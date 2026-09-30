@@ -49,6 +49,23 @@
     .section { padding:16px; margin-bottom:16px; }
     .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
     .section-title h2 { font-size:15px; margin:0; }
+    .overview-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start; margin-bottom:16px; }
+    details.compact-section { padding:0; margin:0; overflow:hidden; }
+    details.compact-section[open] { grid-column:1 / -1; }
+    .compact-summary {
+      cursor:pointer; list-style:none; margin:0; padding:13px 15px; user-select:none;
+      transition:background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
+    }
+    .compact-summary::-webkit-details-marker { display:none; }
+    .compact-summary::after { content:"›"; color:var(--muted); font-size:20px; line-height:1; transform:rotate(0deg); transition:transform var(--motion-fast) var(--motion-ease); }
+    details.compact-section[open] > .compact-summary { border-bottom:1px solid var(--line); background:rgba(21,27,36,.58); }
+    details.compact-section[open] > .compact-summary::after { transform:rotate(90deg); }
+    .compact-summary .pill { margin-left:auto; }
+    .compact-section-body { padding:12px 15px 15px; max-height:min(68vh,760px); overflow:auto; overscroll-behavior:contain; }
+    details.compact-section[open] > .compact-section-body { animation:panel-open var(--motion-base) var(--motion-ease) both; }
+    details.compact-section .empty { padding:18px 12px; }
+    #notificationSummary[data-severity="critical"] { color:var(--bad); border-color:rgba(255,123,114,.45); }
+    #notificationSummary[data-severity="warning"] { color:var(--warn); border-color:rgba(242,204,96,.45); }
     label { display:block; color:var(--muted); font-size:12px; font-weight:700; margin:12px 0 6px; }
     textarea,input,select {
       width:100%; color:var(--text); background:#0c1118; border:1px solid var(--line);
@@ -184,6 +201,8 @@
       header { flex-direction:column; }
       .toolbar { justify-content:flex-start; }
       .topology-grid { grid-template-columns:1fr; }
+      .overview-grid { grid-template-columns:1fr; }
+      details.compact-section[open] { grid-column:auto; }
     }
   </style>
 </head>
@@ -372,83 +391,116 @@
           </div>
         </details>
 
-        <section class="card section">
-          <div class="section-title">
-            <h2>Machine pool</h2>
-            <span class="pill" id="workerSummary">0 workers</span>
-          </div>
-          <div class="tiny">heaven2 is the control center; heaven1 (runtime host <code>heaven</code>) is the preferred resource worker center for heavy work.</div>
-          <div id="workers"></div>
-        </section>
+        <div class="overview-grid" id="overviewGrid">
+          <details class="card section compact-section" id="machinePoolSection">
+            <summary class="section-title compact-summary">
+              <h2>Machine pool</h2>
+              <span class="pill" id="workerSummary">0 workers</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="tiny">heaven2 is the control center; heaven1 (runtime host <code>heaven</code>) is the preferred resource worker center for heavy work.</div>
+              <div id="workers"></div>
+            </div>
+          </details>
 
-        <section class="card section" id="notificationSection">
-          <div class="section-title">
-            <h2>Notifications</h2>
-            <span class="pill" id="notificationSummary">0</span>
-          </div>
-          <div class="branch-list" id="notifications"></div>
-        </section>
+          <details class="card section compact-section" id="notificationSection">
+            <summary class="section-title compact-summary">
+              <h2>Notifications</h2>
+              <span class="pill" id="notificationSummary">0 current</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="branch-list" id="notifications"></div>
+            </div>
+          </details>
 
-        <section class="card section" id="inspectorSection">
-          <div class="section-title">
-            <h2>Inspector</h2>
-            <span class="pill" id="inspectorSummary">nothing selected</span>
-          </div>
-          <div class="branch-list" id="inspectorBody">
-            <div class="empty">Choose Inspect on a managed or federated agent, or use a supported notification action.</div>
-          </div>
-        </section>
+          <details class="card section compact-section" id="inspectorSection">
+            <summary class="section-title compact-summary">
+              <h2>Inspector</h2>
+              <span class="pill" id="inspectorSummary">nothing selected</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="branch-list" id="inspectorBody">
+                <div class="empty">Choose Inspect on a managed or federated agent, or use a supported notification action.</div>
+              </div>
+            </div>
+          </details>
 
-        <section class="card section" id="retiredAgentsSection">
-          <div class="section-title">
-            <h2>Registry history</h2>
-            <span class="pill" id="retiredAgentSummary">0 archived</span>
-          </div>
-          <div class="tiny">Terminal and timed-out registry presence is archived here after safe retirement. Attention/recovery records stay live until their work and ownership are resolved.</div>
-          <div class="branch-list" id="retiredAgents"></div>
-        </section>
+          <details class="card section compact-section" id="retiredAgentsSection">
+            <summary class="section-title compact-summary">
+              <h2>Registry history</h2>
+              <span class="pill" id="retiredAgentSummary">0 archived</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="tiny">Terminal and timed-out registry presence is archived here after safe retirement. Attention/recovery records stay live until their work and ownership are resolved.</div>
+              <div class="branch-list" id="retiredAgents"></div>
+            </div>
+          </details>
 
-        <section class="card section" id="managedAgentsSection">
-          <div class="section-title">
-            <h2>Managed agents</h2>
-            <span class="pill" id="agentSummary">0</span>
-          </div>
-          <div class="agent-list" id="agents"></div>
-        </section>
+          <details class="card section compact-section" id="managedAgentsSection">
+            <summary class="section-title compact-summary">
+              <h2>Managed agents</h2>
+              <span class="pill" id="agentSummary">0 tracked</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="agent-list" id="agents"></div>
+            </div>
+          </details>
 
-        <section class="card section">
-          <div class="section-title">
-            <h2>Federated agent registry</h2>
-            <span class="pill" id="federationSummary">loading</span>
-          </div>
-          <div class="tiny" id="coverageWarning"></div>
-          <div id="providers"></div>
-          <div class="agent-list" id="federatedAgents"></div>
-          <div class="tiny">Local workers are synchronized automatically. ChatGPT, GitHub/CI, and heaven2 observations use stable bridge identities and explicit heartbeats; unavailable providers are shown honestly rather than fabricated.</div>
-        </section>
+          <details class="card section compact-section" id="federationSection">
+            <summary class="section-title compact-summary">
+              <h2>Federated agent registry</h2>
+              <span class="pill" id="federationSummary">loading</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="tiny" id="coverageWarning"></div>
+              <div id="providers"></div>
+              <div class="agent-list" id="federatedAgents"></div>
+              <div class="tiny">Local workers are synchronized automatically. ChatGPT, GitHub/CI, and heaven2 observations use stable bridge identities and explicit heartbeats; unavailable providers are shown honestly rather than fabricated.</div>
+            </div>
+          </details>
 
-        <div class="split">
-          <section class="card section">
-            <div class="section-title"><h2>Mutable-boundary leases</h2><span class="pill" id="leaseSummary">0 active</span></div>
-            <div class="lease-list" id="leaseList"></div>
-          </section>
+          <details class="card section compact-section" id="leaseSection">
+            <summary class="section-title compact-summary">
+              <h2>Mutable-boundary leases</h2>
+              <span class="pill" id="leaseSummary">0 active</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="lease-list" id="leaseList"></div>
+            </div>
+          </details>
 
-          <section class="card section">
-            <div class="section-title"><h2>Integration queue</h2><span class="pill" id="queueSummary">0 candidates</span></div>
-            <div class="queue-list" id="queue"></div>
-          </section>
+          <details class="card section compact-section" id="queueSection">
+            <summary class="section-title compact-summary">
+              <h2>Integration queue</h2>
+              <span class="pill" id="queueSummary">0 candidates</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="queue-list" id="queue"></div>
+            </div>
+          </details>
+
+          <details class="card section compact-section" id="branchSection">
+            <summary class="section-title compact-summary">
+              <h2>Observed swarm branches</h2>
+              <span class="pill" id="branchSummary">0</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="branch-list" id="branches"></div>
+              <div class="tiny">Branch discovery complements the federated registry. Automatic ChatGPT project-session enumeration is unavailable, so ChatGPT sessions must register through the bridge/API using stable source identities.</div>
+            </div>
+          </details>
+
+          <details class="card section compact-section" id="eventSection">
+            <summary class="section-title compact-summary">
+              <h2>Recent events</h2>
+              <span class="pill" id="eventSummary">0 recent</span>
+            </summary>
+            <div class="compact-section-body">
+              <div class="branch-list" id="events"></div>
+            </div>
+          </details>
         </div>
 
-        <section class="card section">
-          <div class="section-title"><h2>Observed swarm branches</h2><span class="pill" id="branchSummary">0</span></div>
-          <div class="branch-list" id="branches"></div>
-          <div class="tiny">Branch discovery complements the federated registry. Automatic ChatGPT project-session enumeration is unavailable, so ChatGPT sessions must register through the bridge/API using stable source identities.</div>
-        </section>
-
-        <section class="card section">
-          <div class="section-title"><h2>Recent events</h2><span class="pill" id="eventSummary">0 recent</span></div>
-          <div class="branch-list" id="events"></div>
-        </section>
       </main>
     </div>
   </div>
@@ -605,6 +657,11 @@
       catch { return String(value ?? ""); }
     }
 
+    function openCompactSection(id) {
+      const section = $(id);
+      if (section?.tagName === "DETAILS") section.open = true;
+    }
+
     function managedAgentById(id, snapshot = state.snapshot) {
       const rawId = decodeStableId(id);
       return (snapshot?.agents || []).find(item => String(item.id || "") === rawId) || null;
@@ -623,6 +680,7 @@
       state.inspectorNotice = { kind, id: rawId, message };
       $("inspectorSummary").textContent = "retired / missing";
       $("inspectorBody").innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+      openCompactSection("inspectorSection");
       toast(message);
       return false;
     }
@@ -630,6 +688,7 @@
     function selectInspector(kind, id) {
       state.selectedInspector = { kind, id: decodeStableId(id) };
       state.inspectorNotice = null;
+      openCompactSection("inspectorSection");
     }
 
     function inspectorActions(agent) {
@@ -821,12 +880,25 @@
 
     function renderNotifications(snapshot) {
       const items = snapshot.notifications || [];
-      $("notificationSummary").textContent = `${items.length} current`;
+      const severities = items.reduce((counts, item) => {
+        const severity = String(item?.severity || "info").toLowerCase();
+        if (severity === "error" || severity === "critical") counts.critical += 1;
+        else if (severity === "warning") counts.warning += 1;
+        return counts;
+      }, { critical:0, warning:0 });
+      const summary = $("notificationSummary");
+      summary.textContent = [
+        `${items.length} current`,
+        severities.critical ? `${severities.critical} critical` : null,
+        severities.warning ? `${severities.warning} warning` : null
+      ].filter(Boolean).join(" · ");
+      summary.dataset.severity = severities.critical ? "critical" : (severities.warning ? "warning" : "info");
       if (!items.length) {
         $("notifications").innerHTML = '<div class="empty">No current control-plane notifications.</div>';
         return;
       }
-      $("notifications").innerHTML = items.slice(0,30).map((item, index) => {
+      const visible = items.slice(0,30);
+      $("notifications").innerHTML = visible.map((item, index) => {
         const severity = String(item.severity || "info").toLowerCase();
         const dot = ["error", "critical"].includes(severity) ? "failed" : (severity === "warning" ? "stopping" : "running");
         return `
@@ -841,6 +913,9 @@
             <div class="task">${escapeHtml(item.message || item.reason || "")}</div>
           </div>`;
       }).join("");
+      if (items.length > visible.length) {
+        $("notifications").insertAdjacentHTML("beforeend", `<div class="tiny">Showing the newest ${visible.length} of ${items.length} notifications.</div>`);
+      }
       bindNotificationActions();
     }
 
