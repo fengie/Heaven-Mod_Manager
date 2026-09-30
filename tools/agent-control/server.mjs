@@ -57,6 +57,7 @@ import {
   recoveryBackoffMs,
   recoveryBackoffWithJitterMs,
   recoveryMachineTarget,
+  shouldRetireFromLiveRegistry,
   terminationReconciliationDecision
 } from "./lib/no-work-recovery.mjs";
 import { planGoToWorkRecoveries } from "./lib/go-to-work-recovery.mjs";
@@ -504,6 +505,75 @@ function readFailureLog(limit = 80) {
     } catch {}
   }
   return failures;
+}
+
+function retireManagedRegistryEntry(state, agent, reason = "terminal-registry-retirement") {
+  if (!agent?.id || coreIsActiveStatus(agent.status)) return false;
+  const id = String(agent.id);
+  const task = state.tasks.find(item => item.id === agent.taskId) || null;
+  releaseLeaseForAgent(state, agent, reason);
+
+  if (task) {
+    task.registryRetirement = {
+      agentId: id,
+      status: agent.status || null,
+      recoveryStatus: agent.recoveryStatus || null,
+      reason,
+      retiredAt: isoNow()
+    };
+  }
+
+  state.agents = state.agents.filter(item => item.id !== id);
+  if (Array.isArray(state.federation?.agents)) {
+    state.federation.agents = state.federation.agents.filter(item =>
+      item.agent_id !== id
+      && item.source_id !== id
+      && item.source_metadata?.managed_agent_id !== id
+      && item.correlation?.controller_agent_id !== id
+    );
+  }
+
+  for (const notification of state.notifications || []) {
+    if (notification?.action?.agentId === id) notification.action = null;
+  }
+  children.delete(id);
+  addEvent(state, "agent.registry-retired", `${id} retired from the live registry after terminal failure evidence was persisted`, {
+    agentId: id,
+    taskId: agent.taskId || null,
+    reason
+  });
+  return true;
+}
+
+function retireFederatedRegistryEntry(state, agent, reason = "terminal-registry-retirement") {
+  const id = String(agent?.agent_id || "").trim();
+  if (!id || !Array.isArray(state.federation?.agents)) return false;
+  const before = state.federation.agents.length;
+  state.federation.agents = state.federation.agents.filter(item => item.agent_id !== id);
+  if (state.federation.agents.length === before) return false;
+
+  for (const notification of state.notifications || []) {
+    if (notification?.action?.agentId === id) notification.action = null;
+  }
+  addEvent(state, "federation.registry-retired", `${id} retired from the live federated registry after terminal failure evidence was persisted`, {
+    agentIds: [id],
+    reason
+  });
+  return true;
+}
+
+function pruneTerminalRegistryEntries(state) {
+  let changed = false;
+  for (const agent of [...state.agents]) {
+    if (!shouldRetireFromLiveRegistry(agent)) continue;
+    changed = retireManagedRegistryEntry(state, agent, "terminal-dead-agent-prune") || changed;
+  }
+
+  for (const agent of [...(state.federation?.agents || [])]) {
+    if (!shouldRetireFromLiveRegistry(agent)) continue;
+    changed = retireFederatedRegistryEntry(state, agent, "terminal-dead-federated-prune") || changed;
+  }
+  return changed;
 }
 
 async function git(args, cwd = REPO, options = {}) {
@@ -1106,6 +1176,8 @@ function refreshState() {
     }
     changed = true;
   }
+
+  if (pruneTerminalRegistryEntries(state)) changed = true;
 
   const federationBefore = JSON.stringify(state.federation);
   syncManagedAgents(state.federation, state.agents, { hostname: os.hostname(), now });
@@ -2065,10 +2137,11 @@ async function recoverNoWorkAgent(agentId) {
       addNotification(state, {
         severity: "error",
         title: "No-work retry limit reached",
-        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts.`,
-        action: { type: "inspect-agent", agentId: source.id },
+        message: `${source.roleLabel || source.id} exhausted ${config.maxRetries} automatic replacement attempts. The dead worker was removed from the live registry; failure/task evidence remains available in diagnostics.`,
+        action: null,
         dedupeKey: `no-work-exhausted:${source.id}`
       });
+      retireManagedRegistryEntry(state, source, "no-work-retry-exhausted");
       saveState(state);
       return null;
     }
@@ -2250,10 +2323,11 @@ async function recoverFederatedNoWorkAgent(agentId) {
       addNotification(state, {
         severity: "error",
         title: "Federated no-work retry limit reached",
-        message: `${source.role || source.agent_id} exhausted ${config.maxRetries} automatic replacement attempts.`,
-        action: { type: "inspect-federation", agentId: source.agent_id },
+        message: `${source.role || source.agent_id} exhausted ${config.maxRetries} automatic replacement attempts. The dead session was removed from the live registry.`,
+        action: null,
         dedupeKey: `federated-no-work-exhausted:${source.agent_id}`
       });
+      retireFederatedRegistryEntry(state, source, "federated-no-work-retry-exhausted");
       saveState(state);
       return null;
     }
