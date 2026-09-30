@@ -13,7 +13,7 @@ public static class ModIoCatalogPolicy
                 ProviderId: ProviderId,
                 SourceKind: CatalogSourceKind.OfficialApi,
                 DocumentationUri: new Uri("https://docs.mod.io/restapi/"),
-                TermsUri: new Uri("https://mod.io/terms"),
+                TermsUri: new Uri("https://mod.io/apiterms"),
                 TermsReviewedOn: new DateOnly(2026, 9, 29),
                 ReviewIntervalDays: 30,
                 AllowsCatalogDiscovery: true,
