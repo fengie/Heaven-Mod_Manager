@@ -20,15 +20,20 @@ More specific, newer repository truth may override generic guidance. A task prom
 
 ## Required startup behavior
 
-Repository training is a pre-response gate, not a deferred onboarding step. Before the first task-facing answer, plan, dispatch, or task-specific action:
-- establish the canonical repository, branch, revision, and working-tree state;
-- read the project's own startup/continuity rules;
-- read the trainer sections relevant to the task;
-- inspect task-relevant source, tests, history, ownership, and active work;
-- identify invariants, dangerous boundaries, and verification obligations before editing;
-- if required training cannot be completed, report a precise training blocker rather than answering from partial context.
+Repository training remains a pre-response gate, but it is intentionally **progressive and hash-verified** rather than a forced reread of the entire historical corpus.
 
-No agent should answer first and "catch up" on repository context afterward. Propagate the same gate to successors and sub-agents.
+Before the first task-facing answer, plan, dispatch, or task-specific action:
+- establish the canonical repository, branch, revision, working-tree state when available, relevant PR/branch ownership, and current verification boundary;
+- read the repository's compact core startup set in full;
+- use the controller-generated hash/index manifest to prove the larger continuity/training corpus belongs to the assigned revision;
+- expand only task-relevant sections of large indexed files, plus materially relevant bug precedents/learned rules and nearby source/tests;
+- paginate/chunk truncated reads instead of treating truncation as failure;
+- route around a missing preferred CLI, network path, or checkout using authorized GitHub connectors/APIs, canonical worktrees, Heaven Local Bridge/Agent Control, or repository CI;
+- declare a training/execution blocker only after reasonable authorized fallbacks are exhausted and record the attempted routes/evidence.
+
+Senior/premium agents should consume compact evidence packets and spend scarce context on architecture, diagnosis, review, integration, and verification decisions; mechanical retrieval and repetitive evidence gathering should be offloaded when practical.
+
+No agent should answer first and “catch up” on repository context afterward. Progressive startup changes **how much is reread**, not the requirement to prove canonical truth and inspect task-relevant evidence. Propagate the same gate to successors and sub-agents.
 
 ## Required completion behavior
 
