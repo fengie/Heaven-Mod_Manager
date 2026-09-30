@@ -1,3 +1,17 @@
+# 2026-09-30 v8.8.38 live-registry projection — CURRENT CANDIDATE
+
+1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates on the same head.
+2. Verify managed completed/terminal evidence is absent from live `snapshot.agents` but remains available in `managedHistory` for authorization/audit.
+3. Verify orphaned/interrupted, retirement-blocked, dirty/divergent, unresolved recovery, and cleanup-required records are absent from live cards and appear in `attentionAgents`.
+4. Verify federated stale/disconnected/terminal records are absent from `federation.agents`, unresolved recovery is in `attention_agents`, and history is in `history_agents`.
+5. Verify Inspector routing searches live + attention + history for both managed and federated records and all dedicated UI controls parse/bind cleanly.
+6. Confirm v8.8.37 safe retirement/tombstone tests remain green; do not weaken fail-closed process/work preservation to achieve projection cleanup.
+7. Review the exact candidate against the three HOLD points posted on PR #504; merge only when all are resolved.
+8. After merge, comment on and close #458 with exact head/gate/merge evidence. Keep #475/#477/#461 open until their separate live heaven2 evidence exists.
+9. Improvement path: if history volume outgrows the bounded snapshot/UI, add pagination/persistent archive retrieval without returning history to current-presence arrays.
+
+---
+
 # 2026-09-30 v8.8.37 registry lifecycle — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the complete Agent Control test suite; require Agent Control and Security PR gates.
