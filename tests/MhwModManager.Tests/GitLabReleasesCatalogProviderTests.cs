@@ -7,6 +7,7 @@ namespace MhwModManager.Tests;
 
 public sealed class GitLabReleasesCatalogProviderTests
 {
+    private static readonly string[] SourceTags = ["mhw", "gitlab"];
     private const string ReleaseJson = """
         {
           "tag_name": "v2.0.0",
@@ -384,7 +385,7 @@ public sealed class GitLabReleasesCatalogProviderTests
             "Monster Hunter: World",
             "example/mhw-mod",
             "Fixture GitLab Mod",
-            new[] { "mhw", "gitlab" });
+            SourceTags);
     }
 
     private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, string json)
