@@ -20,6 +20,7 @@ import {
   resolveExecutionRelayDir,
   resolveBridgePreviousSigningKey,
   resolveBridgeSigningKey,
+  resolveUnsignedBridgeAllowance,
   signBridgeJob,
   shouldRefreshHeartbeat,
   validateBridgeResult,
@@ -121,6 +122,23 @@ test("bridge signing key resolves from machine-local file when env is absent", (
       env: { AGENT_CONTROL_HEAVEN_HMAC_KEY: "env-key" },
       homeDir: tmp
     }), "env-key");
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("unsigned private relay mode can be authorized by a machine-local marker", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-repo-acl-marker-"));
+  try {
+    const authDir = path.join(tmp, "HeavenBridge", "auth");
+    fs.mkdirSync(authDir, { recursive: true });
+    assert.equal(resolveUnsignedBridgeAllowance({ env: {}, homeDir: tmp }), false);
+    fs.writeFileSync(path.join(authDir, "allow-repo-acl-only"), "enabled\n", "utf8");
+    assert.equal(resolveUnsignedBridgeAllowance({ env: {}, homeDir: tmp }), true);
+    assert.equal(resolveUnsignedBridgeAllowance({
+      env: { AGENT_CONTROL_ALLOW_INSECURE_UNSIGNED_BRIDGE: "1" },
+      homeDir: path.join(tmp, "other")
+    }), true);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
