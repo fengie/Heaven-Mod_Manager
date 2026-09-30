@@ -54,7 +54,33 @@ test("restart normalization preserves durable autopilot progress", () => {
   assert.equal(restored.repairLoops, 2);
   assert.equal(restored.candidateAgentId, "main-1");
   assert.equal(restored.runId, "run-1");
-});test("sync-plan fails closed when ownership freshness is missing", () => {
+});test("restart normalization preserves perpetual resilience metadata", () => {
+  const restored = normalizeAutopilotState({
+    enabled: true,
+    perpetual: true,
+    objective: "Never stop",
+    pendingReplacement: {
+      sourceAgentId: "main-stale",
+      agentField: "implementationAgentId",
+      phase: "implement",
+      attempt: 2
+    },
+    replacementCount: 7,
+    recoveryHistory: ["2026-09-29T19:00:00.000Z", "not-a-date"],
+    recoveryCooldownLevel: 4,
+    nextRetryAt: "2026-09-29T19:05:00.000Z",
+    lastRecoveryAt: "2026-09-29T19:01:00.000Z",
+    lastRecoveryReason: "replacement-dispatch-failed"
+  });
+  assert.equal(restored.pendingReplacement.sourceAgentId, "main-stale");
+  assert.equal(restored.replacementCount, 7);
+  assert.deepEqual(restored.recoveryHistory, ["2026-09-29T19:00:00.000Z"]);
+  assert.equal(restored.recoveryCooldownLevel, 4);
+  assert.equal(restored.nextRetryAt, "2026-09-29T19:05:00.000Z");
+  assert.equal(restored.lastRecoveryReason, "replacement-dispatch-failed");
+});
+
+test("sync-plan fails closed when ownership freshness is missing", () => {
   const decision = decideAutopilotAction(state(), { routingCurrent: false, capacityAvailable: true });
   assert.deepEqual(decision, { kind: "gate", reason: "routing-ownership-stale" });
 });
