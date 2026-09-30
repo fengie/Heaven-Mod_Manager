@@ -380,7 +380,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         insert.Parameters.AddWithValue("$name", mod.Name);
         insert.Parameters.AddWithValue("$author", mod.Author);
         insert.Parameters.AddWithValue("$summary", mod.Summary);
-        insert.Parameters.AddWithValue("$tags", string.Join(' ', mod.Tags));
+        insert.Parameters.AddWithValue("$tags", string.Join(" ", mod.Tags));
         insert.Parameters.AddWithValue("$category", mod.Category ?? string.Empty);
         insert.Parameters.AddWithValue("$description", mod.Description);
         await insert.ExecuteNonQueryAsync(ct);
@@ -551,10 +551,10 @@ public sealed class CatalogRepository(ManagerDatabase db)
         value?.ToString("O", CultureInfo.InvariantCulture);
 
     private static DateTimeOffset? ParseDate(string? value) =>
-        value is null ? null : DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        value is null ? null : DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
 
     private static DateTimeOffset ParseRequiredDate(string value) =>
-        DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
 
     private static object DbValue(object? value) => value ?? DBNull.Value;
 
