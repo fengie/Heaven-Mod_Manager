@@ -463,7 +463,31 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var choices=new Dictionary<string,ChoiceAccumulator>(StringComparer.OrdinalIgnoreCase);
             foreach(var conflict in plan.Conflicts.Where(x=>x.Blocking&&x.Path!="<rules>"))
             {
-                filesByPath.TryGetValue(conflict.Path,out var providers);
+                List<ModDescriptor>? providers;
+                IReadOnlyList<string> conflictPaths=[conflict.Path];
+                if(conflict.ReasonCode=="bundle-mixed-providers"&&s.Paths.Game.IsMonsterHunterWorld)
+                {
+                    var bundleKey=AssetBundles.KeyForPath(conflict.Path);
+                    var bundleFiles=snap.Files
+                        .Where(file=>enabledById.ContainsKey(file.ModId)&&
+                                     file.FileClass==FileClass.Structural&&
+                                     StringComparer.OrdinalIgnoreCase.Equals(AssetBundles.KeyForPath(file.Path),bundleKey))
+                        .ToArray();
+                    conflictPaths=bundleFiles
+                        .Select(file=>file.Path)
+                        .Distinct(PathRules.Comparer)
+                        .Order(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    providers=bundleFiles
+                        .Select(file=>enabledById[file.ModId])
+                        .GroupBy(mod=>mod.Id,PathRules.Comparer)
+                        .Select(group=>group.First())
+                        .ToList();
+                }
+                else
+                {
+                    filesByPath.TryGetValue(conflict.Path,out providers);
+                }
                 if(providers is null||providers.Count<2)continue;
                 var logicalGroups=providers
                     .Select(provider=>logicalByMember.TryGetValue(provider.Id,out var identity)
@@ -502,7 +526,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 // own logical family so an external choice cannot accidentally re-enable all parts.
                 var key=logicalGroups.Length>=2?bundle:$"{bundle}|internal:{logicalGroups[0].LogicalId}";
                 if(!choices.TryGetValue(key,out var acc))choices[key]=acc=new ChoiceAccumulator(bundle);
-                acc.Paths.Add(conflict.Path);
+                acc.Paths.UnionWith(conflictPaths);
                 acc.Conflicts.Add(conflict);
                 foreach(var option in options)acc.Options[option.Token]=option;
             }
@@ -515,10 +539,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 var score=Math.Max(95,acc.Conflicts.Max(x=>x.ResolverScore));
                 var evidence=string.Join(" • ",acc.Conflicts.Select(x=>x.Evidence).Where(x=>!string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase));
                 if(string.IsNullOrWhiteSpace(evidence))evidence=s.Paths.Game.IsMonsterHunterWorld?"Independent logical mods provide different bytes inside the same atomic MHW asset bundle.":"Independent logical mods provide different bytes for the same game path.";
-                return new ConflictRow(acc.BundleKey,paths[0],paths,paths.Length,first.Kind,
-                    options.Length==2
+                var explanation=first.ReasonCode=="bundle-mixed-providers"
+                    ?first.Explanation+" Choose one coherent provider/family for the entire bundle; the manager will not mix structural siblings."
+                    :options.Length==2
                         ?"These two logical mods provide different bytes for the same effective game asset/path. Choose one; the other logical mod is staged OFF as a whole."
-                        :$"{options.Length} logical mods provide different bytes for the same effective game asset/path. Choose one winner; every other alternative is staged OFF as a whole.",
+                        :$"{options.Length} logical mods provide different bytes for the same effective game asset/path. Choose one winner; every other alternative is staged OFF as a whole.";
+                return new ConflictRow(acc.BundleKey,paths[0],paths,paths.Length,first.Kind,
+                    explanation,
                     Confidence.High,score,evidence,options);
             }).OrderBy(x=>x.Scope,StringComparer.OrdinalIgnoreCase).ToArray();
 
@@ -1023,6 +1050,18 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {
+            var stage=CaptureStage();
+            await ValidateStageDependenciesAsync(stage,ct);
+            var launchAnalysis=await BuildAnalysisAsync(stage,ct);
+            if(launchAnalysis.plan.IsBlocked)
+            {
+                var displayRows=await EnrichConflictPreviewsAsync(launchAnalysis.rows,ct);
+                await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
+                SelectedTab=3;
+                StatusText="Launch blocked because the currently enabled setup no longer has a uniquely safe conflict/override plan.";
+                return;
+            }
+
             var observation=await s.Automation.LaunchAndObserveAsync(LaunchMode.Modded,TimeSpan.FromSeconds(15),ct);
             StatusText=observation.Message;
             await RefreshActivity(ct);
