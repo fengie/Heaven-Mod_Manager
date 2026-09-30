@@ -19,25 +19,36 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 
 $restoreScript = Join-Path $RepoRoot 'tools\agent-control\Restore-StartupSetup.ps1'
 $watchdogScript = Join-Path $RepoRoot 'tools\agent-control\Watch-AgentControl.ps1'
+$sourceSyncScript = Join-Path $RepoRoot 'tools\agent-control\Sync-AgentControlRuntime.ps1'
 if (-not (Test-Path -LiteralPath $restoreScript)) {
     throw "Startup restore script not found: $restoreScript"
 }
 if (-not (Test-Path -LiteralPath $watchdogScript)) {
     throw "Agent Control watchdog script not found: $watchdogScript"
 }
+if (-not (Test-Path -LiteralPath $sourceSyncScript)) {
+    throw "Agent Control runtime freshness guard not found: $sourceSyncScript"
+}
 
 $appDir = Join-Path $env:LOCALAPPDATA 'MHW-Agent-Control'
 New-Item -ItemType Directory -Force -Path $appDir | Out-Null
 
+$runtimeSyncScript = Join-Path $appDir 'Sync-AgentControlRuntime.ps1'
+Copy-Item -LiteralPath $sourceSyncScript -Destination $runtimeSyncScript -Force
+
 $runtimeLauncher = Join-Path $appDir 'Run-StartupRestore.ps1'
 $escapedRepo = $RepoRoot.Replace("'", "''")
 $escapedRestore = $restoreScript.Replace("'", "''")
+$escapedRuntimeSync = $runtimeSyncScript.Replace("'", "''")
 $launcherText = @'
 $ErrorActionPreference = 'Stop'
 $env:AGENT_CONTROL_REPO = '__REPO__'
-& '__RESTORE__' -RepoRoot '__REPO__'
+$runtime = & '__SYNC__' -RepoRoot '__REPO__'
+$env:AGENT_CONTROL_SOURCE_SHA = [string]$runtime.source_sha
+$env:AGENT_CONTROL_VERSION = [string]$runtime.agent_control_version
+& '__RESTORE__' -RepoRoot '__REPO__' -ExpectedSourceSha $env:AGENT_CONTROL_SOURCE_SHA -ExpectedAgentControlVersion $env:AGENT_CONTROL_VERSION
 '@
-$launcherText = $launcherText.Replace('__REPO__', $escapedRepo).Replace('__RESTORE__', $escapedRestore)
+$launcherText = $launcherText.Replace('__REPO__', $escapedRepo).Replace('__RESTORE__', $escapedRestore).Replace('__SYNC__', $escapedRuntimeSync)
 Set-Content -LiteralPath $runtimeLauncher -Value $launcherText -Encoding UTF8
 
 $watchdogRuntimeLauncher = Join-Path $appDir 'Run-AgentControlWatchdog.ps1'
@@ -45,9 +56,12 @@ $escapedWatchdog = $watchdogScript.Replace("'", "''")
 $watchdogLauncherText = @'
 $ErrorActionPreference = 'Stop'
 $env:AGENT_CONTROL_REPO = '__REPO__'
-& '__WATCHDOG__' -RepoRoot '__REPO__'
+$runtime = & '__SYNC__' -RepoRoot '__REPO__'
+$env:AGENT_CONTROL_SOURCE_SHA = [string]$runtime.source_sha
+$env:AGENT_CONTROL_VERSION = [string]$runtime.agent_control_version
+& '__WATCHDOG__' -RepoRoot '__REPO__' -ExpectedSourceSha $env:AGENT_CONTROL_SOURCE_SHA -ExpectedAgentControlVersion $env:AGENT_CONTROL_VERSION
 '@
-$watchdogLauncherText = $watchdogLauncherText.Replace('__REPO__', $escapedRepo).Replace('__WATCHDOG__', $escapedWatchdog)
+$watchdogLauncherText = $watchdogLauncherText.Replace('__REPO__', $escapedRepo).Replace('__WATCHDOG__', $escapedWatchdog).Replace('__SYNC__', $escapedRuntimeSync)
 Set-Content -LiteralPath $watchdogRuntimeLauncher -Value $watchdogLauncherText -Encoding UTF8
 
 $powerShellExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
@@ -82,6 +96,8 @@ try {
         Register-ScheduledTask -TaskName $WatchdogTaskName -Action $watchdogAction -Trigger $watchdogTrigger -Settings $watchdogSettings -Principal $watchdogPrincipal -Force | Out-Null
         $watchdogTaskInstalled = [bool](Get-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction SilentlyContinue)
         if ($watchdogTaskInstalled) {
+            Stop-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction SilentlyContinue
+            Start-Sleep -Milliseconds 250
             Start-ScheduledTask -TaskName $WatchdogTaskName -ErrorAction SilentlyContinue
         }
     }
@@ -137,4 +153,6 @@ if (-not $watchdogTaskInstalled -and -not ($watchdogFallback -and (Test-Path -Li
     watchdog_fallback = $watchdogFallback
     watchdog_runtime_launcher = $watchdogRuntimeLauncher
     watchdog_script = $watchdogScript
+    runtime_sync_script = $runtimeSyncScript
+    source_sync_script = $sourceSyncScript
 } | ConvertTo-Json -Compress
