@@ -1,3 +1,13 @@
+### 2026-09-30 — Agent Control Heaven relay — inspection and execution resolved different relay configuration
+- **Symptom:** Agent Manager could report the Heaven Bridge as configured/healthy, yet START SWARM or delegated work failed before job publication with a relay-directory configuration error.
+- **Root cause:** Health/inspection used `resolveHeavenRelayDir()`, which supports the documented per-user `HeavenBridgeRepo` checkout, while `submitHeavenBridgeJob()` and `waitForHeavenBridgeResult()` defaulted directly to `process.env.AGENT_CONTROL_HEAVEN_RELAY_DIR`.
+- **Violated invariant / wrong assumption:** Provider health, submission, and result waiting must resolve transport configuration identically. A provider must not pass inspection using a configuration path that execution refuses to use.
+- **Why prior defenses missed it:** The auto-discovery unit test only exercised the resolver itself; it did not pin the submit/wait function defaults.
+- **Direct fix:** Default submit/wait relayDir through `resolveHeavenRelayDir()` and add a regression that rejects the old direct environment-variable default.
+- **Preventive rule/process change:** Every provider transport setting used by health/inspection must be exercised by an execution-path symmetry test.
+- **Verification:** Exact-head Agent Control checks plus live heaven2→heaven1 dispatch/result smoke with the relay-dir env unset.
+- **References:** v8.8.28 / branch `fix/agent-control-heaven-relay-execution-20260930`.
+
 ### 2026-09-30 — Agent Control dashboard — agent cards were display-only despite interactive presentation
 - **Symptom:** Clicking the body of a managed or federated bot card appeared to do nothing. Operators had to discover a small nested action such as **View log**, while backend/notification inspection concepts suggested the card itself should be actionable.
 - **Root cause:** The dashboard rendered each bot as a plain `<article class="agent">` with nested buttons only. There was no card-level mouse/keyboard handler, and `showLog(id, button)` assumed a button object was always the caller.
