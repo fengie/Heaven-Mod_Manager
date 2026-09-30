@@ -1,3 +1,7 @@
+## v0.6.15 — current-presence registry retirement
+
+Ordinary terminal managed failures are retired only after recovery/work/process/remote-stop checks are safe; unsafe or durable-work cases remain visible. Federated terminal/disconnect-expired rows move to durable per-source tombstones, including all correlated provider/source identities, so stale replay cannot repopulate the live registry. Product integration: v8.8.37.
+
 # Heaven Agent Control Plane
 
 A zero-dependency local control plane for the MHW programming-agent swarm.
