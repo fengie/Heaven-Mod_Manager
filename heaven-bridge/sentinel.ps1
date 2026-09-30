@@ -104,7 +104,7 @@ function Ensure-InteractiveTask {
 }
 
 function Get-SentinelArguments {
-    '-NoProfile -ExecutionPolicy Bypass -File "{0}" -UserProfile "{1}" -UserIdentity "{2}" -Pythonw "{3}" -PowerShellExe "{4}"' -f $RuntimeSentinel, $UserProfile, $UserIdentity, $Pythonw, $PowerShellExe
+    '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}" -UserProfile "{1}" -UserIdentity "{2}" -Pythonw "{3}" -PowerShellExe "{4}"' -f $RuntimeSentinel, $UserProfile, $UserIdentity, $Pythonw, $PowerShellExe
 }
 
 function Ensure-SentinelTask {
@@ -244,7 +244,7 @@ function Invoke-SentinelRepair {
 
     Ensure-StartupFallback
     $workerArgs = '"{0}"' -f $RuntimeWorker
-    $watchdogArgs = '-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog
+    $watchdogArgs = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog
     Ensure-InteractiveTask -Name $WorkerTaskName -Execute $Pythonw -Arguments $workerArgs
     Ensure-InteractiveTask -Name $WatchdogTaskName -Execute $PowerShellExe -Arguments $watchdogArgs
     Ensure-SentinelTask

@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'scripts/Publish-UpdaterRelease.ps1'
-      - 'scripts/Publish-PublicUpdaterRelease.ps1'
-      - 'scripts/UpdaterReleasePublication.ps1'
-      - 'scripts/UpdaterReleasePolicy.ps1'
-      - 'scripts/Test-UpdaterReleasePolicy.ps1'
+      - 'scripts/release/Publish-UpdaterRelease.ps1'
+      - 'scripts/release/Publish-PublicUpdaterRelease.ps1'
+      - 'scripts/release/UpdaterReleasePublication.ps1'
+      - 'scripts/release/UpdaterReleasePolicy.ps1'
+      - 'scripts/testing/Test-UpdaterReleasePolicy.ps1'
       - '.github/workflows/updater-publication-pr-gate.yml'
 
 permissions:
@@ -57,7 +57,7 @@ jobs:
       - name: Parse updater publishers
         shell: powershell
         run: |
-          foreach ($path in @('.\scripts\Publish-UpdaterRelease.ps1', '.\scripts\Publish-PublicUpdaterRelease.ps1')) {
+          foreach ($path in @('.\scripts\release\Publish-UpdaterRelease.ps1', '.\scripts\release\Publish-PublicUpdaterRelease.ps1')) {
             $tokens=$null
             $errors=$null
             [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)
@@ -66,25 +66,25 @@ jobs:
               throw "$path contains PowerShell parse errors."
             }
           }
-          if(Select-String -LiteralPath '.\scripts\Publish-PublicUpdaterRelease.ps1' -Pattern 'Get-Command gh|& gh ' -Quiet) {
+          if(Select-String -LiteralPath '.\scripts\release\Publish-PublicUpdaterRelease.ps1' -Pattern 'Get-Command gh|& gh ' -Quiet) {
             throw 'Public updater mirroring must not depend on GitHub CLI on Heaven.'
           }
 
       - name: Run updater publication policy and fault tests
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-UpdaterReleasePolicy.ps1"
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-UpdaterReleasePolicy.ps1"
 
       - name: Run exact repository verification gate
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Verify-Release.ps1"
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\release\Verify-Release.ps1"
 
       - name: Run exact release build and package gate
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Build-Release.ps1"
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\build\Build-Release.ps1"
 
       - name: Run continuity handoff check
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\Test-AgentHandoff.ps1"
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-AgentHandoff.ps1"
 
       - name: Preserve PR verification evidence
         if: always()

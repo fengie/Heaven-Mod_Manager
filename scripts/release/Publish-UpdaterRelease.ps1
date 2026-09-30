@@ -7,7 +7,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 . (Join-Path $PSScriptRoot 'UpdaterReleasePolicy.ps1')
 . (Join-Path $PSScriptRoot 'UpdaterReleasePublication.ps1')
 
@@ -37,7 +37,7 @@ if($ExpectedBuildNumber -le 0){
 if([string]$manifest.sourceSha -ne $ExpectedSourceSha){throw 'Update manifest source SHA does not match the exact workflow source.'}
 if([long]$manifest.buildNumber -ne $ExpectedBuildNumber){throw 'Update manifest build number does not match the exact workflow build.'}
 if([string]$manifest.channel -ne 'main'){throw "Refusing to publish updater channel '$($manifest.channel)'."}
-& (Join-Path $PSScriptRoot 'Test-UpdaterPackage.ps1') -ArtifactPath $artifact -ManifestPath $manifestFile -ExpectedSourceSha $ExpectedSourceSha -ExpectedBuildNumber $ExpectedBuildNumber
+& (Join-Path $PSScriptRoot '..\testing\Test-UpdaterPackage.ps1') -ArtifactPath $artifact -ManifestPath $manifestFile -ExpectedSourceSha $ExpectedSourceSha -ExpectedBuildNumber $ExpectedBuildNumber
 
 function Assert-UpdaterReleaseAssets {
   param($Release,[string]$Artifact,[string]$ManifestFile,$Manifest)

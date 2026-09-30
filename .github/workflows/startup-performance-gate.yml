@@ -7,7 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'tests/MhwModManager.IntegrationTests/**'
-      - 'scripts/Measure-StartupPerformance.ps1'
+      - 'scripts/diagnostics/Measure-StartupPerformance.ps1'
       - '.github/workflows/startup-performance-gate.yml'
       - 'plugins/PLUGIN_GAP_BACKLOG.md'
       - 'Directory.Build.props'
@@ -71,12 +71,12 @@ jobs:
       - name: Measure current main baseline
         shell: powershell
         run: |
-          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
 
       - name: Measure candidate
         shell: powershell
         run: |
-          .\candidate\scripts\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
 
       - name: Build before-after report
         shell: powershell
@@ -140,7 +140,7 @@ jobs:
       - name: Run exact release verification on candidate
         shell: powershell
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\candidate\\scripts\\Verify-Release.ps1"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\candidate\\scripts\\release\\Verify-Release.ps1"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git -C .\\candidate diff --check origin/main...HEAD
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

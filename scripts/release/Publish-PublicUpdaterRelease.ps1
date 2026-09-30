@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 if([string]::IsNullOrWhiteSpace($ManifestPath)){
   $ManifestPath=Join-Path $Root 'artifacts\update-manifest.json'
 }
@@ -29,7 +29,7 @@ $expectedBuild=[long]$manifest.buildNumber
 $expectedSource=([string]$manifest.sourceSha).ToLowerInvariant()
 $tag="updater-main-$expectedBuild"
 
-& (Join-Path $PSScriptRoot 'Test-UpdaterPackage.ps1') -ArtifactPath $artifact -ManifestPath $manifestFile -ExpectedSourceSha $expectedSource -ExpectedBuildNumber $expectedBuild
+& (Join-Path $PSScriptRoot '..\testing\Test-UpdaterPackage.ps1') -ArtifactPath $artifact -ManifestPath $manifestFile -ExpectedSourceSha $expectedSource -ExpectedBuildNumber $expectedBuild
 
 $sourceToken=[string]$env:GH_TOKEN
 if([string]::IsNullOrWhiteSpace($sourceToken)){

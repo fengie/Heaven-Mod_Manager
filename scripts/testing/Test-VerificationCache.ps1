@@ -2,7 +2,7 @@ $ErrorActionPreference='Stop'
 # Exercise the actual fingerprint functions without running the release pipeline.
 $tokens=$null
 $errors=$null
-$ast=[System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'Verify-Release.ps1'),[ref]$tokens,[ref]$errors)
+$ast=[System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot '..\release\Verify-Release.ps1'),[ref]$tokens,[ref]$errors)
 if($errors.Count -gt 0){throw 'Verifier script must parse before testing its cache.'}
 foreach($name in @('Add-ProjectInputs','Get-ProjectFingerprint')){
     $definition=$ast.Find({param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name},$true)

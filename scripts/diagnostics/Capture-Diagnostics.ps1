@@ -4,7 +4,7 @@ param(
     [string]$OutputDirectory = ''
 )
 $ErrorActionPreference='Continue'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 . (Join-Path $PSScriptRoot 'Master-Debug.ps1')
 Start-MhwMasterDebugSession -Root $Root -Area 'CAPTURE' -Title 'Runtime diagnostics capture'
 Write-MhwMasterDebug -Root $Root -Area 'CAPTURE' -Message ("Requested ProcessId=$ProcessId; DurationSeconds=$DurationSeconds; OutputDirectory=$OutputDirectory")

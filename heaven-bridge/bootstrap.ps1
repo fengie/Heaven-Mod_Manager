@@ -62,9 +62,9 @@ function Ensure-ElevatedBootstrap {
     }
 
     $hostExe = (Get-Process -Id $PID -ErrorAction Stop).Path
-    $args = '-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $PSCommandPath
+    $args = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $PSCommandPath
     Write-Output 'HEAVEN_BRIDGE_ELEVATION_REQUESTED'
-    $child = Start-Process -FilePath $hostExe -Verb RunAs -ArgumentList $args -Wait -PassThru
+    $child = Start-Process -WindowStyle Hidden -FilePath $hostExe -Verb RunAs -ArgumentList $args -Wait -PassThru
     exit $child.ExitCode
 }
 
@@ -346,7 +346,7 @@ try {
 
     $watchdogAction = New-ScheduledTaskAction `
         -Execute $powershell `
-        -Argument ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog)
+        -Argument ('-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $RuntimeWatchdog)
     Register-ScheduledTask `
         -TaskName $WatchdogTaskName `
         -Action $watchdogAction `
@@ -364,7 +364,7 @@ try {
     # Machine-start repair owner in a separate principal/trigger failure domain.
     # It never runs bridge jobs; it only repairs persistence for the interactive
     # worker/watchdog and the user Startup fallback.
-    $sentinelArguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -UserProfile "{1}" -UserIdentity "{2}" -Pythonw "{3}" -PowerShellExe "{4}"' -f $RuntimeSentinel, $env:USERPROFILE, $identityName, $pythonw, $powershell
+    $sentinelArguments = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}" -UserProfile "{1}" -UserIdentity "{2}" -Pythonw "{3}" -PowerShellExe "{4}"' -f $RuntimeSentinel, $env:USERPROFILE, $identityName, $pythonw, $powershell
     $sentinelAction = New-ScheduledTaskAction -Execute $powershell -Argument $sentinelArguments
     $sentinelTrigger = New-ScheduledTaskTrigger -AtStartup
     $sentinelPrincipal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest

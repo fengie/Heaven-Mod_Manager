@@ -1,6 +1,6 @@
 $ErrorActionPreference='Stop'
-. (Join-Path $PSScriptRoot 'UpdaterReleasePolicy.ps1')
-. (Join-Path $PSScriptRoot 'UpdaterReleasePublication.ps1')
+. (Join-Path $PSScriptRoot '..\release\UpdaterReleasePolicy.ps1')
+. (Join-Path $PSScriptRoot '..\release\UpdaterReleasePublication.ps1')
 
 function Assert-Equal {
   param($Expected,$Actual,[string]$Label)
@@ -14,7 +14,7 @@ Assert-Equal $true (Test-UpdaterReleaseRelevantPath 'tests/MhwModManager.Integra
 Assert-Equal $true (Test-UpdaterReleaseRelevantPath '.github/workflows/windows-release-gate.yml') 'workflow relevant'
 Assert-Equal $false (Test-UpdaterReleaseRelevantPath '.github/workflows/heaven-bridge-gate.yml') 'unrelated workflow irrelevant'
 Assert-Equal $false (Test-UpdaterReleaseRelevantPath '.github/workflows/agent-control-pr-gate.yml') 'agent workflow irrelevant'
-Assert-Equal $true (Test-UpdaterReleaseRelevantPath 'scripts/Build-Release.ps1') 'scripts relevant'
+Assert-Equal $true (Test-UpdaterReleaseRelevantPath 'scripts/build/Build-Release.ps1') 'scripts relevant'
 Assert-Equal $true (Test-UpdaterReleaseRelevantPath 'VERSION.txt') 'version relevant'
 Assert-Equal $false (Test-UpdaterReleaseRelevantPath '_AGENT_CONTEXT/EVIDENCE/x.log') 'evidence irrelevant'
 Assert-Equal $false (Test-UpdaterReleaseRelevantPath '.verification/function-status.json') 'cache irrelevant'
@@ -231,24 +231,24 @@ Assert-Equal $true ($multiRefreshError -like 'Final updater publication main ref
 # post-publication verification and an already-immutable release retry must use
 # the authoritative Git REST ref. The one remaining local current-build tag
 # check is deliberately the pre-publication orphan-tag refusal.
-$publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-UpdaterRelease.ps1') -Raw
+$publishSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-UpdaterRelease.ps1') -Raw
 $restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repository/git/ref/tags/\$tag"').Count
 Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
 
 # Release completion requires private publication followed by the public client-feed mirror.
-$repoRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$repoRoot=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $releaseWorkflowPath=Join-Path $repoRoot '.github\workflows\windows-release-gate.yml'
 $releaseWorkflow=Get-Content -LiteralPath $releaseWorkflowPath -Raw
-$privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\Publish-UpdaterRelease.ps1')
-$publicMirrorIndex=$releaseWorkflow.IndexOf('.\scripts\Publish-PublicUpdaterRelease.ps1')
+$privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
+$publicMirrorIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
 if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical private updater publisher.'}
 if($publicMirrorIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater mirror.'}
 if($publicMirrorIndex -le $privatePublishIndex){throw 'Public updater mirroring must run after canonical private release publication.'}
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 
-$publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Publish-PublicUpdaterRelease.ps1') -Raw
+$publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicUpdaterRelease.ps1') -Raw
 Assert-Equal $true ($publicPublisherSource.Contains('fengie/mhw-mod-manager-release')) 'canonical public release repository'
 Assert-Equal $true ($publicPublisherSource.Contains('Unexpected private source repository')) 'canonical private release source guard'
 

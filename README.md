@@ -255,7 +255,7 @@ See `docs/AUTO-COMPOSITION.md` for the safety model.
 
 ## Full compiler/analyzer sweep
 
-Run `Test Everything.bat` (recommended) or `scripts\Verify-Release.ps1`. v8.6.7 first syntax-checks all active PowerShell scripts, then performs a relaxed whole-solution build so analyzer warnings do not block downstream projects, then compiles every project independently with warnings-as-errors and continues through the entire project list. This exposes all *reachable* compiler/analyzer failures in one run instead of stopping at the first failing dependency.
+Run `Test Everything.bat` (recommended) or `scripts\release\Verify-Release.ps1`. v8.6.7 first syntax-checks all active PowerShell scripts, then performs a relaxed whole-solution build so analyzer warnings do not block downstream projects, then compiles every project independently with warnings-as-errors and continues through the entire project list. This exposes all *reachable* compiler/analyzer failures in one run instead of stopping at the first failing dependency.
 
 Artifacts are written to `BuildLogs\`: the human-readable verification transcript, `compile-summary-*.txt`, a relaxed whole-solution `.binlog`, one strict `.binlog` per project, and the final strict solution `.binlog` when the sweep is clean. A genuine C# compiler error in an upstream project can still make a downstream assembly impossible to compile until that upstream error is corrected; the verifier reports this rather than pretending otherwise.
 
@@ -319,13 +319,13 @@ Different bytes are never described as merged unless an actual file-format merge
 Use the current .NET 10 SDK (the repository pins SDK `10.0.401` in `global.json`). Then run:
 
 ```powershell
-.\scripts\Verify-Release.ps1 -RunBenchmarks
+.\scripts\release\Verify-Release.ps1 -RunBenchmarks
 ```
 
 If that passes, build the self-contained Windows x64 release:
 
 ```powershell
-.\scripts\Build-Release.ps1
+.\scripts\build\Build-Release.ps1
 ```
 
 The final binary ZIP is produced under `artifacts` by the build script.
@@ -347,7 +347,7 @@ The trace covers path discovery, database initialization, service composition, m
 The app records structured timings automatically. For deeper evidence, click **Activity -> Capture diagnostics**, or run:
 
 ```powershell
-.\scripts\Capture-Diagnostics.ps1 -ProcessId <PID>
+.\scripts\diagnostics\Capture-Diagnostics.ps1 -ProcessId <PID>
 ```
 
 When installed, the script uses `dotnet-stack`, `dotnet-counters`, `dotnet-trace`, and `dotnet-gcdump`. The support bundle stays bounded and does not automatically copy mod assets/CAS blobs.
@@ -416,7 +416,7 @@ Read `plugins/README.md` for layout/ownership rules and `plugins/IMPLEMENTATION_
 The existing `heaven-bridge/` directory remains active compatibility/runtime infrastructure. New plugin-platform code should be developed under `plugins/heaven-control-plane/` and should reuse/adapt proven bridge primitives rather than forking a second implementation. Any physical migration of the existing bridge plugin source must preserve bootstrap/workflow/runtime compatibility and be verified on `heaven`.
 
 
-GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Every shipped application change must also bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run `scripts/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
+GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Every shipped application change must also bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run `scripts/testing/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
 
 ## Verification closure status
 

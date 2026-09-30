@@ -2,10 +2,7 @@ import fs from "node:fs";
 import { createHmac } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
+import { execFileHidden as execFileAsync } from "./background-process.mjs";
 
 export const HEAVEN_BRIDGE_PROTOCOL = "chatgpt-heaven-bridge-v2";
 export const HEAVEN_BRIDGE_BRANCH = "heaven-bridge";
