@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.25</Version>
-    <InformationalVersion>8.8.25-agent-control-copy-branch-plugin-identity</InformationalVersion>
+    <Version>8.8.26</Version>
+    <InformationalVersion>8.8.26-agent-control-retry-exhausted-registry-retirement</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
