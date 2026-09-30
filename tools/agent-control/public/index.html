@@ -736,13 +736,13 @@
 
     function inspectManagedAgentCard(event) {
       if (eventTargetsControl(event)) return;
-      const id = event.currentTarget?.dataset?.agentId || "";
+      const id = event.currentTarget?.dataset?.agentKey || "";
       if (id) inspectManagedAgentById(id);
     }
 
     function inspectFederatedAgentCard(event) {
       if (eventTargetsControl(event)) return;
-      const id = event.currentTarget?.dataset?.federatedId || "";
+      const id = event.currentTarget?.dataset?.federatedKey || "";
       if (id) inspectFederatedAgentById(id);
     }
 
