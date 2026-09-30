@@ -25,6 +25,7 @@ public static class NexusV3CatalogNormalizer
 
         foreach (var item in mods.EnumerateArray())
         {
+            _ = ReadRequiredString(item, "name");
             var sourceUrl = ReadRequiredString(item, "mod_page_url");
             var providerModId = ReadProviderModId(item, sourceUrl, gameDomain);
             results.Add(NormalizeMod(
@@ -61,6 +62,7 @@ public static class NexusV3CatalogNormalizer
         var data = RequireObject(document.RootElement, "data");
         var providerModId = ReadRequiredString(data, "game_scoped_id");
         var globalModId = ReadRequiredString(data, "id");
+        var nexusGameId = ReadRequiredString(data, "game_id");
         var sourceUrl = BuildSourceUrl(gameDomain, providerModId);
         var mod = NormalizeMod(
             data,
@@ -68,7 +70,8 @@ public static class NexusV3CatalogNormalizer
             gameDomain,
             providerModId,
             sourceUrl,
-            files: Array.Empty<CatalogModFile>());
+            files: Array.Empty<CatalogModFile>(),
+            requiredGameId: nexusGameId);
 
         return new NexusV3NormalizedModDetails(mod, globalModId);
     }
@@ -138,9 +141,26 @@ public static class NexusV3CatalogNormalizer
                 throw new InvalidDataException("Nexus v3 file-version payload contains a non-object version.");
 
             var versionId = ReadRequiredString(item, "id");
+            var nestedFile = RequireObject(item, "file");
+            var nestedFileId = ReadRequiredString(nestedFile, "id");
+            _ = ReadRequiredString(nestedFile, "name");
+            if (!nestedFileId.Equals(modFileId, StringComparison.Ordinal))
+                throw new InvalidDataException("Nexus v3 file-version payload references an unexpected persistent mod-file id.");
+
+            var position = ReadRequiredString(item, "position");
+            if (!decimal.TryParse(
+                position,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out _))
+            {
+                throw new InvalidDataException("Nexus v3 file-version property 'position' is not a valid decimal.");
+            }
+
+            var gameScopedFileId = ReadRequiredString(item, "game_scoped_id");
             var name = ReadRequiredString(item, "name");
             var version = ReadRequiredString(item, "version");
-            var category = ParseCategory(ReadRequiredString(item, "category"));
+            var category = ParseVersionCategory(ReadRequiredString(item, "category"));
             var uploadedAt = ReadOptionalTimestamp(item, "uploaded_at")
                 ?? throw new InvalidDataException("Nexus v3 file-version property 'uploaded_at' is required.");
 
@@ -148,7 +168,7 @@ public static class NexusV3CatalogNormalizer
             {
                 ["mod_file_id"] = modFileId.Trim(),
                 ["mod_file_name"] = modFileName.Trim(),
-                ["game_scoped_file_id"] = ReadOptionalString(item, "game_scoped_id")
+                ["game_scoped_file_id"] = gameScopedFileId
             });
 
             results.Add(new CatalogModFile(
@@ -177,10 +197,11 @@ public static class NexusV3CatalogNormalizer
         string gameDomain,
         string providerModId,
         string sourceUrl,
-        IReadOnlyList<CatalogModFile> files)
+        IReadOnlyList<CatalogModFile> files,
+        string? requiredGameId = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var name = ReadRequiredString(item, "name");
+        var name = ReadOptionalString(item, "name") ?? $"Nexus Mod {providerModId}";
         var summary = ReadOptionalString(item, "summary") ?? string.Empty;
         var description = ReadOptionalString(item, "description") ?? summary;
         var author = ReadOptionalString(item, "author") ?? "Unknown";
@@ -209,7 +230,7 @@ public static class NexusV3CatalogNormalizer
             Array.Empty<CatalogDependency>(),
             sourceUrl,
             files,
-            BuildModMetadata(item, gameDomain));
+            BuildModMetadata(item, gameDomain, requiredGameId));
     }
 
     private static string ReadProviderModId(JsonElement item, string sourceUrl, string gameDomain)
@@ -253,18 +274,25 @@ public static class NexusV3CatalogNormalizer
         return $"https://www.nexusmods.com/{Uri.EscapeDataString(gameDomain.Trim())}/mods/{Uri.EscapeDataString(providerModId.Trim())}";
     }
 
-    private static string? BuildModMetadata(JsonElement item, string gameDomain)
+    private static string? BuildModMetadata(
+        JsonElement item,
+        string gameDomain,
+        string? requiredGameId)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var globalId = ReadOptionalString(item, "id");
         if (globalId is null)
             return null;
 
-        return JsonSerializer.Serialize(new Dictionary<string, string>
+        var metadata = new Dictionary<string, string>
         {
             ["game_domain"] = gameDomain,
             ["global_mod_id"] = globalId
-        });
+        };
+        if (!string.IsNullOrWhiteSpace(requiredGameId))
+            metadata["game_id"] = requiredGameId;
+
+        return JsonSerializer.Serialize(metadata);
     }
 
     private static string? BuildFileMetadata(JsonElement item)
@@ -288,6 +316,24 @@ public static class NexusV3CatalogNormalizer
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (value is not null)
             target[key] = value;
+    }
+
+    private static CatalogFileCategory ParseVersionCategory(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "main" => CatalogFileCategory.Main,
+            "update" => CatalogFileCategory.Update,
+            "optional" => CatalogFileCategory.Optional,
+            "old_version" => CatalogFileCategory.OldVersion,
+            "miscellaneous" => CatalogFileCategory.Miscellaneous,
+            "removed" => CatalogFileCategory.Removed,
+            "archived" => CatalogFileCategory.Archived,
+            "unknown" => CatalogFileCategory.Unknown,
+            _ => throw new InvalidDataException(
+                $"Nexus v3 returned unrecognized file-version category '{value}'.")
+        };
     }
 
     private static CatalogFileCategory ParseCategory(string? value)
