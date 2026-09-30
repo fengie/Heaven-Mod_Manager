@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.26 Agent Control terminal-registry GC — CURRENT
+
+1. Run `cd tools/agent-control && npm run check && npm test` on the exact candidate.
+2. On heaven2, restart/reload Agent Control to the exact candidate before evaluating click behavior; stale pre-fix runtime bytes can reproduce the old retry storm.
+3. Start a swarm from the normal **START SWARM** button and verify dispatch actually creates a live worker.
+4. Exercise a bounded failure/no-work retry path and confirm retry-pending/waiting records remain while recovery owns them.
+5. After retry exhaustion or deterministic terminal failure, confirm the dead agent disappears from **Managed agents** and the linked failed record disappears from the **Federated agent registry**.
+6. Confirm the task, event/failure evidence, branch/worktree state, and successor handoff remain available after registry retirement.
+7. Reconcile/merge to current `main`, rerun exact-head checks after any conflict resolution, then delete the task branch.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.25 candidate.
