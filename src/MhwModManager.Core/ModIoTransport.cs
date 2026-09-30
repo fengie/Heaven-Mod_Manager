@@ -189,6 +189,7 @@ public sealed class ModIoTransport
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
+        request.Headers.TryAddWithoutValidation("X-Modio-Platform", "windows");
 
         HttpResponseMessage response;
         try
