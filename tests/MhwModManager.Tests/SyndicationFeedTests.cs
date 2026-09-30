@@ -60,6 +60,97 @@ public sealed class SyndicationFeedTests
     }
 
     [Fact]
+    public async Task Conditional_transport_sends_validators_and_accepts_304_without_parsing_body()
+    {
+        var calls = 0;
+        var lastModified = new DateTimeOffset(2026, 9, 29, 12, 0, 0, TimeSpan.Zero);
+        var handler = new RecordingHandler((request, _) =>
+        {
+            calls++;
+            Assert.Equal("\"fixture-v1\"", Assert.Single(request.Headers.IfNoneMatch).ToString());
+            Assert.Equal(lastModified, request.Headers.IfModifiedSince);
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotModified));
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new SyndicationFeedTransport(client);
+
+        var result = await transport.GetConditionalAsync(
+            new Uri("https://feeds.example.test/catalog/rss.xml"),
+            "\"fixture-v1\"",
+            lastModified,
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.NotModified);
+        Assert.Null(result.Feed);
+        Assert.Equal("\"fixture-v1\"", result.ETag);
+        Assert.Equal(lastModified, result.LastModified);
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public async Task Conditional_transport_rejects_malformed_etag_before_network()
+    {
+        var calls = 0;
+        var handler = new RecordingHandler((_, _) =>
+        {
+            calls++;
+            throw new Xunit.Sdk.XunitException("Malformed validators must fail before network I/O.");
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new SyndicationFeedTransport(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            transport.GetConditionalAsync(
+                new Uri("https://feeds.example.test/catalog/rss.xml"),
+                "not-an-etag",
+                null,
+                TestContext.Current.CancellationToken));
+
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public async Task Conditional_transport_returns_fresh_feed_and_response_validators()
+    {
+        var lastModified = new DateTimeOffset(2026, 9, 30, 3, 0, 0, TimeSpan.Zero);
+        var handler = new RecordingHandler((request, _) =>
+        {
+            Assert.Empty(request.Headers.IfNoneMatch);
+            Assert.Null(request.Headers.IfModifiedSince);
+
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    ReadFixture("ModDb", "downloads-rss.xml"),
+                    Encoding.UTF8,
+                    "application/rss+xml")
+            };
+            response.Headers.ETag =
+                new System.Net.Http.Headers.EntityTagHeaderValue("\"fixture-v2\"");
+            response.Content.Headers.LastModified = lastModified;
+            return Task.FromResult(response);
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new SyndicationFeedTransport(client);
+
+        var result = await transport.GetConditionalAsync(
+            new Uri("https://feeds.example.test/catalog/rss.xml"),
+            null,
+            null,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.NotModified);
+        Assert.NotNull(result.Feed);
+        Assert.Single(result.Feed!.Entries);
+        Assert.Equal("\"fixture-v2\"", result.ETag);
+        Assert.Equal(lastModified, result.LastModified);
+    }
+
+    [Fact]
     public async Task Transport_surfaces_429_without_retry_storm()
     {
         var calls = 0;
