@@ -6,7 +6,7 @@ namespace MhwModManager.Benchmarks;
 
 public static class Program
 {
-    public static void Main() => BenchmarkRunner.Run<PlannerBenchmarks>();
+    public static void Main(string[] args) => BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 }
 
 [MemoryDiagnoser]
@@ -50,4 +50,53 @@ public class PlannerBenchmarks
 
     [Benchmark]
     public DeploymentPlan BuildPlan() => planner.Build(snapshot);
+}
+
+
+[MemoryDiagnoser]
+[ThreadingDiagnoser]
+public class FamilyInferenceBenchmarks
+{
+    private ModDescriptor[] mods = null!;
+    private ModFileDescriptor[] files = null!;
+
+    [Params(100, 250, 500)]
+    public int ModCount { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        const int filesPerMod = 100;
+        const int familySize = 5;
+        const int sharedFilesPerFamily = 40;
+        var modList = new List<ModDescriptor>(ModCount);
+        var fileList = new List<ModFileDescriptor>(ModCount * filesPerMod);
+        var now = DateTimeOffset.UnixEpoch;
+        var roles = new[] { "Base", "Body", "Waist", "Arms", "Hotfix" };
+
+        for (var i = 0; i < ModCount; i++)
+        {
+            var family = i / familySize;
+            var role = roles[i % familySize];
+            var familyName = $"Armor Family {family:D4}";
+            var displayName = role == "Base" ? familyName : $"{familyName} - {role}";
+            var id = $"family-{family:D4}-part-{i % familySize}";
+            modList.Add(new(id, displayName, displayName, id, false, i));
+
+            for (var file = 0; file < filesPerMod; file++)
+            {
+                var path = file < sharedFilesPerFamily
+                    ? $@"nativePC\fixture\family{family:D4}\body\shared{file:D3}.tex"
+                    : $@"nativePC\fixture\family{family:D4}\part{i % familySize}\unique{file:D3}.tex";
+                fileList.Add(new(id, path, $"{i:X8}{file:X8}".PadRight(64, '0'), null, 1024, now, FileClass.Texture));
+            }
+        }
+
+        mods = modList.ToArray();
+        files = fileList.ToArray();
+    }
+
+    [Benchmark]
+    public IReadOnlyDictionary<string, string> InferFamilies() =>
+        GenericFamilyInference.InferKeys(mods, files, out _);
 }
