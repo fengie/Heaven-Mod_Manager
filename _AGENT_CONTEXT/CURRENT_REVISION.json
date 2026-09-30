@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/combobox-contrast-20260930",
-  "currentVersion": "8.8.49",
+  "workingBranch": "codex/training-governance-integration",
+  "currentVersion": "8.8.50",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.49-ui-regression-fixes-candidate",
+  "status": "v8.8.50-governance-integration-candidate",
   "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head gates for combined ComboBox contrast + Mods empty-overlay fixes, merge if green, verify main, then retire superseded UI branches.",
+  "nextRequiredAction": "Run exact-head PR #528 gates on v8.8.50, merge only if green, verify canonical main, then retire superseded temporary branches without discarding unique work.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.48 exact main/release closure remains historical; v8.8.49 UI regression candidate requires exact-head gates and runtime confirmation.",
+  "verificationScopeNote": "v8.8.48 full release closure remains historical proof; v8.8.49 UI PR exact head 3bc8f6b passed Security, Agent Control, and Workflow Feature gates and merged as be4615f. v8.8.50 governance candidate requires fresh exact-head verification.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,9 +38,9 @@
     ]
   },
   "unresolvedRisks": [
-    "Actual operator latest proven352; latest release install remains unverified.",
-    "Bridge auth/provider registration and signing issues411/350/354 remain open.",
-    "Preserve external branches until semantic/ownership review."
+    "v8.8.49 UI fixes are merged but actual operator visual confirmation remains outstanding.",
+    "Bridge auth/provider registration and signing issues 411/350/354 remain open; catalog issue 281 remains open.",
+    "Preserve unique external branches until semantic/ownership review."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
