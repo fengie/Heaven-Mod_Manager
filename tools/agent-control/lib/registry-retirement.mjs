@@ -101,6 +101,22 @@ export function federatedAgentRetirementDecision(agent, {
     return { retire: false, reason: "missing-agent" };
   }
   const state = text(agent.state).toLowerCase();
+  const timeout = Math.max(1_000, Number(disconnectedAfterMs) || 300_000);
+  const correlatedPresence = [
+    { state: agent.state, heartbeat_at: agent.heartbeat_at },
+    ...(Array.isArray(agent.observations) ? agent.observations : [])
+  ];
+  const hasFreshLivePresence = correlatedPresence.some(item => {
+    const observedState = text(item?.state).toLowerCase();
+    if (!LIVE_FEDERATED_STATES.has(observedState)) return false;
+    const observedHeartbeatMs = Date.parse(text(item?.heartbeat_at ?? item?.heartbeatAt));
+    return Number.isFinite(observedHeartbeatMs)
+      && Math.max(0, Number(now) - observedHeartbeatMs) <= timeout;
+  });
+  if (hasFreshLivePresence) {
+    return { retire: false, reason: "correlated-live-presence" };
+  }
+
   if (state === "done" || state === "failed") {
     return { retire: true, reason: `terminal-${state}` };
   }
@@ -111,7 +127,7 @@ export function federatedAgentRetirementDecision(agent, {
     return { retire: false, reason: "heartbeat-unproven" };
   }
   const ageMs = Math.max(0, Number(now) - heartbeatMs);
-  if (ageMs > Math.max(1_000, Number(disconnectedAfterMs) || 300_000)) {
+  if (ageMs > timeout) {
     return { retire: true, reason: "disconnected-timeout" };
   }
   return { retire: false, reason: state === "disconnected" ? "disconnected-grace" : "current-presence" };
