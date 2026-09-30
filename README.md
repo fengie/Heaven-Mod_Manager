@@ -1,4 +1,12 @@
-# v8.8.35 Universal Mod Manager
+# v8.8.36 Universal Mod Manager
+
+## v8.8.36 — Agent Manager notification inspector closure
+
+Agent Manager now renders the backend notification stream instead of silently discarding it. Active notifications show severity, message, timestamp, and supported actions; `inspect-agent` and `inspect-federation` route directly to the exact record that raised the notification.
+
+Managed and federated cards now open one stable inspector surface backed by a URL hash selection, so the selected record survives dashboard refreshes and can be deep-linked. The inspector exposes identity, provider/machine, state/freshness, task, boundary/lease, branch/PR, heartbeat/start evidence, last action/message, last error, replacement/retry lineage, and only actions valid for the current record. If the selected agent retires between refreshes, the inspector explicitly reports that it left the live registry instead of failing silently.
+
+Regression coverage pins card-to-inspector routing, notification action routing, deep-link persistence, retirement degradation, and existing nested-control safety. Agent Control/root/nested plugin identity advances to **v0.6.14**.
 
 ## v8.8.35 — Agent Control canonical runtime freshness
 
