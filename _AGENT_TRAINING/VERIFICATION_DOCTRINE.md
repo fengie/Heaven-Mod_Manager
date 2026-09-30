@@ -44,3 +44,6 @@ If the authoritative environment or dependency is unavailable, say what remains 
 
 ## Defect-class and sibling closure
 An escaped failure is evidence about the verification system, not only the product. After reproducing the defect, inspect sibling uses of the risky pattern, add a regression that fails on old behavior, prefer invariant/property/analyzer enforcement for broad classes, and verify the actual risk surface. A green suite after a one-line repair is insufficient if equivalent sibling defects remain discoverable.
+## Strict analyzer rerun semantics
+When a verification pipeline performs a relaxed build before a strict warning-as-error or analyzer build, the strict phase must force actual compiler/analyzer execution. A successful incremental no-op is not strict verification: up-to-date outputs can suppress diagnostics that were visible in the relaxed phase. Use a rebuild/no-incremental mechanism (or otherwise prove analyzer execution), and regression-test that invariant in the verifier itself.
+

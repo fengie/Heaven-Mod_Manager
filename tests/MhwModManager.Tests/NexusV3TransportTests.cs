@@ -27,7 +27,9 @@ public sealed class NexusV3TransportTests
 
         using var client = new HttpClient(handler);
         var transport = new NexusV3Transport(client);
-        using var result = await transport.GetTrendingModsAsync("monsterhunterworld", ct: TestContext.Current.CancellationToken);
+        using var result = await transport.GetTrendingModsAsync(
+            "monsterhunterworld",
+            ct: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal("\"trend-v1\"", result.ETag);
@@ -138,7 +140,9 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => transport.GetTrendingModsAsync("monsterhunterworld", ct: TestContext.Current.CancellationToken));
+            () => transport.GetTrendingModsAsync(
+                "monsterhunterworld",
+                ct: TestContext.Current.CancellationToken));
 
         Assert.Contains("data envelope", exception.Message, StringComparison.Ordinal);
     }
@@ -157,7 +161,9 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client, maxResponseBytes: 1024);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => transport.GetTrendingModsAsync("monsterhunterworld", ct: TestContext.Current.CancellationToken));
+            () => transport.GetTrendingModsAsync(
+                "monsterhunterworld",
+                ct: TestContext.Current.CancellationToken));
 
         Assert.Contains("safety limit", exception.Message, StringComparison.Ordinal);
     }
@@ -178,7 +184,7 @@ public sealed class NexusV3TransportTests
         using var result = await transport.GetTrendingModsAsync(
             "monsterhunterworld",
             new NexusV3ConditionalRequest("\"fixture-etag\"", lastModified),
-            TestContext.Current.CancellationToken);
+            ct: TestContext.Current.CancellationToken);
 
         Assert.True(result.IsNotModified);
         Assert.Null(result.Document);

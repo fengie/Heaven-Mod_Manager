@@ -159,8 +159,9 @@ public sealed class AutoModTests
 
         var plan = AutoModPatchPlanner.Build(recipe, supplied, registry);
 
-        Assert.True(plan.Operations[1].Value.HasValue);
-        Assert.Equal(250, plan.Operations[1].Value.GetValueOrDefault().GetInt32());
+        var plannedValue = plan.Operations[1].Value;
+        Assert.True(plannedValue.HasValue);
+        Assert.Equal(250, plannedValue.GetValueOrDefault().GetInt32());
     }
 
     [Fact]

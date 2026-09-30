@@ -8,6 +8,12 @@ This is the execution layer that sits above the repository's existing agent doct
 
 ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving through non-Work execution paths unless the user explicitly requests Work for the current task.
 
+## Machine topology
+
+- **heaven2 = control center.** Agent Manager/dashboard, orchestration, credentials, integration, operator controls, and canonical control-side Git actions live here.
+- **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
+- UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
+
 ## What v0.5.9 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
@@ -59,7 +65,7 @@ Federation schema v2 adds an AgentSource-style adapter boundary for normalize / 
 
 External ownership also participates in planning: fresh federated Manager/Main/lane observations suppress duplicate workflow lanes. Exact task IDs are rejected when already owned by a live local or federated agent, while local execution capacity is calculated only from fresh controller-owned workers.
 
-Operator topology is strict: Agent Control, its browser dashboard, CLI interaction, autonomy controls, and other human-facing control surfaces live on `heaven2`. `heaven` remains delegated compute. The multi-host bridge uses explicit `target_host` routing; controller/plugin calls target `heaven2`, while heavy execution placement can target `heaven`.
+Operator topology is strict: Agent Control, its browser dashboard, CLI interaction, autonomy controls, and other human-facing control surfaces live on `heaven2` as the control center. `heaven1` is the resource worker center; its runtime host identifier remains `heaven` for bridge/routing compatibility. The multi-host bridge uses explicit `target_host` routing; controller/plugin calls target `heaven2`, while heavy execution placement can target `heaven`.
 
 Automatic discovery is deliberately honest: `local-control` is automated; ChatGPT registration is bridge-based with discovery unavailable; GitHub/CI and heaven2 use bridge registration. Scheduler `auto` placement on `heaven2` prefers `heaven` for heavy work and fails closed when the authenticated Heaven Local Bridge is unavailable rather than silently falling back to `heaven2`.
 

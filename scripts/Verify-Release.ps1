@@ -416,7 +416,8 @@ try {
 
     foreach($Project in $Projects){
         $binlog=Join-Path $BuildLogs ("project-{0}-{1}.binlog" -f ($Project.Name -replace '[^A-Za-z0-9_.-]','_'),$Stamp)
-        Invoke-CachedDotnetStep ("strict:"+$Project.Name) $Project.Path 'Strict compile/analyzers' $Project.Name @('build',$Project.Path,'-c','Release','--no-restore','-warnaserror','-p:BuildProjectReferences=false',"-bl:$binlog") 'compile-strict' | Out-Null
+        # A preceding relaxed build can leave MSBuild targets up-to-date. Force compiler/analyzer execution so -warnaserror cannot be bypassed by incremental no-op builds.
+        Invoke-CachedDotnetStep ("strict:"+$Project.Name) $Project.Path 'Strict compile/analyzers' $Project.Name @('build',$Project.Path,'-c','Release','--no-restore','--no-incremental','-warnaserror','-p:BuildProjectReferences=false',"-bl:$binlog") 'compile-strict' | Out-Null
     }
 
     Invoke-DotnetStep 'Compile' 'Strict whole solution' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-warnaserror',"-bl:$FinalBinlog") 'compile-final' | Out-Null

@@ -76,6 +76,9 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   const overallGoalAt = primaryLaunch.indexOf('id="overallGoal"');
   assert.ok(overallGoalAt > startSwarmAt, "Overall Goal must sit directly below the primary swarm button");
   assert.match(primaryLaunch, /Overall goal[\s\S]*optional/i);
+  assert.match(html, /Control center[\s\S]*heaven2/);
+  assert.match(html, /Resource worker center[\s\S]*heaven1/);
+  assert.match(html, /runtime host: heaven/);
   assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
   assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role/i);
 
@@ -94,7 +97,7 @@ test("dashboard makes Start Swarm the single normal startup action while keeping
   assert.match(html, /maxCycles:0/);
   assert.match(html, /perpetualOverride/);
 
-  assert.match(html, /Auto \/ heaven/);
+  assert.match(html, /Auto \/ heaven1 \(runtime: heaven\)/);
   assert.match(html, /presence-unknown/);
   assert.match(html, /counts\.working/);
   assert.match(html, /counts\.tool_wait/);

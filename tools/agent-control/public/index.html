@@ -28,6 +28,11 @@
     .sub { color:var(--muted); margin-top:7px; max-width:780px; }
     .pill { border:1px solid var(--line); background:rgba(16,21,29,.8); border-radius:999px; padding:8px 11px; color:var(--muted); }
     .toolbar { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .topology-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+    .topology-node { padding:14px 16px; }
+    .machine-role { color:var(--accent); font-size:10px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    .topology-node strong { display:block; margin-top:3px; font-size:18px; }
+    .machine-detail { display:block; margin-top:4px; color:var(--muted); font-size:12px; line-height:1.4; }
     .grid { display:grid; grid-template-columns:minmax(310px,.85fr) minmax(0,1.85fr); gap:18px; align-items:start; }
     .card { background:rgba(16,21,29,.9); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 18px 70px rgba(0,0,0,.24); }
     .composer { padding:18px; position:sticky; top:14px; }
@@ -108,6 +113,7 @@
       .split { grid-template-columns:1fr; }
       header { flex-direction:column; }
       .toolbar { justify-content:flex-start; }
+      .topology-grid { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -117,12 +123,25 @@
       <div>
         <div class="eyebrow">MHW Swarm · Control Plane</div>
         <h1>Agent Control</h1>
-        <div class="sub">Open Agent Control, press Start Swarm, and let the controller handle the setup.</div>
+        <div class="sub">Agent Manager runs from <strong>heaven2</strong>. Heavy execution is routed to <strong>heaven1</strong> (runtime host <code>heaven</code>) whenever policy permits.</div>
       </div>
       <div class="toolbar">
         <div class="pill" id="connection">Connecting…</div>
       </div>
     </header>
+
+    <div class="topology-grid" aria-label="Agent Manager machine topology">
+      <div class="card topology-node" id="topologyControlCenter">
+        <span class="machine-role">Control center</span>
+        <strong>heaven2</strong>
+        <span class="machine-detail">Agent Manager, orchestration, credentials, integration, operator controls, and canonical control-side Git actions.</span>
+      </div>
+      <div class="card topology-node" id="topologyResourceCenter">
+        <span class="machine-role">Resource worker center</span>
+        <strong>heaven1 <span class="meta">(runtime host: heaven)</span></strong>
+        <span class="machine-detail">Heavy agents, builds, tests, indexing, batch work, worktrees, and background execution.</span>
+      </div>
+    </div>
 
     <div class="grid">
       <aside class="card composer start-card">
@@ -148,8 +167,8 @@
               <input id="baseBranch" value="main" spellcheck="false" />
             </div>
             <div>
-              <label for="machine">Worker</label>
-              <select id="machine"><option value="auto">Auto / heaven</option></select>
+              <label for="machine">Resource worker target</label>
+              <select id="machine"><option value="auto">Auto / heaven1 (runtime: heaven)</option></select>
             </div>
           </div>
 
@@ -270,9 +289,10 @@
 
         <section class="card section">
           <div class="section-title">
-            <h2>Worker pool</h2>
+            <h2>Machine pool</h2>
             <span class="pill" id="workerSummary">0 workers</span>
           </div>
+          <div class="tiny">heaven2 is the control center; heaven1 (runtime host <code>heaven</code>) is the preferred resource worker center for heavy work.</div>
           <div id="workers"></div>
         </section>
 
@@ -329,6 +349,14 @@
     const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
     const fmt = value => value ? new Date(value).toLocaleString() : "—";
+    const machineLabel = value => {
+      const machine = String(value ?? "").trim();
+      if (!machine) return "—";
+      const normalized = machine.toLowerCase();
+      if (normalized === "heaven2") return "heaven2 · control center";
+      if (normalized === "heaven" || normalized === "heaven1") return "heaven1 · resource worker center";
+      return machine;
+    };
     const age = ms => {
       if (ms == null) return "—";
       const s = Math.max(0, Math.round(ms / 1000));
@@ -392,7 +420,7 @@
     function renderWorkers(snapshot) {
       const workers = snapshot.workers || [];
       $("workerSummary").textContent = `${workers.length} worker${workers.length === 1 ? "" : "s"}`;
-      $("machine").innerHTML = '<option value="auto">Auto / heaven</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(w.name)}</option>`).join("");
+      $("machine").innerHTML = '<option value="auto">Auto / heaven1 (runtime: heaven)</option>' + workers.map(w => `<option value="${escapeHtml(w.name)}">${escapeHtml(machineLabel(w.name))}</option>`).join("");
       if (!workers.length) {
         $("workers").innerHTML = '<div class="empty">No workers registered.</div>';
         return;
@@ -411,7 +439,7 @@
         return `<div class="worker">
           <div class="item-top">
             <div>
-              <div class="item-name"><span class="dot ${statusClass(w.status)}"></span>${escapeHtml(w.name)} <span class="meta">· ${escapeHtml(w.status)}</span></div>
+              <div class="item-name"><span class="dot ${statusClass(w.status)}"></span>${escapeHtml(machineLabel(w.name))} <span class="meta">· ${escapeHtml(w.status)}</span></div>
               <div class="meta">${details}</div>
             </div>
             <span class="tag">${capacity}</span>
@@ -434,7 +462,7 @@
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}${a.recoveryStatus ? ` · ${escapeHtml(recoveryLabel(a.recoveryStatus))}` : ""}</span></div>
-              <div class="meta">${escapeHtml(a.id)} · ${escapeHtml(a.machine || "—")} · PID ${escapeHtml(a.pid || "—")} · ${fmt(a.startedAt)}</div>
+              <div class="meta">${escapeHtml(a.id)} · ${escapeHtml(machineLabel(a.machine))} · PID ${escapeHtml(a.pid || "—")} · ${fmt(a.startedAt)}</div>
             </div>
             <span class="tag">P${escapeHtml(a.priority)} · ${escapeHtml(a.boundary)}</span>
           </div>
@@ -483,7 +511,7 @@
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}${a.recovery_status ? ` · ${escapeHtml(recoveryLabel(a.recovery_status))}` : ""}</span></div>
-              <div class="meta">${escapeHtml(a.agent_id)} · ${escapeHtml((a.providers || [a.provider]).join(", "))} · ${escapeHtml(a.machine || "—")} · heartbeat ${fmt(a.heartbeat_at)}</div>
+              <div class="meta">${escapeHtml(a.agent_id)} · ${escapeHtml((a.providers || [a.provider]).join(", "))} · ${escapeHtml(machineLabel(a.machine))} · heartbeat ${fmt(a.heartbeat_at)}</div>
             </div>
             <span class="tag">${a.live ? "LIVE" : escapeHtml(a.freshness || "unknown")}</span>
           </div>
@@ -607,7 +635,7 @@
       $("total").textContent = federatedCount(t.total, coverage);
 
       const controller = snapshot.controller || {};
-      $("connection").textContent = `${controller.host || "controller"} · ${t.running || 0} live`;
+      $("connection").textContent = `${machineLabel(controller.host || "controller")} · ${t.running || 0} live`;
       $("repoPill").textContent = String(controller.repo || "repo").split(/[\\\\/]/).pop();
 
       const autopilot = snapshot.autopilot || {};
