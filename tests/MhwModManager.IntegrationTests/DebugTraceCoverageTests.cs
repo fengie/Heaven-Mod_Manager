@@ -141,6 +141,30 @@ public sealed class DebugTraceCoverageTests
         Assert.Contains("firstChanceExceptions=", text, StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public void HighVolumeViewModelTracingIsOptIn()
+    {
+        var root = FindRepositoryRoot();
+        var trace = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Core", "MasterDebugLog.cs"));
+        var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        Assert.Contains("DetailedDiagnosticsEnabled", trace, StringComparison.Ordinal);
+        Assert.Contains("if(detailedDiagnostics)", viewModel, StringComparison.Ordinal);
+        Assert.Contains("NotifyConflictDerivedState();", viewModel, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MainWindowIsShownBeforeStartupAnalysisFinishes()
+    {
+        var root = FindRepositoryRoot();
+        var app = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "App.xaml.cs"));
+        var show = app.IndexOf("startup.Run(\"ui.main-window.show\",window.Show)", StringComparison.Ordinal);
+        var awaitInitialization = app.IndexOf("await initialization;", StringComparison.Ordinal);
+        Assert.True(show >= 0);
+        Assert.True(awaitInitialization > show);
+        Assert.Contains("DispatcherPriority.Render", app, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

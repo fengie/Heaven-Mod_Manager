@@ -36,6 +36,7 @@ public static class MasterDebugLog
 
     public static string FilePath => Path.Combine(RootDirectory, "MHW-DEBUG-ALL.log");
     public static string? CurrentOperationId => CurrentOperation.Value;
+    public static bool DetailedDiagnosticsEnabled => MethodTraceDetailEnabled;
     internal static bool IsWriting => writing;
 
     public static void Configure(string? preferredRoot)

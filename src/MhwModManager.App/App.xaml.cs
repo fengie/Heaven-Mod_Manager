@@ -30,7 +30,7 @@ public sealed partial class App:Application, IDisposable
         WpfMasterTracing.Install();
         var appVersion=typeof(App).Assembly.GetName().Version;
         var appVersionText=appVersion is null?"unknown":$"{appVersion.Major}.{appVersion.Minor}.{appVersion.Build}";
-        MasterDebugLog.Write("TRACE-COVERAGE", $"v{appVersionText} call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
+        MasterDebugLog.Write("TRACE-COVERAGE", $"v{appVersionText} call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, detailed ViewModel changes when diagnostics are enabled, runtime telemetry, startup/build/test logs.");
         UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v{appVersionText} | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
         try
         {
@@ -172,12 +172,14 @@ public sealed partial class App:Application, IDisposable
             splash.SetDetail("Preparing the main window and loading indexed state…");
             var window=startup.Run("ui.main-window.construct",()=>new MainWindow());
             MainWindow=window;
-            await startup.RunAsync("ui.main-window.initialize",_=>window.InitializeAsync());
+            var initialization=startup.RunAsync("ui.main-window.initialize",_=>window.InitializeAsync());
             startup.Run("ui.main-window.show",window.Show);
             ShutdownMode=ShutdownMode.OnMainWindowClose;
             splash.Close();
+            await Dispatcher.Yield(DispatcherPriority.Render);
+            await initialization;
             watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,telemetry,logger));
-            startup.Complete(true,"Main window initialized and displayed successfully.");
+            startup.Complete(true,"Main window rendered, initialized, and ready.");
             try
             {
                 await UpdateHealthProtocol.AcknowledgeIfRequestedAsync(
