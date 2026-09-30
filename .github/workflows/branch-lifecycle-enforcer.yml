@@ -29,6 +29,34 @@ jobs:
             const deleted = [];
             const preserved = [];
             const failures = [];
+            let deferred = null;
+
+            const isRateLimit = error =>
+              error?.status === 403 &&
+              (
+                String(error?.message || "").toLowerCase().includes("rate limit") ||
+                String(error?.response?.headers?.["x-ratelimit-remaining"] || "") === "0"
+              );
+
+            // Branch cleanup is hygiene, not a reason to burn the last API requests.
+            // Defer cleanly when the installation-wide core quota is already depleted.
+            const rate = await github.rest.rateLimit.get();
+            const coreRate = rate.data.resources?.core;
+            if (coreRate && coreRate.remaining < 250) {
+              deferred = {
+                reason: "github-core-rate-limit-low",
+                remaining: coreRate.remaining,
+                reset: coreRate.reset
+              };
+              core.warning(
+                `Deferring branch cleanup: GitHub core API quota is low (${coreRate.remaining} remaining).`
+              );
+              await core.summary
+                .addHeading("Branch lifecycle enforcement")
+                .addCodeBlock(JSON.stringify({ deferred, deleted, preserved, failures }, null, 2), "json")
+                .write();
+              return;
+            }
 
             const info = await github.rest.repos.get({ owner, repo });
             if (info.data.default_branch !== "main") {
@@ -36,85 +64,63 @@ jobs:
               return;
             }
 
-            // Native GitHub auto-delete is preferred, but GITHUB_TOKEN may not
-            // have repository Administration permission. Try idempotently; the
-            // lifecycle sweep below still enforces cleanup when this PATCH is denied.
-            let deleteBranchOnMerge = Boolean(info.data.delete_branch_on_merge);
-            let settingEnforcement = deleteBranchOnMerge ? "already-enabled" : "not-enabled";
+            const deleteBranchOnMerge = Boolean(info.data.delete_branch_on_merge);
             if (!deleteBranchOnMerge) {
-              try {
-                const updated = await github.rest.repos.update({
-                  owner,
-                  repo,
-                  delete_branch_on_merge: true
-                });
-                deleteBranchOnMerge = Boolean(updated.data.delete_branch_on_merge);
-                settingEnforcement = deleteBranchOnMerge ? "enabled-by-workflow" : "update-returned-false";
-              } catch (error) {
-                settingEnforcement = `permission-denied-or-unsupported:${error.status || "unknown"}`;
-                core.warning(
-                  "Could not set delete_branch_on_merge with GITHUB_TOKEN. " +
-                  "The cleanup sweep still enforces merged-branch deletion. " +
-                  "Repository admin remediation: Settings > General > Pull Requests > " +
-                  "'Automatically delete head branches', or PATCH /repos/{owner}/{repo} " +
-                  "with {\"delete_branch_on_merge\":true} using an Administration-write token."
-                );
-              }
+              core.warning(
+                "GitHub native 'Automatically delete head branches' is not enabled. " +
+                "This workflow will still clean proven-safe branches, but repository-admin remediation remains recommended."
+              );
             }
 
-            const branches = await github.paginate(github.rest.repos.listBranches, {
-              owner,
-              repo,
-              per_page: 100
-            });
+            // Fetch shared state once. The previous implementation re-fetched branch,
+            // PR, and main-ref state per branch and could exhaust the installation quota.
+            const [branches, openPulls, closedPulls, mainRef] = await Promise.all([
+              github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 }),
+              github.paginate(github.rest.pulls.list, { owner, repo, state: "open", per_page: 100 }),
+              github.paginate(github.rest.pulls.list, { owner, repo, state: "closed", base: "main", per_page: 100 }),
+              github.rest.git.getRef({ owner, repo, ref: "heads/main" })
+            ]);
+
+            const mainSha = mainRef.data.object.sha;
+            const openByHead = new Map();
+            for (const pr of openPulls) {
+              if (pr.head?.repo?.full_name !== `${owner}/${repo}`) continue;
+              const list = openByHead.get(pr.head.ref) || [];
+              list.push(pr);
+              openByHead.set(pr.head.ref, list);
+            }
+
+            const mergedByHead = new Map();
+            for (const pr of closedPulls) {
+              if (!pr.merged_at || !pr.merge_commit_sha) continue;
+              if (pr.head?.repo?.full_name !== `${owner}/${repo}`) continue;
+              const list = mergedByHead.get(pr.head.ref) || [];
+              list.push(pr);
+              mergedByHead.set(pr.head.ref, list);
+            }
 
             for (const branchInfo of branches) {
               const branch = branchInfo.name;
+              const branchSha = branchInfo.commit?.sha;
+
               if (protectedNames.has(branch)) {
-                preserved.push({ branch, reason: "reserved-branch" });
+                preserved.push({ branch, sha: branchSha, reason: "reserved-branch" });
                 continue;
               }
-
-              let ref;
-              try {
-                ref = await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
-              } catch (error) {
-                if (error.status === 404) {
-                  preserved.push({ branch, reason: "already-absent" });
-                  continue;
-                }
-                throw error;
-              }
-
-              const branchSha = ref.data.object.sha;
-              const detail = await github.rest.repos.getBranch({ owner, repo, branch });
-              if (detail.data.protected) {
+              if (branchInfo.protected) {
                 preserved.push({ branch, sha: branchSha, reason: "protected" });
                 continue;
               }
 
-              const open = await github.rest.pulls.list({
-                owner,
-                repo,
-                state: "open",
-                head: `${owner}:${branch}`,
-                per_page: 100
-              });
-              if (open.data.length) {
-                preserved.push({
-                  branch,
-                  sha: branchSha,
-                  reason: `open-pr-${open.data[0].number}`
-                });
+              const open = openByHead.get(branch) || [];
+              if (open.length) {
+                preserved.push({ branch, sha: branchSha, reason: `open-pr-${open[0].number}` });
                 continue;
               }
 
-              const mainRef = await github.rest.git.getRef({ owner, repo, ref: "heads/main" });
-              const mainSha = mainRef.data.object.sha;
               let safe = false;
               let reason = "unique-or-unproven";
 
-              // Strongest proof: the exact branch tip is already an ancestor of main.
               try {
                 const ancestry = await github.rest.repos.compareCommitsWithBasehead({
                   owner,
@@ -126,6 +132,11 @@ jobs:
                   reason = "tip-ancestor-of-main";
                 }
               } catch (error) {
+                if (isRateLimit(error)) {
+                  deferred = { reason: "github-core-rate-limit-exhausted", branch };
+                  core.warning(`Deferring remaining branch cleanup after rate-limit exhaustion at ${branch}.`);
+                  break;
+                }
                 preserved.push({
                   branch,
                   sha: branchSha,
@@ -134,40 +145,33 @@ jobs:
                 continue;
               }
 
-              // Squash/rebase merge proof: exact current branch tip must equal the
-              // recorded merged PR head, and that merge commit must itself be on main.
               if (!safe) {
-                const closed = await github.paginate(github.rest.pulls.list, {
-                  owner,
-                  repo,
-                  state: "closed",
-                  base: "main",
-                  head: `${owner}:${branch}`,
-                  per_page: 100
-                });
-
-                for (const pr of closed) {
-                  if (!pr.merged_at || !pr.merge_commit_sha || pr.head?.sha !== branchSha) {
-                    continue;
-                  }
-
-                  const latestMain = await github.rest.git.getRef({
-                    owner,
-                    repo,
-                    ref: "heads/main"
-                  });
-                  const reachability = await github.rest.repos.compareCommitsWithBasehead({
-                    owner,
-                    repo,
-                    basehead: `${pr.merge_commit_sha}...${latestMain.data.object.sha}`
-                  });
-
-                  if (reachability.data.behind_by === 0) {
-                    safe = true;
-                    reason = `merged-pr-${pr.number}`;
-                    break;
+                for (const pr of (mergedByHead.get(branch) || [])) {
+                  if (pr.head?.sha !== branchSha) continue;
+                  try {
+                    const reachability = await github.rest.repos.compareCommitsWithBasehead({
+                      owner,
+                      repo,
+                      basehead: `${pr.merge_commit_sha}...${mainSha}`
+                    });
+                    if (reachability.data.behind_by === 0) {
+                      safe = true;
+                      reason = `merged-pr-${pr.number}`;
+                      break;
+                    }
+                  } catch (error) {
+                    if (isRateLimit(error)) {
+                      deferred = { reason: "github-core-rate-limit-exhausted", branch };
+                      break;
+                    }
+                    preserved.push({
+                      branch,
+                      sha: branchSha,
+                      reason: `merge-reachability-check-failed:${error.status || "unknown"}`
+                    });
                   }
                 }
+                if (deferred) break;
               }
 
               if (!safe) {
@@ -175,46 +179,30 @@ jobs:
                 continue;
               }
 
-              // Race guard: never delete a branch that moved after the proof above.
-              const latest = await github.rest.git.getRef({
-                owner,
-                repo,
-                ref: `heads/${branch}`
-              });
-              if (latest.data.object.sha !== branchSha) {
-                preserved.push({
-                  branch,
-                  sha: latest.data.object.sha,
-                  reason: "moved-during-audit"
-                });
-                continue;
-              }
-
+              // Race guard: delete only if the branch still points at the SHA we proved safe.
               try {
-                await github.rest.git.deleteRef({
-                  owner,
-                  repo,
-                  ref: `heads/${branch}`
-                });
-
-                try {
-                  await github.rest.git.getRef({
-                    owner,
-                    repo,
-                    ref: `heads/${branch}`
-                  });
-                  failures.push({
+                const latest = await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
+                if (latest.data.object.sha !== branchSha) {
+                  preserved.push({
                     branch,
-                    sha: branchSha,
-                    reason: "deletion-verification-failed"
+                    sha: latest.data.object.sha,
+                    reason: "moved-during-audit"
                   });
                   continue;
-                } catch (error) {
-                  if (error.status !== 404) throw error;
                 }
 
+                await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branch}` });
                 deleted.push({ branch, sha: branchSha, reason });
               } catch (error) {
+                if (error.status === 404) {
+                  preserved.push({ branch, sha: branchSha, reason: "already-absent" });
+                  continue;
+                }
+                if (isRateLimit(error)) {
+                  deferred = { reason: "github-core-rate-limit-exhausted", branch };
+                  core.warning(`Deferring remaining branch cleanup after rate-limit exhaustion at ${branch}.`);
+                  break;
+                }
                 failures.push({
                   branch,
                   sha: branchSha,
@@ -223,21 +211,16 @@ jobs:
               }
             }
 
-            const finalBranches = await github.paginate(github.rest.repos.listBranches, {
-              owner,
-              repo,
-              per_page: 100
-            });
-
             await core.summary
               .addHeading("Branch lifecycle enforcement")
               .addCodeBlock(JSON.stringify({
                 deleteBranchOnMerge,
-                settingEnforcement,
+                deferred,
                 deleted,
                 preserved,
                 failures,
-                finalBranchCount: finalBranches.length
+                observedBranchCount: branches.length,
+                estimatedRemainingBranchCount: branches.length - deleted.length
               }, null, 2), "json")
               .write();
 
