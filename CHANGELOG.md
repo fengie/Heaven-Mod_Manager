@@ -1,3 +1,8 @@
+# v8.8.38 — Dependency blocker compile repair
+- Fix the WPF dependency-blocker summary to use `DependencyStatus[].Length` instead of the `Count` method group.
+- Restore application compilation and prevent the cascading missing-test-binary failures caused by the compile break.
+- Preserve dependency blocker ordering and the existing first-three-plus-remainder presentation.
+
 # v8.8.37 — Agent registry lifecycle closure
 - Generalize managed retirement beyond retry-exhausted rows while preserving unresolved recovery/attention/candidate/cleanup states.
 - Fail closed on live unowned PIDs, incomplete branch provenance, committed divergence, or dirty worktrees; preserve the affected task as needs-attention rather than hiding work.
