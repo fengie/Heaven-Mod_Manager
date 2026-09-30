@@ -51,7 +51,10 @@ A handoff should state:
 - what is not verified;
 - branch/PR/commit status;
 - risks/assumptions;
-- next independent action.
+- ordered next independent actions;
+- improvement opportunities a successor could pursue, even when the assigned task itself is complete.
+
+If no worthwhile improvement is known, say that explicitly and record what was considered. Keep next actions and improvements concrete enough to execute without reconstructing private chat history, and update/supersede stale handoff notes rather than accumulating contradictory copies.
 
 The next engineer must be able to continue without private chat history.
 
