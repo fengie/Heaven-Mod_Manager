@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query active Agent Manager work before selecting a lane. Preserve v8.8.23 one-click lifecycle truthfulness: START SWARM must resume paused perpetual work, must not mislabel non-perpetual autopilot as perpetual, and must not clear safety/control state for invalid empty starts. Run exact-head verification before release claims, then continue aggressively prioritizing Agent Manager core functionality. Preserve visible-progress versioning, bug precedents, and durable successor handoffs.",
+  "nextAgentObligation": "Start from live canonical main and aggressively prioritize Agent Manager functionality before cosmetic or unrelated feature work. Preserve v8.8.23 / Agent Control v0.5.11 runtime reliability: START SWARM must truthfully resume paused perpetual runs and reject conflicting non-perpetual runs; all server-active managed states must remain stoppable; background polling must reject stale responses and preserve operator-edited worker targeting. Run exact-SHA tests plus real heaven2→heaven1 validation, re-query ownership/branches before integration, preserve visible-progress governance, and leave durable successor notes with risks/evidence.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
