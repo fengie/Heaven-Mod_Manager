@@ -240,7 +240,7 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
             {"action": "health", "params": {}},
             threading.Event(),
         )
-        self.assertEqual(result["data"]["worker_version"], 7)
+        self.assertEqual(result["data"]["worker_version"], 8)
         self.assertEqual(result["data"]["protocol"], hb.PROTOCOL)
         for action in (
             "fs_delete", "fs_copy", "fs_read_binary", "fs_write_binary", "job_output_read", "cancel",
@@ -558,21 +558,30 @@ class HeavenBridgeWorkerTests(unittest.TestCase):
         self.assertEqual(result["data"], expected)
         create.assert_called_once()
 
-    def test_app_launch_hides_console_by_default_and_requires_explicit_opt_in(self):
+    def test_app_launch_keeps_agent_shells_hidden_and_allows_non_shell_console_opt_in(self):
         if os.name != "nt":
             self.skipTest("Windows creation flags are only available on Windows")
         fake_proc = type("FakeProcess", (), {"pid": 4242})()
-        with patch.object(hb.shutil, "which", return_value=r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"), \
-             patch.object(hb.subprocess, "Popen", return_value=fake_proc) as popen:
-            hb.desktop_launch_app({"path": "powershell.exe"})
-            hidden_flags = popen.call_args.kwargs["creationflags"]
-            self.assertTrue(hidden_flags & hb.subprocess.CREATE_NO_WINDOW)
-            self.assertFalse(hidden_flags & hb.subprocess.CREATE_NEW_CONSOLE)
+        with patch.object(hb.subprocess, "Popen", return_value=fake_proc) as popen:
+            with patch.object(hb.shutil, "which", return_value=r"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"):
+                hidden = hb.desktop_launch_app({"path": "powershell.exe"})
+                hidden_flags = popen.call_args.kwargs["creationflags"]
+                self.assertTrue(hidden_flags & hb.subprocess.CREATE_NO_WINDOW)
+                self.assertFalse(hidden_flags & hb.subprocess.CREATE_NEW_CONSOLE)
+                self.assertFalse(hidden["visible_console"])
 
-            hb.desktop_launch_app({"path": "powershell.exe", "visible_console": True})
-            visible_flags = popen.call_args.kwargs["creationflags"]
-            self.assertTrue(visible_flags & hb.subprocess.CREATE_NEW_CONSOLE)
-            self.assertFalse(visible_flags & hb.subprocess.CREATE_NO_WINDOW)
+                suppressed = hb.desktop_launch_app({"path": "powershell.exe", "visible_console": True})
+                suppressed_flags = popen.call_args.kwargs["creationflags"]
+                self.assertTrue(suppressed_flags & hb.subprocess.CREATE_NO_WINDOW)
+                self.assertFalse(suppressed_flags & hb.subprocess.CREATE_NEW_CONSOLE)
+                self.assertTrue(suppressed["visible_console_suppressed"])
+
+            with patch.object(hb.shutil, "which", return_value=r"C:\\Python\\python.exe"):
+                visible = hb.desktop_launch_app({"path": "python.exe", "visible_console": True})
+                visible_flags = popen.call_args.kwargs["creationflags"]
+                self.assertTrue(visible_flags & hb.subprocess.CREATE_NEW_CONSOLE)
+                self.assertFalse(visible_flags & hb.subprocess.CREATE_NO_WINDOW)
+                self.assertTrue(visible["visible_console"])
 
     def test_uia_request_validation_and_structured_route(self):
         with self.assertRaises(hb.BridgeError) as missing:
