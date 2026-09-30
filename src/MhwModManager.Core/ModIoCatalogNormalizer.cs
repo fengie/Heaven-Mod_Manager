@@ -78,7 +78,7 @@ public static class ModIoCatalogNormalizer
 
         var virusStatus = ReadRequiredInt(root, "virus_status");
         var virusPositive = ReadRequiredInt(root, "virus_positive");
-        var download = RequireObject(root, "download");
+        var download = RequireObjectProperty(root, "download");
         var url = ReadRequiredString(download, "binary_url");
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
             || !uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
@@ -268,10 +268,9 @@ public static class ModIoCatalogNormalizer
         return root;
     }
 
-    private static JsonElement RequireObject(JsonElement root, string property, bool propertyLookup = true)
+    private static JsonElement RequireObjectProperty(JsonElement root, string property)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!propertyLookup) return RequireObject(root, property);
         if (!root.TryGetProperty(property, out var value) || value.ValueKind != JsonValueKind.Object)
             throw new InvalidDataException($"mod.io response property '{property}' must be an object.");
         return value;
