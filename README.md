@@ -1,4 +1,9 @@
-# v8.8.37 Universal Mod Manager
+# v8.8.38 Universal Mod Manager
+
+
+## v8.8.38 — Superseded retry-parent retirement
+
+Agent Manager no longer lets failed `RETRY DISPATCHED` parent records accumulate forever after their replacement has taken ownership. Those terminal superseded parents now pass through the same fail-closed process, branch/worktree, and provenance checks as other terminal workers and are archived out of the live/tracked registry when safe. Unresolved recovery or durable work remains visible instead of being hidden. Agent Control advances to **v0.6.16**.
 
 ## v8.8.37 — Agent registry lifecycle closure
 
