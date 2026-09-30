@@ -36,6 +36,7 @@ public static class MasterDebugLog
 
     public static string FilePath => Path.Combine(RootDirectory, "MHW-DEBUG-ALL.log");
     public static string? CurrentOperationId => CurrentOperation.Value;
+    public static bool DetailedTracingEnabled => MethodTraceDetailEnabled;
     internal static bool IsWriting => writing;
 
     public static void Configure(string? preferredRoot)
@@ -248,11 +249,11 @@ public static class MasterDebugLog
     {
         private readonly string area;
         private readonly string operation;
-        private readonly string id;
+        private string? id;
         private readonly string? parentId;
         private readonly string? previousOperation;
         private readonly ScopeFrame? previousScope;
-        private readonly Stopwatch stopwatch = Stopwatch.StartNew();
+        private readonly long startedTimestamp = Stopwatch.GetTimestamp();
         private readonly bool verbose;
         private int outcome;
         private int disposed;
@@ -265,14 +266,14 @@ public static class MasterDebugLog
             this.area = area;
             this.operation = operation;
             this.verbose = verbose;
-            id = Guid.NewGuid().ToString("N")[..12];
             parentId = CurrentOperation.Value;
             previousOperation = CurrentOperation.Value;
             previousScope = CurrentScope.Value;
-            CurrentOperation.Value = id;
             CurrentScope.Value = new ScopeFrame(this, previousScope);
             if (verbose)
             {
+                id = NewScopeId();
+                CurrentOperation.Value = id;
                 var location = $"{Path.GetFileName(sourceFile)}:{sourceLine}";
                 Write(area, $"START {operation}; id={id}; parent={parentId ?? "<none>"}; caller={caller}; source={location}{FormatDetail(detail)}");
             }
@@ -285,7 +286,7 @@ public static class MasterDebugLog
             if (verbose || errors != 0)
             {
                 var status = errors == 0 ? "PASS" : "PASS-WITH-ERROR-CHECK";
-                Write(area, $"{status} {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}");
+                Write(area, $"{status} {operation}; id={ScopeId}; elapsedMs={ElapsedMilliseconds().ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}");
             }
         }
 
@@ -294,7 +295,7 @@ public static class MasterDebugLog
             ArgumentNullException.ThrowIfNull(exception);
             if (Interlocked.CompareExchange(ref outcome, 2, 0) != 0) return;
             var errors = Volatile.Read(ref observedExceptionCount);
-            Write(area, $"FAIL {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}", exception);
+            Write(area, $"FAIL {operation}; id={ScopeId}; elapsedMs={ElapsedMilliseconds().ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}{FormatDetail(detail)}", exception);
         }
 
         internal void ObserveException(Exception exception)
@@ -309,24 +310,28 @@ public static class MasterDebugLog
         public void Dispose()
         {
             if (Interlocked.Exchange(ref disposed, 1) != 0) return;
-            stopwatch.Stop();
             if (Volatile.Read(ref outcome) == 0)
             {
                 var errors = Volatile.Read(ref observedExceptionCount);
                 if (errors == 0)
                 {
                     if (verbose)
-                        Write(area, $"PASS-CHECK {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; observedExceptions=0");
+                        Write(area, $"PASS-CHECK {operation}; id={ScopeId}; elapsedMs={ElapsedMilliseconds().ToString("F2", CultureInfo.InvariantCulture)}; observedExceptions=0");
                 }
                 else
                 {
-                    Write(area, $"ERROR-CHECK {operation}; id={id}; elapsedMs={stopwatch.Elapsed.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}");
+                    Write(area, $"ERROR-CHECK {operation}; id={ScopeId}; elapsedMs={ElapsedMilliseconds().ToString("F2", CultureInfo.InvariantCulture)}; {FormatObservedErrors(errors)}");
                 }
             }
-            CurrentOperation.Value = previousOperation;
+            if (verbose) CurrentOperation.Value = previousOperation;
             CurrentScope.Value = previousScope;
-            GC.SuppressFinalize(this);
         }
+
+        private string ScopeId => id ??= NewScopeId();
+
+        private static string NewScopeId() => Guid.NewGuid().ToString("N")[..12];
+
+        private double ElapsedMilliseconds() => Stopwatch.GetElapsedTime(startedTimestamp).TotalMilliseconds;
 
         private string FormatObservedErrors(int errors) => errors == 0
             ? "observedExceptions=0"
