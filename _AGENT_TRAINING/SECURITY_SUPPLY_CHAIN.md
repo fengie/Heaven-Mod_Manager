@@ -64,3 +64,8 @@ Benchmarking, compiling, testing, parsing, or otherwise executing candidate-cont
 
 Keep common local secret containers and environment files out of version control with ignore rules, but do not treat ignore rules as the control boundary. Add a tracked-file secret gate that scans the exact Git index for high-confidence credential formats and private-key material. The gate must scan its own policy files safely, fail closed, and never print the matched secret value.
 
+## Privileged remote execution fails closed when authentication is missing
+For a bridge that can run arbitrary commands or mutate files, transport membership is not execution authorization. Missing cryptographic authentication must disable privileged execution by default. Compatibility fallbacks must be explicit, conspicuously named as insecure/emergency behavior, and machine-gated so a missing configuration value cannot silently widen authority.
+
+## Secret-bearing parent environments are not child-process defaults
+General-purpose child processes must start from a scrubbed environment rather than inheriting the controller/worker environment wholesale. An `env_from_host` or similar allowlist is meaningless if the implementation first copies every host variable. Block secret-like variable names both from implicit inheritance and explicit forwarding; use a dedicated secret broker/envelope for credentials that genuinely need to cross a process boundary.
