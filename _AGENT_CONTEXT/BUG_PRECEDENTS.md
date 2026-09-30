@@ -351,3 +351,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Multi-agent integration tooling should test a merge commit that retains a task commit as an ancestor while deliberately keeping the base tree, and must classify the task as preserved-but-not-integrated rather than complete.
 - **References:** GitLab catalog recovery PR #409; original implementation commits `ccb5be87c4edf284331233a4c885fa532dd8f604`, `249aa94f667c49ec4e38d48136409416ad5abec4`, `3bd48709eba46a46896b27213a6dac9ec3cf7c85`, test commit `368b0efe81110171e346da4283aaf0ac752361ad`.
 
+## 2026-09-29 — CI security verification — repeated supersession erased completion evidence
+- **Symptom:** Security Supply Chain Gate runs for security-hardening commits repeatedly ended as cancelled while unrelated newer pushes continued, leaving no completed-successful canonical-main security evidence for the hardened state.
+- **Root cause:** Repository-wide supersession/cancellation behavior treated required security verification like ordinary duplicate CI even though the security workflow itself intentionally disables push cancellation.
+- **Violated invariant / wrong assumption:** A newer commit does not prove an older security-relevant change unless a completed-successful verification run on that newer descendant actually executes the same required checks.
+- **Why prior defenses missed it:** The workflow-level concurrency policy protected push runs from self-cancellation, but external/manual cancellation policy was not constrained by the same invariant.
+- **Direct fix:** Make canonical-main security verification non-disposable, require a completed-successful final-head-or-descendant run, and independently parse the security-policy script before executing it.
+- **Preventive rule/process change:** Supersession automation must distinguish required canonical security evidence from ordinary redundant checks.
+- **Regression coverage added/strengthened:** Security Supply Chain Gate now runs a standalone PowerShell parser preflight before the policy script; repository rules forbid treating cancelled/queued/skipped runs as successful evidence.
+- **Sibling/adjacent cases checked:** workflow concurrency, exact-head integration evidence, release verification, persistent self-hosted runner trust, and the prior duplicated/corrupted security-policy incidents.
