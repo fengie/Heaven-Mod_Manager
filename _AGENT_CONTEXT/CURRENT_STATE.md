@@ -1,3 +1,13 @@
+# v8.8.38 dependency blocker compile repair — CURRENT CANDIDATE
+
+- `DescribeDependencyBlockers(DependencyStatus[] blockers)` now uses `blockers.Length` for the remainder count.
+- This repairs the WPF compile failure at `MainWindowViewModel.cs:519` without changing dependency scan, ordering, or user-facing summary semantics.
+- The previous compile failure caused downstream verification stages to report missing Automation/Integration/SelfTest executables; those are expected to clear once the application build succeeds.
+- Product identity advances to v8.8.38. Agent Control remains v0.6.15 and its v8.8.37 registry-lifecycle behavior is unchanged.
+- Required integration evidence: exact-head repository verification/build plus relevant configured PR gates before merging to `main`.
+
+---
+
 # v8.8.37 Agent Control registry lifecycle — CURRENT CANDIDATE
 
 - Ordinary terminal managed rows are eligible for retirement only when their recovery/task state is no longer active, blocked-for-recovery, candidate, cleanup-required, or needs-attention.
