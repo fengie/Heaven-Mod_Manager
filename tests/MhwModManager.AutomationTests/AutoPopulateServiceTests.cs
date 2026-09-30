@@ -425,6 +425,54 @@ public sealed class AutoPopulateServiceTests : IDisposable
 
 
 
+    [Fact]
+    public async Task PlanAwareDependencyRejectsMixedEffectiveLoaderProviders()
+    {
+        var db = await CreateDbAsync("mixed-effective-loader.db");
+        var gameRoot = Path.Combine(root, "game-mixed-effective-loader");
+        Directory.CreateDirectory(gameRoot);
+
+        await AddModAsync(db, "plugin", "Native Plugin", 300);
+        await AddModAsync(db, "loader-a", "Loader A", 200);
+        await AddModAsync(db, "loader-b", "Loader B", 100);
+        await db.ReplaceModFilesAsync("plugin",
+            [ModFile("plugin", @"nativePC\plugins\feature.dll", "plugin", FileClass.Plugin)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("loader-a",
+            [
+                ModFile("loader-a", @"root\dinput8.dll", "a-proxy", FileClass.Plugin),
+                ModFile("loader-a", @"root\loader.dll", "a-core", FileClass.Plugin)
+            ],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("loader-b",
+            [
+                ModFile("loader-b", @"root\dinput8.dll", "b-proxy", FileClass.Plugin),
+                ModFile("loader-b", @"root\loader.dll", "b-core", FileClass.Plugin)
+            ],
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var enabled = new HashSet<string>(["plugin", "loader-a", "loader-b"], StringComparer.OrdinalIgnoreCase);
+        var snapshot = await snapshots.LoadAsync(TestContext.Current.CancellationToken);
+        var staged = snapshot.Mods.Select(mod => mod with { Enabled = enabled.Contains(mod.Id) }).ToArray();
+        var exactWinners = new Dictionary<string,string>(PathRules.Comparer)
+        {
+            [@"root\dinput8.dll"] = "loader-a",
+            [@"root\loader.dll"] = "loader-b"
+        };
+        var plan = planner.Build(snapshot with { Mods = staged, ExactWinners = exactWinners });
+
+        Assert.False(plan.IsBlocked);
+        var status = await dependencies.ScanStageAsync(enabled, plan, TestContext.Current.CancellationToken);
+
+        var plugin = Assert.Single(status.Where(x => x.ModId == "plugin"));
+        Assert.False(plugin.Ready);
+        Assert.Contains(plugin.Missing, x => x.Contains("mix bootstrap binaries", StringComparison.OrdinalIgnoreCase));
+    }
+
     private async Task<ManagerDatabase> CreateDbAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));
