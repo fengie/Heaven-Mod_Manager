@@ -1,3 +1,10 @@
+# v8.8.50 runtime hardening candidate — next actions
+
+1. Run the exact current-head Security Supply Chain, Workflow Feature, and Agent Control PR gates.
+2. If green, merge the candidate to fresh canonical `main`; if `main` moved, reconcile semantically rather than overwriting concurrent PR #528/#529 work.
+3. Verify canonical-main SHA and refresh CURRENT_REVISION/CURRENT_STATE/NEXT_STEPS/VERIFICATION so no candidate branch or already-completed merge instruction remains stale.
+4. Preserve the v8.8.49 ComboBox and InstalledCount fixes and leave successor notes for any remaining rendered/runtime verification gap.
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
