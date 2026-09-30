@@ -381,6 +381,24 @@
           <div id="workers"></div>
         </section>
 
+        <section class="card section" id="notificationSection">
+          <div class="section-title">
+            <h2>Notifications</h2>
+            <span class="pill" id="notificationSummary">0</span>
+          </div>
+          <div class="branch-list" id="notifications"></div>
+        </section>
+
+        <section class="card section" id="inspectorSection">
+          <div class="section-title">
+            <h2>Inspector</h2>
+            <span class="pill" id="inspectorSummary">nothing selected</span>
+          </div>
+          <div class="branch-list" id="inspectorBody">
+            <div class="empty">Choose Inspect on a managed or federated agent, or use a supported notification action.</div>
+          </div>
+        </section>
+
         <section class="card section" id="managedAgentsSection">
           <div class="section-title">
             <h2>Managed agents</h2>
@@ -430,7 +448,7 @@
 
   <script>
     const $ = id => document.getElementById(id);
-    const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0 };
+    const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0, selectedInspector:null, inspectorNotice:null };
     const stoppableManagedStatuses = new Set(["reserved","starting","running","waiting","blocked","stale","stopping"]);
     const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
@@ -573,59 +591,249 @@
       return Boolean(event?.target?.closest?.("button,a,input,select,textarea,summary"));
     }
 
-    async function inspectManagedAgentCard(event) {
+    function decodeStableId(value) {
+      try { return decodeURIComponent(String(value ?? "")); }
+      catch { return String(value ?? ""); }
+    }
+
+    function managedAgentById(id, snapshot = state.snapshot) {
+      const rawId = decodeStableId(id);
+      return (snapshot?.agents || []).find(item => String(item.id || "") === rawId) || null;
+    }
+
+    function federatedAgentById(id, snapshot = state.snapshot) {
+      const rawId = decodeStableId(id);
+      return (snapshot?.federation?.agents || []).find(item => String(item.agent_id || "") === rawId) || null;
+    }
+
+    function inspectorMissing(kind, id) {
+      const rawId = decodeStableId(id);
+      const label = kind === "managed" ? "Managed agent" : "Federated agent";
+      const message = `${label} ${rawId || "record"} is no longer in the live registry; it may have been retired.`;
+      state.selectedInspector = null;
+      state.inspectorNotice = { kind, id: rawId, message };
+      $("inspectorSummary").textContent = "retired / missing";
+      $("inspectorBody").innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+      toast(message);
+      return false;
+    }
+
+    function selectInspector(kind, id) {
+      state.selectedInspector = { kind, id: decodeStableId(id) };
+      state.inspectorNotice = null;
+    }
+
+    function inspectorActions(agent) {
+      const encodedId = escapeHtml(encodeURIComponent(String(agent.id || "")));
+      const buttons = [
+        `<button class="inspector-action" data-agent-action="log" data-agent-id="${encodedId}">View log</button>`
+      ];
+      if (stoppableManagedStatuses.has(agent.status)) {
+        buttons.push(`<button class="danger inspector-action" data-agent-action="stop" data-agent-id="${encodedId}">Stop</button>`);
+      } else if (agent.status === "done") {
+        buttons.push(`<button class="good inspector-action" data-agent-action="review" data-agent-id="${encodedId}">Deploy reviewer</button>`);
+      }
+      if (agent.branchName) {
+        buttons.push(`<button class="inspector-action" data-agent-action="copy-branch" data-agent-id="${encodedId}" data-branch="${escapeHtml(encodeURIComponent(String(agent.branchName)))}">Copy branch</button>`);
+      }
+      return buttons.join("");
+    }
+
+    function renderInspector(snapshot) {
+      const selection = state.selectedInspector;
+      if (!selection) {
+        if (state.inspectorNotice) {
+          $("inspectorSummary").textContent = "retired / missing";
+          $("inspectorBody").innerHTML = `<div class="empty">${escapeHtml(state.inspectorNotice.message)}</div>`;
+        } else {
+          $("inspectorSummary").textContent = "nothing selected";
+          $("inspectorBody").innerHTML = '<div class="empty">Choose Inspect on a managed or federated agent, or use a supported notification action.</div>';
+        }
+        return;
+      }
+
+      if (selection.kind === "managed") {
+        const agent = managedAgentById(selection.id, snapshot);
+        if (!agent) return inspectorMissing("managed", selection.id);
+        const provider = agent.executionProvider || agent.runtimeProvider || agent.provider || "local-control";
+        const error = agent.error || agent.lastError || agent.providerCapacityTerminationError || "—";
+        const lineage = [
+          agent.replacementAgentId ? `replacement ${agent.replacementAgentId}` : null,
+          agent.recoverySourceAgentId ? `source ${agent.recoverySourceAgentId}` : null,
+          agent.retryAttempt != null ? `retry ${agent.retryAttempt}` : null,
+          agent.recoveryNextAt ? `next ${fmt(agent.recoveryNextAt)}` : null
+        ].filter(Boolean).join(" · ") || "—";
+        $("inspectorSummary").textContent = `managed · ${agent.status || "unknown"}`;
+        $("inspectorBody").innerHTML = `
+          <div class="branch-item">
+            <div class="item-top">
+              <div>
+                <div class="item-name"><span class="dot ${statusClass(agent.status)}"></span>${escapeHtml(agent.roleLabel || agent.role || "managed agent")}</div>
+                <div class="meta">${escapeHtml(agent.id)} · ${escapeHtml(provider)} · ${escapeHtml(machineLabel(agent.machine))}</div>
+              </div>
+              <span class="tag">${escapeHtml(agent.status || "unknown")}</span>
+            </div>
+            <div class="task">${escapeHtml(agent.task || "No current task summary")}</div>
+            <div class="meta">Recovery: ${escapeHtml(recoveryLabel(agent.recoveryStatus) || "none")} · heartbeat ${fmt(agent.heartbeatAt)} · last action ${fmt(agent.updatedAt || agent.lastProgressAt)}</div>
+            <div class="meta">Boundary: ${escapeHtml(agent.boundary || "—")} · lease ${escapeHtml(agent.leaseId || "—")}</div>
+            <div class="meta">Branch: ${escapeHtml(agent.branchName || "—")} · PR ${escapeHtml(agent.prNumber || agent.pr_number || "—")}</div>
+            <div class="meta">Lineage: ${escapeHtml(lineage)}</div>
+            <div class="meta"><strong style="color:var(--text)">Last message:</strong> ${escapeHtml(agent.lastMessage || "—")}</div>
+            <div class="meta"><strong style="color:var(--text)">Last error:</strong> ${escapeHtml(error)}</div>
+            <div class="actions">${inspectorActions(agent)}</div>
+          </div>`;
+        bindInspectorActions();
+        return;
+      }
+
+      const agent = federatedAgentById(selection.id, snapshot);
+      if (!agent) return inspectorMissing("federated", selection.id);
+      const providers = (agent.providers || [agent.provider]).filter(Boolean).join(", ") || "—";
+      const lineage = [
+        agent.replacement_agent_id ? `replacement ${agent.replacement_agent_id}` : null,
+        agent.source_metadata?.recovery_source_agent_id ? `source ${agent.source_metadata.recovery_source_agent_id}` : null,
+        agent.recovery_next_at ? `next ${fmt(agent.recovery_next_at)}` : null
+      ].filter(Boolean).join(" · ") || "—";
+      $("inspectorSummary").textContent = `federated · ${agent.effective_state || agent.state || "unknown"}`;
+      $("inspectorBody").innerHTML = `
+        <div class="branch-item">
+          <div class="item-top">
+            <div>
+              <div class="item-name"><span class="dot ${statusClass(agent.effective_state || agent.state)}"></span>${escapeHtml(agent.role || "federated agent")}</div>
+              <div class="meta">${escapeHtml(agent.agent_id)} · ${escapeHtml(providers)} · ${escapeHtml(machineLabel(agent.machine))}</div>
+            </div>
+            <span class="tag">${escapeHtml(agent.freshness || "unknown")}</span>
+          </div>
+          <div class="task">${escapeHtml(agent.task || agent.last_action_summary || "No current task summary")}</div>
+          <div class="meta">State: ${escapeHtml(agent.effective_state || agent.state || "—")} · recovery ${escapeHtml(recoveryLabel(agent.recovery_status) || "none")}</div>
+          <div class="meta">Boundary: ${escapeHtml(agent.source_metadata?.boundary || "—")} · lease ${escapeHtml(agent.source_metadata?.lease_id || "—")}</div>
+          <div class="meta">Branch: ${escapeHtml(agent.branch || "—")} · PR ${escapeHtml(agent.pr_number || "—")}</div>
+          <div class="meta">Heartbeat: ${fmt(agent.heartbeat_at)} · last action ${escapeHtml(agent.last_action_summary || "—")}</div>
+          <div class="meta">Lineage: ${escapeHtml(lineage)}</div>
+          <div class="meta"><strong style="color:var(--text)">Last error:</strong> ${escapeHtml(agent.last_error || agent.source_metadata?.last_error || "—")}</div>
+        </div>`;
+    }
+
+    function inspectManagedAgentById(id, { scroll = true } = {}) {
+      const agent = managedAgentById(id);
+      if (!agent) return inspectorMissing("managed", id);
+      selectInspector("managed", agent.id);
+      renderInspector(state.snapshot);
+      if (scroll) $("inspectorSection").scrollIntoView({ behavior:"smooth", block:"start" });
+      return true;
+    }
+
+    function inspectFederatedAgentById(id, { scroll = true } = {}) {
+      const agent = federatedAgentById(id);
+      if (!agent) return inspectorMissing("federated", id);
+      const managedId = String(agent.source_metadata?.managed_agent_id || "");
+      if (managedId && managedAgentById(managedId)) return inspectManagedAgentById(managedId, { scroll });
+      selectInspector("federated", agent.agent_id);
+      renderInspector(state.snapshot);
+      if (scroll) $("inspectorSection").scrollIntoView({ behavior:"smooth", block:"start" });
+      return true;
+    }
+
+    function inspectManagedAgentCard(event) {
       if (eventTargetsControl(event)) return;
-      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
-      if (event.type === "keydown") event.preventDefault();
       const id = event.currentTarget?.dataset?.agentId || "";
-      if (!id) return;
-      await showLog(id);
+      if (id) inspectManagedAgentById(id);
     }
 
     function inspectFederatedAgentCard(event) {
       if (eventTargetsControl(event)) return;
-      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
-      if (event.type === "keydown") event.preventDefault();
+      const id = event.currentTarget?.dataset?.federatedId || "";
+      if (id) inspectFederatedAgentById(id);
+    }
 
-      const encodedId = event.currentTarget?.dataset?.federatedId || "";
-      const rawId = decodeURIComponent(encodedId);
-      const agent = (state.snapshot?.federation?.agents || []).find(item => item.agent_id === rawId);
-      if (!agent) return toast("Federated agent is no longer in the live registry.");
-
-      const managedId = String(agent.source_metadata?.managed_agent_id || "");
-      if (managedId && (state.snapshot?.agents || []).some(item => item.id === managedId)) {
-        const encodedManagedId = encodeURIComponent(managedId);
-        const card = document.querySelector(`.managed-agent-card[data-agent-id="${CSS.escape(encodedManagedId)}"]`);
-        card?.scrollIntoView({ behavior:"smooth", block:"center" });
-        if (card) void showLog(encodedManagedId);
-        return;
-      }
-
-      const box = document.getElementById(`federated-log-${encodedId}`);
-      if (!box) return;
-      box.textContent = [
-        `Agent: ${agent.agent_id || "—"}`,
-        `Provider: ${agent.provider || (agent.providers || []).join(", ") || "—"}`,
-        `State: ${agent.effective_state || agent.state || "—"} · ${agent.freshness || "unknown"}`,
-        `Heartbeat: ${agent.heartbeat_at || "—"}`,
-        `Recovery: ${recoveryLabel(agent.recovery_status) || "none"}`,
-        `Last action: ${agent.last_action_summary || "—"}`
-      ].join("\n");
-      box.classList.toggle("show");
+    async function runManagedAgentAction(action, id, button = null, branch = "") {
+      if (action === "inspect") return inspectManagedAgentById(id);
+      if (action === "log") return showLog(id, button);
+      if (action === "stop") return stopAgent(id);
+      if (action === "review") return reviewAgent(id);
+      if (action === "copy-branch") return copyText(decodeStableId(branch));
+      return false;
     }
 
     function bindManagedAgentCardInteractions() {
       document.querySelectorAll(".managed-agent-card").forEach(card => {
         card.addEventListener("click", inspectManagedAgentCard);
-        card.addEventListener("keydown", inspectManagedAgentCard);
+      });
+      document.querySelectorAll(".managed-agent-action").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          void runManagedAgentAction(button.dataset.agentAction || "", button.dataset.agentId || "", button, button.dataset.branch || "");
+        });
       });
     }
 
     function bindFederatedAgentCardInteractions() {
       document.querySelectorAll(".federated-agent-card").forEach(card => {
         card.addEventListener("click", inspectFederatedAgentCard);
-        card.addEventListener("keydown", inspectFederatedAgentCard);
       });
+      document.querySelectorAll(".federated-agent-action").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          inspectFederatedAgentById(button.dataset.federatedId || "");
+        });
+      });
+    }
+
+    function bindInspectorActions() {
+      document.querySelectorAll(".inspector-action").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          void runManagedAgentAction(button.dataset.agentAction || "", button.dataset.agentId || "", button, button.dataset.branch || "");
+        });
+      });
+    }
+
+    function runNotificationAction(action) {
+      if (!action || typeof action !== "object") return false;
+      if (action.type === "inspect-agent" && action.agentId) return inspectManagedAgentById(action.agentId);
+      if (action.type === "inspect-federation" && action.agentId) return inspectFederatedAgentById(action.agentId);
+      return false;
+    }
+
+    function notificationActionButton(item, index) {
+      const type = item?.action?.type;
+      if (!["inspect-agent", "inspect-federation"].includes(type) || !item?.action?.agentId) return "";
+      return `<button class="notification-action" data-notification-index="${index}">Inspect</button>`;
+    }
+
+    function bindNotificationActions() {
+      document.querySelectorAll(".notification-action").forEach(button => {
+        button.addEventListener("click", () => {
+          const index = Number(button.dataset.notificationIndex);
+          const item = (state.snapshot?.notifications || [])[index];
+          if (item?.action) runNotificationAction(item.action);
+        });
+      });
+    }
+
+    function renderNotifications(snapshot) {
+      const items = snapshot.notifications || [];
+      $("notificationSummary").textContent = `${items.length} current`;
+      if (!items.length) {
+        $("notifications").innerHTML = '<div class="empty">No current control-plane notifications.</div>';
+        return;
+      }
+      $("notifications").innerHTML = items.slice(0,30).map((item, index) => {
+        const severity = String(item.severity || "info").toLowerCase();
+        const dot = ["error", "critical"].includes(severity) ? "failed" : (severity === "warning" ? "stopping" : "running");
+        return `
+          <div class="branch-item">
+            <div class="item-top">
+              <div>
+                <div class="item-name"><span class="dot ${dot}"></span>${escapeHtml(item.title || "Notification")}</div>
+                <div class="meta">${escapeHtml(severity)} · ${fmt(item.at || item.createdAt || item.created_at)}</div>
+              </div>
+              <div class="actions">${notificationActionButton(item, index)}</div>
+            </div>
+            <div class="task">${escapeHtml(item.message || item.reason || "")}</div>
+          </div>`;
+      }).join("");
+      bindNotificationActions();
     }
 
     function renderAgents(snapshot) {
@@ -636,8 +844,11 @@
         return;
       }
 
-      $("agents").innerHTML = agents.map(a => `
-        <article class="agent inspectable managed-agent-card" data-agent-id="${escapeHtml(encodeURIComponent(a.id))}" tabindex="0" aria-label="Managed agent ${escapeHtml(a.roleLabel || a.role || "agent")}">
+      $("agents").innerHTML = agents.map(a => {
+        const encodedId = escapeHtml(encodeURIComponent(String(a.id || "")));
+        const encodedBranch = escapeHtml(encodeURIComponent(String(a.branchName ?? "")));
+        return `
+        <article class="agent inspectable managed-agent-card" data-agent-id="${encodedId}" aria-label="Managed agent ${escapeHtml(a.roleLabel || a.role || "agent")}">
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.status)}"></span>${escapeHtml(a.roleLabel || a.role)} <span class="meta">· ${escapeHtml(a.status)}${a.recoveryStatus ? ` · ${escapeHtml(recoveryLabel(a.recoveryStatus))}` : ""}</span></div>
@@ -650,13 +861,14 @@
           ${a.lastMessage ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Last output:</strong> ${escapeHtml(a.lastMessage.slice(0,420))}${a.lastMessage.length > 420 ? "…" : ""}</div>` : ""}
           ${a.recoveryStatus ? `<div class="meta" style="margin-top:9px"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(recoveryLabel(a.recoveryStatus))}${a.replacementAgentId ? ` → ${escapeHtml(a.replacementAgentId)}` : ""}${a.recoveryNextAt ? ` · next ${fmt(a.recoveryNextAt)}` : ""}</div>` : ""}
           <div class="actions">
-            <button onclick="showLog('${encodeURIComponent(a.id)}', this)">View log</button>
-            ${stoppableManagedStatuses.has(a.status) ? `<button class="danger" onclick="stopAgent('${encodeURIComponent(a.id)}')">Stop</button>` : (a.status === "done" ? `<button class="good" onclick="reviewAgent('${encodeURIComponent(a.id)}')">Deploy reviewer</button>` : "")}
-            <button onclick="copyText(decodeURIComponent('${encodeURIComponent(String(a.branchName ?? ""))}'))">Copy branch</button>
+            <button class="managed-agent-action" data-agent-action="inspect" data-agent-id="${encodedId}">Inspect</button>
+            <button class="managed-agent-action" data-agent-action="log" data-agent-id="${encodedId}">View log</button>
+            ${stoppableManagedStatuses.has(a.status) ? `<button class="danger managed-agent-action" data-agent-action="stop" data-agent-id="${encodedId}">Stop</button>` : (a.status === "done" ? `<button class="good managed-agent-action" data-agent-action="review" data-agent-id="${encodedId}">Deploy reviewer</button>` : "")}
+            <button class="managed-agent-action" data-agent-action="copy-branch" data-agent-id="${encodedId}" data-branch="${encodedBranch}">Copy branch</button>
           </div>
           <div class="log" id="log-${escapeHtml(a.id)}"></div>
-        </article>
-      `).join("");
+        </article>`;
+      }).join("");
       bindManagedAgentCardInteractions();
     }
 
@@ -686,8 +898,10 @@
         </div>
       `).join("") : '<div class="empty">No providers registered.</div>';
 
-      $("federatedAgents").innerHTML = agents.length ? agents.map(a => `
-        <article class="agent inspectable federated-agent-card" data-federated-id="${escapeHtml(encodeURIComponent(a.agent_id))}" tabindex="0" aria-label="Federated agent ${escapeHtml(a.agent_id)}">
+      $("federatedAgents").innerHTML = agents.length ? agents.map(a => {
+        const encodedId = escapeHtml(encodeURIComponent(String(a.agent_id || "")));
+        return `
+        <article class="agent inspectable federated-agent-card" data-federated-id="${encodedId}" aria-label="Federated agent ${escapeHtml(a.agent_id)}">
           <div class="agent-top">
             <div>
               <div class="agent-name"><span class="dot ${statusClass(a.effective_state)}"></span>${escapeHtml(a.role || "agent")} <span class="meta">· ${escapeHtml(a.effective_state || a.state)} · ${escapeHtml(a.freshness)}${a.recovery_status ? ` · ${escapeHtml(recoveryLabel(a.recovery_status))}` : ""}</span></div>
@@ -699,9 +913,12 @@
           <div class="meta">${a.branch ? `<span class="tag">${escapeHtml(a.branch)}</span>` : ""} ${a.pr_number ? `<span class="tag">PR #${escapeHtml(a.pr_number)}</span>` : ""}</div>
           <div class="meta">Last action: ${escapeHtml(a.last_action_summary || "—")} · lease ${escapeHtml(a.source_metadata?.lease_id || "—")} · boundary ${escapeHtml(a.source_metadata?.boundary || "—")}</div>
           ${a.recovery_status ? `<div class="meta"><strong style="color:var(--text)">Recovery:</strong> ${escapeHtml(recoveryLabel(a.recovery_status))}${a.replacement_agent_id ? ` → ${escapeHtml(a.replacement_agent_id)}` : ""}${a.recovery_next_at ? ` · next ${fmt(a.recovery_next_at)}` : ""}</div>` : ""}
-          <div class="log" id="federated-log-${escapeHtml(encodeURIComponent(a.agent_id))}"></div>
-        </article>
-      `).join("") : '<div class="empty">No federated agent observations yet.</div>';
+          <div class="actions">
+            <button class="federated-agent-action" data-federated-id="${encodedId}">Inspect</button>
+          </div>
+          <div class="log" id="federated-log-${encodedId}"></div>
+        </article>`;
+      }).join("") : '<div class="empty">No federated agent observations yet.</div>';
       bindFederatedAgentCardInteractions();
     }
 
@@ -839,8 +1056,10 @@
       renderControl(snapshot);
       renderRecommendations(snapshot);
       renderWorkers(snapshot);
+      renderNotifications(snapshot);
       renderAgents(snapshot);
       renderFederation(snapshot);
+      renderInspector(snapshot);
       renderLeases(snapshot);
       renderQueue(snapshot);
       renderBranches(snapshot);
@@ -1088,14 +1307,24 @@
     }
 
     async function showLog(id, button = null) {
+      const rawId = decodeStableId(id);
       try {
-        const data = await api(`/api/agents/${id}/log`);
-        const rawId = decodeURIComponent(id);
+        const data = await api(`/api/agents/${encodeURIComponent(rawId)}/log`);
+        const agent = managedAgentById(rawId);
         const box = document.getElementById(`log-${rawId}`);
+        if (!agent || !box) {
+          inspectorMissing("managed", rawId);
+          return false;
+        }
         box.textContent = data.lastMessage ? `FINAL / LAST MESSAGE\n${data.lastMessage}\n\nEVENT TAIL\n${data.tail}` : data.tail || "No output yet.";
         const open = box.classList.toggle("show");
         if (button) button.textContent = open ? "Hide log" : "View log";
-      } catch (error) { toast(error.message); }
+        return true;
+      } catch (error) {
+        if (!managedAgentById(rawId)) return inspectorMissing("managed", rawId);
+        toast(error.message);
+        return false;
+      }
     }
 
     async function copyText(value) {
