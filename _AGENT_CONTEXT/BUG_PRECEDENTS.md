@@ -321,3 +321,23 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** PR #394 head `ccf1f1c4525464d396ba19a9dcdc07a74086b991`: Security Supply Chain Gate run `36667038748` failed while Workflow Feature PR Gate run `36667038775` remained queued/cancelled; merge `b90e79acc487366f475edf31916337d57bbea59d` nevertheless landed on main.
 - **Sibling/adjacent cases checked:** The same defect class previously occurred on PR #386 and is recorded by LR-035; recurrence confirms the prior prose-only control was insufficient.
 - **References (SHA/PR/issue/log):** PR #394; runs `36667038748`, `36667038775`; LR-035.
+
+## 2026-09-29 — Heaven Bridge authentication — missing HMAC silently widened execution authority
+- **Symptom:** Elevated Heaven Bridge workers reported `private-repo-acl` and accepted unsigned repository relay jobs whenever HMAC was absent.
+- **Root cause:** HMAC was implemented as an optional enhancement instead of a mandatory execution boundary.
+- **Violated invariant / wrong assumption:** Repository write access is transport authority, not permission to execute arbitrary commands on a persistent elevated machine.
+- **Why prior defenses missed it:** Canonicalization, replay/TTL checks, and HMAC tests exercised configured-key behavior but did not assert fail-closed behavior when the key was missing.
+- **Direct fix:** Require HMAC by default, support a machine-local key file, require `mhw-bridge-canon-v1`, and move repo-ACL-only/legacy behavior behind explicit emergency opt-ins.
+- **Preventive rule/process change:** Every privileged remote-execution transport must have a negative test proving that missing authentication disables execution rather than downgrading authority.
+- **Regression coverage added/strengthened:** Worker and Agent Control tests cover missing-key rejection, explicit emergency fallback, legacy-canonical rejection, and machine-local key resolution; CI policy asserts the fail-closed invariants.
+- **Sibling/adjacent cases checked:** replay/TTL, cross-language canonicalization, target-host binding, duplicate job ids, heartbeat auth mode, and Agent Control submission.
+
+## 2026-09-29 — Heaven Bridge process isolation — selective environment API still leaked all host secrets
+- **Symptom:** `build_env` started with `os.environ.copy()`, so spawned shells/sessions inherited worker secrets before the apparent `env_from_host` allowlist ran.
+- **Root cause:** Selective forwarding was layered on top of full inheritance instead of building a clean child environment first.
+- **Violated invariant / wrong assumption:** A host-environment allowlist must actually bound what crosses the process boundary.
+- **Why prior defenses missed it:** Inline secret-like variables were blocked, but tests did not assert absence of ambient parent credentials inside child processes.
+- **Direct fix:** Build child environments from a secret-scrubbed host environment, reject secret-like `env_from_host` requests, scrub internal helper subprocesses, and sanitize shell-association launch.
+- **Preventive rule/process change:** Process-launcher review must verify the effective child environment, not merely the API shape used to add variables.
+- **Regression coverage added/strengthened:** Tests assert token/HMAC variables do not propagate and CI rejects reintroduction of full `os.environ.copy()`.
+- **Sibling/adjacent cases checked:** raw shell fallback, persistent sessions, Git helpers, taskkill, UIA, screenshot/display helpers, shortcut creation, process listing, and app launch.
