@@ -60,6 +60,8 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 35. **Pinned test-framework APIs are compile-time contracts.** Do not assume assertion return values from older framework versions; under xUnit v3, retrieve nullable values separately when assertions return void, assert them, and continue with null-safe access under the pinned analyzer profile.
 36. **New provider/capability getters must satisfy verifier tracing.** Where function coverage is fingerprinted, use explicit getter blocks with `MasterDebugLog.BeginMethod()` as the first executable statement rather than expression-bodied public members.
 
+42. **Generated operator output and mirrored manifests need whole-output validation.** Template fragments are not the final artifact: never place raw serialized data inside an already quoted executable attribute/handler without an explicit encoding or DOM-binding boundary, and regression-check the emitted structure. Likewise, when one runtime is represented by multiple package/plugin manifests, enumerate every distributable manifest in a single release-identity invariant so stale nested metadata cannot ship.
+
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
