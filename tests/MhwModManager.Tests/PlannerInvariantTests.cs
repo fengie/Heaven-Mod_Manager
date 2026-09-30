@@ -17,7 +17,11 @@ public sealed class PlannerInvariantTests
             var modCount = random.Next(2, 24);
             var pathCount = random.Next(4, 80);
             var mods = Enumerable.Range(0, modCount)
-                .Select(i => new ModDescriptor($"m{i}", $"Fixture Texture {i}", $"Fixture Texture {i}", $"M{i}", true, i, FamilyId: "fixture-shared-texture"))
+                .Select(i =>
+                {
+                    var label = ((char)('A' + i)).ToString();
+                    return new ModDescriptor($"m{i}", $"Fixture Texture {label}", $"Fixture Texture {label}", $"M{i}", true, i, FamilyId: "fixture-shared-texture");
+                })
                 .ToArray();
             var files = new List<ModFileDescriptor>();
             var now = DateTimeOffset.UnixEpoch;
