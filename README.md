@@ -1,4 +1,10 @@
-# v8.8.20 Universal Mod Manager
+# v8.8.21 Universal Mod Manager
+
+## v8.8.21 — curated GitHub Releases catalog
+
+The federated catalog now includes a curated GitHub Releases provider. It only queries repositories explicitly linked to a game, maps the current official release and assets into provider-neutral catalog records, and resolves release-asset download URLs only when acquisition is requested instead of persisting them as durable catalog identity.
+
+Requests use the official GitHub REST Releases API with bounded JSON parsing, optional Bearer authentication, rate-limit health/backoff metadata, HTTPS-only GitHub source and asset URLs, and fail-closed schema validation. There is no HTML scraping or repository-wide guessing. This release completes the provider/backend slice; catalog UI integration remains tracked under project issue #281.
 
 ## v8.8.20 — One-click Auto Populate
 
