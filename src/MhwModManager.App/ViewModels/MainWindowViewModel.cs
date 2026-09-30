@@ -722,6 +722,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var current=await s.Database.GetModsAsync(ct);
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
         if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
+        if(dependencyBlockers.Length>0)
+        {
+            PlanPreviewText=$"Blocked • {dependencyBlockers.Length} mod(s) have unsatisfied requirements • no files would be written";
+            StatusText="Dependency validation blocked deployment. "+DescribeDependencyBlockers(dependencyBlockers);
+            SelectedTab=0;
+            return;
+        }
         var analysis=await BuildAnalysisAsync(stage,ct);
         var changes=analysis.plan.Changes;
         var add=changes.Count(x=>x.Kind==ChangeKind.Add);
@@ -732,8 +740,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             var displayRows=await EnrichConflictPreviewsAsync(analysis.rows,ct);
             await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
-            PlanPreviewText=$"Blocked • {analysis.rows.Length} decision(s) required • no files would be written";
-            StatusText=PlanPreviewText;
+            var blockingCount=analysis.plan.Conflicts.Count(x=>x.Blocking);
+            PlanPreviewText=$"Blocked • {Math.Max(analysis.rows.Length,blockingCount)} blocking decision(s) • no files would be written";
+            StatusText=analysis.rows.Length>0?PlanPreviewText:PlanPreviewText+" Check the rule/dependency diagnostics for the exact reason.";
             SelectedTab=3;
             return;
         }
@@ -764,13 +773,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
 
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
+        if(dependencyBlockers.Length>0)
+        {
+            StatusText="Dependency validation blocked deployment. Nothing was written. "+DescribeDependencyBlockers(dependencyBlockers);
+            SelectedTab=0;
+            return;
+        }
+
         var analysis=await BuildAnalysisAsync(stage,ct);
         var displayRows=analysis.plan.IsBlocked?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
         await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
         if(analysis.plan.IsBlocked)
         {
             SelectedTab=3;
-            StatusText=$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written.";
+            var blockingCount=analysis.plan.Conflicts.Count(x=>x.Blocking);
+            StatusText=analysis.rows.Length>0
+                ?$"{analysis.rows.Length} compacted conflict choice(s) need attention. Nothing was written."
+                :$"{blockingCount} resolver/rule safety blocker(s) need attention. Nothing was written.";
             return;
         }
 
@@ -1064,6 +1084,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {
+            var dependencyBlockers=await GetDependencyBlockersAsync(CaptureStage(),ct);
+            if(dependencyBlockers.Length>0)
+            {
+                StatusText="Launch blocked because enabled mods have unsatisfied requirements. "+DescribeDependencyBlockers(dependencyBlockers);
+                return;
+            }
             var observation=await s.Automation.LaunchAndObserveAsync(LaunchMode.Modded,TimeSpan.FromSeconds(15),ct);
             StatusText=observation.Message;
             await RefreshActivity(ct);
@@ -1093,6 +1119,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
         var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
+        var dependencyBlockers=await GetDependencyBlockersAsync(stage,ct);
+        if(dependencyBlockers.Length>0)
+            throw new InvalidOperationException("The saved setup no longer satisfies all mod requirements, so it was not restored: "+DescribeDependencyBlockers(dependencyBlockers));
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
         var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
