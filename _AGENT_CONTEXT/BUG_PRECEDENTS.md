@@ -564,3 +564,15 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence/environment:** Exact-head Agent Control/CI verification is required before this candidate is integrated; no inherited green result is claimed.
 - **Sibling/adjacent cases checked:** Missing preferred GitHub CLI, truncated tool output, unavailable local checkout, single network-path failure, large CURRENT_STATE/NEXT_STEPS/VERIFICATION rereads, and manager-specific training.
 - **References (SHA/PR/issue/log):** v8.8.40 efficient-bootstrap candidate branch `fix/efficient-agent-bootstrap-v8.8.40-20260930`.
+
+## 2026-09-30 — verification recovery — stale repair fixtures introduced independent gate failures
+- **Symptom:** Recovering #507's verifier repairs onto current-main lineage still left the broad gate red on a literal escaped newline in a planner-test comment, one untraced nested GitLab helper, and a dependency-cycle fixture that accidentally exercised MHW atomic-bundle safety.
+- **Root cause:** #507's latest source was treated as useful repair material but had never earned a completed green exact-head run. Its cycle fixture mixed an unrelated structural-bundle invariant into a dependency-cycle test, and one authored comment preserved an escaped newline literally.
+- **Violated invariant / wrong assumption:** A stale repair branch is candidate material, not verified truth. Regression fixtures must isolate the behavior they claim to test, and function instrumentation applies to newly introduced local helpers.
+- **Why prior defenses missed it:** The latest #507 head had no completed green Workflow Feature run. The defects became visible only after #510 exercised the full verifier on fresh-main lineage.
+- **Direct fix:** Preserve the validator's stable training-gate heading, trace the nested catalog normalizer, replace the escaped newline with a real line break, and make the dependency-cycle fixture use non-structural unique files so atomic-bundle semantics cannot mask dependency behavior.
+- **Preventive rule/process change:** Transplant stale repair work narrowly and require exact-head verification before promotion; do not weaken unrelated production invariants to make a fixture pass.
+- **Regression coverage:** Existing handoff continuity, function verifier, planner invariant, and hard-dependency-cycle tests exercise these boundaries.
+- **Verification evidence:** Exact-head PR #510 Agent Control, Workflow Feature, and Security gates are required before integration.
+- **Adjacent cases checked:** Stable handoff heading contract, nested local-function tracing, generated literal escape handling, and MHW structural fixture interference.
+- **Learned-rule decision:** No new rule ID is needed; the existing exact-head verification doctrine plus LR-053's fallback/provenance requirements already cover the reusable lesson.
