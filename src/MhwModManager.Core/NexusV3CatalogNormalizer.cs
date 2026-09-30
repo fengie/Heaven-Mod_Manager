@@ -31,7 +31,6 @@ public static class NexusV3CatalogNormalizer
             result.Add(BuildMod(
                 item,
                 gameId,
-                gameDomain,
                 providerModId,
                 sourceUrl,
                 providerMetadata: null));
@@ -60,7 +59,7 @@ public static class NexusV3CatalogNormalizer
         });
 
         return new NexusV3NormalizedMod(
-            BuildMod(data, gameId, gameDomain, providerModId, sourceUrl, metadata),
+            BuildMod(data, gameId, providerModId, sourceUrl, metadata),
             globalModId);
     }
 
@@ -162,7 +161,6 @@ public static class NexusV3CatalogNormalizer
     private static CatalogMod BuildMod(
         JsonElement item,
         string gameId,
-        string gameDomain,
         string providerModId,
         string sourceUrl,
         string? providerMetadata)
