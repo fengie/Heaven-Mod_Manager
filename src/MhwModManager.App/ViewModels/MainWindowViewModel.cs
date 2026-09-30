@@ -451,6 +451,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(EnabledViewLabel));
         OnPropertyChanged(nameof(StagedViewLabel));
         OnPropertyChanged(nameof(UpdatesViewLabel));
+        OnPropertyChanged(nameof(InstalledCount));
         OnPropertyChanged(nameof(InstalledCountLabel));
         OnPropertyChanged(nameof(IssuesViewLabel));
         OnPropertyChanged(nameof(RevalidateViewLabel));

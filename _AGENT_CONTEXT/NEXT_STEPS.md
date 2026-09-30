@@ -1,3 +1,7 @@
+# v8.8.49 UI regression integration candidate
+
+Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.
+
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.
