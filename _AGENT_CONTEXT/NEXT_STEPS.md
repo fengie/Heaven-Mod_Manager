@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.39 repository verification gate repair — CURRENT CANDIDATE
+
+1. Require the exact-head Workflow Feature gate to pass its full repository verification stage, including handoff continuity, function call-site coverage, strict analyzers, product build, and downstream tests.
+2. Require Security Supply Chain on the same exact head.
+3. Confirm no conflict-resolution, catalog-sync, dependency-ordering, or Agent Control behavior changed beyond verification instrumentation/static qualification and the compile correction.
+4. Merge to current `main` only after exact-head green evidence; remove the temporary task branch afterward.
+5. Resume live-only #411 → #475 → #477 → #461 closure without bypassing the Heaven Bridge HMAC trust boundary.
+
+---
+
 # 2026-09-30 v8.8.38 retry-parent retirement — CURRENT CANDIDATE
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and the full Agent Control test suite; require configured Agent Control and Security gates.
