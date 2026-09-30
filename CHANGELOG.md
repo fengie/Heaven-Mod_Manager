@@ -1,4 +1,4 @@
-# v8.8.32 ? Agent Control retirement identity fail-closed closure
+# v8.8.32 — Agent Control retirement identity fail-closed closure
 - Resolve persisted worker ownership through the canonical executionProvider/runtimeProvider/provider fallback before remote retirement.
 - Block and preserve Heaven-backed retry-exhausted rows whose durable remoteJobId is missing or blank instead of treating proof as unnecessary.
 - Add a real-server regression proving missing-ID/provider-fallback retirement becomes retry-blocked before any registry deletion or tombstone creation.
