@@ -86,8 +86,16 @@ try {
             watchdog_task_started = $false
             watchdog_fallback_present = $false
             already_listening = $false
+            already_running = $false
             started = $false
+            replaced = $false
             healthy = $false
+            source_disposition = $null
+            source_branch = $null
+            source_sha = $null
+            remote_main_sha = $null
+            agent_control_version = $null
+            product_version = $null
             error = $null
         }
         plugin_workspace = [ordered]@{
@@ -214,41 +222,56 @@ try {
         $port = 7331
         $result.agent_control.already_listening = Test-LocalTcpPort -Port $port
 
-        if (-not $result.agent_control.already_listening) {
-            try {
-                $agentDir = Join-Path $RepoRoot 'tools\agent-control'
-                $server = Join-Path $agentDir 'server.mjs'
-                if (-not (Test-Path -LiteralPath $server)) {
-                    throw "Agent Control server missing: $server"
-                }
-                $node = (Get-Command node.exe -ErrorAction Stop).Source
-                $env:AGENT_CONTROL_REPO = $RepoRoot
-                $env:AGENT_CONTROL_SKIP_LOCAL_BRIDGE_BOOTSTRAP = '1'
-                Start-Process -FilePath $node -ArgumentList @('server.mjs') -WorkingDirectory $agentDir -WindowStyle Hidden
-                $result.agent_control.started = $true
-                Write-RestoreLog 'Started Agent Control server.'
-
-                for ($i = 0; $i -lt 20; $i++) {
-                    Start-Sleep -Milliseconds 250
-                    if (Test-LocalTcpPort -Port $port) { break }
-                }
-            } catch {
-                $result.agent_control.error = $_.Exception.Message
-                Write-RestoreLog "Agent Control start failed: $($result.agent_control.error)"
+        try {
+            $verifiedLauncher = Join-Path $RepoRoot 'tools\agent-control\Start-AgentControlVerified.ps1'
+            if (-not (Test-Path -LiteralPath $verifiedLauncher)) {
+                throw "Verified Agent Control launcher missing: $verifiedLauncher"
             }
+
+            $launchParameters = @{ RepoRoot = $RepoRoot }
+            if ($AllowNonControllerHost) { $launchParameters.AllowNonControllerHost = $true }
+            $launchResult = & $verifiedLauncher @launchParameters
+            if (-not [bool]$launchResult.ok) {
+                throw 'Verified Agent Control launcher did not return a successful result.'
+            }
+
+            $result.agent_control.started = [bool]$launchResult.started
+            $result.agent_control.replaced = [bool]$launchResult.replaced
+            $result.agent_control.already_running = [bool]$launchResult.already_running
+            $result.agent_control.source_disposition = [string]$launchResult.source.disposition
+            $result.agent_control.source_branch = [string]$launchResult.source.branch
+            $result.agent_control.source_sha = [string]$launchResult.source.after_sha
+            $result.agent_control.remote_main_sha = [string]$launchResult.source.remote_sha
+            $result.agent_control.agent_control_version = [string]$launchResult.identity.agentControlVersion
+            $result.agent_control.product_version = [string]$launchResult.identity.productVersion
+
+            $status = $launchResult.status
+            $identityMatches = (
+                [bool]$status.ok -and
+                [bool]$status.controller.sourceVerified -and
+                [string]$status.controller.sourceBranch -eq 'main' -and
+                [string]$status.controller.sourceSha -eq [string]$launchResult.source.after_sha -and
+                [string]$status.controller.remoteMainSha -eq [string]$launchResult.source.remote_sha -and
+                [string]$status.controller.agentControlVersion -eq [string]$launchResult.identity.agentControlVersion -and
+                [string]$status.controller.productVersion -eq [string]$launchResult.identity.productVersion
+            )
+            $result.agent_control.healthy = [bool]$identityMatches
+            if (-not $result.agent_control.healthy) {
+                throw 'Agent Control responded, but its immutable process-start identity did not match the verified canonical source.'
+            }
+
+            Write-RestoreLog ("Agent Control verified: disposition={0}; sha={1}; version={2}; started={3}; replaced={4}" -f
+                $result.agent_control.source_disposition,
+                $result.agent_control.source_sha,
+                $result.agent_control.agent_control_version,
+                $result.agent_control.started,
+                $result.agent_control.replaced)
+        } catch {
+            $result.agent_control.healthy = $false
+            $result.agent_control.error = $_.Exception.Message
+            Write-RestoreLog ("Agent Control verified startup blocked/failed: {0}" -f $result.agent_control.error)
         }
 
-        if (Test-LocalTcpPort -Port $port) {
-            try {
-                $status = Invoke-RestMethod -Uri 'http://127.0.0.1:7331/api/status' -Method Get -TimeoutSec 3
-                $result.agent_control.healthy = [bool]$status.ok
-            } catch {
-                $result.agent_control.healthy = $false
-                if (-not $result.agent_control.error) {
-                    $result.agent_control.error = $_.Exception.Message
-                }
-            }
-        }
     }
 
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $statusPath -Encoding UTF8
