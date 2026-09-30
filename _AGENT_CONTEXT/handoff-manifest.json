@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.49",
+  "currentVersion": "8.8.50",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.47 verified and published build356",
+  "immediateParentRevision": "v8.8.49 canonical main with updater installed-client E2E evidence",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -14,6 +14,7 @@
   "continuityProtocol": "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
   "startHere": "NEXT-AGENT-START-HERE.md",
   "requiredContextFiles": [
+    "_AGENT_CONTEXT/EVIDENCE/v8.8.50-installed-game-discovery.md",
     "_AGENT_CONTEXT/RECONCILIATION_2026-09-29.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_NEXT_AGENT.md",
     "_AGENT_CONTEXT/AUTO_UPDATER_C12_RELEASE_DISCOVERY_REPAIR_2026-09-28.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.45/build354 verified/published. Finish existing PR522 and inspector issue461 with exact regressions/runtime proof; preserve unique branches and deferred crypto/auth work, no new features, recursively propagate continuity.",
+  "nextAgentObligation": "Verify and integrate the v8.8.50 installed-game discovery candidate from exact current main; preserve bounded launcher/install-root discovery, LR-060, the defect precedent, PR #534's separate ownership, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
