@@ -474,3 +474,12 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** LR-045 requires polling control planes to preserve operator intent and use the authoritative lifecycle model.
 - **Regression coverage added/strengthened:** `federation-dashboard.test.mjs` now pins lifecycle Stop coverage, selected-machine preservation, and request-sequence stale-response guards; its existing inline-JavaScript parse regression remains in force.
 - **Verification/evidence:** implementation `3ab57f1da041171e043a65078d3294335bcee97c`, regression test `39a2657182797473aa61a7e4ba5e84a7b8f73341`, Agent Control package v0.5.10.
+
+
+## 2026-09-30 — Agent Control generated Copy branch markup broke quoting and nested plugin identity drifted
+- **Symptom:** The managed-agent **Copy branch** action embedded `JSON.stringify(a.branchName)` inside an already double-quoted `onclick` attribute, producing malformed markup for ordinary branch names. Separately, the nested Codex plugin manifest still reported v0.6.1 while the runtime/root plugin were v0.6.3.
+- **Root cause:** Generated operator markup combined two independent quoting layers without an encoding boundary, and the release-identity regression covered only one of the two distributable plugin manifests.
+- **Violated invariant / wrong assumption:** Data inserted into generated executable markup must cross an explicit encoding boundary; every runtime/plugin manifest representing one component must participate in the same release-identity invariant.
+- **Direct fix:** URI-encode branch values before inline-handler interpolation and decode them only on invocation; align runtime, root plugin, and nested Codex plugin at v0.6.4.
+- **Preventive rule/process change:** Validate emitted operator markup rather than only template source, and enumerate every mirrored/distributable manifest in release-identity tests.
+- **Regression coverage added/strengthened:** `operator-ui-cli.test.mjs` requires the encoded Copy branch form and rejects the raw JSON.stringify handler; `agent-manager-priority.test.mjs` now requires the nested Codex manifest to match the runtime version.
