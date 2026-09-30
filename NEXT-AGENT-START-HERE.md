@@ -1,3 +1,11 @@
+# v8.8.50 centralized project planning — current handoff
+
+`_AGENT_CONTEXT/PROJECT_PLAN.md` is now the canonical feature-plan/progress ledger. Read it before proposing or claiming feature work, update the relevant stable plan ID as truth changes, and keep root README's compact current-goals/progress mirror synchronized. Existing catalog, Auto Modder, and plugin PLAN documents are design/history references only for status purposes.
+
+Current integration goal: complete PLAN-001 exact checks/main integration, then continue the highest-priority actionable item in the ledger. Preserve exact verification scope and the permanent continuity constitution; the successor must pass both obligations to the agent after them. **Do not break the chain.**
+
+---
+
 # v8.8.48 current Mods PR integration
 
 v47 exact closure sourceed02/build356, all main gates and packaged update/rollback passed; controller0.6.22 and actual inspector UI verified. See EVIDENCE/v8.8.47-existing-bug-integration.md. Current48 candidate reconciles original PR522 history plus stronger direct-wrapper guard; exact CI/publication required. Styled old/new resize correctly; actual populated-window collapse root cause is unproven.

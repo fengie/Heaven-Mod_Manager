@@ -1,3 +1,11 @@
+# v8.8.50 — centralized feature planning
+- Add `_AGENT_CONTEXT/PROJECT_PLAN.md` as the single source of truth for current feature priority, ownership, dependencies, acceptance, checkbox milestones, and next actions.
+- Add Agent Manager, Mod Browser/catalog, Auto Modder, plan-dashboard, plan-aware scheduling/recovery, and plan-hygiene feature tracks to the canonical ledger.
+- Make root README expose a compact current-goals/progress mirror that links back to the canonical plan instead of becoming a second roadmap.
+- Refactor generic/MHW agent training so detailed design docs, issues, PRs, and handoffs attach evidence to a plan ID rather than carrying competing live status.
+- Mark existing catalog, Auto Modder, Heaven Workflows, and RDC-replacement plan files as design/history references for status purposes.
+- Extend handoff validation and negative fixtures to enforce the canonical plan, README mirror, ownership/status fields, and checkbox progress.
+
 # v8.8.49 — 2026-09-30
 
 - Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.

@@ -1,3 +1,11 @@
+# v8.8.50 centralized project planning — active candidate
+
+PLAN-001 establishes `_AGENT_CONTEXT/PROJECT_PLAN.md` as the only current feature-plan/progress authority. README is a concise mirror; CURRENT_STATE/NEXT_STEPS/handoffs and subsystem plan files now carry evidence/design detail and point back to plan IDs instead of competing roadmaps. Generic training applies the same one-ledger pattern to future repositories.
+
+Candidate scope is governance/documentation/validator only; no product runtime behavior changes. Exact candidate handoff/negative-fixture and applicable CI verification are still required before marking PLAN-001 DONE. After integration, continue the highest-priority actionable item in PROJECT_PLAN rather than copying a new roadmap here.
+
+---
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.

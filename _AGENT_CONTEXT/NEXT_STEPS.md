@@ -1,3 +1,14 @@
+# v8.8.50 centralized planning continuation
+
+Use `_AGENT_CONTEXT/PROJECT_PLAN.md` for all current feature priorities, ownership, dependencies, milestones, and next actions. This file is continuity/evidence detail, not a second roadmap.
+
+1. Finish PLAN-001 exact validation/integration and then mark its final checkbox/DONE on the same v8.8.50 evidence lineage.
+2. Re-read canonical PROJECT_PLAN and claim the highest-priority actionable unowned item; attach branch/PR/evidence to that stable plan ID.
+3. Keep README's Current plans & progress section synchronized, but resolve any disagreement in favor of PROJECT_PLAN.
+4. Preserve exact verification scope and recursive continuity; do not resurrect independent progress tracking in subsystem PLAN/design files.
+
+---
+
 # v8.8.49 UI regression integration candidate
 
 Combines the current ComboBox contrast repair and Mods empty-state refresh fix on one visible patch. Exact-head CI and runtime verification are required before completion. After green integration, retire the superseded standalone UI branch and continue existing issue/branch reconciliation; do not close long-term security/catalog issues without their acceptance evidence.

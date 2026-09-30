@@ -3,13 +3,13 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/combobox-contrast-20260930",
-  "currentVersion": "8.8.49",
+  "workingBranch": "agent/central-project-plan-v8.8.49-20260930",
+  "currentVersion": "8.8.50",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.49-ui-regression-fixes-candidate",
-  "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head gates for combined ComboBox contrast + Mods empty-overlay fixes, merge if green, verify main, then retire superseded UI branches.",
+  "status": "v8.8.50-central-project-planning-governance-candidate",
+  "nextMilestone": "Finish PLAN-001 integration, then drive feature work from the canonical project plan.",
+  "nextRequiredAction": "Verify and integrate PLAN-001, then select the highest-priority actionable item from _AGENT_CONTEXT/PROJECT_PLAN.md.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
@@ -44,5 +44,6 @@
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
-  "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md"
+  "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
+  "projectPlan": "_AGENT_CONTEXT/PROJECT_PLAN.md"
 }

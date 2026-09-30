@@ -1,5 +1,20 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.50 Universal Mod Manager
 
+
+
+## v8.8.50 — centralized feature planning
+
+All current feature plans, priorities, ownership, dependencies, milestones, and progress now live in one canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md). Agent training, continuity, and handoff validation route future feature work through that ledger; detailed catalog, Auto Modder, and plugin plans remain design references rather than competing status sources.
+
+## Current plans & progress
+
+Canonical detail: [Project Plan](_AGENT_CONTEXT/PROJECT_PLAN.md)
+
+- [ ] **PLAN-001 — centralized planning governance:** 5/6; exact candidate verification/main integration remains.
+- [ ] **AGENT-001 — Agent Manager P0 reliability:** 3/6; real authenticated provider + end-to-end operator proof remain.
+- [ ] **CATALOG-001 — in-app Mod Browser/catalog:** 2/6; cache/search/UI/acquisition/provider expansion remain.
+- [ ] **AGENT-002/003 — plan dashboard + plan-aware scheduling/recovery:** planned after the P0 control surface is stable.
+- [ ] **AUTO-001 — Auto Modder:** 1/5; first real adapter/workspace/package path remains.
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
 

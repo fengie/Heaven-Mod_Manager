@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.49",
+  "currentVersion": "8.8.50",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.47 verified and published build356",
+  "immediateParentRevision": "v8.8.49 UI regression fixes and hosted verification evidence on current main lineage",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -35,6 +35,7 @@
     "_AGENT_TRAINING/PROVENANCE.md",
     "_AGENT_TRAINING/PROMPT_TEMPLATES/README.md",
     "_AGENT_CONTEXT/CURRENT_REVISION.json",
+    "_AGENT_CONTEXT/PROJECT_PLAN.md",
     "_AGENT_CONTEXT/README_FIRST.md",
     "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
     "_AGENT_CONTEXT/LEARNED_RULES.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "v8.8.45/build354 verified/published. Finish existing PR522 and inspector issue461 with exact regressions/runtime proof; preserve unique branches and deferred crypto/auth work, no new features, recursively propagate continuity.",
+  "nextAgentObligation": "v8.8.50 centralizes feature planning/progress in _AGENT_CONTEXT/PROJECT_PLAN.md. Finish PLAN-001 exact integration/verification, then work the highest-priority actionable plan item; keep README summary synchronized and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
@@ -116,5 +117,6 @@
     "tools/agent-control/repository-context.mjs",
     "tools/agent-control/test/repository-bootstrap.test.mjs"
   ],
-  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
+  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md",
+  "projectPlan": "_AGENT_CONTEXT/PROJECT_PLAN.md"
 }
