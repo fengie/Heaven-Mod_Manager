@@ -4,6 +4,8 @@
 
 Agent Manager turns every high-volume operational surface into a native collapsed summary card. The cards form a two-column at-a-glance overview, expand full-width on demand, and bound long content inside the opened card so notifications no longer force the operator to scroll past the rest of the dashboard. Inspector selection opens the Inspector automatically, while notification summaries expose critical/warning counts without expanding the list.
 
+Interaction polish stays deliberately lightweight: section/card/metric/toast feedback uses short transform/opacity animations, respects reduced-motion and page visibility, and does not run continuous animation loops. Optional UI audio is synthesized locally with the Web Audio API, persists only after the operator toggles it, and never fires from periodic background refreshes.
+
 # v0.6.23 — compact training with preserved startup and continuity safeguards
 
 ## What v0.6.23 does
