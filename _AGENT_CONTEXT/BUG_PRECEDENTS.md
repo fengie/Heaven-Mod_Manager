@@ -495,6 +495,17 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Sibling/adjacent cases checked:** Direct `manifest.json`, `plugin.json`, and `.codex-plugin/plugin.json` discovery all use the same decoder; non-SemVer and canonical-source protections remain fail-closed.
 - **Verification/evidence:** Failing live job `chatgpt-20260930-verify-plugin-pruner-heaven2-a1`; fix commit `ccff83a93c39233a0231456ac60b919cf003d8f9`; regression commit `44e293003a7b4b06c77270f27f4f85beb6d0f1ff`.
 
+## 2026-09-30 — plugin-pruner install verification — persisted audit JSON and Startup VBS were malformed
+- **Symptom:** The pruner scheduled task installed and ran on both `heaven2` and `heaven`, but post-install `ConvertFrom-Json` failed on `last-prune.json`; inspection also showed the Startup fallback contained `CreateObject(""WScript.Shell"")` instead of valid VBScript quoting.
+- **Root cause:** The Python writer appended the two literal characters `\\n` instead of a newline, and the PowerShell generator over-escaped quotes inside a single-quoted PowerShell string.
+- **Violated invariant / wrong assumption:** A persisted machine-readable artifact is not valid merely because its producer ran successfully; it must round-trip through its real consumer. Generated recovery scripts must be syntax-valid in the target interpreter, not just syntactically valid in the generator language.
+- **Why prior defenses missed it:** Unit tests verified pruning behavior and PowerShell parser validity, but did not parse the persisted audit file or execute/validate the generated `.vbs` fallback.
+- **Direct fix:** Write a real newline after JSON and emit `CreateObject("WScript.Shell")` in the generated fallback.
+- **Preventive rule/process change:** Persistent JSON/log outputs require consumer round-trip tests, and generated cross-language startup/recovery artifacts require target-interpreter validation or execution before integration.
+- **Regression coverage added/strengthened:** Added CLI log round-trip JSON coverage plus installer-source assertions for valid WScript quoting; live reinstall will run the Startup fallback with `cscript.exe` and reparse the generated audit JSON.
+- **Sibling/adjacent cases checked:** Task action uses `pythonw.exe` with a dedicated `--log`; scheduled-task registration and Startup fallback point at the same runtime/pruner arguments.
+- **Verification/evidence:** Failing install jobs `chatgpt-20260930-install-plugin-pruner-heaven2-a1` and `chatgpt-20260930-install-plugin-pruner-heaven-a1`; fixes `9d2a78266ddb89d0489d9eada2108546ccdbeedb` and `d0716ff3c2b477d766a3685dcad597c9670d6491`; exact heaven2 verification `chatgpt-20260930-verify-plugin-pruner-runtime-fix-a1` passed the full plugin gate, JSON consumer round-trip, and deletion smoke.
+
 ## 2026-09-30 — Agent Control terminal failures remained forever in live registries
 - **Symptom:** failed, dead, capacity-blocked, interrupted/orphaned, and especially **RETRY EXHAUSTED** workers stayed visible in Managed agents / Federated agent registry indefinitely, making new clicks/dispatches look broken amid stale tombstones.
 - **Root cause:** lifecycle code wrote terminal/retry-exhausted status durably but had no authoritative registry-retirement pass. `refreshState()` then called `syncManagedAgents(...)`, re-materializing those terminal records into federation, while dashboard renderers displayed every stored entry.
@@ -503,3 +514,4 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** every terminal lifecycle state must define an explicit retention/retirement disposition; live registries must not double as historical failure archives.
 - **Regression coverage added/strengthened:** `tools/agent-control/test/registry-retention.test.mjs` pins failure retirement, active recovery retention, process-alive retention, linked federation purge, and bulk failed-federated GC.
 - **Verification/evidence:** v8.8.26 candidate; exact-head Agent Control tests plus heaven2 live dispatch/cleanup smoke required.
+
