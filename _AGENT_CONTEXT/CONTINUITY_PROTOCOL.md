@@ -70,7 +70,7 @@ If the chain is found broken or incomplete, repairing it becomes part of the cur
 
 ## 4. Propagation must be mechanically verifiable
 
-`scripts/Test-AgentHandoff.ps1` must fail if the continuity system disappears or loses required invariants.
+`scripts/testing/Test-AgentHandoff.ps1` must fail if the continuity system disappears or loses required invariants.
 
 It must verify concepts rather than brittle exact prose, including:
 
@@ -83,7 +83,7 @@ It must verify concepts rather than brittle exact prose, including:
 - recursive successor propagation is explicit;
 - Core Rules are protected from weakening without explicit user authorization.
 
-The negative-fixture harness `scripts/Test-AgentHandoff-NegativeFixtures.ps1` must deliberately break key propagation invariants and confirm that the real validator rejects those broken fixtures.
+The negative-fixture harness `scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1` must deliberately break key propagation invariants and confirm that the real validator rejects those broken fixtures.
 
 Changes to continuity validation are verification-infrastructure work. Test them independently and do not hide them inside unrelated refactors.
 

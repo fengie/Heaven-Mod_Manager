@@ -32,8 +32,8 @@ on:
       - 'tests/MhwModManager.Tests/**'
       - '_AGENT_CONTEXT/handoff-manifest.json'
       - '_AGENT_CONTEXT/CURRENT_REVISION.json'
-      - 'scripts/Test-AgentHandoff.ps1'
-      - 'scripts/Test-AgentHandoff-NegativeFixtures.ps1'
+      - 'scripts/testing/Test-AgentHandoff.ps1'
+      - 'scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1'
       - '.github/workflows/workflow-feature-pr-gate.yml'
   workflow_dispatch:
 
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run exact repository verification gate
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\Verify-Release.ps1"
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\release\\Verify-Release.ps1"
 
       - name: Restore workflow projects
         shell: powershell

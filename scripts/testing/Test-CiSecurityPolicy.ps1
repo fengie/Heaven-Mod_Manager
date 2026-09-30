@@ -5,7 +5,7 @@ $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 
 if([string]::IsNullOrWhiteSpace($Root)){
-    $Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+    $Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 }else{
     $Root=(Resolve-Path -LiteralPath $Root).Path
 }

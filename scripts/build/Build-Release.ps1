@@ -1,6 +1,6 @@
 $ErrorActionPreference='Stop'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-. (Join-Path $PSScriptRoot 'Master-Debug.ps1')
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 $MasterDebug=Get-MhwMasterDebugPath -Root $Root
 Start-MhwMasterDebugSession -Root $Root -Area 'BUILD' -Title 'Release build'
 $buildSucceeded=$false
@@ -124,8 +124,8 @@ try{
     throw "Release build requires an exact committed checkout. Dirty paths: $($dirtyInputs -join ', ')"
   }
 
-  & (Join-Path $PSScriptRoot 'Test-AgentHandoff.ps1') -Root $Root
-  & (Join-Path $PSScriptRoot 'Test-VerificationCache.ps1')
+  & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') -Root $Root
+  & (Join-Path $PSScriptRoot '..\testing\Test-VerificationCache.ps1')
   Require-Stage 'Solution restore' @('restore','.\MhwModManager.sln') (Join-Path $logRoot ("build-restore-"+$stamp+".log"))
   Require-Stage 'Function fingerprint scan' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionReport) (Join-Path $logRoot ("build-function-scan-"+$stamp+".log"))
   Require-Stage 'Solution build/analyzers' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-warnaserror') (Join-Path $logRoot ("build-compile-"+$stamp+".log"))
@@ -315,7 +315,7 @@ try{
   $updateManifestJson=$updateManifest | ConvertTo-Json -Depth 8
   [IO.File]::WriteAllText($updateManifestPath,$updateManifestJson,[Text.UTF8Encoding]::new($false))
 
-  & (Join-Path $PSScriptRoot 'Test-UpdaterPackage.ps1') -ArtifactPath $zip -ManifestPath $updateManifestPath -ExpectedSourceSha $sourceSha -ExpectedBuildNumber $buildNumber
+  & (Join-Path $PSScriptRoot '..\testing\Test-UpdaterPackage.ps1') -ArtifactPath $zip -ManifestPath $updateManifestPath -ExpectedSourceSha $sourceSha -ExpectedBuildNumber $buildNumber
 
   # Verification promotion belongs after every release-producing check. If updater
   # metadata, compression, or final package verification fails, preserve the

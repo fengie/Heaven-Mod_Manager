@@ -182,6 +182,8 @@ Text reads are paginated by line offset. Binary reads use byte offsets and bound
 
 ## Terminal and process control
 
+Console-hosting actions are non-interrupting by default on both `heaven2` and `heaven`: `proc_run`, persistent shell sessions, raw PowerShell/CMD compatibility actions, Codex helpers, bootstrap/recovery children, and console applications launched through `app_launch` run without a visible console window. `app_launch` accepts `visible_console: true` only for an explicitly requested interactive console; ordinary GUI applications still display their own GUI normally.
+
 Use `proc_run` for synchronous commands:
 
 ```json

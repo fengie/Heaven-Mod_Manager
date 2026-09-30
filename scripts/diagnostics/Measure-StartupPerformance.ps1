@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Root = if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
-    (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+    (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 } else {
     (Resolve-Path $RepositoryRoot).Path
 }

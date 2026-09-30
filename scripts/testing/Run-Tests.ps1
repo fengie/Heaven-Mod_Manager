@@ -1,6 +1,6 @@
 $ErrorActionPreference='Stop'
-$Root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-. (Join-Path $PSScriptRoot 'Master-Debug.ps1')
+$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 Start-MhwMasterDebugSession -Root $Root -Area 'RUN-TESTS' -Title 'Standalone test run'
 Push-Location $Root
 $ok=$false

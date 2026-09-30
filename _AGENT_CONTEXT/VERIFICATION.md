@@ -67,11 +67,11 @@ No verification cache or prior hosted evidence is promoted by this focused check
 
 Exact product/docs integration source verified: `dbfaccba6ec15ed1c509ba47194c3e98c4b0c31d` on `heaven2`, Windows, .NET SDK 10.0.401. The Remote Desktop process environment omitted the standard `OS` marker, so `$env:OS='Windows_NT'` was restored process-locally after the host was already established as Windows; repository scripts themselves were unchanged.
 
-- `scripts/Verify-Release.ps1`: 25/25 PASS.
+- `scripts/release/Verify-Release.ps1`: 25/25 PASS.
 - FunctionVerifier: 736/736 promoted; 7,842 explicit call sites / 0 uncovered; 0 trace gaps; 0 parse errors.
 - Core: 79/79; Automation: 28/28; Integration/fault injection: 178/178; self-test: 11/11.
 - Strict project and whole-solution builds/analyzers: PASS, 0 warnings / 0 errors.
-- `scripts/Build-Release.ps1`: PASS; ReadyToRun app and updater-helper publish PASS.
+- `scripts/build/Build-Release.ps1`: PASS; ReadyToRun app and updater-helper publish PASS.
 - Updater build 315; artifact `MHW-Manual-Mod-Manager-v8.8.2-win-x64.zip`; SHA-256 `9E07AB718E6094CD90C36E7E20D8DDBD282D9F97A161BFCECBACA844ACFE9086`.
 - Handoff preflight accepted the v8.8.2 manifest and all eight adversarial negative fixtures failed closed.
 
@@ -92,11 +92,11 @@ Not yet run on C12: full `Verify-Release.ps1`, `Build-Release.ps1`, hosted Windo
 Exact integrated updater source: `08054d96a8ba84819b6dfd775d56f9eeabc7986d` on `agent/auto-updater-20260928`.
 
 Evidence on heaven / Windows x64 / .NET SDK 10.0.401:
-- `scripts/Test-UpdaterReleasePolicy.ps1`: PASS;
-- `scripts/Test-AgentHandoff.ps1`: PASS;
+- `scripts/testing/Test-UpdaterReleasePolicy.ps1`: PASS;
+- `scripts/testing/Test-AgentHandoff.ps1`: PASS;
 - strict whole-solution build/analyzers: **PASS, 0 warnings / 0 errors**;
 - Integration/fault injection: **173/173 PASS**;
-- `scripts/Verify-Release.ps1`: **25/25 PASS** after restoring the standard process-local `OS=Windows_NT` marker omitted by Remote Desktop Commander;
+- `scripts/release/Verify-Release.ps1`: **25/25 PASS** after restoring the standard process-local `OS=Windows_NT` marker omitted by Remote Desktop Commander;
 - FunctionVerifier: **727/727 promoted**, **7749 explicit call sites / 0 uncovered**, **0 trace gaps**, **0 parse errors**;
 - Core: **79/79 PASS**;
 - Automation: **24/24 PASS**;
@@ -147,7 +147,7 @@ Evidence on heaven / Windows x64 / .NET SDK 10.0.401:
 - repaired focused updater/handoff suite: **74/74 PASS**;
 - full `MhwModManager.IntegrationTests`: **170/170 PASS**;
 - strict `dotnet build MhwModManager.sln -c Release -warnaserror`: **PASS, 0 warnings / 0 errors**;
-- `scripts/Test-AgentHandoff.ps1`: PASS;
+- `scripts/testing/Test-AgentHandoff.ps1`: PASS;
 - `git diff --check`: PASS before source checkpoint.
 
 C10 now includes late startup health acknowledgement, non-fatal background/manual check-stage UI, stale updater-health argument removal with malformed input rejection, complete product-owned `UpdaterHelper/` invocation-closure copying with per-file verification, and an atomic foreground-operation/handoff gate.
@@ -219,7 +219,7 @@ Inherited source e42fdd4 plus this checkpoint: two new regression tests failed b
 
 Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Environment: heaven2 / Windows / .NET SDK 10.0.401.
 
-- `scripts/Verify-Release.ps1`: **25/25 PASS**
+- `scripts/release/Verify-Release.ps1`: **25/25 PASS**
 - production fingerprints: **615/615**
 - explicit call sites: **6532 / 0 uncovered**
 - trace gaps / parse errors: **0 / 0**
@@ -228,7 +228,7 @@ Exact integrated source checked: `c6c70dd2f8db760ad236b0188cc7026a502afb7a`. Env
 - Integration/fault injection: **96/96 PASS**
 - automation self-test: **11/11 PASS**
 - strict whole-solution/project analyzers: **PASS**
-- `scripts/Build-Release.ps1`: **PASS**
+- `scripts/build/Build-Release.ps1`: **PASS**
 - win-x64 self-contained ReadyToRun publish: **PASS**
 - local release ZIP SHA-256: `359B12050437AEF0EE9695FEFCE4B8424475413EF54299B2DAC345F5C4E32B21`
 
@@ -484,7 +484,7 @@ Hosted Windows Release Gate `36333960215` closed exact governance commit `73f129
 
 - platform: Windows Server 2025 / x64
 - .NET SDK: `10.0.401`
-- `scripts/Test-AgentHandoff.ps1`: PASS
+- `scripts/testing/Test-AgentHandoff.ps1`: PASS
 - baseline recursive-continuity fixture: PASS
 - negative fixtures rejected as intended: **4/4**
 - repository verifier: **25/25 PASS**
@@ -652,7 +652,7 @@ last changed in `098d617bcb3dcdd044e3fdb8319ba506c97082af`).
 - evidence/cache persistence commit: `702c9055bff19caa80fdd60e29e891181932217a`
 
 The workflow's exact verifier also confirmed
-`scripts/Test-AgentHandoff.ps1`: PASS.
+`scripts/testing/Test-AgentHandoff.ps1`: PASS.
 ## Architecture / Explain Why hosted verification follow-up
 
 Run `36324750213` checked commit
@@ -779,7 +779,7 @@ The only failure was the function fingerprint scan. It found 602 functions, 582 
 
 A repository-native Windows closure path is now defined in
 `.github/workflows/windows-release-gate.yml`. It deliberately invokes the existing
-`scripts/Verify-Release.ps1` and `scripts/Build-Release.ps1` under Windows
+`scripts/release/Verify-Release.ps1` and `scripts/build/Build-Release.ps1` under Windows
 PowerShell with the pinned .NET SDK 10.0.401 rather than creating a weaker parallel
 test policy. The workflow records the exact Git SHA/runner/toolchain, preserves
 BuildLogs, release artifacts, the master log, and the verifier caches (including

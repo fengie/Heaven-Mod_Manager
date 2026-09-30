@@ -331,12 +331,12 @@ A governance-only checkpoint now installs the repository-level continuity consti
 - `AGENTS.md` remains concise and points every agent into the permanent system before edits.
 - `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` is the permanent Core-Rule constitution. Recursive propagation itself may be weakened only with explicit user authorization.
 - `_AGENT_CONTEXT/LEARNED_RULES.md` is the append-only Active/Superseded ledger for durable incident-driven rules.
-- `scripts/Test-AgentHandoff.ps1` validates the invariant by concept rather than exact prose.
-- `scripts/Test-AgentHandoff-NegativeFixtures.ps1` deliberately breaks learned-rules linkage, successor propagation, and Core-Rule protection and requires the real validator to fail closed.
-- `scripts/Verify-Release.ps1` runs both the positive handoff preflight and negative fixtures.
+- `scripts/testing/Test-AgentHandoff.ps1` validates the invariant by concept rather than exact prose.
+- `scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1` deliberately breaks learned-rules linkage, successor propagation, and Core-Rule protection and requires the real validator to fail closed.
+- `scripts/release/Verify-Release.ps1` runs both the positive handoff preflight and negative fixtures.
 - No production C# changed. The previously closed product baseline remains exact commit `106a4569b572473394aa075bcfa5d9c03f2fe44d`, hosted run `36331057943`.
 - Hosted Windows Release Gate `36333960215` verified exact governance commit `73f1298455ec4c651e211488ececf9803504e60d` on Windows x64 / .NET SDK 10.0.401.
-- `scripts/Test-AgentHandoff.ps1` passed; the baseline negative-fixture copy passed; all four recursive-continuity negative fixtures were rejected as intended.
+- `scripts/testing/Test-AgentHandoff.ps1` passed; the baseline negative-fixture copy passed; all four recursive-continuity negative fixtures were rejected as intended.
 - Repository verification finished **25/25** with **615/615** production fingerprints, **6389** explicit call sites / **0** uncovered, Core **79/79**, Automation **20/20**, Integration/fault injection **66/66**, self-test **11/11**, App win-x64 analyzers PASS, and ReadyToRun publish PASS.
 - Release SHA-256: `8A8D78DA53AE81703091683F5BC25D298C7BDEE3FB831098040D91EB2F85AAF4`.
 - Workflow evidence/cache persistence commit: `6bc50de3f07015b63c58ac6bfba3b7bfce9a104c`.
@@ -684,3 +684,8 @@ Support Agent 1 completed an independent static cross-check of SQLite write owne
 The deployment journal/final-commit/rollback transactions were independently confirmed. Four non-deployment consistency defects/gaps were documented for later isolated checkpoints: duplicate cleanup move-before-delete recovery, trust-vs-launch-history split persistence, snapshot-prune DB/payload drift, and legacy migration run-status closure. No production source was changed by this support audit, and no local/hosted Windows execution is claimed for it.
 
 Any successor working on these findings must preserve the permanent recursive continuity constitution and explicitly pass that requirement to its successor. Do not break the chain.
+
+
+## Script layout cleanup 2026-09-30
+
+PowerShell automation is grouped under scripts/build, scripts/release, scripts/testing, scripts/diagnostics, and scripts/benchmarks. Root Windows launchers remain stable entry points and now call the grouped scripts. New automation should use the most specific purpose folder instead of adding flat scripts/ siblings.

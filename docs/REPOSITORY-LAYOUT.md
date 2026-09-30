@@ -30,16 +30,19 @@ For structural moves, first check active PR/branch changed files. Avoid moving f
 
 Folders are not allowed to become new flat roots. When several files share a durable concern, add a named subfolder and move the whole concern together with its references.
 
-Current high-value cleanup targets for the organizing agent:
+Established script neighborhoods:
 
 - `scripts/build/` — build/source-handoff entrypoints and helpers.
-- `scripts/release/` — release, updater publication, release policy, and release verification scripts.
-- `scripts/testing/` — test runners and policy/regression test scripts; split further by subsystem when a test family grows.
+- `scripts/release/` — release verification, updater publication, and release policy.
+- `scripts/testing/` — test runners and policy/regression checks; split further by subsystem when a test family grows.
 - `scripts/diagnostics/` — diagnostics/debug/startup-measurement scripts.
 - `scripts/benchmarks/` — benchmark launch automation.
-- `docs/auto-modder/` — the existing AUTO-MODDER-* document family.
-- `docs/updater/` — updater/release-channel documentation when moved as a coherent batch.
-- `docs/verification/` — verification/failure/diagnostic documentation when their references can be updated coherently.
+
+Next documentation neighborhoods to use as related material grows:
+
+- `docs/auto-modder/` — AUTO-MODDER-* document family.
+- `docs/updater/` — updater/release-channel documentation.
+- `docs/verification/` — verification/failure/diagnostic documentation.
 
 These are target ownership neighborhoods, not permission to perform blind moves. Before each batch, search every old path consumer, check active agent ownership, update all references atomically, and run the affected verification.
 

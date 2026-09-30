@@ -17,13 +17,13 @@ The WPF Dispatcher watchdog posts one lightweight heartbeat at a time. A delay a
 Run:
 
 ```powershell
-.\scripts\Capture-Diagnostics.ps1
+.\scripts\diagnostics\Capture-Diagnostics.ps1
 ```
 
 or pass the process ID:
 
 ```powershell
-.\scripts\Capture-Diagnostics.ps1 -ProcessId 12345 -DurationSeconds 20
+.\scripts\diagnostics\Capture-Diagnostics.ps1 -ProcessId 12345 -DurationSeconds 20
 ```
 
 The script uses whatever current .NET diagnostic tools are installed:

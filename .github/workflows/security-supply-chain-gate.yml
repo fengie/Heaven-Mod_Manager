@@ -11,8 +11,8 @@ on:
       - 'SECURITY.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
       - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
-      - 'scripts/Verify-Release.ps1'
-      - 'scripts/Test-CiSecurityPolicy.ps1'
+      - 'scripts/release/Verify-Release.ps1'
+      - 'scripts/testing/Test-CiSecurityPolicy.ps1'
   pull_request:
     paths:
       - '.github/workflows/**'
@@ -45,4 +45,4 @@ jobs:
 
       - name: Audit workflow security policy
         shell: powershell
-        run: .\scripts\Test-CiSecurityPolicy.ps1 -Root $env:GITHUB_WORKSPACE
+        run: .\scripts\testing\Test-CiSecurityPolicy.ps1 -Root $env:GITHUB_WORKSPACE

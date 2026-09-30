@@ -7,6 +7,8 @@ description: Run, build, test, lint, benchmark and verify code on the user's hea
 
 Use Heaven Local Bridge as the default execution backend for code and repository work on `heaven`.
 
+All agent-owned command, PowerShell, test/build, and local-agent child processes on both `heaven` and `heaven2` must stay in the background by default and must not steal focus. Use the bridge's structured execution paths, which enforce hidden/no-console Windows process creation. Request a visible console only when the task explicitly requires interactive visible terminal use.
+
 ## Core rule
 
 For code verification, do not merely inspect files or claim that commands should pass. Execute the relevant commands through `proc_run` or a persistent process session and read the authoritative bridge result.

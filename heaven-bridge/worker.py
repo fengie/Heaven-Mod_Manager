@@ -2444,9 +2444,13 @@ def desktop_launch_app(p):
         raise BridgeError("INVALID_APP_ARGS", "params.args must be a list of strings")
     cwd = expand_path(p.get("cwd")) if p.get("cwd") else Path.home()
     resolved = shutil.which(target) or target
+    visible_console = bool(p.get("visible_console", False))
     flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-    if bool(p.get("detached", True)):
-        flags |= getattr(subprocess, "DETACHED_PROCESS", 0)
+    if os.name == "nt":
+        if visible_console:
+            flags |= getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+        else:
+            flags |= getattr(subprocess, "CREATE_NO_WINDOW", 0)
     try:
         proc = subprocess.Popen(
             [resolved, *args], cwd=str(cwd), stdin=subprocess.DEVNULL,
