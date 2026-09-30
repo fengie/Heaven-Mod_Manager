@@ -229,3 +229,10 @@ See `CONTROL_PLANE.md` for the federation/liveness architecture, authenticated H
 ### Adaptive Work handoff signatures
 
 The controller does not assume ChatGPT's handoff card labels are permanent. It reads the accessible UI tree, uses the built-in signature registry for known labels, and can safely learn renamed labels only after a unique non-Work action is identified and the Work action is verified gone. Learned aliases and ambiguous drift observations are persisted under the gitignored Agent Control `data/` directory and are available through `GET /api/work-handoff-signatures`. This updates plugin behavior without self-editing tracked source or dirtying `main`.
+
+
+### Durable failure ledger and swarm startup guard
+
+Agent Control now writes a structured local failure ledger to `data/failures.jsonl`. Each record uses the `agent-control/failure/v1` schema and keeps only bounded diagnostic fields such as agent/task/workflow identity, provider/mode, terminal status, exit/signal data, sanitized error text, and the last useful output. Common bearer/token/secret/password patterns are redacted before persistence; prompt bodies, task capabilities, and environment secrets are not copied into the ledger. The newest records are exposed as `recentFailures` in `/api/snapshot` and through `GET /api/failures?limit=N`.
+
+Multi-step workflow launch is no longer a blind burst. After each worker is started, the controller briefly polls authoritative state and output before launching the next lane. If the worker immediately exposes a provider-capacity error or another terminal startup failure, the startup guard stops the remaining fan-out, records a workflow-level failure entry, and leaves the unfinished lanes visible instead of launching a whole doomed swarm against the same shared failure.
