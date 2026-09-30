@@ -72,6 +72,20 @@ If the incident reveals a reusable lesson, also update `_AGENT_CONTEXT/LEARNED_R
 - If the preventive rule can be mechanically enforced, prefer enforcement in code/tests/CI/Agent Control over prose alone.
 - Repeated occurrence of an already logged defect class is a severity escalation: inspect why the prior prevention control failed and strengthen that control before closing the new incident.
 
+### Mandatory completion handoff
+Every agent that finishes a task must leave a durable continuation note **before** claiming `DONE`, `FIXED`, `SHIPPED`, handing off, or terminating the lane.
+
+The completion handoff must include:
+- the exact next step(s), ordered and written so a successor can act without reconstructing private chat history;
+- concrete improvement opportunities discovered during the task (quality, performance, UX, architecture, tests, verification, docs, automation, maintainability, or workflow). If no worthwhile improvement is known, say so explicitly and state what was considered;
+- unresolved risks, assumptions, technical debt, blockers, and verification gaps;
+- the current branch/revision/commit and the relevant artifacts, tests, commands, or evidence needed to continue safely;
+- ownership/integration status when another agent, branch, PR, machine, or external dependency is involved.
+
+Write these notes into the repository's authoritative continuity/handoff surfaces for the task (for example `_AGENT_CONTEXT/NEXT_STEPS.md`, current-state/task handoff records, or the relevant subsystem handoff), updating or superseding stale notes instead of creating contradictory duplicates.
+
+Managers, reviewers, recovery agents, and integration agents must reject or repair a completion claim that lacks actionable next-step notes and improvement opportunities. A task can be functionally complete while still having useful follow-on work; record that work instead of discarding it.
+
 ## Mandatory task-review and plugin activation gate
 
 Repository training is necessary but not sufficient. **After training and before any task-facing plan, answer, dispatch, tool choice, or task-specific action**, every agent must perform a task/plugin preflight.
