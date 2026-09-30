@@ -1,5 +1,9 @@
 # Agent Work Reports handoff — 2026-09-30
 
+## Integration checkpoint
+
+Target patch is v8.8.53 on PR #540 / `feature/agent-work-reports-20260930`, reconciled onto canonical v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415`. The intervening #539 integration touched no #540 files, so the reporting implementation was preserved byte-for-byte during reconciliation. Fresh exact-head PR gates and live heaven2 dashboard smoke remain required before merge; prior local verification is source evidence only.
+
 ## Delivered boundary
 
 A standalone `plugins/agent-work-reports/` application provides a glanceable progress surface over the existing Agent Control snapshot plus explicit human-readable checkpoints. It is intentionally modular: Agent Control remains authoritative for orchestration and process/task state, while `lib/view-model.mjs` owns normalized reporting presentation data for later reuse inside Agent Manager.
