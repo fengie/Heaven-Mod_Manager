@@ -1,6 +1,9 @@
 # v8.8.21 — Fail-closed override and dependency safety
 
-- Gate every modded deployment path on the exact staged enabled set's dependency requirements before game files are written.
+- Gate every normal modded deployment and launch path on the exact enabled set's dependency requirements and a uniquely safe conflict plan before game files are written or the game is started.
+- Validate enabled overlay-rule shape before graph resolution; malformed winner edges hard-block, and a non-blocking resolver result without a real candidate winner is never rescued by arbitrary priority.
+- Treat MHW structural model/material/physics siblings as atomic bundles even when filenames differ, blocking unrelated providers from creating partial mixed assets.
+- Require high-confidence revision/role/provenance evidence for texture precedence; same-family identity or configured priority alone is not overwrite authority.
 - Stop treating manager-owned live files as satisfying dependencies when their current provider is absent from the staged set and will be removed by the same deployment.
 - Reject stale/superseded staged mod identities instead of silently dropping them from dependency validation.
 - Remove the unsafe assumption that a smaller mostly-overlapping same-family package is automatically an optional component; unknown direction remains a blocking family choice.
