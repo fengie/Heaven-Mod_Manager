@@ -299,6 +299,17 @@ public static partial class AutoCompatibility
                     Confidence.High, 100, "Resolver invariant violation: pairwise winner must belong to the compared pair.");
             }
 
+            if (preference.Confidence is Confidence.Medium or Confidence.Low)
+            {
+                return new(null, "texture-evidence-insufficient",
+                    $"'{left.ModName}' and '{right.ModName}' have only {preference.Confidence.ToString().ToLowerInvariant()}-confidence precedence evidence. Multi-provider automatic ordering requires high or explicit evidence for every supporting pair.",
+                    Confidence.High,
+                    Math.Max(95, preference.Score),
+                    string.IsNullOrWhiteSpace(preference.Evidence)
+                        ? "At least one required pairwise texture preference was below high confidence."
+                        : preference.Evidence);
+            }
+
             wins[preference.WinnerModId]++;
             pairProof.Add(preference);
         }
