@@ -91,3 +91,6 @@ Treat CI Actions as executable dependencies: pin them to immutable commit SHAs a
 
 
 41. **Persistent self-healers require installed-runtime and post-restart verification.** For watchdogs, sentinels, scheduled tasks, startup launchers, service wrappers, or other reconciliation owners, source correctness is not enough. A stale installed runtime can continuously rewrite corrected configuration. Identify every active reconciliation owner, synchronize/verify the deployed runtime artifact, apply the repair, then restart the real owner and inspect live postconditions (for example process/window state and task arguments). Treat a successful pre-restart edit as provisional until the self-healing layer has run and the invariant still holds.
+
+
+44. **Provider preflight and execution must share configuration resolution.** A health/discovery path must not accept a documented fallback that the real submit/wait path bypasses. Centralize configuration/path resolution and test the actual no-explicit-config execution contract; otherwise health can be green while every real job deterministically fails.
