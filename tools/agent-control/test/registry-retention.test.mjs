@@ -39,6 +39,21 @@ test("dead managed failures are retired instead of persisting in the registry", 
   );
   assert.equal(
     managedAgentRegistryDisposition({
+      id: "blocked-recovery",
+      status: "failed",
+      recoveryStatus: "retry-blocked"
+    }).retire,
+    false
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({
+      id: "dirty-failed-work",
+      status: "failed"
+    }, { durableWork: true }).retire,
+    false
+  );
+  assert.equal(
+    managedAgentRegistryDisposition({
       id: "still-running",
       status: "failed",
       recoveryStatus: "retry-exhausted"
@@ -97,7 +112,7 @@ test("federated purge removes controller-linked tombstones without touching live
   assert.deepEqual(federation.agents.map(item => item.agent_id), ["live-peer"]);
 });
 
-test("bulk federated failure GC preserves retry-pending records", () => {
+test("bulk federated failure GC preserves active and blocked recovery records", () => {
   const federation = {
     agents: [
       { agent_id: "exhausted", state: "failed", recovery_status: "retry-exhausted" },
@@ -108,6 +123,6 @@ test("bulk federated failure GC preserves retry-pending records", () => {
   };
 
   const retired = purgeFailedFederatedAgents(federation);
-  assert.deepEqual(retired.map(item => item.id), ["exhausted", "blocked"]);
-  assert.deepEqual(federation.agents.map(item => item.agent_id), ["pending", "working"]);
+  assert.deepEqual(retired.map(item => item.id), ["exhausted"]);
+  assert.deepEqual(federation.agents.map(item => item.agent_id), ["blocked", "pending", "working"]);
 });
