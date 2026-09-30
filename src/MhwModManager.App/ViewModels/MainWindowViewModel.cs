@@ -228,7 +228,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("startup.ui","Loading library","Reading indexed state and conflict graph…",false,async ct=>
         {
             await ReloadMods(ct);
-            UnmanagedFileCount=SupportsLiveAdoption?await s.Adoption.CountAsync(ct):0;
+            UnmanagedFileCount=SupportsLiveAdoption?await Task.Run(()=>s.Adoption.CountAsync(ct),ct):0;
             await RefreshAnalysis(ct);
         });
         _=AutoMetadataLoopAsync(backgroundCts.Token);
@@ -464,9 +464,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task ReloadMods(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var models=await s.Database.GetModsAsync(ct);
-        var files=await s.Database.GetModFilesAsync(ct);
-        var updateSettings=await s.Database.GetSettingsByPrefixAsync("update:",ct);
+        var loaded=await Task.Run(async ()=>
+        {
+            var models=await s.Database.GetModsAsync(ct);
+            var files=await s.Database.GetModFilesAsync(ct);
+            var updateSettings=await s.Database.GetSettingsByPrefixAsync("update:",ct);
+            return (models,files,updateSettings);
+        },ct);
+        var (models,files,updateSettings)=loaded;
         await Application.Current.Dispatcher.InvokeAsync(()=>
         {
             var logical=LogicalModFamilies.Build(models,files,s.Paths.Game);
@@ -526,9 +531,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             .ToDictionary(x=>x.MemberId,StringComparer.OrdinalIgnoreCase);
         var logicalMemberIds=Mods.ToDictionary(row=>row.Id,row=>(IReadOnlyList<string>)row.Members.Select(m=>m.Id).ToArray(),StringComparer.OrdinalIgnoreCase);
         var enabledIds=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
-        var snap=await s.PlannerSnapshots.LoadAsync(enabledIds,ct);
-        return await Task.Run(() =>
+        return await Task.Run(async () =>
         {
+            var snap=await s.PlannerSnapshots.LoadAsync(enabledIds,ct);
             ct.ThrowIfCancellationRequested();
             var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.enabled,Priority=v.priority}:m).ToArray();
             var stagedSnap=snap with{Mods=staged};
@@ -1060,7 +1065,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RefreshIssueSuspects(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var suspects=await s.Issues.GetActiveAsync(ct);
+        var suspects=await Task.Run(()=>s.Issues.GetActiveAsync(ct),ct);
         static string IssueKindLabel(ModIssueKind kind)=>kind switch
         {
             ModIssueKind.GpuGraphicsCrash=>"GPU / graphics crash",
