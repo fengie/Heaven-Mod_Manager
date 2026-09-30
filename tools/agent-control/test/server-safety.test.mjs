@@ -912,3 +912,32 @@ test("perpetual one-click prompts evolve across every controller phase", () => {
   assert.match(replacement, /const replacementSwarmContext = autopilotSwarmContext/);
   assert.match(replacement, /source:\s*"perpetual-stale-replacement"/);
 });
+
+test("terminal registry GC terminates only a proven-owned live worker before retirement", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  assert.match(source, /terminalCleanupOperations = new Set\(\)/);
+  assert.match(source, /function scheduleDeadRegistryTermination\(agent\)/);
+
+  const start = source.indexOf("function scheduleDeadRegistryTermination");
+  const end = source.indexOf("function retireDeadRegistryEntries", start);
+  assert.ok(start >= 0 && end > start);
+  const termination = source.slice(start, end);
+  assert.match(termination, /agent\.ownerSessionId === SESSION_ID/);
+  assert.match(termination, /child\.pid === agent\.pid/);
+  assert.match(termination, /isPidAlive\(agent\.pid\)/);
+  assert.match(termination, /cancelHeavenBridgeJob\(agent\.remoteJobId/);
+  assert.match(termination, /killProcessTree\(agent\.pid\)/);
+  assert.match(termination, /waitForPidExit\(agent\.pid\)/);
+  assert.match(termination, /retireDeadRegistryEntries\(current\)/);
+  assert.match(termination, /kept the record instead of risking a zombie or unrelated PID kill/);
+
+  const gcStart = source.indexOf("function retireDeadRegistryEntries");
+  const gcEnd = source.indexOf("function releaseLeaseForAgent", gcStart);
+  assert.ok(gcStart >= 0 && gcEnd > gcStart);
+  const gc = source.slice(gcStart, gcEnd);
+  assert.match(gc, /managedAgentRegistryDisposition\(agent/);
+  assert.match(gc, /disposition\.reason === "process-still-alive" && ownedChildAlive/);
+  assert.match(gc, /scheduleDeadRegistryTermination\(agent\)/);
+  assert.match(gc, /purgeFederatedAgentIds/);
+  assert.match(gc, /purgeFailedFederatedAgents/);
+});
