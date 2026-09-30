@@ -16,6 +16,8 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 
 ## What v0.6.11 does
 
+- Reuses one Heaven Bridge assessment per full dashboard snapshot across worker/federation views, while actual dispatch keeps authoritative bridge validation.
+
 - Keeps `/api/status` a lightweight local-state health contract; full repository/worker/federation/Heaven-Bridge inspection stays behind `/api/snapshot`, with a regression that rejects heavyweight status-route calls.
 
 - Fails closed when a Heaven-backed retry-exhausted row lacks a durable remote job id, including runtimeProvider/provider fallback identities, and preserves retirement tombstones across state migration.
