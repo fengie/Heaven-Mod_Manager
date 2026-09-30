@@ -1,3 +1,5 @@
+> **Planning authority notice:** current feature status, priority, ownership, and progress are centralized in [`_AGENT_CONTEXT/PROJECT_PLAN.md`](../../_AGENT_CONTEXT/PROJECT_PLAN.md). This file is a design/reference document; do not maintain a competing live progress checklist here.
+
 # Federated Mod Catalog Project Plan
 
 Research baseline: 2026-09-29.

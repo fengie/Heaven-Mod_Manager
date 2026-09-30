@@ -42,6 +42,7 @@ if([string]$manifest.agentInstructions -ne 'AGENTS.md'){throw 'handoff-manifest.
 if([string]$manifest.currentRevisionFile -ne '_AGENT_CONTEXT/CURRENT_REVISION.json'){throw 'handoff-manifest.json must point currentRevisionFile to CURRENT_REVISION.json.'}
 if([string]$manifest.continuityProtocol -ne '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md'){throw 'handoff-manifest.json must point continuityProtocol to CONTINUITY_PROTOCOL.md.'}
 if([string]$manifest.learnedRules -ne '_AGENT_CONTEXT/LEARNED_RULES.md'){throw 'handoff-manifest.json must point learnedRules to LEARNED_RULES.md.'}
+if([string]$manifest.projectPlan -ne '_AGENT_CONTEXT/PROJECT_PLAN.md'){throw 'handoff-manifest.json must point projectPlan to _AGENT_CONTEXT/PROJECT_PLAN.md.'}
 
 $version=(Get-Content -Raw -Path (Join-Path $Root 'VERSION.txt')).Trim()
 if([string]$manifest.currentVersion -ne [string]$version){throw "Agent handoff manifest version '$($manifest.currentVersion)' does not match VERSION.txt '$version'."}
@@ -54,6 +55,11 @@ if($buildVersion -ne [string]$version){throw "Directory.Build.props Version '$bu
 $projectReadme=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'README.md'))
 Assert-Match $projectReadme ("(?m)^#\s+v$escapedVersion\b") "README.md title must show current VERSION.txt value '$version'."
 Assert-Match $projectReadme ("(?m)^##\s+v$escapedVersion\b") "README.md must contain a current-patch progress section for '$version'."
+$readmePlanMatch=[regex]::Match($projectReadme,'(?ms)^## Current plans & progress\s*(?<body>.*?)(?=^##\s|\z)')
+if(-not $readmePlanMatch.Success){throw 'README.md must contain a Current plans & progress section.'}
+$readmePlan=$readmePlanMatch.Groups['body'].Value
+Assert-Match $readmePlan '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'README current plans section must link the canonical PROJECT_PLAN.md.'
+Assert-Match $readmePlan '(?m)^\s*-\s+\[[ xX]\]' 'README current plans section must expose checkbox progress.'
 $projectChangelog=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'CHANGELOG.md'))
 Assert-Match $projectChangelog ("(?m)^#\s+v$escapedVersion\b") "CHANGELOG.md must contain a current-patch section for '$version'."
 $gitDirective=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'GLOBAL_GIT_DIRECTIVE.md'))
@@ -82,6 +88,17 @@ if([string]$revision.canonicalRepository -ne [string]$manifest.canonicalReposito
 if([string]$revision.canonicalBranch -ne [string]$manifest.canonicalBranch){throw 'CURRENT_REVISION canonicalBranch does not match handoff manifest.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
+if([string]$revision.projectPlan -ne [string]$manifest.projectPlan){throw 'CURRENT_REVISION projectPlan must match handoff-manifest.json.'}
+
+$projectPlanPath=Join-Path $Root '_AGENT_CONTEXT\PROJECT_PLAN.md'
+$projectPlan=Get-ActiveMarkdownText (Get-Content -Raw -Path $projectPlanPath)
+Assert-Match $projectPlan '(?m)^# Project Plan\b' 'PROJECT_PLAN.md must identify itself as the canonical Project Plan.'
+Assert-Match $projectPlan '(?i)(single source of truth|sole canonical)' 'PROJECT_PLAN.md must declare canonical planning authority.'
+Assert-Match $projectPlan '(?m)^## Current priorities\b' 'PROJECT_PLAN.md must contain Current priorities.'
+Assert-Match $projectPlan '(?m)^\s*-\s+\[[ xX]\]' 'PROJECT_PLAN.md must track progress with checkboxes.'
+Assert-Match $projectPlan '(?i)\bStatus\b' 'PROJECT_PLAN.md must track status.'
+Assert-Match $projectPlan '(?i)\bOwner\b' 'PROJECT_PLAN.md must track ownership.'
+Assert-Match $projectPlan '(?i)README\.md' 'PROJECT_PLAN.md must define README mirror behavior.'
 
 $agents=Get-ActiveMarkdownText (Get-Content -Raw -Path (Join-Path $Root 'AGENTS.md'))
 Assert-Match $agents '(?i)canonical (working state|development state|source of truth)' 'AGENTS.md must identify the canonical repository state.'
@@ -112,6 +129,13 @@ Assert-Match $visibleProgress '(?i)root\s+\x60?README\.md\x60?' 'AGENTS.md visib
 Assert-Match $visibleProgress '(?is)VERSION\.txt.{0,240}patch|patch.{0,240}VERSION\.txt' 'AGENTS.md visible-progress rule must require patch advancement in VERSION.txt.'
 Assert-Match $visibleProgress '(?i)CHANGELOG\.md' 'AGENTS.md visible-progress rule must require updating CHANGELOG.md.'
 Assert-Match $visibleProgress '(?i)same change set' 'AGENTS.md visible-progress rule must bind progress reporting to the same meaningful change set.'
+$centralPlanMatch=[regex]::Match($agents,'(?ms)^### Mandatory centralized feature planning\s*(?<body>.*?)(?=^###\s|^##\s|\z)')
+if(-not $centralPlanMatch.Success){throw 'AGENTS.md must contain the Mandatory centralized feature planning section.'}
+$centralPlanRule=$centralPlanMatch.Groups['body'].Value
+Assert-Match $centralPlanRule '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'AGENTS.md centralized planning rule must name PROJECT_PLAN.md.'
+Assert-Match $centralPlanRule '(?i)single source of truth' 'AGENTS.md centralized planning rule must define a single source of truth.'
+Assert-Match $centralPlanRule '(?i)README\.md' 'AGENTS.md centralized planning rule must require the README progress mirror.'
+Assert-Match $centralPlanRule '(?i)same checkpoint' 'AGENTS.md centralized planning rule must require same-checkpoint updates.'
 Assert-NoMatch $agents '(?is)(?:\bsuccessor\b|\bagent after\b).{0,100}(?:must|should|may|can)\s+not\b.{0,120}(?:inherit|preserve|propagate|obey)' 'AGENTS.md must not negate successor continuity propagation.'
 Assert-NoMatch $agents '(?i)(?:Core continuity rules|Core Rules?).{0,100}(?:without explicit user authorization|do not require explicit user authorization)' 'AGENTS.md must not weaken Core Rules while retaining authorization keywords.'
 

@@ -143,6 +143,21 @@ try{
         return "Reference order: _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md then _AGENT_CONTEXT/LEARNED_RULES.md.`r`n`r`n"+$changed
     }
 
+    Expect-Rejected 'AGENTS loses centralized feature planning rule' 'AGENTS.md' {
+        param($text)
+        [regex]::Replace($text,'(?ms)^### Mandatory centralized feature planning\s*.*?(?=^###\s|^##\s|\z)','')
+    }
+
+    Expect-Rejected 'README loses current plans progress mirror' 'README.md' {
+        param($text)
+        [regex]::Replace($text,'(?ms)^## Current plans & progress\s*.*?(?=^##\s|\z)','')
+    }
+
+    Expect-Rejected 'PROJECT_PLAN loses checkbox tracking' '_AGENT_CONTEXT/PROJECT_PLAN.md' {
+        param($text)
+        $text -replace '(?m)^\s*-\s+\[[ xX]\]\s+','- '
+    }
+
     Write-Host 'PASS: Agent handoff negative fixtures prove recursive continuity checks fail closed.' -ForegroundColor Green
 }finally{
     if(Test-Path $fixture){Remove-Item -LiteralPath $fixture -Recurse -Force -ErrorAction SilentlyContinue}
