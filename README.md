@@ -9,6 +9,12 @@ The dashboard now matches the server's authoritative managed lifecycle: reserved
 Agent Control advances to **v0.5.11** with regression guards for one-click resume, active-state controls, stale-response rejection, selection persistence, and inline JavaScript parseability. LR-045 and the bug-precedent ledger make polling/operator-intent preservation a permanent prevention rule. Fresh exact-head Agent Control/Windows/runtime verification is still required before release-ready claims are transferred to this patch.
 
 
+### Agent Manager P0 lock
+
+Agent Manager / Agent Control is also the repository's explicit P0 engineering priority. While the continuity marker remains active, autonomous implementation and next-cycle planning stay on Agent Manager functionality, reliability, orchestration, observability, routing, recovery, startup persistence, and exact verification instead of drifting into unrelated product work.
+
+The Agent Control runtime package and private ChatGPT plugin now share version **0.6.2**, and stable ChatGPT session registration/heartbeats are the default first observability step when a real stable identity is available. The P0 lock remains active until exact-head checks plus heaven2 controller and heaven1 worker-bridge smoke are proven together.
+
 ## v8.8.22 — Strict analyzer repair
 
 This patch closes a warnings-as-errors break in the catalog/Core verification path. Six production analyzer failures in installed-origin checking, Thunderstore normalization, generic family inference, and Mod DB feed caching were repaired without changing intended runtime behavior; four matching test-project analyzer failures were also fixed so the strict test assembly can compile and execute again.

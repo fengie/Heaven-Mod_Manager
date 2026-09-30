@@ -1,3 +1,15 @@
+# 2026-09-30 v8.8.23 Agent Manager P0 — CURRENT CRITICAL PATH
+
+1. Treat Agent Manager / Agent Control functionality as **P0** while `agentManagerPriority.status` is `active`.
+2. On the exact candidate, run `cd tools/agent-control && npm run check && npm test`; fix any regression before integration.
+3. On **heaven2**, prove controller startup plus server/CLI/dashboard smoke; keep operator-facing control surfaces on heaven2.
+4. Prove the delegated **heaven1** worker path through runtime host `heaven`, or fail closed with a specific visible provider-health reason.
+5. Exercise START SWARM / perpetual orchestration far enough to prove dispatch, federated visibility, recovery, explicit stop control, and no duplicate mutable-boundary ownership.
+6. Register/heartbeat a real stable ChatGPT session when exposed; never synthesize an identity just to make coverage look complete.
+7. Only after all completion requirements have exact-head evidence may the P0 marker be changed to complete.
+
+---
+
 # 2026-09-30 v8.8.23 Agent Manager runtime reliability — HIGHEST PRIORITY
 
 1. Run exact-head Agent Control syntax/tests, including federation-dashboard, server-safety, control-core/liveness/recovery suites, and keep all verification exact-SHA scoped.
