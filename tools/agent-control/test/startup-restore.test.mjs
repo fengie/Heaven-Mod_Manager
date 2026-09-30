@@ -35,6 +35,13 @@ test("startup restore is redundant, idempotent, and avoids duplicate Agent Contr
   assert.match(restore, /server\.mjs/);
   assert.match(restore, /startup-profile\.json/i);
   assert.match(restore, /Heaven Agent Control Watchdog/i);
+  assert.match(restore, /Sync-CanonicalRuntimeSource/i);
+  assert.match(restore, /fetch origin main --quiet/i);
+  assert.match(restore, /merge --ff-only origin\/main --quiet/i);
+  assert.match(restore, /status --porcelain/i);
+  assert.match(restore, /Stop-StaleOwnedAgentControl/i);
+  assert.match(restore, /AGENT_CONTROL_HEAVEN_RELAY_DIR/i);
+  assert.match(restore, /HeavenBridgeRepo/i);
   assert.match(watchdog, /while \(\$true\)/i);
   assert.match(watchdog, /api\/status/i);
   assert.match(watchdog, /controller-process\.json/i);
