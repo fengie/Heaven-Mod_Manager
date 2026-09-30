@@ -421,3 +421,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** failed bridge job `chatgpt-startup-setup-restore-heaven2-20260929-1819`; fixes `f78ac9337b6df935170bfcf62b726cd003d16896`, `989bebbb567cb98bffd4f41e206e09ea4c9878af`.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+## LR-025 — structural UI regressions must move with intentional layout changes
+
+- **Rule ID:** LR-025
+- **Status:** Active
+- **Date:** 2026-09-29
+- **Scope:** WPF/XAML layout changes, structural UI regression tests, release verification
+- **Rule:** When an intentional UI layout change replaces the structure a regression test asserts, update that regression in the same change to assert the new invariant rather than leaving a known-stale structural expectation on canonical main.
+- **Trigger / evidence:** Exact UI-release verification exposed a stale structural assertion after an intentional toolbar redesign.
+- **Rationale:** Structural regressions are useful only when they track intended user-facing invariants rather than obsolete implementation markup.
+- **Enforcement:** Inspect and update structural UI assertions atomically with XAML/layout refactors and run the full relevant integration suite before merge.
+- **Related rules:** LR-021 defect-class closure; LR-022 primary data surfaces; LR-023 collision-safe rule IDs.
+- **Supersedes:** none
+- **Superseded by:** none
