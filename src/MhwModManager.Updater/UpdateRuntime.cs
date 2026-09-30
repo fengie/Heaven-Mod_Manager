@@ -294,6 +294,27 @@ public static class UpdateHealthProtocol
     public const string FileArgument = "--mhw-update-health-file";
     public const string AttemptArgument = "--mhw-update-health-attempt";
 
+    public static string FormatArgumentsForDiagnostics(IReadOnlyList<string> args)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(args);
+        var safe = new List<string>(args.Count);
+        for (var i = 0; i < args.Count; i++)
+        {
+            var argument = args[i];
+            safe.Add(argument);
+            if (!IsSensitiveHealthArgument(argument) || i + 1 >= args.Count) continue;
+            safe.Add("<redacted>");
+            i++;
+        }
+        return string.Join(" ", safe);
+    }
+
+    private static bool IsSensitiveHealthArgument(string argument)
+        => string.Equals(argument, TokenArgument, StringComparison.Ordinal)
+           || string.Equals(argument, FileArgument, StringComparison.Ordinal)
+           || string.Equals(argument, AttemptArgument, StringComparison.Ordinal);
+
     public static async Task AcknowledgeIfRequestedAsync(
         IReadOnlyList<string> args,
         UpdateBuildIdentity current,
