@@ -1,9 +1,9 @@
 # v8.8.49 Universal Mod Manager
 
-## v8.8.49 — consolidate training without weakening safeguards
 
-Compact indexed training and current handoffs replace duplicated prose. Pre-response training, full constitution startup reading, recursive propagation, raw-byte budgets and exact-source release evidence remain enforced. PR525 is reconciled with the completed v48 Mods integration.
+## v8.8.49 — UI visibility and Mods empty-state refresh
 
+Fixes two current UI regressions without changing feature scope: native WPF ComboBoxes now use matched system control/background text brushes so selected values remain readable, and the Mods empty-state overlay now refreshes when the installed-mod collection count changes instead of continuing to cover populated content. Regression guards pin both behaviors.
 
 ## v8.8.48 - automatic Mods page stretch
 
