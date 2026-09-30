@@ -98,7 +98,7 @@ public sealed class ModIoTransport
         ValidateGameId(gameId);
         if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
-        if (sort is not ("-date_updated" or "-date_live" or "-downloads"))
+        if (sort is not ("-date_updated" or "-date_live" or "-downloads_total"))
             throw new ArgumentException("Unsupported mod.io sort.", nameof(sort));
 
         var parameters = new List<(string Key, string Value)>
