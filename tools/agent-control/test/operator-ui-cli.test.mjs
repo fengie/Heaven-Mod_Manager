@@ -55,6 +55,7 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
     "startSwarm",
     "overallGoal",
     "startSwarmStatus",
+    "perpetualMachine",
     "autopilotPerpetual",
     "controlSummary",
     "autonomyLevel",
@@ -71,10 +72,13 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   const primaryLaunch = html.slice(composerStart, composerEnd);
 
   assert.match(primaryLaunch, /id="startSwarm">START SWARM<\/button>/);
-  assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
-  assert.doesNotMatch(primaryLaunch, /<textarea\b|<input\b|<select\b/i);
+  assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one launch action");
+  assert.equal((primaryLaunch.match(/<input\b/g) || []).length, 1, "normal startup surface may expose only the perpetual-machine checkbox");
+  assert.match(primaryLaunch, /id="perpetualMachine" type="checkbox" checked/);
+  assert.doesNotMatch(primaryLaunch, /<textarea\b|<select\b/i);
   assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role|custom objective|overall goal/i);
-  assert.match(primaryLaunch, /handles autonomy, read-only, drain, routing freshness, worker placement, and perpetual cycling automatically/i);
+  assert.match(primaryLaunch, /Perpetual machine/i);
+  assert.match(primaryLaunch, /replace stale, stuck, crashed, or interrupted lanes/i);
 
   const diagnosticsAt = html.indexOf('<details class="card diagnostics">');
   const overallGoalAt = html.indexOf('id="overallGoal"');
@@ -95,8 +99,9 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(html, /async function startSwarm\(objectiveOverride=""\)/);
   assert.match(html, /objectiveOverride \|\| \$\("task"\)\.value\.trim\(\) \|\| defaultSwarmObjective/);
   assert.match(html, /overallGoal:\$\("overallGoal"\)\.value\.trim\(\)/);
-  assert.match(html, /perpetual:true/);
-  assert.match(html, /maxCycles:0/);
+  assert.match(html, /const perpetual = \$\("perpetualMachine"\)\.checked/);
+  assert.match(html, /\n\s*perpetual,/);
+  assert.match(html, /maxCycles:perpetual \? 0 : undefined/);
   assert.match(html, /perpetualOverride/);
 
   assert.match(html, /Auto \/ heaven1 \(runtime: heaven\)/);
