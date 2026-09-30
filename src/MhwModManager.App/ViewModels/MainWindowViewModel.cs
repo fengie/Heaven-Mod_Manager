@@ -409,9 +409,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task ReloadMods(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var models=await s.Database.GetModsAsync(ct);
-        var files=await s.Database.GetModFilesAsync(ct);
-        var updateSettings=await s.Database.GetSettingsByPrefixAsync("update:",ct);
+        var modelsTask=s.Database.GetModsAsync(ct);
+        var filesTask=s.Database.GetModFilesAsync(ct);
+        var updateSettingsTask=s.Database.GetSettingsByPrefixAsync("update:",ct);
+        await Task.WhenAll(modelsTask,filesTask,updateSettingsTask);
+        var models=await modelsTask;
+        var files=await filesTask;
+        var updateSettings=await updateSettingsTask;
         await Application.Current.Dispatcher.InvokeAsync(()=>
         {
             var logical=LogicalModFamilies.Build(models,files,s.Paths.Game);
