@@ -912,3 +912,36 @@ test("perpetual one-click prompts evolve across every controller phase", () => {
   assert.match(replacement, /const replacementSwarmContext = autopilotSwarmContext/);
   assert.match(replacement, /source:\s*"perpetual-stale-replacement"/);
 });
+
+
+test("retry-exhausted no-work lineages are retired from active registries without hiding live owned processes", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const helperStart = source.indexOf("function retireRetryExhaustedManagedAgents");
+  const helperEnd = source.indexOf("function refreshState", helperStart);
+  assert.ok(helperStart >= 0 && helperEnd > helperStart);
+  const helper = source.slice(helperStart, helperEnd);
+
+  assert.match(helper, /retryExhaustedRetirementCandidateIds/);
+  assert.match(helper, /agent\.ownerSessionId === SESSION_ID/);
+  assert.match(helper, /child\.pid === agent\.pid/);
+  assert.match(helper, /isPidAlive\(agent\.pid\)/);
+  assert.match(helper, /if \(ownsLiveChild\) continue/);
+  assert.match(helper, /releaseLeaseForAgent\(state, agent, "retry-exhausted-registry-retirement"\)/);
+  assert.match(helper, /state\.agents = state\.agents\.filter/);
+  assert.match(helper, /state\.federation\.agents = state\.federation\.agents\.filter/);
+  assert.match(helper, /state\.notifications = state\.notifications\.filter/);
+  assert.match(helper, /agent\.retry-exhausted-registry-retired/);
+
+  const refreshStart = source.indexOf("function refreshState");
+  const refreshEnd = source.indexOf("async function workerSnapshot", refreshStart);
+  const refresh = source.slice(refreshStart, refreshEnd);
+  assert.match(refresh, /retireRetryExhaustedManagedAgents\(state\)/);
+
+  const recoveryStart = source.indexOf("async function recoverNoWorkAgent");
+  const recoveryEnd = source.indexOf("async function recoverFederatedNoWorkAgent", recoveryStart);
+  const recovery = source.slice(recoveryStart, recoveryEnd);
+  assert.match(recovery, /source\.recoveryStatus = "retry-exhausted"/);
+  assert.match(recovery, /const retiredIds = retireRetryExhaustedManagedAgents\(state\)/);
+  assert.match(recovery, /dead retry record\(s\) were cleared from the managed\/federated registries/);
+  assert.doesNotMatch(recovery, /title: "No-work retry limit reached"[\s\S]{0,400}action: \{ type: "inspect-agent"/);
+});
