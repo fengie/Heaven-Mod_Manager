@@ -25,3 +25,7 @@ The plugin never handles credentials directly. It delegates permission enforceme
 ```powershell
 python .\plugins\heaven-workflows\verify.py
 ```
+
+## Verification closure
+
+- PG-005 exact-main verification is exercised by Plugin Toolbox Gate and Security Supply Chain Gate on the verification PR; this note changes documentation only.
