@@ -1,3 +1,22 @@
+# 2026-09-30 live state reconciliation — CURRENT
+
+The repository's earlier updater handoff text is stale. Automatic-updater installed-client closure has already succeeded and is persisted at `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.20.log`.
+
+Exact updater E2E evidence:
+- tested source: `c8eb6218130ac5e08a5a78ea954b58ad3069c022`;
+- Heaven/GitHub Actions run: **36659154949**;
+- real packaged success path: build 60 → build **222**, exact target source, startup-health identity confirmed, journal `Confirmed`;
+- seeded `Mods/e2e-user.mod`, `State/e2e-state.json`, and unknown user file hashes unchanged;
+- rollback path: journal `RolledBack`, exact previous build/source restored, previous owned files restored, target-only paths removed, seeded user data unchanged.
+
+Therefore the historical build-61 "installed-client E2E pending" sections below are no longer current blockers. Reopen that acceptance boundary only when updater/release-path behavior changes or contradictory evidence appears.
+
+Present verification work is instead focused on the rapidly advanced `main`: Mod DB RSS/Atom feed support, security-gate repairs, override/conflict hardening, performance changes, and other concurrent integrations landed after prior exact-SHA closure. Heaven job `job-20260930T040400Z-moddb-current-main-gate` is the active isolated-worktree unit/security/full-release gate. Do not extend its evidence beyond the exact SHA it reports.
+
+Mod DB feed checkpoint: `_AGENT_CONTEXT/MODDB_FEED_CATALOG_2026-09-30.md`. Production feed source landed through PR #386 before its tests due a concurrent integration race; regression fixtures/tests were restored immediately. LR-035 records the prevention rule: active branches require explicit integration readiness plus required verification before harvesting/cleanup.
+
+---
+
 # 2026-09-29 v8.8.7 reconciliation checkpoint — CURRENT
 
 Canonical `main` was audited at `fb3fb7ea5c5e4b133cea96f1c52dd9f4a3df327f`; shipped identity is **v8.8.7**. The v8.8.7 line includes updater cross-session ownership, while main also contains Agent Control 0.5.1 liveness, reliability verification, security/authorization hardening, v8.8.6 profile/UI work, and updater E2E/release-gating follow-ups.
