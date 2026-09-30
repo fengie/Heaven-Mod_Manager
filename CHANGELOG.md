@@ -1,3 +1,9 @@
+## 8.8.49 - 2026-09-30
+
+- Fixed low-contrast selected text in native WPF ComboBoxes by pairing system control background and text brushes.
+- Fixed the Mods empty-state overlay so collection-count changes notify InstalledCount and reveal populated mod content.
+- Added focused XAML and UX regressions for both defects.
+
 # v8.8.48 - Mods layout integration
 - Reconcile original PR522/head e0b423e7 without discarding newer main or rewriting its externally created branch.
 - Remove explicit ContentPresenter ActualWidth binding from direct Mods root; preserve automatic Stretch.
