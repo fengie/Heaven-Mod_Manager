@@ -60,3 +60,7 @@ On a persistent self-hosted runner, every `actions/checkout` use must set `persi
 
 Benchmarking, compiling, testing, parsing, or otherwise executing candidate-controlled source should run with read-only repository permissions. Do not give that job write-capable `GITHUB_TOKEN` scopes merely for convenience such as posting a PR comment. Emit an artifact or step summary, then perform any necessary mutation in a separately reviewed trusted context that does not execute candidate source.
 
+## Credentials must fail before review
+
+Keep common local secret containers and environment files out of version control with ignore rules, but do not treat ignore rules as the control boundary. Add a tracked-file secret gate that scans the exact Git index for high-confidence credential formats and private-key material. The gate must scan its own policy files safely, fail closed, and never print the matched secret value.
+
