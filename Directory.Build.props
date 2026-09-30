@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.49</Version>
-    <InformationalVersion>8.8.49-ui-regression-fixes</InformationalVersion>
+    <Version>8.8.53</Version>
+    <InformationalVersion>8.8.53-dark-combobox-template</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
