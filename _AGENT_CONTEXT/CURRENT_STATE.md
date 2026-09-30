@@ -1,3 +1,14 @@
+# v8.8.39 repository verification gate repair — CURRENT CANDIDATE
+
+- Dependency blocker remainder formatting now uses `DependencyStatus[].Length`, removing the WPF compiler error.
+- `ConflictEngine.IsProtectedBootstrapPath` and the DeploymentPlanner family-role helpers now enter `MasterDebugLog` tracing, closing explicit call-site coverage gaps.
+- `CatalogSyncService.PrepareBatchAsync` and `TryGetHealthAsync` are explicitly static, satisfying strict CA1822 analysis without changing behavior.
+- `_AGENT_CONTEXT/handoff-manifest.json` advances to v8.8.39 so continuity preflight matches `VERSION.txt`.
+- Agent Control remains v0.6.16; v8.8.38 retry-parent retirement semantics are unchanged.
+- Required integration evidence: exact-head Workflow Feature repository verification plus Security Supply Chain gate.
+
+---
+
 # v8.8.38 Agent Control retry-parent retirement — CURRENT CANDIDATE
 
 - Terminal managed parents whose replacement was dispatched no longer remain permanently pinned by the `retry-dispatched` recovery label.
