@@ -240,6 +240,7 @@ public sealed class CatalogRepositoryTests : IDisposable
     public async Task Sync_rate_link_and_provenance_state_round_trip()
     {
         var repository = await CreateRepositoryAsync("state");
+        var db = new ManagerDatabase(Path.Combine(root, "state", "manager.db"));
         var first = CreateCached(
             "nexus:state-a",
             "State A",
