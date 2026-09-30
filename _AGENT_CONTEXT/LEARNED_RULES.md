@@ -670,3 +670,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+---
+
+## LR-039 — deterministic runtime failure is not no-work
+
+- **Rule ID:** LR-039
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent Control termination reconciliation, no-work recovery, swarm-tail recovery, perpetual autopilot
+- **Rule:** Classify authoritative process outcome before deciding no-work recovery. A proven nonzero exit, spawn failure, or provider-capacity termination is a deterministic runtime failure and must not be auto-retried merely because terminal prose is empty or stream-loss metadata is also present. Preserve/reconcile substantive durable work if it exists; otherwise gate for diagnosis.
+- **Trigger / evidence:** Perpetual workers exited with code 1, were labeled retryable no-work, then repeatedly auto-requeued until `RETRY EXHAUSTED`.
+- **Rationale:** Empty output answers nothing about why a proven process failed. Treating deterministic failure as “probably never started” converts one diagnosable error into a restart storm and hides the original cause.
+- **Enforcement:** No-work retry requires an unknown/lost execution outcome plus authoritative evidence that no durable work exists. Recovery planners must exclude clean deterministic failures; implementation autopilot must gate on failed ownership rather than synthesize unrelated repair work.
+- **Regression:** `no-work-recovery.test.mjs` covers authoritative nonzero exit, stream-loss override resistance, clean-failure non-resurrection, and dirty-work preservation; `autopilot-core.test.mjs` covers failed implementation gating.
+- **Related rules:** LR-037 canonical tree proof; bug-prevention and evidence-first recovery doctrine.
+- **Supersedes:** none
+- **Superseded by:** none
+
