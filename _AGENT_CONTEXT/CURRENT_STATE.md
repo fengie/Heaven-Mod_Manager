@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.27 Agent Control Heaven relay execution repair — CURRENT
+
+The remaining worker-click failure was traced to execution-time relay resolution, not the dashboard click handler. Agent Control health already discovered the documented `~/HeavenBridgeRepo` checkout, but bridge submit/result-wait bypassed that resolver and required `AGENT_CONTROL_HEAVEN_RELAY_DIR` directly. Observed main and manager workers therefore exited code 1 before useful execution.
+
+v8.8.27 routes execution through the same resolver while preserving explicit relay overrides and all bridge repository/signing/clean-checkout checks. v8.8.26 retry-exhausted registry retirement remains canonical and unchanged.
+
+Exact-head source checks and a restarted heaven2→heaven1 live dispatch smoke are still required before closure.
+
+---
+
 # 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
