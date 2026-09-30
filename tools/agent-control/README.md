@@ -14,7 +14,10 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
-## What v0.6.8 does
+## What v0.6.9 does
+
+- Requires authoritative terminal proof for retry-exhausted Heaven Bridge remote jobs before live-registry retirement; uncertain cancellation/status and non-terminal states fail closed, while running races are re-cancelled and polled to a proven terminal state.
+- Requires raw federated heartbeat evidence strictly newer than the retirement timestamp before a retired source may reactivate, so stale cached live-state payloads cannot clear tombstones.
 
 - Preserves click/Enter/Space inspection while restoring normal article semantics for managed/federated cards; nested action controls remain independent and executable interaction tests cover the accessibility boundary.
 - Uses one relay checkout resolver for Heaven Bridge health and real submit/result-wait execution. Without an explicit relay path, the documented `~/HeavenBridgeRepo` checkout is used instead of crashing dispatched workers because `AGENT_CONTROL_HEAVEN_RELAY_DIR` is absent.
@@ -31,7 +34,7 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - Restricts **Deploy reviewer** to completed managed agents and makes emergency-stop recovery an explicit confirmed Resume action.
 
 - Enforces the repository-driven **Agent Manager P0 functionality lock**: while `_AGENT_CONTEXT/CURRENT_REVISION.json` marks it active, implementation prompts and next-cycle planning stay on Agent Control reliability/orchestration/observability/recovery/routing/verification, and the expansion lane runs at priority 100 instead of selecting unrelated product work.
-- Keeps the runtime package and private ChatGPT plugin on the same v0.6.7 release identity; stable ChatGPT sessions register/heartbeat by default when the runtime exposes a real stable identity, while undiscoverable sessions remain explicitly partial coverage.
+- Keeps the runtime package and private ChatGPT plugin on the same v0.6.9 release identity; stable ChatGPT sessions register/heartbeat by default when the runtime exposes a real stable identity, while undiscoverable sessions remain explicitly partial coverage.
 
 - Makes dashboard lifecycle controls match the server's authoritative active-state model: reserved, starting, running, waiting, blocked, stale, and stopping managed workers can all be stopped from the UI. Polling is serialized and sequence-checked so slow older snapshots cannot overwrite newer operator state, and periodic refreshes preserve the selected worker target instead of silently resetting it to Auto.
 
