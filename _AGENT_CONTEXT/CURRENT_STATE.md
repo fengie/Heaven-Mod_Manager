@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.22 strict analyzer repair — CURRENT
+
+Canonical production analyzer fixes are present through `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2`; PR #437 merge `7597b44892b613552bcec2b194f4f933cb4ccbf0` adds the four test-project analyzer repairs. Canonical-tree inspection confirmed all eight intended fixes survived subsequent integration.
+
+Exact Heaven job `job-20260930T044200Z-bugfix-core-analyzers` proved the production Core project builds with **0 warnings / 0 errors** and then reproduced the four test analyzer blockers. A fresh exact-head Heaven/full-release verification is required for the fully versioned v8.8.22 tree before any release-ready claim.
+
+The incident is recorded in `_AGENT_CONTEXT/BUG_PRECEDENTS.md` and LR-042. Diagnose earliest compiler/analyzer failures before downstream missing-artifact cascade noise, and include the affected test project in strict analyzer closure.
+
+---
+
 # 2026-09-30 v8.8.21 progress-visibility governance — CURRENT
 
 Canonical main at the start of this change set was `4a18e4c1da68210ba48abf892f853f2611b812db`. The repository now requires every completed meaningful change set to update root `README.md`, advance the patch version, update `CHANGELOG.md`, and synchronize canonical version metadata before completion. The handoff validator checks the current patch across `VERSION.txt`, `Directory.Build.props`, README, changelog, and continuity metadata and checks that the governance rule remains present.

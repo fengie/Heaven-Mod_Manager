@@ -1,3 +1,9 @@
+# v8.8.22 — Strict analyzer repair
+- Repair six warnings-as-errors in Core/catalog code: preserve the installed-origin checker instance API with a narrow CA1822 justification, use direct indexing for indexable Thunderstore categories, and keep concrete collection types where the implementation is concrete.
+- Repair four strict analyzer failures in tests: use `Assert.Single` for collection cardinality, propagate xUnit cancellation, and remove repeated constant-array allocations.
+- Record the analyzer cascade as a bug precedent and add LR-042 so downstream missing-assembly errors are treated as cascade symptoms until the earliest compile diagnostic is closed.
+- Require exact-candidate analyzer closure across both `MhwModManager.Core` and `MhwModManager.Tests` (or the full repository verifier) before integration-ready claims.
+
 # v8.8.21 — Override/dependency hardening and visible progression
 - Make root `README.md` progress reporting and a patch-version increment mandatory for every completed meaningful change set.
 - Enforce version agreement across `VERSION.txt`, `Directory.Build.props`, README, changelog, and continuity metadata; keep evidence-only attestation/publication commits on the same patch unless they introduce an independent change.

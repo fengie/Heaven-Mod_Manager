@@ -1,3 +1,13 @@
+# 2026-09-30 v8.8.22 strict analyzer repair — CURRENT
+
+1. Inspect the exact-head Heaven/Windows verification for the fully versioned v8.8.22 tree; do not transfer older exact-SHA evidence to a newer head.
+2. Preserve all eight canonical fixes: six production warnings-as-errors (installed-origin, Thunderstore, generic-family, Mod DB feed) and four test-project analyzer repairs from PR #437.
+3. If verification reports downstream missing assemblies, start at the earliest compiler/analyzer diagnostic per LR-042 rather than treating cascade errors as independent failures.
+4. Improvement opportunity: add a cheaper exact-candidate Core + Core-tests strict analyzer gate before integration so the full Windows release gate is not the first place this class is discovered.
+5. Preserve the bug precedent, LR-042, visible-progress versioning, plugin preflight, main-first integration discipline, and recursively propagate the continuity constitution to the successor.
+
+---
+
 # 2026-09-30 v8.8.21 visible-progress governance — CURRENT
 
 1. Preserve the new completion rule: every completed meaningful change set updates root `README.md`, increments the patch version, updates `CHANGELOG.md`, and synchronizes canonical version metadata in the same integration.

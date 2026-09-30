@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.21</Version>
-    <InformationalVersion>8.8.21-visible-progress</InformationalVersion>
+    <Version>8.8.22</Version>
+    <InformationalVersion>8.8.22-strict-analyzer-repair</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

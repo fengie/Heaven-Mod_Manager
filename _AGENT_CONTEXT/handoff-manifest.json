@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.21",
+  "currentVersion": "8.8.22",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.20 pre-visible-progress state",
+  "immediateParentRevision": "v8.8.21 visible-progress governance",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -101,7 +101,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. Preserve the mandatory visible-progress rule: every completed meaningful change set must update root README.md, advance the patch version, update CHANGELOG.md, and synchronize canonical version metadata before completion; evidence-only attestation/publication for the same change set stays on that patch. v8.8.21 introduces and mechanically validates this rule. Treat all verification as exact-SHA scoped and require fresh exact-head Windows release evidence before calling the current version release-ready. Preserve the permanent continuity and plugin-preflight rules.",
+  "nextAgentObligation": "Start from live canonical main and re-query open PRs/branches before selecting work. Preserve v8.8.22 strict-analyzer closure: production and affected test projects must compile under warnings-as-errors before integration readiness; downstream missing-artifact errors remain cascade symptoms until earliest compiler/analyzer diagnostics are closed. Preserve the mandatory visible-progress rule and exact-SHA verification. Successors must keep the continuity constitution and recursively propagate it.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

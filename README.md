@@ -1,4 +1,10 @@
-# v8.8.21 Universal Mod Manager
+# v8.8.22 Universal Mod Manager
+
+## v8.8.22 — Strict analyzer repair
+
+This patch closes a warnings-as-errors break in the catalog/Core verification path. Six production analyzer failures in installed-origin checking, Thunderstore normalization, generic family inference, and Mod DB feed caching were repaired without changing intended runtime behavior; four matching test-project analyzer failures were also fixed so the strict test assembly can compile and execute again.
+
+The repair also records the failure mode as a prevention precedent: diagnose the first compiler/analyzer diagnostic before chasing downstream missing-assembly noise, and require exact-candidate analyzer closure across both the affected production project and its test project. The canonical tree contains the production fix lineage through `cde589f2330f3e10e92b860ffe16dcdb4fc0d9c2` and the four test repairs merged by PR #437.
 
 ## v8.8.21 — Visible progression + safer overrides
 
