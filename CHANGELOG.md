@@ -1,3 +1,12 @@
+# Unreleased — Override and dependency safety hardening
+
+- Require valid enabled overlay edges: the winner must be one endpoint, cycles remain blocking, and malformed precedence rules never enter resolution.
+- Remove the planner's emergency priority fallback; every non-blocking multi-provider decision must identify a real candidate winner.
+- Stop auto-selecting ambiguous same-family/same-lineage textures from priority alone; only high-confidence revision/role/resource evidence can auto-compose them.
+- Treat MHW structural model/material/physics siblings as atomic bundles, blocking unrelated providers even when they modify different filenames in the same bundle.
+- Revalidate mod/package/file/texture/native-loader requirements before Preview, Apply, normal modded launch, and last-known-good restore.
+- Add adversarial regression coverage for malformed overlay rules, disjoint structural siblings, proven main→optional composition, and randomized ambiguous texture graphs.
+
 # v8.8.20 — One-click Auto Populate
 
 - Add lightweight, accessibility-aware transform/opacity transitions for page navigation, blocking-operation presentation, and shared button/sidebar interaction feedback.
