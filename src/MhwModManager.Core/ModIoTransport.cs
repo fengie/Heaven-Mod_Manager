@@ -155,7 +155,7 @@ public sealed class ModIoTransport
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var pairs = new List<(string Key, string Value)>(query.Count + 1) { ("api_key", apiKey.Value) };
+        var pairs = new List<(string Key, string Value)>(query.Length + 1) { ("api_key", apiKey.Value) };
         pairs.AddRange(query);
         var queryText = string.Join("&", pairs.Select(pair =>
             $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
