@@ -351,3 +351,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Multi-agent integration tooling should test a merge commit that retains a task commit as an ancestor while deliberately keeping the base tree, and must classify the task as preserved-but-not-integrated rather than complete.
 - **References:** GitLab catalog recovery PR #409; original implementation commits `ccb5be87c4edf284331233a4c885fa532dd8f604`, `249aa94f667c49ec4e38d48136409416ad5abec4`, `3bd48709eba46a46896b27213a6dac9ec3cf7c85`, test commit `368b0efe81110171e346da4283aaf0ac752361ad`.
 
+## 2026-09-30 — source replay appended complete C# files instead of replacing them
+
+- **Symptom:** Canonical `main` stopped compiling with six `CS1529` errors because the three GameBanana catalog source files each contained a second complete source file appended after the first declaration block.
+- **Root cause:** The PR #379 replay path applied preserved whole-file payloads with append-like patch semantics instead of reconstructing/replacing each target file atomically.
+- **Violated invariant / wrong assumption:** A replayed whole source file is a state transfer, not an additive patch; provenance does not prove valid emitted source.
+- **Direct fix:** Restore each file to its exact valid pre-replay state, preserving the newer 311-line provider implementation, and require strict compiler closure before canonical integration.
+- **Preventive rule/process change:** Whole-file source replay/transplant must use atomic replacement semantics, compare emitted bytes with the intended source artifact, and run the target-language parser/compiler on the exact candidate before main can move.
+- **Regression coverage added/strengthened:** LR-038 records the portable replacement-semantics rule; LR-030 remains the emitted-source compiler gate.
+- **References:** PR #379; replay commits `d8796b34bc8a520823f20bd832040f055f953b89`, `4483e8ba6ded4b2dae664aa15b6918c52f4329d1`, `09cd31a7851f50e77fb3688b78068e5141619403`.
+
