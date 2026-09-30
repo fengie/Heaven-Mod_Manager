@@ -27,12 +27,12 @@ This produced a false-green configuration state: provider health could find the 
 - Otherwise use `resolveHeavenRelayDir()`, including the documented `~/HeavenBridgeRepo` fallback.
 - Route both job submit and result-wait through that execution resolver.
 - Add a regression for the no-explicit-env documented fallback.
-- Advance repo identity to v8.8.27 and Agent Control/plugin identity to v0.6.6.
+- Advance repo identity to v8.8.28 and Agent Control/plugin identity to v0.6.7.
 - Record LR-051 and the matching generic training lesson/bug precedent.
 
 ## Registry cleanup status
 
-The user's separate **failed · RETRY EXHAUSTED** cleanup request is already canonical in v8.8.26 / merged PR #463.
+The user's separate **failed · RETRY EXHAUSTED** cleanup request is already canonical in v8.8.26 / merged PR #463. The later v8.8.27 agent-card inspection change is also preserved by the reconciled v8.8.28 candidate.
 
 That lifecycle:
 - proves controller ownership before killing a still-live PID;
