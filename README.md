@@ -1,4 +1,10 @@
-# v8.8.26 Universal Mod Manager
+# v8.8.27 Universal Mod Manager
+
+## v8.8.27 — Agent registry cards are actually inspectable
+
+Agent Manager now makes managed and federated agent cards behave like the clickable surfaces they look like. Clicking a managed card opens its log; clicking a federated card jumps to the linked managed worker when one exists, otherwise it opens an inline federated summary. Enter/Space provide the same inspection path for keyboard users, while nested Stop, Review, Copy branch, and View log controls remain independent and do not double-fire.
+
+This complements v8.8.26's retry-exhausted retirement fix: dead terminal cards are removed safely, and live cards now respond when clicked. Agent Control advances to **v0.6.6** with emitted-dashboard parse/interaction regression coverage.
 
 ## v8.8.26 — Agent Control exhausted-agent registry retirement
 
