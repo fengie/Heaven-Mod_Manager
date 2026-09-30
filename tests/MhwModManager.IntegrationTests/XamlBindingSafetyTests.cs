@@ -226,6 +226,34 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("MinHeight=\"32\"", xaml);
     }
 
+    [Fact]
+    public void Dashboard_stretches_inside_viewport_without_self_width_binding()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("x:Name=\"DashboardScroll\" VerticalScrollBarVisibility=\"Auto\" HorizontalScrollBarVisibility=\"Disabled\"", xaml);
+        Assert.Contains("<Grid MaxWidth=\"1320\" HorizontalAlignment=\"Stretch\" Margin=\"32,30,36,36\">", xaml);
+        Assert.DoesNotContain("Width=\"{Binding ViewportWidth,ElementName=DashboardScroll}\"", xaml);
+    }
+
+    [Fact]
+    public void Failed_initial_metadata_refresh_returns_to_retryable_state()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var start = source.IndexOf("private async Task EnsureInitialMetadataLoadedAsync", StringComparison.Ordinal);
+        var end = source.IndexOf("private async Task EnsureConflictPreviewsLoadedAsync", start, StringComparison.Ordinal);
+
+        Assert.True(start >= 0 && end > start);
+        var method = source[start..end];
+        Assert.Contains("var completed=false;", method);
+        Assert.Contains("completed=true;", method);
+        Assert.Contains("if(!completed&&!ct.IsCancellationRequested&&!disposed)", method);
+        Assert.Contains("initialMetadataRefreshStarted=false;", method);
+        Assert.Contains("selecting the Mods page again may retry", method);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
