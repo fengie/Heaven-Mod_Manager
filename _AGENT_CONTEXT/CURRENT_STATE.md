@@ -1,3 +1,16 @@
+# v8.8.35 Agent Control canonical runtime freshness — CURRENT CANDIDATE
+
+- Startup restore, watchdog restart, and manual launch canonicalize runtime source before execution.
+- Only a clean local `main` may fast-forward to `origin/main`; dirty, detached, non-main, ahead, or diverged source fails closed without reset/clean.
+- Health and controller-process identity publish exact repo/source SHA plus Agent Control version; explicit expected identity mismatches refuse startup.
+- Stale listeners are replaced only after persisted PID + exact server path + Node-process ownership proof; unknown listeners remain untouched.
+- Hidden/background process policy is preserved through the shared wrapper.
+- v8.8.34 durable stop-proof semantics remain present on the new main base.
+- Agent Control/root/nested plugin identity is v0.6.13 / product v8.8.35.
+- Exact-head Agent Control + Security gates are required. Issue #475 remains open until live heaven2 stale/behind restart and bounded heaven2→heaven dispatch evidence exists.
+
+---
+
 # v8.8.34 Agent Control durable stop proof — CURRENT CANDIDATE
 
 - Operator Stop and provider-capacity termination now enter a persisted proof-pending state before any process termination begins.

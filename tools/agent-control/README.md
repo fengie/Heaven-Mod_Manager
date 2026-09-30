@@ -14,6 +14,13 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - **heaven1 = resource worker center.** Its existing runtime hostname remains `heaven` for compatibility. Heavy agents, builds, tests, indexing, worktrees, batch jobs, and background execution belong here by default.
 - UI text may say **heaven1**, while routing/bridge payloads may still say **`heaven`**. They refer to the same resource-worker machine; do not rename the runtime host merely for display consistency.
 
+## What v0.6.13 does
+
+- Canonicalizes startup source before restore, watchdog restart, and manual launch: only clean local `main` may fast-forward to `origin/main`; dirty, detached, non-main, ahead, or diverged checkouts fail closed without reset/clean.
+- Publishes the exact runtime repository SHA and Agent Control version through `/api/status` and `controller-process.json`, and refuses an explicitly expected SHA/version mismatch.
+- Replaces a stale listener only when persisted PID, exact server path, and Node process ownership all match; unknown listeners remain untouched.
+- Keeps the startup/watchdog process path hidden/background and reuses the shared hidden-process wrapper for runtime Git probing.
+
 ## What v0.6.12 does
 
 - Makes operator Stop and provider-capacity termination share one persisted fail-closed proof path.
