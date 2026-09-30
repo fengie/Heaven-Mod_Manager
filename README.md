@@ -1,4 +1,10 @@
-# v8.8.19 Universal Mod Manager
+# v8.8.20 Universal Mod Manager
+
+## v8.8.20 — One-click Auto Populate
+
+The Mods page now includes **Auto Populate**, which builds and applies a deterministic maximal conflict-free setup from the installed library. It preserves existing enabled choices first, recursively brings in required packages, main/base family members, explicit required files and textures, native plugin-loader packages, and pinned resource providers, then validates the whole proposed closure through the same deployment conflict engine used by normal Apply.
+
+Required packages and texture providers are not exempt from conflict checks: if the complete dependency/resource closure cannot coexist safely, that candidate is skipped instead of guessed. Independent texture replacers remain pick-one conflicts, missing/invalid requirements fail closed, and the resulting setup is applied automatically so **Launch Game** is ready immediately afterward.
 
 ## v8.8.19 — Auto Modder foundation
 
