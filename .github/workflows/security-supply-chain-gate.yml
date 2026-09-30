@@ -22,6 +22,8 @@ on:
       - 'SECURITY.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
       - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
+      - 'scripts/Verify-Release.ps1'
+      - 'scripts/Test-CiSecurityPolicy.ps1'
   workflow_dispatch:
 
 permissions:
