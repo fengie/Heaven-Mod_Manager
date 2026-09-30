@@ -42,7 +42,15 @@ public sealed class GitHubReleasesCatalogProviderTests
         Assert.Equal(2, mod.Files.Count);
         Assert.Equal("501", mod.Files[0].ProviderFileId);
         Assert.Null(mod.ProviderMetadata);
-        Assert.All(mod.Files, file => Assert.Null(file.ProviderMetadata));
+        Assert.Contains(
+            "sha256:2151b604e3429bff440b9fbc03eb3617bc2603cda96c95b9bb05277f9ddba255",
+            mod.Files[0].ProviderMetadata!,
+            StringComparison.Ordinal);
+        Assert.Null(mod.Files[1].ProviderMetadata);
+        Assert.DoesNotContain(
+            "browser_download_url",
+            mod.Files[0].ProviderMetadata!,
+            StringComparison.OrdinalIgnoreCase);
         Assert.Equal(1, calls);
     }
 
@@ -86,6 +94,43 @@ public sealed class GitHubReleasesCatalogProviderTests
             resolution.DownloadUri?.AbsoluteUri);
         Assert.Null(resolution.ExpiresAt);
         Assert.Equal(2, calls);
+    }
+
+    [Fact]
+    public async Task Curated_discovery_stops_after_response_exhausts_core_rate_limit()
+    {
+        var calls = 0;
+        var handler = new RecordingHandler((_, _) =>
+        {
+            calls++;
+            var response = JsonResponse(HttpStatusCode.OK, ReadFixture("latest.json"));
+            response.Headers.TryAddWithoutValidation("X-RateLimit-Limit", "60");
+            response.Headers.TryAddWithoutValidation("X-RateLimit-Remaining", "0");
+            response.Headers.TryAddWithoutValidation("X-RateLimit-Reset", "1790726400");
+            return Task.FromResult(response);
+        });
+
+        using var client = new HttpClient(handler);
+        var provider = new GitHubReleasesCatalogProvider(
+            new GitHubReleasesTransport(client),
+            new[]
+            {
+                CreateSource(),
+                CreateSource() with
+                {
+                    Owner = "second-owner",
+                    Repository = "second-repo",
+                    ModName = "Second Fixture Mod"
+                }
+            });
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        var mods = await provider.SearchModsAsync(
+            new CatalogBrowseRequest(game),
+            TestContext.Current.CancellationToken);
+
+        Assert.Single(mods);
+        Assert.Equal(1, calls);
     }
 
     [Fact]
@@ -200,6 +245,48 @@ public sealed class GitHubReleasesCatalogProviderTests
         var source = CreateSource();
         Assert.Throws<ArgumentException>(
             () => new GitHubReleasesCatalogProvider(transport, new[] { source, source }));
+    }
+
+    [Fact]
+    public void Credential_cannot_be_bound_to_non_github_api_origin()
+    {
+        using var client = new HttpClient(new RecordingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Credential-origin validation must happen before any request.")));
+
+        Assert.Throws<ArgumentException>(
+            () => new GitHubReleasesTransport(
+                client,
+                new GitHubCatalogCredential("fixture-secret"),
+                new Uri("https://example.invalid/")));
+    }
+
+    [Fact]
+    public async Task Acquisition_rejects_mod_from_different_selected_game()
+    {
+        var calls = 0;
+        using var client = new HttpClient(new RecordingHandler((_, _) =>
+        {
+            calls++;
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("latest.json")));
+        }));
+        var provider = CreateProvider(client);
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var mod = Assert.NotNull(await provider.GetModAsync(
+            game,
+            "example/mhw-mod",
+            TestContext.Current.CancellationToken));
+        var file = Assert.Single(mod.Files, candidate => candidate.ProviderFileId == "501");
+
+        var resolution = await provider.ResolveAcquisitionAsync(
+            new CatalogAcquisitionRequest(
+                game,
+                mod with { GameId = "different-game" },
+                file),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(CatalogAcquisitionKind.Unavailable, resolution.Kind);
+        Assert.Null(resolution.DownloadUri);
+        Assert.Equal(1, calls);
     }
 
     [Fact]
