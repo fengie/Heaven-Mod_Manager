@@ -1,5 +1,10 @@
-# v8.8.38 Universal Mod Manager
+# v8.8.39 Universal Mod Manager
 
+## v8.8.39 — Strict analyzer repair
+
+The strict whole-solution gate now clears the three deterministic CA1822 failures that stopped downstream verification before it could be trusted. The stateless catalog batch/health helpers are explicitly static, while the BenchmarkDotNet instance benchmark keeps its required instance shape with a narrow documented CA1822 suppression.
+
+This patch is intentionally scoped to restoring strict compilation. After the exact-head Workflow Feature gate recompiles successfully, the remaining independent core regressions from run 36673047725 should be handled separately instead of treating missing `--no-build` executables as root causes.
 
 ## v8.8.38 — Superseded retry-parent retirement
 
