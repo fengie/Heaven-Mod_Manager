@@ -1,3 +1,5 @@
+> **Planning authority notice:** current feature status, priority, ownership, and progress are centralized in [`_AGENT_CONTEXT/PROJECT_PLAN.md`](../../_AGENT_CONTEXT/PROJECT_PLAN.md). This plugin plan is design/history detail only for current-status purposes.
+
 # Verified adapter subtask — closure
 
 PR #514/source 7e8e045c passed exact-head/main toolbox/security/workflow/controller checks and real scoped API proof; root v8.8.42 build 351 is immutable in both feeds with successful update/rollback. Source and adapter are integrated; host-provider registration remains an explicit next boundary. See `_AGENT_CONTEXT/EVIDENCE/v8.8.42-ci-evidence.md` and newest NEXT_STEPS; historical implementation plan follows.
