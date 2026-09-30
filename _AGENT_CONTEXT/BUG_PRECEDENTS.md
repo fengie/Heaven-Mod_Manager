@@ -184,3 +184,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression/verification:** The atomic repair PR must pass the exact Heaven feature gate across the fully integrated provider set before merge.
 - **Sibling/adjacent cases checked:** SQLite/FTS #325 did pass run 36659776837 before merge. GameBanana assisted-page fix #333 is preserved. Nexus provider entrypoints already contain first-statement traces on current main.
 - **Reference:** #327, #330; cancelled runs 36660058628 and 36660257258; successful storage run 36659776837.
+
+## 2026-09-29 — CI/release supply chain — mutable tools and fork PRs crossed privileged self-hosted trust boundaries
+
+- **Symptom:** Security review found movable Action tags, persistent self-hosted PR jobs without a fork trust guard, no explicit transitive NuGet audit policy, and a write-capable release job that could execute arbitrary preinstalled `gh.exe` or a moving latest download.
+- **Root cause:** CI trusted repository conventions and upstream mutable labels instead of enforcing immutable executable inputs and explicit trust boundaries.
+- **Violated invariant:** A privileged or persistent runner must treat every executable input as part of its attack surface. “Official tool,” “private repository,” and “HTTPS” do not make mutable code immutable or fork PR code safe on a persistent machine.
+- **Direct fix:** Pin Actions by SHA; reject fork PR execution on self-hosted jobs; disable persisted checkout credentials; pin and SHA-256 verify the release CLI; enable direct/transitive NuGet auditing and Dependabot; add a reusable CI security policy; complete end-to-end HMAC signing for Heaven Bridge hardened mode.
+- **Preventive rule/process change:** The security policy is executed both as a dedicated workflow and by authoritative release verification; reusable lessons are codified in agent training.
+- **Residual risk:** Main branch protection/rulesets, ephemeral runner isolation, and a trusted Windows publisher signing identity require repository/admin or identity configuration outside ordinary source changes.
+
