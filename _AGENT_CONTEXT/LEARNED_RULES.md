@@ -777,3 +777,18 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-002 compile-backed caller closure; LR-021 defect-class closure; exact-SHA verification doctrine.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## LR-045 — control-plane polling must preserve operator intent
+
+- **Rule ID:** LR-045
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent/control dashboards, polling UIs, lifecycle controls, asynchronous status refresh
+- **Rule:** Background status polling must never overwrite newer authoritative responses or erase operator-selected control values. UI lifecycle actions must derive from the same authoritative active/terminal state model as the server rather than a smaller hand-maintained subset.
+- **Trigger / evidence:** Agent Control polled the full snapshot every four seconds without sequencing requests, rebuilt the worker-target selector on every render (resetting the operator's chosen machine), and exposed Stop only for running/starting/stopping even though reserved/waiting/blocked/stale are server-defined active managed states.
+- **Rationale:** A control plane can be backend-correct yet operationally unreliable when stale asynchronous responses or render-time defaults undo the human's latest intent. Divergent lifecycle enums also strand live owned work behind the wrong action.
+- **Enforcement:** Serialize ordinary polling, sequence-check any concurrent authoritative refresh/sync responses, preserve user-controlled selection across renders, and centralize or regression-pin lifecycle action coverage against server-defined states.
+- **Regression/evidence:** Agent Control v0.5.10 dashboard change set beginning at `3ab57f1da041171e043a65078d3294335bcee97c`; `federation-dashboard.test.mjs` pins active-state Stop coverage, selection preservation, and stale-response rejection markers.
+- **Related rules:** LR-039 deterministic runtime failure classification; operator-control and liveness doctrine.
+- **Supersedes:** none
+- **Superseded by:** none
