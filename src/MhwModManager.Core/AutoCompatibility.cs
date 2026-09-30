@@ -257,37 +257,73 @@ public static partial class AutoCompatibility
                 Confidence.High, 93, "Shared resource namespace plus every provider being a broader structural/outfit package rather than a dedicated texture replacer.");
         }
 
-        var ordered = (dedicated.Length>1?dedicated:candidates).OrderBy(c => c.ModId, StringComparer.OrdinalIgnoreCase).ToArray();
-        var winner = ordered[0];
-        var reasonCode = "texture-semantic-resolution";
-        var explanation = "Texture provider was selected from proven lineage/update evidence.";
-        var confidence = Confidence.High;
-        var score = 0;
-        var evidence = string.Empty;
+        var ordered = (dedicated.Length>1?dedicated:candidates)
+            .OrderBy(c => c.ModId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
-        foreach (var challenger in ordered.Skip(1))
+        // Two providers can be decided directly. For 3+ providers, a sequential tournament is unsafe:
+        // a later challenger can replace the provisional winner without ever being compared against
+        // providers that the provisional winner already beat. Require one provider to beat every
+        // other provider under the same pairwise semantics before choosing it automatically.
+        if (ordered.Length == 2)
         {
-            var preference = CompareTextureProviders(path, winner, challenger, mods, contentStats);
-            if (preference.WinnerModId is not null)
-            {
-                var selected = PathRules.Comparer.Equals(preference.WinnerModId, challenger.ModId) ? challenger : winner;
-                if (!PathRules.Comparer.Equals(selected.ModId, winner.ModId)) winner = selected;
-                reasonCode = preference.ReasonCode;
-                explanation = preference.Explanation;
-                confidence = preference.Confidence;
-                score = preference.Score;
-                evidence = preference.Evidence;
-                continue;
-            }
+            var pair = CompareTextureProviders(path, ordered[0], ordered[1], mods, contentStats);
+            if (pair.WinnerModId is not null)
+                return pair;
 
-            // Independent texture replacers are a real pick-one conflict. Do not let arbitrary
-            // priority silently decide which visual mod the user gets.
-            return new(null,"independent-texture-replacement",
-                $"'{winner.ModName}' and '{challenger.ModName}' both replace the same texture but no trustworthy main/optional/update/shared-resource relationship was proven.",
-                Confidence.High,100,"Independent mods provide different bytes at the exact same texture path.");
+            return new(null, "independent-texture-replacement",
+                $"'{ordered[0].ModName}' and '{ordered[1].ModName}' both replace the same texture but no trustworthy main/optional/update/shared-resource relationship was proven.",
+                Confidence.High, 100, "Independent mods provide different bytes at the exact same texture path.");
         }
 
-        return new(winner.ModId, reasonCode, explanation, confidence, score, evidence);
+        var wins = ordered.ToDictionary(c => c.ModId, _ => 0, PathRules.Comparer);
+        var pairProof = new List<AutoProviderSelection>();
+        for (var i = 0; i < ordered.Length - 1; i++)
+        for (var j = i + 1; j < ordered.Length; j++)
+        {
+            var left = ordered[i];
+            var right = ordered[j];
+            var preference = CompareTextureProviders(path, left, right, mods, contentStats);
+            if (preference.WinnerModId is null)
+            {
+                return new(null, "independent-texture-replacement",
+                    $"'{left.ModName}' and '{right.ModName}' both replace the same texture but no trustworthy main/optional/update/shared-resource relationship was proven. The full provider set remains unresolved.",
+                    Confidence.High, 100, "At least one provider pair is incomparable; automatic multi-provider ordering is unsafe.");
+            }
+
+            if (!PathRules.Comparer.Equals(preference.WinnerModId, left.ModId) &&
+                !PathRules.Comparer.Equals(preference.WinnerModId, right.ModId))
+            {
+                return new(null, "invalid-texture-precedence",
+                    "Texture precedence evidence named a winner that is not one of the compared providers. Deployment is blocked rather than falling back to priority.",
+                    Confidence.High, 100, "Resolver invariant violation: pairwise winner must belong to the compared pair.");
+            }
+
+            wins[preference.WinnerModId]++;
+            pairProof.Add(preference);
+        }
+
+        var requiredWins = ordered.Length - 1;
+        var dominant = ordered.Where(c => wins[c.ModId] == requiredWins).ToArray();
+        if (dominant.Length != 1)
+        {
+            return new(null, "ambiguous-texture-precedence",
+                $"{ordered.Length} texture providers have pairwise precedence evidence, but no single provider is proven to dominate every other provider. Choose the intended provider instead of relying on order-dependent inference.",
+                Confidence.High, 100, "Complete all-pairs dominance proof failed; precedence may be cyclic or otherwise non-transitive.");
+        }
+
+        var winner = dominant[0];
+        var winnerProof = pairProof
+            .Where(p => p.WinnerModId is not null && PathRules.Comparer.Equals(p.WinnerModId, winner.ModId))
+            .ToArray();
+        var score = winnerProof.Length == 0 ? 90 : winnerProof.Min(p => p.Score);
+        var evidence = string.Join(" | ", winnerProof
+            .Select(p => string.IsNullOrWhiteSpace(p.Evidence) ? p.ReasonCode : p.Evidence)
+            .Distinct(StringComparer.OrdinalIgnoreCase));
+
+        return new(winner.ModId, "texture-complete-dominance",
+            $"'{winner.ModName}' is the only provider proven to beat every other eligible provider for this texture path. All source mods remain enabled; only this exact path uses the proven dominant provider.",
+            Confidence.High, score, evidence);
     }
 
     private static AutoProviderSelection CompareTextureProviders(
