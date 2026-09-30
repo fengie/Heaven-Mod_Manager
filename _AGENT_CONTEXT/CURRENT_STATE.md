@@ -1,3 +1,11 @@
+# 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
+
+The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
+
+Historical verification does not transfer. Exact-head `npm run check` + `npm test` and a heaven2 dashboard/operator smoke are required before this candidate is called closed; the broader Agent Manager P0 lock remains active.
+
+---
+
 # 2026-09-30 v8.8.24 Agent Manager operator actions — CURRENT
 
 The reconciled v8.8.24 candidate exposes backend `suggestedActions` in the dashboard, gates reviewer deployment to completed agents, and makes emergency-stop recovery explicit and confirmed. Agent Control/runtime plugin identity is v0.6.3.
