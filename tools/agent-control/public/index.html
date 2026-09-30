@@ -216,7 +216,14 @@
         <div class="section-title"><h2>Start the swarm</h2><span class="pill" id="repoPill">ready</span></div>
         <div class="start-hero">
           <button class="primary start-swarm" id="startSwarm">START SWARM</button>
-          <div class="start-status" id="startSwarmStatus">Click Start. Agent Control handles autonomy, read-only, drain, routing freshness, worker placement, and perpetual cycling automatically.</div>
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);cursor:pointer">
+            <input id="perpetualMachine" type="checkbox" checked style="width:auto;margin:3px 0 0" />
+            <span>
+              <strong>Perpetual machine</strong>
+              <small style="display:block;color:var(--muted);margin-top:3px;line-height:1.35">Keep launching fresh swarms after each verified cycle and automatically replace stale, stuck, crashed, or interrupted lanes.</small>
+            </span>
+          </label>
+          <div class="start-status" id="startSwarmStatus">Perpetual Machine is on by default. Click Start once; Agent Control keeps the swarm moving until you pause, drain, stop, or hit a genuine safety gate.</div>
         </div>
       </aside>
 
@@ -715,6 +722,8 @@
         `transitions ${autopilot.iteration ?? 0}/${autopilot.perpetual ? "∞" : (autopilot.maxIterations ?? "—")}`,
         `repairs ${autopilot.repairLoops ?? 0}/${autopilot.maxRepairLoops ?? "—"}`,
         autopilot.perpetual ? `phase retries ${autopilot.phaseRetries ?? 0}/${autopilot.maxPhaseRetries ?? "—"}` : null,
+        autopilot.perpetual ? `replacements ${autopilot.replacementCount ?? 0}` : null,
+        autopilot.nextRetryAt ? `retry ${fmt(autopilot.nextRetryAt)}` : null,
         autopilot.stopReason ? `gate: ${autopilot.stopReason}` : null,
         autopilot.lastCanonicalMainSha ? `main ${autopilot.lastCanonicalMainSha.slice(0,12)}` : null
       ].filter(Boolean).join(" · ");
@@ -820,6 +829,7 @@
 
     async function startSwarm(objectiveOverride="") {
       const objective = (objectiveOverride || $("task").value.trim() || defaultSwarmObjective).trim();
+      const perpetual = $("perpetualMachine").checked;
       $("task").value = objective;
       if (state.busy) return;
       state.busy = true;
@@ -832,17 +842,19 @@
           body:JSON.stringify({
             objective,
             overallGoal:$("overallGoal").value.trim(),
-            perpetual:true,
-            maxCycles:0,
+            perpetual,
+            maxCycles:perpetual ? 0 : undefined,
             baseBranch:$("baseBranch").value.trim() || "main",
             model:$("model").value.trim(),
             machine:$("machine").value,
             repositoryWriteAuthorized:true
           })
         });
-        const message = result.alreadyRunning
-          ? "Perpetual swarm is already running."
-          : "Perpetual swarm started. It will keep cycling until a genuine governed safety boundary.";
+        const message = perpetual
+          ? (result.alreadyRunning
+              ? "Perpetual Machine is already running."
+              : "Perpetual Machine started. Fresh swarms and stale/stuck replacements will continue automatically.")
+          : "One swarm started. Perpetual Machine is off for this launch.";
         $("startSwarmStatus").textContent = message;
         toast(message);
         await refresh();
@@ -921,6 +933,15 @@
 
     document.querySelectorAll(".deploy").forEach(button => button.addEventListener("click", () => deploy(button.dataset.role)));
     $("startSwarm").addEventListener("click", () => startSwarm());
+    $("perpetualMachine").addEventListener("change", () => {
+      $("autopilotPerpetual").checked = $("perpetualMachine").checked;
+      $("startSwarmStatus").textContent = $("perpetualMachine").checked
+        ? "Perpetual Machine is armed: new swarms and replacement agents will be created automatically."
+        : "Perpetual Machine is off: START SWARM will launch one normal swarm only.";
+    });
+    $("autopilotPerpetual").addEventListener("change", () => {
+      $("perpetualMachine").checked = $("autopilotPerpetual").checked;
+    });
     $("refresh").addEventListener("click", () => refresh(false));
     $("sync").addEventListener("click", () => refresh(true));
     $("autopilotStart").addEventListener("click", () => autopilotAction("start"));
