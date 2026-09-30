@@ -756,3 +756,7 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-021 defect-class closure; LR-037 canonical-tree proof; LR-041 boundary-wide URL/secret validation.
 - **Supersedes:** none
 - **Superseded by:** none
+
+## 2026-09-30 — Client-visible updater feed must lead canonical release visibility
+
+## 2026-09-30 — Stale integration can revert newer safeguards without an explicit revert
