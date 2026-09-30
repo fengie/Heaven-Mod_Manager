@@ -484,6 +484,16 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Preventive rule/process change:** Validate emitted operator markup rather than only template source, and enumerate every mirrored/distributable manifest in release-identity tests.
 - **Regression coverage added/strengthened:** `operator-ui-cli.test.mjs` requires the encoded Copy branch form and rejects the raw JSON.stringify handler; `agent-manager-priority.test.mjs` now requires the nested Codex manifest to match the runtime version.
 
+## 2026-09-30 — plugin version pruning — Windows UTF-8 BOM made valid manifests invisible
+- **Symptom:** The first live Windows smoke for the stale-plugin pruner reported no discovered copies, so the old `0.8.1` fixture remained beside `0.8.2` even though the unit suite was green.
+- **Root cause:** PowerShell 5.1 `Set-Content -Encoding UTF8` emitted a UTF-8 BOM, while the pruner decoded manifests with plain `utf-8`; `json.loads` therefore rejected the BOM-prefixed document and discovery silently skipped it.
+- **Violated invariant / wrong assumption:** Manifest discovery must accept the repository's supported Windows text encodings, and a green cross-platform fixture is not proof that a Windows-produced manifest can be parsed.
+- **Why prior defenses missed it:** Unit fixtures were written with Python's BOM-free UTF-8 writer, so they never exercised the exact Windows producer used by the live smoke.
+- **Direct fix:** Decode plugin manifests with `utf-8-sig`, which accepts both BOM and BOM-free UTF-8 without weakening JSON validation.
+- **Preventive rule/process change:** Any automation that consumes JSON/text emitted by Windows PowerShell must include an exact Windows-encoding fixture or live smoke before integration; encoding compatibility belongs in the parser contract.
+- **Regression coverage added/strengthened:** Added `test_windows_utf8_bom_manifests_are_supported` to the plugin-pruner suite and retained the live two-version deletion smoke.
+- **Sibling/adjacent cases checked:** Direct `manifest.json`, `plugin.json`, and `.codex-plugin/plugin.json` discovery all use the same decoder; non-SemVer and canonical-source protections remain fail-closed.
+- **Verification/evidence:** Failing live job `chatgpt-20260930-verify-plugin-pruner-heaven2-a1`; fix commit `ccff83a93c39233a0231456ac60b919cf003d8f9`; regression commit `44e293003a7b4b06c77270f27f4f85beb6d0f1ff`.
 
 ## 2026-09-30 — Agent Control terminal failures remained forever in live registries
 - **Symptom:** failed, dead, capacity-blocked, interrupted/orphaned, and especially **RETRY EXHAUSTED** workers stayed visible in Managed agents / Federated agent registry indefinitely, making new clicks/dispatches look broken amid stale tombstones.
