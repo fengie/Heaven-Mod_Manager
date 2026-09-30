@@ -201,3 +201,10 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Direct fix:** Regenerate the policy from the known-good base using replacement callbacks so replacement text is literal.
 - **Prevention:** Cross-language generated source must use literal-safe/AST-safe generation and must be syntax-checked by the target runtime before it is accepted as security evidence.
 
+## 2026-09-29 — mod.io transport strict-build regression — unresolved calls cascaded into analyzer/test failures
+
+- **Symptom:** The authoritative Windows release verifier failed with `CS1717`, `CS1503`, and `CA1822` in `ModIoTransport.cs`, then downstream tests could not start because build outputs were missing.
+- **Root cause:** The constructor assigned the `baseUri` field to itself after an unqualified assignment, and `GetModsAsync` passed a mutable `List<(string Key,string Value)>` into a helper requiring an array.
+- **Direct fix:** Assign `this.baseUri = NormalizeBaseUri(apiBaseUri)` directly and convert the query list with `ToArray()` at the helper boundary.
+- **Prevention:** Treat strict compile/analyzer failures as primary errors; fix the first compiler/type errors before interpreting cascaded analyzer or missing-binary test failures. Prefer direct field assignment and explicit collection-shape conversion at stable API boundaries.
+
