@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/agent-manager-compact-ui-v8.8.51-20260930",
-  "currentVersion": "8.8.52",
+  "workingBranch": "feature/agent-work-reports-20260930",
+  "currentVersion": "8.8.53",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.52-agent-manager-compact-overview-candidate",
-  "nextMilestone": "Verify and integrate the compact Agent Manager overview without losing v8.8.51 icon integrity or other preserved PR work.",
-  "nextRequiredAction": "Run exact-head Agent Control, Security Supply Chain, and Workflow Feature gates for the reconciled v8.8.52 candidate; then merge only the verified head and perform live heaven2 dashboard smoke.",
+  "status": "v8.8.53-agent-work-reports-candidate",
+  "nextMilestone": "Verify and integrate Agent Work Reports on top of canonical v8.8.52 without weakening Agent Manager authority or losing preserved branch work.",
+  "nextRequiredAction": "Require fresh exact-head Plugin Toolbox, Security Supply Chain, and Agent Control PR gates for the reconciled v8.8.53 candidate; merge only that verified head, then smoke the loopback dashboard on heaven2.",
   "verificationAppliesToCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
-  "verificationScopeNote": "v8.8.51 shortcut-icon integrity is canonical main history. v8.8.52 Agent Manager UI/motion/audio changes require fresh exact-head gates and live operator smoke.",
+  "verificationScopeNote": "v8.8.52 Agent Manager compact overview is canonical main history. v8.8.53 adds the standalone reporting plugin and requires fresh exact-head applicable PR gates plus live heaven2 dashboard smoke.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
@@ -38,7 +38,8 @@
     ]
   },
   "unresolvedRisks": [
-    "v8.8.49 UI fixes are merged but actual operator visual confirmation remains outstanding.",
+    "Agent Work Reports is loopback-only and intentionally has no remote authentication boundary; do not expose it off-host without adding authentication.",
+    "Managed/federated agents remain authoritative through Agent Control; explicit reports supplement rather than replace orchestration state.",
     "Bridge auth/provider registration and signing issues 411/350/354 remain open; catalog issue 281 remains open.",
     "Preserve unique external branches until semantic/ownership review."
   ],

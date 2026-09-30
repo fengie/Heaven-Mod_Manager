@@ -1,3 +1,10 @@
+# v8.8.53 Agent Work Reports integration lane
+
+1. Freeze the final reconciled #540 head while Plugin Toolbox, Security Supply Chain, and Agent Control PR gates run; do not append proof-only commits that invalidate exact-head evidence.
+2. If required gates pass, smoke the loopback dashboard on heaven2: overall-work list, expandable agents/tasks, explicit checkpoint ingestion, Agent Control-unavailable fallback, visible/hidden refresh cadence, and on-demand logs.
+3. Recheck canonical main immediately before merge. If main moved, reconcile semantically and rerun invalidated checks; otherwise merge only the exact verified head and verify remote main contains the reporting plugin plus v8.8.53 metadata.
+4. After integration, continue the preserved recovery/branch queue one semantic slice at a time. Do not delete divergent work merely to reduce branch count.
+
 # v8.8.52 Agent Manager integration lane
 
 1. Freeze the current reconciled head while Agent Control, Security Supply Chain, and Workflow Feature gates run; do not append evidence commits that invalidate exact-head proof.
