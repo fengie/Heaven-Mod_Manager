@@ -115,6 +115,11 @@ function isoNow() {
   return new Date().toISOString();
 }
 
+function stableJitterUnit(seed) {
+  const digest = createHash("sha256").update(String(seed || "agent-control-retry"), "utf8").digest();
+  return digest.readUInt32BE(0) / 0xffffffff;
+}
+
 function taskCapabilityDigest(value) {
   return createHash("sha256").update(String(value || ""), "utf8").digest();
 }
@@ -1057,7 +1062,8 @@ function refreshState() {
     }
 
     const progressAt = new Date(agent.lastProgressAt || agent.startedAt || heartbeatAt).getTime();
-    const stalled = Number.isFinite(progressAt) && now - progressAt > STALE_PROGRESS_MS;
+    const staleProgressMs = swarmTailRecoveryConfig(state).staleAfterMs;
+    const stalled = Number.isFinite(progressAt) && now - progressAt > staleProgressMs;
     if (stalled && agent.status === "running") {
       agent.status = "stale";
       agent.updatedAt = heartbeatAt;
@@ -1957,8 +1963,12 @@ function swarmTailRecoveryConfig(state) {
   const raw = state?.settings?.swarmTailRecovery || {};
   return {
     enabled: raw.enabled !== false,
+    replaceStale: raw.replaceStale !== false,
+    staleAfterMs: Math.max(60_000, Number(raw.staleAfterMs) || STALE_PROGRESS_MS),
+    retryBaseMs: Math.max(5_000, Number(raw.retryBaseMs) || 15_000),
+    retryMaxMs: Math.max(15_000, Number(raw.retryMaxMs) || 300_000),
     maxWorkers: Math.max(1, Math.min(MAX_ACTIVE_AGENTS, Math.floor(Number(raw.maxWorkers) || 4))),
-    maxAttemptsPerRoot: Math.max(1, Math.floor(Number(raw.maxAttemptsPerRoot) || 2)),
+    maxAttemptsPerRoot: Math.max(1, Math.floor(Number(raw.maxAttemptsPerRoot) || 4)),
     armedAt: raw.armedAt || null,
     armedWorkflowId: raw.armedWorkflowId || null,
     armedMission: raw.armedMission || null,
@@ -2576,21 +2586,61 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
   if (swarmTailRecoveryOperations.has(operationId)) return null;
   swarmTailRecoveryOperations.add(operationId);
   try {
-    const state = refreshState();
+    let state = refreshState();
     if (state.settings?.dispatchPaused || state.settings?.emergencyStop || state.settings?.readOnly) return null;
-    const source = state.agents.find(item => item.id === sourceId);
-    const task = state.tasks.find(item => item.id === source?.taskId) || null;
+    const capacity = providerCapacityCircuit(state);
+    if (capacity.blocked) return null;
+
+    let source = state.agents.find(item => item.id === sourceId);
+    let task = state.tasks.find(item => item.id === source?.taskId) || null;
     if (!source || !task) return null;
+
+    const config = swarmTailRecoveryConfig(state);
+    let staleTakeoverPath = source.takeoverPath || null;
+    const recoveringStale = String(source.status || "") === "stale";
+    if (recoveringStale) {
+      if (!config.replaceStale) return null;
+      const phaseRef = perpetualPhaseWorkerRef(state.autopilot);
+      if (state.autopilot?.perpetual && state.autopilot?.enabled && phaseRef?.agentId === source.id) return null;
+
+      const preserved = buildTakeoverForAgent(source.id, { persist: true, safetyControl: true });
+      staleTakeoverPath = preserved.takeoverPath || staleTakeoverPath;
+      await stopAgent(source.id);
+
+      state = refreshState();
+      source = state.agents.find(item => item.id === sourceId);
+      task = state.tasks.find(item => item.id === source?.taskId) || null;
+      if (!source || !task) return null;
+
+      source.status = "interrupted";
+      source.completionEvidence = "stale-recovery-stop";
+      source.swarmTailRecoveryCause = "stale-progress-timeout";
+      source.swarmTailRecoveryStatus = "stale-stopped";
+      source.swarmTailRecoveryTakeoverPath = staleTakeoverPath;
+      source.updatedAt = isoNow();
+      task.status = "retry-pending";
+      task.finishedAt = null;
+      task.updatedAt = isoNow();
+      task.nextAction = "Supervisor proved the stale worker stopped, preserved takeover state, and is dispatching a one-for-one replacement.";
+      addEvent(state, "swarm.stale-worker-stopped", `${source.id} stopped after progress-timeout takeover preservation`, {
+        agentId: source.id,
+        taskId: source.taskId,
+        reason: "stale-progress-timeout",
+        evidence: { rootAgentId: rootId, takeoverPath: staleTakeoverPath, attempt }
+      });
+      saveState(state);
+    }
 
     const sourceWorktree = source.worktree && fs.existsSync(source.worktree) ? source.worktree : null;
     const recoveryTask = [
-      `Finish unfinished work left by crashed/interrupted agent ${source.id}.`,
+      `Finish unfinished work left by ${source.swarmTailRecoveryCause === "stale-progress-timeout" ? "a stale/stuck" : "a crashed/interrupted"} agent ${source.id}.`,
       `Original task: ${task.objective || source.task || "unknown"}`,
       `Original branch: ${source.branchName || task.branchName || "unknown"}.`,
+      staleTakeoverPath ? `Persisted takeover state: ${staleTakeoverPath}.` : null,
       sourceWorktree ? `Preserved source worktree: ${sourceWorktree}. Inspect and recover any uncommitted changes before editing elsewhere.` : "No preserved source worktree is available; recover from durable branch/commit/task evidence.",
       "Do not restart completed portions from scratch. First inventory durable commits, dirty files, artifacts, tests, PRs, and integration state; then finish only what remains.",
       "Own the work through verification, integration to current canonical main when repository policy permits, remote-main confirmation, and safe cleanup."
-    ].join("\n");
+    ].filter(Boolean).join("\n");
 
     const replacement = await deployOne({
       role: "recovery",
@@ -2606,14 +2656,17 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
       lane: `swarm-tail-${rootId.slice(0, 12)}`,
       repositoryWriteAuthorized: Boolean(source.repositoryWriteAuthorized ?? task.repositoryWriteAuthorized),
       acceptanceCriteria: [
-        "Preserve all useful durable work from the failed agent.",
+        "Preserve all useful durable work from the failed or stale agent.",
         "Finish the remaining scope instead of merely auditing it.",
         "Do not duplicate or overwrite newer canonical work.",
         "Integrate and clean up only after targeted verification succeeds."
       ],
       verification: task.verification || [],
       additionalConstraints: [
-        `This is end-of-swarm cleanup attempt ${attempt} for recovery root ${rootId}.`,
+        `This is supervised recovery attempt ${attempt} for recovery root ${rootId}.`,
+        source.swarmTailRecoveryCause === "stale-progress-timeout"
+          ? "The previous worker was proven stopped after a progress timeout before this replacement was launched."
+          : "This replacement owns only the unfinished lane left by the terminated worker.",
         "Use the default direct/non-Work execution path. Never hand off to Work unless the user explicitly requested Work for this task."
       ],
       recoveryContext: {
@@ -2628,7 +2681,9 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
         mission: state.settings?.swarmTailRecovery?.armedMission || task.objective || source.task || recoveryTask,
         stepIndex: Math.max(0, Number(attempt || 1) - 1),
         totalSteps: Math.max(1, Number(state.settings?.swarmTailRecovery?.maxAttemptsPerRoot || attempt || 1)),
-        source: "swarm-tail-recovery"
+        source: source.swarmTailRecoveryCause === "stale-progress-timeout"
+          ? "swarm-stale-supervisor-recovery"
+          : "swarm-tail-recovery"
       }
     });
 
@@ -2642,15 +2697,16 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
       original.swarmTailRecoveryReplacementAgentId = replacement.id;
       original.swarmTailRecoveryReplacementTaskId = replacement.taskId;
       original.swarmTailRecoveryRootAgentId = rootId;
+      original.swarmTailRecoveryDispatchFailures = 0;
+      original.swarmTailRecoveryNextAt = null;
+      original.swarmTailRecoveryLastError = null;
     }
     if (created) {
       created.swarmTailRecovery = true;
       created.swarmTailRecoveryRootAgentId = rootId;
       created.swarmTailRecoveryAttempt = attempt;
     }
-    if (originalTask) {
-      originalTask.nextAction = `End-of-swarm recovery agent ${replacement.id} is finishing the remaining work.`;
-    }
+    if (originalTask) originalTask.nextAction = `Supervised recovery agent ${replacement.id} is finishing the remaining work.`;
     if (createdTask) {
       createdTask.swarmTailRecovery = true;
       createdTask.swarmTailRecoveryRootAgentId = rootId;
@@ -2659,12 +2715,12 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
     addEvent(linked, "swarm.tail-recovery-dispatched", `${source.id} unfinished work assigned to ${replacement.id}`, {
       agentId: replacement.id,
       taskId: replacement.taskId,
-      reason: "end-of-swarm-unfinished-work",
-      evidence: { sourceAgentId: source.id, sourceTaskId: source.taskId, rootAgentId: rootId, attempt }
+      reason: source.swarmTailRecoveryCause === "stale-progress-timeout" ? "stale-worker-replaced" : "unfinished-worker-replaced",
+      evidence: { sourceAgentId: source.id, sourceTaskId: source.taskId, rootAgentId: rootId, attempt, takeoverPath: staleTakeoverPath }
     });
     addNotification(linked, {
       severity: "info",
-      title: "Cleanup wave dispatched",
+      title: source.swarmTailRecoveryCause === "stale-progress-timeout" ? "Stale worker replaced" : "Cleanup wave dispatched",
       message: `${replacement.roleLabel || replacement.id} is finishing unfinished work from ${source.roleLabel || source.id}.`,
       action: { type: "inspect-agent", agentId: replacement.id },
       dedupeKey: `swarm-tail:${rootId}:${attempt}`
@@ -2675,13 +2731,23 @@ async function recoverSwarmTailAgent(sourceId, rootId, attempt) {
     const failed = loadState();
     const source = failed.agents.find(item => item.id === sourceId);
     if (source) {
+      const config = swarmTailRecoveryConfig(failed);
+      const failures = Math.max(0, Math.floor(Number(source.swarmTailRecoveryDispatchFailures) || 0)) + 1;
+      const jitterUnit = stableJitterUnit(`${rootId}:${attempt}:${failures}:${error?.message || error}`);
+      const retryDelayMs = recoveryBackoffWithJitterMs(failures, {
+        baseMs: config.retryBaseMs,
+        maxMs: config.retryMaxMs,
+        jitterUnit
+      });
       source.swarmTailRecoveryStatus = "dispatch-failed";
+      source.swarmTailRecoveryDispatchFailures = failures;
+      source.swarmTailRecoveryNextAt = new Date(Date.now() + retryDelayMs).toISOString();
       source.swarmTailRecoveryLastError = error?.message || String(error);
-      addEvent(failed, "swarm.tail-recovery-dispatch-failed", `Cleanup-wave dispatch failed for ${sourceId}`, {
+      addEvent(failed, "swarm.tail-recovery-dispatch-failed", `Recovery dispatch failed for ${sourceId}`, {
         agentId: sourceId,
         taskId: source.taskId,
         reason: source.swarmTailRecoveryLastError,
-        evidence: { rootAgentId: rootId, attempt }
+        evidence: { rootAgentId: rootId, attempt, dispatchFailures: failures, retryAt: source.swarmTailRecoveryNextAt }
       });
       saveState(failed);
     }
@@ -2705,10 +2771,17 @@ async function reconcileSwarmTailRecoveries() {
       return Number.isFinite(startedMs) && startedMs >= armedMs;
     });
 
+    const phaseRef = perpetualPhaseWorkerRef(state.autopilot);
+    const excludeAgentIds = [];
+    if (state.autopilot?.perpetual && state.autopilot?.enabled && phaseRef?.agentId) excludeAgentIds.push(phaseRef.agentId);
+    if (!config.replaceStale) {
+      excludeAgentIds.push(...scopedAgents.filter(agent => String(agent.status || "") === "stale").map(agent => agent.id));
+    }
     const batch = planSwarmTailRecoveryBatch(state, {
       maxWorkers: config.maxWorkers,
       maxAttemptsPerRoot: config.maxAttemptsPerRoot,
-      since: config.armedAt
+      since: config.armedAt,
+      excludeAgentIds
     });
     if (batch.length) {
       for (const item of batch) {
