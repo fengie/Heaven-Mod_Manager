@@ -85,9 +85,8 @@ public sealed class CatalogSyncServiceTests : IDisposable
             gameId: game.Id,
             ct: TestToken));
 
-        var scope = Assert.NotNull(provider.LastRequest) is not null
-            ? BuildExpectedScope(game, CatalogBrowseMode.Trending, null)
-            : throw new Xunit.Sdk.XunitException("Provider was not invoked.");
+        Assert.NotNull(provider.LastRequest);
+        var scope = BuildExpectedScope(game, CatalogBrowseMode.Trending, null);
         var state = await repository.GetSyncStateAsync("fixture", scope, TestToken);
         Assert.NotNull(state);
         Assert.Equal(CatalogSyncFailureKind.SchemaDrift, state!.LastFailureKind);
