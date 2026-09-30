@@ -45,6 +45,15 @@ foreach($workflow in $workflows){
         $errors.Add("$($workflow.Name): self-hosted pull_request execution requires an explicit same-repository head guard; fork PR code must never run on a persistent runner.")
     }
 
+    if($hasPullRequest){
+        if($content -match '(?i)\bsecrets\.[A-Za-z0-9_]+'){
+            $errors.Add("$($workflow.Name): pull_request validation must not reference repository secrets; move privileged work to a trusted post-merge/push workflow.")
+        }
+        if($content -match '(?mi)^\s{2}[A-Za-z][A-Za-z0-9-]*:\s*write\s*$'){
+            $errors.Add("$($workflow.Name): pull_request validation must keep GITHUB_TOKEN read-only.")
+        }
+    }
+
     if($hasPullRequest -and $usesSelfHosted){
         $checkoutCount=[regex]::Matches($content,'(?mi)^\s+uses:\s*actions/checkout@[0-9a-f]{40}\b').Count
         $safeCheckoutCount=[regex]::Matches($content,'(?mi)^\s+persist-credentials:\s*false\s*$').Count
