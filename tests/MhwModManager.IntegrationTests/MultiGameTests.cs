@@ -73,18 +73,19 @@ public sealed class MultiGameTests : IDisposable
     public void Xbox_discovery_uses_Content_root_and_ignores_helper_executables()
     {
         var xbox=Path.Combine(root,"XboxGames");
-        var content=Path.Combine(xbox,"Example Game","Content");
-        var binaries=Path.Combine(content,"Example","Binaries","Win64");
+        var content=Path.Combine(xbox,"Crash Bandicoot 4","Content");
+        var binaries=Path.Combine(content,"CrashBandicoot4","Binaries","Win64");
         Directory.CreateDirectory(binaries);
         Directory.CreateDirectory(Path.Combine(content,"EasyAntiCheat"));
         File.WriteAllBytes(Path.Combine(content,"EasyAntiCheat","EasyAntiCheat.exe"),[0x4d,0x5a,0x02,0x03]);
-        var gameExe=Path.Combine(binaries,"ExampleGame.exe");
+        File.WriteAllBytes(Path.Combine(binaries,"CrashReportClient.exe"),[0x4d,0x5a,0x02,0x03,0x04]);
+        var gameExe=Path.Combine(binaries,"CrashBandicoot4.exe");
         File.WriteAllBytes(gameExe,[0x4d,0x5a]);
 
         var found=GameProfileRegistry.DiscoverXboxRoots([xbox]);
 
         var game=Assert.Single(found);
-        Assert.Equal("Example Game",game.Name);
+        Assert.Equal("Crash Bandicoot 4",game.Name);
         Assert.Equal("Xbox",game.Store);
         Assert.Equal(Path.GetFullPath(content),Path.GetFullPath(game.Root),StringComparer.OrdinalIgnoreCase);
         Assert.Equal(Path.GetFullPath(gameExe),Path.GetFullPath(game.Executable!),StringComparer.OrdinalIgnoreCase);
