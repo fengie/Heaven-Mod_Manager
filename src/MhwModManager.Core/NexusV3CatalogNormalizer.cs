@@ -3,7 +3,11 @@ using System.Text.Json;
 
 namespace MhwModManager.Core;
 
-public sealed record NexusV3NormalizedMod(CatalogMod Mod, string GlobalModId);
+public sealed record NexusV3NormalizedMod(
+    CatalogMod? Mod,
+    string GlobalModId,
+    string ProviderModId,
+    string GlobalGameId);
 public sealed record NexusV3ModFileGroup(string Id, string Name);
 
 public static class NexusV3CatalogNormalizer
@@ -51,16 +55,25 @@ public static class NexusV3CatalogNormalizer
         var data = RequireObject(document.RootElement, "data");
         var globalModId = ReadRequiredString(data, "id");
         var providerModId = ReadRequiredString(data, "game_scoped_id");
+        var globalGameId = ReadRequiredString(data, "game_id");
+        var name = ReadOptionalString(data, "name");
         var sourceUrl = BuildSourceUrl(gameDomain, providerModId);
         var metadata = JsonSerializer.Serialize(new Dictionary<string, string>
         {
             ["game_domain"] = gameDomain,
-            ["global_mod_id"] = globalModId
+            ["global_mod_id"] = globalModId,
+            ["global_game_id"] = globalGameId
         });
 
+        var mod = string.IsNullOrWhiteSpace(name)
+            ? null
+            : BuildMod(data, gameId, providerModId, sourceUrl, metadata);
+
         return new NexusV3NormalizedMod(
-            BuildMod(data, gameId, providerModId, sourceUrl, metadata),
-            globalModId);
+            mod,
+            globalModId,
+            providerModId,
+            globalGameId);
     }
 
     public static IReadOnlyList<NexusV3ModFileGroup> NormalizeModFileGroups(JsonDocument document)
@@ -75,9 +88,14 @@ public static class NexusV3CatalogNormalizer
         foreach (var item in groups.EnumerateArray())
         {
             RequireObjectValue(item, "mod file");
-            result.Add(new NexusV3ModFileGroup(
-                ReadRequiredString(item, "id"),
-                ReadRequiredString(item, "name")));
+            var id = ReadRequiredString(item, "id");
+            var name = ReadRequiredString(item, "name");
+            _ = ReadRequiredBoolean(item, "is_active");
+            RequireNullableTimestamp(item, "last_file_uploaded_at");
+            _ = ReadRequiredInt64(item, "versions_count");
+            _ = ReadRequiredInt64(item, "archived_count");
+            _ = ReadRequiredInt64(item, "removed_count");
+            result.Add(new NexusV3ModFileGroup(id, name));
         }
 
         return result;
@@ -103,6 +121,14 @@ public static class NexusV3CatalogNormalizer
         {
             RequireObjectValue(item, "mod file version");
             var versionId = ReadRequiredString(item, "id");
+            var file = RequireObject(item, "file");
+            var responseFileId = ReadRequiredString(file, "id");
+            _ = ReadRequiredString(file, "name");
+            if (!responseFileId.Equals(modFileId, StringComparison.Ordinal))
+                throw new InvalidDataException("Nexus v3 mod file version points to an unexpected mod file group.");
+
+            ValidateDecimalString(item, "position");
+            var gameScopedFileId = ReadRequiredString(item, "game_scoped_id");
             var name = ReadRequiredString(item, "name");
             var category = ParseFileCategory(ReadRequiredString(item, "category"));
             var uploadedAt = ReadRequiredTimestamp(item, "uploaded_at");
@@ -110,11 +136,9 @@ public static class NexusV3CatalogNormalizer
             var metadata = new Dictionary<string, string>
             {
                 ["mod_file_group_id"] = modFileId,
-                ["mod_file_group_name"] = modFileName
+                ["mod_file_group_name"] = modFileName,
+                ["game_scoped_file_id"] = gameScopedFileId
             };
-            var gameScopedFileId = ReadOptionalString(item, "game_scoped_id");
-            if (!string.IsNullOrWhiteSpace(gameScopedFileId))
-                metadata["game_scoped_file_id"] = gameScopedFileId;
 
             result.Add(new CatalogModFile(
                 ProviderId,
@@ -368,6 +392,63 @@ public static class NexusV3CatalogNormalizer
         if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
             return number;
         throw new InvalidDataException($"Nexus v3 response property '{propertyName}' must be an integer.");
+    }
+
+    private static long ReadRequiredInt64(JsonElement parent, string propertyName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Number
+            || !value.TryGetInt64(out var number))
+        {
+            throw new InvalidDataException($"Nexus v3 response property '{propertyName}' must be an integer.");
+        }
+
+        return number;
+    }
+
+    private static bool ReadRequiredBoolean(JsonElement parent, string propertyName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!parent.TryGetProperty(propertyName, out var value))
+            throw new InvalidDataException($"Nexus v3 response property '{propertyName}' is required.");
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => throw new InvalidDataException($"Nexus v3 response property '{propertyName}' must be boolean.")
+        };
+    }
+
+    private static void RequireNullableTimestamp(JsonElement parent, string propertyName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!parent.TryGetProperty(propertyName, out var value))
+            throw new InvalidDataException($"Nexus v3 response property '{propertyName}' is required.");
+        if (value.ValueKind == JsonValueKind.Null)
+            return;
+        if (value.ValueKind != JsonValueKind.String)
+            throw new InvalidDataException($"Nexus v3 response property '{propertyName}' must be a timestamp or null.");
+
+        var text = value.GetString();
+        if (string.IsNullOrWhiteSpace(text))
+            throw new InvalidDataException($"Nexus v3 response property '{propertyName}' must be a timestamp or null.");
+        _ = ParseTimestamp(text, propertyName);
+    }
+
+    private static void ValidateDecimalString(JsonElement parent, string propertyName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var value = ReadRequiredString(parent, propertyName);
+        if (!decimal.TryParse(
+            value,
+            NumberStyles.Number,
+            CultureInfo.InvariantCulture,
+            out _))
+        {
+            throw new InvalidDataException($"Nexus v3 response property '{propertyName}' must be a decimal string.");
+        }
     }
 
     private static double? ReadOptionalDouble(JsonElement parent, string propertyName)
