@@ -27,7 +27,9 @@ public sealed class NexusV3TransportTests
 
         using var client = new HttpClient(handler);
         var transport = new NexusV3Transport(client);
-        using var result = await transport.GetTrendingModsAsync("monsterhunterworld");
+        using var result = await transport.GetTrendingModsAsync(
+            "monsterhunterworld",
+            ct: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal("\"trend-v1\"", result.ETag);
@@ -59,7 +61,8 @@ public sealed class NexusV3TransportTests
         using var result = await transport.GetModAsync(
             "monster hunter",
             "10/20",
-            NexusV3Credential.ApiKey(secret));
+            NexusV3Credential.ApiKey(secret),
+            ct: TestContext.Current.CancellationToken);
 
         Assert.NotNull(result.Document);
         Assert.Equal(
@@ -86,7 +89,8 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client);
         using var result = await transport.GetModFilesAsync(
             "fixture-mod-global-id",
-            NexusV3Credential.Bearer(token));
+            NexusV3Credential.Bearer(token),
+            ct: TestContext.Current.CancellationToken);
 
         Assert.Equal(
             "fixture-file-id",
@@ -117,7 +121,8 @@ public sealed class NexusV3TransportTests
             () => transport.GetModAsync(
                 "monsterhunterworld",
                 "101",
-                NexusV3Credential.Bearer(secret)));
+                NexusV3Credential.Bearer(secret),
+                ct: TestContext.Current.CancellationToken));
 
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
         Assert.Equal(TimeSpan.FromSeconds(17), exception.RetryAfter);
@@ -135,7 +140,9 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => transport.GetTrendingModsAsync("monsterhunterworld"));
+            () => transport.GetTrendingModsAsync(
+                "monsterhunterworld",
+                ct: TestContext.Current.CancellationToken));
 
         Assert.Contains("data envelope", exception.Message, StringComparison.Ordinal);
     }
@@ -154,7 +161,9 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client, maxResponseBytes: 1024);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => transport.GetTrendingModsAsync("monsterhunterworld"));
+            () => transport.GetTrendingModsAsync(
+                "monsterhunterworld",
+                ct: TestContext.Current.CancellationToken));
 
         Assert.Contains("safety limit", exception.Message, StringComparison.Ordinal);
     }
@@ -174,7 +183,8 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client);
         using var result = await transport.GetTrendingModsAsync(
             "monsterhunterworld",
-            new NexusV3ConditionalRequest("\"fixture-etag\"", lastModified));
+            new NexusV3ConditionalRequest("\"fixture-etag\"", lastModified),
+            ct: TestContext.Current.CancellationToken);
 
         Assert.True(result.IsNotModified);
         Assert.Null(result.Document);
@@ -212,7 +222,8 @@ public sealed class NexusV3TransportTests
         var transport = new NexusV3Transport(client);
         using var result = await transport.GetModFileVersionsAsync(
             "file/chain",
-            NexusV3Credential.ApiKey("fixture-key"));
+            NexusV3Credential.ApiKey("fixture-key"),
+            ct: TestContext.Current.CancellationToken);
 
         Assert.Empty(result.Document!.RootElement.GetProperty("data").GetProperty("versions").EnumerateArray());
     }
