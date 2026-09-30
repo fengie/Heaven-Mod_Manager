@@ -810,3 +810,55 @@ test("agent failures persist to a redacted durable ledger and are exposed in sna
   const helper = source.slice(helperStart, helperEnd);
   assert.doesNotMatch(helper, /promptPath|workerCapabilityHash|AGENT_CONTROL_TASK_TOKEN:/);
 });
+
+
+test("perpetual one-click prompts evolve across every controller phase", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+
+  const helperStart = source.indexOf("function autopilotSwarmContext");
+  const helperEnd = source.indexOf("function autopilotImplementationObjective", helperStart);
+  assert.ok(helperStart >= 0 && helperEnd > helperStart);
+  const helper = source.slice(helperStart, helperEnd);
+  assert.match(helper, /workflowId:\s*"perpetual-autopilot"/);
+  assert.match(helper, /waveId:\s*`perpetual:\$\{runId\}:\$\{cycle\}`/);
+  assert.match(helper, /source:\s*`one-click-perpetual:\$\{normalizedPhase\}`/);
+  assert.match(helper, /phases\.indexOf\(normalizedPhase\)/);
+
+  const workflowStart = source.indexOf("async function executeWorkflow");
+  const workflowEnd = source.indexOf("async function startUsualSwarm", workflowStart);
+  assert.ok(workflowStart >= 0 && workflowEnd > workflowStart);
+  const workflow = source.slice(workflowStart, workflowEnd);
+  assert.match(workflow, /const requestedSwarmContext = body\.swarmContext/);
+  assert.match(workflow, /requestedSwarmContext\?\.workflowId \|\| workflowId/);
+  assert.match(workflow, /requestedSwarmContext\?\.mission \|\| plan\.mission/);
+  assert.match(workflow, /requestedSwarmContext\?\.source \|\| "one-click-workflow"/);
+
+  const reviewStart = source.indexOf("async function deployReview");
+  const reviewEnd = source.indexOf("async function previewWorkflow", reviewStart);
+  assert.ok(reviewStart >= 0 && reviewEnd > reviewStart);
+  assert.match(source.slice(reviewStart, reviewEnd), /swarmContext:\s*body\.swarmContext \|\| null/);
+
+  const expectations = [
+    ["dispatchAutopilotImplementation", "dispatchAutopilotVerification", /autopilotSwarmContext\(state, "implement", objective\)/],
+    ["dispatchAutopilotVerification", "dispatchAutopilotReview", /autopilotSwarmContext\(state, "verify", state\.autopilot\?\.objective\)/],
+    ["dispatchAutopilotReview", "dispatchAutopilotRepair", /autopilotSwarmContext\(state, "review", state\.autopilot\?\.objective\)/],
+    ["dispatchAutopilotRepair", "dispatchAutopilotIntegration", /autopilotSwarmContext\(state, "repair", state\.autopilot\?\.objective\)/],
+    ["dispatchAutopilotIntegration", "dispatchAutopilotHygiene", /autopilotSwarmContext\(state, "integrate", state\.autopilot\?\.objective\)/],
+    ["dispatchAutopilotHygiene", "dispatchAutopilotExpansion", /autopilotSwarmContext\(state, "hygiene", state\.autopilot\?\.objective\)/],
+    ["dispatchAutopilotExpansion", "autopilotIntegrationVerified", /autopilotSwarmContext\(state, "expand", state\.autopilot\?\.objective\)/]
+  ];
+
+  for (const [startName, endName, pattern] of expectations) {
+    const start = source.indexOf(`async function ${startName}`);
+    const end = source.indexOf(`async function ${endName}`, start);
+    assert.ok(start >= 0 && end > start, `missing block ${startName}`);
+    assert.match(source.slice(start, end), pattern);
+  }
+
+  const replacementStart = source.indexOf("async function dispatchPerpetualReplacement");
+  const replacementEnd = source.indexOf("async function reconcilePerpetualReplacement", replacementStart);
+  assert.ok(replacementStart >= 0 && replacementEnd > replacementStart);
+  const replacement = source.slice(replacementStart, replacementEnd);
+  assert.match(replacement, /const replacementSwarmContext = autopilotSwarmContext/);
+  assert.match(replacement, /source:\s*"perpetual-stale-replacement"/);
+});
