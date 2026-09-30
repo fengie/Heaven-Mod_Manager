@@ -751,6 +751,24 @@ def build_env(p):
     return env
 
 
+CONSOLE_SHELL_NAMES = frozenset({
+    "cmd", "cmd.exe",
+    "powershell", "powershell.exe",
+    "pwsh", "pwsh.exe",
+})
+
+
+def console_launch_policy(target, requested_visible_console=False):
+    name = Path(str(target or "")).name.casefold()
+    is_console_shell = name in CONSOLE_SHELL_NAMES
+    requested = bool(requested_visible_console)
+    return {
+        "visible_console": requested and not is_console_shell,
+        "visible_console_suppressed": requested and is_console_shell,
+        "is_console_shell": is_console_shell,
+    }
+
+
 def shell_argv(shell, command):
     shell = (shell or "powershell").lower()
     if shell == "powershell":
@@ -2444,7 +2462,8 @@ def desktop_launch_app(p):
         raise BridgeError("INVALID_APP_ARGS", "params.args must be a list of strings")
     cwd = expand_path(p.get("cwd")) if p.get("cwd") else Path.home()
     resolved = shutil.which(target) or target
-    visible_console = bool(p.get("visible_console", False))
+    launch_policy = console_launch_policy(resolved, p.get("visible_console", False))
+    visible_console = launch_policy["visible_console"]
     flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     if os.name == "nt":
         if visible_console:
@@ -2457,7 +2476,14 @@ def desktop_launch_app(p):
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             creationflags=flags,
         )
-        return {"target": target, "resolved": str(resolved), "pid": proc.pid, "started": True}
+        return {
+            "target": target,
+            "resolved": str(resolved),
+            "pid": proc.pid,
+            "started": True,
+            "visible_console": visible_console,
+            "visible_console_suppressed": launch_policy["visible_console_suppressed"],
+        }
     except OSError:
         if args:
             raise BridgeError("APP_LAUNCH_FAILED", "direct launch failed and shell association cannot safely accept args")
