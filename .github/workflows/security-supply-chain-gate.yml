@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/dependabot.yml'
+      - '.gitignore'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'SECURITY.md'
@@ -26,6 +27,7 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/dependabot.yml'
+      - '.gitignore'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'SECURITY.md'
