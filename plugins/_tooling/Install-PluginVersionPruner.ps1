@@ -44,7 +44,7 @@ if (-not [string]::IsNullOrWhiteSpace($startup)) {
     $escapedRuntime = $runtime.Replace('"', '""')
     $escapedRepo = $RepoRoot.Replace('"', '""')
     $escapedLog = $logPath.Replace('"', '""')
-    $vbs = 'Set shell = CreateObject(""WScript.Shell"")' + [Environment]::NewLine + 'shell.Run """' + $escapedPython + '"" ""' + $escapedRuntime + '"" --apply --repo-root ""' + $escapedRepo + '"" --log ""' + $escapedLog + '""", 0, False'
+    $vbs = 'Set shell = CreateObject("WScript.Shell")' + [Environment]::NewLine + 'shell.Run """' + $escapedPython + '"" ""' + $escapedRuntime + '"" --apply --repo-root ""' + $escapedRepo + '"" --log ""' + $escapedLog + '""", 0, False'
     Set-Content -LiteralPath $fallback -Value $vbs -Encoding ASCII
 }
 

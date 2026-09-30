@@ -861,3 +861,20 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Related rules:** LR-044 copied-test destination validation; LR-046 installed-runtime/restart proof.
 - **Supersedes:** none
 - **Superseded by:** none
+
+---
+
+## LR-050 — generated persistent artifacts require consumer-side proof
+
+- **Rule ID:** LR-050
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Generated scripts, persisted JSON/status files, startup fallbacks, cross-language automation
+- **Rule:** Validate generated and persisted artifacts with the interpreter/parser that will actually consume them. Producer success, source-language parsing, or visually plausible output is insufficient.
+- **Trigger / evidence:** Plugin-pruner installation succeeded while its JSON audit ended in a literal `\\n` and its generated Startup VBS over-escaped the `CreateObject` call; both defects survived producer-side checks.
+- **Rationale:** Cross-language boundaries can corrupt otherwise-correct values through escaping/serialization mistakes that neither producer parser nor core behavior tests detect.
+- **Enforcement:** For persisted JSON, parse the exact written file in regression/live verification. For generated scripts/configuration, parse or execute the exact generated artifact in its target runtime before declaring persistence healthy.
+- **Regression/evidence:** plugin-pruner log round-trip test, WScript quoting regression, and live reinstall validation on both Heaven machines.
+- **Related rules:** LR-046 installed-runtime/restart proof; LR-049 producer-specific text encoding.
+- **Supersedes:** none
+- **Superseded by:** none
