@@ -76,7 +76,7 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(primaryLaunch, /id="startSwarm">START SWARM<\/button>/);
   assert.equal((primaryLaunch.match(/<button\b/g) || []).length, 1, "normal startup surface must expose exactly one action");
   assert.doesNotMatch(primaryLaunch, /<textarea\b|<input\b|<select\b/i);
-  assert.doesNotMatch(primaryLaunch, /routing manifest|read-only|autonomy|deploy one role|custom objective|overall goal/i);
+  assert.doesNotMatch(primaryLaunch, /id="(?:autonomyLevel|routingManifest|controlReadOnly|task|overallGoal)"/i);
   assert.match(primaryLaunch, /handles autonomy, read-only, drain, routing freshness, worker placement, and perpetual cycling automatically/i);
 
   const diagnosticsAt = html.indexOf('<details class="card diagnostics">');
