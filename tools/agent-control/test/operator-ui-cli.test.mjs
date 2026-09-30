@@ -187,6 +187,7 @@ test("dashboard separates live registry, attention, and archived history surface
   assert.match(html, /\.\.\.\(federation\.history_agents \|\| \[\]\)/);
 
   assert.match(server, /function managedRegistryViews\(state\)/);
+  assert.match(server, /terminalRegistryStates = new Set\(\["done", "failed", "finished", "stopped", "capacity-blocked"\]\)/);
   assert.match(server, /agents: managedRegistry\.live/);
   assert.match(server, /attentionAgents: managedRegistry\.attention/);
   assert.match(server, /managedHistory: managedRegistry\.history/);
