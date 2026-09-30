@@ -1,0 +1,24 @@
+{
+  "data": [
+    {
+      "id": 101,
+      "game_id": 42,
+      "status": 1,
+      "visible": 1,
+      "name": "Fixture Mod",
+      "name_id": "fixture-mod",
+      "summary": "Fixture summary",
+      "description_plaintext": "Fixture description",
+      "date_added": 1760000000,
+      "date_updated": 1760000100,
+      "submitted_by": {
+        "id": 7,
+        "username": "FixtureAuthor"
+      }
+    }
+  ],
+  "result_count": 1,
+  "result_limit": 100,
+  "result_offset": 0,
+  "result_total": 1
+}
