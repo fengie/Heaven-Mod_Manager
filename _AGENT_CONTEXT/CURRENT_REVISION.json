@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/combobox-contrast-20260930",
-  "currentVersion": "8.8.49",
+  "workingBranch": "fix/heaven-auth-status-v8.8.52-20260930",
+  "currentVersion": "8.8.52",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.49-ui-regression-fixes-candidate",
+  "status": "v8.8.52-heaven-auth-status-candidate",
   "nextMilestone": "Finish existing issues/PRs and branch reconciliation; no new features.",
-  "nextRequiredAction": "Run exact-head gates for combined ComboBox contrast + Mods empty-overlay fixes, merge if green, verify main, then retire superseded UI branches.",
+  "nextRequiredAction": "Run exact-head Agent Control/Security/Workflow gates; reconcile any concurrent v8.8.50/v8.8.51 integration; merge only if green; then execute the existing machine-local Heaven primary-mode/HMAC setup on heaven2 and restart/sync Agent Control for live acceptance.",
   "verificationAppliesToCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationCommit": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
   "lastClosedVerificationRun": "heaven-github-actions-36781895386",
-  "verificationScopeNote": "v8.8.48 exact main/release closure remains historical; v8.8.49 UI regression candidate requires exact-head gates and runtime confirmation.",
+  "verificationScopeNote": "Historical evidence does not verify this candidate. v8.8.52 changes Agent Control provider-status semantics; exact-head gates and a post-integration heaven2 runtime smoke are required.",
   "lastClosedVerification": {
     "sourceSha": "ed02e96b5f05b51c4e53a30ca62d1d6b3d49462f",
     "updaterBuild": 356,
@@ -38,9 +38,10 @@
     ]
   },
   "unresolvedRisks": [
-    "Actual operator latest proven352; latest release install remains unverified.",
-    "Bridge auth/provider registration and signing issues411/350/354 remain open.",
-    "Preserve external branches until semantic/ownership review."
+    "heaven is live on worker v8 with explicit machine-local private-repo compatibility authorization; HMAC remains preferred.",
+    "heaven2 worker v8 is live but hmac-required; its machine-local primary-mode marker or HMAC provisioning is still required.",
+    "Concurrent v8.8.50/v8.8.51 PRs must be reconciled before integration; preserve external ownership and unique work.",
+    "Bridge auth/provider registration and signing issues411/350/354 remain open."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
