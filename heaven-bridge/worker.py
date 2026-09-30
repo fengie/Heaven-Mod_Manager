@@ -5,10 +5,12 @@ import ctypes
 import hashlib
 import hmac
 import json
+import math
 import os
 import re
 import shutil
 import subprocess
+import struct
 import threading
 import time
 import uuid
@@ -506,7 +508,76 @@ def safe_id(name):
     return bool(re.fullmatch(r"[A-Za-z0-9._-]{1,120}", str(name)))
 
 
+def _canonical_utf8(value):
+    # Match WHATWG/Node UTF-8 encoding semantics: combine valid surrogate pairs and
+    # replace lone surrogate code points with U+FFFD before encoding.
+    text = str(value)
+    chars = []
+    index = 0
+    while index < len(text):
+        code = ord(text[index])
+        if 0xD800 <= code <= 0xDBFF and index + 1 < len(text):
+            low = ord(text[index + 1])
+            if 0xDC00 <= low <= 0xDFFF:
+                scalar = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00)
+                chars.append(chr(scalar))
+                index += 2
+                continue
+        if 0xD800 <= code <= 0xDFFF:
+            chars.append("\uFFFD")
+        else:
+            chars.append(text[index])
+        index += 1
+    return "".join(chars).encode("utf-8")
+
+
+def _canonical_json_value(value):
+    if value is None:
+        return ["n"]
+    if isinstance(value, bool):
+        return ["b", 1 if value else 0]
+    if isinstance(value, str):
+        return ["s", base64.b64encode(_canonical_utf8(value)).decode("ascii")]
+    if isinstance(value, int):
+        if abs(value) <= 9007199254740991:
+            return ["i", str(value)]
+        numeric = float(value)
+        if not math.isfinite(numeric):
+            raise BridgeError("AUTH_CANONICAL_NUMBER", "bridge job contains a numeric value outside binary64 range")
+        return ["f", struct.pack(">d", numeric).hex()]
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise BridgeError("AUTH_CANONICAL_NUMBER", "bridge job contains a non-finite numeric value")
+        if value.is_integer() and abs(value) <= 9007199254740991:
+            return ["i", str(int(value))]
+        return ["f", struct.pack(">d", value).hex()]
+    if isinstance(value, list):
+        return ["a", [_canonical_json_value(item) for item in value]]
+    if isinstance(value, dict):
+        rows = []
+        for key in sorted(value.keys(), key=lambda item: _canonical_utf8(item)):
+            key_bytes = _canonical_utf8(key)
+            rows.append([
+                base64.b64encode(key_bytes).decode("ascii"),
+                _canonical_json_value(value[key]),
+            ])
+        return ["o", rows]
+    raise BridgeError("AUTH_CANONICAL_TYPE", f"bridge job contains unsupported JSON type: {type(value).__name__}")
+
+
+def canonical_auth_job_v1(job):
+    copy = json.loads(json.dumps(job))
+    auth = copy.get("auth")
+    if isinstance(auth, dict):
+        auth.pop("signature", None)
+        auth.pop("canonical", None)
+        if not auth:
+            copy.pop("auth", None)
+    canonical = ["mhw-bridge-canon-v1", _canonical_json_value(copy)]
+    return json.dumps(canonical, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+
 def canonical_job(job):
+    # Legacy canonicalization is retained for replay hashes and pre-v1 HMAC clients.
     copy = json.loads(json.dumps(job))
     auth = copy.get("auth")
     if isinstance(auth, dict):
@@ -545,10 +616,21 @@ def verify_auth(job):
     signature = str(auth.get("signature") or "")
     if not re.fullmatch(r"[0-9a-fA-F]{64}", signature):
         raise BridgeError("AUTH_REQUIRED", "HMAC signature is required")
-    expected = hmac.new(key.encode("utf-8"), canonical_job(job), hashlib.sha256).hexdigest()
+    canonical_version = str(auth.get("canonical") or "").strip()
+    if canonical_version:
+        if canonical_version != "mhw-bridge-canon-v1":
+            raise BridgeError("AUTH_CANONICAL_UNSUPPORTED", "unsupported HMAC canonical format", {"canonical": canonical_version})
+        payload = canonical_auth_job_v1(job)
+    else:
+        payload = canonical_job(job)
+    expected = hmac.new(key.encode("utf-8"), payload, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(signature.lower(), expected.lower()):
         raise BridgeError("AUTH_INVALID", "HMAC signature verification failed")
-    return {"mode": "hmac-sha256", "verified": True}
+    return {
+        "mode": "hmac-sha256",
+        "verified": True,
+        "canonical": canonical_version or "legacy-json-sort",
+    }
 
 
 def load_processed():
