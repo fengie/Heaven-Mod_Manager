@@ -1,4 +1,10 @@
-# v8.8.23 Universal Mod Manager
+# v8.8.24 Universal Mod Manager
+
+## v8.8.24 — Agent Manager P0 activation
+
+Agent Manager's priority is now enforced by runtime state instead of documentation alone. The canonical continuity record carries an active `agentManagerPriority` P0 marker, and Agent Control already reads that marker into both implementation prompts and perpetual next-cycle planning. While it is active, autonomous work is constrained to Agent Manager / Agent Control functionality, reliability, orchestration, observability, routing, recovery, startup persistence, and exact verification; unrelated product expansion is explicitly out of scope.
+
+A regression now fails if the runtime priority code exists without the active continuity marker again. Agent Control runtime, plugin, and documentation are aligned on **v0.6.2**. The lock remains active until exact-head Agent Control checks and real heaven2 controller → heaven1 worker-path smoke are proven together.
 
 ## v8.8.23 — Agent Manager runtime reliability
 
