@@ -1,4 +1,8 @@
-# v8.8.25 Universal Mod Manager
+# v8.8.26 Universal Mod Manager
+
+## v8.8.26 — Agent Control dead registry retirement and retry-lineage safety
+
+Agent Control now retires dead, retry-exhausted no-work records from its live managed/federated registries while preserving task history, events, and meaningful failed-work evidence. Generic dead-record cleanup also proves the controller no longer owns a live child before releasing its registry entry or lease. Retry-dispatched, pending, and active retry lineage remains available to enforce recovery attempt ceilings. The runtime and both private plugin manifests advance together to **v0.6.5**. Regression coverage includes a server-startup persistence fixture; the local Agent Control suite passes **225/225**. Exact-head hosted and heaven2/heaven1 runtime completion gates remain open under the active Agent Manager P0.
 
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 

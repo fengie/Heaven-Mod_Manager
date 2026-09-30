@@ -1,3 +1,11 @@
+# v8.8.26 — Agent Control dead registry retirement and retry-lineage safety
+
+- Retire dead, retry-exhausted no-work records from active managed/federated registries while retaining task/event history and substantive failed-work evidence.
+- Verify generic registry cleanup proves the controller-owned process is no longer alive before retiring its entry or releasing its lease.
+- Preserve retry-dispatched, pending, and active retry lineage until the root is exhausted or retries are disabled, preventing cleanup from resetting bounded attempt counts.
+- Add a startup persistence integration regression covering lineage retention, exhausted-record cleanup, lease release, and durable task/evidence preservation; Agent Control Node suite passes 225/225 locally.
+- Advance root release to v8.8.26 and synchronize Agent Control runtime and plugin manifests at v0.6.5. Agent Manager P0 host/runtime and exact-head hosted checks remain open.
+
 # v8.8.25 — Agent Control operator-markup + plugin identity repair
 - Fix **Copy branch** generated markup by encoding branch names before interpolation into the inline operator handler and decoding them only when invoked.
 - Add a dashboard regression that requires the encoded handler and rejects the former raw JSON.stringify(...) interpolation pattern.

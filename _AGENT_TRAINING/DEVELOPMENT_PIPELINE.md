@@ -37,7 +37,7 @@ Read the complete diff. Check callers, failure paths, cancellation, cleanup, and
 Run the most direct tests first, then authoritative compile/integration/platform checks needed by the boundary.
 
 ## Adversarial test
-Challenge assumptions with malformed state, partial failure, stale state, concurrency, interruption, retries, permissions, missing dependencies, and large inputs where relevant.
+Challenge assumptions with malformed state, partial failure, stale state, concurrency, interruption, retries, permissions, missing dependencies, and large inputs where relevant. Registry retirement is especially retry-sensitive: retain durable attempt lineage until the bounded retry policy reaches a terminal decision, prove owned child-process death before dropping managed state, and verify that live-index cleanup leaves durable task/event/evidence history intact.
 
 ## Integrate
 Re-fetch remote state, resolve conflicts deliberately, and avoid merging stale handoff snapshots or superseded work blindly.

@@ -1,4 +1,14 @@
-# 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
+# 2026-09-30 v8.8.26 Agent Control registry retirement — CURRENT
+
+1. Run exact-head Agent Control `npm run check && npm test` for the v8.8.26 / v0.6.5 candidate; if npm is unavailable, run the direct Node checks/tests and record that environment limitation.
+2. Obtain hosted verification on the final pushed candidate SHA.
+3. On heaven2, smoke controller startup, server/CLI/dashboard, registry cleanup visibility, and plugin v0.6.5 identity.
+4. Continue all active Agent Manager P0 runtime gates below: heaven1 worker path or explicit fail-closed health, START SWARM/perpetual dispatch/recovery/stop/unique ownership, and real stable ChatGPT session heartbeat if exposed.
+5. Keep P0 active until exact-head evidence closes every gate; use `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md` for implementation and regression detail.
+
+---
+
+# 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — prior checkpoint
 
 1. Run `cd tools/agent-control && npm run check && npm test` on the exact v8.8.25 candidate.
 2. On heaven2, smoke **Copy branch** with a normal slash-containing branch name and confirm the clipboard receives the exact branch value without handler errors.

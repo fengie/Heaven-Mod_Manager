@@ -494,3 +494,13 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Regression coverage added/strengthened:** Added `test_windows_utf8_bom_manifests_are_supported` to the plugin-pruner suite and retained the live two-version deletion smoke.
 - **Sibling/adjacent cases checked:** Direct `manifest.json`, `plugin.json`, and `.codex-plugin/plugin.json` discovery all use the same decoder; non-SemVer and canonical-source protections remain fail-closed.
 - **Verification/evidence:** Failing live job `chatgpt-20260930-verify-plugin-pruner-heaven2-a1`; fix commit `ccff83a93c39233a0231456ac60b919cf003d8f9`; regression commit `44e293003a7b4b06c77270f27f4f85beb6d0f1ff`.
+
+## 2026-09-30 — Agent Control registry cleanup could reset bounded retries or hide a live child
+- **Symptom:** Dead failed-agent records accumulated in the live managed/federated registries, but a naive cleanup of all no-work retries could erase attempt history before the root reached its retry ceiling. Generic cleanup also needed to independently protect a still-running controller-owned child.
+- **Root cause:** Registry membership served two roles: operator-facing live state and durable retry-attempt lineage. Retirement eligibility initially did not distinguish retry-dispatched records from exhausted retry state; process-death proof existed only in one specialized cleanup path.
+- **Violated invariant / wrong assumption:** Retiring live-index state must not erase control state needed to bound recovery; terminal status alone does not prove the controller-owned process is gone.
+- **Why prior defenses missed it:** Selector unit tests established exhaustion eligibility but did not exercise startup persistence and subsequent retry-state visibility through the real server snapshot.
+- **Direct fix:** Retire retry lineage only after exhaustion/disablement, require current-session child identity and process-death checks before generic managed cleanup, and retain task/event/substantive evidence while removing dead live-registry entries.
+- **Preventive rule/process change:** LR-050 makes retry lineage, process ownership, lease release, and durable-history retention explicit cleanup invariants.
+- **Regression coverage added/strengthened:** `no-work-recovery.test.mjs` covers retry statuses; `server-safety.test.mjs` starts a real isolated server over persisted state and verifies lineage retention, exhausted record removal, lease release, and task/event/evidence preservation.
+- **Verification/evidence:** candidate `32633ccf`; `node --test tools/agent-control/test/*.test.mjs` passed 225/225 locally. Exact-head hosted and heaven2/heaven1 runtime P0 checks remain open.

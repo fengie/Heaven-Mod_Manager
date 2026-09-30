@@ -1,4 +1,10 @@
-# 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — CURRENT
+# 2026-09-30 v8.8.26 Agent Control registry retirement — CURRENT
+
+The candidate retires dead failed records once retries are exhausted/disabled, while preserving retry lineage as bounded attempt-count state. Generic managed cleanup proves the current controller no longer owns a live child before retirement/lease release. Tasks, events, and substantive failure evidence remain durable. Root version target is v8.8.26; Agent Control runtime and both private plugin manifests are v0.6.5. The local Node suite passed 225/225 at implementation checkpoint `32633ccf`; exact-head hosted and heaven2/heaven1 Agent Manager P0 gates remain open. See `_AGENT_CONTEXT/AGENT_CONTROL_REGISTRY_RETIREMENT_2026-09-30.md`.
+
+---
+
+# 2026-09-30 v8.8.25 Agent Control operator-markup + plugin identity repair — prior checkpoint
 
 The current candidate fixes malformed **Copy branch** generated handler markup by URI-encoding the branch value before HTML interpolation and decoding only when the button is invoked. It also closes private-plugin identity drift: Agent Control runtime, root ChatGPT plugin, and nested Codex plugin are aligned at v0.6.4 and covered by one release-identity regression.
 

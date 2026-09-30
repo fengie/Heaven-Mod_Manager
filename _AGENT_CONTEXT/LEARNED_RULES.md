@@ -29,6 +29,23 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Supersedes:** none
 - **Superseded by:** none
 
+---
+
+## LR-050 — registry cleanup must preserve retry state and prove process death
+
+- **Rule ID:** LR-050
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Agent registries, bounded retries, process ownership, durable task/evidence state
+- **Rule:** Treat retry lineage as durable attempt-count state. Keep dispatched, pending, or active retry records until the lineage is exhausted or retries are disabled. Before generic managed-registry cleanup removes an entry or releases its lease, prove no live child process is still owned by this controller. Retiring live-index records must preserve task history, events, and substantive work evidence.
+- **Trigger / evidence:** Registry cleanup initially considered every dead no-work retry-dispatched agent eligible for removal; the server's swarm-tail planner counts those records to enforce the per-root retry ceiling. A second review found the generic cleanup path did not independently check for a still-live current-session child.
+- **Rationale:** Removing retry attempts too early can reset bounded recovery and cause repeated dispatch; status-only cleanup can orphan live work or release its lease while the process continues.
+- **Enforcement:** Add selector regressions for every retry state and a server-startup persistence integration fixture covering retry lineage, exhausted cleanup, process ownership, lease release, and durable task/evidence retention.
+- **Regression/evidence:** v8.8.26 Agent Control registry retirement; `tools/agent-control/test/no-work-recovery.test.mjs`, `server-safety.test.mjs`, and `operator-ui-cli.test.mjs`; 225/225 local suite on candidate commit `32633ccf`.
+- **Related rules:** LR-017 independent recovery owner; LR-021 defect-class closure; LR-039 deterministic failure classification.
+- **Supersedes:** none
+- **Superseded by:** none
+
 
 
 ## Conflict/dependency proof separation (2026-09-29)
