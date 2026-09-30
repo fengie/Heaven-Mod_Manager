@@ -71,6 +71,7 @@ import {
   clearObservationRetirement,
   forgetFederatedAgent,
   isRetryExhaustedManagedAgent,
+  managedAgentRetirementDecision,
   recordAgentRetirement,
   retiredObservationDecision
 } from "./lib/registry-retirement.mjs";
@@ -1116,21 +1117,29 @@ function refreshState() {
     changed = true;
   }
 
-  const exhaustedAgentIds = state.agents
-    .filter(isRetryExhaustedManagedAgent)
-    .map(agent => agent.id);
+  const retirementContext = {
+    managedAgentIds: state.agents.map(agent => agent.id),
+    retiredAgentIds: (state.retiredAgents || []).map(item => item.agentId).filter(Boolean)
+  };
+  const terminalRetirementCandidates = state.agents
+    .map(agent => ({
+      agent,
+      decision: managedAgentRetirementDecision(agent, retirementContext)
+    }))
+    .filter(item => item.decision.retire);
+  const retirementCandidateIds = new Set(terminalRetirementCandidates.map(item => item.agent.id));
   const federationBefore = JSON.stringify(state.federation);
   syncManagedAgents(
     state.federation,
-    state.agents.filter(agent => !isRetryExhaustedManagedAgent(agent)),
+    state.agents.filter(agent => !retirementCandidateIds.has(agent.id)),
     { hostname: os.hostname(), now }
   );
   if (JSON.stringify(state.federation) !== federationBefore) changed = true;
 
   if (changed && !degradedReason) saveState(state);
-  if (exhaustedAgentIds.length && !degradedReason) {
-    for (const exhaustedAgentId of exhaustedAgentIds) {
-      setImmediate(() => void retireRetryExhaustedManagedAgent(exhaustedAgentId));
+  if (terminalRetirementCandidates.length && !degradedReason) {
+    for (const { agent, decision } of terminalRetirementCandidates) {
+      setImmediate(() => void retireTerminalManagedAgent(agent.id, { reason: decision.reason }));
     }
   }
   return state;
@@ -2030,6 +2039,13 @@ function managedAgentProvider(agent) {
   return String(agent?.executionProvider || agent?.runtimeProvider || agent?.provider || "local-control").trim().toLowerCase() || "local-control";
 }
 
+function managedRetirementDecisionForState(state, agent) {
+  return managedAgentRetirementDecision(agent, {
+    managedAgentIds: (state?.agents || []).map(item => item.id),
+    retiredAgentIds: (state?.retiredAgents || []).map(item => item.agentId).filter(Boolean)
+  });
+}
+
 function markRegistryRetirementBlocked(state, source, reason) {
   source.recoveryStatus = "retry-blocked";
   source.recoveryLastError = reason;
@@ -2039,7 +2055,7 @@ function markRegistryRetirementBlocked(state, source, reason) {
     task.status = "blocked";
     task.finishedAt ||= isoNow();
     task.blockers = Array.from(new Set([...(task.blockers || []), "registry-retirement-blocked"]));
-    task.nextAction = "Preserve the exhausted worker until Agent Control can prove process/worktree cleanup, then retire it from the live registry.";
+    task.nextAction = "Preserve the terminal worker until Agent Control can prove process/worktree cleanup, then retire it from the live registry.";
   }
   addEvent(state, "agent.registry-retirement-blocked", `Could not safely retire ${source.id} from the live registry`, {
     agentId: source.id,
@@ -2048,22 +2064,22 @@ function markRegistryRetirementBlocked(state, source, reason) {
   });
   addNotification(state, {
     severity: "error",
-    title: "Exhausted agent cleanup is blocked",
+    title: "Terminal agent cleanup is blocked",
     message: `${source.roleLabel || source.id} could not be safely terminated/cleaned, so Agent Control preserved it instead of hiding uncertain ownership.`,
     action: null,
     dedupeKey: `registry-retirement-blocked:${source.id}`
   });
 }
 
-async function proveRetryExhaustedRemoteJobStopped(source) {
+async function proveRemoteJobStoppedForRetirement(source) {
   if (source?.executionProvider !== "heaven-bridge" || !source?.remoteJobId) {
     return { required: false, stopped: true, state: null };
   }
 
   const remoteJobId = String(source.remoteJobId);
-  const cancellation = await cancelHeavenBridgeJob(remoteJobId, { reason: "retry-exhausted-retirement" });
+  const cancellation = await cancelHeavenBridgeJob(remoteJobId, { reason: "terminal-registry-retirement" });
   if (!bridgeResultSucceeded(cancellation)) {
-    throw new Error(`Heaven Bridge retry-exhausted cancellation was not authoritative: ${cancellation?.status || "unknown"} / ${cancellation?.exit_code ?? "unknown"}.`);
+    throw new Error(`Heaven Bridge terminal-registry cancellation was not authoritative: ${cancellation?.status || "unknown"} / ${cancellation?.exit_code ?? "unknown"}.`);
   }
 
   if (String(cancellation?.data?.reason || "").toLowerCase() === "not_running") {
@@ -2097,8 +2113,8 @@ async function proveRetryExhaustedRemoteJobStopped(source) {
   throw new Error(`Remote Heaven Bridge job ${remoteJobId} remained running after cancellation request.`);
 }
 
-async function retireRetryExhaustedManagedAgent(agentId, {
-  reason = "no-work-retry-exhausted"
+async function retireTerminalManagedAgent(agentId, {
+  reason = null
 } = {}) {
   const operationId = `managed:${agentId}`;
   if (registryRetirementOperations.has(operationId)) return null;
@@ -2106,9 +2122,11 @@ async function retireRetryExhaustedManagedAgent(agentId, {
   try {
     let state = loadState();
     let source = state.agents.find(item => item.id === agentId);
-    if (!source || !isRetryExhaustedManagedAgent(source)) return null;
+    let decision = managedRetirementDecisionForState(state, source);
+    if (!source || !decision.retire) return null;
+    const retirementReason = reason || decision.reason || "terminal-registry-retirement";
 
-    await proveRetryExhaustedRemoteJobStopped(source);
+    await proveRemoteJobStoppedForRetirement(source);
 
     const pid = Number(source.pid);
     const child = source.ownerSessionId === SESSION_ID ? children.get(source.id) : null;
@@ -2131,7 +2149,7 @@ async function retireRetryExhaustedManagedAgent(agentId, {
       }
       await killProcessTree(pid);
       if (!await waitForPidExit(pid)) {
-        throw new Error(`PID ${pid} remained alive after retry-exhausted retirement.`);
+        throw new Error(`PID ${pid} remained alive after terminal registry retirement.`);
       }
     }
 
@@ -2142,7 +2160,7 @@ async function retireRetryExhaustedManagedAgent(agentId, {
         markRegistryRetirementBlocked(
           state,
           source,
-          "Retry-exhausted worker has committed branch divergence; preserving it for integration/recovery instead of deleting registry ownership."
+          "Terminal worker has committed branch divergence; preserving it for integration/recovery instead of deleting registry ownership."
         );
         saveState(state);
       }
@@ -2158,7 +2176,7 @@ async function retireRetryExhaustedManagedAgent(agentId, {
           markRegistryRetirementBlocked(
             state,
             source,
-            "Retry-exhausted worker worktree contains uncommitted changes; preserving it instead of deleting evidence."
+            "Terminal worker worktree contains uncommitted changes; preserving it instead of deleting evidence."
           );
           saveState(state);
         }
@@ -2170,16 +2188,22 @@ async function retireRetryExhaustedManagedAgent(agentId, {
 
     state = loadState();
     source = state.agents.find(item => item.id === agentId);
-    if (!source || !isRetryExhaustedManagedAgent(source)) return null;
+    decision = managedRetirementDecisionForState(state, source);
+    if (!source || !decision.retire) return null;
 
-    releaseLeaseForAgent(state, source, "retry-exhausted-registry-retirement");
+    releaseLeaseForAgent(state, source, "terminal-registry-retirement");
     const task = state.tasks.find(item => item.id === source.taskId);
     if (task) {
       task.status = "failed";
       task.finishedAt ||= isoNow();
       task.updatedAt = isoNow();
-      task.blockers = Array.from(new Set([...(task.blockers || []), "no-work-retry-exhausted"]));
-      task.nextAction = "Automatic retry budget exhausted. The dead worker was retired from the live registry; diagnose provider/session health before a fresh dispatch.";
+      const blocker = retirementReason === "retry-dispatched-superseded"
+        ? "retry-dispatched-superseded"
+        : "no-work-retry-exhausted";
+      task.blockers = Array.from(new Set([...(task.blockers || []), blocker]));
+      task.nextAction = retirementReason === "retry-dispatched-superseded"
+        ? "The failed parent was superseded by a known replacement and retired from the live registry; continue from the replacement lineage or its durable retirement evidence."
+        : "Automatic retry budget exhausted. The dead worker was retired from the live registry; diagnose provider/session health before a fresh dispatch.";
     }
 
     const provider = managedAgentProvider(source);
@@ -2193,7 +2217,7 @@ async function retireRetryExhaustedManagedAgent(agentId, {
       branch: source.branchName,
       status: source.status,
       recoveryStatus: source.recoveryStatus,
-      reason
+      reason: retirementReason
     });
     forgetFederatedAgent(state.federation, {
       agentId: source.id,
@@ -2203,22 +2227,23 @@ async function retireRetryExhaustedManagedAgent(agentId, {
     state.agents = state.agents.filter(item => item.id !== source.id);
     children.delete(source.id);
 
-    addEvent(state, "agent.registry-retired", `${source.id} exhausted recovery and was removed from the live registry`, {
+    addEvent(state, "agent.registry-retired", `${source.id} was terminal/superseded and removed from the live registry`, {
       agentId: source.id,
       taskId: source.taskId,
-      reason,
+      reason: retirementReason,
       evidence: {
         provider,
         branchName: source.branchName || null,
         pid: source.pid || null,
         processAliveAtRetirement: alive,
+        replacementAgentId: decision.replacementAgentId || source.replacementAgentId || null,
         tombstoneKey: retirement.key
       }
     });
     addNotification(state, {
       severity: "warning",
-      title: "Retry-exhausted agent cleared",
-      message: `${source.roleLabel || source.id} exhausted automatic recovery and was terminated/cleaned where provable, then removed from the live registry. Durable task/event history was preserved.`,
+      title: "Dead/superseded agent cleared",
+      message: `${source.roleLabel || source.id} was terminated/cleaned where provable and removed from the live registry after terminal ownership was reconciled. Durable task/event history was preserved.`,
       action: null,
       dedupeKey: `registry-retired:${source.id}`
     });
@@ -2334,7 +2359,7 @@ async function recoverNoWorkAgent(agentId) {
         task.nextAction = "Automatic no-work retry limit reached; retiring the dead worker from the live registry.";
       }
       saveState(state);
-      await retireRetryExhaustedManagedAgent(source.id);
+      await retireTerminalManagedAgent(source.id, { reason: "no-work-retry-exhausted" });
       return null;
     }
 
