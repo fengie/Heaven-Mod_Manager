@@ -929,3 +929,21 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Relevant commit/run:** v8.8.40 efficient-bootstrap candidate; exact-head verification required before closure.
 - **Supersedes:** none
 - **Superseded by:** none
+
+
+---
+
+## LR-054 — aggregation may not strengthen the weakest required evidence
+
+- **Rule ID:** LR-054
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Resolver confidence, multi-provider selection, voting/dominance aggregation, inferred precedence
+- **Rule:** When an automatic decision depends on multiple required sub-proofs, aggregation must not promote medium/low-confidence inputs into a high-confidence action merely because they agree or one candidate wins every comparison. Every required supporting proof must independently meet the action's minimum confidence threshold.
+- **Trigger / evidence:** The 3+ texture-provider dominance path counted medium-confidence same-lineage priority tie-breaks and synthesized a High-confidence winner, bypassing the two-provider safeguard and violating the fail-closed family-texture invariant.
+- **Rationale:** Agreement among weak signals improves consistency, not authority. Confidence escalation can silently convert deterministic tie-breaking into unauthorized overwrite intent.
+- **Enforcement:** Multi-input resolvers must check evidence thresholds before aggregation and add regressions where all weak inputs point to the same candidate. Preserve separate tests proving genuinely high/explicit complete evidence can still automate safely.
+- **Regression/evidence:** PR #510 repair after Workflow Feature run 36749989372; deterministic three-provider priority-only regression plus randomized same-family texture invariant.
+- **Related rules:** conflict/dependency proof separation; exact-head verification doctrine.
+- **Supersedes:** none
+- **Superseded by:** none

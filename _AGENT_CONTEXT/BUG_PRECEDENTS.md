@@ -576,3 +576,16 @@ Every discovered bug/regression/process escape must produce or update an entry h
 - **Verification evidence:** Exact-head PR #510 Agent Control, Workflow Feature, and Security gates are required before integration.
 - **Adjacent cases checked:** Stable handoff heading contract, nested local-function tracing, generated literal escape handling, and MHW structural fixture interference.
 - **Learned-rule decision:** No new rule ID is needed; the existing exact-head verification doctrine plus LR-053's fallback/provenance requirements already cover the reusable lesson.
+
+
+## 2026-09-30 — texture resolver — multi-provider aggregation upgraded weak evidence into a guessed winner
+- **Symptom:** Exact-head Workflow Feature verification on PR #510 failed the randomized same-family texture invariant because some 3+ provider collisions were reported non-blocking with an automatically selected winner.
+- **Root cause:** `SelectTextureProvider` counted pairwise winners even when those pair decisions were only `Confidence.Medium` priority tie-breaks, then synthesized a `Confidence.High` `texture-complete-dominance` result when one provider won every weak pair.
+- **Violated invariant / wrong assumption:** Combining several weak precedence signals cannot increase their authority. Multi-provider automatic selection requires every supporting pairwise proof to be independently high/explicit confidence.
+- **Why prior defenses missed it:** Two-provider callers already rejected medium/low confidence after selection, but the 3+ aggregation path rebuilt the final result as High and bypassed that safeguard. Existing complete-dominator coverage used genuinely high-confidence revision evidence only.
+- **Direct fix:** Reject any medium/low pairwise winner before it contributes to multi-provider dominance; return a blocking `texture-evidence-insufficient` result instead of promoting profile priority into overwrite authority.
+- **Preventive rule/process change:** LR-054 requires aggregate decisions to preserve the weakest required evidence threshold rather than strengthening it by vote/count/dominance.
+- **Regression coverage added/strengthened:** Added a deterministic three-provider same-lineage priority-only regression and retained the randomized family-texture invariant plus the genuine high-confidence complete-dominator test.
+- **Verification evidence/environment:** Exact-head PR #510 Workflow Feature gate must pass after this repair; Agent Control and Security gates were already green on the immediately preceding head.
+- **Sibling/adjacent cases checked:** two-provider medium-confidence family texture handling, 3+ genuine revision dominance, dedicated texture-provider dominance, and explicit resource-provider precedence.
+- **References:** PR #510; failed Workflow Feature run 36749989372.
