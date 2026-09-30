@@ -47,6 +47,9 @@ A meaningful incident is not fully closed when the immediate symptom is fixed. F
 
 29. **Long-running autonomy needs progress supervision plus an independent controller supervisor.** A live PID/heartbeat proves only process/channel liveness, not useful forward progress. Track progress separately, preserve durable work before one-for-one replacement, gate replacement on execution capacity, persist pending recovery across restarts, rate-limit restart storms, and place the controller itself under a recovery owner outside its process/failure domain.
 
+
+
+
 ## Future-project rule
 
 At each meaningful checkpoint, compare project-local learned rules/incidents with this catalog and the deeper trainer documents. Every active reusable project lesson must be represented in generic doctrine, explicitly classified project-specific, or tracked as pending promotion with an owner.
