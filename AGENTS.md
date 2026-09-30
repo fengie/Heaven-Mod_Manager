@@ -2,7 +2,7 @@
 
 This repository is the canonical working state for MHW Manual Mod Manager.
 
-## Mandatory pre-response repository bootstrap gate
+## Mandatory pre-response repository training gate
 
 Every agent, sub-agent, manager, reviewer, integration worker, recovery worker, automation, and successor that handles this repository must complete a **compact canonical bootstrap** before task-specific reasoning or action. This remains a hard startup gate, but startup success is defined by proving current repository truth efficiently—not by rereading every historical byte through one tool.
 
