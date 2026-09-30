@@ -430,6 +430,11 @@
     const $ = id => document.getElementById(id);
     const state = { snapshot:null, busy:false, refreshInFlight:false, refreshRequestId:0, refreshAppliedId:0 };
     const stoppableManagedStatuses = new Set(["reserved","starting","running","waiting","blocked","stale","stopping"]);
+    const retiredManagedStatuses = new Set(["failed","finished","stopped","interrupted","orphaned","capacity-blocked"]);
+    const retiredRecoveryStatuses = new Set(["retry-exhausted","retry-blocked","retry-disabled"]);
+    const managedAgentVisible = agent =>
+      !retiredManagedStatuses.has(String(agent?.status || "").toLowerCase())
+      && !retiredRecoveryStatuses.has(String(agent?.recoveryStatus || "").toLowerCase());
     const defaultSwarmObjective = "Continuously improve the project. Start every cycle from current canonical main and ownership truth; stabilize first by fixing the highest-impact reproducible bug or reliability weakness when one exists, otherwise complete the highest-value bounded planned improvement. Verify independently, review, repair until proven, integrate only approved work into canonical main, clean evidence-backed PR/branch/issue state, refresh durable next-step context, choose the next bounded unit, and repeat indefinitely until a genuine safety boundary requires intervention.";
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[ch]));
     const fmt = value => value ? new Date(value).toLocaleString() : "—";
@@ -568,7 +573,7 @@
     }
 
     function renderAgents(snapshot) {
-      const agents = snapshot.agents || [];
+      const agents = (snapshot.agents || []).filter(managedAgentVisible);
       $("agentSummary").textContent = `${agents.length} tracked`;
       if (!agents.length) {
         $("agents").innerHTML = '<div class="empty">No managed agents yet. Give the swarm an objective and deploy one.</div>';
