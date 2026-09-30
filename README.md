@@ -1,4 +1,10 @@
-# v8.8.27 Universal Mod Manager
+# v8.8.28 Universal Mod Manager
+
+## v8.8.28 — Agent Control Heaven relay execution discovery
+
+Agent Control now uses the same documented Heaven Bridge relay discovery path for **execution** that it already used for health/inspection. If `AGENT_CONTROL_HEAVEN_RELAY_DIR` is unset but the normal per-user checkout `%USERPROFILE%\\HeavenBridgeRepo` exists, submit and result-wait operations resolve that checkout automatically instead of failing immediately after a healthy-looking provider check.
+
+This closes the configuration split that could make Agent Manager appear online while START SWARM / delegated work failed before dispatch. The v8.8.26 **failed · RETRY EXHAUSTED** retirement/tombstone behavior and v8.8.27 card inspection behavior remain unchanged. Agent Control/runtime/plugin identity advances to **v0.6.7** with a regression that pins health/submit/wait relay-resolution symmetry.
 
 ## v8.8.27 — Agent Manager card inspection
 
