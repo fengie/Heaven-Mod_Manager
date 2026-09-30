@@ -177,6 +177,7 @@ export function cleanupDisposition({
   branchName,
   branchSha,
   mainContainsBranchTip,
+  canonicalTreeContainsBranchDelta = false,
   worktreeDirty = false,
   deletionSucceeded = false
 } = {}) {
@@ -188,6 +189,9 @@ export function cleanupDisposition({
   }
   if (!mainContainsBranchTip) {
     return { status: "preserved", reason: "unique-or-unmerged-work" };
+  }
+  if (!canonicalTreeContainsBranchDelta) {
+    return { status: "preserved", reason: "branch-tip-ancestor-without-canonical-tree-proof" };
   }
   if (worktreeDirty) {
     return { status: "cleanup-required", reason: "dirty-worktree-after-integration" };
