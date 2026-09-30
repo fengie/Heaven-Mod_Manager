@@ -8,6 +8,7 @@ namespace MhwModManager.Tests;
 
 public sealed class GitHubReleasesCatalogProviderTests
 {
+    private static readonly string[] FixtureSourceTags = ["mhw", "rebalance"];
     [Fact]
     public async Task Curated_latest_release_uses_exact_official_endpoint_and_normalizes_catalog_item()
     {
@@ -82,8 +83,9 @@ public sealed class GitHubReleasesCatalogProviderTests
         using var client = new HttpClient(handler);
         var provider = CreateProvider(client);
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
-        var mod = Assert.NotNull(await provider.GetModAsync(game, "example/mhw-mod", TestContext.Current.CancellationToken));
-        var file = Assert.Single(mod.Files, candidate => candidate.ProviderFileId == "501");
+        var mod = await provider.GetModAsync(game, "example/mhw-mod", TestContext.Current.CancellationToken);
+        Assert.NotNull(mod);
+        var file = Assert.Single(mod!.Files, candidate => candidate.ProviderFileId == "501");
 
         var resolution = await provider.ResolveAcquisitionAsync(
             new CatalogAcquisitionRequest(game, mod, file), TestContext.Current.CancellationToken);
@@ -271,11 +273,12 @@ public sealed class GitHubReleasesCatalogProviderTests
         }));
         var provider = CreateProvider(client);
         var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
-        var mod = Assert.NotNull(await provider.GetModAsync(
+        var mod = await provider.GetModAsync(
             game,
             "example/mhw-mod",
-            TestContext.Current.CancellationToken));
-        var file = Assert.Single(mod.Files, candidate => candidate.ProviderFileId == "501");
+            TestContext.Current.CancellationToken);
+        Assert.NotNull(mod);
+        var file = Assert.Single(mod!.Files, candidate => candidate.ProviderFileId == "501");
 
         var resolution = await provider.ResolveAcquisitionAsync(
             new CatalogAcquisitionRequest(
@@ -314,7 +317,7 @@ public sealed class GitHubReleasesCatalogProviderTests
             "example",
             "mhw-mod",
             "Fixture MHW Mod",
-            new[] { "mhw", "rebalance" });
+            FixtureSourceTags);
     }
 
     private static string ReadFixture(string name)
