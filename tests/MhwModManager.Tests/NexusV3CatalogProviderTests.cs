@@ -358,7 +358,8 @@ public sealed class NexusV3CatalogProviderTests
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => provider.ResolveAcquisitionAsync(
-                new CatalogAcquisitionRequest(game, mod, file)));
+                new CatalogAcquisitionRequest(game, mod, file),
+                TestContext.Current.CancellationToken));
     }
 
     private static string ReadFixture(string name)
