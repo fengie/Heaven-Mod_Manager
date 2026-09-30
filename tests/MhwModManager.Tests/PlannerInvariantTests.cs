@@ -28,7 +28,8 @@ public sealed class PlannerInvariantTests
 
             for (var p = 0; p < pathCount; p++)
             {
-                // This invariant specifically exercises collisions. Require at least two providers per generated path\n                // so the seeded generator cannot produce a no-collision graph and fail before ambiguity is tested.\n                var providers = random.Next(2, Math.Min(8, modCount) + 1);
+                // This invariant specifically exercises collisions. Require at least two providers per generated path
+                // so the seeded generator cannot produce a no-collision graph and fail before ambiguity is tested.\n                var providers = random.Next(2, Math.Min(8, modCount) + 1);
                 foreach (var i in Enumerable.Range(0, modCount).OrderBy(_ => random.Next()).Take(providers))
                 {
                     var path = $@"nativePC\fixture\shared{p}.tex";

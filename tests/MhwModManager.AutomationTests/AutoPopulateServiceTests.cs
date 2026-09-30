@@ -369,10 +369,10 @@ public sealed class AutoPopulateServiceTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(b.SourcePath, "mod-manager.requirements.json"),
             """{"dependencies":["a"]}""", TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("a",
-            [ModFile("a", @"nativePC\cycle\a.mod3", "a", FileClass.Structural)],
+            [ModFile("a", @"nativePC\cycle\a.bin", "a", FileClass.Other)],
             TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("b",
-            [ModFile("b", @"nativePC\cycle\b.mod3", "b", FileClass.Structural)],
+            [ModFile("b", @"nativePC\cycle\b.bin", "b", FileClass.Other)],
             TestContext.Current.CancellationToken);
 
         var game = GameProfile.MonsterHunterWorld(gameRoot);
