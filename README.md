@@ -1,5 +1,9 @@
-# v8.8.49 Universal Mod Manager
+# v8.8.53 Universal Mod Manager
 
+
+## v8.8.53 — dark ComboBox chrome
+
+The app-wide ComboBox style now owns its selected-value surface, arrow, popup, and item states with the existing dark palette. This replaces the v8.8.49 Windows system-brush workaround that made the GAME selector readable but visibly white inside the dark shell. Regression coverage now requires the app-owned dark template and rejects fallback to Windows light-control brushes.
 
 ## v8.8.49 — UI visibility and Mods empty-state refresh
 
