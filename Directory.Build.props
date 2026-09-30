@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.32</Version>
-    <InformationalVersion>8.8.32-agent-control-retirement-identity-safety</InformationalVersion>
+    <Version>8.8.33</Version>
+    <InformationalVersion>8.8.33-agent-control-retirement-identity-safety</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
