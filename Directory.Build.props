@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
     <Version>8.8.33</Version>
-    <InformationalVersion>8.8.33-agent-control-retirement-identity-safety</InformationalVersion>
+    <InformationalVersion>8.8.33-agent-control-lightweight-health</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
