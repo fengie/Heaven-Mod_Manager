@@ -1,0 +1,34 @@
+{
+  "data": {
+    "versions": [
+      {
+        "id": "fixture-version-id",
+        "file": {
+          "id": "fixture-file-id",
+          "name": "Main File"
+        },
+        "position": "1",
+        "game_scoped_id": "1001",
+        "name": "Main File 1.2.0",
+        "version": "1.2.0",
+        "category": "main",
+        "uploaded_at": "2026-09-29T12:00:00Z",
+        "is_primary": true
+      },
+      {
+        "id": "fixture-optional-version-id",
+        "file": {
+          "id": "fixture-file-id",
+          "name": "Main File"
+        },
+        "position": "0.5",
+        "game_scoped_id": "1000",
+        "name": "Optional Variant",
+        "version": "1.1.0",
+        "category": "optional",
+        "uploaded_at": "2026-09-28T12:00:00Z",
+        "is_primary": false
+      }
+    ]
+  }
+}
