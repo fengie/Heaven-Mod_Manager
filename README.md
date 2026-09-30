@@ -1,4 +1,8 @@
-# v8.8.52 Universal Mod Manager
+# v8.8.53 Universal Mod Manager
+
+## v8.8.53 — Agent Work Reports dashboard
+
+Adds a standalone, loopback-only Agent Work Reports app that turns Agent Control state plus explicit agent checkpoints into a glanceable overall-work list, expandable agent/task cards, recent activity, and on-demand logs. The reporting surface stays read-only with respect to Agent Control mutations and exposes a stable `agent-work-reports/view/v1` model for later Agent Manager integration.
 
 ## v8.8.52 — compact Agent Manager overview and motion polish
 

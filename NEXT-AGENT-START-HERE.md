@@ -1,3 +1,11 @@
+# v8.8.53 Agent Work Reports — candidate
+
+Canonical parent is v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415`. PR #540 has been reconciled onto that exact main without overwriting the v8.8.52 Agent Manager UI slice. The candidate adds only the standalone `plugins/agent-work-reports` reporting surface, its verification wiring, and synchronized v8.8.53 continuity/version metadata.
+
+Next: require fresh exact-head Plugin Toolbox, Security Supply Chain, and Agent Control PR gates on the current #540 head. If green, smoke the loopback dashboard on heaven2, recheck canonical main, and merge only the verified head. Agent Control remains authoritative for dispatch, stop, leases, federation, task state, and authorization; reporting is observational. Preserve every divergent unique branch until semantic preservation is proven. Recursively propagate the continuity constitution.
+
+---
+
 # v8.8.52 compact Agent Manager overview — candidate
 
 Canonical parent is v8.8.51 main `485a830a` with the shortcut-icon integrity fix preserved. This candidate carries only the recovered compact Agent Manager UI/motion/audio slice on top: collapsed two-column operational cards, bounded expansion, automatic Inspector opening, severity summaries, reduced-motion/hidden-page safeguards, and opt-in generated UI sounds. Agent Control is v0.6.24.
