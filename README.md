@@ -1,4 +1,10 @@
-# v8.8.26 Universal Mod Manager
+# v8.8.27 Universal Mod Manager
+
+## v8.8.27 — Agent Manager card inspection
+
+The v8.8.26 lifecycle fix removes **failed · RETRY EXHAUSTED** workers from the live registry once safe retirement is proven. This follow-up closes the separate operator bug that made the remaining live agent cards look interactive while clicks on the card body did nothing.
+
+Managed and federated agent cards are now inspectable by mouse and keyboard. Clicking a managed card opens its log; clicking a federated card focuses its linked managed worker when one exists or shows the federated session details otherwise. Nested actions such as **View log**, **Stop**, **Deploy reviewer**, and **Copy branch** remain independent and do not double-trigger the card. The dashboard regression parses the emitted inline JavaScript and pins the mouse/keyboard interaction contract. Agent Control advances to **v0.6.6**.
 
 ## v8.8.26 — Agent Control exhausted-agent registry retirement
 
