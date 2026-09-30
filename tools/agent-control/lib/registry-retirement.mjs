@@ -9,7 +9,7 @@ const RETIRABLE_MANAGED_STATUSES = new Set([
 ]);
 
 const LIVE_FEDERATED_STATES = new Set(["working", "tool_wait", "blocked", "idle"]);
-const MANAGED_FAILURE_STATUSES = new Set(["failed", "stopped", "interrupted", "orphaned", "capacity-blocked"]);
+const MANAGED_FAILURE_STATUSES = new Set(["failed", "stopped", "capacity-blocked"]);
 const FEDERATED_TERMINAL_STATES = new Set(["done", "failed"]);
 const ACTIVE_REGISTRY_RECOVERY_STATES = new Set([
   "retry-pending",
@@ -86,7 +86,7 @@ export function managedAgentRegistryDisposition(agent, {
 
 export function federatedAgentRegistryDisposition(agent, {
   now = Date.now(),
-  disconnectedAfterMs = 300_000
+  retirementAfterMs = 1_800_000
 } = {}) {
   if (!agent || typeof agent !== "object") return { retire: false, reason: "invalid-agent" };
   const state = text(agent.state).toLowerCase();
@@ -100,7 +100,7 @@ export function federatedAgentRegistryDisposition(agent, {
   }
 
   const heartbeatMs = Date.parse(text(agent.heartbeat_at ?? agent.heartbeatAt));
-  const threshold = Math.max(1, Number(disconnectedAfterMs) || 300_000);
+  const threshold = Math.max(1, Number(retirementAfterMs) || 1_800_000);
   if (!Number.isFinite(heartbeatMs)) {
     return { retire: true, reason: "disconnected:missing-heartbeat" };
   }
