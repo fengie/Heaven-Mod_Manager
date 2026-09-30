@@ -16,7 +16,7 @@ public sealed class MultiGameTests : IDisposable
     public void Dispose(){try{Directory.Delete(root,true);}catch(IOException){}catch(UnauthorizedAccessException){}}
 
     [Fact]
-    public void Games_page_first_refresh_discovers_MHW_and_other_installed_games_once()
+    public async Task Games_page_first_refresh_discovers_MHW_and_other_installed_games_once()
     {
         var mhw=Path.Combine(root,"steam-mhw");Directory.CreateDirectory(mhw);
         File.WriteAllBytes(Path.Combine(mhw,"MonsterHunterWorld.exe"),[0x4d,0x5a]);
@@ -36,7 +36,9 @@ public sealed class MultiGameTests : IDisposable
         var page=new GamesPageViewModel(registry);
 
         page.Refresh();
+        await page.AutomaticDiscoveryTask;
         page.Refresh();
+        await page.AutomaticDiscoveryTask;
 
         Assert.Equal(1,discoveryCalls);
         Assert.Equal(2,page.Rows.Count);
