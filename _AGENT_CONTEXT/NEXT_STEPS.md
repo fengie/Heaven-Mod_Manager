@@ -1,3 +1,14 @@
+# 2026-09-30 v8.8.31 durable retirement proof — CURRENT
+
+1. Run exact-head Agent Control `npm run check && npm test` and require the configured Security/Agent Control PR gates to pass.
+2. Merge only from current main after confirming the rebuilt candidate preserves v8.8.30 card accessibility and has no stale version/continuity overwrite.
+3. When heaven2→heaven1 runtime access is available, smoke retry-exhausted retirement: queued/unknown/unproven jobs must stay preserved; a running race must be re-cancelled until an explicit terminal state is observed.
+4. Replay a retired federated source with heartbeat <= retiredAt and prove suppression; prove a strictly newer live heartbeat can legitimately reactivate it.
+5. After merge, close/supersede obsolete retirement PR/branches and continue the separate P0 lanes #475, #477, and #461.
+6. Improvement path: expose the authoritative remote-job proof state in the operator inspector so blocked retirement has a precise visible reason rather than only a generic recovery error.
+
+---
+
 # 2026-09-30 v8.8.30 Agent Control card accessibility closure — CURRENT
 
 1. Run exact-head `npm --prefix tools/agent-control run check` and `npm --prefix tools/agent-control test`.
