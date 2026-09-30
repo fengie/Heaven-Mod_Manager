@@ -8,7 +8,7 @@ This is the execution layer that sits above the repository's existing agent doct
 
 ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving through non-Work execution paths unless the user explicitly requests Work for the current task.
 
-## What v0.5.8 does
+## What v0.5.9 does
 
 - Runs locally on `127.0.0.1:7331` on `heaven2` by default. Normal startup refuses other hosts; `AGENT_CONTROL_ALLOW_NON_CONTROLLER_HOST=1` exists only for isolated tests or explicit recovery.
 - Makes startup a single normal action: open the dashboard and press **START SWARM**. That explicit operator action switches the controller to `coordinate`, clears pause/read-only/drain/emergency-stop friction, and launches/fills the usual 1 Manager + 1 Primary Programmer + 4 Support topology while preserving capacity, live-ownership, lease, machine, and degraded-state checks. Raw routing/autonomy controls remain available only under Advanced / diagnostics.
@@ -36,6 +36,9 @@ ChatGPT Work handoffs are deny-by-default. Agent Control keeps work moving throu
 - Includes a private ChatGPT plugin package under `chatgpt-plugin/`.
 - Adds a durable engineering-autopilot state machine for a user-supplied big direction. Bounded mode remains sync/plan → implement → verify → review → bounded repair/reverify → integration-ready → continuity.
 - The normal one-click startup now launches **Perpetual Cycle**: reconcile canonical truth → stabilize/implement → verify → review → bounded repair/reverify → integrate the approved exact candidate → PR/branch/issue hygiene → next-cycle expansion/continuity → reset per-cycle ownership → repeat.
+- Perpetual Cycle now has progress-based self-healing: a worker that remains alive but produces no recorded progress past the stale threshold is takeover-preserved, controller-owned termination is proven, and a one-for-one direct replacement inherits the preserved branch/worktree/task context. Replacement intent is durable, so a failed dispatch retries the exact lane instead of forgetting it.
+- Recoverable perpetual failures no longer disable the standing run. Provider-capacity, temporary worker-capacity/routing failures, missing verification/review evidence, exhausted bounded phase retries, and runtime errors enter a durable retry/backoff path; repeated recoveries escalate cooldown instead of creating a restart storm. Read-only, drain/pause, emergency-stop, degraded state, and changed autonomy remain operator/safety holds rather than being silently overridden.
+- Agent Control is supervised from outside the Node process by **Heaven Agent Control Watchdog**. The watchdog uses a single-instance lock, localhost health checks, controller-written PID identity, ownership-verified hung-process termination, durable restart history, exponential cooldown, Task Scheduler restart-on-failure, and a Startup-folder fallback.
 - Persists autopilot phase, transition/repair/retry budgets, perpetual cycle number, exact candidate/worker IDs, canonical-main observation, transition timestamps, stop reason, and restart-resumable state.
 - Engineering autopilot requires structured verification/review evidence and current ownership truth; perpetual mode renews an expired routing-freshness lease from current registered controller/federated state without reviving stale assignments.
 - Exposes autopilot start/pause/resume/stop/status through HTTP, `agentctl.mjs`, and the first-party dashboard.
@@ -178,6 +181,10 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - `AGENT_CONTROL_MAX_ACTIVE` — default `8`
 - `AGENT_CONTROL_MAX_DEPLOY_COUNT` — default `8`
 - `AGENT_CONTROL_AUTOPILOT_TICK_MS` — autopilot control-loop cadence; default `4000` ms, minimum `1000`
+- `AGENT_CONTROL_PERPETUAL_RECOVERY_WINDOW_MS` — restart-intensity window for perpetual recovery; default 10 minutes
+- `AGENT_CONTROL_PERPETUAL_MAX_RECOVERIES_PER_WINDOW` — recoveries allowed in that window before escalating cooldown; default `6`
+- `AGENT_CONTROL_PERPETUAL_RETRY_BASE_MS` — base automatic retry delay; default 15 seconds
+- `AGENT_CONTROL_PERPETUAL_RETRY_MAX_MS` — maximum exponential retry delay; default 15 minutes
 - `AGENT_CONTROL_HEAVEN_RELAY_DIR` ? optional override for the dedicated local relay checkout used to exchange authenticated Heaven Bridge heartbeat/jobs/results on the `heaven-bridge` branch; when unset, Agent Control auto-discovers the documented `%USERPROFILE%\HeavenBridgeRepo` checkout if it exists
 - `AGENT_CONTROL_HEAVEN_RELAY_REPOSITORY` — expected private relay repository; defaults to `fengie/mhw-mods`
 - `AGENT_CONTROL_HEAVEN_HEARTBEAT_MAX_MS` — maximum accepted Heaven Bridge heartbeat age
@@ -205,7 +212,7 @@ Safety controls such as changing the autonomy level, pausing/draining, emergency
 - On `heaven2`, `auto` placement prefers `heaven`. Dispatch fails closed if the dedicated relay checkout or authenticated worker heartbeat cannot be proven healthy; it does not silently fall back to heavy execution on `heaven2`.
 - Bounded autopilot still stops at its final integration approval boundary. **Perpetual Cycle** crosses that boundary only for an independently approved candidate and then requires refreshed remote-main ancestry proof for that exact candidate tip before the cycle can proceed.
 - If the routing freshness lease expires, perpetual mode creates a short-lived `overlay` lease from freshly reconciled controller/federated state with **no inherited assignments**, so stale manager claims are not resurrected. Registered live ownership still suppresses duplicate lanes.
-- Perpetual mode ignores the ordinary transition-count budget; `maxCycles=0` means unlimited. It still fails closed on missing structured evidence, manual-reconciliation states, worker-capacity/lease failures, exhausted repair or phase-retry budgets, degraded/read-only/emergency state, and other governed safety boundaries.
+- Perpetual mode ignores the ordinary transition-count budget; `maxCycles=0` means unlimited. Recoverable execution failures are retried with persisted backoff instead of disabling the run. Genuine operator/safety controls remain authoritative: read-only, drain/pause, emergency stop, degraded state, changed autonomy, and ownership that cannot be proven suspend or gate mutation rather than being bypassed.
 - Repository hygiene never deletes unique or ambiguous work merely to reduce counts. PRs/issues are closed and branches are removed only with evidence that the work is integrated, completed, obsolete, or otherwise safe to retire.
 - Stopping a bridge-backed worker first requires an authoritative cancellation result for the owned remote job before terminating the local runner process or releasing its lease.
 - Release publication remains separately governed by repository release policy; Perpetual Cycle does not weaken release gates.
