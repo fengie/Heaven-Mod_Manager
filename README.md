@@ -1,4 +1,12 @@
-# v8.8.25 Universal Mod Manager
+# v8.8.26 Universal Mod Manager
+
+## v8.8.26 — Agent Control terminal registry retirement
+
+Agent Control now treats the live agent registry as a live control surface instead of a failure archive. Clean terminal workers that are definitively dead — including **failed · RETRY EXHAUSTED**, deterministic nonzero exits with no durable work, provider-capacity terminations, and superseded no-work sources after a replacement is dispatched — are retired from the managed/federated registry once their task, event, and failure evidence has been persisted.
+
+This closes the second half of the retry-storm incident. The earlier fix stopped authoritative nonzero exits from being misclassified as “no work” and repeatedly retried; this patch removes the stale terminal record that previously remained clickable forever. Legacy dead entries are swept during normal state refresh, stale notification actions targeting retired agents are cleared, and dirty/substantive work is deliberately preserved instead of garbage-collected.
+
+Agent Control advances to **v0.6.5** with focused retirement-decision and operator-contract regressions. Exact-head Node tests plus a heaven2 dashboard/controller smoke are still required before runtime closure is claimed.
 
 ## v8.8.25 — Agent Control operator-markup + plugin identity repair
 
