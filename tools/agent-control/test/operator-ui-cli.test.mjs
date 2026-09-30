@@ -60,7 +60,10 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
     "autonomyLevel",
     "routingManifest",
     "eventSummary",
-    "events"
+    "events",
+    "recommendationSummary",
+    "recommendations",
+    "managedAgentsSection"
   ]) {
     assert.ok(ids.includes(id), `missing operator surface #${id}`);
   }
@@ -121,6 +124,16 @@ test("dashboard makes Start Swarm the only normal startup action and hides tunin
   assert.match(html, /\/api\/control\/routing-manifest/);
   assert.match(html, /repositoryWriteAuthorized:true/);
   assert.match(html, /server-side authorization remains authoritative/i);
+  assert.match(html, /function renderRecommendations\(snapshot\)/);
+  assert.match(html, /snapshot\.suggestedActions \|\| \[\]/);
+  assert.match(html, /async function runRecommendation\(index\)/);
+  assert.match(html, /ui-manager-recommendation-resume/);
+  assert.match(html, /\/api\/workflows\/\$\{encodeURIComponent\(action\.workflowId\)\}\/execute/);
+  assert.match(html, /a\.status === "done" \? [\s\S]*Deploy reviewer/);
+  assert.doesNotMatch(html, /stoppableManagedStatuses\.has\(a\.status\) \? [^\n]+ : `<button class="good" onclick="reviewAgent/);
+  assert.match(html, /\$\("controlResume"\)\.textContent = settings\.emergencyStop \? "Clear emergency stop \+ resume" : "Resume"/);
+  assert.match(html, /body\.clearEmergencyStop = Boolean\(settings\.emergencyStop\)/);
+  assert.doesNotMatch(html, /if \(action === "resume"\) body\.clearEmergencyStop = false/);
 
   const server = fs.readFileSync(path.join(ROOT, "server.mjs"), "utf8");
   assert.match(server, /bridgeMachineStatus\(heavenBridge\)/);
