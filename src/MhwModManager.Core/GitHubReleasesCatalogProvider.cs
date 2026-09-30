@@ -134,7 +134,8 @@ public sealed class GitHubReleasesCatalogProvider : IModCatalogProvider
 
         if (!string.Equals(request.Mod.ProviderId, ProviderId, StringComparison.OrdinalIgnoreCase)
             || !string.Equals(request.File.ProviderId, ProviderId, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(request.Mod.ProviderModId, request.File.ProviderModId, StringComparison.OrdinalIgnoreCase))
+            || !string.Equals(request.Mod.ProviderModId, request.File.ProviderModId, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(request.Mod.GameId, request.Game.Id, StringComparison.OrdinalIgnoreCase))
         {
             return new CatalogAcquisitionResolution(
                 CatalogAcquisitionKind.Unavailable,
