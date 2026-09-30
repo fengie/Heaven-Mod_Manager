@@ -1,13 +1,22 @@
 param([string]$Root)
 $ErrorActionPreference='Stop'
 if([string]::IsNullOrWhiteSpace($Root)){$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path}else{$Root=(Resolve-Path $Root).Path}
+
+$manifest=Get-Content -Raw -LiteralPath (Join-Path $Root '_AGENT_CONTEXT\handoff-manifest.json') | ConvertFrom-Json
 $fixture=Join-Path ([IO.Path]::GetTempPath()) ('mhw-governance-fixture-'+[Guid]::NewGuid().ToString('N'))
 
-function Copy-Tree([string]$Source,[string]$Destination){
-    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
-    Copy-Item -Path (Join-Path $Source '*') -Destination $Destination -Recurse -Force
+function Copy-FixtureFile {
+    param([string]$Relative)
+    if([string]::IsNullOrWhiteSpace($Relative)){return}
+    $source=Join-Path $Root ($Relative.Replace([char]47,[char]92))
+    $dest=Join-Path $fixture ($Relative.Replace([char]47,[char]92))
+    $parent=Split-Path -Parent $dest
+    if(-not (Test-Path -LiteralPath $parent)){New-Item -ItemType Directory -Force -Path $parent | Out-Null}
+    Copy-Item -LiteralPath $source -Destination $dest -Force
 }
-function Reject([string]$Name,[string]$Relative,[scriptblock]$Mutate){
+
+function Reject {
+    param([string]$Name,[string]$Relative,[scriptblock]$Mutate)
     $path=Join-Path $fixture ($Relative.Replace([char]47,[char]92))
     $original=Get-Content -Raw -LiteralPath $path
     try{
@@ -18,11 +27,41 @@ function Reject([string]$Name,[string]$Relative,[scriptblock]$Mutate){
         try{& (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null}catch{$rejected=$true}
         if(-not $rejected){throw "Negative fixture was accepted: $Name"}
         Write-Host "PASS: rejected $Name" -ForegroundColor Green
-    }finally{Set-Content -LiteralPath $path -Value $original -Encoding utf8}
+    }finally{
+        Set-Content -LiteralPath $path -Value $original -Encoding utf8
+    }
 }
 
 try{
-    Copy-Tree $Root $fixture
+    New-Item -ItemType Directory -Force -Path $fixture | Out-Null
+    $files=@(
+        'VERSION.txt',
+        'Directory.Build.props',
+        'README.md',
+        'CHANGELOG.md',
+        'GLOBAL_GIT_DIRECTIVE.md',
+        'AGENTS.md',
+        'NEXT-AGENT-START-HERE.md',
+        '_AGENT_TRAINING/README.md',
+        '_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md',
+        '_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt',
+        '_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt',
+        '_AGENT_CONTEXT/CURRENT_REVISION.json',
+        '_AGENT_CONTEXT/README_FIRST.md',
+        '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md',
+        '_AGENT_CONTEXT/handoff-manifest.json',
+        '.verification/function-status.json',
+        '.verification/stage-status.json',
+        'scripts/testing/Test-AgentHandoff.ps1'
+    )
+    $files += @($manifest.requiredContextFiles | ForEach-Object {[string]$_})
+    $files += @($manifest.requiredVerificationFiles | ForEach-Object {[string]$_})
+    $files += @($manifest.requiredToolingFiles | ForEach-Object {[string]$_})
+
+    foreach($relative in ($files | Where-Object {-not [string]::IsNullOrWhiteSpace($_)} | Select-Object -Unique)){
+        Copy-FixtureFile $relative
+    }
+
     & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
     Write-Host 'PASS: baseline compact governance fixture accepted.' -ForegroundColor Green
 
