@@ -55,17 +55,17 @@ jobs:
       - name: Restore and build baseline
         shell: powershell
         run: |
-          dotnet restore .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          dotnet restore .\baseline\src\MhwModManager.App\MhwModManager.App.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
+          dotnet build .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Restore and build candidate
         shell: powershell
         run: |
-          dotnet restore .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -p:NuGetAudit=false
+          dotnet restore .\candidate\src\MhwModManager.App\MhwModManager.App.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -p:NuGetAudit=false
+          dotnet build .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Measure current main baseline
@@ -132,7 +132,7 @@ jobs:
       - name: Verify startup optimization guards
         shell: powershell
         run: |
-          dotnet test .\candidate\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release -p:NuGetAudit=false --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
+          dotnet test .\candidate\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python .\candidate\plugins\verify.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
