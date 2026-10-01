@@ -7,6 +7,17 @@ Branch cleanup is now explicitly a semantic work-extraction pass rather than a b
 Current recovered priorities include the catalog browser, manual update check, updater/runtime hardening, dark ComboBox chrome, Heaven auth-state reporting, universal installed-game discovery, and Agent Control lease coordination.
 
 
+## Current plans & progress
+
+Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
+
+- [ ] **RECOVERY-008 / P0** — finish the active v8.8.54 Agent Control coordination/lease integration and retire duplicate live lanes only after tree-survival proof.
+- [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
+- [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
+- [ ] **RECOVERY-007 / P0** — finish universal installed-game discovery and Windows lifecycle proof.
+- [ ] **RECOVERY-003/005/006 / P1** — finish manual updater check, dark ComboBox chrome, and truthful Heaven auth-state reporting.
+
+
 ## v8.8.53 — Agent Work Reports dashboard
 
 Adds a standalone, loopback-only Agent Work Reports app that turns Agent Control state plus explicit agent checkpoints into a glanceable overall-work list, expandable agent/task cards, recent activity, and on-demand logs. The reporting surface stays read-only with respect to Agent Control mutations and exposes a stable `agent-work-reports/view/v1` model for later Agent Manager integration.
