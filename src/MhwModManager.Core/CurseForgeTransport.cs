@@ -77,7 +77,7 @@ public sealed class CurseForgeTransport
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gameId);
-        if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
         if (pageSize is < 1 or > 50) throw new ArgumentOutOfRangeException(nameof(pageSize));
 
         var parameters = new List<(string Key, string Value)>
@@ -134,7 +134,7 @@ public sealed class CurseForgeTransport
 
     private async Task<CurseForgeTransportResponse> SendJsonAsync(
         string relativePath,
-        IReadOnlyList<(string Key, string Value)> query,
+        List<(string Key, string Value)> query,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
