@@ -1,4 +1,13 @@
-# v8.8.57 Universal Mod Manager
+# v8.8.58 Universal Mod Manager
+
+## v8.8.58 — dark ComboBox chrome
+
+Replaces the bright Windows-native ComboBox surface with application-owned dark-theme chrome while preserving readable selected/dropdown text and the existing game/settings bindings.
+
+- Adds dark ComboBox and ComboBoxItem templates using the existing Text/Panel/Border/Accent palette.
+- Styles selected value, dropdown popup, hover, focus, selection, arrow, and disabled states without returning to Windows light control brushes.
+- Replaces the old system-brush regression with a guard that requires the custom template and rejects both system control brush keys.
+- Recovered from the preserved RECOVERY-005 archive without importing its stale version or continuity metadata.
 
 ## v8.8.57 — Heaven Toolbox authority cutover
 
@@ -26,7 +35,8 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
 - [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
-- [ ] **RECOVERY-003/005 / P1** — finish manual updater check and dark ComboBox chrome/contrast behavior.
+- [ ] **RECOVERY-003 / P1** — finish the manual updater check.
+- [ ] **RECOVERY-005 / P1** — v8.8.58 candidate restores application-owned dark ComboBox chrome; exact-head Windows/WPF verification and installed visual acceptance remain before DONE.
 
 
 ## v8.8.54 — collision-safe agent ownership
