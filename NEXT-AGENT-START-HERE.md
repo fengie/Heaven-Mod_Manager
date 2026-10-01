@@ -1,8 +1,8 @@
 # v8.8.62 federated catalog recovery — current handoff
 
-Canonical MHW product repository: `fengie/mhw-mods`  
-Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`  
-Candidate branch: `feat/catalog-ui-v8.8.62`  
+Canonical MHW product repository: `fengie/mhw-mods`
+Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
+Candidate branch: `feat/catalog-ui-v8.8.62`
 PR: #553
 
 ## Implemented on the candidate
