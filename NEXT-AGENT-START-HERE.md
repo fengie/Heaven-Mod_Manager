@@ -1,3 +1,13 @@
+# v8.8.55 branch-cleanup recovery — candidate
+
+Canonical recovery ledger: `_AGENT_CONTEXT/PROJECT_PLAN.md`. Every archived unique-work lane from the 2026-09-30 cleanup is now a live recovery item with exact source provenance, acceptance criteria, status/owner, and next action. **ARCHIVED is not a terminal disposition.**
+
+v8.8.54 coordination/lease hardening is already integrated on canonical main at `be001c2582564e55a7561a97bff791bbf821621a`; RECOVERY-008 is therefore implementation-complete, with only redundant-ref cleanup left after semantic proof. Reconcile and integrate this v8.8.55 governance/ledger candidate, then continue the remaining RECOVERY items rather than recreating stale branches blindly.
+
+Future branch cleanup must integrate useful semantics or extract them into the canonical plan before deleting stale refs. Preserve the permanent continuity constitution and recursively propagate it.
+
+---
+
 # v8.8.54 collision-safe agent ownership — candidate
 
 Start from the integrated v8.8.53 reporting/release state below; do not regress or rewrite its exact-head and updater evidence. Agent Control v0.6.25 makes mutable-boundary identity case-insensitive, rejects routing manifests that assign the same mutable boundary to multiple slots, and refuses counted direct deploy when one explicit mutable boundary would otherwise be split into synthetic numbered leases.
