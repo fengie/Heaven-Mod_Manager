@@ -37,8 +37,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
-**Owner:** ChatGPT live issue lane on `fix/issue-554-crawler-containment-v8.8.63`  
-**Related issue:** #554  
+**Owner:** ChatGPT live issue lane on `fix/issue-554-crawler-containment-v8.8.63`
+**Related issue:** #554
 **Acceptance:** segment-safe path prefixes; no implicit redirect following; bounded manual redirects validated before each follow-up request; disallowed targets never contacted; existing crawler safety/compliance behavior preserved; exact-head repository gates green before integration.
 
 - [x] Replace raw path `StartsWith` authorization with segment-safe matching.
