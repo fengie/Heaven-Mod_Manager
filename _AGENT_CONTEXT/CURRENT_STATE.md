@@ -1,3 +1,9 @@
+# v8.8.54 Agent coordination lease hardening — candidate
+
+Canonical parent is the fully verified and published v8.8.53 line. The candidate makes mutable-boundary ownership case-insensitive, rejects duplicate routing-manifest ownership, and refuses counted deployments that would share one explicit mutable boundary before any worker launches. The four source/test commits from the active coordination lane are reconciled onto current main so v8.8.53 release and updater-E2E evidence are preserved.
+
+Agent Control/plugin identity is 0.6.25. Exact-head CI and live Agent Control admission/dispatch smoke are still required; v8.8.53 green evidence does not transfer to this changed candidate. Archived branch-zero tags preserve prior queue work and are not integration proof.
+
 # v8.8.53 Agent Work Reports — candidate
 
 PR #540 is reconciled onto canonical v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415` with no overlapping file edits from the intervening #539 integration. The candidate adds a standalone loopback reporting dashboard over authoritative Agent Control snapshots plus explicit bounded progress checkpoints. It does not mutate Agent Control lifecycle state.

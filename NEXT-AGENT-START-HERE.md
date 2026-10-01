@@ -1,3 +1,9 @@
+# v8.8.54 Agent coordination lease hardening — candidate
+
+Canonical parent is v8.8.53 exact source 2885609c8db18494dc5d89d7e9545732ab2bf741 with Windows verification/release run 36794493034, updater build/tag 362 / updater-main-362, and later same-version installed-client E2E evidence. This candidate recovers the active coordination-lane source/tests onto that newer main and advances Agent Control to 0.6.25.
+
+Next: require fresh exact-head Agent Control, Security Supply Chain, and all other applicable PR gates. If green, smoke duplicate-boundary rejection and one safe single-owner dispatch on the live control plane, recheck canonical main, and merge only the verified head. Do not weaken Heaven Bridge authentication. Archived archive/branch-zero-20260930 tags preserve retired queue branches for later semantic recovery. Recursively propagate the continuity constitution.
+
 # v8.8.53 Agent Work Reports — candidate
 
 Canonical parent is v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415`. PR #540 has been reconciled onto that exact main without overwriting the v8.8.52 Agent Manager UI slice. The candidate adds only the standalone `plugins/agent-work-reports` reporting surface, its verification wiring, and synchronized v8.8.53 continuity/version metadata.

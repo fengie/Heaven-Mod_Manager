@@ -1,4 +1,8 @@
-# v8.8.53 Universal Mod Manager
+# v8.8.54 Universal Mod Manager
+
+## v8.8.54 — single-owner agent coordination leases
+
+Agent Control now treats mutable work boundaries as case-insensitive ownership identities and rejects duplicate routing assignments before dispatch. Counted deploys also refuse to split one explicit mutable boundary across multiple workers instead of inventing synthetic subleases. This closes a race where separately named-but-equivalent boundaries could let agents edit the same mutable surface concurrently. Agent Control advances to **v0.6.25**.
 
 ## v8.8.53 — Agent Work Reports dashboard
 

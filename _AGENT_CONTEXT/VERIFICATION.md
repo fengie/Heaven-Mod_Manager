@@ -1,3 +1,7 @@
+# v8.8.54 Agent coordination lease hardening — verification scope
+
+Historical v8.8.53 Windows/release/updater evidence applies only to its exact source. This candidate requires fresh exact-head Agent Control and security/applicable repository gates. Focused acceptance must prove case-insensitive active/planned lease conflict detection, duplicate routing-manifest rejection, pre-side-effect refusal of counted deploys sharing one explicit boundary, and preservation of normal single-owner dispatch. Live control-plane smoke is required before runtime closure; Heaven Bridge authentication must remain fail-closed.
+
 # v8.8.53 Agent Work Reports — verification scope
 
 Historical local syntax/tests/HTTP smoke on the pre-reconciliation implementation are useful source evidence but do not authorize integration after the v8.8.52 reconciliation and version/continuity changes. Exact-head acceptance requires the applicable Plugin Toolbox, Security Supply Chain, and Agent Control PR gates on the final #540 head plus a live heaven2 loopback smoke covering dashboard rendering, Agent Control snapshot ingestion, explicit checkpoint persistence, report-only fallback behavior, refresh cadence, and logs. The reporting surface must remain non-mutating and loopback-only by default.

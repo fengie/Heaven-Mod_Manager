@@ -1,3 +1,9 @@
+# v0.6.25 — single-owner mutable boundaries
+
+## What v0.6.25 does
+
+Agent Control canonicalizes mutable boundary identity case-insensitively during workflow lease preflight, rejects duplicate routing-manifest ownership for the same boundary, and refuses counted deploys that would split one explicit mutable boundary across multiple workers. The preflight fails before worker launch, preserving one primary owner per mutable surface and preventing synthetic subleases from hiding overlap.
+
 # v0.6.24 — compact at-a-glance dashboard
 
 ## What v0.6.24 does

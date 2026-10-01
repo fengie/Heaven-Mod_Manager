@@ -1,3 +1,10 @@
+# v8.8.54 Agent coordination lease hardening — integration lane
+
+1. Freeze the final candidate head and require exact-head Agent Control, Security Supply Chain, and all other applicable PR gates. Do not promote v8.8.53 evidence to the changed source.
+2. On the live control plane, verify a case-variant duplicate routing assignment is rejected, a counted deploy with one explicit mutable boundary launches zero workers, and an ordinary single-owner dispatch still succeeds without retry/launcher storms.
+3. Refresh canonical main immediately before merge. If main moved, reconcile semantically and rerun invalidated checks; otherwise merge only the exact verified head and verify remote main/version/plugin identity.
+4. Preserve the archive/branch-zero-20260930 tags until each archived queue slice is semantically recovered or deliberately superseded with proof. Continue one owned slice at a time.
+
 # v8.8.53 Agent Work Reports integration lane
 
 1. Freeze the final reconciled #540 head while Plugin Toolbox, Security Supply Chain, and Agent Control PR gates run; do not append proof-only commits that invalidate exact-head evidence.

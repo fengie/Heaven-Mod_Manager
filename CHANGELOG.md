@@ -1,3 +1,11 @@
+# v8.8.54 — 2026-09-30
+
+- Normalize mutable workflow lease boundaries case-insensitively so existing and planned leases cannot overlap through casing differences.
+- Reject routing manifests that assign one mutable boundary to multiple slots.
+- Reject counted deploys that try to share one explicit mutable boundary across multiple workers; no workers launch on the failed preflight.
+- Add control-core and real server-safety regressions for case variants, duplicate routing ownership, and counted-deploy fail-closed behavior.
+- Advance Agent Control/plugin identity to 0.6.25 and reconcile onto the fully verified/published v8.8.53 main instead of dropping its release evidence.
+
 # v8.8.53 — 2026-09-30
 
 - Add the standalone `plugins/agent-work-reports` dashboard for glanceable overall task and agent progress.

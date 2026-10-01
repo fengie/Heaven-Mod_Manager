@@ -1,3 +1,11 @@
+### 2026-09-30 — Agent coordination — equivalent mutable boundaries could receive multiple owners
+- **Symptom:** independently dispatched agents could claim casing variants of the same mutable boundary, and counted deploys could synthesize numbered sub-boundaries from one explicit boundary, making overlapping ownership look distinct.
+- **Root cause / invariant:** mutable-boundary identity was compared as presentation text rather than canonical ownership identity, while batch deployment rewrote a shared boundary instead of rejecting an unsafe request. One mutable surface must have one primary owner at a time.
+- **Why defenses missed it:** workflow lease tests covered exact duplicate strings but not case variants; server tests covered capacity but not explicit-boundary batch semantics or duplicate routing-manifest ownership.
+- **Fix / prevention:** canonicalize boundary keys for ownership comparisons, reject duplicate routing-manifest boundaries, and fail counted deploys before the first worker when one explicit boundary would be shared.
+- **Regression / verification:** control-core.test.mjs covers active/planned case variants; server-safety.test.mjs pins routing-manifest duplicate rejection and pre-launch counted-deploy refusal. Exact-head CI and live Agent Control smoke remain required before closure.
+- **Sibling checks / propagation:** task IDs remain separately validated; display casing is preserved for operator messages. LR-061 carries the reusable ownership-identity rule.
+
 ### 2026-09-30 — Windows application icon — malformed 48×48 PNG frame escaped into the desktop shortcut
 - **Symptom:** the Windows desktop shortcut displayed the intended top strip followed by colored static/noise.
 - **Root cause / invariant:** `src/MhwModManager.App/Assets/MHWModManager.ico` contained valid 16×16, 24×24, and 32×32 PNG frames, but its 48×48 frame had a bad IDAT CRC and malformed termination. A buildable embedded resource is not necessarily a structurally valid shell resource; every shipped ICO frame must be independently decodable and bounded.
