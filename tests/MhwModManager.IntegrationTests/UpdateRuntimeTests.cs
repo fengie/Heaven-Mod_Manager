@@ -126,6 +126,29 @@ public sealed class UpdateRuntimeTests : IDisposable
     }
 
     [Fact]
+    public void Health_handoff_arguments_are_redacted_from_startup_diagnostics()
+    {
+        var token = "health-secret-token";
+        var file = @"C:\Users\example\private-health.json";
+        var attempt = "attempt-private-id";
+        var formatted = UpdateHealthProtocol.FormatArgumentsForDiagnostics(
+        [
+            "--ordinary", "keep-me",
+            UpdateHealthProtocol.TokenArgument, token,
+            UpdateHealthProtocol.FileArgument, file,
+            UpdateHealthProtocol.AttemptArgument, attempt
+        ]);
+
+        Assert.Contains("--ordinary keep-me", formatted);
+        Assert.Contains($"{UpdateHealthProtocol.TokenArgument} <redacted>", formatted);
+        Assert.Contains($"{UpdateHealthProtocol.FileArgument} <redacted>", formatted);
+        Assert.Contains($"{UpdateHealthProtocol.AttemptArgument} <redacted>", formatted);
+        Assert.DoesNotContain(token, formatted);
+        Assert.DoesNotContain(file, formatted);
+        Assert.DoesNotContain(attempt, formatted);
+    }
+
+    [Fact]
     public async Task Startup_health_acknowledgement_records_exact_build_identity()
     {
         var health = Path.Combine(root, "health.json");
