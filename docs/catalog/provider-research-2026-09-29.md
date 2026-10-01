@@ -56,10 +56,11 @@ Reference:
 
 CurseForge publishes an official REST API for mod search/details/files and requires an `x-api-key`.
 
-Reference:
+References:
 - https://docs.curseforge.com/rest-api/
+- https://support.curseforge.com/support/solutions/articles/9000208346-about-the-curseforge-api-and-how-to-apply-for-a-key
 
-Decision: official API by default; no HTML fallback without a later explicit compliance review.
+Decision: official API only. Third-party access requires an approved API key and acceptance of the provider's API terms. The adapter therefore stays disabled unless explicit credentials/game mapping are configured; there is no HTML fallback.
 
 ## GitHub Releases
 
@@ -85,7 +86,10 @@ References:
 - https://partner.steamgames.com/doc/webapi/IPublishedFileService
 - https://partner.steamgames.com/doc/webapi/ISteamRemoteStorage
 
-Decision: game/capability gated.
+Decision: game/capability gated. The current Monster Hunter: World Steam Community surface for app 582010 exposes discussions/screenshots/artwork/guides rather than a Workshop catalog, so MHW does not register a Workshop adapter. Re-evaluate only when another supported game has a real Workshop capability.
+
+Current MHW reference:
+- https://steamcommunity.com/app/582010/
 
 ## Mod DB
 
