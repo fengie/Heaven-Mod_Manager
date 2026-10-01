@@ -1,3 +1,12 @@
+# v8.8.60 — 2026-10-01
+
+- Reconcile RECOVERY-004 from the archived audit/runtime hardening lanes onto current 8.8.59 Settings lineage without importing stale version or continuity metadata.
+- Restore Dashboard stretch semantics by removing the direct viewport-width binding and using stretch alignment on the ScrollViewer/content wrapper.
+- Make first-use metadata refresh retry-safe: completion is recorded only after successful refresh/reload/analysis, while failure or cancellation clears the in-flight state for a later retry.
+- Serialize staged program-update identity through the final helper-launch boundary under `programUpdateGate`, invalidating prepared handoffs if a newer staged candidate replaces them while preserving automatic-update and manual-update intent.
+- Redact updater health token/file/attempt values from startup diagnostics and add behavioral/structural regressions for all four recovered hardening fixes.
+- Focused Windows evidence before versioning: Release build 0 warnings / 0 errors, IntegrationTests 268/268, FunctionVerifier 1469 functions with 0 trace gaps, 0 uncovered call sites, and 0 parse errors.
+
 # v8.8.59 — 2026-10-01
 
 - Add a dedicated Settings tab with persistent preferences for automatic program updates, UI animations, last-tab restore, Apply/discard confirmations, and periodic background metadata refresh.
