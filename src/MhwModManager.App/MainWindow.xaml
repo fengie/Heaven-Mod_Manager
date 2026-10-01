@@ -867,6 +867,73 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="Settings">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="32,30,36,36" MaxWidth="980" HorizontalAlignment="Left">
+                        <StackPanel>
+                            <TextBlock Text="Settings" Style="{StaticResource PageTitle}"/>
+                            <TextBlock Text="Choose how the manager updates itself, refreshes mod information, and asks before important actions. Changes are saved automatically." Style="{StaticResource PageSubtitle}"/>
+                        </StackPanel>
+
+                        <Border Margin="0,22,0,12" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Program updates" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Margin="0,4,0,12" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Text="Automatic updates stay verified and use the existing safe restart handoff. Turn them off if you prefer to decide when the manager checks and installs."/>
+                                <CheckBox Content="Automatically check for and install verified program updates"
+                                          IsChecked="{Binding AutoUpdateEnabled,Mode=TwoWay}"
+                                          AutomationProperties.Name="Automatic program updates"/>
+                                <TextBlock Margin="24,6,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding ProgramUpdateStatus}" TextWrapping="Wrap"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                    <Button Content="Check for updates now" Command="{Binding CheckForProgramUpdatesCommand}" Style="{StaticResource PrimaryButton}" Padding="16,8"/>
+                                    <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CurrentProgramBuildText}"/>
+                                        <TextBlock Margin="0,2,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding LatestProgramBuildText}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,0,0,12" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Interface" Style="{StaticResource SectionTitle}"/>
+                                <CheckBox Margin="0,12,0,0" Content="Use interface animations and transitions"
+                                          IsChecked="{Binding UiAnimationsEnabled,Mode=TwoWay}"
+                                          AutomationProperties.Name="Interface animations"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="Turn this off for instant page, hover, and dialog transitions."/>
+                                <CheckBox Margin="0,14,0,0" Content="Remember the last tab I used"
+                                          IsChecked="{Binding RememberLastTab,Mode=TwoWay}"
+                                          AutomationProperties.Name="Remember last tab"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="When disabled, the manager always opens on Dashboard."/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,0,0,12" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Safety confirmations" Style="{StaticResource SectionTitle}"/>
+                                <CheckBox Margin="0,12,0,0" Content="Ask before applying pending mod changes"
+                                          IsChecked="{Binding ConfirmBeforeApply,Mode=TwoWay}"
+                                          AutomationProperties.Name="Confirm before apply"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="Adds a final confirmation before the manager writes an approved deployment to the game."/>
+                                <CheckBox Margin="0,14,0,0" Content="Ask before discarding pending changes"
+                                          IsChecked="{Binding ConfirmBeforeDiscardStaged,Mode=TwoWay}"
+                                          AutomationProperties.Name="Confirm before discard"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="Helps prevent accidental loss of staged enable, disable, and priority changes."/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Background refresh" Style="{StaticResource SectionTitle}"/>
+                                <CheckBox Margin="0,12,0,0" Content="Refresh mod metadata periodically in the background"
+                                          IsChecked="{Binding BackgroundMetadataRefreshEnabled,Mode=TwoWay}"
+                                          AutomationProperties.Name="Background metadata refresh"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Text="When enabled, cached lineage, visuals, and update metadata can refresh about every four hours while the manager is idle. Opening Mods can still refresh information on demand."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
         </TabControl>
 
         <!-- Footer -->
