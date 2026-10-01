@@ -132,7 +132,7 @@ public sealed partial class GameProfileRegistry
         return added;
     }
 
-    private static IReadOnlyList<GameDiscoveryCandidate> DiscoverInstalledGameCandidates()
+    private static List<GameDiscoveryCandidate> DiscoverInstalledGameCandidates()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var candidates=new List<GameDiscoveryCandidate>();
@@ -475,7 +475,7 @@ public sealed partial class GameProfileRegistry
                 try
                 {
                     var name=Path.GetFileName(gameDirectory);
-                    if(string.IsNullOrWhiteSpace(name)||name.StartsWith(".",StringComparison.Ordinal))continue;
+                    if(string.IsNullOrWhiteSpace(name)||name.StartsWith('.'))continue;
                     var content=Path.Combine(gameDirectory,"Content");
                     var installRoot=Directory.Exists(content)?content:gameDirectory;
                     var exe=FindLikelyExecutable(installRoot,name);
