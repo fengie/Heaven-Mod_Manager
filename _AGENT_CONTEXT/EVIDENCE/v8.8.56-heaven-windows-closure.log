@@ -1,0 +1,58 @@
+﻿MHW Manual Mod Manager v8.8.56 Heaven Windows closure
+source_sha=e28e87e95d07eed47c50ebf0725b6e06bd7de6b2
+run_id=36801578514
+runner_os=Windows
+runner_arch=X64
+dotnet_sdk=10.0.401
+
+=== VERIFICATION REPORT ===
+# MHW Manual Mod Manager verification report
+
+Generated: 2026-09-30T21:34:19.8455275-04:00
+SDK: 10.0.401
+Overall: **PASS** - 26 passed / 0 failed
+
+| Group | Stage | Result | Exit | Seconds | Detail | Log |
+|---|---|---:|---:|---:|---|---|
+| Harness | PowerShell syntax sweep | PASS | 0 | 0 | All active PowerShell scripts parsed successfully. | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\powershell-syntax-20260930-213254.log |
+| Harness | Report serialization preflight | PASS | 0 | 0.025 | Plain PowerShell object-array report serialization round-tripped successfully. | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\harness-report-preflight-20260930-213254.log |
+| Harness | Agent handoff continuity preflight | PASS | 0 | 1.427 | Required continuity context/manifest is present and propagates to the next agent. | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\agent-handoff-preflight-20260930-213254.log |
+| Security | CI supply-chain policy | PASS | 0 | 2.503 | Workflow actions, permissions, self-hosted PR trust, remote bootstrap, and dependency-audit invariants passed. | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\ci-security-policy-20260930-213254.log |
+| Restore | Solution restore | PASS | 0 | 1.757 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\restore-20260930-213254-Solution_restore.log |
+| Verification | Function fingerprint scan | PASS | 0 | 3.94 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\function-scan-20260930-213254-Function_fingerprint_scan.log |
+| Compile | Relaxed whole solution | PASS | 0 | 16.799 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-relaxed-20260930-213254-Relaxed_whole_solution.log |
+| Strict compile/analyzers | Core | PASS | 0 | 2.124 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Core.log |
+| Strict compile/analyzers | Storage | PASS | 0 | 1.471 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Storage.log |
+| Strict compile/analyzers | Filesystem | PASS | 0 | 1.751 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Filesystem.log |
+| Strict compile/analyzers | Mhw | PASS | 0 | 1.092 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Mhw.log |
+| Strict compile/analyzers | Diagnostics | PASS | 0 | 1.197 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Diagnostics.log |
+| Strict compile/analyzers | Automation | PASS | 0 | 1.815 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Automation.log |
+| Strict compile/analyzers | UnitTests | PASS | 0 | 1.785 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-UnitTests.log |
+| Strict compile/analyzers | AutomationTests | PASS | 0 | 1.817 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-AutomationTests.log |
+| Strict compile/analyzers | IntegrationTests | PASS | 0 | 2.331 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-IntegrationTests.log |
+| Strict compile/analyzers | Benchmarks | PASS | 0 | 1.072 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-Benchmarks.log |
+| Strict compile/analyzers | SelfTest | PASS | 0 | 1.354 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-SelfTest.log |
+| Strict compile/analyzers | FunctionVerifier | PASS | 0 | 1.13 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-FunctionVerifier.log |
+| Strict compile/analyzers | App | PASS | 0 | 4.235 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-strict-20260930-213254-App.log |
+| Compile | Strict whole solution | PASS | 0 | 5.585 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\compile-final-20260930-213254-Strict_whole_solution.log |
+| Tests | Core unit tests | PASS | 0 | 3.357 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\test-20260930-213254-Core_unit_tests.log |
+| Tests | Automation unit tests | PASS | 0 | 8.234 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\test-20260930-213254-Automation_unit_tests.log |
+| Tests | Integration + fault injection | PASS | 0 | 10.455 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\test-20260930-213254-Integration___fault_injection.log |
+| Tests | Full automation self-test | PASS | 0 | 2.609 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\selftest-20260930-213254-Full_automation_self-test.log |
+| Verification | Promote verified function fingerprints | PASS | 0 | 1.3 | ok | C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\function-confirm-20260930-213254-Promote_verified_function_fingerprints.log |
+
+
+
+=== RELEASE BUILD REPORT ===
+Version: 8.8.56
+Source SHA: e28e87e95d07eed47c50ebf0725b6e06bd7de6b2
+Updater build number: 365
+SDK: 10.0.401
+ReadyToRun fallback used: False
+Release folder: C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\release\MHW-Manual-Mod-Manager-v8.8.56
+Artifact: C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\artifacts\MHW-Manual-Mod-Manager-v8.8.56-win-x64.zip
+SHA256: 74E711EA98B5CE35027962BA09624202CF01E3201766DA4FEE92AE4418595841
+Product manifest SHA256: 389F4EED89A928FC888A2948BE3E361C1276FBF5A36FD9FB19D138A320177F33
+Update manifest: C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\artifacts\update-manifest.json
+Master transcript: C:\Users\Xxkan\actions-runner-heaven-v2\_work\mhw-mods\mhw-mods\BuildLogs\build-release-20260930-213420.log
+
