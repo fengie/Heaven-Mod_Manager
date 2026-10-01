@@ -1,33 +1,34 @@
-# v8.8.62 federated catalog recovery — current handoff
+# v8.8.63 crawler containment — current handoff
 
-Canonical MHW product repository: `fengie/mhw-mods`
-Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Canonical merge: `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71`
-Exact verified source: `9c2976ae96533b3d439610ef7c770a73d0e14fe3`
-PR: #553 (merged)
+Canonical MHW product repository: `fengie/mhw-mods`  
+Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`  
+Active PR: #555  
+Candidate source commit: `76205544ed23422cfb4056dfa88787a162e9a2fd`  
+Current branch: `fix/issue-554-crawler-containment-v8.8.63`
 
-## Integrated in v8.8.62
+## Candidate change
 
-- Added a final **Browse Mods** tab so existing tab indices and deferred page behavior remain stable.
-- Uses the existing source-aware SQLite/FTS cache and provider sync services; provider refresh failures are isolated and cached rows remain browseable.
-- Added exact provider-file loading, provider-page handoff, and exact installed-origin status checks.
-- Added a catalog acquisition bridge: exact provider/game/mod/file validation, bounded HTTPS temporary download, authoritative SHA-256, existing archive inspection/import, then exact installed-origin persistence.
-- Recovered the official CurseForge API adapter/transport/compliance policy plus deterministic fixtures/tests from the stale issue #281 lane.
-- Recovered the fail-closed permitted crawler framework with reviewed terms/robots, origin/path containment, size/content-type bounds, and kill switch.
-- CurseForge remains opt-in through external `MOD_MANAGER_CURSEFORGE_API_KEY` and `MOD_MANAGER_CURSEFORGE_GAME_ID`; no credential is persisted.
+Issue #554 hardens the permitted HTML crawler before any real HTML provider is enabled:
+
+- path prefixes use segment boundaries, so `/mods` cannot authorize `/mods-evil`;
+- malformed, encoded-separator, and dot-segment path inputs fail closed before network dispatch;
+- production transport is crawler-owned with automatic redirects disabled;
+- redirects are followed manually with a five-hop bound, loop detection, and origin/path validation before every follow-up request;
+- deterministic tests record attempted requests and prove disallowed redirect targets are never contacted;
+- existing compliance review, robots/terms checks, kill switch, response MIME/size bounds, attribution metadata, cancellation, and provider isolation remain in place.
 
 ## Verification state
 
-Exact head `9c2976ae96533b3d439610ef7c770a73d0e14fe3` passed Workflow Feature PR Gate `36869271453`, MHW Product Security Gate `36869271833`, and Heaven Toolbox Ownership Gate `36869271597`. The full Workflow gate included repository verification, strict builds, unit/integration tests, focused UX/XAML, migration, deployment-concurrency, catalog-sync, workflow regressions, continuity, and whitespace checks. PR #553 merged as `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71`, and post-merge comparison reports zero file differences from the verified head.
+This is a **candidate**, not yet an integrated claim. MHW Product Security and Heaven Toolbox Ownership gates have passed on intermediate exact heads. The Workflow Feature gate exposed and drove fixes for compile/analyzer errors, handoff-version drift, and constructor function-trace coverage. Merge PR #555 only after all required gates pass on the same final exact head.
 
 ## Unresolved risks and remaining work
 
-- Steam Workshop is conditional: only implement for a game/profile with a supported Workshop contract and required capabilities/credentials. Do not invent an MHW mapping.
-- Vortex is optional interoperability, not a catalog backend. Implement only an explicit supported metadata/import-export/handoff contract.
-- Issue #350 has a checked-in signed-updater design, but production closure requires real external public/private key provisioning plus an end-to-end signed release. Never commit a fake production key.
-- Issue #354 source-side hardening may proceed, but GitHub rulesets remain externally unavailable on the current private-repository/account tier, and Authenticode publisher identity requires external certificate provisioning.
-- RECOVERY-007 representative installed-game/runtime discovery proof and RECOVERY-005 installed WPF interaction acceptance remain evidence gaps.
-- Older issue #281 recovery branches still carry unique historical commits; classify that ancestry before branch deletion rather than assuming byte-level supersession.
+- No provider-specific HTML adapter is enabled by this change; a future adapter still requires its own reviewed compliance manifest and deterministic parser fixtures.
+- Issue #281 remains limited to real conditional Steam Workshop/Vortex/provider contracts.
+- Issue #350 still requires an external production updater signing trust anchor/private-key ceremony and a real signed release.
+- Issue #354 still requires external repository-admin/publisher controls for full closure.
+- RECOVERY-007 representative Windows installed-game/runtime proof and RECOVERY-005 installed WPF interaction acceptance remain evidence gaps.
+- Older issue #281 recovery branches remain preserved until unique ancestry is classified.
 
 ## Successor obligation
 
