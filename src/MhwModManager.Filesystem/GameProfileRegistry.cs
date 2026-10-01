@@ -516,4 +516,3 @@ public sealed partial class GameProfileRegistry
 }
 
 internal sealed record GameDiscoveryCandidate(string Name,string Root,string? Executable,string Store,string? SteamAppId);
-
