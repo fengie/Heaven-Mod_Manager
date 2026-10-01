@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.53",
+  "currentVersion": "8.8.54",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.52 compact Agent Manager dashboard merged at 9a38fcbebea605d8be0842053652c0ed54cf9415 after exact-head PR gates",
+  "immediateParentRevision": "v8.8.53 main after PR #540 integration, Windows 26/26 release build 362 and updater E2E closure; authenticated heaven2 Agent Work Reports smoke remains pending",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -105,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.53 Agent Work Reports: require fresh exact-head Plugin Toolbox, Security Supply Chain and Agent Control PR gates, smoke the loopback reporting dashboard on heaven2, merge only the verified head, verify canonical main contains the reporting slice and synchronized metadata, then continue preserved branch recovery and recursively propagate continuity.",
+  "nextAgentObligation": "Finish v8.8.54 collision-safe Agent Control ownership: exact-head Agent Control/security/applicable gates, authorized duplicate-boundary plus normal single-owner dispatch smoke, exact verified merge, remote-main verification, then retire superseded coordination branches after preservation proof. Preserve the separate authenticated heaven2 reporting smoke gap and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

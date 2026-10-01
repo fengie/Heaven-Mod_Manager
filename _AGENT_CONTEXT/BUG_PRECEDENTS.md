@@ -1,3 +1,11 @@
+### 2026-09-30 — Agent coordination — equivalent mutable boundaries could receive multiple owners
+- **Symptom:** casing variants of one mutable boundary could be admitted as separate owners, while counted deploy could synthesize numbered sub-boundaries from one explicitly shared boundary.
+- **Root cause / invariant:** presentation text was used as ownership identity and batch dispatch rewrote unsafe shared ownership instead of rejecting it. One canonical mutable surface must have one primary writer.
+- **Why defenses missed it:** prior tests covered exact duplicate lease strings and capacity, not case variants, duplicate routing-manifest ownership, or explicit-boundary counted deploy semantics.
+- **Fix / prevention:** normalize boundary identity case-insensitively across preflight/routing ownership and fail counted shared-boundary deploys before the first worker starts.
+- **Regression / verification:** control-core and server-safety regressions cover case variants, duplicate routing owners, zero-launch rejection, and disjoint-owner allowance. Fresh exact-head CI plus authorized live smoke are still required.
+- **Sibling checks / propagation:** task identity remains separate; operator-facing spelling is preserved. LR-061 records the reusable concurrency rule.
+
 ### 2026-09-30 — Windows application icon — malformed 48×48 PNG frame escaped into the desktop shortcut
 - **Symptom:** the Windows desktop shortcut displayed the intended top strip followed by colored static/noise.
 - **Root cause / invariant:** `src/MhwModManager.App/Assets/MHWModManager.ico` contained valid 16×16, 24×24, and 32×32 PNG frames, but its 48×48 frame had a bad IDAT CRC and malformed termination. A buildable embedded resource is not necessarily a structurally valid shell resource; every shipped ICO frame must be independently decodable and bounded.
