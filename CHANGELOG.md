@@ -1,17 +1,10 @@
-# v8.8.59 — 2026-10-01
-
-- Add a dedicated Settings tab with persistent preferences for automatic program updates, UI animations, last-tab restore, Apply/discard confirmations, and periodic background metadata refresh.
-- Allow automatic program updates to be switched off while preserving the existing explicit Check for updates path as manual install intent.
-- Persist settings under the isolated Next state root using atomic same-directory replacement and fall back to safe defaults if the JSON file is malformed or unreadable.
-- Apply motion and update preferences immediately, remember the selected tab when requested, and gate periodic metadata refresh without removing demand-loaded refresh.
-- Add focused integration regressions for defaults, persistence, malformed settings, Settings bindings, and manual/automatic updater separation.
-
 # v8.8.58 — 2026-09-30
 
 - Replace the native Windows ComboBox surface with application-owned dark-theme ComboBox and ComboBoxItem templates.
 - Preserve readable selected/dropdown text while styling popup, hover, focus, selected, arrow, and disabled states from the existing application palette.
 - Replace the v8.8.49 matched-system-color regression with a dark-chrome regression that requires the custom template and rejects Windows control brush fallback.
 - Recover only the still-useful RECOVERY-005 UI/test semantics from the archived branch; stale archive version/continuity metadata is not imported.
+- Integrate the verified source/test tranche via PR #549; installed Windows/WPF visual/interaction acceptance remains an explicit runtime follow-up before RECOVERY-005 is marked DONE.
 
 # v8.8.57 — 2026-09-30
 

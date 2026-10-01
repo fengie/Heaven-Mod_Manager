@@ -58,22 +58,17 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 **Next action:** continue the existing recovery branch; do not create a duplicate catalog implementation lane.
 
-## RECOVERY-003 — Manual update check + user update preference
+## RECOVERY-003 — Manual update check
 
-**Owner:** ChatGPT Settings lane on `feat/settings-v8.8.59-20261001`
-**Status:** ACTIVE
-**Acceptance:** user can explicitly trigger the existing verified updater path, can disable background automatic checks/installation, and both routes preserve current updater concurrency/safe-handoff guarantees.
+**Owner:** unclaimed
+**Acceptance:** user can explicitly trigger the existing updater check path; automatic updater behavior remains unchanged; UI/state regressions cover both routes.
 
-- [x] Preserve exact archived manual-check behavior and reuse the existing updater command.
-- [x] Expose the manual updater action in the new Settings tab.
-- [x] Add a persistent automatic-update preference without removing manual update/install intent.
-- [x] Gate background checks and staged automatic handoff when automatic updates are disabled.
-- [x] Add preference/updater/UI regression coverage.
-- [ ] Run exact-head required gates, integrate to `main`, and persist exact verification evidence.
+- [x] Preserve exact archived source tip.
+- [ ] Port only the current-compatible manual-check behavior/tests onto fresh main.
+- [ ] Verify updater concurrency/state semantics against current updater code.
+- [ ] Run updater/UI regressions and integrate.
 
-**Coordination:** RECOVERY-004 remains a separate divergent hardening lane. This Settings change intentionally touches only the preference gates around the existing current-main updater path; it does not absorb or overwrite RECOVERY-004 semantics.
-
-**Next action:** exact-head CI on the v8.8.59 candidate, then refresh main and integrate if green.
+**Next action:** claim the updater UI boundary after checking RECOVERY-004 ownership to avoid overlapping updater edits.
 
 ## RECOVERY-004 — Runtime/updater audit hardening
 
@@ -90,7 +85,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-005 — Dark ComboBox chrome
 
-**Owner:** ChatGPT recovery lane on `fix/recovery-005-dark-combobox-v8.8.58`
+**Owner:** integrated source/test on canonical main; runtime acceptance pending
 **Status:** ACTIVE
 **Acceptance:** remove jarring native white ComboBox chrome while preserving readable selected/dropdown text, theme behavior, accessibility, and non-laggy UI.
 
@@ -98,13 +93,14 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Compare archived template with current v8.8.49+ contrast fixes.
 - [x] Port only complementary styling and regression coverage that remains useful.
 - [x] Run exact-head MHW gates on the v8.8.58 candidate.
-- [ ] Verify installed Windows/WPF appearance and interaction, then integrate and mark DONE.
+- [x] Integrate the verified source/test tranche to canonical main via PR #549.
+- [ ] Verify installed Windows/WPF appearance and interaction, then mark DONE.
 
-**Current candidate:** app-owned ComboBox/ComboBoxItem templates replace the v8.8.49 Windows system-brush workaround while retaining readable selected/dropdown text and existing bindings.
+**Integrated result:** app-owned ComboBox/ComboBoxItem templates replace the v8.8.49 Windows system-brush workaround while retaining readable selected/dropdown text and existing bindings.
 
-**Automated evidence:** PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4` passed Workflow Feature PR Gate run 634 (`36810757532`), MHW Product Security Gate run 624 (`36810757536`), and Heaven Toolbox Ownership Gate run 18 (`36810757535`).
+**Automated evidence:** PR #549 head `9c9894d39f5875ef5271260638fb07d26c66da8d` passed Workflow Feature PR Gate run 636 (`36811068797`), MHW Product Security Gate run 626 (`36811068802`), and Heaven Toolbox Ownership Gate run 20 (`36811068784`), then merged as `b270494c047c2de24b2c7aa94bd710c21527d72a`.
 
-**Next action:** perform installed-client visual/interaction proof before integration/DONE.
+**Next action:** perform installed-client visual/interaction proof before marking DONE.
 
 ## RECOVERY-007 — Installed-game discovery
 
