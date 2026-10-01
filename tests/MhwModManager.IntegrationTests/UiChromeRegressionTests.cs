@@ -30,6 +30,7 @@ public sealed class UiChromeRegressionTests
         Assert.Contains("useImmersiveDarkModeBefore20H1=19",code);
         Assert.Contains("[DllImport(\"dwmapi.dll\",ExactSpelling=true)]",code);\n        Assert.Contains("DefaultDllImportSearchPaths(DllImportSearchPath.System32)",code);
         Assert.Contains("DwmSetWindowAttribute",code);
+        Assert.DoesNotContain(@"\\n    [DllImport",code,StringComparison.Ordinal);
     }
 
     [Fact]
