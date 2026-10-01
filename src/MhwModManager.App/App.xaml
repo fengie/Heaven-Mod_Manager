@@ -202,6 +202,77 @@
             <Setter Property="BorderBrush" Value="{StaticResource Warn}"/>
         </Style>
 
+        <!-- App-owned scroll chrome keeps ScrollViewer/DataGrid surfaces in the dark theme instead of falling back to Windows light scrollbars. -->
+        <Style x:Key="DarkScrollBarThumb" TargetType="Thumb">
+            <Setter Property="Background" Value="#435569"/>
+            <Setter Property="MinWidth" Value="8"/>
+            <Setter Property="MinHeight" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="ThumbRoot" Margin="2" Background="{TemplateBinding Background}" CornerRadius="4"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ThumbRoot" Property="Background" Value="#60758A"/></Trigger>
+                            <Trigger Property="IsDragging" Value="True"><Setter TargetName="ThumbRoot" Property="Background" Value="{StaticResource Accent}"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ThumbRoot" Property="Opacity" Value="0.35"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="DarkScrollBarPageButton" TargetType="RepeatButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Background="{TemplateBinding Background}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#0A1018"/>
+            <Setter Property="Foreground" Value="#435569"/>
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <Track x:Name="PART_Track"
+                                   Margin="0"
+                                   Focusable="False"
+                                   IsDirectionReversed="True"
+                                   Orientation="{TemplateBinding Orientation}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton x:Name="DecreaseButton"
+                                                  Command="{x:Static ScrollBar.PageUpCommand}"
+                                                  Style="{StaticResource DarkScrollBarPageButton}"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource DarkScrollBarThumb}"/>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton x:Name="IncreaseButton"
+                                                  Command="{x:Static ScrollBar.PageDownCommand}"
+                                                  Style="{StaticResource DarkScrollBarPageButton}"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter Property="Width" Value="Auto"/>
+                                <Setter Property="Height" Value="12"/>
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                                <Setter TargetName="DecreaseButton" Property="Command" Value="{x:Static ScrollBar.PageLeftCommand}"/>
+                                <Setter TargetName="IncreaseButton" Property="Command" Value="{x:Static ScrollBar.PageRightCommand}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Inputs -->
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#0C1015"/>
