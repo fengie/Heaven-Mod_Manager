@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.57",
+  "currentVersion": "8.8.58",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.56 canonical main b469feb38448e4a38a2e19f24bc8feb99a04616e; Heaven Toolbox ownership cutover follows this exact head",
+  "immediateParentRevision": "v8.8.57 canonical main 5d3c7cda5dcfaba8d3aafdd6710a47399fa23bb1; RECOVERY-005 dark ComboBox candidate follows this exact head",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then continue MHW product recovery from _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve RECOVERY-007 Windows/runtime discovery proof as pending until actually observed, and recursively propagate continuity.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then verify the v8.8.58 RECOVERY-005 candidate without weakening gates. Preserve RECOVERY-005 installed visual acceptance and RECOVERY-007 runtime discovery proof as pending until actually observed, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
