@@ -1,6 +1,6 @@
 # Catalog Provider Matrix
 
-Research date: 2026-09-29.
+Research date: 2026-09-29. Implementation status refreshed 2026-09-30.
 
 | Source | Preferred integration | Authentication | Discovery | Acquisition | HTML scraping | Priority |
 |---|---|---|---|---|---|---|
@@ -17,3 +17,13 @@ Research date: 2026-09-29.
 | User feed/manifest | RSS/Atom/JSON manifest | Optional | Explicit configured source | Explicit source | N/A | P2/P3 |
 
 See `PROJECT_PLAN.md`, `provider-research-2026-09-29.md`, and `provider-policy.md`.
+
+
+## Current Monster Hunter: World status
+
+- **Nexus Mods + GameBanana:** composed into Browse Mods by default for the MHW profile.
+- **CurseForge:** adapter implemented; composed only when both `MOD_MANAGER_CURSEFORGE_API_KEY` and `MOD_MANAGER_CURSEFORGE_GAME_ID` are supplied. The repository does not guess a game ID or persist the API key/signed URLs.
+- **Steam Workshop:** not applicable to the current MHW Steam app 582010; its Steam Community surface has no Workshop catalog. No inert or scraping-based adapter is registered.
+- **HTML/crawlers:** framework exists but all domains are disabled unless an explicit current terms/robots manifest and path allowlist are provided.
+- **Vortex:** optional interop is local metadata/sidecar compatibility, not a remote provider or authenticated-session reuse.
+- **Installed-origin updates:** the Browse Mods page can check persisted provider/mod/file origins exactly; missing identities fail closed and no fuzzy replacement file is selected.
