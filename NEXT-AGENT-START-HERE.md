@@ -25,4 +25,4 @@ Before integration, run the required exact-head MHW gates on the complete v8.8.5
 
 ## Successor obligation
 
-Start from current `fengie/heaven-toolbox@main`, then current MHW canonical state and ownership. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. You inherit the permanent continuity constitution; preserve it and explicitly require your successor to inherit and recursively propagate it again to the agent after them. **Do not break the chain.**
+Start from current `fengie/heaven-toolbox@main`, then current MHW canonical state and ownership. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. You inherit the permanent continuity constitution; preserve it and explicitly require your successor to inherit it. Your successor must recursively propagate these same rules to the agent after them. **Do not break the chain.**
