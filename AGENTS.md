@@ -40,7 +40,9 @@ The canonical active/recovery ledger is `_AGENT_CONTEXT/PROJECT_PLAN.md`. Branch
 
 Follow the current `fengie/heaven-toolbox@main:GLOBAL_GIT_DIRECTIVE.md`. Finished owned work belongs on verified remote `main`; temporary branches and PRs are coordination mechanisms, not completion states. Never force-push shared/canonical history, and verify that intended tree semantics survived integration.
 
-Every meaningful integrated MHW change set updates root `README.md`, `CHANGELOG.md`, and `VERSION.txt` with synchronized version metadata. Coordinate version bumps against fresh `main`.
+Every meaningful integrated MHW product change set updates root `README.md`, `CHANGELOG.md`, and `VERSION.txt` with synchronized version metadata. Coordinate version bumps against fresh `main`.
+
+The README is a current-state surface, not the historical release ledger. Its release section must show **at most three patch summaries**: the current version and the two immediately preceding patches. When a new patch lands, add it at the top and remove the oldest README patch entry instead of appending indefinitely; preserve complete history in `CHANGELOG.md` / GitHub Releases. Documentation-only cleanup that merely repairs README/version drift or enforces this retention policy does not consume a new product patch number by itself.
 
 ## Collaboration and continuity
 
