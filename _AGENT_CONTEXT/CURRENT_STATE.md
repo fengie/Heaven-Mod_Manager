@@ -1,25 +1,27 @@
-# v8.8.63 crawler containment — candidate MHW product state
+# v8.8.64 rich Browse Mods — candidate MHW product state
 
 MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
 
-PR #555 is the active v8.8.63 candidate for issue #554. Candidate production source is `76205544ed23422cfb4056dfa88787a162e9a2fd`; later branch commits synchronize continuity metadata only.
+PR #561 is the active v8.8.64 candidate. Candidate production/test source is `2b49f4f719dfcddfccd3a215a88595df5c779b5e`; later branch commits synchronize version and continuity metadata.
 
 ## Current MHW product work
 
-- **SECURITY-554 / P0:** ACTIVE. Segment-safe crawler paths, crawler-owned no-auto-redirect transport, bounded/manual redirect validation, encoded-path rejection, and deterministic attempted-request tests are implemented. Exact-head Workflow Feature verification must be green before merge.
+- **BROWSE-556 / P1:** ACTIVE candidate. Header game selector uses a DisplayName item template so raw `GameProfile` text cannot appear in the selected surface.
+- **BROWSE-557 / P1:** ACTIVE candidate. Browse Mods has artwork-backed rich rows, metadata, selected-mod artwork, and focused regressions.
+- **CATALOG-SCALE-558 / P1:** ACTIVE. First capacity tranche is in v8.8.64; deeper provider-aware pagination/search remains open.
+- **BROWSE-UX-559 / P1:** READY. Filters, sorting, provider-health and richer discovery states remain follow-up work.
+- **SECURITY-554 / P0:** DONE in v8.8.63 via PR #555 after all required exact-head gates passed.
 - **RECOVERY-002 / P0:** DONE for v8.8.62 catalog browsing/acquisition + CurseForge recovery.
-- **Issue #281:** remains open only for conditional Steam Workshop support, optional Vortex interoperability, and future provider-specific adapters with real contracts/compliance evidence.
-- **Issue #350:** source-side independently signed updater design exists; production closure still requires a real external trust anchor/private-key ceremony and a real signed release.
-- **Issue #354:** source-side hardening is substantially complete; remaining closure requires external repository-admin/publisher evidence.
+- **Issue #281:** remains open only for real provider contracts such as conditional Steam Workshop support, optional Vortex interoperability, and future provider-specific adapters with compliance evidence.
 - **RECOVERY-007 / P0:** discovery source is integrated; representative Windows/runtime installed-game proof remains before DONE.
 - **RECOVERY-005 / P1:** dark ComboBox source/tests are integrated; installed Windows/WPF interaction acceptance remains an evidence gap.
 
 ## Verification boundary
 
-Do not describe v8.8.63 as integrated until PR #555 has all required gates green on one exact head and merges. Intermediate gate failures were repaired rather than waived. The closed baseline remains v8.8.62 exact source `9c2976ae96533b3d439610ef7c770a73d0e14fe3` merged through PR #553.
+v8.8.63 closed exact source `1090cdde27f979c672d633d9bb513b0c04874e4a` passed Workflow Feature PR Gate 36881182866, Heaven Toolbox Ownership Gate 36881181872, and MHW Product Security Gate 36881181751 before PR #555 merged as `29bcc6fe3c1ac3bb81091f9ba5f02e4e56b9e094`.
 
-No provider-specific HTML crawler, production signing key, Authenticode certificate, repository ruleset, or missing runtime acceptance evidence is implied by source-gate success.
+Do not describe v8.8.64 as integrated until PR #561 passes all required gates on one exact final head and merges. Source-gate success does not substitute for installed Windows/WPF visual acceptance.
 
 ## Coordination
 
-Global Agent Control/Heaven/plugin work remains owned by `fengie/heaven-toolbox` and must not be recreated in MHW. Preserve issue #281 recovery branches until their unique history is classified before deletion.
+The Heaven Bridge HMAC boundary remains intact: unsigned ChatGPT dispatch was rejected with `AUTH_REQUIRED`. Global Agent Control/Heaven/plugin work stays in `fengie/heaven-toolbox`. Preserve active issue/branch ownership and do not recreate generic tooling in MHW.
