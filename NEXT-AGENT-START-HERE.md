@@ -1,9 +1,9 @@
 # v8.8.63 crawler containment — current handoff
 
-Canonical MHW product repository: `fengie/mhw-mods`  
-Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`  
-Active PR: #555  
-Candidate source commit: `76205544ed23422cfb4056dfa88787a162e9a2fd`  
+Canonical MHW product repository: `fengie/mhw-mods`
+Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
+Active PR: #555
+Candidate source commit: `76205544ed23422cfb4056dfa88787a162e9a2fd`
 Current branch: `fix/issue-554-crawler-containment-v8.8.63`
 
 ## Candidate change
