@@ -20,27 +20,27 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
-| RECOVERY-001 | P0 | ACTIVE | `archive/branch-zero-20260930/agent-central-project-plan-v8.8.49-20260930-5fd5319c` | Restore centralized planning and make branch cleanup extract unique work before deletion. |
+| RECOVERY-001 | P0 | DONE | `archive/branch-zero-20260930/agent-central-project-plan-v8.8.49-20260930-5fd5319c` | Restore centralized planning and make branch cleanup extract unique work before deletion. |
 | RECOVERY-002 | P0 | ACTIVE | `archive/branch-zero-20260930/feat-catalog-browser-v8.8.50-20260930-a772aeee` | Finish the in-app catalog browser against current main. |
 | RECOVERY-003 | P1 | READY | `archive/branch-zero-20260930/feature-manual-update-check-20260930-385c1146` | Restore and finish the manual “Check for updates” UI path. |
 | RECOVERY-004 | P0 | READY | `archive/branch-zero-20260930/fix-audit-hardening-20260930-6fd76158`; `archive/branch-zero-20260930/fix-runtime-hardening-20260930-34df6690` | Reconcile overlapping updater/runtime hardening without regressing newer main. |
 | RECOVERY-005 | P1 | READY | `archive/branch-zero-20260930/fix-dark-combobox-v8.8.53-20260930-9bfb3028` | Finish dark ComboBox chrome/contrast behavior and regression coverage. |
 | RECOVERY-006 | P1 | READY | `archive/branch-zero-20260930/fix-heaven-auth-status-v8.8.52-20260930-9e482688` | Finish truthful Heaven auth-required status and blocked-state UI. |
-| RECOVERY-007 | P0 | READY | `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4` | Finish automatic universal installed-game discovery and lifecycle hardening. |
+| RECOVERY-007 | P0 | ACTIVE | `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4` | Finish automatic universal installed-game discovery and lifecycle hardening. |
 | RECOVERY-008 | P0 | DONE | `archive/branch-zero-20260930/fix-agent-coordination-leases-20260930-f742d988`; canonical `main` `be001c2582564e55a7561a97bff791bbf821621a` | Lease/ownership conflict hardening integrated as v8.8.54. |
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
-**Owner:** branch-cleanup recovery owner
+**Owner:** completed on canonical main
 **Acceptance:** canonical plan exists; cleanup policy requires semantic extraction before deletion; global agent training carries the rule; recovered work remains visible until integrated/superseded/rejected.
 
 - [x] Recover a canonical plan ledger from the archived planning work.
 - [x] Enumerate every archived unique-work lane from the cleanup incident.
-- [ ] Integrate this policy/ledger change to `main` after reconciling the active v8.8.54 lane.
-- [ ] Add/retain mechanical validation that the canonical plan remains discoverable from agent bootstrap/handoff.
-- [ ] After integration, mark this item DONE and keep the other recovery items live.
+- [x] Integrate this policy/ledger change to `main` after reconciling the active v8.8.54 lane.
+- [x] Add/retain mechanical validation that the canonical plan remains discoverable from agent bootstrap/handoff.
+- [x] After integration, mark this item DONE and keep the other recovery items live.
 
-**Next action:** reconcile this v8.8.55 recovery-policy candidate onto the post-v8.8.54 main, run continuity/governance verification, and integrate.
+**Next action:** DONE on canonical v8.8.55 main; continue the remaining recovery items.
 
 ## RECOVERY-002 — Catalog browser
 
@@ -109,15 +109,15 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-007 — Installed-game discovery
 
-**Owner:** unclaimed
+**Owner:** ChatGPT recovery lane on `fix/installed-game-discovery-v8.8.56-20260930`
 **Acceptance:** installed-game discovery works beyond MHW, stays off the UI thread, serializes registry mutation safely, avoids false executable filtering, and has lifecycle/regression coverage.
 
 - [x] Preserve exact archived source tip.
-- [ ] Reproduce current-main multi-game discovery behavior.
-- [ ] Port current-compatible discovery/lifecycle changes and tests.
+- [x] Reproduce current-main multi-game discovery behavior.
+- [x] Port current-compatible discovery/lifecycle changes and tests.
 - [ ] Verify on Windows against representative installed games and integrate.
 
-**Next action:** inspect current `GamesPageViewModel`, registry, and multi-game tests before applying archived deltas.
+**Next action:** run exact-head focused/required gates on the v8.8.56 candidate, reconcile fresh `main`, then integrate and perform Windows installed-game/runtime proof before marking DONE.
 
 ## RECOVERY-008 — Agent coordination leases
 

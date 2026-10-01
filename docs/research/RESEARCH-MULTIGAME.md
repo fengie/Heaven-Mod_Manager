@@ -10,7 +10,9 @@ The manager now follows the same broad architectural lesson used by mature mod m
 - Nexus API resources are scoped by game domain, so Nexus enrichment must come from the active game profile rather than a hard-coded MHW domain.
 - BepInEx uses `BepInEx/plugins` as the common plugin location.
 - Unreal mod packages commonly target a game's `Content/Paks` tree, often a `~mods` folder, with UE5 games also using `.utoc/.ucas` alongside `.pak`.
-- Steam, Epic and GOG all expose enough local installation metadata for best-effort discovery, but manual executable selection remains the universal fallback.
+- Steam, Epic, GOG, and Xbox app installs expose enough local installation metadata or bounded install-root structure for best-effort discovery, but manual executable selection remains the universal fallback.
+- General installed-game discovery should run automatically and idempotently; a specialized bootstrap path such as MHW must not make other supported games invisible until the user discovers a hidden rescan action.
+- Executable fallback search stays bounded inside launcher-proven install roots. The manager must not crawl whole drives looking for arbitrary `.exe` files.
 
 ## Resulting design
 

@@ -1,28 +1,17 @@
-# v8.8.55 branch-cleanup recovery — current handoff
+# v8.8.56 installed-game discovery — current handoff
 
-Canonical baseline is v8.8.54 `main`: behavior merged as `be001c2582564e55a7561a97bff791bbf821621a` after exact-head Agent Control, Security Supply Chain, and Workflow Feature gates; canonical post-merge evidence currently extends through `62cd959e00c66f034b7091f0f323ba0ccb1db8b2`.
+Canonical base observed for this recovery lane is v8.8.55 `main` at `9de6f81c5b2377ee1568b5bf4de5baa389eb90de`. RECOVERY-007 is implemented on `fix/installed-game-discovery-v8.8.56-20260930` from preserved archive `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4`; stale archived v8.8.50 version/continuity snapshots were deliberately excluded.
 
-This v8.8.55 candidate restores `_AGENT_CONTEXT/PROJECT_PLAN.md` as the canonical active/recovery ledger and closes the branch-cleanup policy gap exposed by the 2026-09-30 cleanup. Exact archived tips were preserved, but a semantic audit proved several still contained useful unique work that had not reached `main`. **ARCHIVED is therefore preservation only, never a terminal work disposition.**
+The candidate makes general installed-game discovery part of the ordinary Games-page lifecycle. Existing profiles render immediately, one bounded background discovery pass runs per view-model lifetime, Steam/Epic/GOG/Xbox failures are isolated, registry mutations serialize, launcher-proven install roots are preserved, and fallback executable lookup remains bounded inside those roots with reparse/helper filtering. Manual rescan and manual executable selection remain available.
 
-## Verification and unresolved risk
+Focused integration regressions cover mixed MHW + generic first-refresh registration, one-time discovery, Steam multi-library manifests, nested executable lookup, Xbox Content-root discovery, and helper/anti-cheat filtering. The recovered reusable invariant is LR-063 because canonical LR-060 already belongs to the shell-visible binary-resource incident.
 
-Verification state: this v8.8.55 candidate requires fresh exact-head `Test-AgentHandoff.ps1` plus negative-fixture proof after every reconciliation; historical v8.8.54 green evidence does not prove these governance/verifier changes.
+## Verification state and unresolved risk
 
-Unresolved risk: archived product lanes still contain unique semantics not yet canonical. Their exact source tags and finish/supersede paths are tracked in `_AGENT_CONTEXT/PROJECT_PLAN.md`; do not mistake preservation for completion.
+No exact-head build/test/Windows result is claimed yet for this v8.8.56 tree. The unresolved risk is live Windows representative installed-game discovery: deterministic Windows CI proves the implementation and regressions, but RECOVERY-007 must remain ACTIVE until representative installed-game/runtime behavior is explicitly proven on canonical main.
 
-## Ordered next actions
+## Unresolved risk
 
-1. Run `scripts/testing/Test-AgentHandoff.ps1` and its negative fixtures on the exact current candidate.
-2. Refresh `main` and current ownership immediately before integration; reconcile any concurrent governance changes without dropping v8.8.54 state.
-3. Integrate only the verified v8.8.55 tree, then prove remote `main` contains the project ledger, extraction-first cleanup rule, LR-062, and synchronized version metadata.
-4. Continue the remaining `RECOVERY-*` items from `_AGENT_CONTEXT/PROJECT_PLAN.md`; do not blindly recreate archived branches.
-5. Retire stale/redundant branches only after each useful unique semantic is `INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED` with evidence.
+Live Windows/runtime proof that the operator's installed games beyond MHW are discovered correctly remains pending. Do not mark RECOVERY-007 DONE from source tests alone, and do not overlap the separately owned RECOVERY-002 catalog lane. Run the required PR gates, refresh main and ownership before integration, prove the intended canonical tree survived, then obtain Windows/runtime installed-game discovery evidence before marking RECOVERY-007 DONE. RECOVERY-002 remains owned by the existing catalog branches; do not overlap it.
 
-## Current recovery truth
-
-- RECOVERY-008 Agent Control coordination is implemented on v8.8.54 main; only redundant-ref cleanup remains after uniqueness proof.
-- Catalog recovery is active on fresh-main branch `fix/issue281-catalog-v8.8.55`; the older `fix/issue281-catalog-browser-recovery` remains preserved until equivalence is proven.
-- Manual updater check, overlapping updater/runtime hardening, dark ComboBox chrome, Heaven auth-state reporting, and universal installed-game discovery remain live recovery work with exact archive provenance in the project ledger.
-- v8.8.53 Agent Work Reports still has an authenticated heaven2 runtime-smoke gap. Do not bypass HMAC to close it.
-
-You inherit the permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`. Read and preserve it and active Learned Rules at `_AGENT_CONTEXT/LEARNED_RULES.md`. Before finishing, leave a current durable handoff. Your successor must inherit and preserve the constitution and must recursively propagate it to the agent after them. Do not break the chain.
+You inherit the repository's permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`. Read and preserve it and the active Learned Rules in `_AGENT_CONTEXT/LEARNED_RULES.md`. Before finishing, update the repository handoff and explicitly require your successor to inherit, preserve, and recursively propagate these same rules. That successor must repeat the requirement again for the agent after them. Your successor must propagate these continuity rules to the agent after them. Do not break the chain.

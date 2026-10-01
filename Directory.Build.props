@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.55</Version>
-    <InformationalVersion>8.8.55-branch-cleanup-recovery</InformationalVersion>
+    <Version>8.8.56</Version>
+    <InformationalVersion>8.8.56-installed-game-discovery</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

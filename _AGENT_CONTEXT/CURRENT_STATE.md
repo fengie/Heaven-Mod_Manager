@@ -1,58 +1,9 @@
-# v8.8.55 branch-cleanup recovery policy — candidate
+# v8.8.56 installed-game discovery — active candidate
 
-The 2026-09-30 branch-zero pass preserved exact deleted tips but did not prove that every useful semantic had reached canonical main. A follow-up semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and Agent Control coordination work. v8.8.54 subsequently integrated the coordination/lease semantics on canonical `main` at `be001c2582564e55a7561a97bff791bbf821621a`.
+Canonical base is v8.8.55 `main` at `9de6f81c5b2377ee1568b5bf4de5baa389eb90de`. RECOVERY-007 is now implemented on `fix/installed-game-discovery-v8.8.56-20260930` from the preserved archive lane without importing its stale v8.8.50 metadata.
 
-This candidate restores a canonical recovery ledger for all eight lanes and changes cleanup semantics so useful unique work must be integrated or actionably extracted before deleting a stale branch ref. Existing archive tags remain exact provenance. The fresh-main catalog recovery branch is `fix/issue281-catalog-v8.8.55`; the older catalog recovery branch remains preserved until semantic equivalence is confirmed.
+The candidate makes general installed-game discovery part of the default Games-page lifecycle: existing profiles render immediately, one background discovery pass runs per view-model lifetime, Steam/Epic/GOG/Xbox sources are isolated, registry writes serialize, and executable fallback remains bounded to proven install roots with helper/reparse filtering. Manual scan/add-game paths remain intact.
 
----
+Focused integration regressions were recovered for mixed MHW + generic first-refresh discovery, one-time lifecycle behavior, Steam multi-library manifests, nested executable lookup, Xbox Content roots, and helper filtering. The recovered discovery rule is LR-063 because canonical LR-060 is already the shell-visible binary-resource rule.
 
-# v8.8.54 single-owner agent coordination ΓÇö integrated; authenticated live smoke pending
-
-PR #542 exact head `c59554b441c47085d6af18e703adc63855e35472` passed Agent Control `36796050757`, Security Supply Chain `36796050831`, and Workflow Feature `36796050750`. The same exact head passed local syntax, 77/77 targeted tests, 279/279 full Agent Control tests, handoff baseline/negative fixtures, version identity, and diff checks on heaven. It merged to canonical main as `be001c2582564e55a7561a97bff791bbf821621a`; post-merge comparison shows zero file differences from the verified head.
-
-Canonical v8.8.54 / Agent Control v0.6.25 now enforces one primary writer per canonical mutable boundary: boundary identity is case-insensitive, duplicate routing-manifest owners are rejected, and counted deploys cannot manufacture numbered subleases for one explicitly shared boundary. Disjoint boundaries remain parallelizable.
-
-Remaining runtime acceptance is intentionally narrow: use an authorized signed or machine-local heaven2 path to smoke duplicate-boundary rejection, disjoint coexistence, and a normal single-owner dispatch. The heaven2 bridge remains HMAC-required; do not bypass it. Before new mutable work, refresh live ownership and reuse the canonical guardrails. The candidate notes below are historical.
-
----
-
-# v8.8.54 collision-safe agent ownership ΓÇö integration candidate
-
-Canonical baseline includes v8.8.53 Agent Work Reports plus the subsequent updater installed-client evidence. This candidate changes only Agent Control ownership enforcement, its tests, synchronized runtime/plugin identity, and current release/continuity metadata.
-
-Mutable-boundary identity is now case-insensitive during workflow preflight and routing-manifest validation. A routing board cannot claim one mutable boundary twice, and direct counted deploy refuses one shared explicit boundary instead of fabricating numbered subleases. Existing disjoint lanes continue to use separate leases and dependencies.
-
-Exact source validation on the reconciled code slice passed Agent Control syntax checks, 77/77 targeted control-core/server-safety tests, and 279/279 full Agent Control tests on heaven. Because heaven2 remote execution is currently HMAC-auth-blocked, live controller routing mutation/smoke was not bypassed and remains an operator/runtime verification gap.
-
----
-
-# v8.8.53 Agent Work Reports ΓÇö candidate
-
-PR #540 is reconciled onto canonical v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415` with no overlapping file edits from the intervening #539 integration. The candidate adds a standalone loopback reporting dashboard over authoritative Agent Control snapshots plus explicit bounded progress checkpoints. It does not mutate Agent Control lifecycle state.
-
-Local plugin verification on the implementation slice reported Node syntax success, 7/7 deterministic tests, and HTTP smoke. Those historical checks do not transfer to the reconciled/versioned head; fresh exact-head applicable PR gates and a live heaven2 dashboard smoke remain required before integration.
-
----
-
-# v8.8.52 compact Agent Manager overview ΓÇö candidate
-
-Reconciled from current v8.8.51 main without importing stale branch metadata. The candidate preserves the shortcut-icon fix and adds only the Agent Manager compact overview, Inspector auto-open behavior, severity summaries, bounded transform/opacity motion, and opt-in UI sound contract from recovered PR #539. Agent Control/plugin identity is 0.6.24.
-
-Exact-head CI and live heaven2 dashboard acceptance remain pending. Other unique branches stay preserved for later semantic recovery.
-
----
-
-# v8.8.51 shortcut icon integrity ΓÇö candidate
-
-Canonical baseline is v8.8.50 main `3e4ae104`. The user-reported Windows desktop shortcut corruption was traced to a malformed 48├ù48 PNG frame inside the committed application ICO: 16/24/32 frames validate, while the 48 frame has an invalid IDAT CRC and malformed termination. The candidate removes only that corrupt frame, preserves the existing icon artwork, and adds deterministic ICO/PNG integrity regression coverage. Windows will scale the intact 32px frame rather than decode corrupt bytes.
-
-Exact-head CI, packaged executable/resource verification, and a freshly recreated Windows desktop shortcut smoke are required before closure. Draft Agent Manager PR #539 remains independently owned; if this urgent bug fix reaches main first, that lane must reconcile/re-version rather than overwrite v8.8.51.
-
----
-# Current state ΓÇö v8.8.50 candidate
-
-Canonical main is `be4615f` at v8.8.49 with the ComboBox contrast and Mods empty-overlay fixes merged after all three exact-head PR gates passed. PR #525 is closed as superseded; PR #528 preserves its repaired work and reconciliation ancestry while carrying the newer governance integration.
-
-Candidate v8.8.50 is governance/prompt/bootstrap validation only: compact mandatory core, full continuity constitution at startup, indexed task-relevant context, explicit authorized fallback/blocker rules, bug-prevention closure, recursive successor propagation, strict raw UTF-8 byte budgets, adversarial validator fixtures, and synchronized Agent Control contracts. Exact-head v8.8.50 verification is pending; no historical green is being promoted.
-
-Open long-term work remains issues #411/#350/#354 (security/signing/provider boundaries) and #281 (catalog). Unique registry/catalog branches remain preserved for semantic review. Actual operator visual confirmation of the merged v8.8.49 UI fixes is still a runtime verification gap. No new product features until the current queue is reconciled.
+No exact-head test/build/Windows result is claimed yet. Required next evidence is exact candidate CI/gates, fresh-main reconciliation, post-merge tree proof, and a Windows/runtime discovery smoke. Other active P0 recovery work remains RECOVERY-002 (owned catalog lane) and RECOVERY-004 (unclaimed updater/runtime reconciliation).

@@ -1,3 +1,12 @@
+# v8.8.56 — 2026-09-30
+
+- Run one automatic best-effort installed-game discovery pass on the first Games-page refresh while retaining the explicit manual rescan and executable-selection fallback.
+- Isolate launcher discovery failures and serialize registry mutations so background discovery cannot race manual game-profile writes.
+- Expand bounded discovery across Steam libraries, Epic, GOG, and Xbox Games installs; preserve launcher-proven roots and avoid whole-drive executable crawling.
+- Replace shallow executable probing with bounded breadth-first lookup that skips reparse/support/redistributable trees and filters helper, installer, crash-handler, and anti-cheat executables without rejecting legitimate Crash-named games.
+- Add regressions for mixed MHW + generic first-refresh discovery, one-time lifecycle behavior, Steam multi-library manifests, nested executable resolution, Xbox Content roots, and helper filtering.
+- Recover the escaped-defect precedent as LR-063 and keep RECOVERY-007 active until exact-head and Windows/runtime evidence closes it.
+
 # v8.8.55 — 2026-10-01
 
 - Restore a canonical project/recovery ledger containing every still-unique work lane discovered after the branch-zero cleanup.
