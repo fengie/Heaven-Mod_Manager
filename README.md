@@ -1,4 +1,8 @@
-# v8.8.55 Universal Mod Manager
+# v8.8.56 Universal Mod Manager
+
+## v8.8.56 — automatic universal installed-game discovery
+
+The Games view now performs one bounded, best-effort background discovery pass on its first refresh instead of showing only the MHW-specialized bootstrap result until the user finds the manual scan button. Discovery remains idempotent and off the WPF dispatcher, composes Steam/Epic/GOG with Xbox Games installs, preserves launcher-proven roots, isolates source failures, and uses bounded helper-aware executable lookup inside known install roots rather than crawling drives.
 
 ## v8.8.55 — recover unique work before branch cleanup
 
@@ -11,7 +15,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **RECOVERY-008 / P0** — v8.8.54 Agent Control coordination/lease semantics integrated on canonical `main`.
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
-- [ ] **RECOVERY-007 / P0** — finish universal installed-game discovery and Windows lifecycle proof.
+- [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
 - [ ] **RECOVERY-003/005/006 / P1** — finish manual updater check, dark ComboBox chrome, and truthful Heaven auth-state reporting.
 
 
