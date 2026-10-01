@@ -1,39 +1,40 @@
-# v8.8.59 — MHW Manual Mod Manager
+# v8.8.60 — MHW Manual Mod Manager
 
-Current product version: **8.8.59**.
+Current product version: **8.8.60**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.59 — persistent Settings tab
+## v8.8.60 — runtime/updater recovery hardening
+
+- Restored Dashboard stretch behavior without binding the content wrapper directly to the ScrollViewer viewport width.
+- Initial on-demand metadata refresh now marks completion only after a successful refresh and resets its in-flight flag on failure/cancellation so a later Mods visit can retry.
+- Program-update handoff now snapshots the staged update identity and holds the update mutation gate across the final identity/policy checks and synchronous helper launch, while preserving the 8.8.59 automatic/manual update preferences.
+- Startup diagnostics redact updater health token, file, and attempt values instead of logging those handoff arguments verbatim.
+
+### v8.8.59 — persistent Settings tab
 
 - Added a dedicated Settings tab with persistent automatic-update, UI-motion, last-tab, safety-confirmation, and background-metadata preferences.
-- Automatic program updates can now be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
+- Automatic program updates can be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
 - Added atomic JSON preference persistence, malformed-file fallback, immediate motion/update behavior changes, and focused regression coverage.
 
 ### v8.8.58 — dark ComboBox chrome
 
 - Replaced the bright Windows-native ComboBox surface with application-owned dark-theme ComboBox/ComboBoxItem templates.
 - Preserved readable selected/dropdown text and existing game/settings bindings while covering popup, hover, focus, selection, arrow, and disabled states.
-- Added regression coverage that requires the custom dark template and rejects fallback to Windows light control brushes.
-
-### v8.8.57 — Heaven Toolbox authority cutover
-
-- Moved reusable global agent infrastructure, training, Git doctrine, plugins, Heaven Bridge, Agent Control, and generic tooling ownership to `fengie/heaven-toolbox@main`.
-- Kept MHW product source, tests, release/runtime evidence, product security, and `_AGENT_CONTEXT/` continuity in this repository.
-- Added ownership enforcement so shared infrastructure is not silently recreated in MHW.
+- Added regression coverage that requires the custom template and rejects fallback to Windows light control brushes.
 
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
-- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete. Toolbox issues #5 and #18 are closed.
-- [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
-- [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
-- [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
-- [ ] **RECOVERY-003 / P1** — v8.8.59 settings candidate exposes the manual updater action and automatic-update preference; exact-head verification/integration remains.
-- [ ] **RECOVERY-005 / P1** — v8.8.58 source/test work is integrated on `main` via PR #549; installed Windows/WPF visual/interaction acceptance is still required before DONE.
+- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
+- [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on its existing owner lane.
+- [ ] **RECOVERY-004 / P0** — 8.8.60 candidate reconciles the archived runtime/updater hardening; focused Windows build/tests are green and exact-head required gates remain before DONE.
+- [ ] **RECOVERY-007 / P0** — universal installed-game discovery is integrated, but representative Windows/runtime discovery proof remains before DONE.
+- [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
+- [ ] **RECOVERY-005 / P1** — v8.8.58 dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
 
 ## One-file diagnostics
 
