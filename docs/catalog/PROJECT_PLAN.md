@@ -1,6 +1,6 @@
 # Federated Mod Catalog Project Plan
 
-Research baseline: 2026-09-29.
+Research baseline: 2026-09-29. Implementation status refreshed 2026-09-30.
 
 ## Objective
 
@@ -75,7 +75,7 @@ Use Thunderstore's public REST package API for relevant communities. Normalize p
 
 ### P2 — CurseForge
 
-Use the official CurseForge REST API with its required API key. No HTML fallback by default.
+Implemented through the official CurseForge REST API. The provider is enabled only when the operator supplies both `MOD_MANAGER_CURSEFORGE_API_KEY` and `MOD_MANAGER_CURSEFORGE_GAME_ID`; missing or partial configuration fails closed. The API key is header-only and expiring/signed acquisition URLs are never stored as catalog provenance. No HTML fallback exists.
 
 ### P2 — GitLab Releases
 
@@ -83,7 +83,7 @@ Use the official GitLab Releases API for explicitly linked/curated projects.
 
 ### P2 — Steam Workshop
 
-Enable only for games that actually use Workshop and only through supported Steam interfaces. Credential/capability requirements are operation-specific.
+Enable only for games that actually use Workshop and only through supported Steam interfaces. Monster Hunter: World (Steam app 582010) has no Workshop catalog in its Steam Community surface, so no dead Workshop adapter is registered for the current MHW profile. A future supported game must provide explicit Workshop capability and operation-specific credentials before this adapter class becomes relevant.
 
 ### P2 — Mod DB feeds
 
@@ -91,15 +91,19 @@ Use Mod DB's official RSS feeds for releases/downloads/addons with attribution. 
 
 ### P3 — permitted structured-page/HTML adapters
 
-A generic crawler framework may exist, but every domain is disabled by default until it has a checked-in compliance manifest and deterministic parser fixtures.
+`PermittedCatalogCrawler` provides the generic fail-closed boundary. Every domain remains disabled until it supplies an explicit compliance manifest with fresh terms/robots review, approved HTTPS origin/path prefixes, a local kill switch, bounded response size, and deterministic parser fixtures. The framework rejects origin/path escapes and non-HTML responses; it is not a license to scrape arbitrary providers.
 
 ### Interop — Vortex
 
 Vortex API is an extension/runtime API, not a remote catalog backend.
 
+Current optional interop:
+- existing Nexus metadata ingestion accepts MO2/Vortex `meta.ini` / `vortex.meta.ini` sidecars and imported artwork without requiring Vortex to run;
+- catalog exact-origin state uses the recovered provider/mod/file identity rather than a fuzzy title match.
+
 Possible later interop:
-- import/export compatible metadata;
-- compatibility with Vortex game-extension concepts;
+- export compatible metadata;
+- compatibility with additional Vortex game-extension concepts;
 - optional supported handoff workflows.
 
 Normal catalog browsing must not depend on Vortex running or reuse Vortex-authenticated sessions without an explicit supported contract.
@@ -241,7 +245,7 @@ Still required before Nexus is considered a supported catalog provider:
 - approved structured-page adapters only where API/feed coverage is insufficient.
 
 ### Phase 4 — interoperability and advanced linkage
-- optional Vortex interoperability;
+- [implemented baseline] optional Vortex/MO2 sidecar interoperability;
 - explicit cross-source identity links;
 - update lineage across linked sources;
 - provider collections/packs where contracts allow.
@@ -263,3 +267,17 @@ A provider is not "supported" until:
 ## Execution notes
 
 PR #208 was closed without merge and its task branch was deleted. This project starts from current canonical `main` and selectively recovers ideas/code only after current-state review; it will not resurrect the old branch wholesale.
+
+
+### Integrated catalog status — 2026-09-30
+
+The current implementation now includes:
+
+- a recovered and reconciled **Browse Mods** split-pane UI over the source-aware SQLite/FTS cache, with provider filtering, local search/sort, provider health and source-page handoff;
+- exact installed-origin inspection from persisted provider/mod/file identity, including explicit missing/changed states and a UI action that never guesses a replacement file;
+- an official CurseForge REST adapter with API-key authentication, strict schema checks, bounded responses, 429/Retry-After health, deterministic fixtures, and ephemeral authorized download resolution;
+- the generic permitted-crawler safety boundary described above;
+- existing Vortex/MO2 sidecar metadata interoperability;
+- Steam Workshop intentionally **not registered for Monster Hunter: World**, because the supported MHW Steam profile does not expose a Workshop catalog. This is a capability-gated non-applicability decision, not a scraping fallback.
+
+External/provider credentials remain operator configuration, not repository secrets.
