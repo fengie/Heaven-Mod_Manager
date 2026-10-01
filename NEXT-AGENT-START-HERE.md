@@ -1,3 +1,13 @@
+# v8.8.55 branch-cleanup recovery — candidate
+
+Canonical recovery ledger: `_AGENT_CONTEXT/PROJECT_PLAN.md`. Every archived unique-work lane from the 2026-09-30 cleanup is now a live recovery item with exact source provenance, acceptance criteria, status/owner, and next action. **ARCHIVED is not a terminal disposition.**
+
+Finish the already-active v8.8.54 Agent Control coordination lane first, then reconcile this candidate onto fresh main. Run continuity/governance checks, verify the plan survives on canonical main, and only then retire this temporary branch. Future branch cleanup must integrate useful semantics or extract them into the canonical plan before deleting stale refs.
+
+Preserve the permanent continuity constitution and recursively propagate it.
+
+---
+
 # v8.8.53 Agent Work Reports — integrated; live authenticated smoke pending
 
 PR #540 exact head `b295586beef4e56c7bdc2968b005cc44354c86f5` passed Security Supply Chain `36793284454`, Agent Control `36793284492`, Plugin Toolbox `36793284463`, and Workflow Feature `36793284449`, then merged as `2885609c8db18494dc5d89d7e9545732ab2bf741` with the verified tree preserved. Hosted Windows closure `36794493034` passed 26/26 and produced updater build 362; installed-client updater E2E `36794962203` passed update and rollback.
