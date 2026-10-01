@@ -1,39 +1,36 @@
-# v8.8.60 RECOVERY-004 runtime/updater hardening — current handoff
+# v8.8.61 dark window chrome + build-label repair — current handoff
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Candidate branch: `fix/recovery-004-runtime-hardening-v8.8.60`
+Candidate branch: `fix/ui-chrome-encoding-v8.8.60-20261001` (temporary branch name; release version is 8.8.61)
+PR: #551
 
 ## Implemented
 
-This candidate semantically reconciles the two preserved RECOVERY-004 archive tips onto current 8.8.59 Settings lineage instead of replaying stale history.
+This candidate is reconciled on top of canonical v8.8.60 / PR #552 and keeps its Dashboard/runtime/updater fixes intact.
 
-- Dashboard content stretches naturally without a direct ScrollViewer viewport-width binding.
-- Initial Mods-page metadata refresh records completion only after success and clears its in-flight flag after failure/cancellation so a later visit can retry.
-- Staged updater handoff snapshots the exact `StagedUpdate`, invalidates stale prepared handoffs, and holds `programUpdateGate` across final identity/policy checks and synchronous helper launch.
-- The 8.8.59 automatic-update preference and explicit manual-update intent remain enforced before and inside the serialized launch boundary.
-- Startup diagnostics now redact updater health token, file, and attempt argument values.
+- WPF ScrollBar/Thumb chrome is now application-owned and dark for vertical and horizontal scrolling instead of falling back to Windows' light scrollbar surface.
+- The native Windows title bar requests immersive dark mode through a constrained `dwmapi.dll` System32 import, without enabling unsafe code for the application.
+- `UpdateBuildIdentity.DisplayId` no longer contains the corrupted literal `â€¢`; it uses an ASCII-stable ` | ` separator.
+- Focused regressions protect all three fixes and reject literal escaped-newline corruption in the DWM declaration.
 
-Focused regressions cover all four recovered semantics plus the existing deferred-load contract.
+The first draft-gate iteration caught a malformed-source regression where literal `\\n` sequences caused the interop declaration to be commented out. The source was repaired to real line breaks and the regression was added before release integration.
 
 ## Verification state
 
-Focused Windows verification on implementation checkpoint `5f11ce59712808ce259dbf72922cc011fb4319c1` passed:
-- Release build: 0 warnings / 0 errors.
-- IntegrationTests: 268/268.
-- FunctionVerifier: 1469 functions, 0 trace gaps, 0 uncovered call sites, 0 parse errors.
+RECOVERY-004 v8.8.60 exact-head gates passed before PR #552 merged as `2ace37e2731dc9282e04cc42d77c701ff12e1751`.
 
-Version/README/continuity metadata was updated after that checkpoint, so the final branch head still requires the repository's normal exact-head gates before integration.
+v8.8.61 implementation merge checkpoint: `eb440ef91cc453c28a18c243d4e3fa325ad33b81`. Version/README/continuity edits followed, so the final branch head requires the normal exact-head Workflow Feature, MHW Product Security, Heaven Toolbox Ownership, and continuity gates before PR #551 is marked ready and merged.
 
-The attempted local Codex audit on `heaven` hit its usage quota and made no edits. Deterministic Heaven Bridge execution successfully produced the Windows evidence above; no security/auth boundary was bypassed.
+No installed-client visual/interaction acceptance is claimed yet for the new scrollbar or native title-bar dark mode.
 
 ## Coordination / risks
 
-- RECOVERY-003 Settings is DONE on canonical 8.8.59 via PR #550. Preserve its preferences/manual-update behavior.
-- RECOVERY-002 catalog recovery has existing owner branches; do not duplicate or absorb them.
+- RECOVERY-004 is DONE on canonical v8.8.60; do not reopen or replay its archived branches.
+- RECOVERY-002 catalog recovery remains separately owned.
 - RECOVERY-007 still needs representative installed-game/runtime discovery proof.
-- RECOVERY-005 still needs installed Windows/WPF ComboBox visual/interaction acceptance.
-- Do not merge the stale `fix/runtime-updater-hardening-v8.8.57-20261001` branch wholesale. Its useful semantics have been extracted into this fresh lane.
+- RECOVERY-005 retains an interaction-acceptance gap even though the supplied installed screenshot visually confirms the ComboBox is dark.
+- The direct local Heaven/Agent Control route is unavailable in this chat; exact-head Windows execution is available through the self-hosted Heaven Actions runner.
 - Global Agent Control/Heaven/plugin work belongs in `fengie/heaven-toolbox`, not MHW.
 
 ## Successor obligation
