@@ -56,7 +56,7 @@ public sealed record CatalogCrawlerManifest(
             throw new InvalidOperationException("Crawler manifest requires at least one allowed path prefix.");
         foreach (var prefix in AllowedPathPrefixes)
         {
-            if (string.IsNullOrWhiteSpace(prefix) || !prefix.StartsWith("/", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(prefix) || prefix[0] != '/')
                 throw new InvalidOperationException("Crawler path prefixes must be non-empty absolute-path prefixes.");
         }
 
