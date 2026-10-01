@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.64",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.63 crawler containment exact head 1090cdde27f979c672d633d9bb513b0c04874e4a verified and merged via PR #555 as 29bcc6fe3c1ac3bb81091f9ba5f02e4e56b9e094; v8.8.64 rich Browse Mods candidate production/test source is 2b49f4f719dfcddfccd3a215a88595df5c779b5e on PR #561",
+  "immediateParentRevision": "v8.8.64 rich Browse Mods exact head 3ced8b41041909d91b06902631ef36085bfd7489 verified by required gates and merged through PR #561 as a39064643f97aa5a0df80bf7c917d260b3d7e7a1; issues #556/#557 are closed, while #558/#559 remain explicit follow-up work",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/PR state; finish exact-head verification and integration of PR #561 without weakening HMAC/provider safety; keep #558/#559 as explicit follow-up work; recursively preserve the continuity constitution.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/issues; claim a non-overlapping #558 or #559 tranche before mutation; preserve the verified v8.8.64 selector/catalog invariants, HMAC/provider safety, and installed Windows/WPF evidence gap; recursively preserve the continuity constitution.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
