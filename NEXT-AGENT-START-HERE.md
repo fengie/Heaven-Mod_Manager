@@ -19,7 +19,7 @@ PR: #553
 
 No final-head Windows verification is claimed yet. PR #553 must pass the repository's exact-head build/analyzer/test, product-security, Toolbox-ownership, and continuity gates after the last source/metadata edit.
 
-## Remaining work and external boundaries
+## Unresolved risks and remaining work
 
 - Steam Workshop is conditional: only implement for a game/profile with a supported Workshop contract and required capabilities/credentials. Do not invent an MHW mapping.
 - Vortex is optional interoperability, not a catalog backend. Implement only an explicit supported metadata/import-export/handoff contract.
