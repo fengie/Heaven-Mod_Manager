@@ -10,13 +10,20 @@ public sealed partial class GameProfileRegistry
     private readonly string stateRoot;
     private readonly string registryPath;
     private readonly string activePath;
+    private readonly Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride;
+    private readonly object mutationGate=new();
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web){WriteIndented=true};
 
-    public GameProfileRegistry(string stateRoot)
+    public GameProfileRegistry(string stateRoot):this(stateRoot,null)
+    {
+    }
+
+    internal GameProfileRegistry(string stateRoot,Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride)
     {
         this.stateRoot=Path.GetFullPath(stateRoot);
         registryPath=Path.Combine(this.stateRoot,"games.json");
         activePath=Path.Combine(this.stateRoot,"active-game.txt");
+        this.discoveryOverride=discoveryOverride;
     }
 
     public string RegistryPath=>registryPath;
@@ -60,7 +67,10 @@ public sealed partial class GameProfileRegistry
 
     public GameProfile AddGenericFromExecutable(string executablePath)
     {
-        var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
+        lock(mutationGate)
+        {
+            var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
+        }
     }
 
     public GameProfile RepairFromExecutable(GameProfile existing,string executablePath)
@@ -86,44 +96,78 @@ public sealed partial class GameProfileRegistry
     public IReadOnlyList<GameProfile> DiscoverAndRegisterInstalledGames()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var candidates=new List<DiscoveredGame>();
-        candidates.AddRange(DiscoverSteam());
-        candidates.AddRange(DiscoverEpic());
-        candidates.AddRange(DiscoverGog());
+        var candidates=discoveryOverride?.Invoke()??DiscoverInstalledGameCandidates();
+        lock(mutationGate)return RegisterDiscoveredGames(candidates);
+    }
+
+    internal IReadOnlyList<GameProfile> RegisterDiscoveredGames(IEnumerable<GameDiscoveryCandidate> candidates)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(candidates);
+        var candidateList=candidates
+            .Where(x=>!string.IsNullOrWhiteSpace(x.Root))
+            .DistinctBy(x=>Path.GetFullPath(x.Root),StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var existing=Load();
         var added=new List<GameProfile>();
-        foreach(var item in candidates.DistinctBy(x=>Path.GetFullPath(x.Root),StringComparer.OrdinalIgnoreCase))
+        foreach(var item in candidateList)
         {
             try
             {
-                if(existing.Any(x=>Path.GetFullPath(x.GameRoot).Equals(Path.GetFullPath(item.Root),StringComparison.OrdinalIgnoreCase)))continue;
+                var candidateRoot=Path.GetFullPath(item.Root);
+                if(existing.Any(x=>Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase)))continue;
                 var exe=item.Executable;
-                if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))exe=FindLikelyExecutable(item.Root,item.Name);
+                if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))exe=FindLikelyExecutable(candidateRoot,item.Name);
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))continue;
                 GameProfile profile;
                 if(string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)||Path.GetFileName(exe).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
-                    profile=GameProfile.MonsterHunterWorld(item.Root);
-                else profile=CreateFromExecutable(exe,item.Name,item.Store,item.SteamAppId);
+                    profile=GameProfile.MonsterHunterWorld(candidateRoot);
+                else profile=CreateFromDiscoveredGame(item with{Root=candidateRoot},exe);
                 Upsert(profile);added.Add(profile);
             }
-            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or JsonException)
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or JsonException or System.Security.SecurityException)
             { MasterDebugLog.Write("GAME-DISCOVERY",$"Skipped discovered game '{item.Name}' at '{item.Root}'.",ex); }
         }
-        MasterDebugLog.Write("GAME-DISCOVERY",$"Discovered={candidates.Count}; registered={added.Count}");
+        MasterDebugLog.Write("GAME-DISCOVERY",$"Discovered={candidateList.Length}; registered={added.Count}");
         return added;
+    }
+
+    private static IReadOnlyList<GameDiscoveryCandidate> DiscoverInstalledGameCandidates()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var candidates=new List<GameDiscoveryCandidate>();
+        AddDiscoverySource(candidates,"Steam",DiscoverSteam);
+        AddDiscoverySource(candidates,"Epic",DiscoverEpic);
+        AddDiscoverySource(candidates,"GOG",DiscoverGog);
+        AddDiscoverySource(candidates,"Xbox",DiscoverXbox);
+        return candidates;
+    }
+
+    private static void AddDiscoverySource(List<GameDiscoveryCandidate> candidates,string source,Func<List<GameDiscoveryCandidate>> discover)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}");
+        try{candidates.AddRange(discover());}
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or System.Security.SecurityException)
+        {MasterDebugLog.Write("GAME-DISCOVERY",$"{source} discovery failed; continuing with other installed-game sources.",ex);}
     }
 
     public void Upsert(GameProfile profile)
     {
-        if(!IsUsable(profile))throw new ArgumentException("Game profile is invalid or points outside its game root.",nameof(profile));
-        var list=Load().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
-        Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));
+        lock(mutationGate)
+        {
+            if(!IsUsable(profile))throw new ArgumentException("Game profile is invalid or points outside its game root.",nameof(profile));
+            var list=Load().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
+            Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));
+        }
     }
 
     public void SetActive(string id)
     {
-        if(!Load().Any(x=>x.Id.Equals(id,StringComparison.OrdinalIgnoreCase)))throw new KeyNotFoundException($"Unknown game profile '{id}'.");
-        Directory.CreateDirectory(stateRoot);AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(id.Trim()+Environment.NewLine));
+        lock(mutationGate)
+        {
+            if(!Load().Any(x=>x.Id.Equals(id,StringComparison.OrdinalIgnoreCase)))throw new KeyNotFoundException($"Unknown game profile '{id}'.");
+            Directory.CreateDirectory(stateRoot);AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(id.Trim()+Environment.NewLine));
+        }
     }
 
     public static bool IsUsable(GameProfile profile)
@@ -145,7 +189,24 @@ public sealed partial class GameProfileRegistry
         var full=Path.GetFullPath(executablePath);
         if(!File.Exists(full)||!full.EndsWith(".exe",StringComparison.OrdinalIgnoreCase))throw new FileNotFoundException("Select the game's Windows executable.",full);
         var root=InferGameRoot(full);
-        var exe=Path.GetRelativePath(root,full).Replace('/','\\');var name=string.IsNullOrWhiteSpace(displayName)?Path.GetFileNameWithoutExtension(full):displayName.Trim();
+        return CreateGenericProfile(root,full,displayName,store,steamAppId);
+    }
+
+    private GameProfile CreateFromDiscoveredGame(GameDiscoveryCandidate item,string executablePath)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"store={item.Store}; name={item.Name}");
+        var root=Path.GetFullPath(item.Root);
+        var full=Path.GetFullPath(executablePath);
+        var prefix=root.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar)+Path.DirectorySeparatorChar;
+        if(!full.StartsWith(prefix,StringComparison.OrdinalIgnoreCase))
+            return CreateFromExecutable(full,item.Name,item.Store,item.SteamAppId);
+        return CreateGenericProfile(root,full,item.Name,item.Store,item.SteamAppId);
+    }
+
+    private GameProfile CreateGenericProfile(string root,string executablePath,string? displayName,string? store,string? steamAppId)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var exe=Path.GetRelativePath(root,executablePath).Replace('/','\\');var name=string.IsNullOrWhiteSpace(displayName)?Path.GetFileNameWithoutExtension(executablePath):displayName.Trim();
         var baseId=GameProfile.NormalizeId(name);var ids=Load().Select(x=>x.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);var id=baseId;var suffix=2;while(ids.Contains(id))id=$"{baseId}-{suffix++}";
         var layout=InferLayout(root);
         return GameProfile.Generic(id,name,root,exe,layout.ModRoot,layout.Adapter,steamAppId,null,store);
@@ -184,32 +245,49 @@ public sealed partial class GameProfileRegistry
 
     private static string? FindExisting(string root,params string[] relative)=>relative.FirstOrDefault(x=>Directory.Exists(Path.Combine(root,x)));
 
-    private static List<DiscoveredGame> DiscoverSteam()
+    private static List<GameDiscoveryCandidate> DiscoverSteam()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var roots=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        try
+        foreach(var hive in new[]{RegistryHive.CurrentUser,RegistryHive.LocalMachine})
         {
             foreach(var view in new[]{RegistryView.Registry64,RegistryView.Registry32})
             {
-                using var baseKey=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,view);
-                using var h=baseKey.OpenSubKey(@"Software\Valve\Steam");
-                if(h?.GetValue("SteamPath") is string p&&Directory.Exists(p))roots.Add(p.Replace('/','\\'));
+                try
+                {
+                    using var baseKey=RegistryKey.OpenBaseKey(hive,view);
+                    using var h=baseKey.OpenSubKey(@"Software\Valve\Steam");
+                    foreach(var valueName in new[]{"SteamPath","InstallPath"})
+                    {
+                        if(h?.GetValue(valueName) is string p&&Directory.Exists(p))roots.Add(p.Replace('/','\\'));
+                    }
+                }
+                catch(System.Security.SecurityException){}
             }
         }
-        catch(System.Security.SecurityException){}
         var pf=Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);if(!string.IsNullOrWhiteSpace(pf)){var p=Path.Combine(pf,"Steam");if(Directory.Exists(p))roots.Add(p);}
+        return DiscoverSteamFromRoots(roots);
+    }
+
+    internal static List<GameDiscoveryCandidate> DiscoverSteamFromRoots(IEnumerable<string> steamRoots)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(steamRoots);
+        var roots=steamRoots.Where(Directory.Exists).Select(Path.GetFullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var libraries=new HashSet<string>(roots,StringComparer.OrdinalIgnoreCase);
         foreach(var steam in roots)
         {
             var vdf=Path.Combine(steam,"steamapps","libraryfolders.vdf");if(!File.Exists(vdf))continue;
             try{foreach(Match m in Regex.Matches(File.ReadAllText(vdf),"\\\"path\\\"\\s+\\\"(?<p>[^\\\"]+)\\\""))libraries.Add(m.Groups["p"].Value.Replace("\\\\","\\"));}catch(IOException){}
         }
-        var result=new List<DiscoveredGame>();
+        var result=new List<GameDiscoveryCandidate>();
         foreach(var lib in libraries)
         {
             var apps=Path.Combine(lib,"steamapps");if(!Directory.Exists(apps))continue;
-            foreach(var manifest in Directory.EnumerateFiles(apps,"appmanifest_*.acf",SearchOption.TopDirectoryOnly))
+            IEnumerable<string> manifests;
+            try{manifests=Directory.EnumerateFiles(apps,"appmanifest_*.acf",SearchOption.TopDirectoryOnly).ToArray();}
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){MasterDebugLog.Write("GAME-DISCOVERY",$"Could not enumerate Steam manifests at '{apps}'.",ex);continue;}
+            foreach(var manifest in manifests)
             {
                 try
                 {
@@ -222,11 +300,11 @@ public sealed partial class GameProfileRegistry
         return result;
     }
 
-    private static List<DiscoveredGame> DiscoverEpic()
+    private static List<GameDiscoveryCandidate> DiscoverEpic()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var dir=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),"Epic","EpicGamesLauncher","Data","Manifests");
-        if(!Directory.Exists(dir))return [];var result=new List<DiscoveredGame>();
+        if(!Directory.Exists(dir))return [];var result=new List<GameDiscoveryCandidate>();
         foreach(var file in Directory.EnumerateFiles(dir,"*.item",SearchOption.TopDirectoryOnly))
         {
             try
@@ -240,10 +318,10 @@ public sealed partial class GameProfileRegistry
         return result;
     }
 
-    private static List<DiscoveredGame> DiscoverGog()
+    private static List<GameDiscoveryCandidate> DiscoverGog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var result=new List<DiscoveredGame>();
+        var result=new List<GameDiscoveryCandidate>();
         foreach(var view in new[]{RegistryView.Registry64,RegistryView.Registry32})
         {
             try
@@ -271,30 +349,149 @@ public sealed partial class GameProfileRegistry
         return null;
     }
 
-    private static string? FindLikelyExecutable(string root,string name)
+    internal static string? FindLikelyExecutable(string root,string name)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
-            var dirs=new List<string>{root,Path.Combine(root,"bin"),Path.Combine(root,"Bin"),Path.Combine(root,"Binaries","Win64"),Path.Combine(root,"Binaries","Win32")};
-            foreach(var child in Directory.EnumerateDirectories(root))
-            {
-                dirs.Add(Path.Combine(child,"Binaries","Win64"));dirs.Add(Path.Combine(child,"Binaries","Win32"));
-            }
+            var fullRoot=Path.GetFullPath(root);
+            if(!Directory.Exists(fullRoot))return null;
             var normalized=GameProfile.NormalizeId(name).Replace("-",string.Empty,StringComparison.Ordinal);
+            var queue=new Queue<(string Directory,int Depth)>();
+            queue.Enqueue((fullRoot,0));
+            var visited=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var candidates=new List<string>();
-            foreach(var dir in dirs.Distinct(StringComparer.OrdinalIgnoreCase).Where(Directory.Exists))
+            const int maxDepth=4;
+            const int maxDirectories=384;
+            while(queue.Count>0&&visited.Count<maxDirectories)
             {
-                try{candidates.AddRange(Directory.EnumerateFiles(dir,"*.exe",SearchOption.TopDirectoryOnly));}
-                catch(UnauthorizedAccessException){}
+                var current=queue.Dequeue();
+                if(!visited.Add(current.Directory))continue;
+                string[] localExecutables;
+                try{localExecutables=Directory.EnumerateFiles(current.Directory,"*.exe",SearchOption.TopDirectoryOnly).ToArray();}
+                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){MasterDebugLog.Write("GAME-DISCOVERY",$"Could not inspect executables in '{current.Directory}'.",ex);localExecutables=[];}
+                candidates.AddRange(localExecutables);
+                var strongMatch=localExecutables
+                    .Where(x=>!IsHelperExecutable(Path.GetFileNameWithoutExtension(x)))
+                    .Select(x=>(Path:x,Normalized:GameProfile.NormalizeId(Path.GetFileNameWithoutExtension(x)).Replace("-",string.Empty,StringComparison.Ordinal)))
+                    .Where(x=>x.Normalized.Equals(normalized,StringComparison.OrdinalIgnoreCase)
+                        ||(normalized.Length>=5&&(x.Normalized.Contains(normalized,StringComparison.OrdinalIgnoreCase)||normalized.Contains(x.Normalized,StringComparison.OrdinalIgnoreCase))))
+                    .OrderByDescending(x=>x.Normalized.Equals(normalized,StringComparison.OrdinalIgnoreCase))
+                    .ThenByDescending(x=>SafeFileLength(x.Path))
+                    .Select(x=>x.Path)
+                    .FirstOrDefault();
+                if(strongMatch is not null)return strongMatch;
+                if(current.Depth>=maxDepth)continue;
+                string[] children;
+                try{children=Directory.EnumerateDirectories(current.Directory).ToArray();}
+                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){MasterDebugLog.Write("GAME-DISCOVERY",$"Could not inspect game subdirectories in '{current.Directory}'.",ex);continue;}
+                foreach(var child in children
+                    .Where(x=>!ShouldSkipExecutableSearchDirectory(Path.GetFileName(x)))
+                    .OrderByDescending(x=>ExecutableSearchDirectoryPriority(Path.GetFileName(x))))
+                {
+                    try
+                    {
+                        if((new DirectoryInfo(child).Attributes&FileAttributes.ReparsePoint)!=0)continue;
+                    }
+                    catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){continue;}
+                    queue.Enqueue((child,current.Depth+1));
+                }
             }
-            return candidates.Where(x=>!x.Contains("redist",StringComparison.OrdinalIgnoreCase)&&!x.Contains("unins",StringComparison.OrdinalIgnoreCase)&&!x.Contains("crash",StringComparison.OrdinalIgnoreCase))
+            return candidates
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(x=>!IsHelperExecutable(Path.GetFileNameWithoutExtension(x)))
                 .OrderByDescending(x=>GameProfile.NormalizeId(Path.GetFileNameWithoutExtension(x)).Replace("-",string.Empty,StringComparison.Ordinal).Contains(normalized,StringComparison.OrdinalIgnoreCase))
-                .ThenByDescending(x=>new FileInfo(x).Length).FirstOrDefault();
-        }catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){return null;}
+                .ThenByDescending(x=>ExecutableSearchDirectoryPriority(Path.GetFileName(Path.GetDirectoryName(x)??string.Empty)))
+                .ThenBy(x=>Path.GetRelativePath(fullRoot,x).Count(ch=>ch==Path.DirectorySeparatorChar||ch==Path.AltDirectorySeparatorChar))
+                .ThenByDescending(x=>SafeFileLength(x))
+                .FirstOrDefault();
+        }catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException){return null;}
+    }
+
+    private static bool ShouldSkipExecutableSearchDirectory(string name)=>name.Equals("_CommonRedist",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("redist",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("redistributable",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("installer",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("installers",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("support",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("directx",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("dotnet",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("easyanticheat",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("battleye",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("saved",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("mods",StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsHelperExecutable(string name)=>name.StartsWith("unins",StringComparison.OrdinalIgnoreCase)
+        ||name.StartsWith("uninstall",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("CrashReportClient",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("CrashReporter",StringComparison.OrdinalIgnoreCase)
+        ||name.StartsWith("UnityCrashHandler",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("crashpad_handler",StringComparison.OrdinalIgnoreCase)
+        ||name.Contains("reportclient",StringComparison.OrdinalIgnoreCase)
+        ||name.Contains("easyanticheat",StringComparison.OrdinalIgnoreCase)
+        ||name.Contains("battleye",StringComparison.OrdinalIgnoreCase)
+        ||name.Contains("redist",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("setup",StringComparison.OrdinalIgnoreCase)
+        ||name.Equals("installer",StringComparison.OrdinalIgnoreCase);
+
+    private static int ExecutableSearchDirectoryPriority(string name)=>name.Equals("Win64",StringComparison.OrdinalIgnoreCase)?6:
+        name.Equals("Win32",StringComparison.OrdinalIgnoreCase)?5:
+        name.Equals("Binaries",StringComparison.OrdinalIgnoreCase)?4:
+        name.Equals("bin",StringComparison.OrdinalIgnoreCase)?3:
+        name.Equals("x64",StringComparison.OrdinalIgnoreCase)?2:
+        name.Equals("x86",StringComparison.OrdinalIgnoreCase)?1:0;
+
+    private static long SafeFileLength(string path){try{return new FileInfo(path).Length;}catch(IOException){return 0;}catch(UnauthorizedAccessException){return 0;}}
+
+    private static List<GameDiscoveryCandidate> DiscoverXbox()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var roots=new List<string>();
+        foreach(var drive in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if(drive.DriveType!=DriveType.Fixed||!drive.IsReady)continue;
+                var xbox=Path.Combine(drive.RootDirectory.FullName,"XboxGames");
+                if(Directory.Exists(xbox))roots.Add(xbox);
+            }
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){}
+        }
+        return DiscoverXboxRoots(roots);
+    }
+
+    internal static List<GameDiscoveryCandidate> DiscoverXboxRoots(IEnumerable<string> xboxRoots)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(xboxRoots);
+        var result=new List<GameDiscoveryCandidate>();
+        foreach(var xboxRoot in xboxRoots.Where(Directory.Exists))
+        {
+            string[] gameDirectories;
+            try{gameDirectories=Directory.EnumerateDirectories(xboxRoot).ToArray();}
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){continue;}
+            foreach(var gameDirectory in gameDirectories)
+            {
+                try
+                {
+                    var name=Path.GetFileName(gameDirectory);
+                    if(string.IsNullOrWhiteSpace(name)||name.StartsWith(".",StringComparison.Ordinal))continue;
+                    var content=Path.Combine(gameDirectory,"Content");
+                    var installRoot=Directory.Exists(content)?content:gameDirectory;
+                    var exe=FindLikelyExecutable(installRoot,name);
+                    if(string.IsNullOrWhiteSpace(exe))continue;
+                    result.Add(new(name,installRoot,exe,"Xbox",null));
+                }
+                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException){}
+            }
+        }
+        return result;
     }
 
     private static string? VdfValue(string text,string key){var m=Regex.Match(text,$"\\\"{Regex.Escape(key)}\\\"\\s+\\\"(?<v>[^\\\"]*)\\\"",RegexOptions.IgnoreCase);return m.Success?m.Groups["v"].Value:null;}
     private static string? GetJson(JsonElement e,string name)=>e.TryGetProperty(name,out var v)&&v.ValueKind==JsonValueKind.String?v.GetString():null;
     private static void AtomicWrite(string path,byte[] bytes){var dir=Path.GetDirectoryName(path)!;Directory.CreateDirectory(dir);var temp=path+".tmp-"+Guid.NewGuid().ToString("N");File.WriteAllBytes(temp,bytes);File.Move(temp,path,true);}
-    private sealed record DiscoveredGame(string Name,string Root,string? Executable,string Store,string? SteamAppId);
 }
+
+internal sealed record GameDiscoveryCandidate(string Name,string Root,string? Executable,string Store,string? SteamAppId);
+
