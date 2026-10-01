@@ -16,6 +16,6 @@
     <ProjectReference Include="../../src/MhwModManager.Updater/MhwModManager.Updater.csproj" />
     <ProjectReference Include="../../src/MhwModManager.Updater.Helper/MhwModManager.Updater.Helper.csproj"
                       ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../../tools/MhwModManager.FunctionVerifier/MhwModManager.FunctionVerifier.csproj" />
+    <ProjectReference Include="../MhwModManager.FunctionVerifier/MhwModManager.FunctionVerifier.csproj" />
   </ItemGroup>
 </Project>
