@@ -1,6 +1,6 @@
 # v8.8.57 Heaven Toolbox authority cutover — current handoff
 
-Canonical MHW product repository: `fengie/mhw-mods`  
+Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
 
 ## Cutover state
