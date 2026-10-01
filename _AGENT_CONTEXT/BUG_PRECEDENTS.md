@@ -1,3 +1,15 @@
+### 2026-09-30 — Installed-game discovery — specialized MHW bootstrap hid general discovery
+- **Symptom:** The Universal Mod Manager game selector commonly contained only Monster Hunter: World even when other supported-store games were installed.
+- **Root cause:** Startup registered MHW through a specialized locator, while Steam/Epic/GOG discovery ran only through the later **Find Installed Games** command; Steam fallback also searched only a few fixed executable directories.
+- **Violated invariant / wrong assumption:** A compatibility-specific bootstrap must compose with the universal discovery lifecycle. General discovery should be automatic/idempotent, source failures isolated, and probing bounded to authoritative launcher/install roots.
+- **Why prior defenses missed it:** Multi-game tests covered manual profile creation and deployment semantics but not first Games-page refresh with MHW plus another installed game, multiple Steam libraries, nested executables, or Xbox installs.
+- **Direct fix:** Schedule one background discovery pass on first Games refresh; retain manual rescans; isolate launcher failures; serialize registry mutation; broaden Steam roots/libraries; use bounded install-root executable traversal; add Xbox Games top-level discovery; preserve launcher-proven roots.
+- **Preventive rule/process change:** LR-063 requires specialized bootstrap/discovery paths to compose with general discovery and forbids unbounded whole-drive executable crawling.
+- **Regression coverage added/strengthened:** `MultiGameTests` covers mixed MHW + generic first-refresh registration, one-time discovery, Steam multi-library manifests, nested executable resolution, Xbox Content-root discovery, and helper/anti-cheat executable exclusion.
+- **Verification evidence/environment:** v8.8.56 candidate evidence is tracked in `_AGENT_CONTEXT/EVIDENCE/v8.8.56-installed-game-discovery.md`; exact-head CI and Windows/runtime proof are required before closure.
+- **Sibling/adjacent cases checked:** Manual **Find Installed Games**, manual executable addition, MHW adapter identity, Epic/GOG paths, generic isolated workspaces, and bounded/non-drive-recursive discovery remain intact.
+- **References:** recovered from `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4`; fresh-main recovery branch `fix/installed-game-discovery-v8.8.56-20260930`; base `9de6f81c5b2377ee1568b5bf4de5baa389eb90de`.
+
 ### 2026-09-30 — Agent coordination — equivalent mutable boundaries could receive multiple owners
 - **Symptom:** independently dispatched agents could claim casing variants of the same mutable boundary, and counted deploys could synthesize numbered sub-boundaries from one explicit boundary, making overlapping ownership look distinct.
 - **Root cause / invariant:** mutable-boundary identity was compared as presentation text rather than canonical ownership identity, while batch deployment rewrote a shared boundary instead of rejecting an unsafe request. One mutable surface must have one primary owner at a time.
