@@ -88,6 +88,27 @@ try{
     Reject 'Git policy permits force push' 'GLOBAL_GIT_DIRECTIVE.md' {param($x) $x -replace 'Never overwrite another owner''s changes or force-push shared/canonical history\.','Force-push shared history when convenient.'}
     Reject 'current handoff loses version' 'NEXT-AGENT-START-HERE.md' {param($x) $v=(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixture 'VERSION.txt')).Trim(); $x -replace ("v"+[regex]::Escape($v)),'version-current'}
     Reject 'constitution loses exact verification' '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md' {param($x) $x -replace '(?i)exact verification','approximate evidence'}
+    Reject 'project plan loses recovery queue' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) [regex]::Replace($x,'(?m)^\|\s*RECOVERY-.*    Reject 'AGENTS exceeds context budget' 'AGENTS.md' {param($x) $x + ("noise" * 3000)}
+    Reject 'HTML comments cannot evade actual source byte budget' 'AGENTS.md' {param($x) $x + '<!--' + ('noise' * 3000) + '-->'}
+    foreach($relative in @('AGENTS.md','NEXT-AGENT-START-HERE.md')){
+        Reject "$relative preserves vocabulary but removes successor obligation" $relative {
+            param($x)
+            [regex]::Replace($x,'(?im)^.*\b(?:successor|next agent)\b.*\b(?:must|shall|is required to)\b.*\b(?:propagate|pass)\b.*$','Successor, recursive propagation, constitution, and the agent after them are descriptive vocabulary only.')
+        }
+        Reject "$relative negates recursive obligation" $relative {param($x) $x -replace '(?i)successor must','successor must not'}
+    }
+    Reject 'Core authorization vocabulary cannot permit weakening' 'AGENTS.md' {param($x) $x + "`nCore Rules may be weakened without explicit user authorization."}
+    Reject 'active Learned Rules reference cannot hide in comments' 'AGENTS.md' {param($x) ($x -replace 'LEARNED_RULES\.md','continuity-ledger') + '<!-- LEARNED_RULES.md -->'}
+    Reject 'README loses current progress heading' 'README.md' {param($x) $v=[regex]::Escape([string]$manifest.currentVersion); $x -replace ("(?m)^##\s+v"+$v+'\b.*$'),'## historical progress'}
+    Reject 'constitution loses Core authorization protection' '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md' {param($x) $x -replace '(?i)explicit user authorization','ordinary project decision'}
+
+    Write-Host 'PASS: compact governance negative fixtures fail closed.' -ForegroundColor Green
+}finally{
+    if(Test-Path -LiteralPath $fixture){Remove-Item -LiteralPath $fixture -Recurse -Force -ErrorAction SilentlyContinue}
+}
+,'')}
+    Reject 'project plan loses archive non-terminal rule' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) $x -replace '(?i)archive tag alone does not mean useful work was integrated, finished, or safely forgotten','archive tag alone means cleanup is complete'}
+    Reject 'Git cleanup loses explicit extraction disposition' 'GLOBAL_GIT_DIRECTIVE.md' {param($x) $x -replace '(?i)`INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED`','`ARCHIVED`'}
     Reject 'AGENTS exceeds context budget' 'AGENTS.md' {param($x) $x + ("noise" * 3000)}
     Reject 'HTML comments cannot evade actual source byte budget' 'AGENTS.md' {param($x) $x + '<!--' + ('noise' * 3000) + '-->'}
     foreach($relative in @('AGENTS.md','NEXT-AGENT-START-HERE.md')){
