@@ -31,3 +31,5 @@ No final-head Windows verification is claimed yet. PR #553 must pass the reposit
 ## Successor obligation
 
 Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Preserve unresolved evidence/security boundaries and recursively propagate this obligation. **Do not break the chain.**
+
+The successor must propagate this continuity obligation to the next agent.
