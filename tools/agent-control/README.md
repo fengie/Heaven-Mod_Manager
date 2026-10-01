@@ -1,3 +1,9 @@
+# v0.6.25 — collision-safe mutable-boundary ownership
+
+## What v0.6.25 does
+
+Agent Control now treats mutable-boundary identity consistently across routing, workflow preflight, and direct deployment. Case-only boundary variants collide, authoritative routing manifests reject duplicate owners for the same mutable boundary, and counted direct deployment fails closed instead of inventing `#1`/`#2` subleases for one operator-supplied boundary. Disjoint support/review/test lanes can still run in parallel through their own boundaries and existing task dependencies.
+
 # v0.6.24 — compact at-a-glance dashboard
 
 ## What v0.6.24 does
