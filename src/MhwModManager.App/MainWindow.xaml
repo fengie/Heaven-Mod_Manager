@@ -934,6 +934,148 @@
                 </ScrollViewer>
             </TabItem>
 
+
+            <TabItem Header="Browse Mods">
+                <Grid Margin="24,22,28,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Browse mods" Style="{StaticResource PageTitle}"/>
+                            <TextBlock Text="Search cached provider metadata, refresh supported sources, and install only an exact file you choose." Style="{StaticResource PageSubtitle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button Content="Check Installed Origins" Command="{Binding CheckCatalogUpdatesCommand}" Style="{StaticResource QuietButton}"/>
+                            <Button Content="Refresh Providers" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="1" Margin="0,18,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.45*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Style="{StaticResource SubtleCard}" Padding="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding CatalogQuery,UpdateSourceTrigger=PropertyChanged}"
+                                             AutomationProperties.Name="Search provider catalog"
+                                             ToolTip="Search cached catalog names, authors, summaries, tags, categories, and descriptions."/>
+                                    <Button Grid.Column="1" Margin="8,0,0,0" Content="Search" Command="{Binding SearchCatalogCommand}" Style="{StaticResource QuietButton}"/>
+                                </Grid>
+                            </Border>
+                            <Grid Grid.Row="1" Margin="2,8,2,8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogProviderSummary}" TextWrapping="Wrap"/>
+                                <Border Grid.Column="1" Style="{StaticResource StatusBadge}">
+                                    <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold">
+                                        <Run Text="{Binding CatalogItemCount,Mode=OneWay}"/><Run Text=" cached"/>
+                                    </TextBlock>
+                                </Border>
+                            </Grid>
+                            <DataGrid Grid.Row="2"
+                                      ItemsSource="{Binding CatalogItems}"
+                                      SelectedItem="{Binding SelectedCatalogItem,Mode=TwoWay}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      AutomationProperties.Name="Provider catalog results">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="MOD" Binding="{Binding Name}" Width="2.1*"/>
+                                    <DataGridTextColumn Header="AUTHOR" Binding="{Binding Author}" Width="1.1*"/>
+                                    <DataGridTextColumn Header="SOURCE" Binding="{Binding Provider}" Width="105"/>
+                                    <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="95"/>
+                                    <DataGridTextColumn Header="UPDATED" Binding="{Binding Updated}" Width="145"/>
+                                    <DataGridTextColumn Header="CACHE" Binding="{Binding CacheState}" Width="145"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Padding="14">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedCatalogItem.Name}" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11">
+                                        <Run Text="{Binding SelectedCatalogItem.Provider}"/><Run Text=" · "/><Run Text="{Binding SelectedCatalogItem.Author}"/>
+                                    </TextBlock>
+                                    <TextBlock Margin="0,10,0,0" Text="{Binding SelectedCatalogItem.Summary}" TextWrapping="Wrap" MaxHeight="90"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,10">
+                                    <Button Content="Load Exact Files" Command="{Binding LoadCatalogFilesCommand}" Style="{StaticResource QuietButton}"/>
+                                    <Button Content="Open Provider Page" Command="{Binding OpenCatalogSourceCommand}" Margin="6,0,0,0"/>
+                                </StackPanel>
+
+                                <DataGrid Grid.Row="2"
+                                          ItemsSource="{Binding CatalogFiles}"
+                                          SelectedItem="{Binding SelectedCatalogFile,Mode=TwoWay}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          AutomationProperties.Name="Exact provider files">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="FILE" Binding="{Binding Name}" Width="1.7*"/>
+                                        <DataGridTextColumn Header="TYPE" Binding="{Binding Category}" Width="92"/>
+                                        <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="90"/>
+                                        <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="86"/>
+                                        <DataGridTextColumn Header="UPLOADED" Binding="{Binding Uploaded}" Width="135"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <StackPanel Grid.Row="3" Margin="0,10,0,0">
+                                    <Button Content="Install Selected File" Command="{Binding InstallCatalogFileCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
+                                    <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogStatusText}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <Expander Grid.Row="2" Header="Installed catalog origin checks" Foreground="{StaticResource Text}">
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Margin="0,0,0,8"
+                                       Text="Checks only the exact provider mod/file identity recorded at install time. Missing files or changed metadata require review; the manager never guesses a replacement." TextWrapping="Wrap"/>
+                            <DataGrid MaxHeight="180"
+                                      ItemsSource="{Binding CatalogOriginStatuses}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      AutomationProperties.Name="Installed catalog origin status">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="LOCAL MOD" Binding="{Binding ModId}" Width="1.4*"/>
+                                    <DataGridTextColumn Header="SOURCE" Binding="{Binding Provider}" Width="105"/>
+                                    <DataGridTextColumn Header="MOD ID" Binding="{Binding ProviderModId}" Width="115"/>
+                                    <DataGridTextColumn Header="FILE ID" Binding="{Binding ProviderFileId}" Width="115"/>
+                                    <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="175"/>
+                                    <DataGridTextColumn Header="DETAIL" Binding="{Binding Message}" Width="3*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Expander>
+                </Grid>
+            </TabItem>
+
         </TabControl>
 
         <!-- Footer -->
