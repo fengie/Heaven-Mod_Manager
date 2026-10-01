@@ -1,3 +1,10 @@
+# v8.8.58 — 2026-09-30
+
+- Replace the native Windows ComboBox surface with application-owned dark-theme ComboBox and ComboBoxItem templates.
+- Preserve readable selected/dropdown text while styling popup, hover, focus, selected, arrow, and disabled states from the existing application palette.
+- Replace the v8.8.49 matched-system-color regression with a dark-chrome regression that requires the custom template and rejects Windows control brush fallback.
+- Recover only the still-useful RECOVERY-005 UI/test semantics from the archived branch; stale archive version/continuity metadata is not imported.
+
 # v8.8.57 — 2026-09-30
 
 - Cut global programming-agent bootstrap authority over from MHW to `fengie/heaven-toolbox@main`.
