@@ -667,6 +667,19 @@ test("workflow lease preflight rejects active and duplicate mutable boundaries b
   assert.equal(duplicatePlan.allowed, false);
   assert.equal(duplicatePlan.boundary, "same-boundary");
 
+  const caseVariantConflict = workflowLeasePreflight(current, [
+    { role: "support", boundary: "SHARED-API" }
+  ]);
+  assert.equal(caseVariantConflict.allowed, false);
+  assert.equal(caseVariantConflict.boundary, "SHARED-API");
+
+  const caseVariantPlan = workflowLeasePreflight(state(), [
+    { role: "support", boundary: "Same-Boundary" },
+    { role: "test", boundary: "same-boundary" }
+  ]);
+  assert.equal(caseVariantPlan.allowed, false);
+  assert.equal(caseVariantPlan.boundary, "same-boundary");
+
   assert.deepEqual(workflowLeasePreflight(state(), [
     { role: "support", boundary: "one" },
     { role: "test", boundary: "two" }
