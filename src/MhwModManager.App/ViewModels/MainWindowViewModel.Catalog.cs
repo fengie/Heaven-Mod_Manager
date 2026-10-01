@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MhwModManager.Automation;
@@ -10,25 +11,130 @@ namespace MhwModManager.App.ViewModels;
 
 public sealed record CatalogModRow(CatalogMod Mod, bool IsStale)
 {
-    public string Name => Mod.Name;
-    public string Author => string.IsNullOrWhiteSpace(Mod.Author) ? "Unknown" : Mod.Author;
-    public string Provider => Mod.ProviderId;
-    public string Version => string.IsNullOrWhiteSpace(Mod.Version) ? "—" : Mod.Version;
-    public string Category => string.IsNullOrWhiteSpace(Mod.Category) ? "Uncategorized" : Mod.Category;
-    public string Summary => Mod.Summary;
-    public string Updated => Mod.UpdatedAt?.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture) ?? "—";
-    public string Downloads => Mod.Downloads?.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) ?? "—";
-    public string CacheState => IsStale ? "Cached · refresh recommended" : "Current cache";
+    public string Name
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Mod.Name;
+        }
+    }
+    public string Author
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return string.IsNullOrWhiteSpace(Mod.Author) ? "Unknown" : Mod.Author;
+        }
+    }
+    public string Provider
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Mod.ProviderId;
+        }
+    }
+    public string Version
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return string.IsNullOrWhiteSpace(Mod.Version) ? "—" : Mod.Version;
+        }
+    }
+    public string Category
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return string.IsNullOrWhiteSpace(Mod.Category) ? "Uncategorized" : Mod.Category;
+        }
+    }
+    public string Summary
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Mod.Summary;
+        }
+    }
+    public string Updated
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Mod.UpdatedAt?.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture) ?? "—";
+        }
+    }
+    public string Downloads
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Mod.Downloads?.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) ?? "—";
+        }
+    }
+    public string CacheState
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return IsStale ? "Cached · refresh recommended" : "Current cache";
+        }
+    }
 }
 
 public sealed record CatalogFileRow(CatalogModFile File)
 {
-    public string Name => File.Name;
-    public string FileName => File.FileName;
-    public string Version => string.IsNullOrWhiteSpace(File.Version) ? "—" : File.Version;
-    public string Category => File.Category.ToString();
-    public string Size => File.SizeBytes is long bytes ? FormatBytes(bytes) : "—";
-    public string Uploaded => File.UploadedAt?.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture) ?? "—";
+    public string Name
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return File.Name;
+        }
+    }
+    public string FileName
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return File.FileName;
+        }
+    }
+    public string Version
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return string.IsNullOrWhiteSpace(File.Version) ? "—" : File.Version;
+        }
+    }
+    public string Category
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return File.Category.ToString();
+        }
+    }
+    public string Size
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return File.SizeBytes is long bytes ? FormatBytes(bytes) : "—";
+        }
+    }
+    public string Uploaded
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return File.UploadedAt?.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture) ?? "—";
+        }
+    }
 
     private static string FormatBytes(long value)
     {
@@ -70,9 +176,23 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty] private string catalogStatusText = "Browse verified provider metadata without installing anything until you choose a file.";
     [ObservableProperty] private string catalogProviderSummary = "Providers not loaded yet.";
 
-    public int CatalogItemCount => CatalogItems.Count;
-    public int CatalogOriginAttentionCount => CatalogOriginStatuses.Count(row =>
-        !string.Equals(row.State, InstalledCatalogOriginCheckState.Current.ToString(), StringComparison.OrdinalIgnoreCase));
+    public int CatalogItemCount
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogItems.Count;
+        }
+    }
+    public int CatalogOriginAttentionCount
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogOriginStatuses.Count(row =>
+                !string.Equals(row.State, InstalledCatalogOriginCheckState.Current.ToString(), StringComparison.OrdinalIgnoreCase));
+        }
+    }
 
     partial void OnCatalogQueryChanged(string value)
     {
