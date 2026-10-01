@@ -43,7 +43,17 @@ Resolve conflicts semantically. Do not prefer “ours” or “theirs” by age/
 
 ## Branch cleanup
 
-Delete a temporary branch only after proving its useful content/evidence is integrated, intentionally superseded, or otherwise preserved. Branch count is not a correctness goal.
+Branch cleanup means **extracting useful work before deleting stale refs**, not minimizing the branch counter.
+
+Before deleting any stale, divergent, failed, superseded, or abandoned branch:
+
+1. compare it semantically against fresh `main` (ancestry alone is insufficient);
+2. identify unique code, tests, fixes, research, evidence, or design intent;
+3. for each useful unique item, either integrate it now or extract it into the canonical `_AGENT_CONTEXT/PROJECT_PLAN.md` with an exact source ref/tag, status/owner, acceptance criteria, and next action;
+4. record an explicit disposition: `INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED`;
+5. only then archive/delete the branch ref when ownership and current activity are clear.
+
+An archive tag is valuable provenance/recovery insurance, but **archive-only preservation is not completion and does not authorize forgetting unique work**. A branch may be deleted after useful work is actionably extracted even when that work will be finished later. Branch count is not a correctness goal.
 
 ## Progress visibility / patch version coordination
 
