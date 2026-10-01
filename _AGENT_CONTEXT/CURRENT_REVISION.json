@@ -10,17 +10,17 @@
   "status": "v8.8.59-settings-candidate",
   "nextMilestone": "Verify and integrate the persistent Settings tab, then continue MHW product recovery by PROJECT_PLAN priority.",
   "nextRequiredAction": "Run exact-head required gates for feat/settings-v8.8.59-20261001, refresh canonical main immediately before integration, and merge only if green/non-conflicting.",
-  "verificationAppliesToCommit": null,
+  "verificationAppliesToCommit": "9c9894d39f5875ef5271260638fb07d26c66da8d",
   "lastClosedVerificationCommit": "9c9894d39f5875ef5271260638fb07d26c66da8d",
   "lastClosedVerificationRun": "github-actions-36811068797",
-  "verificationScopeNote": "v8.8.59 Settings changes are implemented and reconciled with main a2e4dbadc6353bd1c1dccd77d0c89779d39b0b24 but have not yet earned exact-head verification. Local Heaven offload/runtime execution was unavailable in this ChatGPT session; GitHub CI is required before integration.",
+  "verificationScopeNote": "Inherited closed verification applies to v8.8.58 source commit 9c9894d39f5875ef5271260638fb07d26c66da8d only. The v8.8.59 Settings candidate source is 8bb9cfd9dd6354f302a1164758bdc46ee3feb9ba and still requires exact-head verification before integration. Local Heaven offload/runtime execution was unavailable in this ChatGPT session; no local installed-client proof is claimed.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
     "updaterReleaseTag": "updater-main-357",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.48-mods-layout-integration.md"
   },
-  "candidateSourceCommit": "b62c099f2514281a1d1d0b350cad2a090e0554d2",
+  "candidateSourceCommit": "8bb9cfd9dd6354f302a1164758bdc46ee3feb9ba",
   "unresolvedRisks": [
     "The v8.8.59 Settings candidate still needs exact-head required gates and a fresh-main integration check.",
     "The separate runtime/updater hardening lane may overlap updater code and must be semantically reconciled after Settings lands; do not overwrite either lane.",
