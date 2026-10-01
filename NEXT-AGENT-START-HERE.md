@@ -23,7 +23,7 @@ v8.8.63 is integrated through PR #555 after exact-head Workflow Feature, MHW Pro
 
 The signed Heaven Bridge rejected unsigned ChatGPT dispatch with `AUTH_REQUIRED`; do not weaken HMAC. GitHub Actions is the authoritative verification environment for this lane.
 
-## Unresolved work
+## Unresolved risks and remaining work
 
 - #558 remains open for deeper provider-aware pagination/search and catalog breadth beyond the first capacity bump.
 - #559 remains open for sorting, filters, provider health, richer loading/empty/partial-failure states, and broader discovery UX.
@@ -33,4 +33,4 @@ The signed Heaven Bridge rejected unsigned ChatGPT dispatch with `AUTH_REQUIRED`
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Refresh live ownership/state before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, refresh live ownership/state before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
