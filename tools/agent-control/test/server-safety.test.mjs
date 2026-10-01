@@ -346,6 +346,19 @@ test("counted deploy preflights whole-batch capacity before launching the first 
   assert.match(route, /No workers were launched/);
 });
 
+test("counted deploy never splits one explicit mutable boundary into synthetic subleases", () => {
+  const source = fs.readFileSync(SERVER, "utf8");
+  const route = source.slice(
+    source.indexOf('if (req.method === "POST" && pathname === "/api/deploy")'),
+    source.indexOf("const reviewMatch", source.indexOf('pathname === "/api/deploy"'))
+  );
+  const boundaryGuardAt = route.indexOf("count > 1 && explicitBoundary");
+  const firstDeployAt = route.indexOf("await deployOne");
+  assert.ok(boundaryGuardAt >= 0 && firstDeployAt > boundaryGuardAt);
+  assert.match(route, /one worker per mutable boundary/i);
+  assert.doesNotMatch(route, /explicitBoundary\}#\$\{index \+ 1/);
+});
+
 
 test("assist autonomy blocks dispatch and governed mutations before side effects", async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-control-autonomy-"));
@@ -489,6 +502,18 @@ test("broad workflow execution fails closed until a routing manifest is current"
   assert.equal(blocked.status, 201);
   assert.equal(blocked.body.created.length, 0);
   assert.match(blocked.body.blocked[0], /current routing manifest/i);
+
+  const duplicateManifest = await postJson(port, "/api/control/routing-manifest", {
+    source: "test-routing-board-duplicate",
+    mode: "authoritative",
+    ttlMinutes: 30,
+    assignments: [
+      { slotId: "main-a", role: "main", status: "claimed", owner: "agent-a", boundary: "Agent-Control/Core" },
+      { slotId: "main-b", role: "main", status: "claimed", owner: "agent-b", boundary: "agent-control/core" }
+    ]
+  });
+  assert.ok(duplicateManifest.status >= 400);
+  assert.match(duplicateManifest.body.error, /duplicates mutable boundary/i);
 
   const manifest = await postJson(port, "/api/control/routing-manifest", {
     source: "test-routing-board",
