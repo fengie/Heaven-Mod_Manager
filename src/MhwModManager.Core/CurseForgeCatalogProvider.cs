@@ -129,7 +129,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
                     ct).ConfigureAwait(false);
                 var page = NormalizeModList(response.Document, request.Game, source.CurseForgeGameId);
                 result.AddRange(page.Take(wanted - result.Count));
-                if (page.Count < pageSize) break;
+                if (page.Length < pageSize) break;
             }
 
             MarkConnected();
@@ -316,9 +316,9 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
         var summary = ReadOptionalString(root, "summary") ?? string.Empty;
         var authors = ReadNameArray(root, "authors");
         var categories = ReadNameArray(root, "categories");
-        var files = root.TryGetProperty("latestFiles", out var latestFiles) && latestFiles.ValueKind == JsonValueKind.Array
+        List<CatalogModFile> files = root.TryGetProperty("latestFiles", out var latestFiles) && latestFiles.ValueKind == JsonValueKind.Array
             ? NormalizeFiles(latestFiles, providerModId)
-            : Array.Empty<CatalogModFile>();
+            : [];
         var sourceUrl = ReadOptionalString(root, "links", "websiteUrl")
             ?? $"https://www.curseforge.com/projects/{providerModId}";
 
