@@ -2,10 +2,11 @@
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Candidate branch: `feat/catalog-ui-v8.8.62`
-PR: #553
+Canonical merge: `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71`
+Exact verified source: `9c2976ae96533b3d439610ef7c770a73d0e14fe3`
+PR: #553 (merged)
 
-## Implemented on the candidate
+## Integrated in v8.8.62
 
 - Added a final **Browse Mods** tab so existing tab indices and deferred page behavior remain stable.
 - Uses the existing source-aware SQLite/FTS cache and provider sync services; provider refresh failures are isolated and cached rows remain browseable.
@@ -17,19 +18,19 @@ PR: #553
 
 ## Verification state
 
-No final-head Windows verification is claimed yet. PR #553 must pass the repository's exact-head build/analyzer/test, product-security, Toolbox-ownership, and continuity gates after the last source/metadata edit.
+Exact head `9c2976ae96533b3d439610ef7c770a73d0e14fe3` passed Workflow Feature PR Gate `36869271453`, MHW Product Security Gate `36869271833`, and Heaven Toolbox Ownership Gate `36869271597`. The full Workflow gate included repository verification, strict builds, unit/integration tests, focused UX/XAML, migration, deployment-concurrency, catalog-sync, workflow regressions, continuity, and whitespace checks. PR #553 merged as `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71`, and post-merge comparison reports zero file differences from the verified head.
 
 ## Unresolved risks and remaining work
 
 - Steam Workshop is conditional: only implement for a game/profile with a supported Workshop contract and required capabilities/credentials. Do not invent an MHW mapping.
 - Vortex is optional interoperability, not a catalog backend. Implement only an explicit supported metadata/import-export/handoff contract.
-- Issue #350 has a checked-in ECDSA P-256 signed-updater design, but production closure requires real external public/private key provisioning plus an end-to-end signed release. Never commit a fake production key.
-- Issue #354 source-side hardening may proceed, but GitHub rulesets currently return 403 for this private repository/account tier, and Authenticode publisher identity requires external certificate provisioning.
+- Issue #350 has a checked-in signed-updater design, but production closure requires real external public/private key provisioning plus an end-to-end signed release. Never commit a fake production key.
+- Issue #354 source-side hardening may proceed, but GitHub rulesets remain externally unavailable on the current private-repository/account tier, and Authenticode publisher identity requires external certificate provisioning.
 - RECOVERY-007 representative installed-game/runtime discovery proof and RECOVERY-005 installed WPF interaction acceptance remain evidence gaps.
-- The direct local Heaven/Agent Control execution namespace is unavailable in this chat; the self-hosted Heaven Actions runner is the deterministic Windows execution fallback.
+- Older issue #281 recovery branches still carry unique historical commits; classify that ancestry before branch deletion rather than assuming byte-level supersession.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Preserve unresolved evidence/security boundaries and recursively propagate this obligation. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Refresh live findings/ownership before mutation. Preserve unresolved evidence/security boundaries and recursively propagate this obligation. **Do not break the chain.**
 
 The successor must propagate this continuity obligation to the next agent.
