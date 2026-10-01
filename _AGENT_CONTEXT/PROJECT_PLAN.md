@@ -23,7 +23,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
 | RECOVERY-001 | P0 | DONE | `archive/branch-zero-20260930/agent-central-project-plan-v8.8.49-20260930-5fd5319c` | Restore centralized planning and make branch cleanup extract unique work before deletion. |
-| RECOVERY-002 | P0 | ACTIVE | `archive/branch-zero-20260930/feat-catalog-browser-v8.8.50-20260930-a772aeee` | Finish the in-app catalog browser against current main. |
+| RECOVERY-002 | P0 | DONE | `archive/branch-zero-20260930/feat-catalog-browser-v8.8.50-20260930-a772aeee` | Finish the in-app catalog browser against current main. |
 | RECOVERY-003 | P1 | DONE | `archive/branch-zero-20260930/feature-manual-update-check-20260930-385c1146` | Restore and finish the manual “Check for updates” UI path. |
 | RECOVERY-004 | P0 | DONE | `archive/branch-zero-20260930/fix-audit-hardening-20260930-6fd76158`; `archive/branch-zero-20260930/fix-runtime-hardening-20260930-34df6690` | Reconcile overlapping updater/runtime hardening without regressing newer main. |
 | RECOVERY-005 | P1 | ACTIVE | `archive/branch-zero-20260930/fix-dark-combobox-v8.8.53-20260930-9bfb3028` | Finish dark ComboBox chrome/contrast behavior and regression coverage. |
@@ -46,19 +46,19 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-002 — Catalog browser
 
-**Owner:** active catalog recovery lane
-**Current live branches:** `fix/issue281-catalog-v8.8.55` (fresh-main recovery candidate); `fix/issue281-catalog-browser-recovery` (older preserved source lane)
+**Owner:** completed on canonical v8.8.62 main via PR #553
+**Preserved reference branches:** `fix/issue281-catalog-v8.8.55`; `fix/issue281-catalog-browser-recovery` (both retain unique historical commits and require ancestry classification before deletion)
 **Related issue:** #281
 **Acceptance:** current-main-compatible browse/search/detail UI, provider-neutral composition, focused tests, safe acquisition boundaries, current metadata/versioning, exact integration evidence.
 
 - [x] Preserve exact archived source tip.
 - [x] Rehydrate implementation work into a live recovery branch.
-- [ ] Review the archived UI/view-model code against current catalog contracts and newer main.
-- [ ] Repair/reconcile stale assumptions and metadata.
-- [ ] Run focused catalog/UI checks and required broader gates.
-- [ ] Integrate the verified semantic result to `main`, then retire the recovery branch.
+- [x] Review the archived UI/view-model code against current catalog contracts and newer main.
+- [x] Repair/reconcile stale assumptions and metadata.
+- [x] Run focused catalog/UI checks and required broader gates.
+- [x] Integrate the verified semantic result to `main` via PR #553; defer branch retirement until unique historical ancestry is explicitly classified.
 
-**Next action:** continue the existing recovery branch; do not create a duplicate catalog implementation lane.
+**Next action:** DONE on canonical v8.8.62 main at merge `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71`. Keep issue #281 open only for its real conditional/optional follow-up contracts; preserve the two historical recovery branches until their unique ancestry is classified.
 
 ## RECOVERY-003 — Manual update check + user update preference
 
