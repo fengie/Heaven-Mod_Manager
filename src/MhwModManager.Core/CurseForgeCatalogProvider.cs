@@ -320,7 +320,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
             ? NormalizeFiles(latestFiles, providerModId)
             : [];
         var sourceUrl = ReadOptionalString(root, "links", "websiteUrl")
-            ?? $"https://www.curseforge.com/projects/{providerModId}";
+            ?? throw new InvalidDataException("CurseForge mod payload is missing its authoritative website URL.");
 
         if (!Uri.TryCreate(sourceUrl, UriKind.Absolute, out var source)
             || !source.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
@@ -407,7 +407,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
                 $"CurseForge mod {modId}",
                 CurseForgeCatalogPolicy.ProviderId,
                 modId,
-                $"https://www.curseforge.com/projects/{modId}",
+                null,
                 Required: ReadOptionalInt64(dependency, "relationType") == 3));
         }
         return result;
