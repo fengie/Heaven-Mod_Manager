@@ -1,3 +1,12 @@
+# v8.8.62 — 2026-10-01
+
+- Add an integrated **Browse Mods** WPF surface over the provider-neutral SQLite/FTS catalog cache with local search, exact file inspection, provider-page handoff, and failure-isolated refresh.
+- Add a bounded catalog acquisition bridge that accepts only exact provider/game/mod/file identities, requires credential-free HTTPS endpoints at the durable boundary, downloads direct artifacts into manager-owned temporary staging, hashes them, and routes them through the existing archive inspection/import pipeline.
+- Persist exact installed provider mod/file origins after successful direct import and expose exact-origin update checks that fail closed when a source/file disappears or changes instead of guessing replacements.
+- Recover the official CurseForge REST adapter, transport, compliance policy, deterministic fixtures/tests, and the generic permitted crawler framework with reviewed terms/robots, path/origin containment, response bounds, and kill switch.
+- Keep CurseForge opt-in through `MOD_MANAGER_CURSEFORGE_API_KEY` plus `MOD_MANAGER_CURSEFORGE_GAME_ID`; secrets and expiring download URLs remain outside durable catalog records.
+- Reconcile all catalog work onto current v8.8.61 main rather than reviving stale issue #281 branches.
+
 # v8.8.61 — 2026-10-01
 
 - Replace remaining system-light WPF scrollbars with application-owned dark ScrollBar and Thumb chrome while retaining vertical/horizontal paging behavior.

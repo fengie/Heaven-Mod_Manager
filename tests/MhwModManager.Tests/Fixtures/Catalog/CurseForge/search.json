@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "id": 123,
+      "gameId": 777,
+      "name": "Fixture Hunter Tools",
+      "summary": "Fixture CurseForge mod.",
+      "downloadCount": 4200,
+      "dateCreated": "2026-09-01T12:00:00Z",
+      "dateModified": "2026-09-29T15:30:00Z",
+      "links": {
+        "websiteUrl": "https://www.curseforge.com/example/fixture-hunter-tools"
+      },
+      "logo": {
+        "thumbnailUrl": "https://media.example/logo.png"
+      },
+      "authors": [
+        { "name": "FixtureAuthor" }
+      ],
+      "categories": [
+        { "name": "Quality of Life" }
+      ],
+      "screenshots": [
+        { "title": "Preview", "url": "https://media.example/preview.png" }
+      ],
+      "latestFiles": [
+        {
+          "id": 456,
+          "displayName": "1.2.3",
+          "fileName": "fixture-hunter-tools.zip",
+          "fileLength": 2048,
+          "fileDate": "2026-09-29T15:00:00Z",
+          "dependencies": [
+            { "modId": 999, "relationType": 3 }
+          ]
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "index": 0,
+    "pageSize": 1,
+    "resultCount": 1,
+    "totalCount": 1
+  }
+}

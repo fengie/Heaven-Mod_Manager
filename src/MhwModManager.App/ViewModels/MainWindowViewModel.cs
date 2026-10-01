@@ -187,7 +187,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         confirmBeforeApply=settings.ConfirmBeforeApply;
         confirmBeforeDiscardStaged=settings.ConfirmBeforeDiscardStaged;
         backgroundMetadataRefreshEnabled=settings.BackgroundMetadataRefreshEnabled;
-        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,7):0;
+        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,8):0;
         UiMotion.AnimationsEnabled=uiAnimationsEnabled;
         CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0
             ? $"v{s.BuildIdentity.ProductVersion} · build {s.BuildIdentity.BuildNumber} · {s.BuildIdentity.ShortSha}"
@@ -249,7 +249,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
-        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,7));
+        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,8));
         if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
         {
             initialMetadataRefreshStarted=true;
@@ -257,6 +257,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);
         if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
+        if(value==8)_=EnsureCatalogLoadedAsync(backgroundCts.Token);
     }
 
     private async Task EnsureDeferredPageLoadedAsync(int tab,CancellationToken ct)
@@ -1509,6 +1510,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         searchCts?.Cancel();
         searchCts?.Dispose();
         searchCts=null;
+        DisposeCatalogRuntime();
         GC.SuppressFinalize(this);
     }
 

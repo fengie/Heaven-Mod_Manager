@@ -1,40 +1,35 @@
-# v8.8.61 dark window chrome + build-label repair — current handoff
+# v8.8.62 federated catalog recovery — current handoff
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Candidate branch: `fix/ui-chrome-encoding-v8.8.60-20261001` (temporary branch name; release version is 8.8.61)
-PR: #551
+Candidate branch: `feat/catalog-ui-v8.8.62`
+PR: #553
 
-## Implemented
+## Implemented on the candidate
 
-This candidate is reconciled on top of canonical v8.8.60 / PR #552 and keeps its Dashboard/runtime/updater fixes intact.
-
-- WPF ScrollBar/Thumb chrome is now application-owned and dark for vertical and horizontal scrolling instead of falling back to Windows' light scrollbar surface.
-- The native Windows title bar requests immersive dark mode through a constrained `dwmapi.dll` System32 import, without enabling unsafe code for the application.
-- `UpdateBuildIdentity.DisplayId` no longer contains the corrupted literal `â€¢`; it uses an ASCII-stable ` | ` separator.
-- Focused regressions protect all three fixes and reject literal escaped-newline corruption in the DWM declaration.
-
-The first draft-gate iteration caught a malformed-source regression where literal `\\n` sequences caused the interop declaration to be commented out. The source was repaired to real line breaks and the regression was added before release integration.
+- Added a final **Browse Mods** tab so existing tab indices and deferred page behavior remain stable.
+- Uses the existing source-aware SQLite/FTS cache and provider sync services; provider refresh failures are isolated and cached rows remain browseable.
+- Added exact provider-file loading, provider-page handoff, and exact installed-origin status checks.
+- Added a catalog acquisition bridge: exact provider/game/mod/file validation, bounded HTTPS temporary download, authoritative SHA-256, existing archive inspection/import, then exact installed-origin persistence.
+- Recovered the official CurseForge API adapter/transport/compliance policy plus deterministic fixtures/tests from the stale issue #281 lane.
+- Recovered the fail-closed permitted crawler framework with reviewed terms/robots, origin/path containment, size/content-type bounds, and kill switch.
+- CurseForge remains opt-in through external `MOD_MANAGER_CURSEFORGE_API_KEY` and `MOD_MANAGER_CURSEFORGE_GAME_ID`; no credential is persisted.
 
 ## Verification state
 
-RECOVERY-004 v8.8.60 exact-head gates passed before PR #552 merged as `2ace37e2731dc9282e04cc42d77c701ff12e1751`.
+No final-head Windows verification is claimed yet. PR #553 must pass the repository's exact-head build/analyzer/test, product-security, Toolbox-ownership, and continuity gates after the last source/metadata edit.
 
-v8.8.61 implementation merge checkpoint: `eb440ef91cc453c28a18c243d4e3fa325ad33b81`. Version/README/continuity edits followed, so the final branch head requires the normal exact-head Workflow Feature, MHW Product Security, Heaven Toolbox Ownership, and continuity gates before PR #551 is marked ready and merged.
+## Unresolved risks and remaining work
 
-No installed-client visual/interaction acceptance is claimed yet for the new scrollbar or native title-bar dark mode.
-
-## Coordination / risks
-
-- RECOVERY-004 is DONE on canonical v8.8.60; do not reopen or replay its archived branches.
-- RECOVERY-002 catalog recovery remains separately owned.
-- RECOVERY-007 still needs representative installed-game/runtime discovery proof.
-- RECOVERY-005 retains an interaction-acceptance gap even though the supplied installed screenshot visually confirms the ComboBox is dark.
-- The direct local Heaven/Agent Control route is unavailable in this chat; exact-head Windows execution is available through the self-hosted Heaven Actions runner.
-- Global Agent Control/Heaven/plugin work belongs in `fengie/heaven-toolbox`, not MHW.
+- Steam Workshop is conditional: only implement for a game/profile with a supported Workshop contract and required capabilities/credentials. Do not invent an MHW mapping.
+- Vortex is optional interoperability, not a catalog backend. Implement only an explicit supported metadata/import-export/handoff contract.
+- Issue #350 has a checked-in ECDSA P-256 signed-updater design, but production closure requires real external public/private key provisioning plus an end-to-end signed release. Never commit a fake production key.
+- Issue #354 source-side hardening may proceed, but GitHub rulesets currently return 403 for this private repository/account tier, and Authenticode publisher identity requires external certificate provisioning.
+- RECOVERY-007 representative installed-game/runtime discovery proof and RECOVERY-005 installed WPF interaction acceptance remain evidence gaps.
+- The direct local Heaven/Agent Control execution namespace is unavailable in this chat; the self-hosted Heaven Actions runner is the deterministic Windows execution fallback.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Preserve the permanent continuity constitution, all unresolved evidence gaps, and this explicit successor-propagation obligation. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Preserve unresolved evidence/security boundaries and recursively propagate this obligation. **Do not break the chain.**
 
 The successor must propagate this continuity obligation to the next agent.
