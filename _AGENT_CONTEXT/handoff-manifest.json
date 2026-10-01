@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.54",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.53 canonical main a6716c8ab0bd9b722d28ad41f825538c67602daf after PR #540 exact-head integration, Windows 26/26 release build 362, updater E2E, and persisted integration evidence; authenticated heaven2 Agent Work Reports smoke remains pending",
+  "immediateParentRevision": "v8.8.54 exact head c59554b441c47085d6af18e703adc63855e35472 passed Agent Control 36796050757, Security Supply Chain 36796050831, and Workflow Feature 36796050750, then merged as be001c2582564e55a7561a97bff791bbf821621a with zero file delta",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -105,7 +105,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.54 single-owner coordination hardening with fresh exact-head Agent Control and applicable repository gates, verify canonical main after integration, retire only proven-superseded coordination branches, and run live duplicate-boundary/single-owner smoke only through an authenticated heaven2 path.",
+  "nextAgentObligation": "Use the integrated single-owner mutable-boundary guardrails, refresh live ownership before mutation, and run the remaining duplicate/disjoint/single-owner smoke only through an authorized signed or machine-local heaven2 path; never weaken HMAC. Preserve and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
