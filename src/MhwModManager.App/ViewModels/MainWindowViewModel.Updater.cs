@@ -287,8 +287,11 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    private static bool IsPreparedHandoffCurrent(PreparedUpdateHandoff? prepared, StagedUpdate? preparedFor, StagedUpdate? current) =>
-        prepared is not null && preparedFor is not null && ReferenceEquals(preparedFor, current);
+    private static bool IsPreparedHandoffCurrent(PreparedUpdateHandoff? prepared, StagedUpdate? preparedFor, StagedUpdate? current)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return prepared is not null && preparedFor is not null && ReferenceEquals(preparedFor, current);
+    }
 
     private bool HasActiveGameProcess()
     {
