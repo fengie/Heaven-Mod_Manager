@@ -1,3 +1,12 @@
+# v8.8.64 — 2026-10-01
+
+- Fix the main-window game selector so the custom dark ComboBox renders `GameProfile.DisplayName` rather than raw record/debug text.
+- Replace the plain Browse Mods identity cell with artwork-backed rich rows showing summary, author, category, downloads, provider, version, update time, and cache state.
+- Add selected-mod artwork plus version/update context while preserving exact-file loading, provider-page handoff, and safe acquisition.
+- Accept only credential-free HTTPS thumbnail URIs at the UI projection boundary.
+- Enable recycled DataGrid row virtualization, raise provider refresh requests from 60 to 100 items, and raise cached visible results from 250 to 1000.
+- Add focused XAML/source regression coverage and keep deeper provider-aware expansion/search plus filter/sort/provider-health UX tracked in #558 and #559.
+
 # v8.8.63 — 2026-10-01
 
 - Harden permitted HTML crawler path authorization with segment-boundary matching and stricter manifest-prefix validation.

@@ -34,7 +34,13 @@ public sealed record CatalogModRow(CatalogMod Mod, bool IsStale)
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return Mod.ProviderId;
+            return Mod.ProviderId.Trim().ToLowerInvariant() switch
+            {
+                "nexus" => "Nexus Mods",
+                "gamebanana" => "GameBanana",
+                "curseforge" => "CurseForge",
+                _ => Mod.ProviderId
+            };
         }
     }
     public string Version
@@ -83,6 +89,18 @@ public sealed record CatalogModRow(CatalogMod Mod, bool IsStale)
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
             return IsStale ? "Cached · refresh recommended" : "Current cache";
+        }
+    }
+    public Uri? ThumbnailUri
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (!Uri.TryCreate(Mod.Thumbnail, UriKind.Absolute, out var uri)) return null;
+            if (!uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)) return null;
+            if (!string.IsNullOrEmpty(uri.UserInfo)) return null;
+            if (!uri.IsDefaultPort && uri.Port != 443) return null;
+            return uri;
         }
     }
 }
@@ -158,6 +176,9 @@ public sealed record CatalogOriginStatusRow(
 
 public sealed partial class MainWindowViewModel
 {
+    private const int CatalogProviderRefreshLimit = 100;
+    private const int CatalogVisibleResultLimit = 1000;
+
     private HttpClient? catalogHttp;
     private CatalogRepository? catalogRepository;
     private CatalogSyncService? catalogSync;
@@ -328,7 +349,7 @@ public sealed partial class MainWindowViewModel
                     : CatalogBrowseMode.RecentlyUpdated;
                 var result = await sync.SyncAsync(
                     provider,
-                    new CatalogBrowseRequest(s.Paths.Game, Query: null, Mode: mode, Limit: 60),
+                    new CatalogBrowseRequest(s.Paths.Game, Query: null, Mode: mode, Limit: CatalogProviderRefreshLimit),
                     new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
                     ct);
                 successes++;
@@ -376,7 +397,7 @@ public sealed partial class MainWindowViewModel
             CatalogQuery,
             gameId: s.Paths.Game.Id,
             includeStale: true,
-            limit: 250,
+            limit: CatalogVisibleResultLimit,
             now: DateTimeOffset.UtcNow,
             ct: ct);
         var now = DateTimeOffset.UtcNow;

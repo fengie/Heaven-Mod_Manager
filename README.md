@@ -1,10 +1,18 @@
-# v8.8.63 — MHW Manual Mod Manager
+# v8.8.64 — MHW Manual Mod Manager
 
-Current product version: **8.8.63**.
+Current product version: **8.8.64**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.64 — richer Browse Mods + selector repair
+
+- Fix the header game selector so the app-owned dark ComboBox renders the selected game's human-readable name instead of the raw `GameProfile` record.
+- Upgrade **Browse Mods** to show safe HTTPS thumbnails, summaries, author/category/download metadata, readable provider names, version, updated date, and cache freshness.
+- Add selected-mod artwork plus version/update context while preserving exact-file selection and the existing safe install/provider-page flow.
+- Enable recycled row virtualization and raise the initial provider refresh cap from 60 to 100 items plus the cached visible-result cap from 250 to 1000.
+- Add focused XAML/source regressions; deeper provider-aware pagination/search and discovery controls remain tracked in #558/#559.
 
 ## v8.8.63 — crawler containment hardening
 
@@ -22,19 +30,15 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Recovered the official CurseForge API adapter and fail-closed permitted crawler framework from stale issue #281 branches onto current main lineage, with deterministic fixtures and policy tests.
 - CurseForge remains opt-in through environment-provided API/game IDs; no credential is written into catalog rows or durable URLs.
 
-### v8.8.61 — dark window chrome + clean build labels
-
-- Replaced remaining Windows-light scrollbars with application-owned dark ScrollBar/Thumb templates, including horizontal and vertical paging behavior.
-- Requests immersive dark mode for the native Windows title bar without enabling unsafe code for the WPF application.
-- Repaired the updater build identity label that literally rendered `â€¢`; build/version text now uses an ASCII-stable separator and has a regression guard.
-- Added focused UI regressions, including a malformed-source guard that rejects escaped-newline interop declarations.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
-- [ ] **SECURITY-554 / P0** — v8.8.63 hardens permitted-crawler path and redirect containment; source/tests are on the issue branch pending exact-head gates and integration.
+- [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
+- [ ] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods + selector repair is implemented in PR #561 and pending final exact-head gates/integration.
+- [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 raises the first cache/provider limits; deeper provider-aware discovery/pagination remains open under #558.
+- [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — universal installed-game discovery is integrated, but representative Windows/runtime discovery proof remains before DONE.

@@ -33,11 +33,15 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
-| SECURITY-554 | P0 | ACTIVE | issue #554; `fix/issue-554-crawler-containment-v8.8.63` | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
+| SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
+| BROWSE-556 | P1 | ACTIVE | issue #556; PR #561 | Fix the header game selector selected-text template. |
+| BROWSE-557 | P1 | ACTIVE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche | Expand catalog breadth safely with provider-aware scaling. |
+| BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
-**Owner:** ChatGPT live issue lane on `fix/issue-554-crawler-containment-v8.8.63`
+**Owner:** completed on canonical v8.8.63 main via PR #555
 **Related issue:** #554
 **Acceptance:** segment-safe path prefixes; no implicit redirect following; bounded manual redirects validated before each follow-up request; disallowed targets never contacted; existing crawler safety/compliance behavior preserved; exact-head repository gates green before integration.
 
@@ -46,9 +50,27 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Move production crawler transport ownership inside the crawler and disable automatic redirects.
 - [x] Validate and follow allowed redirects manually with a bounded hop count and loop detection.
 - [x] Add deterministic tests for allowed redirects and for off-origin/HTTP/alternate-port/user-info/out-of-prefix/missing/looping/excessive redirects.
-- [ ] Run required exact-head gates, reconcile fresh `main`, integrate, and close issue #554.
+- [x] Required exact-head gates passed; PR #555 integrated to canonical main and closed issue #554.
 
-**Next action:** open the v8.8.63 PR, use GitHub Actions as the Windows/.NET verification environment, repair any exact-head failures, then merge only after required gates are green.
+**Next action:** DONE. Preserve crawler containment while continuing only provider-specific adapters with reviewed contracts.
+
+## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
+
+**Owner:** ChatGPT live lane on `fix/browse-mods-rich-ui-v8.8.64`
+**Active PR:** #561
+**Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
+
+- [x] Fix selected game rendering with an explicit `DisplayName` template.
+- [x] Add safe HTTPS thumbnails, summary/author/category/download metadata, provider labels, version and update time to Browse Mods.
+- [x] Add selected-mod artwork and preserve exact-file install/source-page behavior.
+- [x] Enable recycled row virtualization.
+- [x] Raise first-tranche refresh/cache limits to 100/provider and 1000 visible cached rows.
+- [x] Add focused source/XAML regression guards.
+- [ ] Pass all required exact-head PR #561 gates and integrate #556/#557.
+- [ ] Continue #558 with provider-aware pagination/search beyond the first capacity tranche.
+- [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
+
+**Next action:** finish exact-head verification/integration for PR #561, then keep #558/#559 open as distinct non-overlapping follow-up lanes.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
