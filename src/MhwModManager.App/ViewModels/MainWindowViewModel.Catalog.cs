@@ -133,6 +133,24 @@ public sealed partial class MainWindowViewModel
         {
             providers.Add(new NexusV3CatalogProvider(new NexusV3Transport(catalogHttp)));
             providers.Add(new GameBananaCatalogProvider(new GameBananaTransport(catalogHttp)));
+
+            var curseForgeApiKey = Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_API_KEY");
+            var curseForgeGameIdText = Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_GAME_ID");
+            if (!string.IsNullOrWhiteSpace(curseForgeApiKey)
+                && int.TryParse(
+                    curseForgeGameIdText,
+                    System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var curseForgeGameId)
+                && curseForgeGameId > 0)
+            {
+                providers.Add(new CurseForgeCatalogProvider(
+                    new CurseForgeTransport(catalogHttp, curseForgeApiKey),
+                    [new CurseForgeCatalogGameSource(
+                        s.Paths.Game.Id,
+                        s.Paths.Game.DisplayName,
+                        curseForgeGameId)]));
+            }
         }
         catalogProviders = providers;
     }
