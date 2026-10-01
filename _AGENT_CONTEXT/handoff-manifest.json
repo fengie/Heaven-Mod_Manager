@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.53",
+  "currentVersion": "8.8.55",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.52 compact Agent Manager dashboard merged at 9a38fcbebea605d8be0842053652c0ed54cf9415 after exact-head PR gates",
   "canonicalRepository": "fengie/mhw-mods",
@@ -38,6 +38,7 @@
     "_AGENT_CONTEXT/README_FIRST.md",
     "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
     "_AGENT_CONTEXT/LEARNED_RULES.md",
+    "_AGENT_CONTEXT/PROJECT_PLAN.md",
     "_AGENT_CONTEXT/CURRENT_STATE.md",
     "_AGENT_CONTEXT/ARCHITECTURE.md",
     "_AGENT_CONTEXT/SOURCE_MAP.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.53 Agent Work Reports: require fresh exact-head Plugin Toolbox, Security Supply Chain and Agent Control PR gates, smoke the loopback reporting dashboard on heaven2, merge only the verified head, verify canonical main contains the reporting slice and synchronized metadata, then continue preserved branch recovery and recursively propagate continuity.",
+  "nextAgentObligation": "Finish the active v8.8.54 coordination integration first, then reconcile and integrate the v8.8.55 branch-cleanup recovery policy/ledger. Preserve every RECOVERY item until its useful semantics are integrated, intentionally superseded, or rejected with evidence; archive-only preservation is non-terminal. Recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
@@ -116,5 +117,6 @@
     "tools/agent-control/repository-context.mjs",
     "tools/agent-control/test/repository-bootstrap.test.mjs"
   ],
-  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
+  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md",
+  "projectPlan": "_AGENT_CONTEXT/PROJECT_PLAN.md"
 }
