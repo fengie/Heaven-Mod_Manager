@@ -1,16 +1,14 @@
-# v8.8.63 MHW product recovery — ordered next actions
+# v8.8.64 MHW product — ordered next actions
 
-1. Finish issue #554 / PR #555 first. Required exact-head gates are Workflow Feature PR Gate, MHW Product Security Gate, and Heaven Toolbox Ownership Gate; merge only when all three are green on one final head.
-2. After green verification, refresh `main` and PR ownership/freshness, merge PR #555, verify the merged tree matches the verified PR source, close #554, and record exact run/merge evidence without another patch bump.
-3. Keep issue #281 limited to real remaining contracts: supported Steam Workshop mappings/capabilities, optional Vortex interoperability, and future HTML adapters only with provider-specific compliance manifests and deterministic parser fixtures.
-4. Continue issue #350 only within the checked-in independent-signing design. Full closure requires an external public/private key ceremony and one real signed release; never commit a fake production key.
-5. Continue issue #354 only where real source-side work remains. Do not claim repository rulesets or Authenticode identity without external evidence.
-6. Preserve RECOVERY-007 representative Windows installed-game/runtime proof and RECOVERY-005 installed WPF interaction acceptance as evidence gaps until observed.
-7. Preserve older issue #281 recovery branches until remaining unique commits are explicitly classified as integrated, superseded, or rejected.
-8. Keep reusable Agent Control/Heaven/plugin/toolbox work in `fengie/heaven-toolbox`.
+1. Finish PR #561 first. Required exact-head gates are Workflow Feature PR Gate, MHW Product Security Gate, and Heaven Toolbox Ownership Gate; merge only when all three are green on one final head.
+2. If a gate fails, repair only the concrete failure on the current branch, synchronize candidate metadata, and rerun exact-head verification. Do not waive failures.
+3. After green verification, refresh canonical `main` and ownership, merge PR #561, verify the merged tree contains the verified source, close #556/#557, and persist integration evidence without another patch bump.
+4. Continue #558 with provider-aware pagination/search only where provider capabilities support it. Nexus v3 full-catalog search is currently unsupported and must not be invented.
+5. Continue #559 with filters, sorting, provider-health/loading/empty/partial-failure UX after the rich-row tranche is canonical.
+6. Preserve issue #281's remaining real provider contracts, external signing/ruleset constraints, RECOVERY-007 Windows discovery proof, and installed WPF acceptance gaps.
 
 ## Current verification boundary
 
-v8.8.63 candidate production source is `76205544ed23422cfb4056dfa88787a162e9a2fd`. Intermediate Workflow Feature runs identified real defects/invariants and were repaired; they are not closure evidence. Final closure requires all required gates green on the same exact PR #555 head.
+v8.8.63 exact head `1090cdde27f979c672d633d9bb513b0c04874e4a` passed all three required gates and merged through PR #555 as `29bcc6fe3c1ac3bb81091f9ba5f02e4e56b9e094`. v8.8.64 candidate source/test commit is `2b49f4f719dfcddfccd3a215a88595df5c779b5e`; later candidate commits synchronize version/docs/continuity. No v8.8.64 integration claim is valid until the final exact PR #561 head passes all required gates.
 
-Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`. Preserve the permanent MHW continuity constitution and active learned rules, recursively propagate this obligation, and do not replace external security/runtime evidence with assumptions. **Do not break the chain.**
+Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`. Preserve and recursively propagate the MHW continuity constitution. **Do not break the chain.**
