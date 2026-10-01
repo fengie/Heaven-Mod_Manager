@@ -70,6 +70,10 @@ A delegation packet should contain: objective, boundary, relevant context, accep
 
 Senior agents should reserve context for architecture, hard reasoning, review, integration, and high-risk verification. Offload mechanical retrieval or repetitive independent work when useful, not by default.
 
+## Branch cleanup and orphan recovery
+
+Treat cleanup as semantic extraction, not branch-count reduction. Before deleting a stale/divergent/failed branch, inspect its diff against fresh canonical state. Useful unique code, tests, research, fixes, or evidence must be either integrated or recorded as an actionable canonical-plan item with exact provenance and a finish/supersede decision path. Archive tags preserve bytes but do not prove integration or authorize forgetting unfinished work.
+
 ## Documentation and durable knowledge
 
 Update documentation when truth changed, not as a ritual after every command. Keep current state current and historical detail historical.
