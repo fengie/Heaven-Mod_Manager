@@ -13,14 +13,14 @@
   "verificationAppliesToCommit": "38d0fcaa853c8951e1bb0043cb962fdb2261a92f",
   "lastClosedVerificationCommit": "38d0fcaa853c8951e1bb0043cb962fdb2261a92f",
   "lastClosedVerificationRun": "workflow-feature-pr-gate-649",
-  "verificationScopeNote": "v8.8.60 RECOVERY-004 exact-head required gates passed on 38d0fcaa853c8951e1bb0043cb962fdb2261a92f before PR #552 merged as 2ace37e2731dc9282e04cc42d77c701ff12e1751. v8.8.61 UI implementation was reconciled on top at eb440ef91cc453c28a18c243d4e3fa325ad33b81; final version/continuity edits followed, so final exact-head gates remain mandatory. No installed-client visual proof is claimed yet for new scrollbar/title-bar behavior.",
+  "verificationScopeNote": "v8.8.60 RECOVERY-004 exact-head required gates passed on 38d0fcaa853c8951e1bb0043cb962fdb2261a92f before PR #552 merged as 2ace37e2731dc9282e04cc42d77c701ff12e1751. v8.8.61 UI source/test checkpoint is 602fcb9b124621c0915519def22145d41890194a after repairing literal escaped-newline corruption caught by draft verification. Final version/continuity metadata is present on the branch, so exact-head gates on the resulting head remain mandatory. No installed-client visual proof is claimed yet for new scrollbar/title-bar behavior.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
     "updaterReleaseTag": "updater-main-357",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.48-mods-layout-integration.md"
   },
-  "candidateSourceCommit": "eb440ef91cc453c28a18c243d4e3fa325ad33b81",
+  "candidateSourceCommit": "602fcb9b124621c0915519def22145d41890194a",
   "unresolvedRisks": [
     "The final v8.8.61 branch head still requires exact-head Workflow Feature, MHW Product Security, Heaven Toolbox Ownership, and continuity verification before integration.",
     "Installed-client visual/interaction acceptance is still required for the new dark scrollbar and native title-bar behavior.",
