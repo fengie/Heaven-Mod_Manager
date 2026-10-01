@@ -89,10 +89,17 @@ public sealed record CatalogCrawlerManifest(
 
         foreach (var segment in prefix.Split('/', StringSplitOptions.None))
         {
-            if (segment is "." or "..")
+            if (HasMalformedPercentEncoding(segment))
             {
                 throw new InvalidOperationException(
-                    "Crawler path prefixes must not contain dot-segment traversal.");
+                    "Crawler path prefixes must use valid percent encoding.");
+            }
+
+            var decoded = Uri.UnescapeDataString(segment);
+            if (decoded is "." or ".." || decoded.Contains('/') || decoded.Contains('\\'))
+            {
+                throw new InvalidOperationException(
+                    "Crawler path prefixes must not contain encoded separators or dot-segment traversal.");
             }
         }
     }
@@ -172,7 +179,7 @@ public sealed class PermittedCatalogCrawler : IDisposable
                 if (redirectCount >= MaxRedirectHops)
                     throw new InvalidOperationException($"Crawler exceeded the {MaxRedirectHops}-redirect safety limit.");
 
-                var nextUri = ResolveRedirectUri(currentUri, response.Headers.Location);
+                var nextUri = ResolveRedirectUri(currentUri, response.Headers);
                 EnsureAllowedUri(nextUri);
                 currentUri = nextUri;
                 redirectCount++;
@@ -261,20 +268,56 @@ public sealed class PermittedCatalogCrawler : IDisposable
         return (int)statusCode is 301 or 302 or 303 or 307 or 308;
     }
 
-    private static Uri ResolveRedirectUri(Uri currentUri, Uri? location)
+    private static Uri ResolveRedirectUri(Uri currentUri, HttpResponseHeaders headers)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (location is null)
+        if (!headers.TryGetValues("Location", out var values))
             throw new InvalidDataException("Crawler redirect response omitted the Location header.");
+
+        var locations = values.ToArray();
+        if (locations.Length != 1 || string.IsNullOrWhiteSpace(locations[0]))
+            throw new InvalidDataException("Crawler redirect Location header must contain exactly one URI.");
 
         try
         {
+            if (!Uri.TryCreate(locations[0], UriKind.RelativeOrAbsolute, out var location))
+                throw new InvalidDataException("Crawler redirect Location header is malformed.");
+
             return location.IsAbsoluteUri ? location : new Uri(currentUri, location);
         }
         catch (UriFormatException ex)
         {
             throw new InvalidDataException("Crawler redirect Location header is malformed.", ex);
         }
+    }
+
+    private static bool HasMalformedPercentEncoding(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        for (var index = 0; index < value.Length; index++)
+        {
+            if (value[index] != '%')
+                continue;
+
+            if (index + 2 >= value.Length
+                || !IsHexDigit(value[index + 1])
+                || !IsHexDigit(value[index + 2]))
+            {
+                return true;
+            }
+
+            index += 2;
+        }
+
+        return false;
+    }
+
+    private static bool IsHexDigit(char value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value is >= '0' and <= '9'
+            or >= 'a' and <= 'f'
+            or >= 'A' and <= 'F';
     }
 
     private static string BuildRequestKey(Uri uri)
