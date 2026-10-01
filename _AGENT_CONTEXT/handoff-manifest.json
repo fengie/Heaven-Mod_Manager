@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.54",
+  "currentVersion": "8.8.55",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.53 canonical main a6716c8ab0bd9b722d28ad41f825538c67602daf after PR #540 exact-head integration, Windows 26/26 release build 362, updater E2E, and persisted integration evidence; authenticated heaven2 Agent Work Reports smoke remains pending",
+  "immediateParentRevision": "v8.8.54 collision-safe Agent Control ownership integrated on canonical main be001c2582564e55a7561a97bff791bbf821621a after exact-head Agent Control, Security Supply Chain, and Workflow Feature gates",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -38,6 +38,7 @@
     "_AGENT_CONTEXT/README_FIRST.md",
     "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
     "_AGENT_CONTEXT/LEARNED_RULES.md",
+    "_AGENT_CONTEXT/PROJECT_PLAN.md",
     "_AGENT_CONTEXT/CURRENT_STATE.md",
     "_AGENT_CONTEXT/ARCHITECTURE.md",
     "_AGENT_CONTEXT/SOURCE_MAP.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Finish v8.8.54 single-owner coordination hardening with fresh exact-head Agent Control and applicable repository gates, verify canonical main after integration, retire only proven-superseded coordination branches, and run live duplicate-boundary/single-owner smoke only through an authenticated heaven2 path.",
+  "nextAgentObligation": "Integrate the v8.8.55 branch-cleanup recovery policy/ledger onto current main, verify governance/continuity checks on the exact reconciled head, then continue RECOVERY items from _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve every useful unique lane until INTEGRATED, EXTRACTED, SUPERSEDED, or REJECTED with evidence; ARCHIVED alone is non-terminal. Recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
@@ -116,5 +117,6 @@
     "tools/agent-control/repository-context.mjs",
     "tools/agent-control/test/repository-bootstrap.test.mjs"
   ],
-  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
+  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md",
+  "projectPlan": "_AGENT_CONTEXT/PROJECT_PLAN.md"
 }
