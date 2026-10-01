@@ -273,8 +273,30 @@ public sealed class PermittedCatalogCrawler : IDisposable
         }
 
         var path = uri.AbsolutePath;
-        if (!manifest.AllowedPathPrefixes.Any(prefix => PathMatchesPrefix(path, prefix)))
+        if (HasUnsafeEncodedPathSegment(path)
+            || !manifest.AllowedPathPrefixes.Any(prefix => PathMatchesPrefix(path, prefix)))
+        {
             throw new InvalidOperationException("Crawler request escaped the manifest-approved path prefixes.");
+        }
+    }
+
+    private static bool HasUnsafeEncodedPathSegment(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (path.Contains("%2f", StringComparison.OrdinalIgnoreCase)
+            || path.Contains("%5c", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        foreach (var segment in path.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var decoded = Uri.UnescapeDataString(segment);
+            if (decoded is "." or ".." || decoded.Contains('/') || decoded.Contains('\\'))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool PathMatchesPrefix(string path, string prefix)
