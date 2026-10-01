@@ -21,6 +21,8 @@ public sealed record CatalogProviderFilter(string? Id,string DisplayName)
 
 public sealed record CatalogBrowserItem(
     string CanonicalId,
+    string ProviderId,
+    string ProviderModId,
     string ProviderName,
     string Name,
     string Summary,
@@ -53,6 +55,8 @@ public sealed record CatalogBrowserItem(
 
         return new CatalogBrowserItem(
             mod.CanonicalId,
+            mod.ProviderId,
+            mod.ProviderModId,
             providerName,
             mod.Name,
             summary,
@@ -90,7 +94,11 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
     private readonly CatalogSyncService syncService;
     private readonly IModCatalogProvider[] providers;
     private readonly GameProfile game;
+    private readonly InstalledCatalogOriginRepository? installedOrigins;
+    private readonly InstalledCatalogOriginChecker? installedOriginChecker;
     private readonly Dictionary<string,string> providerNames;
+    private readonly Dictionary<string,IModCatalogProvider> providersById;
+    private InstalledCatalogOrigin[] selectedInstalledOrigins=[];
     private readonly CancellationTokenSource lifetimeCts=new();
     private readonly SemaphoreSlim refreshGate=new(1,1);
     private bool loaded;
@@ -114,6 +122,8 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
     [ObservableProperty]private bool isRefreshing;
     [ObservableProperty]private string statusText="Open Browse to load the local catalog.";
     [ObservableProperty]private string providerStatusText="Sources have not been refreshed yet.";
+    [ObservableProperty]private string installedOriginStatusText="Select a catalog entry to inspect its exact installed origin.";
+    [ObservableProperty]private bool hasInstalledOrigin;
 
     public string ResultCountLabel
     {
@@ -128,7 +138,9 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
         CatalogRepository repository,
         CatalogSyncService syncService,
         IEnumerable<IModCatalogProvider> providers,
-        GameProfile game)
+        GameProfile game,
+        InstalledCatalogOriginRepository? installedOrigins=null,
+        InstalledCatalogOriginChecker? installedOriginChecker=null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(repository);
@@ -143,9 +155,15 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
             .OrderBy(provider=>provider.DisplayName,StringComparer.OrdinalIgnoreCase)
             .ToArray();
         this.game=game;
+        this.installedOrigins=installedOrigins;
+        this.installedOriginChecker=installedOriginChecker;
         providerNames=this.providers.ToDictionary(
             provider=>provider.ProviderId,
             provider=>provider.DisplayName,
+            StringComparer.OrdinalIgnoreCase);
+        providersById=this.providers.ToDictionary(
+            provider=>provider.ProviderId,
+            provider=>provider,
             StringComparer.OrdinalIgnoreCase);
 
         ProviderFilters.ReplaceAll(
@@ -186,6 +204,117 @@ public sealed partial class CatalogBrowserViewModel:ObservableObject,IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return RefreshCatalogCoreAsync(lifetimeCts.Token);
+    }
+
+    partial void OnSelectedModChanged(CatalogBrowserItem? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        _=LoadInstalledOriginStatusAsync(value,lifetimeCts.Token);
+    }
+
+    public async Task CheckSelectedInstalledOriginAsync(CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var selected=SelectedMod;
+        if(selected is null)
+        {
+            InstalledOriginStatusText="Select a catalog entry first.";
+            HasInstalledOrigin=false;
+            return;
+        }
+
+        await LoadInstalledOriginStatusAsync(selected,ct);
+        if(selectedInstalledOrigins.Length==0||installedOriginChecker is null)
+            return;
+
+        var messages=new List<string>(selectedInstalledOrigins.Length);
+        foreach(var origin in selectedInstalledOrigins)
+        {
+            ct.ThrowIfCancellationRequested();
+            if(!providersById.TryGetValue(origin.ProviderId,out var provider))
+            {
+                messages.Add($"{origin.ModId}: provider is not enabled.");
+                continue;
+            }
+
+            try
+            {
+                var result=await installedOriginChecker.CheckAsync(provider,game,origin,ct);
+                messages.Add(result.State switch
+                {
+                    InstalledCatalogOriginCheckState.Current=>$"{origin.ModId}: exact installed file still resolves.",
+                    InstalledCatalogOriginCheckState.ExactFileMetadataChanged=>$"{origin.ModId}: the same exact file reports changed version metadata; review before updating.",
+                    InstalledCatalogOriginCheckState.SourceFileMissing=>$"{origin.ModId}: exact installed file is missing; no replacement was guessed.",
+                    InstalledCatalogOriginCheckState.SourceModMissing=>$"{origin.ModId}: exact provider mod is missing; no replacement was guessed.",
+                    InstalledCatalogOriginCheckState.UpdatesUnsupported=>$"{origin.ModId}: provider does not support exact update checks.",
+                    _=>$"{origin.ModId}: exact-origin status is unknown."
+                });
+            }
+            catch(Exception ex) when(ex is HttpRequestException or InvalidDataException or InvalidOperationException)
+            {
+                messages.Add($"{origin.ModId}: exact-origin check failed safely.");
+                MasterDebugLog.Write("CATALOG-BROWSE",$"Installed-origin check failed safely. provider={origin.ProviderId}; mod={origin.ProviderModId}; file={origin.ProviderFileId}",ex);
+            }
+        }
+
+        if(SelectedMod?.CanonicalId==selected.CanonicalId)
+            InstalledOriginStatusText=string.Join(" • ",messages);
+    }
+
+    [RelayCommand]
+    private Task CheckInstalledOriginAsync()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return CheckSelectedInstalledOriginAsync(lifetimeCts.Token);
+    }
+
+    private async Task LoadInstalledOriginStatusAsync(CatalogBrowserItem? selected,CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(selected is null)
+        {
+            selectedInstalledOrigins=[];
+            HasInstalledOrigin=false;
+            InstalledOriginStatusText="Select a catalog entry to inspect its exact installed origin.";
+            return;
+        }
+
+        if(installedOrigins is null)
+        {
+            selectedInstalledOrigins=[];
+            HasInstalledOrigin=false;
+            InstalledOriginStatusText="Installed-origin tracking is unavailable in this context.";
+            return;
+        }
+
+        try
+        {
+            var origins=await installedOrigins.GetAllAsync(ct);
+            var matches=origins
+                .Where(origin=>origin.ProviderId.Equals(selected.ProviderId,StringComparison.OrdinalIgnoreCase)
+                    &&origin.ProviderModId.Equals(selected.ProviderModId,StringComparison.OrdinalIgnoreCase))
+                .OrderBy(origin=>origin.ModId,StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if(SelectedMod?.CanonicalId!=selected.CanonicalId)return;
+
+            selectedInstalledOrigins=matches;
+            HasInstalledOrigin=matches.Length>0;
+            InstalledOriginStatusText=matches.Length switch
+            {
+                0=>"This catalog entry is not linked to an installed mod.",
+                1=>$"Installed as {matches[0].ModId}; exact provider file {matches[0].ProviderFileId}.",
+                _=>$"{matches.Length} installed mods link to this exact provider identity."
+            };
+        }
+        catch(OperationCanceledException) when(ct.IsCancellationRequested){}
+        catch(Exception ex) when(ex is IOException or InvalidDataException or Microsoft.Data.Sqlite.SqliteException)
+        {
+            if(SelectedMod?.CanonicalId!=selected.CanonicalId)return;
+            selectedInstalledOrigins=[];
+            HasInstalledOrigin=false;
+            InstalledOriginStatusText="Installed-origin status could not be read; no update was guessed.";
+            MasterDebugLog.Write("CATALOG-BROWSE","Installed-origin status load failed safely.",ex);
+        }
     }
 
     [RelayCommand]
