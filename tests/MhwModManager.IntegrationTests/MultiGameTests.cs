@@ -1,5 +1,6 @@
 using System.Text.Json;
 using MhwModManager.App;
+using MhwModManager.App.ViewModels;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using MhwModManager.Storage;
