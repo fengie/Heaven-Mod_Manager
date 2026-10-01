@@ -5,6 +5,7 @@
 - Relocated MHW-only FunctionVerifier and SelfTest executables under `tests/` and updated solution/build/release verification references.
 - Replaced global-infrastructure CI copies with a MHW product-security gate plus a fail-closed ownership regression gate.
 - Updated durable MHW handoff/routing metadata so product continuity stays local while reusable permissions, routing, training, and tools resolve through Heaven Toolbox.
+- Repaired cutover regression coverage for the relocated FunctionVerifier path, fail-closed Core Rule authorization, and recursive handoff continuity wording.
 
 # v8.8.56 — 2026-09-30
 
