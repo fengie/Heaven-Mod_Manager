@@ -1,1 +1,0 @@
-# Plugin Toolbox Phase 2 — active lane\n\nActive implementation lane for the remaining reusable Heaven plugin roadmap. This branch is intentionally registered before broad coding so branch-lifecycle automation can distinguish live work from stale branch debt.\n
