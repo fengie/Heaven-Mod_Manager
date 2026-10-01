@@ -214,7 +214,7 @@ public sealed partial class App:Application, IDisposable
         }
     }
 
-    private static IReadOnlyList<IModCatalogProvider> CreateRemoteCatalogProviders(GameProfile game,HttpClient httpClient)
+    private static List<IModCatalogProvider> CreateRemoteCatalogProviders(GameProfile game,HttpClient httpClient)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
