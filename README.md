@@ -36,8 +36,8 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
-- [ ] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods + selector repair is implemented in PR #561 and pending final exact-head gates/integration.
-- [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 raises the first cache/provider limits; deeper provider-aware discovery/pagination remains open under #558.
+- [x] **BROWSE-556/BROWSE-557 / P1** — v8.8.64 selector repair and rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
+- [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 integrated the first cache/provider capacity tranche; deeper provider-aware discovery/pagination remains open under #558.
 - [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
