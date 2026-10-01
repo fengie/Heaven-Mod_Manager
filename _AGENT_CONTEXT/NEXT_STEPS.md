@@ -1,9 +1,9 @@
-# v8.8.53 Agent Work Reports integration lane
+# v8.8.53 Agent Work Reports — integrated; authenticated heaven2 smoke pending
 
-1. Freeze the final reconciled #540 head while Plugin Toolbox, Security Supply Chain, and Agent Control PR gates run; do not append proof-only commits that invalidate exact-head evidence.
-2. If required gates pass, smoke the loopback dashboard on heaven2: overall-work list, expandable agents/tasks, explicit checkpoint ingestion, Agent Control-unavailable fallback, visible/hidden refresh cadence, and on-demand logs.
-3. Recheck canonical main immediately before merge. If main moved, reconcile semantically and rerun invalidated checks; otherwise merge only the exact verified head and verify remote main contains the reporting plugin plus v8.8.53 metadata.
-4. After integration, continue the preserved recovery/branch queue one semantic slice at a time. Do not delete divergent work merely to reduce branch count.
+1. **Source/release integration is complete.** PR #540 exact head `b295586beef4e56c7bdc2968b005cc44354c86f5` passed Security Supply Chain `36793284454`, Agent Control `36793284492`, Plugin Toolbox `36793284463`, and Workflow Feature `36793284449`; it merged as `2885609c8db18494dc5d89d7e9545732ab2bf741` with the verified tree preserved. Windows closure `36794493034` passed 26/26 and produced updater build 362. Installed-client updater E2E `36794962203` passed both update success and rollback.
+2. **Finish only the live acceptance gap.** From an authorized signed or machine-local heaven2 path, run the loopback dashboard against canonical main and verify overall-work rendering, expandable agents/tasks, Agent Control ingestion, explicit checkpoint persistence, report-only fallback, visible/hidden refresh cadence, and on-demand logs.
+3. **Do not bypass authentication.** The live heaven2 bridge is HMAC-required. An exact-main provider probe on heaven found no signing key, so heaven cannot legitimately proxy the privileged heaven2 smoke from this route.
+4. After the live smoke, persist same-version evidence and close the Agent Manager P0 lock only if its remaining dispatch/observe/recover/stop and honest provider/freshness contract is also actually proven. Then resume preserved security/catalog/branch work one semantic slice at a time.
 
 # v8.8.52 Agent Manager integration lane
 

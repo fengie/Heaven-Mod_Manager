@@ -2,7 +2,7 @@
 
 ## Integration checkpoint
 
-Target patch is v8.8.53 on PR #540 / `feature/agent-work-reports-20260930`, reconciled onto canonical v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415`. The intervening #539 integration touched no #540 files, so the reporting implementation was preserved byte-for-byte during reconciliation. Fresh exact-head PR gates and live heaven2 dashboard smoke remain required before merge; prior local verification is source evidence only.
+v8.8.53 source/release integration is complete. PR #540 exact head `b295586beef4e56c7bdc2968b005cc44354c86f5` passed all four applicable exact-head gates and merged as `2885609c8db18494dc5d89d7e9545732ab2bf741` with the tested tree preserved. Hosted Windows closure `36794493034` passed 26/26 and produced updater build 362; installed-client updater E2E `36794962203` passed update and rollback. The remaining acceptance gap is the live authenticated heaven2 loopback dashboard smoke; it is not claimed here.
 
 ## Delivered boundary
 
@@ -18,19 +18,22 @@ Agent Control state is always ingested automatically, so a managed/federated age
 
 ## Verification
 
-Local exact-source plugin verification passed on 2026-09-30:
+Verification accumulated in layers:
 
-- Node syntax checks for server, CLI, adapters, view model, and UI script.
-- 7/7 deterministic tests covering snapshot/log ingestion, loopback enforcement, report validation/persistence, corrupt-line tolerance, Agent Control/report merging, and report-only external agents.
-- HTTP smoke confirmed report submission and dashboard rendering while Agent Control is unavailable, preserving local progress instead of dropping it.
+- Historical local exact-source verification passed Node syntax checks, 7/7 deterministic tests, and HTTP fallback smoke.
+- Exact PR head `b295586beef4e56c7bdc2968b005cc44354c86f5` passed Security Supply Chain `36793284454`, Agent Control `36793284492`, Plugin Toolbox `36793284463`, and Workflow Feature `36793284449`.
+- Merge source `2885609c8db18494dc5d89d7e9545732ab2bf741` passed hosted Windows closure `36794493034`: 26/26, updater build 362.
+- Installed-client updater E2E `36794962203` passed success and rollback.
+- Live heaven2 Agent Work Reports dashboard acceptance is still pending. The heaven2 bridge is HMAC-required, while the exact-main heaven provider probe has no signing key; do not bypass that trust boundary.
 
 ## Successor actions
 
-1. Keep the stable `agent-work-reports/view/v1` data contract when merging the reporting surface into Agent Manager; reuse/extract `lib/view-model.mjs` instead of duplicating orchestration logic.
-2. Keep Agent Manager authoritative for dispatch, stop, leases, federation, task state, and authorization.
-3. After this plugin lands, update current agent training/prompt generation so every managed worker emits the reporting checkpoints automatically.
-4. Simplify the root README into milestone/larger-version changes only; keep patch-by-patch detail in CHANGELOG and continuity evidence.
-5. Install the optional desktop shortcut only on the operator machine where the canonical checkout is known; the repository includes a hidden-window launcher and shortcut installer but this handoff does not claim desktop installation.
+1. From an authorized signed or machine-local heaven2 path, smoke the loopback dashboard against canonical main: rendering, Agent Control ingestion, explicit reports, fallback, refresh cadence, and logs. Do not weaken HMAC or expose the loopback service to manufacture evidence.
+2. Keep the stable `agent-work-reports/view/v1` data contract when merging the reporting surface into Agent Manager; reuse/extract `lib/view-model.mjs` instead of duplicating orchestration logic.
+3. Keep Agent Manager authoritative for dispatch, stop, leases, federation, task state, and authorization.
+4. After the live smoke closes this lane, update current agent training/prompt generation so every managed worker emits the reporting checkpoints automatically.
+5. Simplify the root README into milestone/larger-version changes only; keep patch-by-patch detail in CHANGELOG and continuity evidence.
+6. Install the optional desktop shortcut only on the operator machine where the canonical checkout is known; the repository includes a hidden-window launcher and shortcut installer but this handoff does not claim desktop installation.
 
 ## Risks / limits
 

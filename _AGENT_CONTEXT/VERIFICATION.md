@@ -1,8 +1,10 @@
-# v8.8.53 Agent Work Reports — verification scope
+# v8.8.53 Agent Work Reports — integrated verification state
 
-Historical local syntax/tests/HTTP smoke on the pre-reconciliation implementation are useful source evidence but do not authorize integration after the v8.8.52 reconciliation and version/continuity changes. Exact-head acceptance requires the applicable Plugin Toolbox, Security Supply Chain, and Agent Control PR gates on the final #540 head plus a live heaven2 loopback smoke covering dashboard rendering, Agent Control snapshot ingestion, explicit checkpoint persistence, report-only fallback behavior, refresh cadence, and logs. The reporting surface must remain non-mutating and loopback-only by default.
+Exact-head PR verification is complete for `b295586beef4e56c7bdc2968b005cc44354c86f5`: Security Supply Chain `36793284454`, Agent Control `36793284492`, Plugin Toolbox `36793284463`, and Workflow Feature `36793284449` all succeeded. The candidate merged as `2885609c8db18494dc5d89d7e9545732ab2bf741`; post-merge comparison showed no file delta from the verified candidate tree.
 
----
+Hosted Windows closure `36794493034` applies to source `2885609c8db18494dc5d89d7e9545732ab2bf741`: 26/26 stages passed and updater build 362 was produced. Installed-client updater E2E `36794962203` then passed both the update-success and rollback scenarios. Durable logs are `_AGENT_CONTEXT/EVIDENCE/v8.8.53-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.53.log`.
+
+**Not yet claimed:** the required live heaven2 loopback dashboard smoke. The current heaven2 bridge is HMAC-required. A detached exact-main provider probe on heaven reported no signing key, so this route cannot authenticate a privileged heaven2 job. Run the acceptance test through an authorized signed or machine-local heaven2 path; do not weaken HMAC, expose the loopback service remotely, or substitute unsigned heaven.
 
 # v8.8.52 compact Agent Manager — verification scope
 
