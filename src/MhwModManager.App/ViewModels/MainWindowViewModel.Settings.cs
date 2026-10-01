@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using MhwModManager.Core;
 using MhwModManager.Updater;
 
 namespace MhwModManager.App.ViewModels;
@@ -14,6 +15,7 @@ public sealed partial class MainWindowViewModel
 
     partial void OnAutoUpdateEnabledChanged(bool value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
         s.Settings.Update(settings=>settings.AutoUpdateEnabled=value);
         if(!UpdateClientService.CanSelfUpdate(UpdateClientService.GetInstallRoot()))
         {
@@ -38,12 +40,14 @@ public sealed partial class MainWindowViewModel
 
     partial void OnUiAnimationsEnabledChanged(bool value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
         s.Settings.Update(settings=>settings.UiAnimationsEnabled=value);
         UiMotion.AnimationsEnabled=value;
     }
 
     partial void OnRememberLastTabChanged(bool value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
         s.Settings.Update(settings=>
         {
             settings.RememberLastTab=value;
@@ -52,11 +56,20 @@ public sealed partial class MainWindowViewModel
     }
 
     partial void OnConfirmBeforeApplyChanged(bool value)
-        =>s.Settings.Update(settings=>settings.ConfirmBeforeApply=value);
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
+        s.Settings.Update(settings=>settings.ConfirmBeforeApply=value);
+    }
 
     partial void OnConfirmBeforeDiscardStagedChanged(bool value)
-        =>s.Settings.Update(settings=>settings.ConfirmBeforeDiscardStaged=value);
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
+        s.Settings.Update(settings=>settings.ConfirmBeforeDiscardStaged=value);
+    }
 
     partial void OnBackgroundMetadataRefreshEnabledChanged(bool value)
-        =>s.Settings.Update(settings=>settings.BackgroundMetadataRefreshEnabled=value);
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
+        s.Settings.Update(settings=>settings.BackgroundMetadataRefreshEnabled=value);
+    }
 }

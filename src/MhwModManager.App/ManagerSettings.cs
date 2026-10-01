@@ -27,6 +27,7 @@ public sealed class ManagerSettingsStore
 
     private ManagerSettingsStore(string path, ManagerSettings current)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         this.path = path;
         Current = current;
     }
