@@ -218,7 +218,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
         try
         {
             using var response = await transport.GetDownloadUrlAsync(modId, fileId, ct).ConfigureAwait(false);
-            var url = ReadRequiredString(RequireDataValue(response.Document), "download URL");
+            var url = ReadRequiredDataString(RequireDataValue(response.Document), "download URL");
             if (!Uri.TryCreate(url, UriKind.Absolute, out var download)
                 || !download.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
                 || !string.IsNullOrEmpty(download.UserInfo))
@@ -288,7 +288,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
         return id;
     }
 
-    private static IReadOnlyList<CatalogMod> NormalizeModList(
+    private static CatalogMod[] NormalizeModList(
         JsonDocument document,
         GameProfile game,
         int expectedGameId)
@@ -340,7 +340,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
             summary,
             authors.Length == 0 ? "Unknown author" : string.Join(", ", authors),
             files.FirstOrDefault()?.Version,
-            categories.FirstOrDefault(),
+            categories.Length == 0 ? null : categories[0],
             tags,
             logo,
             screenshots,
@@ -354,7 +354,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
             files);
     }
 
-    private static IReadOnlyList<CatalogModFile> NormalizeFiles(JsonElement array, string providerModId)
+    private static List<CatalogModFile> NormalizeFiles(JsonElement array, string providerModId)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (array.ValueKind != JsonValueKind.Array)
@@ -389,7 +389,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
         return result;
     }
 
-    private static IReadOnlyList<CatalogDependency> NormalizeDependencies(JsonElement file)
+    private static List<CatalogDependency> NormalizeDependencies(JsonElement file)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!file.TryGetProperty("dependencies", out var dependencies)
@@ -446,10 +446,10 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
         return value;
     }
 
-    private static string ReadRequiredString(JsonElement value, string context, bool directValue = true)
+    private static string ReadRequiredDataString(JsonElement value, string context)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (directValue && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()))
+        if (value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()))
             return value.GetString()!.Trim();
         throw new InvalidDataException($"CurseForge {context} must be a non-empty string.");
     }
@@ -549,7 +549,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
             .ToArray();
     }
 
-    private static IReadOnlyList<CatalogImage> ReadImageArray(JsonElement root, string property)
+    private static List<CatalogImage> ReadImageArray(JsonElement root, string property)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!root.TryGetProperty(property, out var array)
