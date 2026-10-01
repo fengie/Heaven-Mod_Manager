@@ -62,33 +62,37 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-003 — Manual update check + user update preference
 
-**Owner:** ChatGPT Settings lane on `feat/settings-v8.8.59-20261001`
-**Status:** ACTIVE
+**Owner:** completed on canonical main
+**Status:** DONE
 **Acceptance:** user can explicitly trigger the existing verified updater path, can disable background automatic checks/installation, and both routes preserve current updater concurrency/safe-handoff guarantees.
 
 - [x] Preserve exact archived manual-check behavior and reuse the existing updater command.
-- [x] Expose the manual updater action in the new Settings tab.
+- [x] Expose the manual updater action in the Settings tab.
 - [x] Add a persistent automatic-update preference without removing manual update/install intent.
 - [x] Gate background checks and staged automatic handoff when automatic updates are disabled.
 - [x] Add preference/updater/UI regression coverage.
-- [ ] Run exact-head required gates, integrate to `main`, and persist exact verification evidence.
+- [x] Run exact-head required gates and integrate to `main` via PR #550.
 
-**Coordination:** RECOVERY-004 remains a separate divergent hardening lane. This Settings change intentionally touches only the preference gates around the existing current-main updater path; it does not absorb or overwrite RECOVERY-004 semantics.
+**Integrated evidence:** PR #550 head `b7db699ab105a036b249c8b373f561327be4d2d5` passed Workflow Feature PR Gate run 645, MHW Product Security Gate run 635, and Heaven Toolbox Ownership Gate run 35, then merged as `3e9729ffa4e90660e939657e3a72f9c541d62344`. Follow-up hosted/installed-client evidence was persisted on main without another product patch.
 
-**Next action:** exact-head CI on the v8.8.59 candidate, then refresh main and integrate if green.
+**Next action:** DONE; preserve the Settings preference gates while reconciling RECOVERY-004.
 
 ## RECOVERY-004 — Runtime/updater audit hardening
 
-**Owner:** unclaimed
+**Owner:** active recovery lane on `fix/recovery-004-runtime-hardening-v8.8.60`
+**Status:** ACTIVE
 **Acceptance:** semantically reconcile the two overlapping archived lanes; retain valid fixes for dashboard stretch, metadata retry, staged-update identity/mutation serialization, and diagnostic redaction without importing stale version/continuity snapshots.
 
 - [x] Preserve both exact archived source tips.
-- [ ] Diff both lanes against current updater/runtime code and deduplicate equivalent fixes.
-- [ ] Reproduce which defects still exist on current main.
-- [ ] Port only still-needed code/tests and add/retain regressions.
-- [ ] Run focused updater/runtime checks, then required exact-head gates and integrate.
+- [x] Diff both lanes against current updater/runtime code and deduplicate equivalent fixes.
+- [x] Reproduce all four still-missing defects on current 8.8.59 main.
+- [x] Port only still-needed code/tests while preserving the 8.8.59 Settings/manual-update semantics.
+- [x] Run focused Windows build/integration/function-verifier checks.
+- [ ] Run required exact-head gates, refresh main, integrate, and retire the stale recovery branch.
 
-**Next action:** perform a semantic sibling audit of the two archive tags before writing code; do not cherry-pick stale full-history metadata.
+**Focused evidence:** source checkpoint `5f11ce59712808ce259dbf72922cc011fb4319c1` built Release with 0 warnings / 0 errors; IntegrationTests passed 268/268; FunctionVerifier reported 1469 functions with 0 trace gaps, 0 uncovered call sites, and 0 parse errors.
+
+**Next action:** finish 8.8.60 continuity/version metadata, run exact-head required gates, then integrate only if fresh-main reconciliation remains non-conflicting.
 
 ## RECOVERY-005 — Dark ComboBox chrome
 
