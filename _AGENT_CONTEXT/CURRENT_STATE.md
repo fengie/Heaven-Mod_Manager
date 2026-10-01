@@ -1,30 +1,28 @@
-# v8.8.61 dark window chrome + build-label repair — MHW product state
+# v8.8.62 federated catalog browsing — integrated MHW product state
 
 MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
 
-Canonical v8.8.60 is integrated on `main` via PR #552. Its exact-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership gates passed before merge, so the Dashboard stretch/clipping repair and RECOVERY-004 runtime/updater hardening are now canonical.
-
-The active v8.8.61 lane addresses the remaining defects visible in the installed v8.8.59 screenshot: Windows-light scrollbar chrome, a light native title bar, and mojibake in the build identity label.
+Canonical v8.8.62 is integrated on `main` via PR #553 as merge `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71`. The exact PR head `9c2976ae96533b3d439610ef7c770a73d0e14fe3` passed Workflow Feature PR Gate `36869271453`, MHW Product Security Gate `36869271833`, and Heaven Toolbox Ownership Gate `36869271597`. A post-merge compare reports zero file differences from the verified head.
 
 ## Current MHW product work
 
-- **v8.8.61 direct UI fix:** application-owned dark ScrollBar/Thumb templates, native DWM dark title-bar request, clean ASCII-stable build identity display, and focused regression coverage are implemented on the current candidate branch.
-- **RECOVERY-004 / P0:** DONE on canonical v8.8.60 via PR #552.
-- **RECOVERY-002 / P0:** in-app catalog browser recovery remains active on its existing owner lane.
+- **RECOVERY-002 / P0:** DONE for the recovered catalog browser/acquisition + CurseForge + permitted-crawler tranche now canonical in v8.8.62.
+- **Issue #281:** remains open only for conditional Steam Workshop support, optional Vortex interoperability, and any future provider-specific adapter whose real contract/compliance evidence exists.
+- **Issue #350:** source-side independently signed updater design exists; production closure still requires a real external trust anchor/private-key ceremony and a real signed release.
+- **Issue #354:** source-side hardening may continue, but repository rulesets remain externally unavailable on the current private-repository/account tier and stable Authenticode identity requires external certificate provisioning.
 - **RECOVERY-007 / P0:** discovery source is integrated; representative Windows/runtime installed-game proof remains before DONE.
-- **RECOVERY-003 / P1:** DONE on canonical v8.8.59 via PR #550.
-- **RECOVERY-005 / P1:** dark ComboBox source/tests are integrated; installed Windows/WPF interaction acceptance remains before DONE. The supplied installed-client screenshot visually confirms the ComboBox no longer falls back to the bright native control surface, but does not by itself prove interaction behavior.
+- **RECOVERY-005 / P1:** dark ComboBox source/tests are integrated; installed Windows/WPF interaction acceptance remains an evidence gap.
 
 ## Verification boundary
 
-v8.8.60 exact-head verification is closed on RECOVERY-004 head `38d0fcaa853c8951e1bb0043cb962fdb2261a92f` and merged as `2ace37e2731dc9282e04cc42d77c701ff12e1751`.
+The closed v8.8.62 source boundary is exact head `9c2976ae96533b3d439610ef7c770a73d0e14fe3`. Its full repository verification passed before merge, including strict solution/App compilation with warnings-as-errors, function verification with zero trace/uncovered-call-site gaps, Core/Automation/Integration tests, focused catalog/UX/XAML/migration/concurrency/workflow regressions, product security, Toolbox ownership, continuity, and `git diff --check`.
 
-The v8.8.61 UI implementation was reconciled non-destructively on top of that canonical tree at merge checkpoint `eb440ef91cc453c28a18c243d4e3fa325ad33b81`. Final version/README/continuity edits followed, so the final candidate head still requires exact-head required gates before integration. No installed-client acceptance is claimed for the new scrollbar/title-bar behavior until the resulting build is observed on Windows.
+Merge `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71` has no file delta from the verified head. Subsequent `[skip ci]` continuity/evidence updates are documentation-only and do not extend the verified production-source boundary.
 
-A first draft-gate attempt exposed literal `\\n` sequences in the DWM interop declaration; that malformed source was repaired and a regression now rejects the escaped-newline form.
+No external CurseForge credential, live Steam Workshop mapping, Vortex runtime contract, signed-updater production key, Authenticode certificate, or installed-client interaction evidence is implied by the green source gates.
 
 ## Coordination
 
-The direct local Heaven/Agent Control route is not exposed in this ChatGPT session, but GitHub's self-hosted Heaven Windows runner is available and is the required execution path for exact-head compile/test evidence here. Catalog branches remain separately owned and must not be absorbed into this UI lane.
+The two older issue #281 recovery branches remain preserved because they still have unique historical commits. They are not canonical implementation lanes; classify their unique ancestry as integrated/superseded/rejected before any deletion.
 
 Global Agent Control/Heaven/plugin work remains owned by `fengie/heaven-toolbox` and must not be recreated in MHW.
