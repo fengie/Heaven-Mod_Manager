@@ -1005,3 +1005,13 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - Rule: Normalize only explicitly supported encoding markers before strict parsing; test actual producer bytes throughout reads, backup validation and migration. Valid newer ownership must never be replaced by stale backup due only to encoding. Malformed data remains fail-closed.
 - Trigger/evidence: repeated BOM defect after the plugin-pruner precedent; controller primary/legacy/backup-validation consumers still used plain JSON.parse.
 - Enforcement: shared state decoder, real isolated server precedence/save/recovery/legacy/malformed regressions, generic trainer. Preserve incident history and uncertainty.
+
+## LR-060 — branch cleanup must extract useful work before deleting refs
+- **Rule ID:** LR-060
+- **Status:** Active
+- **Date:** 2026-10-01
+- **Scope:** Git branch cleanup, orphan recovery, integration, multi-agent coordination
+- **Rule:** Treat branch cleanup as semantic work extraction, not branch-count reduction. Before deleting a stale/divergent/failed branch, inspect it against fresh canonical state and either integrate every still-useful unique semantic or create/update an actionable canonical project-plan item with exact provenance, owner/status, acceptance criteria, and next action. Archive tags preserve bytes but do not prove integration or completion.
+- **Trigger / evidence:** The 2026-09-30 branch-zero cleanup archived exact tips correctly but deleted several branch refs before proving that all useful unique work had landed on `main`. A later `git cherry`/semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and coordination work.
+- **Enforcement:** `GLOBAL_GIT_DIRECTIVE.md` extraction gate, `_AGENT_CONTEXT/PROJECT_PLAN.md` recovery queue/disposition contract, multi-agent training, and canonical-tree survival proof. Branch deletion requires `INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED` disposition; `ARCHIVED` alone is non-terminal.
+- **Related rules:** canonical tree survival proof; orphan recovery; permanent continuity constitution.
