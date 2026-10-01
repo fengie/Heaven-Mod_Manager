@@ -16,10 +16,12 @@ public sealed partial class GameProfileRegistry
 
     public GameProfileRegistry(string stateRoot):this(stateRoot,null)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
     }
 
     internal GameProfileRegistry(string stateRoot,Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         this.stateRoot=Path.GetFullPath(stateRoot);
         registryPath=Path.Combine(this.stateRoot,"games.json");
         activePath=Path.Combine(this.stateRoot,"active-game.txt");
@@ -67,6 +69,7 @@ public sealed partial class GameProfileRegistry
 
     public GameProfile AddGenericFromExecutable(string executablePath)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         lock(mutationGate)
         {
             var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
@@ -153,6 +156,7 @@ public sealed partial class GameProfileRegistry
 
     public void Upsert(GameProfile profile)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod($"game={profile.Id}");
         lock(mutationGate)
         {
             if(!IsUsable(profile))throw new ArgumentException("Game profile is invalid or points outside its game root.",nameof(profile));
@@ -163,6 +167,7 @@ public sealed partial class GameProfileRegistry
 
     public void SetActive(string id)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod($"game={id}");
         lock(mutationGate)
         {
             if(!Load().Any(x=>x.Id.Equals(id,StringComparison.OrdinalIgnoreCase)))throw new KeyNotFoundException($"Unknown game profile '{id}'.");
@@ -186,6 +191,7 @@ public sealed partial class GameProfileRegistry
 
     private GameProfile CreateFromExecutable(string executablePath,string? displayName,string? store,string? steamAppId)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         var full=Path.GetFullPath(executablePath);
         if(!File.Exists(full)||!full.EndsWith(".exe",StringComparison.OrdinalIgnoreCase))throw new FileNotFoundException("Select the game's Windows executable.",full);
         var root=InferGameRoot(full);
@@ -408,40 +414,56 @@ public sealed partial class GameProfileRegistry
         }catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException){return null;}
     }
 
-    private static bool ShouldSkipExecutableSearchDirectory(string name)=>name.Equals("_CommonRedist",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("redist",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("redistributable",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("installer",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("installers",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("support",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("directx",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("dotnet",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("easyanticheat",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("battleye",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("saved",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("mods",StringComparison.OrdinalIgnoreCase);
+    private static bool ShouldSkipExecutableSearchDirectory(string name)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        return name.Equals("_CommonRedist",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("redist",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("redistributable",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("installer",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("installers",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("support",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("directx",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("dotnet",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("easyanticheat",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("battleye",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("saved",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("mods",StringComparison.OrdinalIgnoreCase);
+    }
 
-    private static bool IsHelperExecutable(string name)=>name.StartsWith("unins",StringComparison.OrdinalIgnoreCase)
-        ||name.StartsWith("uninstall",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("CrashReportClient",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("CrashReporter",StringComparison.OrdinalIgnoreCase)
-        ||name.StartsWith("UnityCrashHandler",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("crashpad_handler",StringComparison.OrdinalIgnoreCase)
-        ||name.Contains("reportclient",StringComparison.OrdinalIgnoreCase)
-        ||name.Contains("easyanticheat",StringComparison.OrdinalIgnoreCase)
-        ||name.Contains("battleye",StringComparison.OrdinalIgnoreCase)
-        ||name.Contains("redist",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("setup",StringComparison.OrdinalIgnoreCase)
-        ||name.Equals("installer",StringComparison.OrdinalIgnoreCase);
+    private static bool IsHelperExecutable(string name)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        return name.StartsWith("unins",StringComparison.OrdinalIgnoreCase)
+            ||name.StartsWith("uninstall",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("CrashReportClient",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("CrashReporter",StringComparison.OrdinalIgnoreCase)
+            ||name.StartsWith("UnityCrashHandler",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("crashpad_handler",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("reportclient",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("easyanticheat",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("battleye",StringComparison.OrdinalIgnoreCase)
+            ||name.Contains("redist",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("setup",StringComparison.OrdinalIgnoreCase)
+            ||name.Equals("installer",StringComparison.OrdinalIgnoreCase);
+    }
 
-    private static int ExecutableSearchDirectoryPriority(string name)=>name.Equals("Win64",StringComparison.OrdinalIgnoreCase)?6:
-        name.Equals("Win32",StringComparison.OrdinalIgnoreCase)?5:
-        name.Equals("Binaries",StringComparison.OrdinalIgnoreCase)?4:
-        name.Equals("bin",StringComparison.OrdinalIgnoreCase)?3:
-        name.Equals("x64",StringComparison.OrdinalIgnoreCase)?2:
-        name.Equals("x86",StringComparison.OrdinalIgnoreCase)?1:0;
+    private static int ExecutableSearchDirectoryPriority(string name)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        return name.Equals("Win64",StringComparison.OrdinalIgnoreCase)?6:
+            name.Equals("Win32",StringComparison.OrdinalIgnoreCase)?5:
+            name.Equals("Binaries",StringComparison.OrdinalIgnoreCase)?4:
+            name.Equals("bin",StringComparison.OrdinalIgnoreCase)?3:
+            name.Equals("x64",StringComparison.OrdinalIgnoreCase)?2:
+            name.Equals("x86",StringComparison.OrdinalIgnoreCase)?1:0;
+    }
 
-    private static long SafeFileLength(string path){try{return new FileInfo(path).Length;}catch(IOException){return 0;}catch(UnauthorizedAccessException){return 0;}}
+    private static long SafeFileLength(string path)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        try{return new FileInfo(path).Length;}catch(IOException){return 0;}catch(UnauthorizedAccessException){return 0;}
+    }
 
     private static List<GameDiscoveryCandidate> DiscoverXbox()
     {
