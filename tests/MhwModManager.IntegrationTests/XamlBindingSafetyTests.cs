@@ -134,6 +134,40 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void HeaderGameSelectorUsesDisplayNameTemplate()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains("AutomationProperties.Name=\"Active game\"", xaml);
+        Assert.Contains("<ComboBox.ItemTemplate>", xaml);
+        Assert.Contains("Text=\"{Binding DisplayName}\"", xaml);
+        Assert.DoesNotContain("DisplayMemberPath=\"DisplayName\"", xaml);
+    }
+
+    [Fact]
+    public void BrowseModsShowsArtworkMetadataAndUsesVirtualizedCapacity()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Source=\"{Binding ThumbnailUri}\"", xaml);
+        Assert.Contains("SelectedCatalogItem.ThumbnailUri", xaml);
+        Assert.Contains("Binding=\"{Binding Version}\"", xaml);
+        Assert.Contains("Binding=\"{Binding Updated}\"", xaml);
+        Assert.Contains("Text=\"{Binding Downloads}\"", xaml);
+        Assert.Contains("EnableRowVirtualization=\"True\"", xaml);
+        Assert.Contains("VirtualizingPanel.VirtualizationMode=\"Recycling\"", xaml);
+        Assert.Contains("private const int CatalogProviderRefreshLimit = 100;", source);
+        Assert.Contains("private const int CatalogVisibleResultLimit = 1000;", source);
+        Assert.Contains("Limit: CatalogProviderRefreshLimit", source);
+        Assert.Contains("limit: CatalogVisibleResultLimit", source);
+        Assert.Contains("public Uri? ThumbnailUri", source);
+        Assert.Contains("Uri.UriSchemeHttps", source);
+    }
+
+    [Fact]
     public void ConflictCollectionChangesNotifyDerivedAttentionState()
     {
         var root = FindRepositoryRoot();
