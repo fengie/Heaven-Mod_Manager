@@ -71,6 +71,8 @@ public sealed class PermittedCatalogCrawlerTests
     [InlineData("/mods//nested")]
     [InlineData("/mods/../admin")]
     [InlineData("/mods/%2fadmin")]
+    [InlineData("/mods/%2e%2e/admin")]
+    [InlineData("/mods/%zz/admin")]
     public void Malformed_or_ambiguous_path_prefixes_fail_closed(string prefix)
     {
         var manifest = CreateManifest() with { AllowedPathPrefixes = [prefix] };
@@ -144,6 +146,29 @@ public sealed class PermittedCatalogCrawlerTests
             {
                 attempts.Add(Assert.IsType<Uri>(request.RequestUri));
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Found));
+            }),
+            CreateManifest());
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => crawler.FetchHtmlAsync(
+                new Uri("https://catalog.example/mods/start"),
+                new DateOnly(2026, 9, 30),
+                TestContext.Current.CancellationToken));
+
+        Assert.Single(attempts);
+    }
+
+    [Fact]
+    public async Task Malformed_redirect_location_fails_without_follow_up_request()
+    {
+        var attempts = new List<Uri>();
+        using var crawler = new PermittedCatalogCrawler(
+            new RoutingHandler((request, _) =>
+            {
+                attempts.Add(Assert.IsType<Uri>(request.RequestUri));
+                var response = new HttpResponseMessage(HttpStatusCode.Found);
+                response.Headers.TryAddWithoutValidation("Location", "http://[::1");
+                return Task.FromResult(response);
             }),
             CreateManifest());
 
