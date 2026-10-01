@@ -42,6 +42,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 **Next action:** DONE on canonical v8.8.55 main; continue the remaining recovery items.
 
+**Branch disposition:** `fix/branch-cleanup-recovery-v8.8.55-20261001` at `b9b87f6eee78be2ab99b0fc69b13330f40da6c0f` is **INTEGRATED/SUPERSEDED**. Current MHW main retains the RECOVERY-001 ledger and cleanup-extraction contract; the branch's reusable training/Git-doctrine semantics moved to Heaven Toolbox during the v8.8.57 ownership cutover. The obsolete live branch may be retired without losing unique work.
+
 ## RECOVERY-002 — Catalog browser
 
 **Owner:** active catalog recovery lane
