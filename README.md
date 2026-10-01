@@ -36,7 +36,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
 - [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
 - [ ] **RECOVERY-003 / P1** — finish the manual updater check.
-- [ ] **RECOVERY-005 / P1** — v8.8.58 candidate restores application-owned dark ComboBox chrome; exact-head Windows/WPF verification and installed visual acceptance remain before DONE.
+- [ ] **RECOVERY-005 / P1** — v8.8.58 candidate restores application-owned dark ComboBox chrome; exact-head automated gates are green, with installed Windows/WPF visual/interaction acceptance still required before DONE.
 
 
 ## v8.8.54 — collision-safe agent ownership
