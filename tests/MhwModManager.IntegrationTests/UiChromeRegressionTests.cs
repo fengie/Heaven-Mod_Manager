@@ -28,9 +28,10 @@ public sealed class UiChromeRegressionTests
         Assert.Contains("SourceInitialized+=OnSourceInitialized",code);
         Assert.Contains("useImmersiveDarkMode=20",code);
         Assert.Contains("useImmersiveDarkModeBefore20H1=19",code);
-        Assert.Contains("[DllImport(\"dwmapi.dll\",ExactSpelling=true)]",code);\n        Assert.Contains("DefaultDllImportSearchPaths(DllImportSearchPath.System32)",code);
+        Assert.Contains("[DllImport(\"dwmapi.dll\",ExactSpelling=true)]",code);
+        Assert.Contains("DefaultDllImportSearchPaths(DllImportSearchPath.System32)",code);
         Assert.Contains("DwmSetWindowAttribute",code);
-        Assert.DoesNotContain(@"\\n    [DllImport",code,StringComparison.Ordinal);
+        Assert.DoesNotContain(@"\n    [DllImport",code,StringComparison.Ordinal);
     }
 
     [Fact]
@@ -39,12 +40,12 @@ public sealed class UiChromeRegressionTests
         var identity=new UpdateBuildIdentity(
             UpdateProtocol.BuildIdentitySchemaVersion,
             UpdateProtocol.Channel,
-            "8.8.60",
+            "8.8.61",
             "1234567890abcdef",
             373,
             DateTimeOffset.UnixEpoch);
 
-        Assert.Equal("8.8.60 | build 373 | 1234567890ab",identity.DisplayId);
+        Assert.Equal("8.8.61 | build 373 | 1234567890ab",identity.DisplayId);
         Assert.DoesNotContain("â",identity.DisplayId,StringComparison.Ordinal);
         Assert.DoesNotContain("€¢",identity.DisplayId,StringComparison.Ordinal);
     }
