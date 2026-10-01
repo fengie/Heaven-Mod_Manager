@@ -247,7 +247,7 @@ public sealed class PermittedCatalogCrawler : IDisposable
         if (prefix == "/")
             return true;
 
-        var boundary = prefix.EndsWith('/', StringComparison.Ordinal)
+        var boundary = prefix.EndsWith("/", StringComparison.Ordinal)
             ? prefix[..^1]
             : prefix;
 
