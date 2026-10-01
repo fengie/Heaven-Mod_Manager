@@ -1,4 +1,4 @@
-﻿# v8.8.55 branch-cleanup recovery policy â€” candidate
+# v8.8.55 branch-cleanup recovery policy — candidate
 
 The 2026-09-30 branch-zero pass preserved exact deleted tips but did not prove that every useful semantic had reached canonical main. A follow-up semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and Agent Control coordination work. v8.8.54 subsequently integrated the coordination/lease semantics on canonical `main` at `be001c2582564e55a7561a97bff791bbf821621a`.
 
