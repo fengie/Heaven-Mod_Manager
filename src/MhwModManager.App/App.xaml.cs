@@ -76,6 +76,8 @@ public sealed partial class App:Application, IDisposable
             startup.Info("bootstrap.paths.resolved", $"ToolRoot={paths.ToolRoot}; ModsRoot={paths.ModsRoot}; StateRoot={paths.StateRoot}; GameRoot={paths.GameRoot}; Database={paths.DatabasePath}; MasterLog={UnifiedDebugLog.FilePath}");
             startup.Run("bootstrap.state-directories",()=>Directory.CreateDirectory(paths.NextStateRoot));
 
+            var settings=startup.Run("services.settings",()=>ManagerSettingsStore.Load(Path.Combine(paths.NextStateRoot,"settings.json")));
+            UiMotion.AnimationsEnabled=settings.Current.UiAnimationsEnabled;
             var db=startup.Run("services.database.construct",()=>new ManagerDatabase(paths.DatabasePath));
             await startup.RunAsync("database.initialize",ct=>db.InitializeAsync(ct));
             var plannerSnapshots=startup.Run("services.planner-snapshots",()=>new PlannerSnapshotRepository(db));
@@ -132,7 +134,7 @@ public sealed partial class App:Application, IDisposable
             };
 
             Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
-                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
+                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,settings,updater,buildIdentity,e.Args.ToArray()));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
             var migration=paths.Game.IsMonsterHunterWorld
@@ -286,6 +288,7 @@ public sealed record AppServices(
     LaunchHealthGateService LaunchGate,
     AutomationCoordinator Automation,
     CrashBisectorEngine Bisector,
+    ManagerSettingsStore Settings,
     UpdateClientService Updater,
     UpdateBuildIdentity BuildIdentity,
     IReadOnlyList<string> StartupArguments);

@@ -179,12 +179,23 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         s=services;
+        var settings=s.Settings.Current;
+        autoUpdateEnabled=settings.AutoUpdateEnabled;
+        uiAnimationsEnabled=settings.UiAnimationsEnabled;
+        rememberLastTab=settings.RememberLastTab;
+        confirmBeforeApply=settings.ConfirmBeforeApply;
+        confirmBeforeDiscardStaged=settings.ConfirmBeforeDiscardStaged;
+        backgroundMetadataRefreshEnabled=settings.BackgroundMetadataRefreshEnabled;
+        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,7):0;
+        UiMotion.AnimationsEnabled=uiAnimationsEnabled;
         CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0
             ? $"v{s.BuildIdentity.ProductVersion} · build {s.BuildIdentity.BuildNumber} · {s.BuildIdentity.ShortSha}"
             : $"v{s.BuildIdentity.ProductVersion} · development";
-        ProgramUpdateStatus=UpdateClientService.CanSelfUpdate(UpdateClientService.GetInstallRoot())
-            ? "Automatic program updates are ready."
-            : "Self-update is disabled for this development/unmanaged installation.";
+        ProgramUpdateStatus=!UpdateClientService.CanSelfUpdate(UpdateClientService.GetInstallRoot())
+            ? "Self-update is disabled for this development/unmanaged installation."
+            : autoUpdateEnabled
+                ? "Automatic program updates are ready."
+                : "Automatic program updates are off. Manual checks remain available.";
         Activity=new ActivityPageViewModel(s.PresentationReads);
         ActivityRows=Activity.Rows;
         Coverage=new CoveragePageViewModel(s.PresentationReads);
@@ -237,6 +248,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
+        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,7));
         if(value==1&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
         {
             initialMetadataRefreshStarted=true;
@@ -331,6 +343,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             {
                 try
                 {
+                    if(!BackgroundMetadataRefreshEnabled)
+                    {
+                        MasterDebugLog.Write("AUTO-METADATA","Periodic refresh skipped because background metadata refresh is disabled in Settings.");
+                        continue;
+                    }
                     if(BusyVisibility==Visibility.Visible||CriticalOperation)
                     {
                         MasterDebugLog.Write("AUTO-METADATA","Periodic refresh skipped because a foreground/critical operation is active.");
@@ -770,6 +787,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(StagedCount==0){StatusText="There are no pending changes to discard.";return;}
+        if(ConfirmBeforeDiscardStaged&&MessageBox.Show(
+            $"Discard {StagedCount} pending mod change(s)? Your installed game files will not be changed.",
+            "Discard pending changes",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question)!=MessageBoxResult.Yes)
+        {
+            StatusText="Discard cancelled. Pending changes were kept.";
+            return;
+        }
         suppressChanged=true;
         try{foreach(var row in Mods)row.DiscardStaged();}
         finally{suppressChanged=false;Changed();}
@@ -828,6 +854,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task Apply()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(ConfirmBeforeApply&&StagedCount>0&&MessageBox.Show(
+            $"Apply {StagedCount} pending mod change(s) to {s.Paths.Game.DisplayName}?",
+            "Apply mod changes",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question)!=MessageBoxResult.Yes)
+        {
+            StatusText="Apply cancelled. No game files were changed.";
+            return;
+        }
         await RunBusy("deployment.apply","Applying Mod Changes","Checking the setup, creating recovery information, and safely updating the game files…",false,async ct=>
     {
         var blockers=s.ProcessGuard.GetKnownBlockers();

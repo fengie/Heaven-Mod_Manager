@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.58</Version>
-    <InformationalVersion>8.8.58-dark-combobox-chrome</InformationalVersion>
+    <Version>8.8.59</Version>
+    <InformationalVersion>8.8.59-settings</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

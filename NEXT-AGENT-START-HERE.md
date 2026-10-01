@@ -1,29 +1,31 @@
-# v8.8.58 dark ComboBox chrome — current handoff
+# v8.8.59 persistent Settings — current handoff
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Candidate branch: `fix/recovery-005-dark-combobox-v8.8.58`
+Candidate branch: `feat/settings-v8.8.59-20261001`
 
 ## Implemented
 
-RECOVERY-005 has been reconciled from the preserved archive onto current v8.8.57 main without importing stale metadata. `App.xaml` now owns ComboBox and ComboBoxItem chrome with the existing dark Text/Panel/Border/Accent palette. The selected value, arrow, popup, hover, focus, selected-item, open, and disabled states no longer depend on the bright Windows system control surface. Existing GAME/settings bindings and view-model contracts are unchanged.
+The Settings candidate adds a dedicated left-navigation tab with six persistent preferences: automatic program updates, UI animations, remember-last-tab, confirmation before Apply, confirmation before discarding staged changes, and periodic background metadata refresh.
 
-The focused XAML regression now requires the custom ComboBox template and `PART_Popup`, pins dark palette resources, and rejects both Windows system control brush keys.
+Settings are stored under the isolated `State/Next` root with atomic JSON replacement and safe-default fallback. Automatic updates honor the preference at startup, periodic checks, staging, and the final safe handoff; the existing manual **Check for updates now** action remains available and carries explicit install intent even when automatic updates are off.
+
+The lane was reconciled non-destructively with main `a2e4dbadc6353bd1c1dccd77d0c89779d39b0b24`, preserving the RECOVERY-005 integration/continuity commits that landed while Settings work was in progress.
 
 ## Verification state
 
-The production source/test checkpoint is `5076ee0bf81ddfe69e0418bc599e2c7a810a0959`. PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4` passed Workflow Feature PR Gate run 634 (`36810757532`), MHW Product Security Gate run 624 (`36810757536`), and Heaven Toolbox Ownership Gate run 18 (`36810757535`). Installed-client visual proof is **not** claimed.
-
-RECOVERY-005 remains ACTIVE until representative installed Windows/WPF visual and interaction acceptance confirms selected value, popup items, focus/hover/open/disabled states and normal GAME/settings use. This evidence-only handoff update must itself remain green on the final PR head before integration.
+Source checkpoint: `b62c099f2514281a1d1d0b350cad2a090e0554d2`. No exact-head verification is claimed yet for the complete reconciled/versioned candidate. Required GitHub/Windows gates must pass on the final branch head before integration. Refresh `main` immediately before merge because other product lanes are active.
 
 ## Coordination / risks
 
-- Do not race the active catalog recovery branches.
-- The divergent `fix/runtime-updater-hardening-v8.8.57-20261001` branch touches other UI/updater boundaries and must refresh newer main and allocate the next patch version before it integrates.
-- RECOVERY-007 still requires representative Windows/runtime installed-game discovery evidence before DONE.
-- Global Agent Control/Heaven/plugin work remains in `fengie/heaven-toolbox` and must not return to MHW.
-- The separate MHW `heaven-bridge` transport branch is still live for `heaven2`; Toolbox issue #18 owns its relay cutover and eventual retirement. Do not delete it as stale.
+- RECOVERY-004 is a separate updater/runtime hardening lane. Preserve its unique work and reconcile it onto newer main after this Settings lane; do not overwrite it.
+- Catalog recovery remains separate.
+- RECOVERY-007 retains its representative Windows/runtime proof gap.
+- The local Heaven/Agent Control route required by global training was not exposed in this ChatGPT session, so no local Heaven execution or installed-client UI proof is claimed.
+- Global Agent Control/Heaven/plugin work belongs in `fengie/heaven-toolbox`, not this repo.
 
 ## Successor obligation
 
-Start from current `fengie/heaven-toolbox@main`, then current MHW canonical state and ownership. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. You inherit the permanent continuity constitution; preserve it and explicitly require your successor to inherit it. Your successor must recursively propagate these same rules to the agent after them. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Preserve the permanent continuity constitution, all unresolved evidence gaps, and this explicit successor-propagation obligation. **Do not break the chain.**
+
+The successor must propagate this continuity obligation to the next agent.

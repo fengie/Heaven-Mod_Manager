@@ -14,6 +14,7 @@ public sealed partial class MainWindowViewModel
     private StagedUpdate? stagedProgramUpdate;
     private Task? stagedProgramHandoffTask;
     private bool programUpdaterStarted;
+    private bool stagedProgramUpdateRequestedManually;
 
     [ObservableProperty] private string currentProgramBuildText = "Program build unavailable";
     [ObservableProperty] private string programUpdateStatus = "Program updater has not checked yet.";
@@ -23,7 +24,12 @@ public sealed partial class MainWindowViewModel
     public void StartProgramUpdater()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (disposed || programUpdaterStarted) return;
+        if (disposed || programUpdaterStarted || !AutoUpdateEnabled)
+        {
+            if (!AutoUpdateEnabled && UpdateClientService.CanSelfUpdate(UpdateClientService.GetInstallRoot()))
+                ProgramUpdateStatus = "Automatic program updates are off. Manual checks remain available.";
+            return;
+        }
         programUpdaterStarted = true;
         _ = ProgramUpdateLoopAsync(backgroundCts.Token);
     }
@@ -40,11 +46,13 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
-            await CheckAndStageProgramUpdateAsync(manual: false, ct);
+            if (AutoUpdateEnabled)
+                await CheckAndStageProgramUpdateAsync(manual: false, ct);
             while (!ct.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromHours(6), ct);
-                await CheckAndStageProgramUpdateAsync(manual: false, ct);
+                if (AutoUpdateEnabled)
+                    await CheckAndStageProgramUpdateAsync(manual: false, ct);
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -98,11 +106,20 @@ public sealed partial class MainWindowViewModel
             }
 
             stagedProgramUpdate = staged;
+            stagedProgramUpdateRequestedManually = manual;
             LatestProgramBuildText =
                 $"Latest build: {staged.Manifest.ProductVersion} · build {staged.Manifest.BuildNumber} · {ShortSha(staged.Manifest.SourceSha)}";
-            ProgramUpdateStatus =
-                $"Verified update build {staged.Manifest.BuildNumber} is staged safely. Waiting for a safe restart point.";
-            ScheduleStagedProgramHandoff();
+            if (AutoUpdateEnabled || stagedProgramUpdateRequestedManually)
+            {
+                ProgramUpdateStatus =
+                    $"Verified update build {staged.Manifest.BuildNumber} is staged safely. Waiting for a safe restart point.";
+                ScheduleStagedProgramHandoff();
+            }
+            else
+            {
+                ProgramUpdateStatus =
+                    $"Verified update build {staged.Manifest.BuildNumber} is staged, but automatic installation is paused because automatic updates are off.";
+            }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -144,6 +161,12 @@ public sealed partial class MainWindowViewModel
             PreparedUpdateHandoff? prepared = null;
             while (!ct.IsCancellationRequested && stagedProgramUpdate is not null)
             {
+            if (!AutoUpdateEnabled && !stagedProgramUpdateRequestedManually)
+            {
+                ProgramUpdateStatus =
+                    $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} remains staged; automatic installation is off.";
+                return;
+            }
             if (CriticalOperation
                 || BusyVisibility == Visibility.Visible)
             {
@@ -193,6 +216,12 @@ public sealed partial class MainWindowViewModel
                 await DelayForSafeUpdateRetryAsync(ct);
                 continue;
             }
+            if (!AutoUpdateEnabled && !stagedProgramUpdateRequestedManually)
+            {
+                ProgramUpdateStatus =
+                    $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} remains staged; automatic installation is off.";
+                return;
+            }
             if (!programUpdateHandoffGate.TryArmHandoff())
             {
                 ProgramUpdateStatus =
@@ -211,6 +240,12 @@ public sealed partial class MainWindowViewModel
                     || BusyVisibility == Visibility.Visible
                     || HasActiveGameProcess())
                     continue;
+                if (!AutoUpdateEnabled && !stagedProgramUpdateRequestedManually)
+                {
+                    ProgramUpdateStatus =
+                        $"Verified update build {stagedProgramUpdate.Manifest.BuildNumber} remains staged; automatic installation is off.";
+                    continue;
+                }
 
                 using var helper = s.Updater.LaunchHelper(prepared);
                 keepHandoffArmed = true;

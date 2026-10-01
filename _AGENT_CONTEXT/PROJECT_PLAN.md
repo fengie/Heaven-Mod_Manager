@@ -60,17 +60,22 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 **Next action:** continue the existing recovery branch; do not create a duplicate catalog implementation lane.
 
-## RECOVERY-003 — Manual update check
+## RECOVERY-003 — Manual update check + user update preference
 
-**Owner:** unclaimed
-**Acceptance:** user can explicitly trigger the existing updater check path; automatic updater behavior remains unchanged; UI/state regressions cover both routes.
+**Owner:** ChatGPT Settings lane on `feat/settings-v8.8.59-20261001`
+**Status:** ACTIVE
+**Acceptance:** user can explicitly trigger the existing verified updater path, can disable background automatic checks/installation, and both routes preserve current updater concurrency/safe-handoff guarantees.
 
-- [x] Preserve exact archived source tip.
-- [ ] Port only the current-compatible manual-check behavior/tests onto fresh main.
-- [ ] Verify updater concurrency/state semantics against current updater code.
-- [ ] Run updater/UI regressions and integrate.
+- [x] Preserve exact archived manual-check behavior and reuse the existing updater command.
+- [x] Expose the manual updater action in the new Settings tab.
+- [x] Add a persistent automatic-update preference without removing manual update/install intent.
+- [x] Gate background checks and staged automatic handoff when automatic updates are disabled.
+- [x] Add preference/updater/UI regression coverage.
+- [ ] Run exact-head required gates, integrate to `main`, and persist exact verification evidence.
 
-**Next action:** claim the updater UI boundary after checking RECOVERY-004 ownership to avoid overlapping updater edits.
+**Coordination:** RECOVERY-004 remains a separate divergent hardening lane. This Settings change intentionally touches only the preference gates around the existing current-main updater path; it does not absorb or overwrite RECOVERY-004 semantics.
+
+**Next action:** exact-head CI on the v8.8.59 candidate, then refresh main and integrate if green.
 
 ## RECOVERY-004 — Runtime/updater audit hardening
 

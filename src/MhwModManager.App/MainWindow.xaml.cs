@@ -64,7 +64,7 @@ public partial class MainWindow:Window
 
         AnimateElement(BusyOverlay,0.42,0,0,130);
         if(BusyDialogCard.RenderTransform is not ScaleTransform scale)return;
-        if(!SystemParameters.ClientAreaAnimation)
+        if(!UiMotion.AnimationsEnabled||!SystemParameters.ClientAreaAnimation)
         {
             scale.BeginAnimation(ScaleTransform.ScaleXProperty,null);
             scale.BeginAnimation(ScaleTransform.ScaleYProperty,null);
@@ -89,7 +89,7 @@ public partial class MainWindow:Window
             element.RenderTransform=translate;
         }
 
-        if(!SystemParameters.ClientAreaAnimation)
+        if(!UiMotion.AnimationsEnabled||!SystemParameters.ClientAreaAnimation)
         {
             element.BeginAnimation(UIElement.OpacityProperty,null);
             translate.BeginAnimation(TranslateTransform.XProperty,null);

@@ -10,6 +10,8 @@ namespace MhwModManager.App;
 
 public static class UiMotion
 {
+    public static bool AnimationsEnabled { get; set; } = true;
+
     private const int HoverInMs = 110;
     private const int HoverOutMs = 130;
     private const int PressMs = 65;
@@ -133,7 +135,7 @@ public static class UiMotion
         presenter.Opacity=1;
         transform.X=0;
 
-        if(!SystemParameters.ClientAreaAnimation)return;
+        if(!AnimationsEnabled||!SystemParameters.ClientAreaAnimation)return;
 
         var easing=new CubicEase{EasingMode=EasingMode.EaseOut};
         var duration=new Duration(TimeSpan.FromMilliseconds(PageTransitionMs));
@@ -196,7 +198,7 @@ public static class UiMotion
             control.RenderTransform=transform;
         }
 
-        if(!SystemParameters.ClientAreaAnimation)
+        if(!AnimationsEnabled||!SystemParameters.ClientAreaAnimation)
         {
             control.BeginAnimation(UIElement.OpacityProperty,null);
             transform.BeginAnimation(ScaleTransform.ScaleXProperty,null);
