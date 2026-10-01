@@ -1,3 +1,11 @@
+# v8.8.54 collision-safe coordination — current lane
+
+1. Freeze the final candidate long enough to run exact-head Agent Control syntax checks plus targeted control-core/server-safety and full Agent Control tests.
+2. Refresh `origin/main` immediately before delivery. Agent Control is a protected integration surface: if its source/tests/version/coordination continuity moved, reconcile semantically and invalidate stale proof.
+3. Deliver the verified tree to remote `main`; verify canonical version 8.8.54, Agent Control/plugin 0.6.25, and the intended ownership guards are present.
+4. Delete superseded temporary coordination branches only after canonical-tree preservation is proven; preserve unrelated divergent work.
+5. Run the live heaven2 routing/lease smoke only through an authorized signed or machine-local route. Duplicate boundaries must fail, disjoint boundaries must coexist, and HMAC must remain enforced.
+
 # v8.8.53 Agent Work Reports — integrated; authenticated heaven2 smoke pending
 
 1. **Source/release integration is complete.** PR #540 exact head `b295586beef4e56c7bdc2968b005cc44354c86f5` passed Security Supply Chain `36793284454`, Agent Control `36793284492`, Plugin Toolbox `36793284463`, and Workflow Feature `36793284449`; it merged as `2885609c8db18494dc5d89d7e9545732ab2bf741` with the verified tree preserved. Windows closure `36794493034` passed 26/26 and produced updater build 362. Installed-client updater E2E `36794962203` passed both update success and rollback.
