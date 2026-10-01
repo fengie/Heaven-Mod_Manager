@@ -103,6 +103,35 @@ public sealed record CatalogCrawlerManifest(
             }
         }
     }
+
+    private static bool HasMalformedPercentEncoding(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        for (var index = 0; index < value.Length; index++)
+        {
+            if (value[index] != '%')
+                continue;
+
+            if (index + 2 >= value.Length
+                || !IsHexDigit(value[index + 1])
+                || !IsHexDigit(value[index + 2]))
+            {
+                return true;
+            }
+
+            index += 2;
+        }
+
+        return false;
+    }
+
+    private static bool IsHexDigit(char value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return value is >= '0' and <= '9'
+            or >= 'a' and <= 'f'
+            or >= 'A' and <= 'F';
+    }
 }
 
 public sealed class PermittedCatalogCrawler : IDisposable
@@ -254,7 +283,7 @@ public sealed class PermittedCatalogCrawler : IDisposable
         if (prefix == "/")
             return true;
 
-        var boundary = prefix.EndsWith("/", StringComparison.Ordinal)
+        var boundary = prefix.EndsWith('/')
             ? prefix[..^1]
             : prefix;
 
@@ -289,35 +318,6 @@ public sealed class PermittedCatalogCrawler : IDisposable
         {
             throw new InvalidDataException("Crawler redirect Location header is malformed.", ex);
         }
-    }
-
-    private static bool HasMalformedPercentEncoding(string value)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        for (var index = 0; index < value.Length; index++)
-        {
-            if (value[index] != '%')
-                continue;
-
-            if (index + 2 >= value.Length
-                || !IsHexDigit(value[index + 1])
-                || !IsHexDigit(value[index + 2]))
-            {
-                return true;
-            }
-
-            index += 2;
-        }
-
-        return false;
-    }
-
-    private static bool IsHexDigit(char value)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return value is >= '0' and <= '9'
-            or >= 'a' and <= 'f'
-            or >= 'A' and <= 'F';
     }
 
     private static string BuildRequestKey(Uri uri)
