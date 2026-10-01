@@ -47,6 +47,7 @@ try{
     New-Item -ItemType Directory -Force -Path $fixture | Out-Null
     $files=@(
         'VERSION.txt','Directory.Build.props','README.md','CHANGELOG.md','AGENTS.md','NEXT-AGENT-START-HERE.md',
+        'docs/REPOSITORY-LAYOUT.md',
         '_AGENT_CONTEXT/CURRENT_REVISION.json','_AGENT_CONTEXT/README_FIRST.md','_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md',
         '_AGENT_CONTEXT/handoff-manifest.json','.verification/function-status.json','.verification/stage-status.json',
         'scripts/testing/Test-AgentHandoff.ps1','scripts/testing/Test-HeavenToolboxOwnership.ps1'
@@ -61,6 +62,8 @@ try{
 
     Reject 'AGENTS loses Heaven Toolbox authority' 'AGENTS.md' {param($x) $x -replace 'fengie/heaven-toolbox@main','fengie/toolbox-missing@main'}
     Reject 'AGENTS reclaims global training authority for MHW' 'AGENTS.md' {param($x) $x + [Environment]::NewLine + 'This fengie/mhw-mods repository is the global training bootstrap authority.'}
+    Reject 'README routes plugin development back to MHW' 'README.md' {param($x) $x + [Environment]::NewLine + 'New plugin development is centralized under `plugins/`.'}
+    Reject 'repository layout advertises local plugin ownership' 'docs/REPOSITORY-LAYOUT.md' {param($x) $x + [Environment]::NewLine + '- `plugins/` — plugin implementations and plugin-specific docs/tests.'}
     Reject 'AGENTS loses progressive retrieval' 'AGENTS.md' {param($x) $x -replace 'task-relevant','all-context'}
     Reject 'AGENTS loses smallest coherent rule' 'AGENTS.md' {param($x) $x -replace 'smallest coherent','broadest convenient'}
     Reject 'full constitution startup cannot become optional' 'AGENTS.md' {param($x) $x -replace '(?i)in full\s+at startup','optionally at startup'}
