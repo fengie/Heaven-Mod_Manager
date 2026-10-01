@@ -1,26 +1,28 @@
-# v8.8.57 Heaven Toolbox authority cutover — current handoff
+# v8.8.58 dark ComboBox chrome — current handoff
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
+Candidate branch: `fix/recovery-005-dark-combobox-v8.8.58`
 
-## Cutover state
+## Implemented
 
-The source-side takeover is implemented in this branch. MHW contains no local global trainer, shared Git directive, reusable plugin tree, Heaven Bridge tree, Agent Control tree, or root `tools/` ownership surface. MHW-owned FunctionVerifier and SelfTest were preserved under `tests/MhwModManager.FunctionVerifier` and `tests/MhwModManager.SelfTest`, and solution/build/release references now use those product-owned locations.
+RECOVERY-005 has been reconciled from the preserved archive onto current v8.8.57 main without importing stale metadata. `App.xaml` now owns ComboBox and ComboBoxItem chrome with the existing dark Text/Panel/Border/Accent palette. The selected value, arrow, popup, hover, focus, selected-item, open, and disabled states no longer depend on the bright Windows system control surface. Existing GAME/settings bindings and view-model contracts are unchanged.
 
-Every MHW agent must refresh and bootstrap from current `fengie/heaven-toolbox@main` first, then refresh MHW and load its product-specific `AGENTS.md`, `_AGENT_CONTEXT/`, source, tests, plans, releases, and evidence. Reusable/global doctrine or tooling must not be re-created in MHW.
-
-The MHW ownership regression gate fails if migrated global roots return or routing points back to MHW. MHW's security gate now covers product/updater/release invariants only; reusable repository security doctrine belongs to Toolbox.
+The focused XAML regression now requires the custom ComboBox template and `PART_Popup`, pins dark palette resources, and rejects both Windows system control brush keys.
 
 ## Verification state
 
-Before integration, verify the exact candidate with the MHW governance baseline + negative fixtures, Heaven Toolbox ownership gate, product security gate, verifier relocation/build paths, and the canonical Toolbox `scripts/verify-mhw-transition.mjs --cutover` check. Historical v8.8.56 verification remains evidence only for the exact source it covered; this migration does not claim new runtime product proof.
+The source/test candidate ends at source checkpoint `5076ee0bf81ddfe69e0418bc599e2c7a810a0959` before version/handoff metadata. No new exact-head CI or installed-client visual proof is claimed yet. The last closed broad verification belongs to PR #548 head `2475675c4282c4d287ca306c1717d2e93f633976`, not to this UI change.
 
-## Coordination
+Before integration, run the required exact-head MHW gates on the complete v8.8.58 candidate. RECOVERY-005 remains ACTIVE until representative installed Windows/WPF visual and interaction acceptance confirms selected value, popup items, focus/hover/open/disabled states and normal GAME/settings use.
 
-The separately owned `fix/runtime-updater-hardening-v8.8.57-20261001` branch contains product updater/runtime work and must not be overwritten. After this cutover claims v8.8.57 on main, that lane must refresh main and allocate the next patch version when it integrates.
+## Coordination / risks
 
-## Existing product risk
+- Do not race the active catalog recovery branches.
+- The divergent `fix/runtime-updater-hardening-v8.8.57-20261001` branch touches other UI/updater boundaries and must refresh newer main and allocate the next patch version before it integrates.
+- RECOVERY-007 still requires representative Windows/runtime installed-game discovery evidence before DONE.
+- Global Agent Control/Heaven/plugin work remains in `fengie/heaven-toolbox` issue #5 and must not return to MHW.
 
-RECOVERY-007 universal installed-game discovery is merged but still requires representative Windows/runtime discovery evidence before DONE. Agent Control/Agent Manager/Heaven/plugin global follow-up has transferred to `fengie/heaven-toolbox` issue #5 and is not MHW product work. Continue only the mod-manager recovery items in `_AGENT_CONTEXT/PROJECT_PLAN.md`.
+## Successor obligation
 
-Start every successor from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. Your successor must preserve this continuity contract and propagate it to the agent after them; that agent must repeat the same obligation onward. **Do not break the chain.**
+Start from current `fengie/heaven-toolbox@main`, then current MHW canonical state and ownership. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. You inherit the permanent continuity constitution; preserve it and explicitly require your successor to inherit and recursively propagate it again to the agent after them. **Do not break the chain.**
