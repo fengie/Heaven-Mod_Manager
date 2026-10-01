@@ -246,6 +246,23 @@ Still required before Nexus is considered a supported catalog provider:
 - update lineage across linked sources;
 - provider collections/packs where contracts allow.
 
+## v8.8.62 recovery candidate — 2026-10-01
+
+Recovered onto current-main lineage from the stale issue #281 branches, without restoring stale release metadata:
+
+- integrated **Browse Mods** UI over the source-aware SQLite/FTS cache;
+- provider refresh remains failure-isolated and cached results stay browseable;
+- exact provider file inspection and exact installed-origin update checks are exposed in the UI;
+- direct acquisitions route through bounded temporary HTTPS download + SHA-256 + the existing archive inspection/import boundary; assisted sources keep provider-authorized browser flow;
+- official CurseForge REST adapter/transport/compliance policy and deterministic tests are restored, opt-in through externally supplied API/game IDs;
+- generic permitted HTML crawler framework is restored with reviewed terms/robots requirements, same-origin/path containment, response bounds, and environment kill switch.
+
+Still open after this candidate:
+- Steam Workshop only for a game/profile with a supported Workshop contract and credentials/capabilities;
+- optional Vortex interoperability (metadata/import-export/handoff), not remote catalog browsing;
+- any additional HTML adapter remains disabled until a provider-specific compliance manifest and deterministic parser fixtures exist;
+- exact-head Windows build/test verification and integration of PR #553.
+
 ## Acceptance criteria
 
 A provider is not "supported" until:
