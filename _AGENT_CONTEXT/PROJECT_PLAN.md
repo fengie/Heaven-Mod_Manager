@@ -16,6 +16,8 @@ This file is the repository's single source of truth for **current planned, acti
 
 ## Current recovery queue
 
+Global Agent Control / Heaven / plugin recovery work has transferred to `fengie/heaven-toolbox` issue #5 and is no longer MHW product work. The queue below is intentionally limited to MHW Manual Mod Manager work and its repository-local planning/recovery.
+
 These entries recover unique work that had been archived during the 2026-09-30 branch cleanup. Exact source tips remain immutable under `archive/branch-zero-20260930/...`; the work below is live unfinished work until each item reaches a documented terminal disposition.
 
 | ID | Priority | Status | Source | Goal |
@@ -25,14 +27,12 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | RECOVERY-003 | P1 | READY | `archive/branch-zero-20260930/feature-manual-update-check-20260930-385c1146` | Restore and finish the manual “Check for updates” UI path. |
 | RECOVERY-004 | P0 | READY | `archive/branch-zero-20260930/fix-audit-hardening-20260930-6fd76158`; `archive/branch-zero-20260930/fix-runtime-hardening-20260930-34df6690` | Reconcile overlapping updater/runtime hardening without regressing newer main. |
 | RECOVERY-005 | P1 | READY | `archive/branch-zero-20260930/fix-dark-combobox-v8.8.53-20260930-9bfb3028` | Finish dark ComboBox chrome/contrast behavior and regression coverage. |
-| RECOVERY-006 | P1 | READY | `archive/branch-zero-20260930/fix-heaven-auth-status-v8.8.52-20260930-9e482688` | Finish truthful Heaven auth-required status and blocked-state UI. |
 | RECOVERY-007 | P0 | ACTIVE | `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4` | Finish automatic universal installed-game discovery and lifecycle hardening. |
-| RECOVERY-008 | P0 | DONE | `archive/branch-zero-20260930/fix-agent-coordination-leases-20260930-f742d988`; canonical `main` `be001c2582564e55a7561a97bff791bbf821621a` | Lease/ownership conflict hardening integrated as v8.8.54. |
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
 **Owner:** completed on canonical main
-**Acceptance:** canonical plan exists; cleanup policy requires semantic extraction before deletion; global agent training carries the rule; recovered work remains visible until integrated/superseded/rejected.
+**Acceptance:** canonical plan exists; cleanup policy requires semantic extraction before deletion; Heaven Toolbox carries the reusable global rule; recovered MHW product work remains visible until integrated/superseded/rejected.
 
 - [x] Recover a canonical plan ledger from the archived planning work.
 - [x] Enumerate every archived unique-work lane from the cleanup incident.
@@ -95,17 +95,6 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 **Next action:** inspect current `App.xaml` ComboBox styles and archived template side by side before deciding what remains unique.
 
-## RECOVERY-006 — Heaven auth status
-
-**Owner:** unclaimed
-**Acceptance:** Agent Manager/Control distinguishes auth-required/degraded/blocked states truthfully and does not misreport machine absence; plugin/runtime identities remain synchronized.
-
-- [x] Preserve exact archived source tip.
-- [ ] Reconcile archived provider/status mapping with current Heaven Bridge HMAC/ACL behavior and issue #411.
-- [ ] Port the still-valid UI/provider logic and tests.
-- [ ] Run Agent Control/plugin verification and live status smoke, then integrate.
-
-**Next action:** verify current provider schema/state names before porting; security boundaries remain fail closed.
 
 ## RECOVERY-007 — Installed-game discovery
 
@@ -119,19 +108,6 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 **Next action:** run exact-head focused/required gates on the v8.8.56 candidate, reconcile fresh `main`, then integrate and perform Windows installed-game/runtime proof before marking DONE.
 
-## RECOVERY-008 — Agent coordination leases
-
-**Owner:** current Agent Control coordination owner
-**Canonical integration:** `main` `be001c2582564e55a7561a97bff791bbf821621a` (v8.8.54)
-**Acceptance:** one canonical current-main implementation rejects overlapping/case-insensitive ownership conflicts, passes Agent Control tests, and survives integration. Redundant historical/live refs may be retired only after confirming no additional unique semantics remain.
-
-- [x] Preserve the deleted predecessor tip.
-- [x] Rehydrate/reconcile work into current v8.8.54 lanes.
-- [x] Select and verify one exact candidate.
-- [x] Integrate to `main` and prove the intended tree survived.
-- [ ] Retire redundant coordination/evidence branches only after confirming they add no unique semantics beyond canonical v8.8.54/evidence.
-
-**Next action:** cleanup-only: classify remaining v8.8.54 coordination/evidence refs and retire only proven-redundant refs.
 
 ## Cleanup disposition contract
 

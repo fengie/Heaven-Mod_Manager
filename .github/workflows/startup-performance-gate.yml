@@ -9,7 +9,6 @@ on:
       - 'tests/MhwModManager.IntegrationTests/**'
       - 'scripts/diagnostics/Measure-StartupPerformance.ps1'
       - '.github/workflows/startup-performance-gate.yml'
-      - 'plugins/PLUGIN_GAP_BACKLOG.md'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'global.json'
@@ -134,8 +133,6 @@ jobs:
         shell: powershell
         run: |
           dotnet test .\candidate\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python .\candidate\plugins\verify.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run exact release verification on candidate

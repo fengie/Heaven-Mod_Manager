@@ -1,5 +1,8 @@
 # Learned Rules — append-only agent ledger
 
+> **v8.8.57 ownership scope:** This ledger preserves historical entries from the period when reusable/global tooling lived inside MHW. Entries about Agent Control, Agent Manager, Heaven Bridge, reusable plugins, global agent bootstrap/governance, or other cross-repository infrastructure are **archival in MHW after the cutover** and are canonically owned by `fengie/heaven-toolbox@main`. An old `Active` label on such an entry does not make it active MHW product ownership after v8.8.57. Current MHW policy/work should be limited to the mod-manager product and repository-local concerns. The complete pre-cutover ledger is preserved under Toolbox `history/mhw-global-tooling/` for provenance.
+
+
 ## LR-061 — mutable ownership identity must be canonical before concurrency checks
 
 - **Rule ID:** LR-061

@@ -1,5 +1,0 @@
-[project]
-name="heaven-git-ops"
-version="0.1.0"
-description="Structured Git operations and verified task-branch integration"
-requires-python=">=3.10"

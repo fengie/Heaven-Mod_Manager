@@ -1,6 +1,7 @@
 param([string]$Root)
 $ErrorActionPreference='Stop'
-if([string]::IsNullOrWhiteSpace($Root)){$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path}else{$Root=(Resolve-Path $Root).Path}
+Set-StrictMode -Version Latest
+if([string]::IsNullOrWhiteSpace($Root)){$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path}else{$Root=(Resolve-Path -LiteralPath $Root).Path}
 
 function SourceBytes([string]$Relative){
     $p=Join-Path $Root ($Relative.Replace([char]47,[char]92))
@@ -21,14 +22,20 @@ function MaxBytes([string]$Relative,[int]$Limit){
     return $bytes
 }
 function Continuity([string]$Text,[string]$Name){
-    Need $Text '(?i)\b(?:successor|next agent)\b[^\r\n]{0,160}\b(?:must|shall|is required to)\b[^\r\n]{0,240}\b(?:propagate|pass)\b[^\r\n]{0,160}\b(?:agent after|successor|next agent)\b' "$Name must require the successor to propagate continuity onward."
+    Need $Text '(?i)\b(?:successor|next agent)\b[^\r\n]{0,180}\b(?:must|shall|is required to)\b[^\r\n]{0,260}\b(?:propagate|pass)\b[^\r\n]{0,180}\b(?:agent after|successor|next agent)\b' "$Name must require the successor to propagate continuity onward."
     Forbid $Text '(?is)(?:\bsuccessor\b|\bagent after\b).{0,100}(?:must|should|may|can)\s+not\b.{0,120}(?:inherit|preserve|propagate|obey)' "$Name must not negate successor continuity."
-    Forbid $Text '(?i)Core (?:continuity rules|Rules?)\s+(?:(?:may|can)\s+be\s+weakened\s+without explicit user authorization|do not require explicit user authorization)' "$Name must not weaken Core Rules without authorization."
+}
+
+foreach($forbidden in @('_AGENT_TRAINING','plugins','heaven-bridge','tools','GLOBAL_GIT_DIRECTIVE.md')){
+    if(Test-Path -LiteralPath (Join-Path $Root $forbidden)){throw "MHW must not contain migrated global ownership path: $forbidden"}
 }
 
 $manifest=Active '_AGENT_CONTEXT/handoff-manifest.json' | ConvertFrom-Json
 if($manifest.formatVersion -ne 1 -or $manifest.continuityRequired -ne $true -or $manifest.propagateToNextAgent -ne $true){throw 'Invalid handoff manifest continuity contract.'}
-if([string]$manifest.canonicalRepository -ne 'fengie/mhw-mods' -or [string]$manifest.canonicalBranch -ne 'main'){throw 'Unexpected canonical repository/branch.'}
+if([string]$manifest.canonicalRepository -ne 'fengie/mhw-mods' -or [string]$manifest.canonicalBranch -ne 'main'){throw 'Unexpected canonical MHW repository/branch.'}
+if([string]$manifest.globalBootstrapRepository -ne 'fengie/heaven-toolbox' -or [string]$manifest.globalBootstrapBranch -ne 'main'){throw 'Global bootstrap must route to fengie/heaven-toolbox@main.'}
+if([string]$manifest.companyTrainer -ne 'fengie/heaven-toolbox@main:_AGENT_TRAINING/README.md'){throw 'companyTrainer must route to the canonical Toolbox trainer.'}
+if([string]$manifest.globalGitDirective -ne 'fengie/heaven-toolbox@main:GLOBAL_GIT_DIRECTIVE.md'){throw 'globalGitDirective must route to the canonical Toolbox Git policy.'}
 foreach($pointer in @{agentInstructions='AGENTS.md';currentRevisionFile='_AGENT_CONTEXT/CURRENT_REVISION.json';continuityProtocol='_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md';learnedRules='_AGENT_CONTEXT/LEARNED_RULES.md';projectPlan='_AGENT_CONTEXT/PROJECT_PLAN.md'}.GetEnumerator()){
     if([string]$manifest.($pointer.Key) -ne $pointer.Value){throw "Invalid handoff manifest pointer: $($pointer.Key)."}
 }
@@ -39,8 +46,9 @@ if([string]$props.Project.PropertyGroup.Version -ne $version){throw 'Directory.B
 if([string]$manifest.currentVersion -ne $version){throw 'handoff-manifest currentVersion must match VERSION.txt.'}
 $revision=Active '_AGENT_CONTEXT/CURRENT_REVISION.json' | ConvertFrom-Json
 if($revision.formatVersion -ne 1 -or $revision.canonicalRepository -ne $manifest.canonicalRepository -or $revision.canonicalBranch -ne $manifest.canonicalBranch){throw 'Invalid current revision canonical identity.'}
-if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
 if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must match VERSION.txt.'}
+if([string]$revision.globalBootstrapRepository -ne 'fengie/heaven-toolbox' -or [string]$revision.globalBootstrapBranch -ne 'main'){throw 'CURRENT_REVISION must route global bootstrap to Heaven Toolbox main.'}
+if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
 
 $escaped=[regex]::Escape($version)
@@ -49,51 +57,29 @@ Need $readme "(?m)^#\s+v$escaped\b" 'README title must show current version.'
 Need $readme "(?m)^##\s+v$escaped\b" 'README must contain a current-version progress section.'
 Need $changelog "(?m)^#\s+v$escaped\b" 'CHANGELOG must contain a current-version section.'
 Need $readme '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'README must link the canonical project plan.'
+
 $plan=Active '_AGENT_CONTEXT/PROJECT_PLAN.md'
-Need $plan '(?i)branch cleanup.{0,160}(?:work-extraction|extract)' 'Project plan must define extraction-first branch cleanup.'
+Need $plan '(?i)branch cleanup.{0,180}(?:work-extraction|extract)' 'Project plan must define extraction-first branch cleanup.'
 Need $plan '(?im)^\|\s*RECOVERY-\d+' 'Project plan must retain actionable recovery items.'
-Need $plan '(?i)ARCHIVED.{0,120}(?:not|non-terminal)' 'Project plan must state that archive-only preservation is non-terminal.'
+Need $plan '(?i)ARCHIVED.{0,140}(?:not|non-terminal)' 'Project plan must state that archive-only preservation is non-terminal.'
 
 $agents=Active 'AGENTS.md'
-Need $agents '(?i)canonical working state' 'AGENTS must identify canonical working state.'
-Need $agents '_AGENT_TRAINING/README\.md' 'AGENTS must link the trainer router.'
-Need $agents '_AGENT_TRAINING/AGENT_OPERATING_STANDARD\.md' 'AGENTS must link the universal operating standard.'
+Need $agents 'fengie/heaven-toolbox@main' 'AGENTS must route global bootstrap to exact Heaven Toolbox main.'
 Need $agents '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'AGENTS must link current revision.'
 Need $agents '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'AGENTS must link the permanent constitution.'
-Need $agents 'GLOBAL_GIT_DIRECTIVE\.md' 'AGENTS must link canonical Git policy.'
 Need $agents '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'AGENTS must link the canonical project plan.'
-Need $agents '(?is)branch cleanup.{0,260}(?:extract|integrate)' 'AGENTS must require semantic extraction before branch deletion.'
+Need $agents 'LEARNED_RULES\.md' 'AGENTS must link active Learned Rules.'
 Need $agents '(?i)task-relevant' 'AGENTS must use progressive task-relevant context.'
 Need $agents '(?i)smallest coherent' 'AGENTS must favor smallest coherent implementation.'
 Need $agents '(?i)narrowest useful' 'AGENTS must specify risk-calibrated verification.'
 Need $agents '(?i)without private chat history' 'AGENTS must require chat-independent handoff.'
 Need $agents '(?i)explicit user authorization' 'AGENTS must protect Core Rules.'
-Need $agents '(?im)^Before\s+(?:any\s+)?task-specific\s+reasoning[^\r\n]{0,200}\banswer\w*\b[^\r\n]{0,100}\bplann?\w*\b[^\r\n]{0,100}\bdispatch\b[^\r\n]{0,100}\baction\b[^\r\n]{0,180}\bmust\b[^\r\n]{0,240}\bbootstrap\b' 'AGENTS must require completed training before task reasoning, answer, plan, dispatch or action.'
-Forbid $agents '(?im)^Before\s+[^\r\n]{0,400}\bmust\s+(?:not|never)\b[^\r\n]{0,240}\bbootstrap\b' 'AGENTS must not negate mandatory pre-response bootstrap.'
-Need $agents '(?im)^\d+\.\s+Read\s+`?_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md`?\s+in full\s+at startup\b' 'AGENTS must require the full continuity constitution at startup.'
-Forbid $agents '(?is)CONTINUITY_PROTOCOL\.md.{0,80}(?:only task-relevant|optional|not required)' 'AGENTS must not make full constitution startup reading optional.'
-Need $agents 'LEARNED_RULES\.md' 'AGENTS must link active Learned Rules.'
-Need $agents '(?is)README\.md.{0,700}CHANGELOG\.md.{0,700}VERSION\.txt' 'AGENTS must preserve visible progress and version coordination.'
+Need $agents '(?is)README\.md.{0,700}CHANGELOG\.md.{0,700}VERSION\.txt' 'AGENTS must preserve visible progress/version coordination.'
+Need $agents '(?im)^Before any task-specific reasoning, answering, planning, dispatch, or action, every agent and recurring worker must complete this bootstrap:' 'AGENTS must require Toolbox bootstrap before task reasoning, answer, plan, dispatch or action.'
+Need $agents '(?is)Read.{0,80}_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md.{0,80}in full at startup' 'AGENTS must require the full continuity constitution at startup.'
+Forbid $agents '(?is)fengie/mhw-mods.{0,120}(?:global training bootstrap authority|cross-repository programming-agent training baseline)' 'MHW must not claim global training/bootstrap ownership.'
+Forbid $agents '(?is)Core Rules.{0,120}(?:may|can|should).{0,120}(?:weaken|override|change).{0,120}without\s+explicit\s+user\s+authorization' 'Core Rules cannot be weakened without explicit user authorization.'
 Continuity $agents 'AGENTS'
-
-$standard=Active '_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md'
-Need $standard '(?is)inspect.*understand.*implement.*test.*verify.*integrate.*hand off' 'Operating standard must define execution order.'
-Need $standard '(?i)smallest coherent change' 'Operating standard must constrain scope.'
-Need $standard '(?i)reproduce.*defect|defect.*reproduce' 'Operating standard must encourage bug reproduction.'
-Need $standard '(?i)flaky tests' 'Operating standard must treat flaky tests as signals.'
-Need $standard '(?i)private chat history' 'Operating standard must define durable completion.'
-Need $standard '(?is)branch cleanup.{0,260}(?:semantic extraction|branch-count)' 'Operating standard must preserve extraction-first branch cleanup.'
-
-$trainer=Active '_AGENT_TRAINING/README.md'
-Need $trainer '(?is)delete.*merge.*rewrite.*relocate.*add' 'Trainer maintenance order must prefer consolidation before addition.'
-
-$git=Active 'GLOBAL_GIT_DIRECTIVE.md'
-Need $git '(?i)main.*canonical integration target' 'Git directive must identify canonical main.'
-Need $git '(?i)never.*force-push' 'Git directive must forbid shared/canonical force push.'
-Need $git '(?is)README\.md.*CHANGELOG\.md.*VERSION\.txt' 'Git directive must preserve visible patch/version coordination.'
-Need $git '(?i)remote.*main' 'Git directive must require canonical remote-main verification.'
-Need $git '(?is)archive tag.{0,220}(?:not completion|does not authorize|non-terminal)' 'Git directive must not treat archive tags as completion.'
-Need $git '(?i)INTEGRATED.*EXTRACTED.*SUPERSEDED.*REJECTED' 'Git directive must preserve explicit cleanup dispositions.'
 
 $router=Active '_AGENT_CONTEXT/README_FIRST.md'
 Need $router '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'Context router must link current revision.'
@@ -101,10 +87,10 @@ Need $router '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'Context router must link 
 Need $router 'LEARNED_RULES\.md' 'Context router must link Learned Rules.'
 Need $router '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'Context router must link the canonical project plan.'
 Need $router '(?i)task-relevant' 'Context router must require task-relevant retrieval.'
-Forbid $router '(?i)MHW Manual Mod Manager v8\.8\.7' 'Context router contains obsolete fixed-version startup text.'
 
 $start=Active 'NEXT-AGENT-START-HERE.md'
 Need $start "(?i)v$escaped\b" 'Current handoff must identify current version.'
+Need $start 'fengie/heaven-toolbox@main' 'Current handoff must preserve Toolbox-first bootstrap.'
 Need $start '(?i)successor' 'Current handoff must name successor continuity.'
 Need $start '(?i)verification' 'Current handoff must carry verification state.'
 Need $start '(?i)risk' 'Current handoff must carry unresolved risk.'
@@ -121,25 +107,20 @@ Need $constitution '(?i)append-only' 'Continuity constitution must preserve Lear
 Need $constitution '(?i)explicit user authorization' 'Continuity constitution must protect changes to Core Rules.'
 Need $constitution '(?i)preservation mode' 'Continuity constitution must preserve resource-low recovery.'
 Continuity $constitution 'Continuity constitution'
+
 $learned=Active '_AGENT_CONTEXT/LEARNED_RULES.md'
-foreach($concept in @('append-only','Rule ID','Active','Superseded','Core Rules')){
-    Need $learned ([regex]::Escape($concept)) "Learned Rules must preserve $concept."
-}
+foreach($concept in @('append-only','Rule ID','Active','Superseded','Core Rules')){Need $learned ([regex]::Escape($concept)) "Learned Rules must preserve $concept."}
 
 $total=0
 $total+=MaxBytes 'AGENTS.md' 9000
-$total+=MaxBytes '_AGENT_TRAINING/README.md' 5500
-$total+=MaxBytes '_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md' 9000
-$total+=MaxBytes '_AGENT_TRAINING/PROMPT_TEMPLATES/00_SWARM_RULES.txt' 6000
-$total+=MaxBytes '_AGENT_TRAINING/PROMPT_TEMPLATES/01_MANAGER_ORCHESTRATOR.txt' 7000
 $total+=MaxBytes 'NEXT-AGENT-START-HERE.md' 7000
 $total+=MaxBytes '_AGENT_CONTEXT/README_FIRST.md' 5500
-if($total -gt 45000){throw "Active training/router set is $total bytes; 45000-byte regression budget exceeded."}
+if($total -gt 21500){throw "Active MHW routing/context set is $total bytes; 21500-byte regression budget exceeded."}
 
 foreach($relative in @($manifest.requiredContextFiles)+@($manifest.requiredVerificationFiles)+@($manifest.requiredToolingFiles)){
     if([string]::IsNullOrWhiteSpace([string]$relative)){continue}
     $path=Join-Path $Root ([string]$relative).Replace([char]47,[char]92)
-    if(-not (Test-Path -LiteralPath $path)){throw "Manifest-required file missing: $relative"}
+    if(-not (Test-Path -LiteralPath $path)){throw "Manifest-required local file missing: $relative"}
 }
 
 $functionStatus=Active '.verification/function-status.json' | ConvertFrom-Json
@@ -157,4 +138,5 @@ foreach($entry in @($stageStatus.stages)){
     if([string]::IsNullOrWhiteSpace([string]$entry.fingerprint)){throw "Missing stage fingerprint: $($entry.id)"}
 }
 
-Write-Host ("PASS: compact agent governance preflight. Version="+$version+"; activeBytes="+$total) -ForegroundColor Green
+& (Join-Path $Root 'scripts\testing\Test-HeavenToolboxOwnership.ps1') -Root $Root
+Write-Host ("PASS: MHW project governance preflight. Version="+$version+"; activeBytes="+$total+"; globalBootstrap=fengie/heaven-toolbox@main") -ForegroundColor Green

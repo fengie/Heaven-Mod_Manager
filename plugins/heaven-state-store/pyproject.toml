@@ -1,5 +1,0 @@
-[project]
-name="heaven-state-store"
-version="0.1.0"
-description="Durable artifact, checkpoint, and health store for Heaven workflows"
-requires-python=">=3.10"

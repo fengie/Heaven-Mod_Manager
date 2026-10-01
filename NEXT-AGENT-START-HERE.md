@@ -1,17 +1,26 @@
-# v8.8.56 installed-game discovery — current handoff
+# v8.8.57 Heaven Toolbox authority cutover — current handoff
 
-Canonical base observed for this recovery lane is v8.8.55 `main` at `9de6f81c5b2377ee1568b5bf4de5baa389eb90de`. RECOVERY-007 is implemented on `fix/installed-game-discovery-v8.8.56-20260930` from preserved archive `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4`; stale archived v8.8.50 version/continuity snapshots were deliberately excluded.
+Canonical MHW product repository: `fengie/mhw-mods`
+Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
 
-The candidate makes general installed-game discovery part of the ordinary Games-page lifecycle. Existing profiles render immediately, one bounded background discovery pass runs per view-model lifetime, Steam/Epic/GOG/Xbox failures are isolated, registry mutations serialize, launcher-proven install roots are preserved, and fallback executable lookup remains bounded inside those roots with reparse/helper filtering. Manual rescan and manual executable selection remain available.
+## Cutover state
 
-Focused integration regressions cover mixed MHW + generic first-refresh registration, one-time discovery, Steam multi-library manifests, nested executable lookup, Xbox Content-root discovery, and helper/anti-cheat filtering. The recovered reusable invariant is LR-063 because canonical LR-060 already belongs to the shell-visible binary-resource incident.
+The source-side takeover is implemented in this branch. MHW contains no local global trainer, shared Git directive, reusable plugin tree, Heaven Bridge tree, Agent Control tree, or root `tools/` ownership surface. MHW-owned FunctionVerifier and SelfTest were preserved under `tests/MhwModManager.FunctionVerifier` and `tests/MhwModManager.SelfTest`, and solution/build/release references now use those product-owned locations.
 
-## Verification state and unresolved risk
+Every MHW agent must refresh and bootstrap from current `fengie/heaven-toolbox@main` first, then refresh MHW and load its product-specific `AGENTS.md`, `_AGENT_CONTEXT/`, source, tests, plans, releases, and evidence. Reusable/global doctrine or tooling must not be re-created in MHW.
 
-No exact-head build/test/Windows result is claimed yet for this v8.8.56 tree. The unresolved risk is live Windows representative installed-game discovery: deterministic Windows CI proves the implementation and regressions, but RECOVERY-007 must remain ACTIVE until representative installed-game/runtime behavior is explicitly proven on canonical main.
+The MHW ownership regression gate fails if migrated global roots return or routing points back to MHW. MHW's security gate now covers product/updater/release invariants only; reusable repository security doctrine belongs to Toolbox.
 
-## Unresolved risk
+## Verification state
 
-Live Windows/runtime proof that the operator's installed games beyond MHW are discovered correctly remains pending. Do not mark RECOVERY-007 DONE from source tests alone, and do not overlap the separately owned RECOVERY-002 catalog lane. Run the required PR gates, refresh main and ownership before integration, prove the intended canonical tree survived, then obtain Windows/runtime installed-game discovery evidence before marking RECOVERY-007 DONE. RECOVERY-002 remains owned by the existing catalog branches; do not overlap it.
+Before integration, verify the exact candidate with the MHW governance baseline + negative fixtures, Heaven Toolbox ownership gate, product security gate, verifier relocation/build paths, and the canonical Toolbox `scripts/verify-mhw-transition.mjs --cutover` check. Historical v8.8.56 verification remains evidence only for the exact source it covered; this migration does not claim new runtime product proof.
 
-You inherit the repository's permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`. Read and preserve it and the active Learned Rules in `_AGENT_CONTEXT/LEARNED_RULES.md`. Before finishing, update the repository handoff and explicitly require your successor to inherit, preserve, and recursively propagate these same rules. That successor must repeat the requirement again for the agent after them. Your successor must propagate these continuity rules to the agent after them. Do not break the chain.
+## Coordination
+
+The separately owned `fix/runtime-updater-hardening-v8.8.57-20261001` branch contains product updater/runtime work and must not be overwritten. After this cutover claims v8.8.57 on main, that lane must refresh main and allocate the next patch version when it integrates.
+
+## Existing product risk
+
+RECOVERY-007 universal installed-game discovery is merged but still requires representative Windows/runtime discovery evidence before DONE. Agent Control/Agent Manager/Heaven/plugin global follow-up has transferred to `fengie/heaven-toolbox` issue #5 and is not MHW product work. Continue only the mod-manager recovery items in `_AGENT_CONTEXT/PROJECT_PLAN.md`.
+
+Start every successor from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. Your successor must preserve this continuity contract and propagate it to the agent after them; that agent must repeat the same obligation onward. **Do not break the chain.**

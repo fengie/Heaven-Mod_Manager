@@ -24,9 +24,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.Automation", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.AutomationTests", "tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj", "{A2222222-2222-4222-8222-222222222222}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.SelfTest", "tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj", "{A3333333-3333-4333-8333-333333333333}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.SelfTest", "tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj", "{A3333333-3333-4333-8333-333333333333}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.FunctionVerifier", "tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj", "{A4444444-4444-4444-8444-444444444444}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.FunctionVerifier", "tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj", "{A4444444-4444-4444-8444-444444444444}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MhwModManager.Updater", "src\MhwModManager.Updater\MhwModManager.Updater.csproj", "{A7D4097C-0EE9-4130-A1A0-C9989020B2C1}"
 EndProject

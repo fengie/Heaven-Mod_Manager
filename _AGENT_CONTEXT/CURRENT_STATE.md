@@ -1,9 +1,19 @@
-# v8.8.56 installed-game discovery — active candidate
+# v8.8.57 Heaven Toolbox cutover — MHW product state
 
-Canonical base is v8.8.55 `main` at `9de6f81c5b2377ee1568b5bf4de5baa389eb90de`. RECOVERY-007 is now implemented on `fix/installed-game-discovery-v8.8.56-20260930` from the preserved archive lane without importing its stale v8.8.50 metadata.
+MHW is being finalized as the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
 
-The candidate makes general installed-game discovery part of the default Games-page lifecycle: existing profiles render immediately, one background discovery pass runs per view-model lifetime, Steam/Epic/GOG/Xbox sources are isolated, registry writes serialize, and executable fallback remains bounded to proven install roots with helper/reparse filtering. Manual scan/add-game paths remain intact.
+The v8.8.57 cutover candidate removes the migrated global roots, relocates MHW-owned FunctionVerifier and SelfTest projects under `tests/`, narrows MHW CI/security to product concerns, and adds a fail-closed ownership gate preventing global copies from returning.
 
-Focused integration regressions were recovered for mixed MHW + generic first-refresh discovery, one-time lifecycle behavior, Steam multi-library manifests, nested executable lookup, Xbox Content roots, and helper filtering. The recovered discovery rule is LR-063 because canonical LR-060 is already the shell-visible binary-resource rule.
+## Current MHW product work
 
-No exact-head test/build/Windows result is claimed yet. Required next evidence is exact candidate CI/gates, fresh-main reconciliation, post-merge tree proof, and a Windows/runtime discovery smoke. Other active P0 recovery work remains RECOVERY-002 (owned catalog lane) and RECOVERY-004 (unclaimed updater/runtime reconciliation).
+- **RECOVERY-007 / P0:** universal installed-game discovery source is integrated; representative Windows/runtime discovery proof is still required before DONE.
+- **RECOVERY-002 / P0:** in-app catalog browser recovery remains active on its existing product lane.
+- **RECOVERY-004 / P0:** updater/runtime hardening recovery remains product-owned; the existing updater branch must refresh after the v8.8.57 cutover and take the next patch version.
+- **RECOVERY-003 / P1:** manual update-check UI remains product work.
+- **RECOVERY-005 / P1:** dark ComboBox chrome/contrast remains product work.
+
+Legacy Agent Control, Agent Manager, Heaven Bridge/auth/provider, Agent Work Reports, plugin-toolbox, and global coordination follow-up has transferred to `fengie/heaven-toolbox` issue #5. It is not active MHW work.
+
+## Verification boundary
+
+PR #548 must pass its exact-head ownership, product-security, governance/continuity, integration, and affected build/test gates before integration. Historical v8.8.56 evidence remains exact-source evidence only. This cutover does not claim RECOVERY-007's remaining representative runtime proof.

@@ -1,5 +1,0 @@
-[project]
-name="heaven-desktop"
-version="0.1.0"
-description="Stable desktop observation and Win32/UIA action wrapper over Heaven Bridge"
-requires-python=">=3.10"

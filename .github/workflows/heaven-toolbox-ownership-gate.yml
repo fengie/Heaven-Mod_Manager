@@ -1,0 +1,49 @@
+name: Heaven Toolbox Ownership Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - '_AGENT_CONTEXT/**'
+      - '_AGENT_TRAINING/**'
+      - 'GLOBAL_GIT_DIRECTIVE.md'
+      - 'plugins/**'
+      - 'heaven-bridge/**'
+      - 'tools/**'
+      - 'scripts/testing/Test-HeavenToolboxOwnership.ps1'
+      - '.github/workflows/heaven-toolbox-ownership-gate.yml'
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - '_AGENT_CONTEXT/**'
+      - '_AGENT_TRAINING/**'
+      - 'GLOBAL_GIT_DIRECTIVE.md'
+      - 'plugins/**'
+      - 'heaven-bridge/**'
+      - 'tools/**'
+      - 'scripts/testing/Test-HeavenToolboxOwnership.ps1'
+      - '.github/workflows/heaven-toolbox-ownership-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heaven-toolbox-ownership-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ownership:
+    name: Reject duplicated global ownership in MHW
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Verify Toolbox takeover
+        shell: powershell
+        run: .\scripts\testing\Test-HeavenToolboxOwnership.ps1 -Root $env:GITHUB_WORKSPACE

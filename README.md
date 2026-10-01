@@ -1,4 +1,14 @@
-# v8.8.56 Universal Mod Manager
+# v8.8.57 Universal Mod Manager
+
+## v8.8.57 — Heaven Toolbox authority cutover
+
+Global reusable agent infrastructure now belongs exclusively to `fengie/heaven-toolbox@main`. MHW bootstraps Toolbox first, then loads only this repository's product-specific source, tests, `_AGENT_CONTEXT/`, workflows, release state, and continuity.
+
+- Removed the duplicated global training tree, shared Git directive, personal plugins, Heaven Bridge, and Agent Control/toolbox roots from MHW.
+- Relocated the MHW-owned FunctionVerifier and SelfTest projects from root `tools/` into `tests/` and rewired the solution/build/release verifier paths.
+- Split MHW security validation down to product/updater/release invariants; generic reusable repository security policy remains in Heaven Toolbox.
+- Added a fail-closed Heaven Toolbox ownership gate that rejects reintroduced global copies or routing back to MHW.
+- The canonical active/recovery ledger remains [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md); product recovery work and runtime evidence remain MHW-owned.
 
 ## v8.8.56 — automatic universal installed-game discovery
 
@@ -12,11 +22,11 @@ Branch cleanup is now explicitly a semantic work-extraction pass rather than a b
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
-- [x] **RECOVERY-008 / P0** — v8.8.54 Agent Control coordination/lease semantics integrated on canonical `main`.
+- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, and no-reintroduction enforcement are implemented in the v8.8.57 cutover; exact-head gates remain the integration proof. Global Agent Control/Heaven/plugin follow-up has transferred to Toolbox issue #5.
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
 - [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
-- [ ] **RECOVERY-003/005/006 / P1** — finish manual updater check, dark ComboBox chrome, and truthful Heaven auth-state reporting.
+- [ ] **RECOVERY-003/005 / P1** — finish manual updater check and dark ComboBox chrome/contrast behavior.
 
 
 ## v8.8.54 — collision-safe agent ownership
@@ -628,17 +638,11 @@ Accepted heuristic pairings are written to `MHW-DEBUG-ALL.log` as `[FAMILY] GENE
 
 ## Git-first agent continuity
 
+Global programming-agent bootstrap, shared Git policy, personal plugins, Heaven Bridge, Agent Control, and reusable operator/developer tools are owned by `fengie/heaven-toolbox@main`. For MHW work, refresh and read current Toolbox first, then refresh `fengie/mhw-mods@main` and load this repository's product-specific `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/`, source, tests, release state, and evidence.
 
-## Plugin workspace and Heaven control plane
+Do not create new reusable plugin/control-plane/tooling implementations under MHW-local `plugins/`, `heaven-bridge/`, `tools/`, or `_AGENT_TRAINING/`; those ownership roots intentionally no longer exist here. Reusable infrastructure changes belong in Heaven Toolbox. MHW keeps only mod-manager product code, tests, product-specific scripts/workflows, and continuity/evidence needed to operate the product.
 
-New plugin development is centralized under `plugins/`. The initial platform direction is a Heaven Control Plane: a stable, permissioned capability layer for local execution, filesystem/Git operations, build/test, browser/GUI automation, worker queues, repository indexing, artifacts/checkpoints, observability, and later multi-machine workers.
-
-Read `plugins/README.md` for layout/ownership rules and `plugins/IMPLEMENTATION_SWARM_PROMPT.md` for the current collaborative implementation directive.
-
-The existing `heaven-bridge/` directory remains active compatibility/runtime infrastructure. New plugin-platform code should be developed under `plugins/heaven-control-plane/` and should reuse/adapt proven bridge primitives rather than forking a second implementation. Any physical migration of the existing bridge plugin source must preserve bootstrap/workflow/runtime compatibility and be verified on `heaven`.
-
-
-GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Every shipped application change must also bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run `scripts/testing/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
+Every shipped application change must bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run the current MHW product verification gates before declaring work complete.
 
 ## Verification closure status
 
