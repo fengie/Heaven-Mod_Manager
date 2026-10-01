@@ -1,3 +1,11 @@
+# v8.8.55 — 2026-10-01
+
+- Restore a canonical project/recovery ledger containing every still-unique work lane discovered after the branch-zero cleanup.
+- Define branch cleanup as semantic work extraction: useful code/tests/research/evidence must be integrated or converted into an actionable canonical-plan item before a stale branch ref is deleted.
+- Make archive-only preservation explicitly non-terminal; cleanup dispositions are INTEGRATED, EXTRACTED, SUPERSEDED, or REJECTED.
+- Propagate the rule through the Git directive, agent bootstrap, generic operating standard, multi-agent coordination training, learned-rules ledger, and handoff verification.
+- Record v8.8.54 Agent Control coordination as recovered/integrated while leaving the remaining archived lanes visible for completion.
+
 # v8.8.54 — 2026-09-30
 
 - Enforce case-insensitive mutable-boundary collision checks during workflow preflight so `Foo` and `foo` cannot become separate writers.
