@@ -56,4 +56,3 @@ Canonical main is `be4615f` at v8.8.49 with the ComboBox contrast and Mods empty
 Candidate v8.8.50 is governance/prompt/bootstrap validation only: compact mandatory core, full continuity constitution at startup, indexed task-relevant context, explicit authorized fallback/blocker rules, bug-prevention closure, recursive successor propagation, strict raw UTF-8 byte budgets, adversarial validator fixtures, and synchronized Agent Control contracts. Exact-head v8.8.50 verification is pending; no historical green is being promoted.
 
 Open long-term work remains issues #411/#350/#354 (security/signing/provider boundaries) and #281 (catalog). Unique registry/catalog branches remain preserved for semantic review. Actual operator visual confirmation of the merged v8.8.49 UI fixes is still a runtime verification gap. No new product features until the current queue is reconciled.
-
