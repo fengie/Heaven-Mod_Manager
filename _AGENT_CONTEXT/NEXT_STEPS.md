@@ -1,12 +1,12 @@
 # v8.8.58 MHW product recovery — ordered next actions
 
-1. **RECOVERY-005:** automated exact-head gates are green on PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4`. Perform representative installed Windows/WPF visual and interaction proof for selected value, popup items, focus/hover, dropdown-open state, disabled state, and existing GAME/settings bindings.
-2. Integrate RECOVERY-005 only after that visual acceptance is observed; then mark it DONE at the same v8.8.58 patch version.
+1. **RECOVERY-005:** source/test work is integrated on v8.8.58 main via PR #549. Perform representative installed Windows/WPF visual and interaction proof for selected value, popup items, focus/hover, dropdown-open state, disabled state, and existing GAME/settings bindings.
+2. Mark RECOVERY-005 DONE at the same v8.8.58 patch version only after that installed-client visual acceptance is observed.
 3. Keep the active RECOVERY-002 catalog lane separate.
 4. Require the divergent RECOVERY-004 updater/runtime branch to refresh current main and take the next available patch version before integration.
 5. Continue RECOVERY-007 representative installed-game/runtime proof; it is not DONE until observed on Windows.
 6. Continue RECOVERY-003 only after checking updater-boundary ownership; do not race RECOVERY-004.
-7. **Operational Toolbox handoff:** do not delete MHW branch `heaven-bridge` while `heaven2` still uses it. Toolbox issue #18 owns migration to the Toolbox relay and the eventual old-branch retirement.
+7. **Operational Toolbox handoff:** complete. Toolbox issue #18 proved authenticated `heaven2` traffic on the Toolbox relay and retired the legacy MHW `heaven-bridge` branch.
 
 ## Product verification gap
 
