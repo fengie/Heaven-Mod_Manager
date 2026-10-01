@@ -44,7 +44,13 @@
                 <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0D151F" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" Padding="10,7">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
-                        <ComboBox Width="190" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" DisplayMemberPath="DisplayName" AutomationProperties.Name="Active game"/>
+                        <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" AutomationProperties.Name="Active game" ToolTip="{Binding SelectedGame.DisplayName}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="5,0,0,0" Padding="10,6"/>
                         <Button Content="Settings" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}" Margin="2,0,0,0" Padding="10,6"/>
                     </StackPanel>
@@ -997,13 +1003,46 @@
                                       SelectedItem="{Binding SelectedCatalogItem,Mode=TwoWay}"
                                       AutoGenerateColumns="False"
                                       IsReadOnly="True"
+                                      RowHeight="88"
+                                      EnableRowVirtualization="True"
+                                      VirtualizingPanel.IsVirtualizing="True"
+                                      VirtualizingPanel.VirtualizationMode="Recycling"
+                                      ScrollViewer.CanContentScroll="True"
                                       AutomationProperties.Name="Provider catalog results">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="MOD" Binding="{Binding Name}" Width="2.1*"/>
-                                    <DataGridTextColumn Header="AUTHOR" Binding="{Binding Author}" Width="1.1*"/>
+                                    <DataGridTemplateColumn Header="MOD" Width="2.8*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="2,5,10,5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="74"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="64" Height="64" CornerRadius="8" Background="#0A1018" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
+                                                        <Grid>
+                                                            <TextBlock Text="No image" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <Image Source="{Binding ThumbnailUri}" Stretch="UniformToFill"/>
+                                                        </Grid>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Margin="0,3,0,0" Text="{Binding Summary}" Foreground="{StaticResource Muted}" FontSize="10" MaxHeight="30" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                                        <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Author}" Foreground="{StaticResource Muted}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="120"/>
+                                                            <TextBlock Text="  •  " Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                            <TextBlock Text="{Binding Category}" Foreground="{StaticResource AccentBright}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="110"/>
+                                                            <TextBlock Text="  •  " Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                            <TextBlock Text="{Binding Downloads}" Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                            <TextBlock Text=" downloads" Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="SOURCE" Binding="{Binding Provider}" Width="105"/>
-                                    <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="95"/>
-                                    <DataGridTextColumn Header="UPDATED" Binding="{Binding Updated}" Width="145"/>
+                                    <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="100"/>
+                                    <DataGridTextColumn Header="UPDATED" Binding="{Binding Updated}" Width="135"/>
                                     <DataGridTextColumn Header="CACHE" Binding="{Binding CacheState}" Width="145"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -1017,13 +1056,28 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SelectedCatalogItem.Name}" Style="{StaticResource SectionTitle}"/>
-                                    <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11">
-                                        <Run Text="{Binding SelectedCatalogItem.Provider,Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding SelectedCatalogItem.Author,Mode=OneWay}"/>
-                                    </TextBlock>
-                                    <TextBlock Margin="0,10,0,0" Text="{Binding SelectedCatalogItem.Summary}" TextWrapping="Wrap" MaxHeight="90"/>
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="106"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="96" Height="72" HorizontalAlignment="Left" VerticalAlignment="Top" CornerRadius="9" Background="#0A1018" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
+                                        <Grid>
+                                            <TextBlock Text="No image" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Image Source="{Binding SelectedCatalogItem.ThumbnailUri}" Stretch="UniformToFill"/>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding SelectedCatalogItem.Name}" Style="{StaticResource SectionTitle}" TextWrapping="Wrap"/>
+                                        <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11">
+                                            <Run Text="{Binding SelectedCatalogItem.Provider,Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding SelectedCatalogItem.Author,Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="10">
+                                            <Run Text="Version "/><Run Text="{Binding SelectedCatalogItem.Version,Mode=OneWay}"/><Run Text=" · Updated "/><Run Text="{Binding SelectedCatalogItem.Updated,Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock Margin="0,10,0,0" Text="{Binding SelectedCatalogItem.Summary}" TextWrapping="Wrap" MaxHeight="90"/>
+                                    </StackPanel>
+                                </Grid>
 
                                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,10">
                                     <Button Content="Load Exact Files" Command="{Binding LoadCatalogFilesCommand}" Style="{StaticResource QuietButton}"/>
