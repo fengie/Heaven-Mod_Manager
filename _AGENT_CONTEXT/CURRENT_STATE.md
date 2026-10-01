@@ -1,25 +1,30 @@
-# v8.8.60 runtime/updater hardening — MHW product state
+# v8.8.61 dark window chrome + build-label repair — MHW product state
 
 MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
 
-Canonical 8.8.59 already contains the persistent Settings/manual-update preference work from PR #550. The active 8.8.60 RECOVERY-004 lane is a fresh-main semantic reconciliation of two archived updater/runtime hardening branches; it does not replay their stale version or continuity metadata.
+Canonical v8.8.60 is integrated on `main` via PR #552. Its exact-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership gates passed before merge, so the Dashboard stretch/clipping repair and RECOVERY-004 runtime/updater hardening are now canonical.
+
+The active v8.8.61 lane addresses the remaining defects visible in the installed v8.8.59 screenshot: Windows-light scrollbar chrome, a light native title bar, and mojibake in the build identity label.
 
 ## Current MHW product work
 
-- **RECOVERY-004 / P0:** active 8.8.60 candidate. Dashboard stretch, retry-safe initial metadata refresh, staged-update identity/mutation serialization, and updater-health diagnostic redaction are implemented with focused regressions.
+- **v8.8.61 direct UI fix:** application-owned dark ScrollBar/Thumb templates, native DWM dark title-bar request, clean ASCII-stable build identity display, and focused regression coverage are implemented on the current candidate branch.
+- **RECOVERY-004 / P0:** DONE on canonical v8.8.60 via PR #552.
 - **RECOVERY-002 / P0:** in-app catalog browser recovery remains active on its existing owner lane.
 - **RECOVERY-007 / P0:** discovery source is integrated; representative Windows/runtime installed-game proof remains before DONE.
-- **RECOVERY-003 / P1:** DONE on canonical 8.8.59 via PR #550 with required exact-head gates green.
-- **RECOVERY-005 / P1:** dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
+- **RECOVERY-003 / P1:** DONE on canonical v8.8.59 via PR #550.
+- **RECOVERY-005 / P1:** dark ComboBox source/tests are integrated; installed Windows/WPF interaction acceptance remains before DONE. The supplied installed-client screenshot visually confirms the ComboBox no longer falls back to the bright native control surface, but does not by itself prove interaction behavior.
 
 ## Verification boundary
 
-Focused Windows proof for the recovered implementation checkpoint `5f11ce59712808ce259dbf72922cc011fb4319c1` is green: Release build 0 warnings / 0 errors, IntegrationTests 268/268, FunctionVerifier 1469 functions with 0 trace gaps, 0 uncovered call sites, and 0 parse errors. This is not a substitute for final exact-head CI after version/continuity edits.
+v8.8.60 exact-head verification is closed on RECOVERY-004 head `38d0fcaa853c8951e1bb0043cb962fdb2261a92f` and merged as `2ace37e2731dc9282e04cc42d77c701ff12e1751`.
 
-The local Codex audit route on `heaven` was quota-blocked and made no edits. Deterministic Heaven Bridge execution remained available and produced the focused Windows evidence. No authentication or security boundary was weakened.
+The v8.8.61 UI implementation was reconciled non-destructively on top of that canonical tree at merge checkpoint `eb440ef91cc453c28a18c243d4e3fa325ad33b81`. Final version/README/continuity edits followed, so the final candidate head still requires exact-head required gates before integration. No installed-client acceptance is claimed for the new scrollbar/title-bar behavior until the resulting build is observed on Windows.
+
+A first draft-gate attempt exposed literal `\\n` sequences in the DWM interop declaration; that malformed source was repaired and a regression now rejects the escaped-newline form.
 
 ## Coordination
 
-Do not merge the stale `fix/runtime-updater-hardening-v8.8.57-20261001` history wholesale. Its useful semantics have been re-evaluated against current main and selectively ported into the fresh 8.8.60 lane. Catalog branches remain separately owned and must not be absorbed into this updater lane.
+The direct local Heaven/Agent Control route is not exposed in this ChatGPT session, but GitHub's self-hosted Heaven Windows runner is available and is the required execution path for exact-head compile/test evidence here. Catalog branches remain separately owned and must not be absorbed into this UI lane.
 
 Global Agent Control/Heaven/plugin work remains owned by `fengie/heaven-toolbox` and must not be recreated in MHW.

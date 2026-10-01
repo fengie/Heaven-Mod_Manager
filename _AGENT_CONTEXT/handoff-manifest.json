@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.60",
+  "currentVersion": "8.8.61",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.59 canonical main b6754d389ee544b86a6b2dd5482adeb325eee360 with Settings integrated and hosted/installed-client evidence persisted; RECOVERY-004 is reconciled on top",
+  "immediateParentRevision": "v8.8.60 canonical main 2ace37e2731dc9282e04cc42d77c701ff12e1751 with RECOVERY-004 integrated after exact-head gates; v8.8.61 UI chrome/build-label repair is reconciled on top",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then verify/integrate the v8.8.60 RECOVERY-004 candidate without weakening the 8.8.59 Settings preference gates. Preserve RECOVERY-002 catalog ownership, RECOVERY-007 runtime proof, RECOVERY-005 installed visual acceptance, and recursively propagate continuity.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then verify/integrate PR #551 for v8.8.61 without regressing canonical v8.8.60 runtime/updater hardening. Preserve RECOVERY-002 catalog ownership, RECOVERY-007 runtime proof, RECOVERY-005 interaction acceptance, and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

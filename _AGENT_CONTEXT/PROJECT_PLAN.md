@@ -24,9 +24,9 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | --- | --- | --- | --- | --- |
 | RECOVERY-001 | P0 | DONE | `archive/branch-zero-20260930/agent-central-project-plan-v8.8.49-20260930-5fd5319c` | Restore centralized planning and make branch cleanup extract unique work before deletion. |
 | RECOVERY-002 | P0 | ACTIVE | `archive/branch-zero-20260930/feat-catalog-browser-v8.8.50-20260930-a772aeee` | Finish the in-app catalog browser against current main. |
-| RECOVERY-003 | P1 | READY | `archive/branch-zero-20260930/feature-manual-update-check-20260930-385c1146` | Restore and finish the manual “Check for updates” UI path. |
-| RECOVERY-004 | P0 | READY | `archive/branch-zero-20260930/fix-audit-hardening-20260930-6fd76158`; `archive/branch-zero-20260930/fix-runtime-hardening-20260930-34df6690` | Reconcile overlapping updater/runtime hardening without regressing newer main. |
-| RECOVERY-005 | P1 | READY | `archive/branch-zero-20260930/fix-dark-combobox-v8.8.53-20260930-9bfb3028` | Finish dark ComboBox chrome/contrast behavior and regression coverage. |
+| RECOVERY-003 | P1 | DONE | `archive/branch-zero-20260930/feature-manual-update-check-20260930-385c1146` | Restore and finish the manual “Check for updates” UI path. |
+| RECOVERY-004 | P0 | DONE | `archive/branch-zero-20260930/fix-audit-hardening-20260930-6fd76158`; `archive/branch-zero-20260930/fix-runtime-hardening-20260930-34df6690` | Reconcile overlapping updater/runtime hardening without regressing newer main. |
+| RECOVERY-005 | P1 | ACTIVE | `archive/branch-zero-20260930/fix-dark-combobox-v8.8.53-20260930-9bfb3028` | Finish dark ComboBox chrome/contrast behavior and regression coverage. |
 | RECOVERY-007 | P0 | ACTIVE | `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4` | Finish automatic universal installed-game discovery and lifecycle hardening. |
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
@@ -79,8 +79,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-004 — Runtime/updater audit hardening
 
-**Owner:** active recovery lane on `fix/recovery-004-runtime-hardening-v8.8.60`
-**Status:** ACTIVE
+**Owner:** completed on canonical main via PR #552
+**Status:** DONE
 **Acceptance:** semantically reconcile the two overlapping archived lanes; retain valid fixes for dashboard stretch, metadata retry, staged-update identity/mutation serialization, and diagnostic redaction without importing stale version/continuity snapshots.
 
 - [x] Preserve both exact archived source tips.
@@ -93,6 +93,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 **Focused evidence:** source checkpoint `5f11ce59712808ce259dbf72922cc011fb4319c1` built Release with 0 warnings / 0 errors; IntegrationTests passed 268/268; FunctionVerifier reported 1469 functions with 0 trace gaps, 0 uncovered call sites, and 0 parse errors.
 
 **Next action:** finish 8.8.60 continuity/version metadata, run exact-head required gates, then integrate only if fresh-main reconciliation remains non-conflicting.
+
+**Integrated evidence (RECOVERY-004):** PR #552 head `38d0fcaa853c8951e1bb0043cb962fdb2261a92f` passed Workflow Feature PR Gate run 649, MHW Product Security Gate run 640, and Heaven Toolbox Ownership Gate run 37, then merged to canonical main as `2ace37e2731dc9282e04cc42d77c701ff12e1751`.
 
 ## RECOVERY-005 — Dark ComboBox chrome
 

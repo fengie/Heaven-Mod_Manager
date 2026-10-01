@@ -1,5 +1,6 @@
 using MhwModManager.Core;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,6 +21,7 @@ public partial class MainWindow:Window
         Closing+=OnClosing;
         Closed+=OnClosed;
         PreviewKeyDown+=OnPreviewKeyDown;
+        SourceInitialized+=OnSourceInitialized;
     }
 
     public Task InitializeAsync()
@@ -35,6 +37,24 @@ public partial class MainWindow:Window
     }
 
 
+    private void OnSourceInitialized(object? sender,EventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var handle=new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        if(handle==IntPtr.Zero)return;
+
+        var enabled=1;
+        const int useImmersiveDarkMode=20;
+        const int useImmersiveDarkModeBefore20H1=19;
+        if(DwmSetWindowAttribute(handle,useImmersiveDarkMode,ref enabled,sizeof(int))!=0)
+            _=DwmSetWindowAttribute(handle,useImmersiveDarkModeBefore20H1,ref enabled,sizeof(int));
+    }
+
+    #pragma warning disable SYSLIB1054 // This single blittable System32 call avoids enabling unsafe code for the WPF app just to use LibraryImport.
+    [DllImport("dwmapi.dll",ExactSpelling=true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int DwmSetWindowAttribute(nint hwnd,int dwAttribute,ref int pvAttribute,int cbAttribute);
+    #pragma warning restore SYSLIB1054
 
     private void OnWindowLoaded(object sender,RoutedEventArgs e)
     {
