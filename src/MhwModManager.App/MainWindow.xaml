@@ -995,7 +995,10 @@
                                             <TextBlock Text="{Binding SelectedMod.Name}" FontSize="23" FontWeight="Bold" TextWrapping="Wrap"/>
                                             <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" Text="{Binding SelectedMod.AuthorVersionLine}"/>
                                         </StackPanel>
-                                        <Button Grid.Column="1" Margin="14,0,0,0" Content="Open Source Page" Command="{Binding OpenSelectedSourceCommand}" Style="{StaticResource PrimaryButton}" Padding="13,8" VerticalAlignment="Top"/>
+                                        <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Top">
+                                            <Button Content="Open Source Page" Command="{Binding OpenSelectedSourceCommand}" Style="{StaticResource PrimaryButton}" Padding="13,8"/>
+                                            <Button Margin="0,8,0,0" Content="Check Installed Origin" Command="{Binding CheckInstalledOriginCommand}" IsEnabled="{Binding HasInstalledOrigin}" Padding="13,8"/>
+                                        </StackPanel>
                                     </Grid>
 
                                     <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
@@ -1019,6 +1022,7 @@
                                                 <TextBlock Text="PACKAGE INFO" Style="{StaticResource Eyebrow}"/>
                                                 <TextBlock Margin="0,5,0,0" Text="{Binding SelectedMod.FilesLine}" FontWeight="SemiBold"/>
                                                 <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding SelectedMod.SourceHint}" TextWrapping="Wrap"/>
+                                                <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding InstalledOriginStatusText}" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
