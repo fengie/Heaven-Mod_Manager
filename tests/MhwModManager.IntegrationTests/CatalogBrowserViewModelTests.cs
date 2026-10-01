@@ -69,6 +69,95 @@ public sealed class CatalogBrowserViewModelTests:IDisposable
         Assert.Equal("900 downloads • 3.2 rating",result.StatsLine);
     }
 
+    [Fact]
+    public async Task Installed_origin_check_stays_pinned_to_exact_file_identity()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var db=new ManagerDatabase(Path.Combine(root,"origin-flow","manager.db"));
+        await db.InitializeAsync(TestToken);
+        var repository=new CatalogRepository(db);
+        var origins=new InstalledCatalogOriginRepository(db);
+        var game=GameProfile.MonsterHunterWorld(Path.Combine(root,"origin-game"));
+        var oldFile=new CatalogModFile(
+            "alpha",
+            "mod-1",
+            "file-old",
+            "Installed file",
+            "installed.zip",
+            CatalogFileCategory.Main,
+            Version:"1.0");
+        var newerFile=new CatalogModFile(
+            "alpha",
+            "mod-1",
+            "file-new",
+            "Newer file",
+            "newer.zip",
+            CatalogFileCategory.Main,
+            Version:"2.0");
+        var exactMod=new CatalogMod(
+            "alpha:mod-1",
+            "alpha",
+            "mod-1",
+            game.Id,
+            "Exact Origin Fixture",
+            "summary",
+            "description",
+            "author",
+            "2.0",
+            "Utility",
+            [],
+            null,
+            [],
+            null,
+            DateTimeOffset.UtcNow,
+            10,
+            null,
+            null,
+            [],
+            "https://mods.example.test/alpha/mod-1",
+            [oldFile,newerFile]);
+        await repository.UpsertAsync(
+            new CachedCatalogMod(
+                exactMod,
+                new CatalogCacheMetadata(DateTimeOffset.UtcNow,DateTimeOffset.UtcNow.AddHours(1))),
+            TestToken);
+        await origins.UpsertAsync(
+            new InstalledCatalogOrigin(
+                "local-mod",
+                "alpha",
+                "mod-1",
+                "file-old",
+                "1.0",
+                DateTimeOffset.UtcNow.AddDays(-1),
+                "https://mods.example.test/alpha/mod-1",
+                new string('a',64)),
+            TestToken);
+
+        var provider=new FakeProvider("alpha")
+        {
+            ExactMod=exactMod,
+            ExactFiles=[oldFile,newerFile]
+        };
+        using var vm=new CatalogBrowserViewModel(
+            repository,
+            new CatalogSyncService(repository),
+            [provider],
+            game,
+            origins,
+            new InstalledCatalogOriginChecker());
+
+        await vm.ReloadAsync(TestToken);
+        vm.SelectedMod=Assert.Single(vm.Results);
+        await vm.CheckSelectedInstalledOriginAsync(TestToken);
+
+        Assert.True(vm.HasInstalledOrigin);
+        Assert.Contains("exact installed file still resolves",vm.InstalledOriginStatusText,StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("mod-1",provider.LastGetModId);
+        Assert.Equal("mod-1",provider.LastGetFilesModId);
+        Assert.Contains("file-new",provider.ExactFiles.Select(file=>file.ProviderFileId));
+        Assert.DoesNotContain("newer file",vm.InstalledOriginStatusText,StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<CatalogRepository> CreateRepositoryAsync(string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -121,9 +210,15 @@ public sealed class CatalogBrowserViewModelTests:IDisposable
     {
         public string ProviderId=>providerId;
         public string DisplayName=>$"{providerId} source";
-        public CatalogProviderCapabilities Capabilities=>CatalogProviderCapabilities.Browse|CatalogProviderCapabilities.Metadata;
+        public CatalogProviderCapabilities Capabilities=>ExactMod is null
+            ? CatalogProviderCapabilities.Browse|CatalogProviderCapabilities.Metadata
+            : CatalogProviderCapabilities.Browse|CatalogProviderCapabilities.Metadata|CatalogProviderCapabilities.Updates;
         public CatalogProviderCompliance Compliance=>NexusV3CatalogPolicy.Compliance with{ProviderId=providerId};
         public Exception? SearchException{get;set;}
+        public CatalogMod? ExactMod{get;set;}
+        public IReadOnlyList<CatalogModFile> ExactFiles{get;set;}=[];
+        public string? LastGetModId{get;private set;}
+        public string? LastGetFilesModId{get;private set;}
         public int SearchCalls{get;private set;}
 
         public Task<IReadOnlyList<CatalogGame>> GetGamesAsync(CancellationToken ct=default)
@@ -170,13 +265,20 @@ public sealed class CatalogBrowserViewModelTests:IDisposable
         public Task<CatalogMod?> GetModAsync(GameProfile game,string providerModId,CancellationToken ct=default)
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return Task.FromResult<CatalogMod?>(null);
+            ct.ThrowIfCancellationRequested();
+            LastGetModId=providerModId;
+            return Task.FromResult(
+                ExactMod is not null&&ExactMod.ProviderModId.Equals(providerModId,StringComparison.Ordinal)
+                    ? ExactMod
+                    : null);
         }
 
         public Task<IReadOnlyList<CatalogModFile>> GetModFilesAsync(GameProfile game,string providerModId,CancellationToken ct=default)
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return Task.FromResult<IReadOnlyList<CatalogModFile>>([]);
+            ct.ThrowIfCancellationRequested();
+            LastGetFilesModId=providerModId;
+            return Task.FromResult<IReadOnlyList<CatalogModFile>>(ExactFiles);
         }
 
         public Task<CatalogAcquisitionResolution> ResolveAcquisitionAsync(CatalogAcquisitionRequest request,CancellationToken ct=default)
