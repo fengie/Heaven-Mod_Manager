@@ -92,12 +92,14 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Preserve exact archived source tip.
 - [x] Compare archived template with current v8.8.49+ contrast fixes.
 - [x] Port only complementary styling and regression coverage that remains useful.
-- [ ] Run exact-head MHW gates on the v8.8.58 candidate.
+- [x] Run exact-head MHW gates on the v8.8.58 candidate.
 - [ ] Verify installed Windows/WPF appearance and interaction, then integrate and mark DONE.
 
 **Current candidate:** app-owned ComboBox/ComboBoxItem templates replace the v8.8.49 Windows system-brush workaround while retaining readable selected/dropdown text and existing bindings.
 
-**Next action:** run exact-head CI on the complete v8.8.58 branch, then perform installed-client visual/interaction proof before DONE.
+**Automated evidence:** PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4` passed Workflow Feature PR Gate run 634 (`36810757532`), MHW Product Security Gate run 624 (`36810757536`), and Heaven Toolbox Ownership Gate run 18 (`36810757535`).
+
+**Next action:** perform installed-client visual/interaction proof before integration/DONE.
 
 ## RECOVERY-007 — Installed-game discovery
 
