@@ -89,7 +89,7 @@ try{
     Reject 'current handoff loses version' 'NEXT-AGENT-START-HERE.md' {param($x) $v=(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixture 'VERSION.txt')).Trim(); $x -replace ("v"+[regex]::Escape($v)),'version-current'}
     Reject 'constitution loses exact verification' '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md' {param($x) $x -replace '(?i)exact verification','approximate evidence'}
     Reject 'project plan loses recovery queue' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) [regex]::Replace($x,'(?m)^\|\s*RECOVERY-.*$','')}
-    Reject 'project plan loses archive non-terminal rule' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) $x -replace '(?i)archive tag alone does not mean useful work was integrated, finished, or safely forgotten','archive tag alone means cleanup is complete'}
+    Reject 'project plan loses archive non-terminal rule' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) $x -replace '(?i)`ARCHIVED` by itself is only a preservation mechanism and is \*\*not\*\* a terminal work disposition','`ARCHIVED` by itself is a terminal work disposition'}
     Reject 'Git cleanup loses explicit extraction disposition' 'GLOBAL_GIT_DIRECTIVE.md' {param($x) $x -replace '(?i)`INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED`','`ARCHIVED`'}
     Reject 'AGENTS exceeds context budget' 'AGENTS.md' {param($x) $x + ("noise" * 3000)}
     Reject 'HTML comments cannot evade actual source byte budget' 'AGENTS.md' {param($x) $x + '<!--' + ('noise' * 3000) + '-->'}
