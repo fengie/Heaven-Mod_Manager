@@ -6,9 +6,9 @@ The candidate makes general installed-game discovery part of the ordinary Games-
 
 Focused integration regressions cover mixed MHW + generic first-refresh registration, one-time discovery, Steam multi-library manifests, nested executable lookup, Xbox Content-root discovery, and helper/anti-cheat filtering. The recovered reusable invariant is LR-063 because canonical LR-060 already belongs to the shell-visible binary-resource incident.
 
-## Verification state
+## Verification state and unresolved risk
 
-No exact-head build/test/Windows result is claimed yet for this v8.8.56 tree.
+No exact-head build/test/Windows result is claimed yet for this v8.8.56 tree. The unresolved risk is live Windows representative installed-game discovery: deterministic Windows CI proves the implementation and regressions, but RECOVERY-007 must remain ACTIVE until representative installed-game/runtime behavior is explicitly proven on canonical main.
 
 ## Unresolved risk
 
