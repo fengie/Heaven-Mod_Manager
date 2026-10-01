@@ -1,3 +1,13 @@
+# v8.8.54 collision-safe agent ownership — candidate
+
+Canonical baseline is current v8.8.53 main with Agent Work Reports and later installed-client evidence preserved. Agent Control advances to v0.6.25 and closes two overlap loopholes: routing manifests cannot assign one mutable boundary twice (case-insensitive), and counted direct deploy cannot split one operator-supplied boundary into synthetic numbered leases. Workflow lease preflight now uses the same case-insensitive boundary identity as actual lease acquisition.
+
+Pre-metadata reconciled code passed Agent Control syntax, 77/77 targeted control-core/server-safety tests, and 279/279 full Agent Control tests on heaven. Rerun those checks on the final synchronized head, refresh main immediately before integration, and verify the intended Agent Control paths on canonical main after delivery. Live heaven2 controller mutation/smoke is still blocked by required HMAC authentication; preserve that fail-closed boundary.
+
+Successor improvement: expose conflicting owner/slot information prominently in Agent Manager so rejected dispatches are immediately actionable without reading logs. Preserve unique concurrent branches and recursively propagate the continuity constitution.
+
+---
+
 # v8.8.53 Agent Work Reports — candidate
 
 Canonical parent is v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415`. PR #540 has been reconciled onto that exact main without overwriting the v8.8.52 Agent Manager UI slice. The candidate adds only the standalone `plugins/agent-work-reports` reporting surface, its verification wiring, and synchronized v8.8.53 continuity/version metadata.
