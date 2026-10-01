@@ -4642,6 +4642,17 @@ function updateRoutingManifest(body = {}) {
     };
   });
 
+  const boundaryOwners = new Map();
+  for (const assignment of assignments) {
+    const boundaryKey = String(assignment.boundary || "").trim().toLowerCase();
+    if (!boundaryKey) continue;
+    const existing = boundaryOwners.get(boundaryKey);
+    if (existing) {
+      throw new Error(`Routing manifest duplicates mutable boundary "${assignment.boundary}" across slots "${existing}" and "${assignment.slotId}". Assign one primary owner per mutable boundary.`);
+    }
+    boundaryOwners.set(boundaryKey, assignment.slotId);
+  }
+
   const mode = String(body.mode || "authoritative").trim().toLowerCase();
   if (!["authoritative", "overlay"].includes(mode)) throw new Error("Routing manifest mode must be authoritative or overlay.");
 
@@ -6014,10 +6025,13 @@ const server = http.createServer(async (req, res) => {
         if (!capacity.allowed) {
           throw new Error(`Requested deployment batch of ${count} exceeds available worker capacity (${capacity.available} free of ${capacity.maximum}; ${capacity.active} active). No workers were launched.`);
         }
+        const explicitBoundary = String(body.boundary || "").trim();
+        if (count > 1 && explicitBoundary) {
+          throw new Error(`Requested deployment batch of ${count} cannot share mutable boundary "${explicitBoundary}". Assign one worker per mutable boundary or dispatch distinct boundaries explicitly. No workers were launched.`);
+        }
         const created = [];
         for (let index = 0; index < count; index += 1) {
-          const explicitBoundary = String(body.boundary || "").trim();
-          const effectiveBoundary = explicitBoundary && count > 1 ? `${explicitBoundary}#${index + 1}` : explicitBoundary;
+          const effectiveBoundary = explicitBoundary;
           created.push(await deployOne({
             role: body.role || "support",
             task: body.task || "",
