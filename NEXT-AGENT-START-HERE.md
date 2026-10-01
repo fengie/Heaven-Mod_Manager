@@ -1,3 +1,13 @@
+# v8.8.54 single-owner agent coordination — integrated; authenticated live smoke pending
+
+PR #542 exact head `c59554b441c47085d6af18e703adc63855e35472` passed Agent Control `36796050757`, Security Supply Chain `36796050831`, and Workflow Feature `36796050750`. The same exact head passed local syntax, 77/77 targeted tests, 279/279 full Agent Control tests, handoff baseline/negative fixtures, version identity, and diff checks on heaven. It merged to canonical main as `be001c2582564e55a7561a97bff791bbf821621a`; post-merge comparison shows zero file differences from the verified head.
+
+Canonical v8.8.54 / Agent Control v0.6.25 now enforces one primary writer per canonical mutable boundary: boundary identity is case-insensitive, duplicate routing-manifest owners are rejected, and counted deploys cannot manufacture numbered subleases for one explicitly shared boundary. Disjoint boundaries remain parallelizable.
+
+Remaining runtime acceptance is intentionally narrow: use an authorized signed or machine-local heaven2 path to smoke duplicate-boundary rejection, disjoint coexistence, and a normal single-owner dispatch. The heaven2 bridge remains HMAC-required; do not bypass it. Before new mutable work, refresh live ownership and reuse the canonical guardrails. The candidate notes below are historical.
+
+---
+
 # v8.8.54 collision-safe agent ownership — candidate
 
 Start from the integrated v8.8.53 reporting/release state below; do not regress or rewrite its exact-head and updater evidence. Agent Control v0.6.25 makes mutable-boundary identity case-insensitive, rejects routing manifests that assign the same mutable boundary to multiple slots, and refuses counted direct deploy when one explicit mutable boundary would otherwise be split into synthetic numbered leases.
