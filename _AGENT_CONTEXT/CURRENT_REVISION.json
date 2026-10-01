@@ -3,27 +3,26 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/recovery-005-dark-combobox-v8.8.58",
+  "workingBranch": "main",
   "currentVersion": "8.8.58",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.58-dark-combobox-candidate",
-  "nextMilestone": "Verify and integrate RECOVERY-005 dark ComboBox chrome, then continue MHW product recovery by PROJECT_PLAN priority.",
-  "nextRequiredAction": "Perform installed Windows/WPF visual/interaction acceptance for PR #549 after its evidence-only head rerun is green; integrate RECOVERY-005 only after that proof.",
-  "verificationAppliesToCommit": "94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4",
-  "lastClosedVerificationCommit": "94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4",
-  "lastClosedVerificationRun": "github-actions-36810757532",
-  "verificationScopeNote": "PR #549 head 94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4 passed Workflow Feature PR Gate run 634, MHW Product Security Gate run 624, and Heaven Toolbox Ownership Gate run 18. Installed Windows/WPF visual/interaction acceptance for RECOVERY-005 remains unobserved and required before integration/DONE. This evidence-persistence edit changes continuity text only and will receive its own exact-head rerun.",
+  "status": "v8.8.58-dark-combobox-integrated-visual-acceptance-pending",
+  "nextMilestone": "Complete installed Windows/WPF acceptance for integrated RECOVERY-005, then continue MHW product recovery by PROJECT_PLAN priority.",
+  "nextRequiredAction": "Run representative installed Windows/WPF visual/interaction acceptance for the integrated v8.8.58 ComboBox chrome; mark RECOVERY-005 DONE only after that runtime proof.",
+  "verificationAppliesToCommit": "9c9894d39f5875ef5271260638fb07d26c66da8d",
+  "lastClosedVerificationCommit": "9c9894d39f5875ef5271260638fb07d26c66da8d",
+  "lastClosedVerificationRun": "github-actions-36811068797",
+  "verificationScopeNote": "PR #549 head 9c9894d39f5875ef5271260638fb07d26c66da8d passed Workflow Feature PR Gate run 636, MHW Product Security Gate run 626, and Heaven Toolbox Ownership Gate run 20, then merged to canonical main as b270494c047c2de24b2c7aa94bd710c21527d72a. Installed Windows/WPF visual/interaction acceptance remains unobserved and required before RECOVERY-005 is DONE.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
     "updaterReleaseTag": "updater-main-357",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.48-mods-layout-integration.md"
   },
-  "candidateSourceCommit": "5076ee0bf81ddfe69e0418bc599e2c7a810a0959",
+  "candidateSourceCommit": null,
   "unresolvedRisks": [
-    "The MHW heaven-bridge transport branch remains live for heaven2; Toolbox issue #18 owns relay cutover and old-branch retirement. Do not branch-clean it before Toolbox relay proof.",
-    "RECOVERY-005 source/test is implemented on the v8.8.58 candidate but installed Windows/WPF visual/interaction acceptance is not yet observed.",
+    "RECOVERY-005 source/test is integrated on v8.8.58 main, but installed Windows/WPF visual/interaction acceptance is not yet observed.",
     "The divergent fix/runtime-updater-hardening-v8.8.57-20261001 lane must refresh newer main and allocate the next available patch version before integration.",
     "RECOVERY-007 source is integrated; representative Windows/runtime installed-game discovery proof remains pending before DONE.",
     "The fresh-main catalog recovery lane fix/issue281-catalog-v8.8.55 remains active; do not create a duplicate catalog implementation lane."
@@ -33,5 +32,5 @@
   "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
   "globalBootstrapRepository": "fengie/heaven-toolbox",
   "globalBootstrapBranch": "main",
-  "toolboxTransferredWork": "Legacy Agent Control, Agent Manager, Heaven Bridge/auth/provider, Agent Work Reports, plugin-toolbox, and global coordination follow-up is owned by fengie/heaven-toolbox issue #5 and is not active MHW product work."
+  "toolboxTransferredWork": "Legacy Agent Control, Agent Manager, Heaven Bridge/auth/provider, Agent Work Reports, plugin-toolbox, and global coordination context takeover completed in fengie/heaven-toolbox issue #5; live relay cutover completed in issue #18."
 }
