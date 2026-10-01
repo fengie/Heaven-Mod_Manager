@@ -1,4 +1,4 @@
-# MHW Manual Mod Manager — v8.8.59
+# v8.8.59 — MHW Manual Mod Manager
 
 Current product version: **8.8.59**.
 
@@ -6,7 +6,7 @@ Current product version: **8.8.59**.
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-### v8.8.59 — persistent Settings tab
+## v8.8.59 — persistent Settings tab
 
 - Added a dedicated Settings tab with persistent automatic-update, UI-motion, last-tab, safety-confirmation, and background-metadata preferences.
 - Automatic program updates can now be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
