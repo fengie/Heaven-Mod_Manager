@@ -8,8 +8,8 @@
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
   "status": "v8.8.57-heaven-toolbox-cutover-candidate",
-  "nextMilestone": "Verify and integrate the completed source-side Heaven Toolbox authority cutover, then continue MHW product recovery by PROJECT_PLAN priority.",
-  "nextRequiredAction": "Run exact-head cutover gates, integrate PR #548 without overwriting the separately owned updater-hardening lane, verify remote main ownership invariants, then continue RECOVERY-007 and remaining MHW product recovery.",
+  "nextMilestone": "Verify and integrate the completed Heaven Toolbox ownership cutover, then continue only MHW Manual Mod Manager product recovery by PROJECT_PLAN priority.",
+  "nextRequiredAction": "Run exact-head PR #548 gates and integrate the cutover when green; then continue MHW product work only: RECOVERY-007 representative runtime discovery proof, RECOVERY-002 catalog, RECOVERY-004 updater hardening, RECOVERY-003 manual update check, and RECOVERY-005 ComboBox UI.",
   "verificationAppliesToCommit": "c59554b441c47085d6af18e703adc63855e35472",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
@@ -21,74 +21,16 @@
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.48-mods-layout-integration.md"
   },
   "candidateSourceCommit": null,
-  "agentManagerPriority": {
-    "status": "active",
-    "priority": "P0",
-    "mode": "functionality-lock",
-    "goal": "Prove Agent Manager end-to-end before expansion.",
-    "completionContract": "_AGENT_CONTEXT/HISTORY/current-revision-before-v8.8.47.json#agentManagerPriority",
-    "releasePolicy": "No unrelated product features before exact-head full P0 proof; full binding acceptance contract remains in completionContract.",
-    "completionRequires": [
-      "Runtime/plugin identity agrees.",
-      "Exact candidate check and P0 tests pass.",
-      "heaven2 server/CLI/dashboard smoke passes.",
-      "Authenticated Heaven provider healthy or fails closed.",
-      "Dispatch/observe/recover/stop without stale ownership.",
-      "Honest provider/machine/freshness/partial coverage."
-    ]
-  },
   "unresolvedRisks": [
     "The separately owned fix/runtime-updater-hardening-v8.8.57-20261001 lane must refresh post-cutover main and allocate the next patch version; do not overwrite or absorb it into this ownership cutover.",
-    "v8.8.56 RECOVERY-007 implementation is persisted but exact-head compile/test/Windows discovery evidence is pending; do not inherit archived v8.8.50 green claims.",
-    "v8.8.54 live heaven2 routing/lease smoke remains unclaimed and must use an authorized signed or machine-local path; HMAC stays fail closed.",
+    "RECOVERY-007 source is integrated; representative Windows/runtime installed-game discovery proof remains pending before DONE.",
     "Several archived branch tips still contain unique semantics; exact provenance and actionable recovery are tracked in _AGENT_CONTEXT/PROJECT_PLAN.md until each receives a terminal semantic disposition.",
-    "The fresh-main catalog recovery lane fix/issue281-catalog-v8.8.55 is active; the older catalog recovery branch must not be deleted until equivalence/unique-work review is complete.",
-    "Live heaven2 Agent Work Reports dashboard acceptance remains pending. The heaven2 bridge is HMAC-required; do not weaken or bypass that boundary merely to obtain smoke evidence.",
-    "The exact-main provider probe on heaven found no local signing key, so heaven cannot legitimately proxy a privileged heaven2 relay job from this route.",
-    "Agent Work Reports is loopback-only and intentionally has no remote authentication boundary; do not expose it off-host without adding authentication.",
-    "Managed/federated agents remain authoritative through Agent Control; explicit reports supplement rather than replace orchestration state.",
-    "Bridge auth/provider registration and signing issues 411/350/354 remain open; catalog issue 281 remains open."
+    "The fresh-main catalog recovery lane fix/issue281-catalog-v8.8.55 is active; the older catalog recovery branch must not be deleted until equivalence/unique-work review is complete."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
   "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
-  "priorIntegrationEvidence": {
-    "pullRequest": 540,
-    "candidateSha": "b295586beef4e56c7bdc2968b005cc44354c86f5",
-    "mergeSha": "2885609c8db18494dc5d89d7e9545732ab2bf741",
-    "windowsEvidenceCommit": "30ddeb1177cf4b0aa491ffea3b28ed8d8b2446e9",
-    "updaterEvidenceCommit": "3c2e91639e5d902f6533ff215fb3b7d8ebe189e4",
-    "windowsRun": 36794493034,
-    "updaterE2ERun": 36794962203,
-    "updaterBuild": 362,
-    "exactHeadRuns": {
-      "securitySupplyChain": 36793284454,
-      "agentControl": 36793284492,
-      "pluginToolbox": 36793284463,
-      "workflowFeature": 36793284449
-    },
-    "liveHeaven2Smoke": "pending-authenticated-local-execution"
-  },
-  "integrationEvidence": {
-    "pullRequest": 542,
-    "candidateSha": "c59554b441c47085d6af18e703adc63855e35472",
-    "mergeSha": "be001c2582564e55a7561a97bff791bbf821621a",
-    "exactHeadRuns": {
-      "agentControl": 36796050757,
-      "securitySupplyChain": 36796050831,
-      "workflowFeature": 36796050750
-    },
-    "localExactHead": {
-      "host": "heaven",
-      "job": "job-20261001T002400Z-final-exact-coordination",
-      "targeted": "77/77",
-      "fullAgentControl": "279/279",
-      "handoff": "baseline-and-negative-fixtures-pass",
-      "diffCheck": "pass"
-    },
-    "postMergeTreeDelta": "zero-files",
-    "liveHeaven2Smoke": "pending-authenticated-local-execution"
-  },
   "globalBootstrapRepository": "fengie/heaven-toolbox",
-  "globalBootstrapBranch": "main"
+  "globalBootstrapBranch": "main",
+  "toolboxTransferredWork": "Legacy Agent Control, Agent Manager, Heaven Bridge/auth/provider, Agent Work Reports, plugin-toolbox, and global coordination follow-up is owned by fengie/heaven-toolbox issue #5 and is not active MHW product work."
 }

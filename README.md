@@ -22,12 +22,11 @@ Branch cleanup is now explicitly a semantic work-extraction pass rather than a b
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
-- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, and no-reintroduction enforcement are implemented in the v8.8.57 cutover; exact-head gates remain the integration proof.
-- [x] **RECOVERY-008 / P0** — v8.8.54 Agent Control coordination/lease semantics integrated on canonical `main`.
+- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, and no-reintroduction enforcement are implemented in the v8.8.57 cutover; exact-head gates remain the integration proof. Global Agent Control/Heaven/plugin follow-up has transferred to Toolbox issue #5.
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
 - [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
-- [ ] **RECOVERY-003/005/006 / P1** — finish manual updater check, dark ComboBox chrome, and truthful Heaven auth-state reporting.
+- [ ] **RECOVERY-003/005 / P1** — finish manual updater check and dark ComboBox chrome/contrast behavior.
 
 
 ## v8.8.54 — collision-safe agent ownership

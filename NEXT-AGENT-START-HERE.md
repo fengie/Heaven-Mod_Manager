@@ -21,6 +21,6 @@ The separately owned `fix/runtime-updater-hardening-v8.8.57-20261001` branch con
 
 ## Existing product risk
 
-RECOVERY-007 universal installed-game discovery is merged but still requires representative Windows/runtime discovery evidence before DONE. Existing Agent Manager/heaven2 authentication/live-smoke gaps and the other active recovery items remain MHW product work in `_AGENT_CONTEXT/PROJECT_PLAN.md`.
+RECOVERY-007 universal installed-game discovery is merged but still requires representative Windows/runtime discovery evidence before DONE. Agent Control/Agent Manager/Heaven/plugin global follow-up has transferred to `fengie/heaven-toolbox` issue #5 and is not MHW product work. Continue only the mod-manager recovery items in `_AGENT_CONTEXT/PROJECT_PLAN.md`.
 
 Start every successor from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and preserve active `LEARNED_RULES.md`. Your successor must preserve this continuity contract and propagate it to the agent after them; that agent must repeat the same obligation onward. **Do not break the chain.**

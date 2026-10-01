@@ -1,18 +1,14 @@
-# v8.8.56 installed-game discovery — ordered next actions
+# v8.8.57 MHW product-only cutover — ordered next actions
 
-1. Run exact-head focused multi-game/integration checks and every repository-required PR gate for `fix/installed-game-discovery-v8.8.56-20260930`; archived v8.8.50 evidence does not transfer.
-2. Refresh canonical `main`, open PRs, branches, and mutable-boundary ownership immediately before integration. Reconcile only relevant concurrent changes and preserve the separately owned catalog lane.
-3. Prove the reconciled candidate still contains the automatic one-shot Games-page discovery lifecycle, serialized registry mutation, bounded executable lookup, Steam multi-library coverage, Xbox discovery, LR-063, and synchronized v8.8.56 metadata.
-4. Integrate only a verified exact candidate to canonical `main`, then obtain risk-matched Windows/runtime proof against representative installed games. Do not scan arbitrary drives or weaken provider isolation to manufacture a result.
-5. Persist exact CI/runtime evidence and mark RECOVERY-007 DONE only when its canonical-tree and runtime acceptance statements are actually true.
-6. Continue RECOVERY-002/004 next according to live ownership and priority; do not create a duplicate catalog lane.
+1. Finish exact-head verification for PR #548 and integrate only when all required cutover/product gates are green.
+2. Verify canonical MHW `main` contains no `_AGENT_TRAINING/`, `plugins/`, `heaven-bridge/`, `tools/`, or `GLOBAL_GIT_DIRECTIVE.md`, and still requires `fengie/heaven-toolbox@main` bootstrap.
+3. Run the canonical Toolbox migration verifier in `--cutover` mode against refreshed MHW/Toolbox main.
+4. Keep global Agent Control/Heaven/plugin/history cleanup in `fengie/heaven-toolbox` issue #5; do not recreate those workstreams in MHW.
+5. Continue MHW product recovery by live ownership: RECOVERY-007 representative installed-game/runtime proof, RECOVERY-002 catalog, RECOVERY-004 updater/runtime hardening, then RECOVERY-003 and RECOVERY-005.
+6. The separately owned updater-hardening branch must refresh post-cutover main and allocate the next patch version rather than overwriting v8.8.57 metadata.
 
-## Improvement opportunities
+## Product verification gap
 
-If future defects justify it, add deterministic Epic/GOG provider seams comparable to the Steam/Xbox test seams. If launcher discovery latency becomes visible, add cooperative cancellation without moving filesystem/registry work onto the WPF dispatcher. Broader launcher scraping, uninstall-registry software guessing, and whole-drive executable crawling are intentionally out of scope.
+RECOVERY-007 is not DONE until representative Windows/runtime installed-game discovery evidence is actually observed. Do not broaden discovery into arbitrary drive crawling or weaken provider isolation merely to obtain proof.
 
-## Current verification gap
-
-This chat route can mutate/read GitHub but cannot execute the Windows application locally. Exact CI and later authorized Windows/runtime evidence therefore remain required; no local-machine result is implied.
-
-Every successor inherits the permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, must preserve active Learned Rules, and must recursively pass the same obligation to the next agent.
+Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`. Preserve the permanent MHW continuity constitution and active MHW learned rules. Your successor must propagate this continuity obligation onward. **Do not break the chain.**
