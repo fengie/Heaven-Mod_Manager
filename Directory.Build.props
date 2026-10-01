@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.61</Version>
-    <InformationalVersion>8.8.61-ui-chrome</InformationalVersion>
+    <Version>8.8.62</Version>
+    <InformationalVersion>8.8.62-federated-catalog</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
