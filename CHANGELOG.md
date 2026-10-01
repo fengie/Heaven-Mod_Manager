@@ -572,12 +572,6 @@
 
 # Changelog
 
-# v8.8.57 — Heaven Toolbox global ownership cutover
-- Make `fengie/heaven-toolbox@main` the mandatory global bootstrap for reusable agent training, tools, plugins, Heaven Bridge, Agent Control, and shared Git doctrine.
-- Restrict `fengie/mhw-mods` authority to the MHW Manual Mod Manager product: source, tests, `_AGENT_CONTEXT`, plans, bugs, releases, evidence, and runtime facts.
-- Mark the local `_AGENT_TRAINING` tree and other migrated shared roots as temporary compatibility copies pending final deletion under issue #546.
-- Update machine-readable current revision and successor handoff so stale MHW metadata cannot redirect future agents back to MHW as the global training source.
-
 
 ## v8.6.18 - Generic family inference
 - Replaced the HPN-centric family patch with generic evidence-based family inference.
