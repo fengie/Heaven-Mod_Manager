@@ -25,4 +25,4 @@ Unresolved risk: archived product lanes still contain unique semantics not yet c
 - Manual updater check, overlapping updater/runtime hardening, dark ComboBox chrome, Heaven auth-state reporting, and universal installed-game discovery remain live recovery work with exact archive provenance in the project ledger.
 - v8.8.53 Agent Work Reports still has an authenticated heaven2 runtime-smoke gap. Do not bypass HMAC to close it.
 
-You inherit the permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`. Read and preserve it and active Learned Rules at `_AGENT_CONTEXT/LEARNED_RULES.md`. Before finishing, leave a current durable handoff and require your successor to inherit, preserve, and recursively propagate the same constitution to the agent after them. Do not break the chain.
+You inherit the permanent continuity constitution in `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`. Read and preserve it and active Learned Rules at `_AGENT_CONTEXT/LEARNED_RULES.md`. Before finishing, leave a current durable handoff. Your successor must inherit and preserve the constitution and must recursively propagate it to the agent after them. Do not break the chain.
