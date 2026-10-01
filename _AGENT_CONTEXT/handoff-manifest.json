@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.62",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.61 canonical main 1853a51a68949ff4a30029df81e29c406e4305ca; v8.8.62 federated catalog recovery is candidate PR #553",
+  "immediateParentRevision": "v8.8.62 federated catalog exact head 9c2976ae96533b3d439610ef7c770a73d0e14fe3 verified and merged to canonical main as 3c19270a9dbf37c434aaa0654fdedcc8c28c6d71",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then current MHW main. Verify/integrate PR #553 only at its exact final head, then continue unresolved issue #281 conditional Steam/Vortex work and issues #350/#354 without fabricating external credentials, rulesets, signing keys, certificates, or runtime evidence. Preserve RECOVERY-007/RECOVERY-005 evidence gaps and recursively propagate continuity.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then current MHW main. Treat v8.8.62 / PR #553 as integrated. Refresh live findings and ownership before new work; continue issue #281 only for real conditional Steam/Vortex/provider contracts and issues #350/#354 without fabricating external credentials, rulesets, signing keys, certificates, or runtime evidence. Preserve RECOVERY-007/RECOVERY-005 evidence gaps and preserved recovery-branch history until its unique ancestry is classified. Recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
