@@ -47,7 +47,7 @@ public sealed record UpdateBuildIdentity(
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return $"{ProductVersion} â€¢ build {BuildNumber} â€¢ {ShortSha}";
+            return $"{ProductVersion} | build {BuildNumber} | {ShortSha}";
         }
     }
 
