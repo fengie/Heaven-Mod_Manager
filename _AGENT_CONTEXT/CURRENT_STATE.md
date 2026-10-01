@@ -1,3 +1,11 @@
+# v8.8.55 branch-cleanup recovery policy — candidate
+
+The 2026-09-30 branch-zero pass preserved exact deleted tips but did not prove that every useful semantic had reached canonical main. A follow-up semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and Agent Control coordination work. v8.8.54 subsequently integrated the coordination/lease semantics on canonical `main` at `be001c2582564e55a7561a97bff791bbf821621a`.
+
+This candidate restores a canonical recovery ledger for all eight lanes and changes cleanup semantics so useful unique work must be integrated or actionably extracted before deleting a stale branch ref. Existing archive tags remain exact provenance. The fresh-main catalog recovery branch is `fix/issue281-catalog-v8.8.55`; the older catalog recovery branch remains preserved until semantic equivalence is confirmed.
+
+---
+
 # v8.8.54 collision-safe agent ownership — integration candidate
 
 Canonical baseline includes v8.8.53 Agent Work Reports plus the subsequent updater installed-client evidence. This candidate changes only Agent Control ownership enforcement, its tests, synchronized runtime/plugin identity, and current release/continuity metadata.
