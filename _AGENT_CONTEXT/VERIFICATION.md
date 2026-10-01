@@ -1,5 +1,8 @@
 # v8.8.54 single-owner agent coordination — integrated; authenticated live smoke pending
 
+> **v8.8.57 ownership scope:** Older sections below are retained as exact historical evidence for MHW revisions that once bundled reusable/global tooling. Agent Control, Heaven Bridge, plugin-toolbox, and global-agent verification described in those historical sections is **not a current MHW verification requirement or ownership claim** after the cutover. Current reusable/global verification belongs to `fengie/heaven-toolbox@main`; current MHW verification is product/release/runtime verification only. The complete pre-cutover ledger is archived in Toolbox `history/mhw-global-tooling/MHW_VERIFICATION_PRE_CUTOVER.md`.
+
+
 PR #542 exact head `c59554b441c47085d6af18e703adc63855e35472` passed Agent Control `36796050757`, Security Supply Chain `36796050831`, and Workflow Feature `36796050750`. The same exact head passed local syntax, 77/77 targeted tests, 279/279 full Agent Control tests, handoff baseline/negative fixtures, version identity, and diff checks on heaven. It merged to canonical main as `be001c2582564e55a7561a97bff791bbf821621a`; post-merge comparison shows zero file differences from the verified head.
 
 Canonical v8.8.54 / Agent Control v0.6.25 now enforces one primary writer per canonical mutable boundary: boundary identity is case-insensitive, duplicate routing-manifest owners are rejected, and counted deploys cannot manufacture numbered subleases for one explicitly shared boundary. Disjoint boundaries remain parallelizable.

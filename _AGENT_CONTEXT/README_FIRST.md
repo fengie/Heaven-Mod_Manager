@@ -16,7 +16,7 @@ After the compact core and mandatory full constitution startup read from `AGENTS
    - `ARCHITECTURE.md`, `VERIFICATION.md`, `DECISIONS.md`, `KNOWN_ISSUES.md`, and specialized evidence/audits when the task touches those domains.
 4. Inspect relevant source/tests directly before editing.
 
-Use the hash-verified context search/heading/pagination path advertised by Agent Control. Large ledgers and historical audits are indexed reference material, not mandatory end-to-end startup reading.
+Use the hash-verified context search/heading/pagination path provided by the current Heaven Toolbox bootstrap/tooling surface. Large ledgers and historical audits are indexed reference material, not mandatory end-to-end startup reading.
 
 ## Current-state discipline
 
@@ -27,3 +27,6 @@ Historical verification proves only its exact source/artifact. Never promote an 
 ## Durable handoff
 
 When truth changes, update the smallest authoritative current file. Do not copy the same status into several documents. A handoff should state exact revision, changed behavior, checks actually run, unresolved risks, ownership/integration state, and ordered next actions.
+
+
+> **v8.8.57 ownership scope:** MHW active context is for the mod-manager product only. Historical global-tool entries may remain in mixed ledgers as provenance, but current Agent Control, Heaven Bridge, plugin, and global agent-governance ownership lives in `fengie/heaven-toolbox@main`.

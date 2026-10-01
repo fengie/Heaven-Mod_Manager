@@ -7,6 +7,7 @@
 - Updated durable MHW handoff/routing metadata so product continuity stays local while reusable permissions, routing, training, and tools resolve through Heaven Toolbox.
 - Repaired cutover regression coverage for the relocated FunctionVerifier path, fail-closed Core Rule authorization, and recursive handoff continuity wording.
 - Removed global-tool work from MHW's active revision/recovery state and transferred remaining Agent Control/Heaven/plugin context follow-up to Heaven Toolbox issue #5.
+- Scoped mixed historical ledgers so old Agent Control/Heaven/plugin entries remain provenance only; complete pre-cutover copies are preserved under Toolbox `history/mhw-global-tooling/`.
 
 # v8.8.56 — 2026-09-30
 
