@@ -50,7 +50,11 @@ public partial class MainWindow:Window
             _=DwmSetWindowAttribute(handle,useImmersiveDarkModeBefore20H1,ref enabled,sizeof(int));
     }
 
-    #pragma warning disable SYSLIB1054 // This single blittable System32 call avoids enabling unsafe code for the WPF app just to use LibraryImport.\n    [DllImport("dwmapi.dll",ExactSpelling=true)]\n    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]\n    private static extern int DwmSetWindowAttribute(nint hwnd,int dwAttribute,ref int pvAttribute,int cbAttribute);\n    #pragma warning restore SYSLIB1054
+    #pragma warning disable SYSLIB1054 // This single blittable System32 call avoids enabling unsafe code for the WPF app just to use LibraryImport.
+    [DllImport("dwmapi.dll",ExactSpelling=true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int DwmSetWindowAttribute(nint hwnd,int dwAttribute,ref int pvAttribute,int cbAttribute);
+    #pragma warning restore SYSLIB1054
 
     private void OnWindowLoaded(object sender,RoutedEventArgs e)
     {
