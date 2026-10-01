@@ -1,0 +1,22 @@
+{
+  "schema": "heaven-plugin/manifest/v1",
+  "name": "agent-work-reports",
+  "version": "0.1.0",
+  "entrypoint": "server.mjs",
+  "capabilities": [
+    "agent-reports.view",
+    "agent-reports.append",
+    "agent-reports.agent-log"
+  ],
+  "task_tags": ["agents", "progress", "observability", "dashboard"],
+  "depends_on": {
+    "agent-control": ">=0.6.22"
+  },
+  "security": {
+    "loopback_only_by_default": true,
+    "plaintext_secrets_persisted": false,
+    "agent_control_mutation": false,
+    "report_body_max_bytes": 24576,
+    "report_log_max_bytes": 16777216
+  }
+}

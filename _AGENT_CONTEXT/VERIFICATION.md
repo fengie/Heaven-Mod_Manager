@@ -1,3 +1,9 @@
+# v8.8.53 Agent Work Reports — verification scope
+
+Historical local syntax/tests/HTTP smoke on the pre-reconciliation implementation are useful source evidence but do not authorize integration after the v8.8.52 reconciliation and version/continuity changes. Exact-head acceptance requires the applicable Plugin Toolbox, Security Supply Chain, and Agent Control PR gates on the final #540 head plus a live heaven2 loopback smoke covering dashboard rendering, Agent Control snapshot ingestion, explicit checkpoint persistence, report-only fallback behavior, refresh cadence, and logs. The reporting surface must remain non-mutating and loopback-only by default.
+
+---
+
 # v8.8.52 compact Agent Manager — verification scope
 
 No v8.8.51 or pre-reconciliation green transfers to this candidate. Exact-head acceptance requires Agent Control, Security Supply Chain, and Workflow Feature success on the reconciled source plus live heaven2 confirmation that the operational surfaces start collapsed, expansion stays bounded, Inspector opens correctly, reduced-motion suppresses nonessential motion, and UI sound remains opt-in with background refresh silent. The v8.8.51 icon fix is inherited from canonical main and must remain present.

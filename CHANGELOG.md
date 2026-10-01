@@ -1,3 +1,10 @@
+# v8.8.53 — 2026-09-30
+
+- Add the standalone `plugins/agent-work-reports` dashboard for glanceable overall task and agent progress.
+- Ingest authoritative Agent Control snapshots/logs plus bounded explicit plan/progress/blocked/done checkpoints with an offline JSONL fallback.
+- Keep the reporting app loopback-only and non-mutating, with a stable `agent-work-reports/view/v1` boundary for later Agent Manager integration.
+- Wire the plugin into catalog/root verification and preserve deterministic unit, syntax, and HTTP-smoke coverage.
+
 # v8.8.52 — 2026-09-30
 
 - Compact Agent Manager's high-volume operational surfaces into collapsed summary cards with a responsive at-a-glance overview and bounded per-card scrolling.

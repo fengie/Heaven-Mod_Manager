@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.52</Version>
-    <InformationalVersion>8.8.52-agent-manager-compact-overview</InformationalVersion>
+    <Version>8.8.53</Version>
+    <InformationalVersion>8.8.53-agent-work-reports</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
