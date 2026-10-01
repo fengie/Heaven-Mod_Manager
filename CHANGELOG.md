@@ -1,3 +1,11 @@
+# v8.8.61 — 2026-10-01
+
+- Replace remaining system-light WPF scrollbars with application-owned dark ScrollBar and Thumb chrome while retaining vertical/horizontal paging behavior.
+- Request immersive dark mode for the native Windows title bar through a constrained System32 DWM import without enabling unsafe blocks for the application.
+- Repair the updater build-identity display string that shipped mojibake (`â€¢`) and use an ASCII-stable separator for version/build/SHA text.
+- Add regressions for dark scrollbar ownership, title-bar dark-mode interop, clean build labels, and literal escaped-newline corruption in the interop source.
+- Reconcile on top of integrated v8.8.60 so the Dashboard stretch/clipping repair and runtime/updater hardening remain intact.
+
 # v8.8.60 — 2026-10-01
 
 - Reconcile RECOVERY-004 from the archived audit/runtime hardening lanes onto current 8.8.59 Settings lineage without importing stale version or continuity metadata.
