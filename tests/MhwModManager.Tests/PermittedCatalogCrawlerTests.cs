@@ -116,6 +116,8 @@ public sealed class PermittedCatalogCrawlerTests
     [InlineData("https://user@catalog.example/mods/final")]
     [InlineData("https://catalog.example/forum/final")]
     [InlineData("https://catalog.example/mods-evil/final")]
+    [InlineData("https://catalog.example/mods/%2fadmin")]
+    [InlineData("https://catalog.example/mods/%2e%2e/admin")]
     public async Task Disallowed_redirect_target_is_never_contacted(string target)
     {
         var attempts = new List<Uri>();
@@ -282,6 +284,8 @@ public sealed class PermittedCatalogCrawlerTests
     [InlineData("https://other.example/mods/fixture")]
     [InlineData("https://catalog.example/forum/fixture")]
     [InlineData("https://catalog.example/mods-evil/fixture")]
+    [InlineData("https://catalog.example/mods/%2fadmin")]
+    [InlineData("https://catalog.example/mods/%2e%2e/admin")]
     [InlineData("http://catalog.example/mods/fixture")]
     public async Task Origin_scheme_and_path_escape_fail_before_network(string uri)
     {
