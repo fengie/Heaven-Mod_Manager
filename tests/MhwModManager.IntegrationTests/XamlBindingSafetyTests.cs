@@ -191,7 +191,7 @@ public sealed partial class XamlBindingSafetyTests
 
         Assert.DoesNotContain("nexus.RefreshAsync", blockingStartup);
         Assert.Contains("startup.intelligence.nexus.deferred", blockingStartup);
-        Assert.Contains("if(value==1&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)", mainViewModel);
+        Assert.Contains("if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)", mainViewModel);
         Assert.Contains("EnsureInitialMetadataLoadedAsync(backgroundCts.Token)", mainViewModel);
         Assert.Contains("if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);", mainViewModel);
         Assert.Contains("var shouldEnrich=SelectedTab==3;", mainViewModel);
