@@ -118,14 +118,19 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
-    public void ComboBoxesUseMatchedSystemColorsForReadableSelectedText()
+    public void ComboBoxesOwnDarkThemeChromeInsteadOfUsingWindowsLightSystemSurface()
     {
         var root = FindRepositoryRoot();
         var appXaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "App.xaml"));
 
-        Assert.Contains("Property=\"Foreground\" Value=\"{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}\"", appXaml);
-        Assert.Contains("Property=\"Background\" Value=\"{DynamicResource {x:Static SystemColors.ControlBrushKey}}\"", appXaml);
-        Assert.DoesNotContain("<Setter Property=\"Foreground\" Value=\"{StaticResource Text}\"/>\n            <Setter Property=\"Background\" Value=\"#0C1015\"/>", appXaml);
+        Assert.Contains("<Style TargetType=\"ComboBoxItem\">", appXaml);
+        Assert.Contains("<ControlTemplate TargetType=\"ComboBox\">", appXaml);
+        Assert.Contains("x:Name=\"PART_Popup\"", appXaml);
+        Assert.Contains("Property=\"Foreground\" Value=\"{StaticResource Text}\"", appXaml);
+        Assert.Contains("Property=\"Background\" Value=\"#0C1015\"", appXaml);
+        Assert.Contains("Background=\"{StaticResource Panel2}\"", appXaml);
+        Assert.DoesNotContain("SystemColors.ControlBrushKey", appXaml);
+        Assert.DoesNotContain("SystemColors.ControlTextBrushKey", appXaml);
     }
 
     [Fact]

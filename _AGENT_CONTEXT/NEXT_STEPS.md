@@ -1,14 +1,15 @@
-# v8.8.57 MHW product-only cutover — ordered next actions
+# v8.8.58 MHW product recovery — ordered next actions
 
-1. Finish exact-head verification for PR #548 and integrate only when all required cutover/product gates are green.
-2. Verify canonical MHW `main` contains no `_AGENT_TRAINING/`, `plugins/`, `heaven-bridge/`, `tools/`, or `GLOBAL_GIT_DIRECTIVE.md`, and still requires `fengie/heaven-toolbox@main` bootstrap.
-3. Run the canonical Toolbox migration verifier in `--cutover` mode against refreshed MHW/Toolbox main.
-4. Keep global Agent Control/Heaven/plugin/history cleanup in `fengie/heaven-toolbox` issue #5; do not recreate those workstreams in MHW.
-5. Continue MHW product recovery by live ownership: RECOVERY-007 representative installed-game/runtime proof, RECOVERY-002 catalog, RECOVERY-004 updater/runtime hardening, then RECOVERY-003 and RECOVERY-005.
-6. The separately owned updater-hardening branch must refresh post-cutover main and allocate the next patch version rather than overwriting v8.8.57 metadata.
+1. **RECOVERY-005:** automated exact-head gates are green on PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4`. Perform representative installed Windows/WPF visual and interaction proof for selected value, popup items, focus/hover, dropdown-open state, disabled state, and existing GAME/settings bindings.
+2. Integrate RECOVERY-005 only after that visual acceptance is observed; then mark it DONE at the same v8.8.58 patch version.
+3. Keep the active RECOVERY-002 catalog lane separate.
+4. Require the divergent RECOVERY-004 updater/runtime branch to refresh current main and take the next available patch version before integration.
+5. Continue RECOVERY-007 representative installed-game/runtime proof; it is not DONE until observed on Windows.
+6. Continue RECOVERY-003 only after checking updater-boundary ownership; do not race RECOVERY-004.
+7. **Operational Toolbox handoff:** do not delete MHW branch `heaven-bridge` while `heaven2` still uses it. Toolbox issue #18 owns migration to the Toolbox relay and the eventual old-branch retirement.
 
 ## Product verification gap
 
-RECOVERY-007 is not DONE until representative Windows/runtime installed-game discovery evidence is actually observed. Do not broaden discovery into arbitrary drive crawling or weaken provider isolation merely to obtain proof.
+RECOVERY-005 has passed all automated exact-head gates but is not DONE until installed-client visual/interaction evidence is observed. RECOVERY-007 independently retains its representative runtime discovery gap.
 
-Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`. Preserve the permanent MHW continuity constitution and active MHW learned rules. Your successor must propagate this continuity obligation onward. **Do not break the chain.**
+Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`. Preserve the permanent MHW continuity constitution and active MHW learned rules. Your successor must propagate these same rules to the agent after them. **Do not break the chain.**
