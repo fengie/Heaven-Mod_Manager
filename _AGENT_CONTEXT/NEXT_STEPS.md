@@ -1,3 +1,11 @@
+# v8.8.54 agent coordination integration lane
+
+1. Recheck canonical `main` immediately before delivery because Agent Control is a protected integration surface; reconcile any newer overlapping ownership/control changes before merge.
+2. Require exact-head Agent Control syntax plus targeted/full tests after the synchronized v0.6.25/version/continuity edits.
+3. Deliver the verified tree to remote `main`, prove the intended Agent Control paths survived canonically, then remove superseded temporary coordination branches only after preservation proof.
+4. When authenticated heaven2 control is available, smoke live routing/leases: duplicate boundary claims must fail, disjoint boundaries must coexist, and dashboard/snapshot ownership must stay truthful. Do not weaken HMAC merely to perform this smoke.
+5. Preserve unrelated unique branches/issues; branch-count reduction never overrides semantic preservation.
+
 # v8.8.53 Agent Work Reports integration lane
 
 1. Freeze the final reconciled #540 head while Plugin Toolbox, Security Supply Chain, and Agent Control PR gates run; do not append proof-only commits that invalidate exact-head evidence.
