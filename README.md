@@ -1,4 +1,11 @@
-# v8.8.53 Universal Mod Manager
+# v8.8.55 Universal Mod Manager
+
+## v8.8.55 — recover unique branch work before cleanup
+
+Branch cleanup is now explicitly a semantic work-extraction pass rather than a branch-count exercise. The canonical `_AGENT_CONTEXT/PROJECT_PLAN.md` recovery ledger restores every still-unique lane found in the 2026-09-30 cleanup audit, records exact archive provenance, and keeps each item live until it is integrated, intentionally superseded, or rejected after review. Archive tags remain recovery insurance, not a substitute for finishing useful work.
+
+Current recovered priorities include the catalog browser, manual update check, updater/runtime hardening, dark ComboBox chrome, Heaven auth-state reporting, universal installed-game discovery, and Agent Control lease coordination.
+
 
 ## v8.8.53 — Agent Work Reports dashboard
 
