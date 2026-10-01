@@ -1029,3 +1029,17 @@ Each rule records: Rule ID, status, date, scope, rule, trigger/evidence, rationa
 - **Trigger / evidence:** The 2026-09-30 branch-zero cleanup archived exact tips correctly but deleted several branch refs before proving that all useful unique work had landed on `main`. A later `git cherry`/semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and coordination work.
 - **Enforcement:** `GLOBAL_GIT_DIRECTIVE.md` extraction gate, `_AGENT_CONTEXT/PROJECT_PLAN.md` recovery queue/disposition contract, multi-agent training, and canonical-tree survival proof. Branch deletion requires `INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED` disposition; `ARCHIVED` alone is non-terminal.
 - **Related rules:** LR-061 canonical mutable-boundary ownership; canonical tree survival proof; orphan recovery; permanent continuity constitution.
+
+## LR-063 — specialized bootstrap must compose with general discovery
+- **Rule ID:** LR-063
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** Multi-target applications, launcher/provider discovery, compatibility bootstrap, first-run UX
+- **Rule:** A specialized fast path that discovers or configures one known target must not suppress the application's general discovery lifecycle. General discovery should be automatic and idempotent, isolate provider failures, and remain bounded to authoritative provider/install roots rather than crawling unrelated storage.
+- **Trigger / evidence:** Universal Mod Manager bootstrapped MHW successfully, then populated the Games UI only from that registry; Steam/Epic/GOG discovery remained hidden behind a manual rescan, making a multi-game manager appear MHW-only.
+- **Rationale:** A correct special case can still create a system-level omission when it becomes the only path exercised by ordinary startup. Universal behavior must be proven from the user's default path, not only from an optional command.
+- **Enforcement:** For specialized bootstrap changes, regression-test a mixed population containing the special target plus at least one generic target, prove automatic first-path discovery and idempotence, retain an explicit rescan/manual fallback, and forbid unbounded whole-drive executable crawling.
+- **Regression/evidence:** `MultiGameTests` v8.8.56 recovery coverage and `_AGENT_CONTEXT/EVIDENCE/v8.8.56-installed-game-discovery.md`.
+- **Related rules:** exact-input verification doctrine; UI-thread/performance invariants; LR-062 recovery provenance.
+- **Supersedes:** archived conflicting-ID draft LR-060 from the deleted installed-game branch; canonical LR-060 remains the shell-visible binary-resource rule.
+- **Superseded by:** none
