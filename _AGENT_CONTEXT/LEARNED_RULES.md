@@ -1,5 +1,19 @@
 # Learned Rules — append-only agent ledger
 
+## LR-061 — mutable ownership identity must be canonical before concurrency checks
+
+- **Rule ID:** LR-061
+- **Status:** Active
+- **Date:** 2026-09-30
+- **Scope:** agent leases, routing manifests, deployment batches, mutable work boundaries
+- **Rule:** Normalize mutable-boundary identity before every ownership/concurrency decision and enforce one primary owner per canonical boundary. Never manufacture synthetic child boundary names to make one explicitly shared mutable surface appear safe for parallel writers.
+- **Trigger / evidence:** Agent Control compared workflow boundaries case-sensitively and counted deploys rewrote one explicit boundary into numbered subleases, allowing equivalent ownership requests to evade overlap semantics.
+- **Rationale:** presentation spelling is not a safe concurrency key. A concurrency guard is only as strong as the identity normalization used at every admission boundary.
+- **Enforcement:** use the same canonical identity rule for active leases, planned workflow steps, and routing assignments; reject unsafe batches before the first side effect; regression-test case variants and duplicate routing ownership.
+- **Relevant candidate:** v8.8.54 Agent Control v0.6.25 coordination lease hardening.
+- **Supersedes:** none
+- **Superseded by:** none
+
 ## LR-060 — shell-visible binary resources require structural release validation
 
 - **Status:** Active

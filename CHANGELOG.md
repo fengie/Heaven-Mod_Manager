@@ -1,3 +1,10 @@
+# v8.8.54 — 2026-09-30
+
+- Enforce case-insensitive mutable-boundary collision checks during workflow preflight so `Foo` and `foo` cannot become separate writers.
+- Reject routing manifests that assign the same mutable boundary to multiple slots instead of trusting contradictory ownership state.
+- Reject counted direct deployment when one explicit mutable boundary is supplied; callers must assign distinct boundaries explicitly rather than receiving synthetic `#1`/`#2` leases.
+- Add focused routing/deploy/lease regressions and advance Agent Control runtime/private-plugin identity to 0.6.25.
+
 # v8.8.53 — 2026-09-30
 
 - Add the standalone `plugins/agent-work-reports` dashboard for glanceable overall task and agent progress.

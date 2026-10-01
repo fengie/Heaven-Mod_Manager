@@ -3,24 +3,24 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "main",
-  "currentVersion": "8.8.53",
+  "workingBranch": "fix/agent-coordination-v8.8.54-final-20260930",
+  "currentVersion": "8.8.54",
   "companyTrainingRoot": "_AGENT_TRAINING",
   "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.53-agent-work-reports-integrated-runtime-smoke-pending",
-  "nextMilestone": "Close the live heaven2 Agent Work Reports / Agent Manager acceptance path without weakening the authenticated control boundary.",
-  "nextRequiredAction": "From an authorized signed or machine-local heaven2 path, smoke the loopback Agent Work Reports dashboard against canonical main: rendering, Agent Control snapshot ingestion, explicit checkpoint persistence, report-only fallback, visible/hidden refresh cadence, and on-demand logs. Do not proxy this through unsigned heaven: heaven2 requires HMAC and the exact-main heaven provider probe has no signing key.",
+  "status": "v8.8.54-agent-coordination-candidate",
+  "nextMilestone": "Integrate collision-safe Agent Control ownership on top of the fully integrated v8.8.53 reporting/release evidence without weakening the authenticated heaven2 boundary.",
+  "nextRequiredAction": "Run exact-head Agent Control syntax/targeted/full tests on this v8.8.54 candidate, refresh canonical main immediately before delivery, merge only if the protected Agent Control surface has not changed, verify remote main, then retire superseded coordination branches after preservation proof.",
   "verificationAppliesToCommit": "2885609c8db18494dc5d89d7e9545732ab2bf741",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
-  "verificationScopeNote": "PR #540 exact head b295586beef4e56c7bdc2968b005cc44354c86f5 passed Security Supply Chain 36793284454, Agent Control 36793284492, Plugin Toolbox 36793284463, and Workflow Feature 36793284449. It merged as 2885609c8db18494dc5d89d7e9545732ab2bf741 with the tested tree preserved. Windows closure 36794493034 passed 26/26 and produced updater build 362; installed-client updater E2E 36794962203 passed success and rollback. Live authenticated heaven2 dashboard smoke remains unclaimed.",
+  "verificationScopeNote": "v8.8.53 PR #540/release evidence remains closed historical proof. v8.8.54 changes Agent Control ownership coordination: case-insensitive lease identity, duplicate routing-boundary rejection, and fail-closed counted direct deployment for one explicit mutable boundary. Pre-metadata code passed syntax, 77/77 targeted tests and 279/279 full Agent Control tests on heaven; final synchronized head requires fresh exact-head verification. Live heaven2 controller smoke remains HMAC-authenticated and must not be bypassed.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
     "updaterReleaseTag": "updater-main-357",
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.48-mods-layout-integration.md"
   },
-  "candidateSourceCommit": "b295586beef4e56c7bdc2968b005cc44354c86f5",
+  "candidateSourceCommit": null,
   "agentManagerPriority": {
     "status": "active",
     "priority": "P0",
@@ -38,6 +38,7 @@
     ]
   },
   "unresolvedRisks": [
+    "v8.8.54 live heaven2 routing/lease smoke is not yet claimed because the repository-relay path is HMAC-required and no authorized signing path is available from this session; preserve that fail-closed boundary.",
     "Live heaven2 Agent Work Reports dashboard acceptance remains pending. The heaven2 bridge is HMAC-required; do not weaken or bypass that boundary merely to obtain smoke evidence.",
     "The exact-main provider probe on heaven found no local signing key, so heaven cannot legitimately proxy a privileged heaven2 relay job from this route.",
     "Agent Work Reports is loopback-only and intentionally has no remote authentication boundary; do not expose it off-host without adding authentication.",
@@ -48,7 +49,7 @@
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
   "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
-  "integrationEvidence": {
+  "priorIntegrationEvidence": {
     "pullRequest": 540,
     "candidateSha": "b295586beef4e56c7bdc2968b005cc44354c86f5",
     "mergeSha": "2885609c8db18494dc5d89d7e9545732ab2bf741",

@@ -1,4 +1,10 @@
-# v8.8.53 Universal Mod Manager
+# v8.8.54 Universal Mod Manager
+
+## v8.8.54 — collision-safe agent ownership
+
+Agent Control v0.6.25 now enforces one writer per mutable boundary across routing manifests, workflow preflight, and direct deployment. Boundary matching is case-insensitive, duplicate routing owners fail closed, and counted deploys can no longer disguise one requested mutable boundary as synthetic `#1`/`#2` subleases. Existing disjoint support, review, test, recovery, and dependency lanes remain parallelizable without racing the same state.
+
+## v8.8.53 Universal Mod Manager
 
 ## v8.8.53 — Agent Work Reports dashboard
 
