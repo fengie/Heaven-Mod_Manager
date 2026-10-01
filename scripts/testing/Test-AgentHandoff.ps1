@@ -78,6 +78,7 @@ Need $agents '(?is)README\.md.{0,700}CHANGELOG\.md.{0,700}VERSION\.txt' 'AGENTS 
 Need $agents '(?im)^Before any task-specific reasoning, answering, planning, dispatch, or action, every agent and recurring worker must complete this bootstrap:' 'AGENTS must require Toolbox bootstrap before task reasoning, answer, plan, dispatch or action.'
 Need $agents '(?is)Read.{0,80}_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md.{0,80}in full at startup' 'AGENTS must require the full continuity constitution at startup.'
 Forbid $agents '(?is)fengie/mhw-mods.{0,120}(?:global training bootstrap authority|cross-repository programming-agent training baseline)' 'MHW must not claim global training/bootstrap ownership.'
+Forbid $agents '(?is)Core Rules.{0,120}(?:may|can|should).{0,120}(?:weaken|override|change).{0,120}without\s+explicit\s+user\s+authorization' 'Core Rules cannot be weakened without explicit user authorization.'
 Continuity $agents 'AGENTS'
 
 $router=Active '_AGENT_CONTEXT/README_FIRST.md'
