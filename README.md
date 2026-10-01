@@ -27,12 +27,12 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
-- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, and no-reintroduction enforcement are implemented in the v8.8.57 cutover; exact-head gates remain the integration proof. Global Agent Control/Heaven/plugin follow-up has transferred to Toolbox issue #5.
+- [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete. Toolbox issues #5 and #18 are closed.
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
 - [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
 - [ ] **RECOVERY-003 / P1** — finish the manual updater check.
-- [ ] **RECOVERY-005 / P1** — v8.8.58 candidate restores application-owned dark ComboBox chrome; exact-head automated gates are green, with installed Windows/WPF visual/interaction acceptance still required before DONE.
+- [ ] **RECOVERY-005 / P1** — v8.8.58 source/test work is integrated on `main` via PR #549; installed Windows/WPF visual/interaction acceptance is still required before DONE.
 
 ## One-file diagnostics
 
