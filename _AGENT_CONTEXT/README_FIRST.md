@@ -11,6 +11,7 @@ After the compact core and mandatory full constitution startup read from `AGENTS
 3. Retrieve only task-relevant sections from:
    - `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` for project Core Rules and domain invariants;
    - `_AGENT_CONTEXT/BUG_PRECEDENTS.md` and `LEARNED_RULES.md` for relevant prior failure classes;
+   - `_AGENT_CONTEXT/PROJECT_PLAN.md` for canonical active/recovery work, ownership, acceptance, and next actions;
    - `CURRENT_STATE.md` / `NEXT_STEPS.md` for live project state;
    - `ARCHITECTURE.md`, `VERIFICATION.md`, `DECISIONS.md`, `KNOWN_ISSUES.md`, and specialized evidence/audits when the task touches those domains.
 4. Inspect relevant source/tests directly before editing.
