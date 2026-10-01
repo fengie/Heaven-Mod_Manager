@@ -52,6 +52,8 @@ An integration agent must:
 - Prefer the newest independently verified implementation when two branches solve the same boundary.
 - Salvage unique tests/research from superseded branches where useful.
 - Never let an older branch overwrite newer canonical continuity or verification records merely because its merge is clean.
+- Branch cleanup is a work-extraction pass: identify useful unique semantics first, then integrate them or create/update the canonical project-plan recovery item with exact provenance, acceptance criteria, owner/status, and next action.
+- An immutable archive tag is recovery insurance, not proof that the work is finished. Do not delete the live branch ref merely because the tip was tagged unless its useful work has an explicit `INTEGRATED`, `EXTRACTED`, `SUPERSEDED`, or `REJECTED` disposition.
 
 ## Interrupted agents
 A partial branch is evidence, not automatically valid work.
