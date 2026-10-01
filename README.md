@@ -1,4 +1,19 @@
-# v8.8.54 Universal Mod Manager
+# v8.8.55 Universal Mod Manager
+
+## v8.8.55 — recover unique work before branch cleanup
+
+Branch cleanup is now explicitly a semantic work-extraction pass rather than a branch-count exercise. The canonical `_AGENT_CONTEXT/PROJECT_PLAN.md` recovery ledger restores every still-unique lane found in the 2026-09-30 cleanup audit, records exact archive provenance, and keeps each item live until it is integrated, intentionally superseded, or rejected after review. Archive tags remain recovery insurance, not a substitute for finishing useful work.
+
+## Current plans & progress
+
+Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
+
+- [x] **RECOVERY-008 / P0** — v8.8.54 Agent Control coordination/lease semantics integrated on canonical `main`.
+- [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
+- [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
+- [ ] **RECOVERY-007 / P0** — finish universal installed-game discovery and Windows lifecycle proof.
+- [ ] **RECOVERY-003/005/006 / P1** — finish manual updater check, dark ComboBox chrome, and truthful Heaven auth-state reporting.
+
 
 ## v8.8.54 — collision-safe agent ownership
 
