@@ -194,7 +194,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         Profiles=ProfilesPage.Rows;
         GamesPage=new GamesPageViewModel(s.GameRegistry);
         Games=GamesPage.Rows;
-        BrowsePage=new CatalogBrowserViewModel(s.RemoteCatalog,s.RemoteCatalogSync,s.RemoteCatalogProviders,s.Paths.Game);
+        BrowsePage=new CatalogBrowserViewModel(s.RemoteCatalog,s.RemoteCatalogSync,s.RemoteCatalogProviders,s.Paths.Game,s.InstalledCatalogOrigins,s.InstalledCatalogOriginChecker);
         var detailedDiagnostics=MasterDebugLog.DetailedDiagnosticsEnabled;
         if(detailedDiagnostics)
         {
