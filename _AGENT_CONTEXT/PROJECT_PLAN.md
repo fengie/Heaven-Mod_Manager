@@ -85,16 +85,19 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-005 — Dark ComboBox chrome
 
-**Owner:** unclaimed
+**Owner:** ChatGPT recovery lane on `fix/recovery-005-dark-combobox-v8.8.58`
+**Status:** ACTIVE
 **Acceptance:** remove jarring native white ComboBox chrome while preserving readable selected/dropdown text, theme behavior, accessibility, and non-laggy UI.
 
 - [x] Preserve exact archived source tip.
-- [ ] Compare archived template with current v8.8.49+ contrast fixes.
-- [ ] Port only complementary styling and regressions that remain useful.
-- [ ] Verify rendered behavior on Windows/WPF and integrate.
+- [x] Compare archived template with current v8.8.49+ contrast fixes.
+- [x] Port only complementary styling and regression coverage that remains useful.
+- [ ] Run exact-head MHW gates on the v8.8.58 candidate.
+- [ ] Verify installed Windows/WPF appearance and interaction, then integrate and mark DONE.
 
-**Next action:** inspect current `App.xaml` ComboBox styles and archived template side by side before deciding what remains unique.
+**Current candidate:** app-owned ComboBox/ComboBoxItem templates replace the v8.8.49 Windows system-brush workaround while retaining readable selected/dropdown text and existing bindings.
 
+**Next action:** run exact-head CI on the complete v8.8.58 branch, then perform installed-client visual/interaction proof before DONE.
 
 ## RECOVERY-007 — Installed-game discovery
 
