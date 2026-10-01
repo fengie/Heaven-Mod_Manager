@@ -34,3 +34,5 @@ The signed Heaven Bridge rejected unsigned ChatGPT dispatch with `AUTH_REQUIRED`
 ## Successor obligation
 
 Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, refresh live ownership/state before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
+
+The successor must propagate this continuity obligation to the next agent.
