@@ -1,22 +1,23 @@
 # Agent Instructions
 
-This repository is the canonical working state for MHW Manual Mod Manager and the user's cross-repository programming-agent training baseline: `fengie/mhw-mods`, branch `main`.
+This repository is the canonical working state for **MHW Manual Mod Manager only**: `fengie/mhw-mods`, branch `main`. Global reusable programming-agent training, shared tooling, plugins, Heaven Bridge, and cross-repository Git doctrine are canonically owned by `fengie/heaven-toolbox`, branch `main`.
 
 ## Authority and truth
 
 Higher-priority platform/safety instructions and the current user's explicit request outrank repository guidance. Repository files define engineering workflow and current project facts; fresh repository/runtime evidence outranks stale hashes, branch names, status claims, or chat memory.
 
-Generic training belongs under `_AGENT_TRAINING/`. MHW-specific state, hazards, and continuity belong under `_AGENT_CONTEXT/`. Do not copy the same rule into both layers unless a small entry-point reminder prevents a realistic mistake.
+Generic training and reusable tooling belong in `fengie/heaven-toolbox`. MHW-specific source, state, hazards, continuity, product plans, release evidence, and runtime facts belong here under the normal product tree and `_AGENT_CONTEXT/`. The local `_AGENT_TRAINING/`, `plugins/`, `heaven-bridge/`, `tools/agent-control/`, and `GLOBAL_GIT_DIRECTIVE.md` are temporary compatibility copies during cutover and must not receive new canonical reusable work.
 
 ## Compact bootstrap
 
-Before task-specific reasoning, answering, planning, dispatch or action, every agent and recurring worker must refresh current MHW main and complete this bootstrap for every repository; then load target-repository rules:
+Before task-specific reasoning, answering, planning, dispatch or action, every agent and recurring worker must bootstrap from **current Heaven Toolbox first**, then load current MHW project state:
 
-1. Refresh canonical state: exact `origin/main`, assigned head/base, relevant diff/history, worktree status when available, and active ownership/PRs/leases that could collide.
-2. Read the current core manifest in full: this file, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json`.
-3. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full at startup using hash-verified pagination. Then use the hash-verified indexed manifest/search/pagination tooling for only the task-relevant sections of `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, `BUG_PRECEDENTS.md`, `LEARNED_RULES.md`, architecture, verification, policy, and other large context files. Do not reread historical ledgers end to end by default.
-4. Inspect the source, tests, callers, contracts, and architecture around the boundary you will change. Discover/load task-relevant plugins or skills when they materially improve execution; do not enumerate unrelated capabilities as ceremony.
-5. Recheck canonical state and ownership immediately before integration or destructive mutation.
+1. Refresh exact `fengie/heaven-toolbox@main` and read its `AGENTS.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`, and `GLOBAL_GIT_DIRECTIVE.md`.
+2. Load only the additional Toolbox training/tools relevant to the task. Do not use MHW's temporary compatibility copies as a substitute for current Toolbox.
+3. Refresh MHW canonical state: exact `origin/main`, assigned head/base, relevant diff/history, worktree status when available, and active ownership/PRs/leases that could collide.
+4. Read this MHW `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, and `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full at startup using hash-verified pagination. Then use the hash-verified indexed manifest/search/pagination tooling for only task-relevant MHW context such as `NEXT-AGENT-START-HERE.md`, `BUG_PRECEDENTS.md`, `LEARNED_RULES.md`, architecture, verification, policy, and other large context files.
+5. Inspect the MHW source, tests, callers, contracts, and architecture around the boundary you will change. Discover/load task-relevant Toolbox plugins or skills when they materially improve execution.
+6. Recheck both Toolbox ownership and MHW canonical state immediately before integration or destructive mutation.
 
 Truncation, one failed tool/network route, or a missing preferred CLI is a routing problem, not proof that the task is blocked. Use another authorized route when practical. Report a blocker only with exact evidence after reasonable alternatives are exhausted.
 
@@ -40,7 +41,7 @@ While changing code:
 - keep comments for intent, invariants, or non-obvious tradeoffs—not narration of obvious code;
 - treat warnings, flaky tests, ignored failures, and unexplained state as engineering signals.
 
-Detailed universal practice lives in `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`; risk-specific verification lives in `_AGENT_TRAINING/VERIFICATION_DOCTRINE.md`.
+Detailed universal practice and risk-specific verification live canonically in `fengie/heaven-toolbox/_AGENT_TRAINING/`. MHW's local trainer copy is compatibility-only pending deletion.
 
 ## Verification and evidence
 
@@ -58,13 +59,13 @@ Recurring workers get a bounded recovery attempt. If an unchanged blocker remain
 
 ## Git, integration, and visible progress
 
-`GLOBAL_GIT_DIRECTIVE.md` is the canonical Git/integration policy. In short: finished owned work belongs on verified remote `main`; temporary branches/PRs are tools, not completion states. Branch cleanup must first extract useful unique work into `_AGENT_CONTEXT/PROJECT_PLAN.md` (or integrate/supersede/reject it with evidence); archive tags alone are preservation, not completion. Preserve unique concurrent work, never force-push shared/canonical history, and verify the intended tree survived integration.
+`fengie/heaven-toolbox/GLOBAL_GIT_DIRECTIVE.md` is the canonical Git/integration policy. In short: finished owned work belongs on verified remote `main`; temporary branches/PRs are tools, not completion states. Branch cleanup must first extract useful unique work into `_AGENT_CONTEXT/PROJECT_PLAN.md` (or integrate/supersede/reject it with evidence); archive tags alone are preservation, not completion. Preserve unique concurrent work, never force-push shared/canonical history, and verify the intended tree survived integration.
 
 Every meaningful integrated change set updates the root `README.md`, `CHANGELOG.md`, and patch component in `VERSION.txt` with synchronized version metadata. Evidence-only persistence for the same change set does not recursively bump the patch.
 
 ## Safety and repository-specific invariants
 
-Load task-applicable `_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md` and BUG_PRECEDENTS/LEARNED_RULES entries before implementation. Full constitution startup reading remains mandatory. MHW's filesystem, transactional deployment, updater/release, plugin, security, process-ownership, dependency-resolution, UI-lifetime, and machine-routing invariants remain binding where relevant. Repository organization follows `_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`.
+Load task-applicable `fengie/heaven-toolbox/_AGENT_TRAINING/REPOSITORY_POLICY_REFERENCE.md` plus MHW `BUG_PRECEDENTS.md`/`LEARNED_RULES.md` entries before implementation. Full constitution startup reading remains mandatory. MHW's filesystem, transactional deployment, updater/release, plugin, security, process-ownership, dependency-resolution, UI-lifetime, and machine-routing invariants remain binding where relevant. Reusable repository organization doctrine follows `fengie/heaven-toolbox/_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`; MHW-specific layout remains defined by this repository's current source and context.
 
 ## Continuity and completion
 
