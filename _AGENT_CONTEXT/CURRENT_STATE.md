@@ -1,25 +1,25 @@
-# v8.8.59 Settings candidate — MHW product state
+# v8.8.60 runtime/updater hardening — MHW product state
 
 MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
 
-The v8.8.59 candidate on `feat/settings-v8.8.59-20261001` adds a persistent in-app Settings surface. It keeps current defaults for existing users, lets automatic program updates be disabled while retaining explicit manual checks, and adds working UI-motion, last-tab, Apply/discard confirmation, and background metadata-refresh preferences.
+Canonical 8.8.59 already contains the persistent Settings/manual-update preference work from PR #550. The active 8.8.60 RECOVERY-004 lane is a fresh-main semantic reconciliation of two archived updater/runtime hardening branches; it does not replay their stale version or continuity metadata.
 
 ## Current MHW product work
 
-- **RECOVERY-003 / P1:** implemented in the v8.8.59 Settings candidate; exact-head gates and integration remain.
-- **RECOVERY-004 / P0:** updater/runtime hardening remains a separate divergent lane; it must refresh newer main and preserve unique semantics instead of overwriting Settings work.
-- **RECOVERY-002 / P0:** in-app catalog browser recovery remains active on its existing product lane.
-- **RECOVERY-007 / P0:** source is integrated; representative Windows/runtime discovery proof remains before DONE.
-- **RECOVERY-005 / P1:** dark ComboBox source integration is complete on main; retain any separately recorded installed Windows/WPF runtime acceptance gap until its evidence closes it.
+- **RECOVERY-004 / P0:** active 8.8.60 candidate. Dashboard stretch, retry-safe initial metadata refresh, staged-update identity/mutation serialization, and updater-health diagnostic redaction are implemented with focused regressions.
+- **RECOVERY-002 / P0:** in-app catalog browser recovery remains active on its existing owner lane.
+- **RECOVERY-007 / P0:** discovery source is integrated; representative Windows/runtime installed-game proof remains before DONE.
+- **RECOVERY-003 / P1:** DONE on canonical 8.8.59 via PR #550 with required exact-head gates green.
+- **RECOVERY-005 / P1:** dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
 
 ## Verification boundary
 
-The Settings candidate has not yet earned exact-head verification evidence. Do not call it integrated or DONE until required GitHub/Windows gates pass on its final source head and current `main` is rechecked immediately before integration.
+Focused Windows proof for the recovered implementation checkpoint `5f11ce59712808ce259dbf72922cc011fb4319c1` is green: Release build 0 warnings / 0 errors, IntegrationTests 268/268, FunctionVerifier 1469 functions with 0 trace gaps, 0 uncovered call sites, and 0 parse errors. This is not a substitute for final exact-head CI after version/continuity edits.
 
-## Coordination / execution note
+The local Codex audit route on `heaven` was quota-blocked and made no edits. Deterministic Heaven Bridge execution remained available and produced the focused Windows evidence. No authentication or security boundary was weakened.
 
-The candidate was reconciled with main `a2e4dbadc6353bd1c1dccd77d0c89779d39b0b24` using a non-force merge commit, preserving the RECOVERY-005 continuity updates that landed during this task.
+## Coordination
 
-The required local Heaven offload route was not exposed in this ChatGPT session, so this bounded lane was implemented through the connected GitHub repository instead of a local Heaven worker. Preserve that limitation in the successor handoff; do not treat it as local runtime proof.
+Do not merge the stale `fix/runtime-updater-hardening-v8.8.57-20261001` history wholesale. Its useful semantics have been re-evaluated against current main and selectively ported into the fresh 8.8.60 lane. Catalog branches remain separately owned and must not be absorbed into this updater lane.
 
 Global Agent Control/Heaven/plugin work remains owned by `fengie/heaven-toolbox` and must not be recreated in MHW.
