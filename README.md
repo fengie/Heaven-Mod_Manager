@@ -638,17 +638,11 @@ Accepted heuristic pairings are written to `MHW-DEBUG-ALL.log` as `[FAMILY] GENE
 
 ## Git-first agent continuity
 
+Global programming-agent bootstrap, shared Git policy, personal plugins, Heaven Bridge, Agent Control, and reusable operator/developer tools are owned by `fengie/heaven-toolbox@main`. For MHW work, refresh and read current Toolbox first, then refresh `fengie/mhw-mods@main` and load this repository's product-specific `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, `_AGENT_CONTEXT/`, source, tests, release state, and evidence.
 
-## Plugin workspace and Heaven control plane
+Do not create new reusable plugin/control-plane/tooling implementations under MHW-local `plugins/`, `heaven-bridge/`, `tools/`, or `_AGENT_TRAINING/`; those ownership roots intentionally no longer exist here. Reusable infrastructure changes belong in Heaven Toolbox. MHW keeps only mod-manager product code, tests, product-specific scripts/workflows, and continuity/evidence needed to operate the product.
 
-New plugin development is centralized under `plugins/`. The initial platform direction is a Heaven Control Plane: a stable, permissioned capability layer for local execution, filesystem/Git operations, build/test, browser/GUI automation, worker queues, repository indexing, artifacts/checkpoints, observability, and later multi-machine workers.
-
-Read `plugins/README.md` for layout/ownership rules and `plugins/IMPLEMENTATION_SWARM_PROMPT.md` for the current collaborative implementation directive.
-
-The existing `heaven-bridge/` directory remains active compatibility/runtime infrastructure. New plugin-platform code should be developed under `plugins/heaven-control-plane/` and should reuse/adapt proven bridge primitives rather than forking a second implementation. Any physical migration of the existing bridge plugin source must preserve bootstrap/workflow/runtime compatibility and be verified on `heaven`.
-
-
-GitHub `fengie/mhw-mods` on `main` is the canonical development state. Repository-aware coding agents should read `AGENTS.md`, `NEXT-AGENT-START-HERE.md`, and `_AGENT_CONTEXT/CURRENT_REVISION.json` before changing code, then follow the full continuity protocol. Update `_AGENT_CONTEXT/` and commit the handoff state with the code it describes. Every shipped application change must also bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run `scripts/testing/Test-AgentHandoff.ps1` before declaring work complete. `Build Source Handoff.bat` remains available when a reproducible source ZIP export is useful.
+Every shipped application change must bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run the current MHW product verification gates before declaring work complete.
 
 ## Verification closure status
 
