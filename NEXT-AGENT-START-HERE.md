@@ -1,4 +1,4 @@
-﻿# v8.8.55 branch-cleanup recovery â€” current handoff
+# v8.8.55 branch-cleanup recovery — current handoff
 
 Canonical baseline is v8.8.54 `main`: behavior merged as `be001c2582564e55a7561a97bff791bbf821621a` after exact-head Agent Control, Security Supply Chain, and Workflow Feature gates; canonical post-merge evidence currently extends through `62cd959e00c66f034b7091f0f323ba0ccb1db8b2`.
 
