@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.55",
+  "currentVersion": "8.8.56",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.54 exact head c59554b441c47085d6af18e703adc63855e35472 passed Agent Control 36796050757, Security Supply Chain 36796050831, and Workflow Feature 36796050750, then merged as be001c2582564e55a7561a97bff791bbf821621a with zero file delta",
+  "immediateParentRevision": "v8.8.55 canonical main 9de6f81c5b2377ee1568b5bf4de5baa389eb90de; RECOVERY-007 recovery lane branched from this exact head",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -106,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Integrate the v8.8.55 branch-cleanup recovery policy/ledger onto current main, verify governance/continuity checks on the exact reconciled head, then continue RECOVERY items from _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve every useful unique lane until INTEGRATED, EXTRACTED, SUPERSEDED, or REJECTED with evidence; ARCHIVED alone is non-terminal. Recursively propagate continuity.",
+  "nextAgentObligation": "Verify fix/installed-game-discovery-v8.8.56-20260930 at exact head, reconcile fresh main, integrate RECOVERY-007 with canonical-tree proof, obtain Windows/runtime installed-game discovery validation, and only then mark RECOVERY-007 DONE. Preserve and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
