@@ -31,7 +31,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
-**Owner:** branch-cleanup recovery owner  
+**Owner:** branch-cleanup recovery owner
 **Acceptance:** canonical plan exists; cleanup policy requires semantic extraction before deletion; global agent training carries the rule; recovered work remains visible until integrated/superseded/rejected.
 
 - [x] Recover a canonical plan ledger from the archived planning work.
@@ -44,9 +44,9 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-002 — Catalog browser
 
-**Owner:** active catalog recovery lane  
-**Current live branches:** `fix/issue281-catalog-v8.8.55` (fresh-main recovery candidate); `fix/issue281-catalog-browser-recovery` (older preserved source lane)  
-**Related issue:** #281  
+**Owner:** active catalog recovery lane
+**Current live branches:** `fix/issue281-catalog-v8.8.55` (fresh-main recovery candidate); `fix/issue281-catalog-browser-recovery` (older preserved source lane)
+**Related issue:** #281
 **Acceptance:** current-main-compatible browse/search/detail UI, provider-neutral composition, focused tests, safe acquisition boundaries, current metadata/versioning, exact integration evidence.
 
 - [x] Preserve exact archived source tip.
@@ -60,7 +60,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-003 — Manual update check
 
-**Owner:** unclaimed  
+**Owner:** unclaimed
 **Acceptance:** user can explicitly trigger the existing updater check path; automatic updater behavior remains unchanged; UI/state regressions cover both routes.
 
 - [x] Preserve exact archived source tip.
@@ -72,7 +72,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-004 — Runtime/updater audit hardening
 
-**Owner:** unclaimed  
+**Owner:** unclaimed
 **Acceptance:** semantically reconcile the two overlapping archived lanes; retain valid fixes for dashboard stretch, metadata retry, staged-update identity/mutation serialization, and diagnostic redaction without importing stale version/continuity snapshots.
 
 - [x] Preserve both exact archived source tips.
@@ -85,7 +85,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-005 — Dark ComboBox chrome
 
-**Owner:** unclaimed  
+**Owner:** unclaimed
 **Acceptance:** remove jarring native white ComboBox chrome while preserving readable selected/dropdown text, theme behavior, accessibility, and non-laggy UI.
 
 - [x] Preserve exact archived source tip.
@@ -97,7 +97,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-006 — Heaven auth status
 
-**Owner:** unclaimed  
+**Owner:** unclaimed
 **Acceptance:** Agent Manager/Control distinguishes auth-required/degraded/blocked states truthfully and does not misreport machine absence; plugin/runtime identities remain synchronized.
 
 - [x] Preserve exact archived source tip.
@@ -109,7 +109,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-007 — Installed-game discovery
 
-**Owner:** unclaimed  
+**Owner:** unclaimed
 **Acceptance:** installed-game discovery works beyond MHW, stays off the UI thread, serializes registry mutation safely, avoids false executable filtering, and has lifecycle/regression coverage.
 
 - [x] Preserve exact archived source tip.
@@ -121,8 +121,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-008 — Agent coordination leases
 
-**Owner:** current Agent Control coordination owner  
-**Canonical integration:** `main` `be001c2582564e55a7561a97bff791bbf821621a` (v8.8.54)  
+**Owner:** current Agent Control coordination owner
+**Canonical integration:** `main` `be001c2582564e55a7561a97bff791bbf821621a` (v8.8.54)
 **Acceptance:** one canonical current-main implementation rejects overlapping/case-insensitive ownership conflicts, passes Agent Control tests, and survives integration. Redundant historical/live refs may be retired only after confirming no additional unique semantics remain.
 
 - [x] Preserve the deleted predecessor tip.
