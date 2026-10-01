@@ -1,12 +1,19 @@
-# v8.8.60 — MHW Manual Mod Manager
+# v8.8.61 — MHW Manual Mod Manager
 
-Current product version: **8.8.60**.
+Current product version: **8.8.61**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.60 — runtime/updater recovery hardening
+## v8.8.61 — dark window chrome + clean build labels
+
+- Replaced remaining Windows-light scrollbars with application-owned dark ScrollBar/Thumb templates, including horizontal and vertical paging behavior.
+- Requests immersive dark mode for the native Windows title bar without enabling unsafe code for the WPF application.
+- Repaired the updater build identity label that literally rendered `â€¢`; build/version text now uses an ASCII-stable separator and has a regression guard.
+- Added focused UI regressions, including a malformed-source guard that rejects escaped-newline interop declarations.
+
+### v8.8.60 — runtime/updater recovery hardening
 
 - Restored Dashboard stretch behavior without binding the content wrapper directly to the ScrollViewer viewport width.
 - Initial on-demand metadata refresh now marks completion only after a successful refresh and resets its in-flight flag on failure/cancellation so a later Mods visit can retry.
@@ -16,14 +23,8 @@ Keep this section intentionally short. The README shows the **current patch plus
 ### v8.8.59 — persistent Settings tab
 
 - Added a dedicated Settings tab with persistent automatic-update, UI-motion, last-tab, safety-confirmation, and background-metadata preferences.
-- Automatic program updates can be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
+- Automatic program updates can now be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
 - Added atomic JSON preference persistence, malformed-file fallback, immediate motion/update behavior changes, and focused regression coverage.
-
-### v8.8.58 — dark ComboBox chrome
-
-- Replaced the bright Windows-native ComboBox surface with application-owned dark-theme ComboBox/ComboBoxItem templates.
-- Preserved readable selected/dropdown text and existing game/settings bindings while covering popup, hover, focus, selection, arrow, and disabled states.
-- Added regression coverage that requires the custom template and rejects fallback to Windows light control brushes.
 
 ## Current plans & progress
 
@@ -31,7 +32,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on its existing owner lane.
-- [ ] **RECOVERY-004 / P0** — 8.8.60 candidate reconciles the archived runtime/updater hardening; focused Windows build/tests are green and exact-head required gates remain before DONE.
+- [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — universal installed-game discovery is integrated, but representative Windows/runtime discovery proof remains before DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
 - [ ] **RECOVERY-005 / P1** — v8.8.58 dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
