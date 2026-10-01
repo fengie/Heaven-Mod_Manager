@@ -12,16 +12,17 @@ The focused XAML regression now requires the custom ComboBox template and `PART_
 
 ## Verification state
 
-The source/test candidate ends at source checkpoint `5076ee0bf81ddfe69e0418bc599e2c7a810a0959` before version/handoff metadata. No new exact-head CI or installed-client visual proof is claimed yet. The last closed broad verification belongs to PR #548 head `2475675c4282c4d287ca306c1717d2e93f633976`, not to this UI change.
+The production source/test checkpoint is `5076ee0bf81ddfe69e0418bc599e2c7a810a0959`. PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4` passed Workflow Feature PR Gate run 634 (`36810757532`), MHW Product Security Gate run 624 (`36810757536`), and Heaven Toolbox Ownership Gate run 18 (`36810757535`). Installed-client visual proof is **not** claimed.
 
-Before integration, run the required exact-head MHW gates on the complete v8.8.58 candidate. RECOVERY-005 remains ACTIVE until representative installed Windows/WPF visual and interaction acceptance confirms selected value, popup items, focus/hover/open/disabled states and normal GAME/settings use.
+RECOVERY-005 remains ACTIVE until representative installed Windows/WPF visual and interaction acceptance confirms selected value, popup items, focus/hover/open/disabled states and normal GAME/settings use. This evidence-only handoff update must itself remain green on the final PR head before integration.
 
 ## Coordination / risks
 
 - Do not race the active catalog recovery branches.
 - The divergent `fix/runtime-updater-hardening-v8.8.57-20261001` branch touches other UI/updater boundaries and must refresh newer main and allocate the next patch version before it integrates.
 - RECOVERY-007 still requires representative Windows/runtime installed-game discovery evidence before DONE.
-- Global Agent Control/Heaven/plugin work remains in `fengie/heaven-toolbox` issue #5 and must not return to MHW.
+- Global Agent Control/Heaven/plugin work remains in `fengie/heaven-toolbox` and must not return to MHW.
+- The separate MHW `heaven-bridge` transport branch is still live for `heaven2`; Toolbox issue #18 owns its relay cutover and eventual retirement. Do not delete it as stale.
 
 ## Successor obligation
 
