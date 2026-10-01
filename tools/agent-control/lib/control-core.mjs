@@ -532,10 +532,11 @@ export function deploymentBatchCapacity(state, requestedCount, maxActiveAgents, 
 }
 
 export function workflowLeasePreflight(state, steps = [], { now = Date.now() } = {}) {
+  const normalizeBoundary = value => String(value || "").trim().toLowerCase();
   const occupied = new Set(
     (state?.leases || [])
       .filter(lease => lease?.status === "active")
-      .map(lease => String(lease?.boundary || "").trim())
+      .map(lease => normalizeBoundary(lease?.boundary))
       .filter(Boolean)
   );
   const thresholds = livenessThresholds(state);
@@ -564,8 +565,9 @@ export function workflowLeasePreflight(state, steps = [], { now = Date.now() } =
     if (taskId) plannedTaskIds.add(taskId);
 
     const boundary = String(work?.boundary || "").trim();
-    if (!boundary) continue;
-    if (occupied.has(boundary)) {
+    const boundaryKey = normalizeBoundary(boundary);
+    if (!boundaryKey) continue;
+    if (occupied.has(boundaryKey)) {
       return {
         allowed: false,
         boundary,
@@ -573,7 +575,7 @@ export function workflowLeasePreflight(state, steps = [], { now = Date.now() } =
         reason: `Mutable boundary "${boundary}" is already leased or duplicated in this workflow.`
       };
     }
-    occupied.add(boundary);
+    occupied.add(boundaryKey);
   }
 
   return { allowed: true, boundary: null, reason: null };
