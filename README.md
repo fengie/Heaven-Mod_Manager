@@ -1,10 +1,16 @@
-# MHW Manual Mod Manager — v8.8.58
+# MHW Manual Mod Manager — v8.8.59
 
-Current product version: **8.8.58**.
+Current product version: **8.8.59**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+### v8.8.59 — persistent Settings tab
+
+- Added a dedicated Settings tab with persistent automatic-update, UI-motion, last-tab, safety-confirmation, and background-metadata preferences.
+- Automatic program updates can now be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
+- Added atomic JSON preference persistence, malformed-file fallback, immediate motion/update behavior changes, and focused regression coverage.
 
 ### v8.8.58 — dark ComboBox chrome
 
@@ -18,10 +24,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Kept MHW product source, tests, release/runtime evidence, product security, and `_AGENT_CONTEXT/` continuity in this repository.
 - Added ownership enforcement so shared infrastructure is not silently recreated in MHW.
 
-### v8.8.56 — automatic universal installed-game discovery
-
-- Added one bounded, best-effort installed-game discovery pass on the first Games-page refresh.
-- Discovery composes Steam, Epic, GOG, and Xbox Games sources, preserves launcher-proven roots, isolates provider failures, and avoids arbitrary whole-drive executable crawling.
 
 ## Current plans & progress
 
@@ -31,7 +33,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on current main.
 - [ ] **RECOVERY-004 / P0** — reconcile the two updater/runtime hardening archives and port only still-needed semantics/tests.
 - [ ] **RECOVERY-007 / P0** — v8.8.56 candidate implements universal installed-game discovery; exact-head gates and Windows lifecycle proof remain before closure.
-- [ ] **RECOVERY-003 / P1** — finish the manual updater check.
+- [ ] **RECOVERY-003 / P1** — v8.8.59 settings candidate exposes the manual updater action and automatic-update preference; exact-head verification/integration remains.
 - [ ] **RECOVERY-005 / P1** — v8.8.58 candidate restores application-owned dark ComboBox chrome; exact-head automated gates are green, with installed Windows/WPF visual/interaction acceptance still required before DONE.
 
 ## One-file diagnostics
