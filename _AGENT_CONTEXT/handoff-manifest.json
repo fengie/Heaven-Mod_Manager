@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.62",
+  "currentVersion": "8.8.63",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.62 federated catalog exact head 9c2976ae96533b3d439610ef7c770a73d0e14fe3 verified and merged to canonical main as 3c19270a9dbf37c434aaa0654fdedcc8c28c6d71",
+  "immediateParentRevision": "v8.8.62 federated catalog exact head 9c2976ae96533b3d439610ef7c770a73d0e14fe3 verified and merged to canonical main as 3c19270a9dbf37c434aaa0654fdedcc8c28c6d71; v8.8.63 crawler-containment candidate source is 76205544ed23422cfb4056dfa88787a162e9a2fd",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then current MHW main. Treat v8.8.62 / PR #553 as integrated. Refresh live findings and ownership before new work; continue issue #281 only for real conditional Steam/Vortex/provider contracts and issues #350/#354 without fabricating external credentials, rulesets, signing keys, certificates, or runtime evidence. Preserve RECOVERY-007/RECOVERY-005 evidence gaps and preserved recovery-branch history until its unique ancestry is classified. Recursively propagate continuity.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main first, then current MHW main. Treat v8.8.63 issue #554 crawler-containment work as candidate until its exact PR head passes required gates and merges. Preserve issue #281 conditional Steam/Vortex/provider boundaries and issues #350/#354 external trust boundaries; do not fabricate credentials, rulesets, signing keys, certificates, or runtime evidence. Preserve RECOVERY-007/RECOVERY-005 evidence gaps and recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

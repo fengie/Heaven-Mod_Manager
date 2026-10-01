@@ -29,6 +29,27 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | RECOVERY-005 | P1 | ACTIVE | `archive/branch-zero-20260930/fix-dark-combobox-v8.8.53-20260930-9bfb3028` | Finish dark ComboBox chrome/contrast behavior and regression coverage. |
 | RECOVERY-007 | P0 | ACTIVE | `archive/branch-zero-20260930/fix-installed-game-discovery-20260930-691315f4` | Finish automatic universal installed-game discovery and lifecycle hardening. |
 
+## Current issue work
+
+| ID | Priority | Status | Source | Goal |
+| --- | --- | --- | --- | --- |
+| SECURITY-554 | P0 | ACTIVE | issue #554; `fix/issue-554-crawler-containment-v8.8.63` | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
+
+## SECURITY-554 — Permitted crawler path + redirect containment
+
+**Owner:** ChatGPT live issue lane on `fix/issue-554-crawler-containment-v8.8.63`
+**Related issue:** #554
+**Acceptance:** segment-safe path prefixes; no implicit redirect following; bounded manual redirects validated before each follow-up request; disallowed targets never contacted; existing crawler safety/compliance behavior preserved; exact-head repository gates green before integration.
+
+- [x] Replace raw path `StartsWith` authorization with segment-safe matching.
+- [x] Reject malformed/ambiguous path-prefix manifests.
+- [x] Move production crawler transport ownership inside the crawler and disable automatic redirects.
+- [x] Validate and follow allowed redirects manually with a bounded hop count and loop detection.
+- [x] Add deterministic tests for allowed redirects and for off-origin/HTTP/alternate-port/user-info/out-of-prefix/missing/looping/excessive redirects.
+- [ ] Run required exact-head gates, reconcile fresh `main`, integrate, and close issue #554.
+
+**Next action:** open the v8.8.63 PR, use GitHub Actions as the Windows/.NET verification environment, repair any exact-head failures, then merge only after required gates are green.
+
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
 **Owner:** completed on canonical main

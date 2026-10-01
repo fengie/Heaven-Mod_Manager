@@ -1,10 +1,18 @@
-# v8.8.62 — MHW Manual Mod Manager
+# v8.8.63 — MHW Manual Mod Manager
 
-Current product version: **8.8.62**.
+Current product version: **8.8.63**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.63 — crawler containment hardening
+
+- Make permitted-crawler path allowlists segment-safe so a prefix such as `/mods` cannot authorize sibling paths such as `/mods-evil`.
+- Replace arbitrary `HttpClient` injection with a crawler-owned production transport that explicitly disables automatic redirects.
+- Follow only a bounded set of redirects manually, validating HTTPS origin, port, user-info, and approved path before every follow-up request.
+- Reject missing, looping, excessive, off-origin, HTTP, alternate-port, credentialed, and out-of-prefix redirects before a disallowed target is contacted.
+- Add deterministic redirect-attempt and malformed-prefix regressions while preserving compliance review, kill switch, HTML/content-size bounds, and cancellation.
 
 ## v8.8.62 — federated catalog browser + safe acquisition
 
@@ -21,18 +29,12 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Repaired the updater build identity label that literally rendered `â€¢`; build/version text now uses an ASCII-stable separator and has a regression guard.
 - Added focused UI regressions, including a malformed-source guard that rejects escaped-newline interop declarations.
 
-### v8.8.60 — runtime/updater recovery hardening
-
-- Restored Dashboard stretch behavior without binding the content wrapper directly to the ScrollViewer viewport width.
-- Initial on-demand metadata refresh now marks completion only after a successful refresh and resets its in-flight flag on failure/cancellation so a later Mods visit can retry.
-- Program-update handoff now snapshots the staged update identity and holds the update mutation gate across the final identity/policy checks and synchronous helper launch, while preserving the 8.8.59 automatic/manual update preferences.
-- Startup diagnostics redact updater health token, file, and attempt values instead of logging those handoff arguments verbatim.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
+- [ ] **SECURITY-554 / P0** — v8.8.63 hardens permitted-crawler path and redirect containment; source/tests are on the issue branch pending exact-head gates and integration.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — universal installed-game discovery is integrated, but representative Windows/runtime discovery proof remains before DONE.
