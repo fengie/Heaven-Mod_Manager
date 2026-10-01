@@ -28,6 +28,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private bool activityLoaded;
     private bool overlapsLoaded;
     private bool initialMetadataRefreshStarted;
+    private bool initialMetadataRefreshCompleted;
     private int conflictPreviewGeneration;
     private int conflictPreviewLoadedGeneration=-1;
     private bool suppressChanged;
@@ -249,7 +250,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
         if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,7));
-        if(value==1&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
+        if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
         {
             initialMetadataRefreshStarted=true;
             _=EnsureInitialMetadataLoadedAsync(backgroundCts.Token);
@@ -294,19 +295,29 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task EnsureInitialMetadataLoadedAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(ct.IsCancellationRequested)return;
-        await RunBusy("metadata.initial-refresh","Refreshing mod information","Checking lineage, artwork, and update metadata now that the Mods page is in use…",true,async innerCt=>
+        var completed=false;
+        try
         {
-            await metadataGate.WaitAsync(innerCt);
-            try
+            if(ct.IsCancellationRequested)return;
+            await RunBusy("metadata.initial-refresh","Refreshing mod information","Checking lineage, artwork, and update metadata now that the Mods page is in use…",true,async innerCt=>
             {
-                var result=await s.Nexus.RefreshAsync(false,innerCt);
-                await ReloadMods(innerCt);
-                await RefreshAnalysis(innerCt);
-                MasterDebugLog.Write("AUTO-METADATA",$"Demand-loaded metadata refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
-            }
-            finally{metadataGate.Release();}
-        });
+                await metadataGate.WaitAsync(innerCt);
+                try
+                {
+                    var result=await s.Nexus.RefreshAsync(false,innerCt);
+                    await ReloadMods(innerCt);
+                    await RefreshAnalysis(innerCt);
+                    completed=true;
+                    MasterDebugLog.Write("AUTO-METADATA",$"Demand-loaded metadata refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
+                }
+                finally{metadataGate.Release();}
+            });
+        }
+        finally
+        {
+            if(completed)initialMetadataRefreshCompleted=true;
+            initialMetadataRefreshStarted=false;
+        }
     }
 
     private async Task EnsureConflictPreviewsLoadedAsync(CancellationToken ct)
