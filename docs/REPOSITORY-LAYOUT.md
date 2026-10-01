@@ -8,15 +8,13 @@ Keep the repository root intentionally small. Root files should be limited to pr
 - `tests/` — automated test projects.
 - `benchmarks/` — performance harnesses.
 - `scripts/` — build, verification, packaging, and automation PowerShell.
-- `tools/` — developer utilities and standalone helper programs.
-- `plugins/` — plugin implementations and plugin-specific docs/tests.
 - `docs/` — durable product/architecture documentation.
 - `docs/research/` — external research and design notes.
 - `docs/history/` — superseded release/repair notes kept only for historical context.
 - `data/` — checked-in reference datasets.
 - `legacy-v7/` — frozen legacy implementation/material.
 - `_AGENT_CONTEXT/` — live multi-agent continuity, audits, checkpoints, and evidence only.
-- `_AGENT_TRAINING/` — durable agent operating standards and prompt templates.
+- Reusable agent training, plugins, Heaven Bridge, Agent Control, shared Git policy, and generic developer/operator tools are owned by `fengie/heaven-toolbox@main` and must not be recreated as MHW-local roots.
 - `.verification/` — verification state/bootstrap evidence.
 
 ## Hygiene
@@ -54,4 +52,4 @@ Do not move toolchain/discovery files such as the solution, `Directory.*.props`,
 
 ## Binding agent rule
 
-The full mandatory rule is `../_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`. All repository-changing agents must follow it. This document is the human-facing layout map; the training file defines placement, migration verification, and multi-agent coordination invariants.
+The reusable repository-structure rule is `fengie/heaven-toolbox@main:_AGENT_TRAINING/REPOSITORY_STRUCTURE.md`. All repository-changing agents bootstrap from current Heaven Toolbox first, then apply this MHW product layout. This document is the MHW-facing layout map; Toolbox owns generic placement and migration doctrine.
