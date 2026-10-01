@@ -1020,7 +1020,7 @@
                                 <StackPanel>
                                     <TextBlock Text="{Binding SelectedCatalogItem.Name}" Style="{StaticResource SectionTitle}"/>
                                     <TextBlock Margin="0,4,0,0" Foreground="{StaticResource Muted}" FontSize="11">
-                                        <Run Text="{Binding SelectedCatalogItem.Provider}"/><Run Text=" · "/><Run Text="{Binding SelectedCatalogItem.Author}"/>
+                                        <Run Text="{Binding SelectedCatalogItem.Provider,Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding SelectedCatalogItem.Author,Mode=OneWay}"/>
                                     </TextBlock>
                                     <TextBlock Margin="0,10,0,0" Text="{Binding SelectedCatalogItem.Summary}" TextWrapping="Wrap" MaxHeight="90"/>
                                 </StackPanel>
