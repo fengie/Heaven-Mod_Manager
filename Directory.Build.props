@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.57</Version>
-    <InformationalVersion>8.8.57-heaven-toolbox-cutover</InformationalVersion>
+    <Version>8.8.58</Version>
+    <InformationalVersion>8.8.58-dark-combobox-chrome</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
