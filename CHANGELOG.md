@@ -1,3 +1,11 @@
+# v8.8.57 — 2026-09-30
+
+- Cut global programming-agent bootstrap authority over from MHW to `fengie/heaven-toolbox@main`.
+- Removed MHW's duplicated global trainer, Git doctrine, plugins, Heaven Bridge, Agent Control, and generic tooling roots after Toolbox parity/inventory completion.
+- Relocated MHW-only FunctionVerifier and SelfTest executables under `tests/` and updated solution/build/release verification references.
+- Replaced global-infrastructure CI copies with a MHW product-security gate plus a fail-closed ownership regression gate.
+- Updated durable MHW handoff/routing metadata so product continuity stays local while reusable permissions, routing, training, and tools resolve through Heaven Toolbox.
+
 # v8.8.56 — 2026-09-30
 
 - Run one automatic best-effort installed-game discovery pass on the first Games-page refresh while retaining the explicit manual rescan and executable-selection fallback.

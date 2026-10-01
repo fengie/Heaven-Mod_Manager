@@ -1,9 +1,0 @@
-{
-  "schema":"heaven-plugin/manifest/v1",
-  "name":"heaven-cluster",
-  "version":"0.1.0",
-  "entrypoint":"heaven_cluster.scheduler:ClusterScheduler",
-  "capabilities":["cluster.worker.register","cluster.worker.heartbeat","cluster.worker.pause","cluster.worker.list","cluster.choose","cluster.reserve","cluster.release","cluster.dispatch"],
-  "storage":"sqlite",
-  "security":{"transport_locator_is_opaque":true,"capacity_reservation_atomic":true,"stale_workers_excluded":true}
-}

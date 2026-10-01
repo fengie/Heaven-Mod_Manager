@@ -127,14 +127,14 @@ try{
   & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') -Root $Root
   & (Join-Path $PSScriptRoot '..\testing\Test-VerificationCache.ps1')
   Require-Stage 'Solution restore' @('restore','.\MhwModManager.sln') (Join-Path $logRoot ("build-restore-"+$stamp+".log"))
-  Require-Stage 'Function fingerprint scan' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionReport) (Join-Path $logRoot ("build-function-scan-"+$stamp+".log"))
+  Require-Stage 'Function fingerprint scan' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionReport) (Join-Path $logRoot ("build-function-scan-"+$stamp+".log"))
   Require-Stage 'Solution build/analyzers' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-warnaserror') (Join-Path $logRoot ("build-compile-"+$stamp+".log"))
   Require-Stage 'Core unit tests' @('test','.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj','-c','Release','--no-build') (Join-Path $logRoot ("build-test-core-"+$stamp+".log"))
   Require-Stage 'Automation unit tests' @('test','.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj','-c','Release','--no-build') (Join-Path $logRoot ("build-test-automation-"+$stamp+".log"))
   Require-Stage 'Integration/fault-injection tests' @('test','.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj','-c','Release','--no-build') (Join-Path $logRoot ("build-test-integration-"+$stamp+".log"))
 
   $selfTestOutput = Join-Path $Root 'BuildLogs'
-  Require-Stage 'Automation self-test' @('run','-c','Release','--project','.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-build','--',$selfTestOutput) (Join-Path $logRoot ("build-selftest-"+$stamp+".log"))
+  Require-Stage 'Automation self-test' @('run','-c','Release','--project','.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-build','--',$selfTestOutput) (Join-Path $logRoot ("build-selftest-"+$stamp+".log"))
   $appVersion=(Get-Content (Join-Path $Root 'VERSION.txt') -Raw).Trim()
   $headSha=(& git rev-parse HEAD).Trim()
   $sourceSha=$env:MHW_UPDATE_SOURCE_SHA
@@ -320,7 +320,7 @@ try{
   # Verification promotion belongs after every release-producing check. If updater
   # metadata, compression, or final package verification fails, preserve the
   # previous verified cache rather than promoting a release that did not finish.
-  Require-Stage 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionConfirmReport) (Join-Path $logRoot ("build-function-confirm-"+$stamp+".log"))
+  Require-Stage 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$functionBaseline,'--trusted-files',$trustedFunctionFiles,'--trusted-source',$trustedFunctionSource,'--report',$functionConfirmReport) (Join-Path $logRoot ("build-function-confirm-"+$stamp+".log"))
 
   @(
     ('Version: '+$appVersion),

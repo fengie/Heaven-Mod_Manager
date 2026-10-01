@@ -38,8 +38,8 @@ $Projects=@(
     @{Name='AutomationTests';Path='.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj'},
     @{Name='IntegrationTests';Path='.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj'},
     @{Name='Benchmarks';Path='.\benchmarks\MhwModManager.Benchmarks\MhwModManager.Benchmarks.csproj'},
-    @{Name='SelfTest';Path='.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj'},
-    @{Name='FunctionVerifier';Path='.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj'},
+    @{Name='SelfTest';Path='.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj'},
+    @{Name='FunctionVerifier';Path='.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj'},
     @{Name='App';Path='.\src\MhwModManager.App\MhwModManager.App.csproj'}
 )
 
@@ -109,7 +109,7 @@ function Get-ProjectFingerprint([string]$ProjectPath){
     # Integration tests inspect App/XAML, verification tooling, and handoff documents
     # at runtime without ProjectReference edges to those inputs. Include them too.
     if([IO.Path]::GetFileName($ProjectPath.Replace([char]92,[char]47)) -eq 'MhwModManager.IntegrationTests.csproj'){
-        foreach($folder in @('src','tools/MhwModManager.FunctionVerifier','scripts')){
+        foreach($folder in @('src','tests/MhwModManager.FunctionVerifier','scripts')){
             Get-ChildItem -LiteralPath (Join-Path $Root $folder) -Recurse -File -Force | Where-Object {
                 $parts=$_.FullName.Substring($Root.Length) -split '[\\/]'
                 -not ($parts -contains 'bin') -and -not ($parts -contains 'obj')
@@ -330,7 +330,7 @@ function Invoke-CiSecurityPolicyPreflight {
     try {
         & (Join-Path $PSScriptRoot '..\testing\Test-CiSecurityPolicy.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
         $sw.Stop()
-        Add-Result 'Security' 'CI supply-chain policy' $true 0 $sw.Elapsed.TotalSeconds $log 'Workflow actions, permissions, self-hosted PR trust, remote bootstrap, and dependency-audit invariants passed.'
+        Add-Result 'Security' 'CI supply-chain policy' $true 0 $sw.Elapsed.TotalSeconds $log 'MHW updater, release, package, and dependency-audit invariants passed.'
         Write-Host 'PASS: CI supply-chain policy' -ForegroundColor Green
         Write-MhwMasterDebug -Root $Root -Area 'VERIFY-SECURITY' -Message 'PASS CI security policy preflight'
         return $true
@@ -434,7 +434,7 @@ try {
 
     Invoke-DotnetStep 'Restore' 'Solution restore' @('restore','.\MhwModManager.sln') 'restore' | Out-Null
 
-    Invoke-DotnetStep 'Verification' 'Function fingerprint scan' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionReport) 'function-scan' | Out-Null
+    Invoke-DotnetStep 'Verification' 'Function fingerprint scan' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionReport) 'function-scan' | Out-Null
 
     Invoke-DotnetStep 'Compile' 'Relaxed whole solution' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-p:TreatWarningsAsErrors=false',"-bl:$RelaxedBinlog") 'compile-relaxed' | Out-Null
 
@@ -451,7 +451,7 @@ try {
     $isWindowsHost = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
     if($isWindowsHost){
         Invoke-CachedDotnetStep 'test:Integration + fault injection' '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj' 'Tests' 'Integration + fault injection' @('test','.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
-        Invoke-CachedDotnetStep 'test:Full automation self-test' '.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj' 'Tests' 'Full automation self-test' @('run','-c','Release','--project','.\tools\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-restore','--no-build','--',$BuildLogs) 'selftest' | Out-Null
+        Invoke-CachedDotnetStep 'test:Full automation self-test' '.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj' 'Tests' 'Full automation self-test' @('run','-c','Release','--project','.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-restore','--no-build','--',$BuildLogs) 'selftest' | Out-Null
     } else {
         Write-MhwMasterDebug -Root $Root -Area 'VERIFY' -Message 'Windows-only integration/self-test stages skipped because host is not Windows.'
         Add-Result 'Tests' 'Integration + fault injection' $false 9001 0 '' 'Skipped: Windows is required.'
@@ -459,7 +459,7 @@ try {
     }
     $prePromotionFailures=@($script:Results | Where-Object { $_.passed -ne $true }).Count
     if($prePromotionFailures -eq 0){
-        Invoke-DotnetStep 'Verification' 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tools\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionConfirmReport) 'function-confirm' | Out-Null
+        Invoke-DotnetStep 'Verification' 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionConfirmReport) 'function-confirm' | Out-Null
     } else {
         Add-Result 'Verification' 'Function cache promotion safely skipped' $true 0 0 '' ("Preserved previous verified=true function cache because "+$prePromotionFailures+" earlier verification stage(s) failed.")
         Write-MhwMasterDebug -Root $Root -Area 'FUNCTION-VERIFY' -Message ("Cache promotion skipped because "+$prePromotionFailures+" earlier verification stage(s) failed.")

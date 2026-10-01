@@ -1,9 +1,0 @@
-{
-  "schema":"heaven-plugin/manifest/v1",
-  "name":"heaven-visual",
-  "version":"0.1.0",
-  "entrypoint":"heaven_visual.service:VisualPlugin",
-  "capabilities":["visual.probe","visual.tile_plan","visual.resize","visual.crop"],
-  "security":{"allowed_root_containment":true,"overwrite_confirmation":true},
-  "optional_dependencies":{"transforms":"Pillow>=10"}
-}

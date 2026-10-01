@@ -1,9 +1,0 @@
-{
-  "schema":"heaven-plugin/manifest/v1",
-  "name":"heaven-state-store",
-  "version":"0.1.0",
-  "entrypoint":"heaven_state_store.store:StateStore",
-  "capabilities":["artifact.publish","artifact.info","artifact.read","artifact.compare","checkpoint.put","checkpoint.get","health.record","health.recent"],
-  "storage":"sqlite+content-addressed-files",
-  "security":{"credential_metadata_refused":true,"checkpoint_optimistic_concurrency":true}
-}

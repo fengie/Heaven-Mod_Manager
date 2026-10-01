@@ -1,4 +1,14 @@
-# v8.8.56 Universal Mod Manager
+# v8.8.57 Universal Mod Manager
+
+## v8.8.57 — Heaven Toolbox authority cutover
+
+Global reusable agent infrastructure now belongs exclusively to `fengie/heaven-toolbox@main`. MHW bootstraps Toolbox first, then loads only this repository's product-specific source, tests, `_AGENT_CONTEXT/`, workflows, release state, and continuity.
+
+- Removed the duplicated global training tree, shared Git directive, personal plugins, Heaven Bridge, and Agent Control/toolbox roots from MHW.
+- Relocated the MHW-owned FunctionVerifier and SelfTest projects from root `tools/` into `tests/` and rewired the solution/build/release verifier paths.
+- Split MHW security validation down to product/updater/release invariants; generic reusable repository security policy remains in Heaven Toolbox.
+- Added a fail-closed Heaven Toolbox ownership gate that rejects reintroduced global copies or routing back to MHW.
+- The canonical active/recovery ledger remains [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md); product recovery work and runtime evidence remain MHW-owned.
 
 ## v8.8.56 — automatic universal installed-game discovery
 

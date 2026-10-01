@@ -1,5 +1,0 @@
-[project]
-name="heaven-file-ops"
-version="0.1.0"
-description="Structured filesystem mutation and binary operations over Heaven Bridge"
-requires-python=">=3.10"

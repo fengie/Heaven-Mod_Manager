@@ -1,5 +1,0 @@
-[project]
-name="heaven-database"
-version="0.1.0"
-description="Safe local SQLite inspection, query, mutation, integrity, and backup"
-requires-python=">=3.10"

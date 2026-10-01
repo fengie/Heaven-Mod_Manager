@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/installed-game-discovery-v8.8.56-20260930",
-  "currentVersion": "8.8.56",
-  "companyTrainingRoot": "_AGENT_TRAINING",
-  "companyTrainingStatus": "active-living-system",
-  "status": "v8.8.56-installed-game-discovery-candidate",
-  "nextMilestone": "Verify and integrate RECOVERY-007 automatic universal installed-game discovery, then continue remaining P0 recovery work by live ownership.",
-  "nextRequiredAction": "Verify fix/installed-game-discovery-v8.8.56-20260930 at its exact head with required gates, refresh main/ownership, integrate with canonical-tree proof, then obtain Windows/runtime installed-game discovery validation before closing RECOVERY-007.",
+  "workingBranch": "cutover/heaven-toolbox-v8.8.57",
+  "currentVersion": "8.8.57",
+  "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
+  "companyTrainingStatus": "external-canonical",
+  "status": "v8.8.57-heaven-toolbox-cutover-candidate",
+  "nextMilestone": "Complete and verify the MHW source-side Heaven Toolbox ownership cutover, then continue live MHW product recovery by PROJECT_PLAN priority.",
+  "nextRequiredAction": "Verify the v8.8.57 cutover exact head: Toolbox ownership gate, MHW governance baseline/negative fixtures, product security, verifier relocation/build paths, and Toolbox --cutover transition check; then integrate to main and continue RECOVERY-007 runtime proof.",
   "verificationAppliesToCommit": "c59554b441c47085d6af18e703adc63855e35472",
   "lastClosedVerificationCommit": "de38e58c5e3c709b12d153f19d793406f864e8a6",
   "lastClosedVerificationRun": "heaven-github-actions-36783706158",
-  "verificationScopeNote": "v8.8.55 evidence remains historical proof for its exact source. v8.8.56 changes installed-game discovery, Games-page lifecycle, registry synchronization, tests, and recovery continuity; no new exact-head green or Windows runtime proof is claimed yet.",
+  "verificationScopeNote": "Historical v8.8.56 evidence remains valid only for its exact source. v8.8.57 changes governance, repository ownership boundaries, CI routing, and verifier project paths; exact-head cutover verification is required and no runtime product gap is claimed closed by this migration.",
   "lastClosedVerification": {
     "sourceSha": "de38e58c5e3c709b12d153f19d793406f864e8a6",
     "updaterBuild": 357,
@@ -87,5 +87,7 @@
     },
     "postMergeTreeDelta": "zero-files",
     "liveHeaven2Smoke": "pending-authenticated-local-execution"
-  }
+  },
+  "globalBootstrapRepository": "fengie/heaven-toolbox",
+  "globalBootstrapBranch": "main"
 }

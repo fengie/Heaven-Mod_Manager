@@ -1,9 +1,0 @@
-{
-  "schema":"heaven-plugin/manifest/v1",
-  "name":"heaven-file-ops",
-  "version":"0.1.0",
-  "entrypoint":"heaven_file_ops.service:FileOpsPlugin",
-  "capabilities":["filesystem.info","filesystem.list","filesystem.copy","filesystem.move","filesystem.delete","filesystem.read_binary","filesystem.write_binary"],
-  "depends_on":{"heaven-bridge":"chatgpt-heaven-bridge-v2"},
-  "security":{"mutations_require_confirmation":true,"path_traversal_segments":false}
-}

@@ -1,47 +1,37 @@
-name: Security Supply Chain Gate
+name: MHW Product Security Gate
 
 on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/**'
-      - '.github/dependabot.yml'
-      - '.gitignore'
+      - '.github/workflows/windows-release-gate.yml'
+      - '.github/workflows/updater-publication-pr-gate.yml'
+      - '.github/workflows/security-supply-chain-gate.yml'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'SECURITY.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-30.md'
-      - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
-      - 'scripts/release/Verify-Release.ps1'
+      - 'scripts/release/**'
       - 'scripts/testing/Test-CiSecurityPolicy.ps1'
-      - 'src/**'
-      - 'tests/**'
-      - 'heaven-bridge/**'
-      - 'plugins/**'
-      - 'tools/**'
-      - 'scripts/**'
-      - '*.sln'
+      - 'src/MhwModManager.Updater/**'
+      - 'src/MhwModManager.Updater.Helper/**'
       - 'global.json'
       - 'NuGet.config'
   pull_request:
     paths:
-      - '.github/workflows/**'
-      - '.github/dependabot.yml'
-      - '.gitignore'
+      - '.github/workflows/windows-release-gate.yml'
+      - '.github/workflows/updater-publication-pr-gate.yml'
+      - '.github/workflows/security-supply-chain-gate.yml'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'SECURITY.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-29.md'
       - '_AGENT_CONTEXT/SECURITY_HARDENING_2026-09-30.md'
-      - '_AGENT_TRAINING/SECURITY_SUPPLY_CHAIN.md'
-      - 'src/**'
-      - 'tests/**'
-      - 'heaven-bridge/**'
-      - 'plugins/**'
-      - 'tools/**'
-      - 'scripts/**'
-      - '*.sln'
+      - 'scripts/release/**'
+      - 'scripts/testing/Test-CiSecurityPolicy.ps1'
+      - 'src/MhwModManager.Updater/**'
+      - 'src/MhwModManager.Updater.Helper/**'
       - 'global.json'
       - 'NuGet.config'
   workflow_dispatch:
@@ -50,12 +40,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: security-supply-chain-gate-${{ github.ref }}
+  group: mhw-product-security-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  workflow-policy:
-    name: Enforce immutable actions and runner trust boundary
+  product-security:
+    name: Verify updater and release security invariants
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 10
@@ -64,8 +54,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-
-      - name: Parse security policy before execution
+      - name: Parse product security policy
         shell: powershell
         run: |
           $tokens = $null
@@ -79,7 +68,6 @@ jobs:
             $parseErrors | ForEach-Object { Write-Error $_.Message }
             exit 1
           }
-
-      - name: Audit workflow security policy
+      - name: Audit MHW product security policy
         shell: powershell
         run: .\scripts\testing\Test-CiSecurityPolicy.ps1 -Root $env:GITHUB_WORKSPACE
