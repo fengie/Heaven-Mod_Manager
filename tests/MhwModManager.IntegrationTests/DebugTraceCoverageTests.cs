@@ -104,7 +104,7 @@ public sealed class DebugTraceCoverageTests
     public void FunctionVerifierRejectsGeneratedSourceAndValidatesTrustedSnapshot()
     {
         var root = FindRepositoryRoot();
-        var verifier = File.ReadAllText(Path.Combine(root, "tools", "MhwModManager.FunctionVerifier", "Program.cs"));
+        var verifier = File.ReadAllText(Path.Combine(root, "tests", "MhwModManager.FunctionVerifier", "Program.cs"));
         Assert.Contains("IsGeneratedBuildPath", verifier, StringComparison.Ordinal);
         Assert.Contains("part.Equals(\"obj\"", verifier, StringComparison.Ordinal);
         Assert.Contains("part.Equals(\"bin\"", verifier, StringComparison.Ordinal);
