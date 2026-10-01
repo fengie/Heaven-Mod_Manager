@@ -1,3 +1,11 @@
+# v8.8.54 collision-safe agent ownership — verification scope
+
+Historical v8.8.53 greens do not prove this Agent Control change. Exact-head acceptance requires Agent Control syntax plus the targeted control-core/server-safety suite and full Agent Control suite on the synchronized v8.8.54 head. Required behavior: case-insensitive mutable-boundary collision detection; duplicate routing-manifest boundaries fail before dispatch; a counted direct deploy with one explicit mutable boundary fails before any worker launch; disjoint ownership remains allowed.
+
+Live heaven2 routing mutation is a separate runtime check and remains unclaimed from this route because heaven2 requires HMAC authentication. Do not weaken that boundary for verification.
+
+---
+
 # v8.8.53 Agent Work Reports — integrated verification state
 
 Exact-head PR verification is complete for `b295586beef4e56c7bdc2968b005cc44354c86f5`: Security Supply Chain `36793284454`, Agent Control `36793284492`, Plugin Toolbox `36793284463`, and Workflow Feature `36793284449` all succeeded. The candidate merged as `2885609c8db18494dc5d89d7e9545732ab2bf741`; post-merge comparison showed no file delta from the verified candidate tree.
