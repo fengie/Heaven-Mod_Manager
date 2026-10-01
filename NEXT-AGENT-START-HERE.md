@@ -27,3 +27,5 @@ Source checkpoint: `b62c099f2514281a1d1d0b350cad2a090e0554d2`. No exact-head ver
 ## Successor obligation
 
 Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full. Preserve the permanent continuity constitution, all unresolved evidence gaps, and this explicit successor-propagation obligation. **Do not break the chain.**
+
+The successor must propagate this continuity obligation to the next agent.
