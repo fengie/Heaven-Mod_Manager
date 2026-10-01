@@ -1,12 +1,20 @@
-# v8.8.61 — MHW Manual Mod Manager
+# v8.8.62 — MHW Manual Mod Manager
 
-Current product version: **8.8.61**.
+Current product version: **8.8.62**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.61 — dark window chrome + clean build labels
+## v8.8.62 — federated catalog browser + safe acquisition
+
+- Added a **Browse Mods** tab backed by the existing source-aware SQLite/FTS catalog cache, with isolated provider refresh failures and stale-cache browsing.
+- Routed direct provider downloads through bounded HTTPS staging and the existing hardened archive import pipeline; assisted providers keep their provider-authorized browser flow.
+- Added exact installed-origin persistence/checks so update detection uses the recorded provider mod/file identity and never guesses a replacement.
+- Recovered the official CurseForge API adapter and fail-closed permitted crawler framework from stale issue #281 branches onto current main lineage, with deterministic fixtures and policy tests.
+- CurseForge remains opt-in through environment-provided API/game IDs; no credential is written into catalog rows or durable URLs.
+
+### v8.8.61 — dark window chrome + clean build labels
 
 - Replaced remaining Windows-light scrollbars with application-owned dark ScrollBar/Thumb templates, including horizontal and vertical paging behavior.
 - Requests immersive dark mode for the native Windows title bar without enabling unsafe code for the WPF application.
@@ -20,18 +28,12 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Program-update handoff now snapshots the staged update identity and holds the update mutation gate across the final identity/policy checks and synchronous helper launch, while preserving the 8.8.59 automatic/manual update preferences.
 - Startup diagnostics redact updater health token, file, and attempt values instead of logging those handoff arguments verbatim.
 
-### v8.8.59 — persistent Settings tab
-
-- Added a dedicated Settings tab with persistent automatic-update, UI-motion, last-tab, safety-confirmation, and background-metadata preferences.
-- Automatic program updates can now be disabled without removing the explicit **Check for updates now** action; manual checks remain an intentional update/install path.
-- Added atomic JSON preference persistence, malformed-file fallback, immediate motion/update behavior changes, and focused regression coverage.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
-- [ ] **RECOVERY-002 / P0** — finish the recovered in-app catalog browser on its existing owner lane.
+- [ ] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and crawler recovery are on PR #553; exact-head Windows verification and integration remain before DONE.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — universal installed-game discovery is integrated, but representative Windows/runtime discovery proof remains before DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
