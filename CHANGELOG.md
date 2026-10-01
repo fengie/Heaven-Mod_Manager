@@ -1,3 +1,11 @@
+# v8.8.63 — 2026-10-01
+
+- Harden permitted HTML crawler path authorization with segment-boundary matching and stricter manifest-prefix validation.
+- Replace arbitrary `HttpClient` injection with a production crawler transport that disables automatic redirects.
+- Resolve redirects manually with a five-hop bound and validate every target before request dispatch.
+- Reject off-origin, HTTP, alternate-port, credentialed, out-of-prefix, missing-location, looping, excessive, and transport-rewritten redirect flows.
+- Add deterministic tests proving disallowed redirect targets are never contacted while preserving content-type/size bounds, compliance reviews, kill switch behavior, and cancellation.
+
 # v8.8.62 — 2026-10-01
 
 - Add an integrated **Browse Mods** WPF surface over the provider-neutral SQLite/FTS catalog cache with local search, exact file inspection, provider-page handoff, and failure-isolated refresh.
