@@ -58,7 +58,7 @@ Recurring workers get a bounded recovery attempt. If an unchanged blocker remain
 
 ## Git, integration, and visible progress
 
-`GLOBAL_GIT_DIRECTIVE.md` is the canonical Git/integration policy. In short: finished owned work belongs on verified remote `main`; temporary branches/PRs are tools, not completion states. Preserve unique concurrent work, never force-push shared/canonical history, and verify the intended tree survived integration.
+`GLOBAL_GIT_DIRECTIVE.md` is the canonical Git/integration policy. In short: finished owned work belongs on verified remote `main`; temporary branches/PRs are tools, not completion states. Branch cleanup must first extract useful unique work into `_AGENT_CONTEXT/PROJECT_PLAN.md` (or integrate/supersede/reject it with evidence); archive tags alone are preservation, not completion. Preserve unique concurrent work, never force-push shared/canonical history, and verify the intended tree survived integration.
 
 Every meaningful integrated change set updates the root `README.md`, `CHANGELOG.md`, and patch component in `VERSION.txt` with synchronized version metadata. Evidence-only persistence for the same change set does not recursively bump the patch.
 

@@ -29,7 +29,7 @@ function Continuity([string]$Text,[string]$Name){
 $manifest=Active '_AGENT_CONTEXT/handoff-manifest.json' | ConvertFrom-Json
 if($manifest.formatVersion -ne 1 -or $manifest.continuityRequired -ne $true -or $manifest.propagateToNextAgent -ne $true){throw 'Invalid handoff manifest continuity contract.'}
 if([string]$manifest.canonicalRepository -ne 'fengie/mhw-mods' -or [string]$manifest.canonicalBranch -ne 'main'){throw 'Unexpected canonical repository/branch.'}
-foreach($pointer in @{agentInstructions='AGENTS.md';currentRevisionFile='_AGENT_CONTEXT/CURRENT_REVISION.json';continuityProtocol='_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md';learnedRules='_AGENT_CONTEXT/LEARNED_RULES.md'}.GetEnumerator()){
+foreach($pointer in @{agentInstructions='AGENTS.md';currentRevisionFile='_AGENT_CONTEXT/CURRENT_REVISION.json';continuityProtocol='_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md';learnedRules='_AGENT_CONTEXT/LEARNED_RULES.md';projectPlan='_AGENT_CONTEXT/PROJECT_PLAN.md'}.GetEnumerator()){
     if([string]$manifest.($pointer.Key) -ne $pointer.Value){throw "Invalid handoff manifest pointer: $($pointer.Key)."}
 }
 
@@ -48,6 +48,11 @@ $readme=Active 'README.md'; $changelog=Active 'CHANGELOG.md'
 Need $readme "(?m)^#\s+v$escaped\b" 'README title must show current version.'
 Need $readme "(?m)^##\s+v$escaped\b" 'README must contain a current-version progress section.'
 Need $changelog "(?m)^#\s+v$escaped\b" 'CHANGELOG must contain a current-version section.'
+Need $readme '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'README must link the canonical project plan.'
+$plan=Active '_AGENT_CONTEXT/PROJECT_PLAN.md'
+Need $plan '(?i)branch cleanup.{0,160}(?:work-extraction|extract)' 'Project plan must define extraction-first branch cleanup.'
+Need $plan '(?im)^\|\s*RECOVERY-\d+' 'Project plan must retain actionable recovery items.'
+Need $plan '(?i)ARCHIVED.{0,120}(?:not|non-terminal)' 'Project plan must state that archive-only preservation is non-terminal.'
 
 $agents=Active 'AGENTS.md'
 Need $agents '(?i)canonical working state' 'AGENTS must identify canonical working state.'
@@ -56,6 +61,8 @@ Need $agents '_AGENT_TRAINING/AGENT_OPERATING_STANDARD\.md' 'AGENTS must link th
 Need $agents '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'AGENTS must link current revision.'
 Need $agents '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'AGENTS must link the permanent constitution.'
 Need $agents 'GLOBAL_GIT_DIRECTIVE\.md' 'AGENTS must link canonical Git policy.'
+Need $agents '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'AGENTS must link the canonical project plan.'
+Need $agents '(?is)branch cleanup.{0,260}(?:extract|integrate)' 'AGENTS must require semantic extraction before branch deletion.'
 Need $agents '(?i)task-relevant' 'AGENTS must use progressive task-relevant context.'
 Need $agents '(?i)smallest coherent' 'AGENTS must favor smallest coherent implementation.'
 Need $agents '(?i)narrowest useful' 'AGENTS must specify risk-calibrated verification.'
@@ -75,6 +82,7 @@ Need $standard '(?i)smallest coherent change' 'Operating standard must constrain
 Need $standard '(?i)reproduce.*defect|defect.*reproduce' 'Operating standard must encourage bug reproduction.'
 Need $standard '(?i)flaky tests' 'Operating standard must treat flaky tests as signals.'
 Need $standard '(?i)private chat history' 'Operating standard must define durable completion.'
+Need $standard '(?is)branch cleanup.{0,260}(?:semantic extraction|branch-count)' 'Operating standard must preserve extraction-first branch cleanup.'
 
 $trainer=Active '_AGENT_TRAINING/README.md'
 Need $trainer '(?is)delete.*merge.*rewrite.*relocate.*add' 'Trainer maintenance order must prefer consolidation before addition.'
@@ -84,11 +92,14 @@ Need $git '(?i)main.*canonical integration target' 'Git directive must identify 
 Need $git '(?i)never.*force-push' 'Git directive must forbid shared/canonical force push.'
 Need $git '(?is)README\.md.*CHANGELOG\.md.*VERSION\.txt' 'Git directive must preserve visible patch/version coordination.'
 Need $git '(?i)remote.*main' 'Git directive must require canonical remote-main verification.'
+Need $git '(?is)archive tag.{0,220}(?:not completion|does not authorize|non-terminal)' 'Git directive must not treat archive tags as completion.'
+Need $git '(?i)INTEGRATED.*EXTRACTED.*SUPERSEDED.*REJECTED' 'Git directive must preserve explicit cleanup dispositions.'
 
 $router=Active '_AGENT_CONTEXT/README_FIRST.md'
 Need $router '_AGENT_CONTEXT/CURRENT_REVISION\.json' 'Context router must link current revision.'
 Need $router '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'Context router must link constitution.'
 Need $router 'LEARNED_RULES\.md' 'Context router must link Learned Rules.'
+Need $router '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'Context router must link the canonical project plan.'
 Need $router '(?i)task-relevant' 'Context router must require task-relevant retrieval.'
 Forbid $router '(?i)MHW Manual Mod Manager v8\.8\.7' 'Context router contains obsolete fixed-version startup text.'
 

@@ -1,4 +1,12 @@
-# v8.8.54 single-owner agent coordination — integrated; authenticated live smoke pending
+# v8.8.55 branch-cleanup recovery policy — candidate
+
+The 2026-09-30 branch-zero pass preserved exact deleted tips but did not prove that every useful semantic had reached canonical main. A follow-up semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and Agent Control coordination work. v8.8.54 subsequently integrated the coordination/lease semantics on canonical `main` at `be001c2582564e55a7561a97bff791bbf821621a`.
+
+This candidate restores a canonical recovery ledger for all eight lanes and changes cleanup semantics so useful unique work must be integrated or actionably extracted before deleting a stale branch ref. Existing archive tags remain exact provenance. The fresh-main catalog recovery branch is `fix/issue281-catalog-v8.8.55`; the older catalog recovery branch remains preserved until semantic equivalence is confirmed.
+
+---
+
+# v8.8.54 single-owner agent coordination ΓÇö integrated; authenticated live smoke pending
 
 PR #542 exact head `c59554b441c47085d6af18e703adc63855e35472` passed Agent Control `36796050757`, Security Supply Chain `36796050831`, and Workflow Feature `36796050750`. The same exact head passed local syntax, 77/77 targeted tests, 279/279 full Agent Control tests, handoff baseline/negative fixtures, version identity, and diff checks on heaven. It merged to canonical main as `be001c2582564e55a7561a97bff791bbf821621a`; post-merge comparison shows zero file differences from the verified head.
 
@@ -8,7 +16,7 @@ Remaining runtime acceptance is intentionally narrow: use an authorized signed o
 
 ---
 
-# v8.8.54 collision-safe agent ownership — integration candidate
+# v8.8.54 collision-safe agent ownership ΓÇö integration candidate
 
 Canonical baseline includes v8.8.53 Agent Work Reports plus the subsequent updater installed-client evidence. This candidate changes only Agent Control ownership enforcement, its tests, synchronized runtime/plugin identity, and current release/continuity metadata.
 
@@ -18,7 +26,7 @@ Exact source validation on the reconciled code slice passed Agent Control syntax
 
 ---
 
-# v8.8.53 Agent Work Reports — candidate
+# v8.8.53 Agent Work Reports ΓÇö candidate
 
 PR #540 is reconciled onto canonical v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415` with no overlapping file edits from the intervening #539 integration. The candidate adds a standalone loopback reporting dashboard over authoritative Agent Control snapshots plus explicit bounded progress checkpoints. It does not mutate Agent Control lifecycle state.
 
@@ -26,7 +34,7 @@ Local plugin verification on the implementation slice reported Node syntax succe
 
 ---
 
-# v8.8.52 compact Agent Manager overview — candidate
+# v8.8.52 compact Agent Manager overview ΓÇö candidate
 
 Reconciled from current v8.8.51 main without importing stale branch metadata. The candidate preserves the shortcut-icon fix and adds only the Agent Manager compact overview, Inspector auto-open behavior, severity summaries, bounded transform/opacity motion, and opt-in UI sound contract from recovered PR #539. Agent Control/plugin identity is 0.6.24.
 
@@ -34,14 +42,14 @@ Exact-head CI and live heaven2 dashboard acceptance remain pending. Other unique
 
 ---
 
-# v8.8.51 shortcut icon integrity — candidate
+# v8.8.51 shortcut icon integrity ΓÇö candidate
 
-Canonical baseline is v8.8.50 main `3e4ae104`. The user-reported Windows desktop shortcut corruption was traced to a malformed 48×48 PNG frame inside the committed application ICO: 16/24/32 frames validate, while the 48 frame has an invalid IDAT CRC and malformed termination. The candidate removes only that corrupt frame, preserves the existing icon artwork, and adds deterministic ICO/PNG integrity regression coverage. Windows will scale the intact 32px frame rather than decode corrupt bytes.
+Canonical baseline is v8.8.50 main `3e4ae104`. The user-reported Windows desktop shortcut corruption was traced to a malformed 48├ù48 PNG frame inside the committed application ICO: 16/24/32 frames validate, while the 48 frame has an invalid IDAT CRC and malformed termination. The candidate removes only that corrupt frame, preserves the existing icon artwork, and adds deterministic ICO/PNG integrity regression coverage. Windows will scale the intact 32px frame rather than decode corrupt bytes.
 
 Exact-head CI, packaged executable/resource verification, and a freshly recreated Windows desktop shortcut smoke are required before closure. Draft Agent Manager PR #539 remains independently owned; if this urgent bug fix reaches main first, that lane must reconcile/re-version rather than overwrite v8.8.51.
 
 ---
-# Current state — v8.8.50 candidate
+# Current state ΓÇö v8.8.50 candidate
 
 Canonical main is `be4615f` at v8.8.49 with the ComboBox contrast and Mods empty-overlay fixes merged after all three exact-head PR gates passed. PR #525 is closed as superseded; PR #528 preserves its repaired work and reconciliation ancestry while carrying the newer governance integration.
 

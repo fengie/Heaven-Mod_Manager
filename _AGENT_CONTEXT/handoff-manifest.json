@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.54",
+  "currentVersion": "8.8.55",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.54 exact head c59554b441c47085d6af18e703adc63855e35472 passed Agent Control 36796050757, Security Supply Chain 36796050831, and Workflow Feature 36796050750, then merged as be001c2582564e55a7561a97bff791bbf821621a with zero file delta",
   "canonicalRepository": "fengie/mhw-mods",
@@ -38,6 +38,7 @@
     "_AGENT_CONTEXT/README_FIRST.md",
     "_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md",
     "_AGENT_CONTEXT/LEARNED_RULES.md",
+    "_AGENT_CONTEXT/PROJECT_PLAN.md",
     "_AGENT_CONTEXT/CURRENT_STATE.md",
     "_AGENT_CONTEXT/ARCHITECTURE.md",
     "_AGENT_CONTEXT/SOURCE_MAP.md",
@@ -105,7 +106,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Use the integrated single-owner mutable-boundary guardrails, refresh live ownership before mutation, and run the remaining duplicate/disjoint/single-owner smoke only through an authorized signed or machine-local heaven2 path; never weaken HMAC. Preserve and recursively propagate continuity.",
+  "nextAgentObligation": "Integrate the v8.8.55 branch-cleanup recovery policy/ledger onto current main, verify governance/continuity checks on the exact reconciled head, then continue RECOVERY items from _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve every useful unique lane until INTEGRATED, EXTRACTED, SUPERSEDED, or REJECTED with evidence; ARCHIVED alone is non-terminal. Recursively propagate continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
@@ -116,5 +117,6 @@
     "tools/agent-control/repository-context.mjs",
     "tools/agent-control/test/repository-bootstrap.test.mjs"
   ],
-  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md"
+  "learnedRules": "_AGENT_CONTEXT/LEARNED_RULES.md",
+  "projectPlan": "_AGENT_CONTEXT/PROJECT_PLAN.md"
 }
