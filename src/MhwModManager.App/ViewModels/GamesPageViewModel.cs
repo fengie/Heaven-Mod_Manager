@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
