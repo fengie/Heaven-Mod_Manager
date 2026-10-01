@@ -1,3 +1,11 @@
+# v8.8.55 branch-cleanup recovery policy — candidate
+
+The 2026-09-30 branch-zero pass preserved exact deleted tips but did not prove that every useful semantic had reached canonical main. A follow-up semantic audit found still-unique catalog, updater, UI, game-discovery, Heaven-status, planning, and Agent Control coordination work. This candidate restores a canonical recovery ledger and changes cleanup semantics so unique work must be integrated or actionably extracted before deleting a stale branch ref.
+
+The exact archived tips remain preserved. Existing live recovery/coordination branches remain independently owned and must not be overwritten. This candidate intentionally does not import stale feature code or metadata wholesale; it records actionable recovery work and the policy needed to prevent recurrence.
+
+---
+
 # v8.8.53 Agent Work Reports — candidate
 
 PR #540 is reconciled onto canonical v8.8.52 main `9a38fcbebea605d8be0842053652c0ed54cf9415` with no overlapping file edits from the intervening #539 integration. The candidate adds a standalone loopback reporting dashboard over authoritative Agent Control snapshots plus explicit bounded progress checkpoints. It does not mutate Agent Control lifecycle state.
