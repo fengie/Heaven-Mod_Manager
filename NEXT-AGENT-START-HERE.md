@@ -8,15 +8,6 @@ Remaining runtime acceptance is intentionally narrow: use an authorized signed o
 
 ---
 
-# v8.8.54 collision-safe agent ownership — candidate
-
-Start from the integrated v8.8.53 reporting/release state below; do not regress or rewrite its exact-head and updater evidence. Agent Control v0.6.25 makes mutable-boundary identity case-insensitive, rejects routing manifests that assign the same mutable boundary to multiple slots, and refuses counted direct deploy when one explicit mutable boundary would otherwise be split into synthetic numbered leases.
-
-Pre-metadata reconciled code passed syntax, 77/77 targeted control-core/server-safety tests, and 279/279 full Agent Control tests on heaven. The final synchronized head must repeat exact-head validation before delivery. The live heaven2 bridge remains HMAC-required, so do not bypass authentication merely to mutate routing or obtain smoke evidence.
-
-After verified integration, improve operator visibility by surfacing the conflicting owner/slot directly in Agent Manager when dispatch is rejected. Preserve unique concurrent branches and recursively propagate the continuity constitution.
-
----
 
 # v8.8.53 Agent Work Reports — integrated; live authenticated smoke pending
 
