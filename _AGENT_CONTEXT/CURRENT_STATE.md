@@ -1,23 +1,23 @@
-# v8.8.58 dark ComboBox candidate — MHW product state
+# v8.8.59 Settings candidate — MHW product state
 
 MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
 
-The v8.8.57 Toolbox cutover is integrated on canonical main at `5d3c7cda5dcfaba8d3aafdd6710a47399fa23bb1`. RECOVERY-005 is now active on `fix/recovery-005-dark-combobox-v8.8.58`: the archived application-owned dark ComboBox template and its focused regression have been reconciled onto current main without importing stale metadata.
+The v8.8.59 candidate on `feat/settings-v8.8.59-20261001` adds a persistent in-app Settings surface. It keeps current defaults for existing users, lets automatic program updates be disabled while retaining explicit manual checks, and adds working UI-motion, last-tab, Apply/discard confirmation, and background metadata-refresh preferences.
 
 ## Current MHW product work
 
-- **RECOVERY-007 / P0:** universal installed-game discovery source is integrated; representative Windows/runtime discovery proof is still required before DONE.
+- **RECOVERY-003 / P1:** implemented in the v8.8.59 Settings candidate; exact-head gates and integration remain.
+- **RECOVERY-004 / P0:** updater/runtime hardening remains a separate divergent lane; it must refresh newer main and preserve unique semantics instead of overwriting Settings work.
 - **RECOVERY-002 / P0:** in-app catalog browser recovery remains active on its existing product lane.
-- **RECOVERY-004 / P0:** updater/runtime hardening remains on its separate divergent branch and must refresh after newer main before integration.
-- **RECOVERY-005 / P1:** v8.8.58 candidate replaces bright native ComboBox chrome with app-owned dark chrome; all exact-head automated gates are green on `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4`, while installed Windows/WPF visual/interaction acceptance remains.
-- **RECOVERY-003 / P1:** manual update-check UI remains product work and must avoid overlapping RECOVERY-004 updater edits.
-
-Legacy Agent Control, Agent Manager, Heaven Bridge/auth/provider, Agent Work Reports, plugin-toolbox, and global coordination follow-up remains owned by `fengie/heaven-toolbox` issue #5 and is not MHW product work.
+- **RECOVERY-007 / P0:** source is integrated; representative Windows/runtime discovery proof remains before DONE.
+- **RECOVERY-005 / P1:** dark ComboBox source is on current main; preserve any remaining installed Windows/WPF acceptance requirement until durably closed by evidence.
 
 ## Verification boundary
 
-PR #549 head `94a867eeaecd1f2d84f6d5d56784ec53f7eb50f4` passed the exact repository verification/build/test workflow, focused UX/XAML regressions, product-security gate, and Toolbox-ownership gate. That automated evidence does not replace installed-client visual acceptance.
+The Settings candidate has not yet earned exact-head verification evidence. Do not call it integrated or DONE until required GitHub/Windows gates pass on its final source head and current `main` is rechecked immediately before integration.
 
-## Operational Toolbox handoff residue
+## Coordination / execution note
 
-The MHW `heaven-bridge` transport branch is still live for `heaven2` and must **not** be treated as stale or deleted. Toolbox issue #18 owns the relay cutover; retire the MHW branch only after that issue proves `heaven2` on the Toolbox relay.
+The required local Heaven offload route was not exposed in this ChatGPT session, so this bounded lane was implemented through the connected GitHub repository instead of a local Heaven worker. Preserve that limitation in the successor handoff; do not treat it as local runtime proof.
+
+Global Agent Control/Heaven/plugin work remains owned by `fengie/heaven-toolbox` and must not be recreated in MHW.
