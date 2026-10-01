@@ -21,7 +21,7 @@ if($null -eq $strictCompile -or $strictCompile.Extent.Text -notmatch "'--no-incr
 $Root=Join-Path ([IO.Path]::GetTempPath()) ('mhw-cache-test-'+[guid]::NewGuid().ToString('N'))
 $sdk='fixture-toolchain'
 try{
-    foreach($folder in @('src/Core','src/App','tools/MhwModManager.FunctionVerifier','tests/MhwModManager.IntegrationTests','scripts','_AGENT_CONTEXT')){
+    foreach($folder in @('src/Core','src/App','tests/MhwModManager.FunctionVerifier','tests/MhwModManager.IntegrationTests','scripts','_AGENT_CONTEXT')){
         New-Item -ItemType Directory -Force -Path (Join-Path $Root $folder) | Out-Null
     }
     $core='src/Core/Core.csproj'
