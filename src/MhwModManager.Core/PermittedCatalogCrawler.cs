@@ -144,10 +144,12 @@ public sealed class PermittedCatalogCrawler : IDisposable
     public PermittedCatalogCrawler(CatalogCrawlerManifest manifest)
         : this(CreateDefaultHandler(), manifest)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
     }
 
     internal PermittedCatalogCrawler(HttpMessageHandler handler, CatalogCrawlerManifest manifest)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(handler);
         this.manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
         client = new HttpClient(handler, disposeHandler: true);
