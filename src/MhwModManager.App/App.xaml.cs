@@ -89,6 +89,8 @@ public sealed partial class App:Application, IDisposable
             var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot));
             var remoteCatalog=startup.Run("services.remote-catalog",()=>new CatalogRepository(db));
             var remoteCatalogSync=startup.Run("services.remote-catalog-sync",()=>new CatalogSyncService(remoteCatalog));
+            var installedCatalogOrigins=startup.Run("services.installed-catalog-origins",()=>new InstalledCatalogOriginRepository(db));
+            var installedCatalogOriginChecker=startup.Run("services.installed-catalog-origin-checker",()=>new InstalledCatalogOriginChecker());
             var remoteCatalogHttp=startup.Run("services.remote-catalog-http",()=>new HttpClient
             {
                 Timeout=TimeSpan.FromSeconds(20)
@@ -139,7 +141,7 @@ public sealed partial class App:Application, IDisposable
                     new Dictionary<string,object?>{{"count",hint.Paths.Count},{"overflow",hint.WatcherOverflowed}});
             };
 
-            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,remoteCatalog,remoteCatalogSync,remoteCatalogProviders,remoteCatalogHttp,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
+            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,remoteCatalog,remoteCatalogSync,installedCatalogOrigins,installedCatalogOriginChecker,remoteCatalogProviders,remoteCatalogHttp,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
                 timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updater,buildIdentity,e.Args.ToArray()));
 
             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
@@ -219,11 +221,24 @@ public sealed partial class App:Application, IDisposable
         ArgumentNullException.ThrowIfNull(httpClient);
         if(!game.IsMonsterHunterWorld)return [];
 
-        return
-        [
+        var providers=new List<IModCatalogProvider>
+        {
             new NexusV3CatalogProvider(new NexusV3Transport(httpClient)),
             new GameBananaCatalogProvider(new GameBananaTransport(httpClient))
-        ];
+        };
+
+        var curseForgeApiKey=Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_API_KEY");
+        var curseForgeGameIdText=Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_GAME_ID");
+        if(!string.IsNullOrWhiteSpace(curseForgeApiKey)
+           &&int.TryParse(curseForgeGameIdText,System.Globalization.NumberStyles.None,System.Globalization.CultureInfo.InvariantCulture,out var curseForgeGameId)
+           &&curseForgeGameId>0)
+        {
+            providers.Add(new CurseForgeCatalogProvider(
+                new CurseForgeTransport(httpClient,curseForgeApiKey),
+                [new CurseForgeCatalogGameSource(game.Id,game.DisplayName,curseForgeGameId)]));
+        }
+
+        return providers;
     }
 
     private static string ResolveDiagnosticRoot()
@@ -278,6 +293,8 @@ public sealed record AppServices(
     CatalogService Catalog,
     CatalogRepository RemoteCatalog,
     CatalogSyncService RemoteCatalogSync,
+    InstalledCatalogOriginRepository InstalledCatalogOrigins,
+    InstalledCatalogOriginChecker InstalledCatalogOriginChecker,
     IReadOnlyList<IModCatalogProvider> RemoteCatalogProviders,
     HttpClient RemoteCatalogHttp,
     DeploymentPlanner Planner,
