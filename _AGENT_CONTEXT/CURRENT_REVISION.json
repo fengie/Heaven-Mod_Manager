@@ -9,11 +9,11 @@
   "companyTrainingStatus": "external-canonical",
   "status": "v8.8.65-header-selector-selected-template-candidate",
   "nextMilestone": "Close reopened issue #556 by verifying and integrating the ComboBox selected-content template repair, then obtain installed Windows/WPF confirmation.",
-  "nextRequiredAction": "Open and verify the v8.8.65 candidate PR on exact head; merge only after all required gates are green and fresh-main reconciliation preserves concurrent work.",
+  "nextRequiredAction": "Rerun all three required PR #562 gates on the exact post-handoff-repair head; merge only when all are green, then obtain installed Windows/WPF visual confirmation.",
   "verificationAppliesToCommit": "3ced8b41041909d91b06902631ef36085bfd7489",
   "lastClosedVerificationCommit": "3ced8b41041909d91b06902631ef36085bfd7489",
   "lastClosedVerificationRun": "Workflow Feature PR Gate 36895834301; MHW Product Security Gate 36895834289; Heaven Toolbox Ownership Gate 36895834269",
-  "verificationScopeNote": "v8.8.64 exact PR #561 head 3ced8b41041909d91b06902631ef36085bfd7489 remains the closed baseline. Installed-client evidence on 2026-10-02 reopened #556 because the closed selector still rendered raw GameProfile text. v8.8.65 changes the shared ComboBox selected presenter to reuse ItemTemplate/ItemTemplateSelector/ItemStringFormat; it is unverified until exact-head required gates pass and it merges.",
+  "verificationScopeNote": "v8.8.64 exact PR #561 head 3ced8b41041909d91b06902631ef36085bfd7489 remains the closed baseline. Installed-client evidence on 2026-10-02 reopened #556 because the closed selector still rendered raw GameProfile text. v8.8.65 changes the shared ComboBox selected presenter to reuse ItemTemplate/ItemTemplateSelector/ItemStringFormat. Initial PR #562 head 3e4a0be46672c9b57183f08cf0f23969d510e377 passed Product Security run 36963151158 and Toolbox Ownership run 36963151149; Workflow Feature run 36963151154 failed only the Agent handoff continuity preflight ('Current handoff must carry unresolved risk') after builds/analyzers and 323 core, 79 automation, 273 integration/fault tests plus self-test passed. The handoff wording is repaired on a newer head, so all required gates must rerun on that exact final head before merge.",
   "lastClosedVerification": {
     "sourceSha": "1853a51a68949ff4a30029df81e29c406e4305ca",
     "updaterBuild": 357,
