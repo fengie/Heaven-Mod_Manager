@@ -21,7 +21,7 @@ v8.8.72 predecessor exact head `c9904b0ba85854ec332bd14778e5e5531a50d582` passed
 
 Those results do **not** authorize v8.8.73. Require fresh exact-head gates for the final provenance branch before integration, then read back canonical `main`. If release publication runs on a private non-Enterprise repository, an explicit attestation skip is expected; do not describe that run as attested.
 
-## Coordination
+## Unresolved risks and coordination
 
 PR #582 existed before this change with a v8.8.73 working-title assumption but its branch still carried v8.8.72 version metadata. After v8.8.73 becomes canonical, #582 must rebase/reconcile onto it and consume the next patch version rather than overwriting or duplicating this release identity.
 
