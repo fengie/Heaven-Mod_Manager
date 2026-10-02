@@ -1,4 +1,4 @@
-# v8.8.78 — 2026-10-02
+# v8.8.79 — 2026-10-02
 
 - Give Mod Library preview/gallery images and compact thumbnails contextual UI Automation names tied to the current mod, without using raw local cache paths as descriptions.
 - Give each Needs attention **Clear mark** button a target-specific accessible name while preserving the existing command target and file-safe behavior.
