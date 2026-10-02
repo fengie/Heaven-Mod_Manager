@@ -34,6 +34,12 @@ Last release evidence:
 
 Mandatory local Heaven offload was attempted earlier in this issue with both heaven2/heaven bridge health jobs; neither produced durable status/result/heartbeat. No local-agent verification is claimed and the HMAC boundary must not be weakened.
 
+## Unresolved risks
+
+- **Unresolved risk:** v8.8.68 still needs exact-head verification, exact release publication, and packaged ComboBox peer-value UI Automation proof before issue #556 can close.
+- **Unresolved risk:** GitHub Actions artifact storage remains exhausted, so installed-client failures must remain diagnosable from console-emitted evidence.
+- **Unresolved risk:** the release-asset API returned a transient HTTP 500 during E2E #290 attempt 1; one bounded rerun cleared it, but repeated transport failures must not be mistaken for product failures.
+
 ## Ordered continuation
 
 1. Open the v8.8.68 PR from this branch.
