@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.65",
+  "currentVersion": "8.8.66",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.65 selector source fix exact PR #562 head 236d3604f1df245f9c224eda3f21f2177979cfd2 passed Workflow Feature run 36963458484, Product Security run 36963458384, and Toolbox Ownership run 36963458431 and merged as c3f238cbe4f1850763736bac999af0577a4606c5; #556 remains open only for installed Windows/WPF visual acceptance.",
+  "immediateParentRevision": "v8.8.66 issue #558 provider-aware search candidate: explicit Search queries only configured providers advertising CatalogProviderCapabilities.Search; text-entry debounce remains cache-only. v8.8.65 PR #562 exact head 236d3604f1df245f9c224eda3f21f2177979cfd2 remains the last closed verification baseline. Initial v8.8.66 Workflow Feature run 36966116030 passed builds/tests but failed continuity preflight because this manifest still reported 8.8.65; this revision repairs that metadata mismatch.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/issues; obtain installed Windows/WPF acceptance for the integrated v8.8.65 selector fix and close #556 only if it passes; preserve HMAC/provider safety and recursively preserve the continuity constitution.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/issues; require all three exact-head gates for the v8.8.66 #558 provider-search candidate before merge; keep #558 open for broader pagination after this tranche; separately preserve #556 installed Windows/WPF acceptance and recursively preserve the continuity constitution.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
