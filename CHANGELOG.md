@@ -1,3 +1,11 @@
+# v8.8.78 — 2026-10-02
+
+- Canonicalize live generic same-root Monster Hunter: World profiles when authoritative discovery resolves the real `MonsterHunterWorld.exe`.
+- Refuse new Steam app 582010 registration when executable discovery resolves a launcher or other non-MHW executable.
+- Add deterministic canonical-repair, restart-idempotency, and no-mutation rejection regressions.
+- Advance the canonical v8.8.76 verification boundary to source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52` / hosted Windows run `37060606949` (26/26 PASS).
+- Restore synchronized assembly/release metadata after the concurrent v8.8.77 updater-runner repair and strengthen canonical handoff validation against self-integration instructions.
+
 # v8.8.77 — 2026-10-02
 
 - Route the updater installed-client E2E publication classifier from unavailable GitHub-hosted `ubuntu-latest` capacity to the known-good self-hosted Heaven Windows runner.
