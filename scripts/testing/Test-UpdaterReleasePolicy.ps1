@@ -22,6 +22,26 @@ Assert-Equal $false (Test-UpdaterReleaseRelevantPath '.verification/function-sta
 $current='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 $previous='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
+$publishedE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $true -MainRelation 'ahead'
+Assert-Equal $true $publishedE2E.RunE2E 'exact published source runs installed-client E2E'
+Assert-Equal 'exact-release-published' $publishedE2E.Reason 'exact published source reason'
+
+$supersededE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $false -MainRelation 'ahead'
+Assert-Equal $false $supersededE2E.RunE2E 'superseded non-publishing source skips installed-client E2E'
+Assert-Equal 'superseded-before-publication' $supersededE2E.Reason 'superseded non-publishing source reason'
+
+$missingCanonicalReleaseRejected=$false
+try{
+  [void](Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $current -ExactReleaseFound $false -MainRelation 'identical')
+}catch{$missingCanonicalReleaseRejected=$true}
+Assert-Equal $true $missingCanonicalReleaseRejected 'canonical source missing exact release fails closed'
+
+$divergedMissingReleaseRejected=$false
+try{
+  [void](Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $false -MainRelation 'diverged')
+}catch{$divergedMissingReleaseRejected=$true}
+Assert-Equal $true $divergedMissingReleaseRejected 'diverged source missing exact release fails closed'
+
 $staleUnknown=Get-UpdaterPublicationDecision -CurrentBuild 20 -CurrentSourceSha $current -RemoteMainSha $previous
 Assert-Equal $false $staleUnknown.Publish 'unclassified stale main publish'
 Assert-Equal 'stale-main-unclassified' $staleUnknown.Reason 'unclassified stale main reason'
@@ -294,5 +314,22 @@ Assert-Equal $true ($publicPublisherSource.Contains('Invoke-UpdaterDraftPublicat
 Assert-Equal $true ($publicPublisherSource.Contains('-RefreshMain')) 'public release post-upload main refresh'
 Assert-Equal $true ($publicPublisherSource.Contains('-EvaluateRefreshedMain')) 'public release post-upload drift evaluation'
 Assert-Equal $true ($publicPublisherSource.Contains('stale-main-unclassified-large-diff')) 'public release compare truncation fails closed'
+
+$installedE2EWorkflowPath=Join-Path $repoRoot '.github\workflows\updater-installed-client-e2e.yml'
+$installedE2EWorkflow=Get-Content -LiteralPath $installedE2EWorkflowPath -Raw
+Assert-Equal $true ($installedE2EWorkflow.Contains('classify-workflow-run:')) 'installed-client E2E upstream classifier job'
+Assert-Equal $true ($installedE2EWorkflow.Contains('runs-on: ubuntu-latest')) 'installed-client E2E classifier uses lightweight hosted runner'
+Assert-Equal $true ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?permissions:\s*contents:\s*read')) 'installed-client E2E classifier is read-only'
+Assert-Equal $true ($installedE2EWorkflow.Contains('Get-UpdaterInstalledClientE2EDecision')) 'installed-client E2E workflow calls shared classification policy'
+Assert-Equal $true ($installedE2EWorkflow.Contains('/git/ref/heads/main')) 'installed-client E2E classifier reads canonical main'
+Assert-Equal $true ($installedE2EWorkflow.Contains('/compare/$env:SOURCE_SHA...$remoteMain')) 'installed-client E2E classifier verifies canonical ancestry'
+Assert-Equal $true ($installedE2EWorkflow.Contains('needs: classify-workflow-run')) 'installed-client E2E heavy job depends on classifier'
+Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.outputs.run_e2e == 'true'")) 'installed-client E2E heavy job requires explicit eligibility'
+Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.result == 'success'")) 'installed-client E2E heavy job fails closed on classifier failure'
+$classifierIndex=$installedE2EWorkflow.IndexOf('classify-workflow-run:')
+$restoreIndex=$installedE2EWorkflow.IndexOf('Restore integration test project')
+if($classifierIndex -lt 0 -or $restoreIndex -lt 0 -or $classifierIndex -ge $restoreIndex){
+  throw 'Installed-client E2E eligibility classification must precede expensive restore/build work.'
+}
 
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
