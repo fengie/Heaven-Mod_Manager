@@ -1,3 +1,12 @@
+# v8.8.67 — 2026-10-02
+
+- Make explicit Browse Mods searches contact only configured providers that advertise `CatalogProviderCapabilities.Search`, then persist returned items through the existing catalog sync/cache boundary.
+- Keep text-entry debounce cache-only so typing does not generate repeated provider API traffic.
+- Preserve Nexus Mods and GameBanana's current no-full-text-search contracts instead of probing unsupported query modes; configured CurseForge can use its existing official paged search implementation.
+- Keep provider-search failures isolated and continue showing matching local cached rows when a searchable provider is unavailable.
+- Clarify cached-versus-provider search behavior in the Browse Mods UI.
+- Add integration regression coverage for capability gating and the cache-only debounce contract. Broader #558 pagination/browse expansion remains open.
+
 # v8.8.66 — 2026-10-02
 
 - Extend the real packaged updater E2E so it inspects the updated WPF application's UI Automation tree and verifies the closed header game selector renders the active profile's human-readable display name.
