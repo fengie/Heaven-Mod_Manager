@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.75",
+  "currentVersion": "8.8.76",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.74 is the integrated predecessor. v8.8.75 / issue #589 gives Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and deterministic regression coverage.",
+  "immediateParentRevision": "v8.8.75 is the last numbered product patch. Canonical main subsequently integrated #591 Heaven2 telemetry-channel removal, #354 runner/secret-leak policy hardening, and the #350 independently signed updater verification core. v8.8.76 completes issue #578 game-profile reconciliation semantics on top of that live security boundary.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification and release supply-chain rules; after #589 integration reconcile live ownership for PRs #582/#585/#586 and remaining #558/#559/#578 plus external #350/#354 prerequisites; propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve v8.8.76 single-owner game-profile reconciliation, exact-input verification, and the #591/#350/#354 security boundaries; treat old PR #582 as superseded after v8.8.76 integration; reconcile #281/PR #585 separately without Vortex credentials; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

@@ -1,3 +1,12 @@
+# v8.8.76 — 2026-10-02
+
+- Make installed-game discovery reconcile one authoritative in-memory profile set and atomically replace `games.json` once per scan.
+- Rebuild stale Monster Hunter: World profiles from the canonical MHW adapter shape while preserving the profile ID, display name, save path, and legitimate store selection.
+- Preserve every live same-root profile, remove only stale duplicate siblings, remap an active stale duplicate to a deterministic live/repaired owner, and heal stale active markers after interrupted writes or restart.
+- Add deterministic restart/idempotency, cleanup-only status, canonical-MHW repair, and multiple-same-root regression coverage for issue #578.
+- Remove the completed one-shot Heaven2 identity probe and permanently reject workflow serialization of arbitrary `Win32_Process.CommandLine` or unrestricted local heartbeat objects; synthetic credential canaries remain absent from complete Actions logs and artifacts (#591).
+- Carry forward the independently signed updater verification core (#350) and self-hosted runner/secret-leak policy gates (#354) now on canonical main; production signing-key/trust-anchor ceremony, real signed-release E2E, account-tier rulesets, and stable publisher certificate provisioning remain external prerequisites.
+
 # v8.8.75 — 2026-10-02
 
 - Give the Mod Library whole-mod enable checkbox an accessible name bound to the current mod `DisplayName`.

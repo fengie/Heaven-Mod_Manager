@@ -1,29 +1,38 @@
-# v8.8.75 Mod Library accessibility — canonical-ready handoff
+# v8.8.76 game-profile reconciliation — canonical-ready handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Integrated predecessor: v8.8.74 / PR #588
-Change set: issue #589 Mod Library toggle accessibility
+Integrated predecessor: v8.8.75 plus the later canonical #591/#354/#350 security hardening
+Change set: issue #578 stale/duplicate game-profile lifecycle
 
-## v8.8.75 behavior
+## v8.8.76 behavior
 
-- The Mod Library whole-mod enable checkbox exposes a UI Automation name bound to the current mod `DisplayName`.
-- Advanced component toggles expose UI Automation names bound to the current component `Label`.
-- Both controls remain native WPF `CheckBox` instances, preserving TogglePattern state and keyboard Space behavior.
-- Accessible names remain data-bound to the current item, so row/item recycling updates identity instead of retaining a previous item's name.
-- `XamlBindingSafetyTests.ModLibraryTogglesExposeTargetSpecificAutomationNames` guards both bindings.
+- `games.json` remains the single authoritative persisted game-profile registry.
+- One discovery scan reconciles an in-memory snapshot and atomically writes the complete registry once instead of durably mutating one profile at a time.
+- Stale generic Monster Hunter: World state is rebuilt from the canonical MHW adapter shape while preserving the existing profile ID, display name, save path, and legitimate store choice.
+- Live same-root profiles are preserved. Stale same-root siblings are removed deterministically so dead duplicate records do not survive discovery/restart cycles.
+- If reconciliation removes the active stale sibling, `active-game.txt` is mapped to a deterministic surviving/repaired owner. If interruption occurs between the registry and marker writes, `GetActive()` heals the stale marker on restart.
+- Repeated reconciliation is idempotent; cleanup-only scans are reported explicitly instead of claiming that nothing changed.
+
+## Security boundary inherited from canonical main
+
+- #591 removed the completed Heaven2 one-shot identity probe and added a repository security regression against arbitrary `Win32_Process.CommandLine` and unrestricted local-heartbeat logging.
+- #350 integrated the independently signed updater metadata verification core. Production public trust-anchor/key ceremony and a real signed-release E2E remain external completion requirements.
+- #354 restored machine-enforced self-hosted-runner and tracked secret/private-key policy gates. Account-tier repository rulesets and stable Authenticode publisher provisioning remain external requirements.
+- Do not weaken any of those boundaries while reconciling older feature work.
 
 ## Verification boundary
 
-v8.8.74 predecessor exact head `1db52ceace7cc373753b3bac34d7bdfb4e002f01` passed Workflow Feature `36995650793`, Updater Publication `36995650796`, Heaven Toolbox Ownership `36995650860`, and MHW Product Security `36995650986`.
+The last closed predecessor verification record in `CURRENT_REVISION.json` is not authorization for v8.8.76. Require fresh exact-head gates for the complete v8.8.76 tree, including version/continuity files, before integration. After merge, read back canonical `main`, verify issue #578 closure, and retire stale PR #582 rather than merging its stacked v8.8.72-era history.
 
-Those results do **not** authorize v8.8.75. Require fresh exact-head gates for the final accessibility candidate before integration, then read back canonical `main`.
+## Remaining work
 
-## Unresolved risks and coordination
-
-PRs #582, #585, and #586 predate this patch boundary and must reconcile against fresh canonical `main` before later integration. Issues #558/#559/#578, RECOVERY-005/RECOVERY-007, external production trust-anchor provisioning for #350, and account-tier ruleset/certificate constraints for #354 remain independent work.
+- RECOVERY-007 still needs representative installed Windows/runtime discovery proof even after #578 source/state lifecycle completion.
+- Issue #281 / PR #585 Vortex interoperability remains independent and must use an explicit credential-free handoff contract.
+- #350 and #354 retain the external production-signing/repository-tier/publisher-certificate prerequisites described above.
+- #558/#559 and RECOVERY-005 retain their existing independent scopes.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and release supply-chain rules. The successor **must propagate** this continuity obligation to the next agent after them. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, single-owner profile persistence, and release/security trust boundaries. Propagate this continuity obligation to the next agent after you. **Do not break the chain.**

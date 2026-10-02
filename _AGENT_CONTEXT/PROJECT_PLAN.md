@@ -39,7 +39,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
 | BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.72 explicit selection-state tranche | Add filters, sorting, provider health, and richer discovery states. |
 | CATALOG-UPDATES-569 | P1 | DONE | issue #569; PR #573; v8.8.71 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
-| RECOVERY-578 | P0 | READY | issue #578; follow-up to #571 / PR #572 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
+| RECOVERY-578 | P0 | DONE | issue #578; v8.8.76 | Recover canonical MHW identity, reconcile stale same-root duplicates atomically, preserve live profiles, and heal interrupted active-profile state. |
 | AUDIT-575 | P1 | DONE | issue #575; v8.8.72 | Prevent torn live-save snapshots with stable-copy verification, cleanup, and mutation/cancellation coverage. |
 | AUDIT-576 | P1 | DONE | issue #576; v8.8.72 | Reject stale queued release sources before the first updater publication mutation. |
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |

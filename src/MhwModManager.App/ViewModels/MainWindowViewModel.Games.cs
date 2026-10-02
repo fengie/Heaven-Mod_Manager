@@ -15,14 +15,31 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("games.discover","Scanning installed games","Checking Steam, Epic Games Store, GOG, and Xbox installations…",true,async ct=>
         {
-            var added=await Task.Run(()=>s.GameRegistry.DiscoverAndRegisterInstalledGames(),ct);
+            var result=await Task.Run(()=>s.GameRegistry.DiscoverAndRegisterInstalledGamesDetailed(),ct);
             await Application.Current.Dispatcher.InvokeAsync(()=>
             {
                 GamesPage.Refresh();
                 SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
             });
-            StatusText=added.Count==0?"No new games were found automatically. You can still choose Add Game and select the game executable yourself.":$"Added {added.Count} game(s). Select one and choose Use This Game.";
+            StatusText=FormatGameDiscoveryStatus(result.AddedCount,result.RepairedCount,result.RemovedStaleCount);
         });
+    }
+
+    private static string FormatGameDiscoveryStatus(int addedCount,int repairedCount,int removedStaleCount)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var baseline=(addedCount,repairedCount) switch
+        {
+            (0,0)=>"No new games were found automatically.",
+            (>0,0)=>$"Added {addedCount} game(s).",
+            (0,>0)=>$"Repaired {repairedCount} existing game profile(s).",
+            _=>$"Added {addedCount} game(s) and repaired {repairedCount} existing game profile(s)."
+        };
+        if(removedStaleCount>0)
+            baseline+=$" Reconciled {removedStaleCount} stale duplicate game profile(s).";
+        return addedCount==0&&repairedCount==0&&removedStaleCount==0
+            ? baseline+" You can still choose Add Game and select the game executable yourself."
+            : baseline+" Select one and choose Use This Game.";
     }
 
     [RelayCommand]

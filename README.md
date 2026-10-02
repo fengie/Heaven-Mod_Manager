@@ -1,10 +1,17 @@
-# v8.8.75 — MHW Manual Mod Manager
+# v8.8.76 — MHW Manual Mod Manager
 
-Current product version: **8.8.75**.
+Current product version: **8.8.76**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.76 — deterministic game-profile reconciliation
+
+- Make `games.json` the single authoritative discovery/reconciliation snapshot and persist one atomic registry update per scan instead of incremental per-profile writes.
+- Rebuild stale Monster Hunter: World records from the canonical MHW adapter shape, preserve legitimate live same-root profiles, and remove stale duplicate siblings deterministically.
+- Heal a stale `active-game.txt` marker after interrupted reconciliation/restart, and add restart/idempotency coverage plus explicit UI reporting for repaired/removed profiles.
+- Carry forward the post-8.8.75 security hardening already integrated on canonical main: #591 removes the one-shot Heaven2 command-line/heartbeat leak channel; #350 adds independent signed-updater verification core; #354 restores runner/secret-leak policy gates. Production trust-anchor ceremony, repository-tier rulesets, and stable publisher certificate provisioning remain external prerequisites.
 
 ## v8.8.75 — Mod Library accessibility labels
 
@@ -20,14 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Treat a missing exact release as an intentional clean skip only when canonical `main` is proven to be a descendant of that source; canonical or divergent missing-release states fail closed.
 - Keep the existing exact-release resolution inside the Windows E2E as defense in depth after eligibility has been established.
 - Add regression coverage for published, superseded, canonical-missing, divergent, least-privilege classifier, and heavy-job gating behavior.
-
-## v8.8.73 — release build provenance hardening
-
-- Bind the exact updater ZIP name and SHA-256 from `update-manifest.json` to a GitHub SLSA build-provenance attestation before either updater feed is published.
-- Recompute the built ZIP digest before attestation and verify the resulting attestation against `fengie/mhw-mods` with the pinned GitHub CLI before publication.
-- Pin `actions/attest` to its exact v4.2.2 commit and grant only the OIDC/attestation permissions required by the release workflow.
-- Treat private-repository entitlement explicitly: public repos attest automatically; private repos require GitHub Enterprise Cloud plus `MHW_ENABLE_GITHUB_ATTESTATIONS=true`, otherwise the release records an explicit skip rather than claiming provenance.
-- Extend updater publication policy regressions so provenance ordering, action pinning, permissions, exact subject identity, tier gating, and fail-closed digest verification cannot silently regress.
 
 ## Current plans & progress
 
@@ -46,7 +45,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
-- [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.
+- [ ] **RECOVERY-007 / P0** — v8.8.76 completes issue #578 source/state lifecycle hardening (canonical-MHW repair, stale same-root reconciliation, atomic persistence, restart/idempotency recovery); representative installed Windows/runtime discovery proof remains before the broader recovery item is DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
 - [ ] **RECOVERY-005 / P1** — v8.8.58 dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
 
