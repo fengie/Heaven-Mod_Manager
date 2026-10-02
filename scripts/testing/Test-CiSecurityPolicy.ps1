@@ -53,7 +53,7 @@ Authorization: Bearer $($telemetryCanaries[3])
 https://user:$($telemetryCanaries[4])@example.invalid/
 --future-secret-option $($telemetryCanaries[5])
 "@
-if((Get-UnsafeWorkflowTelemetryViolations -Text $unsafeProcessFixture -DisplayName 'synthetic-process-fixture').Count -eq 0){
+if(@(Get-UnsafeWorkflowTelemetryViolations -Text $unsafeProcessFixture -DisplayName 'synthetic-process-fixture').Count -eq 0){
     $errors.Add('CI telemetry regression: Win32_Process.CommandLine fixture was not rejected.')
 }
 
@@ -63,7 +63,7 @@ $unsafeHeartbeatFixture=@"
 `$local | Add-Member -NotePropertyName FutureSecret -NotePropertyValue '$($telemetryCanaries[6])'
 Write-Host ("LOCAL_HEARTBEAT=" + (`$local | ConvertTo-Json -Compress -Depth 5))
 "@
-if((Get-UnsafeWorkflowTelemetryViolations -Text $unsafeHeartbeatFixture -DisplayName 'synthetic-heartbeat-fixture').Count -eq 0){
+if(@(Get-UnsafeWorkflowTelemetryViolations -Text $unsafeHeartbeatFixture -DisplayName 'synthetic-heartbeat-fixture').Count -eq 0){
     $errors.Add('CI telemetry regression: unrestricted local heartbeat fixture was not rejected.')
 }
 
