@@ -111,22 +111,64 @@ public sealed partial class GameProfileRegistry
             .Where(x=>!string.IsNullOrWhiteSpace(x.Root))
             .DistinctBy(x=>Path.GetFullPath(x.Root),StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var existing=Load();
+        var existing=Load().ToList();
         var added=new List<GameProfile>();
         foreach(var item in candidateList)
         {
             try
             {
                 var candidateRoot=Path.GetFullPath(item.Root);
-                if(existing.Any(x=>Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase)))continue;
+                var sameRoot=existing.FirstOrDefault(x=>
+                    Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase));
+                if(sameRoot is not null&&File.Exists(sameRoot.ExecutablePath))continue;
+
                 var exe=item.Executable;
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))exe=FindLikelyExecutable(candidateRoot,item.Name);
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))continue;
+
+                var fullExecutable=Path.GetFullPath(exe);
+                var executableRelative=GameProfile.NormalizeRelative(
+                    Path.GetRelativePath(candidateRoot,fullExecutable).Replace('/','\\'),
+                    false);
+
+                if(sameRoot is not null)
+                {
+                    var isMonsterHunterWorld=
+                        sameRoot.IsMonsterHunterWorld
+                        || string.Equals(sameRoot.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase);
+                    if(isMonsterHunterWorld
+                        && !Path.GetFileName(fullExecutable).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
+                    {
+                        MasterDebugLog.Write(
+                            "GAME-DISCOVERY",
+                            $"Refused to auto-repair MHW profile '{sameRoot.Id}' with non-MHW executable '{fullExecutable}'.");
+                        continue;
+                    }
+
+                    var repaired=sameRoot with
+                    {
+                        GameRoot=candidateRoot,
+                        ExecutableRelativePath=executableRelative,
+                        ProcessName=Path.GetFileNameWithoutExtension(fullExecutable),
+                        SteamAppId=string.IsNullOrWhiteSpace(sameRoot.SteamAppId)?item.SteamAppId:sameRoot.SteamAppId,
+                        Store=string.IsNullOrWhiteSpace(sameRoot.Store)?item.Store:sameRoot.Store
+                    };
+                    Upsert(repaired);
+                    var existingIndex=existing.FindIndex(x=>x.Id.Equals(repaired.Id,StringComparison.OrdinalIgnoreCase));
+                    if(existingIndex>=0)existing[existingIndex]=repaired;
+                    added.Add(repaired);
+                    MasterDebugLog.Write(
+                        "GAME-DISCOVERY",
+                        $"Repaired stale discovered profile id={repaired.Id}; root={repaired.GameRoot}; exe={repaired.ExecutableRelativePath}");
+                    continue;
+                }
+
                 GameProfile profile;
-                if(string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)||Path.GetFileName(exe).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
+                if(string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)||Path.GetFileName(fullExecutable).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
                     profile=GameProfile.MonsterHunterWorld(candidateRoot);
-                else profile=CreateFromDiscoveredGame(item with{Root=candidateRoot},exe);
-                Upsert(profile);added.Add(profile);
+                else profile=CreateFromDiscoveredGame(item with{Root=candidateRoot},fullExecutable);
+                Upsert(profile);existing.Add(profile);added.Add(profile);
             }
             catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or JsonException or System.Security.SecurityException)
             { MasterDebugLog.Write("GAME-DISCOVERY",$"Skipped discovered game '{item.Name}' at '{item.Root}'.",ex); }

@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.69</Version>
-    <InformationalVersion>8.8.69-provider-aware-catalog-search</InformationalVersion>
+    <Version>8.8.70</Version>
+    <InformationalVersion>8.8.70-stale-profile-rediscovery</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

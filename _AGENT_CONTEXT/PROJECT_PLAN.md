@@ -36,7 +36,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
-| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 candidate | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
@@ -56,7 +56,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
 
-**Owner:** #556 completed via PR #567 / v8.8.68; #558 v8.8.69 provider-search/capacity reconciliation is active on PR #565; #559 remains ready. Both must preserve the closed selector boundary.
+**Owner:** #556 completed via PR #567 / v8.8.68; #558 v8.8.69 provider-search/capacity tranche integrated via PR #565; #559 remains ready. Both must preserve the closed selector boundary.
 **Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`; #567 at merge `7def58c1b16d115e1555738ebad51717d1c1f752`
 **Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
 
@@ -80,11 +80,11 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Exact head `3ced8b41041909d91b06902631ef36085bfd7489` passed all required PR #561 gates and integrated #556/#557 as `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`.
 - [x] v8.8.69 candidate: explicit Search queries only providers advertising `CatalogProviderCapabilities.Search`; text-entry debounce remains local-cache-only.
 - [x] v8.8.69 candidate: raise the repository search clamp from 500 to 1000 to match the virtualized UI capacity, with a deterministic >500-row regression.
-- [ ] Verify and integrate PR #565 on exact-head required gates.
+- [x] PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then squash-merged as `7ee321a349098849b9e4db302b20dfa1595ca13b`.
 - [ ] Continue #558 with broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** verify and integrate PR #565 v8.8.69 on one exact green head, then keep #558 open for broader pagination/scale work while preserving completed #556 acceptance.
+**Next action:** continue #558 with broader provider-aware pagination/scale work while preserving integrated v8.8.69 behavior; #559 remains a separate UX tranche.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
@@ -174,15 +174,19 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-007 — Installed-game discovery
 
-**Owner:** ChatGPT recovery lane on `fix/installed-game-discovery-v8.8.56-20260930`
+**Owner:** v8.8.70 issue #571 / PR #572 stale-profile lifecycle follow-up; original RECOVERY-007 discovery source is integrated
 **Acceptance:** installed-game discovery works beyond MHW, stays off the UI thread, serializes registry mutation safely, avoids false executable filtering, and has lifecycle/regression coverage.
 
 - [x] Preserve exact archived source tip.
 - [x] Reproduce current-main multi-game discovery behavior.
 - [x] Port current-compatible discovery/lifecycle changes and tests.
-- [ ] Verify on Windows against representative installed games and integrate.
+- [x] Integrate the original universal installed-game discovery source/lifecycle changes on canonical main.
+- [x] v8.8.70 candidate repairs stale same-root profiles with missing executables while preserving ID/active selection and filling missing discovery metadata.
+- [x] v8.8.70 candidate hardens MHW repair identity using persisted MHW state or Steam app 582010 and adds deterministic regressions.
+- [ ] Pass PR #572 exact-head required gates and integrate issue #571.
+- [ ] Verify on Windows against representative installed games before marking RECOVERY-007 DONE.
 
-**Next action:** run exact-head focused/required gates on the v8.8.56 candidate, reconcile fresh `main`, then integrate and perform Windows installed-game/runtime proof before marking DONE.
+**Next action:** verify/integrate v8.8.70 PR #572 exact-head, then perform representative installed-game Windows/runtime proof before marking RECOVERY-007 DONE.
 
 
 ## Cleanup disposition contract
