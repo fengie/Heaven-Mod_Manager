@@ -547,7 +547,19 @@ public sealed partial class MainWindowViewModel
                     s.Paths.Game,
                     selected.Mod.ProviderModId,
                     ct);
-                CatalogFiles.ReplaceAll(files.Select(file => new CatalogFileRow(file)));
+
+                var repository = catalogRepository
+                    ?? throw new InvalidOperationException("Catalog repository is unavailable.");
+                var cached = await repository.GetAsync(selected.Mod.CanonicalId, ct)
+                    ?? throw new InvalidOperationException("Selected catalog item is no longer present in the local cache.");
+                var hydratedMod = selected.Mod with { Files = files };
+                await repository.UpsertAsync(cached with { Mod = hydratedMod }, ct);
+
+                var hydratedRow = selected with { Mod = hydratedMod };
+                var rowIndex = CatalogItems.IndexOf(selected);
+                if (rowIndex >= 0)
+                    CatalogItems[rowIndex] = hydratedRow;
+                SelectedCatalogItem = hydratedRow;
                 SelectedCatalogFile = CatalogFiles.FirstOrDefault();
                 CatalogStatusText = files.Count == 0
                     ? "This provider did not expose installable files for the selected mod."
