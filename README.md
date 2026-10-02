@@ -1,10 +1,18 @@
-# v8.8.71 — MHW Manual Mod Manager
+# v8.8.72 — MHW Manual Mod Manager
 
-Current product version: **8.8.71**.
+Current product version: **8.8.72**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.72 — audit reliability hardening
+
+- Make save snapshots fail closed against concurrent game/Steam writes: source and copied payload must agree across stable SHA-256 observations before a snapshot can be indexed as successful.
+- Add bounded retry and cleanup behavior plus deterministic concurrent-mutation and cancellation regressions for save backup capture.
+- Re-read canonical `main` immediately before the first updater publication mutation and skip public/private publication when a queued release run is stale.
+- Make active continuity state canonical-ready by construction: `CURRENT_REVISION.json` must declare `integrationState=canonical-main`, use `workingBranch=main`, and cannot ship candidate status/source state.
+- Add negative governance fixtures that reject the stale continuity forms responsible for #577.
 
 ## v8.8.71 — installed-origin provider snapshot deduplication
 
@@ -21,19 +29,12 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Treat either persisted MHW identity or Steam app `582010` discovery identity as MHW for repair safety, refusing a replacement executable unless it is `MonsterHunterWorld.exe`.
 - Cover the direct and inferred-executable repair paths plus MHW safety regressions deterministically.
 
-## v8.8.69 — provider-aware Browse Mods search
-
-- Keep ordinary Browse Mods typing local to the SQLite/FTS cache; only the explicit **Search** action may contact remote providers.
-- Query only configured providers that advertise `CatalogProviderCapabilities.Search`, persist returned rows through `CatalogSyncService`, and isolate per-provider failures so cached matches remain usable.
-- Preserve providers' declared capability contracts instead of probing unsupported full-catalog text-search modes.
-- Make the advertised 1000-row virtualized Browse Mods capacity real by raising the storage search clamp from 500 to 1000, with a deterministic regression proving results can exceed 500.
-- Preserve the completed v8.8.68 selector/updater acceptance boundary; issue #556 remains closed.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
+- [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
