@@ -8,6 +8,8 @@ namespace MhwModManager.AutomationTests;
 
 public sealed class VortexInteropServiceTests : IDisposable
 {
+    private static readonly JsonSerializerOptions WebJsonOptions = new(JsonSerializerDefaults.Web);
+
     private readonly string root = Path.Combine(
         Path.GetTempPath(),
         "MhwVortexInteropTests-" + Guid.NewGuid().ToString("N"));
@@ -151,8 +153,7 @@ public sealed class VortexInteropServiceTests : IDisposable
                     true,
                     1)
             ]);
-        var webJson = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-        var validJson = JsonSerializer.Serialize(handoff, webJson);
+        var validJson = JsonSerializer.Serialize(handoff, WebJsonOptions);
         var credentialJson = validJson.Replace(
             "\"priority\":1",
             "\"priority\":1,\"sourceUrl\":\"https://example.invalid/mod?token=CANARY_VORTEX_IMPORT\"",
