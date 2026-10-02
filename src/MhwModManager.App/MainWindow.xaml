@@ -44,7 +44,7 @@
                 <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0D151F" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" Padding="10,7">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
-                        <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" AutomationProperties.Name="Active game" AutomationProperties.AutomationId="ActiveGameSelector" ToolTip="{Binding SelectedGame.DisplayName}">
+                        <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" TextSearch.TextPath="DisplayName" AutomationProperties.Name="Active game" AutomationProperties.AutomationId="ActiveGameSelector" AutomationProperties.ItemStatus="{Binding SelectedGame.DisplayName}" ToolTip="{Binding SelectedGame.DisplayName}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" AutomationProperties.AutomationId="ActiveGameDisplayName" AutomationProperties.Name="{Binding DisplayName}"/>
