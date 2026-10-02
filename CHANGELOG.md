@@ -1,3 +1,10 @@
+# v8.8.78 — 2026-10-02
+
+- Give Mod Library preview/gallery images and compact thumbnails contextual UI Automation names tied to the current mod, without using raw local cache paths as descriptions.
+- Give each Needs attention **Clear mark** button a target-specific accessible name while preserving the existing command target and file-safe behavior.
+- Replace the stale v8.5.0 safe-upgrade instructions with version-neutral current-release guidance that preserves `Mods` and `State`.
+- Add deterministic regressions for the image/action accessibility bindings and upgrade documentation contract.
+
 # v8.8.77 — 2026-10-02
 
 - Route the updater installed-client E2E publication classifier from unavailable GitHub-hosted `ubuntu-latest` capacity to the known-good self-hosted Heaven Windows runner.
