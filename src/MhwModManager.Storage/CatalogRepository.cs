@@ -5,6 +5,12 @@ using MhwModManager.Core;
 
 namespace MhwModManager.Storage;
 
+public enum CatalogFileSetCompleteness
+{
+    PartialOrUnknown = 0,
+    Authoritative = 1
+}
+
 public sealed class CatalogRepository(ManagerDatabase db)
 {
     private const int MaxSearchResults = 1000;
@@ -73,10 +79,18 @@ public sealed class CatalogRepository(ManagerDatabase db)
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    public async Task UpsertAsync(CachedCatalogMod cached, CancellationToken ct = default)
+    public Task UpsertAsync(CachedCatalogMod cached, CancellationToken ct = default) =>
+        UpsertAsync(cached, CatalogFileSetCompleteness.Authoritative, ct);
+
+    public async Task UpsertAsync(
+        CachedCatalogMod cached,
+        CatalogFileSetCompleteness fileSetCompleteness,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(cached);
+        if (!Enum.IsDefined(fileSetCompleteness))
+            throw new ArgumentOutOfRangeException(nameof(fileSetCompleteness));
         ValidateCachedMod(cached);
 
         await using var c = await db.OpenAsync(ct);
@@ -84,7 +98,8 @@ public sealed class CatalogRepository(ManagerDatabase db)
 
         await EnsureSourceExistsAsync(c, tx, cached.Mod.ProviderId, ct);
         await UpsertItemAsync(c, tx, cached, ct);
-        await ReplaceFilesAsync(c, tx, cached.Mod, ct);
+        if (fileSetCompleteness == CatalogFileSetCompleteness.Authoritative)
+            await ReplaceFilesAsync(c, tx, cached.Mod, ct);
         await UpsertProvenanceAsync(c, tx, cached, ct);
         await ReindexAsync(c, tx, cached.Mod, ct);
 
