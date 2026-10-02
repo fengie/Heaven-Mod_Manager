@@ -8,6 +8,7 @@ namespace MhwModManager.Storage;
 public sealed class CatalogRepository(ManagerDatabase db)
 {
     private const int MaxSearchResults = 1000;
+    private const int FileHydrationBatchSize = 400;
     private const string ItemColumns = """
         i.canonical_id,i.provider_id,i.provider_mod_id,i.game_id,i.name,i.summary,i.description,i.author,
         i.version,i.category,i.tags_json,i.screenshots_json,i.thumbnail,i.created_at,i.updated_at,
@@ -166,11 +167,19 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$limit", boundedLimit);
 
         var rows = await ReadRowsAsync(cmd, ct);
+        var filesByCanonicalId = await LoadFilesBatchAsync(
+            c,
+            rows.Select(row => row.CanonicalId).ToArray(),
+            ct);
+
         var result = new List<CachedCatalogMod>(rows.Count);
         foreach (var row in rows)
         {
             ct.ThrowIfCancellationRequested();
-            result.Add(await MaterializeAsync(c, row, ct));
+            var files = filesByCanonicalId.TryGetValue(row.CanonicalId, out var hydratedFiles)
+                ? hydratedFiles
+                : Array.Empty<CatalogModFile>();
+            result.Add(Materialize(row, files));
         }
         return result;
     }
@@ -646,6 +655,14 @@ public sealed class CatalogRepository(ManagerDatabase db)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var files = await LoadFilesAsync(c, row.CanonicalId, ct);
+        return Materialize(row, files);
+    }
+
+    private static CachedCatalogMod Materialize(
+        StoredItem row,
+        IReadOnlyList<CatalogModFile> files)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mod = new CatalogMod(
             row.CanonicalId,
             row.ProviderId,
@@ -697,28 +714,84 @@ public sealed class CatalogRepository(ManagerDatabase db)
         cmd.Parameters.AddWithValue("$canonical", canonicalId);
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
-        {
-            var categoryText = reader.GetString(5);
-            var category = Enum.TryParse<CatalogFileCategory>(categoryText, true, out var parsed)
-                ? parsed
-                : CatalogFileCategory.Unknown;
-            files.Add(new CatalogModFile(
-                reader.GetString(0),
-                reader.GetString(1),
-                reader.GetString(2),
-                reader.GetString(3),
-                reader.GetString(4),
-                category,
-                reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.IsDBNull(7) ? null : reader.GetInt64(7),
-                reader.IsDBNull(8) ? null : reader.GetString(8),
-                reader.IsDBNull(9) ? null : ParseDate(reader.GetString(9)),
-                reader.GetInt64(10) != 0,
-                reader.GetInt64(11) != 0,
-                Deserialize<IReadOnlyList<CatalogDependency>>(reader.GetString(12)),
-                ProviderMetadata: null));
-        }
+            files.Add(ReadCatalogModFile(reader, columnOffset: 0));
+
         return files;
+    }
+
+    private static async Task<IReadOnlyDictionary<string, IReadOnlyList<CatalogModFile>>> LoadFilesBatchAsync(
+        SqliteConnection c,
+        IReadOnlyList<string> canonicalIds,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var distinctIds = canonicalIds
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (distinctIds.Length == 0)
+            return new Dictionary<string, IReadOnlyList<CatalogModFile>>(StringComparer.Ordinal);
+
+        var filesByCanonicalId = new Dictionary<string, List<CatalogModFile>>(StringComparer.Ordinal);
+        foreach (var batch in distinctIds.Chunk(FileHydrationBatchSize))
+        {
+            ct.ThrowIfCancellationRequested();
+            await using var cmd = c.CreateCommand();
+            var parameterNames = new string[batch.Length];
+            for (var i = 0; i < batch.Length; i++)
+            {
+                parameterNames[i] = $"$canonical{i}";
+                cmd.Parameters.AddWithValue(parameterNames[i], batch[i]);
+            }
+
+            cmd.CommandText = $"""
+                SELECT canonical_id,provider_id,provider_mod_id,provider_file_id,name,file_name,category,version,size_bytes,
+                       description,uploaded_at,required,recommended,dependencies_json
+                FROM catalog_files
+                WHERE canonical_id IN ({string.Join(",", parameterNames)})
+                ORDER BY canonical_id,rowid
+                """;
+
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                var canonicalId = reader.GetString(0);
+                if (!filesByCanonicalId.TryGetValue(canonicalId, out var files))
+                {
+                    files = [];
+                    filesByCanonicalId.Add(canonicalId, files);
+                }
+                files.Add(ReadCatalogModFile(reader, columnOffset: 1));
+            }
+        }
+
+        return filesByCanonicalId.ToDictionary(
+            pair => pair.Key,
+            pair => (IReadOnlyList<CatalogModFile>)pair.Value,
+            StringComparer.Ordinal);
+    }
+
+    private static CatalogModFile ReadCatalogModFile(SqliteDataReader reader, int columnOffset)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var categoryText = reader.GetString(columnOffset + 5);
+        var category = Enum.TryParse<CatalogFileCategory>(categoryText, true, out var parsed)
+            ? parsed
+            : CatalogFileCategory.Unknown;
+        return new CatalogModFile(
+            reader.GetString(columnOffset),
+            reader.GetString(columnOffset + 1),
+            reader.GetString(columnOffset + 2),
+            reader.GetString(columnOffset + 3),
+            reader.GetString(columnOffset + 4),
+            category,
+            reader.IsDBNull(columnOffset + 6) ? null : reader.GetString(columnOffset + 6),
+            reader.IsDBNull(columnOffset + 7) ? null : reader.GetInt64(columnOffset + 7),
+            reader.IsDBNull(columnOffset + 8) ? null : reader.GetString(columnOffset + 8),
+            reader.IsDBNull(columnOffset + 9) ? null : ParseDate(reader.GetString(columnOffset + 9)),
+            reader.GetInt64(columnOffset + 10) != 0,
+            reader.GetInt64(columnOffset + 11) != 0,
+            Deserialize<IReadOnlyList<CatalogDependency>>(reader.GetString(columnOffset + 12)),
+            ProviderMetadata: null);
     }
 
     private static string? BuildFtsQuery(string? query)
