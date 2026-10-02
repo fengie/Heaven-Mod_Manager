@@ -147,6 +147,194 @@ public sealed class MultiGameTests : IDisposable
     }
 
     [Fact]
+    public void Discovery_rebuilds_stale_generic_MHW_profile_from_canonical_adapter_shape()
+    {
+        var game=Path.Combine(root,"mhw-canonical-repair");Directory.CreateDirectory(game);
+        var exe=Path.Combine(game,"MonsterHunterWorld.exe");File.WriteAllBytes(exe,[0x4d,0x5a]);
+
+        var registry=new GameProfileRegistry(Path.Combine(root,"mhw-canonical-repair-state"),()=>
+        [
+            new GameDiscoveryCandidate("Monster Hunter: World",game,exe,"Steam","582010")
+        ]);
+        var stale=GameProfile.Generic("legacy-mhw","My Monster Hunter",game,"Missing.exe","Mods",store:"Manual") with
+        {
+            SavePath="user-save-location"
+        };
+        registry.Upsert(stale);
+
+        var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
+
+        Assert.Empty(result.Added);
+        var repaired=Assert.Single(result.Repaired);
+        Assert.Equal(stale.Id,repaired.Id);
+        Assert.Equal(stale.DisplayName,repaired.DisplayName);
+        Assert.Equal(stale.SavePath,repaired.SavePath);
+        Assert.Equal("Manual",repaired.Store);
+        Assert.True(repaired.IsMonsterHunterWorld);
+        Assert.Equal(GameSupportTier.AdapterEnhanced,repaired.SupportTier);
+        Assert.Equal("mhw",repaired.AdapterId);
+        Assert.Equal("MonsterHunterWorld.exe",repaired.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("MonsterHunterWorld",repaired.ProcessName);
+        Assert.Equal("nativePC",repaired.ModRootRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("monsterhunterworld",repaired.NexusGameDomain);
+        Assert.Equal("582010",repaired.SteamAppId);
+        Assert.Equal(9081,repaired.GameBananaGameId);
+        Assert.True(repaired.SupportsSemanticCoverage);
+
+        var persisted=Assert.Single(registry.Load());
+        Assert.Equal(repaired,persisted);
+    }
+
+    [Fact]
+    public void Discovery_checks_all_same_root_profiles_before_repairing_a_stale_sibling()
+    {
+        var game=Path.Combine(root,"same-root-set");Directory.CreateDirectory(game);
+        var liveExe=Path.Combine(game,"Live.exe");File.WriteAllBytes(liveExe,[0x4d,0x5a]);
+        var replacementExe=Path.Combine(game,"Replacement.exe");File.WriteAllBytes(replacementExe,[0x4d,0x5a,0x01]);
+
+        var registry=new GameProfileRegistry(Path.Combine(root,"same-root-set-state"),()=>
+        [
+            new GameDiscoveryCandidate("Same Root Game",game,replacementExe,"Steam","333333")
+        ]);
+        var stale=GameProfile.Generic("a-stale","A stale profile",game,"Missing.exe","");
+        var live=GameProfile.Generic("z-live","Z live profile",game,"Live.exe","");
+        registry.Upsert(stale);
+        registry.Upsert(live);
+        registry.SetActive(stale.Id);
+
+        var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
+
+        Assert.Empty(result.Added);
+        var reconciled=Assert.Single(result.Repaired);
+        Assert.Equal(live.Id,reconciled.Id);
+        var persisted=Assert.Single(registry.Load());
+        Assert.Equal(live.Id,persisted.Id);
+        Assert.Equal("Live.exe",persisted.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(live.Id,registry.GetActive()!.Id);
+    }
+
+    [Fact]
+    public void Discovery_leaves_registry_unchanged_when_active_duplicate_cannot_be_repointed()
+    {
+        var game=Path.Combine(root,"same-root-repoint-failure");Directory.CreateDirectory(game);
+        var liveExe=Path.Combine(game,"Live.exe");File.WriteAllBytes(liveExe,[0x4d,0x5a]);
+
+        var stateRoot=Path.Combine(root,"same-root-repoint-failure-state");
+        var registry=new GameProfileRegistry(stateRoot,()=>
+        [
+            new GameDiscoveryCandidate("Same Root Game",game,liveExe,"Steam","333333")
+        ]);
+        var stale=GameProfile.Generic("a-stale-locked","A stale locked",game,"Missing.exe","");
+        var live=GameProfile.Generic("z-live-owner","Z live owner",game,"Live.exe","");
+        registry.Upsert(stale);
+        registry.Upsert(live);
+        registry.SetActive(stale.Id);
+
+        var activePath=Path.Combine(stateRoot,"active-game.txt");
+        using(var locked=new FileStream(activePath,FileMode.Open,FileAccess.ReadWrite,FileShare.None))
+        {
+            var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
+            Assert.False(result.HasChanges);
+            Assert.Empty(result.Added);
+            Assert.Empty(result.Repaired);
+            var persisted=registry.Load();
+            Assert.Equal(2,persisted.Count);
+            Assert.Contains(persisted,x=>x.Id==stale.Id);
+            Assert.Contains(persisted,x=>x.Id==live.Id);
+        }
+
+        var retry=registry.DiscoverAndRegisterInstalledGamesDetailed();
+        Assert.Single(retry.Repaired);
+        var final=Assert.Single(registry.Load());
+        Assert.Equal(live.Id,final.Id);
+        Assert.Equal(live.Id,registry.GetActive()!.Id);
+    }
+
+    [Fact]
+    public void Discovery_prefers_stale_MHW_identity_when_all_same_root_profiles_need_repair()
+    {
+        var game=Path.Combine(root,"same-root-stale-mhw");Directory.CreateDirectory(game);
+        var exe=Path.Combine(game,"MonsterHunterWorld.exe");File.WriteAllBytes(exe,[0x4d,0x5a]);
+
+        var registry=new GameProfileRegistry(Path.Combine(root,"same-root-stale-mhw-state"),()=>
+        [
+            new GameDiscoveryCandidate("Monster Hunter: World",game,exe,"Steam","582010")
+        ]);
+        var generic=GameProfile.Generic("a-generic","A generic stale",game,"MissingGeneric.exe","");
+        var mhw=GameProfile.MonsterHunterWorld(game) with
+        {
+            Id="z-mhw",
+            DisplayName="Z canonical stale",
+            ExecutableRelativePath="MissingMhw.exe",
+            ProcessName="MissingMhw"
+        };
+        registry.Upsert(generic);
+        registry.Upsert(mhw);
+
+        var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
+
+        var repaired=Assert.Single(result.Repaired);
+        Assert.Equal(mhw.Id,repaired.Id);
+        Assert.True(repaired.IsMonsterHunterWorld);
+        Assert.Equal("MonsterHunterWorld.exe",repaired.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        var persisted=Assert.Single(registry.Load());
+        Assert.Equal(mhw.Id,persisted.Id);
+        Assert.True(persisted.IsMonsterHunterWorld);
+        Assert.DoesNotContain(registry.Load(),x=>x.Id==generic.Id);
+    }
+
+    [Fact]
+    public void Manual_game_scan_status_distinguishes_added_repaired_mixed_and_zero_change_results()
+    {
+        var formatter=typeof(MainWindowViewModel).GetMethod(
+            "FormatGameDiscoveryStatus",
+            System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static);
+        Assert.NotNull(formatter);
+
+        string Format(int added,int repaired)=>(string)formatter!.Invoke(null,[added,repaired])!;
+
+        Assert.Equal(
+            "No new games were found automatically. You can still choose Add Game and select the game executable yourself.",
+            Format(0,0));
+        Assert.Equal("Added 2 game(s). Select one and choose Use This Game.",Format(2,0));
+        Assert.Equal("Repaired 1 existing game profile(s). Select one and choose Use This Game.",Format(0,1));
+        Assert.Equal("Added 2 game(s) and repaired 1 existing game profile(s). Select one and choose Use This Game.",Format(2,1));
+    }
+
+    [Fact]
+    public void Discovery_repair_is_idempotent_after_persisted_restart()
+    {
+        var game=Path.Combine(root,"repair-idempotent");Directory.CreateDirectory(game);
+        var exe=Path.Combine(game,"MonsterHunterWorld.exe");File.WriteAllBytes(exe,[0x4d,0x5a]);
+        var stateRoot=Path.Combine(root,"repair-idempotent-state");
+        GameDiscoveryCandidate[] Candidates() =>
+        [
+            new GameDiscoveryCandidate("Monster Hunter: World",game,exe,"Steam","582010")
+        ];
+
+        var firstRegistry=new GameProfileRegistry(stateRoot,Candidates);
+        var stale=GameProfile.Generic("legacy-id","Legacy",game,"Missing.exe","Mods");
+        firstRegistry.Upsert(stale);
+
+        var first=firstRegistry.DiscoverAndRegisterInstalledGamesDetailed();
+        Assert.Empty(first.Added);
+        var repaired=Assert.Single(first.Repaired);
+        Assert.Equal(stale.Id,repaired.Id);
+        Assert.True(repaired.IsMonsterHunterWorld);
+
+        var restartedRegistry=new GameProfileRegistry(stateRoot,Candidates);
+        var second=restartedRegistry.DiscoverAndRegisterInstalledGamesDetailed();
+
+        Assert.False(second.HasChanges);
+        Assert.Empty(second.Added);
+        Assert.Empty(second.Repaired);
+        var persisted=Assert.Single(restartedRegistry.Load());
+        Assert.Equal(stale.Id,persisted.Id);
+        Assert.True(persisted.IsMonsterHunterWorld);
+        Assert.Equal("MonsterHunterWorld.exe",persisted.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Steam_discovery_reads_every_manifest_across_configured_libraries()
     {
         var steam=Path.Combine(root,"Steam");
