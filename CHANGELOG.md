@@ -1,10 +1,18 @@
+# v8.8.69 — 2026-10-02
+
+- Add explicit remote Browse Mods search that contacts only configured providers advertising `CatalogProviderCapabilities.Search`; per-keystroke filtering remains local to SQLite/FTS.
+- Persist provider-search results through the existing source-aware catalog sync/cache path, isolate individual provider failures, and explain cache-only behavior when no configured provider supports search.
+- Raise the catalog repository's hard search ceiling from 500 to 1,000 so the existing virtualized Browse Mods window can actually surface rows 501–1000.
+- Add focused XAML/source coverage plus a behavioral 600-row catalog regression proving the storage layer no longer truncates the UI's requested result window.
+- Preserve v8.8.68's verified `ActiveGameSelector` peer-level DisplayName, Switch/Settings, update, and rollback acceptance while reconciling the useful semantics from stale PR #565.
+
 # v8.8.68 — 2026-10-02
 
 - Expose the active game's selected `DisplayName` directly on the header ComboBox automation peer with `AutomationProperties.ItemStatus`, preserving the stable `Active game` accessibility name.
 - Add `TextSearch.TextPath="DisplayName"` so the selector has a control-level human-readable text fallback in addition to the existing `DisplayName` data template.
 - Change packaged selector acceptance to validate the visible/bounded ComboBox peer value because installed v8.8.67 E2E #290 proved the closed WPF ComboBox exposes zero raw UI Automation descendants.
 - Preserve strict failure behavior for missing/raw `GameProfile { ... }` selected values plus enabled Switch/Settings checks, and retain the structural XAML guard for the visual selected-content template.
-- Record updater-main-381 as a successful immutable v8.8.67 publication; #556 remains open because its second installed-client E2E attempt failed at selector acceptance after the first attempt hit a transient GitHub asset HTTP 500.
+- Record the v8.8.67 failure as the reason for the peer-level v8.8.68 repair; PR #567 then passed hosted Windows verification and installed-client E2E, including selector DisplayName, Switch/Settings, update, and rollback, closing #556.
 
 # v8.8.67 — 2026-10-02
 
