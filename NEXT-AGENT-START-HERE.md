@@ -1,29 +1,31 @@
-# v8.8.75 Mod Library accessibility — canonical-ready handoff
+# v8.8.76 Vortex handoff interoperability — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Integrated predecessor: v8.8.74 / PR #588
-Change set: issue #589 Mod Library toggle accessibility
+Change set: issue #281 / PR #601 bounded Vortex interoperability
 
-## v8.8.75 behavior
+## v8.8.76 behavior
 
-- The Mod Library whole-mod enable checkbox exposes a UI Automation name bound to the current mod `DisplayName`.
-- Advanced component toggles expose UI Automation names bound to the current component `Label`.
-- Both controls remain native WPF `CheckBox` instances, preserving TogglePattern state and keyboard Space behavior.
-- Accessible names remain data-bound to the current item, so row/item recycling updates identity instead of retaining a previous item's name.
-- `XamlBindingSafetyTests.ModLibraryTogglesExposeTargetSpecificAutomationNames` guards both bindings.
+- Vortex remains an optional interoperability boundary, not a catalog provider or private-state integration.
+- The app imports/exports only the reviewed v1 handoff schema for Monster Hunter: World.
+- Handoffs cannot carry generic source URLs, cookies, API keys, bearer tokens, Vortex databases, deployment folders, or private Redux/state.
+- Wrong-game, malformed, unknown-field, unsafe-path, ambiguous, missing, and hash-mismatched entries fail closed.
+- Import creates an isolated manager profile and never mutates live game files until the normal explicit profile-apply flow.
+- Export uses same-directory temporary files plus atomic replacement so an interrupted write cannot corrupt an existing handoff.
+- Steam Workshop remains unsupported for MHW until a reviewed operation-specific contract exists.
 
 ## Verification boundary
 
-v8.8.74 predecessor exact head `1db52ceace7cc373753b3bac34d7bdfb4e002f01` passed Workflow Feature `36995650793`, Updater Publication `36995650796`, Heaven Toolbox Ownership `36995650860`, and MHW Product Security `36995650986`.
+The last closed predecessor is v8.8.75 source `5d864d4d5189e5ad7c0ec535886c506fcc07c513` with hosted Windows verification evidence run `37015488962` persisted on canonical main. v8.8.76 requires fresh exact-head PR/security/release gates on the final #601 candidate before integration; predecessor evidence is not authorization for changed interoperability, tests, or version metadata.
 
-Those results do **not** authorize v8.8.75. Require fresh exact-head gates for the final accessibility candidate before integration, then read back canonical `main`.
+## Unresolved risks and next work
 
-## Unresolved risks and coordination
-
-PRs #582, #585, and #586 predate this patch boundary and must reconcile against fresh canonical `main` before later integration. Issues #558/#559/#578, RECOVERY-005/RECOVERY-007, external production trust-anchor provisioning for #350, and account-tier ruleset/certificate constraints for #354 remain independent work.
+- Issue #350 remains externally blocked on a real production updater signing identity/public trust anchor and real signed-release E2E.
+- Issue #354 remains externally blocked on repository ruleset/branch-protection capabilities and a stable Authenticode publisher identity.
+- Issue #281 remains open only for the separate Steam Workshop applicability tranche.
+- Issues #558/#559 and representative RECOVERY-005/RECOVERY-007 runtime acceptance remain independent follow-up work.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and release supply-chain rules. The successor **must propagate** this continuity obligation to the next agent after them. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, release supply-chain rules, and the credential-free Vortex boundary. The successor **must propagate** this continuity obligation to the next agent after them. **Do not break the chain.**

@@ -176,6 +176,60 @@ public sealed class VortexInteropServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportAtomicallyReplacesExistingHandoffWithoutLeavingPartials()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, "atomic-export.db"));
+        await db.InitializeAsync(ct);
+        await db.UpsertModAsync(new ModDescriptor(
+            "atomic-local",
+            "Atomic Local",
+            "Atomic Local",
+            Path.Combine(root, "mods", "atomic"),
+            true,
+            3), ct);
+
+        var service = new VortexInteropService(
+            db,
+            GameProfile.MonsterHunterWorld(Path.Combine(root, "game")));
+        var destination = Path.Combine(root, "atomic.vortexhandoff.json");
+        await File.WriteAllTextAsync(destination, "{not-valid-json", ct);
+
+        await service.ExportAsync(destination, ct);
+
+        var json = await File.ReadAllTextAsync(destination, ct);
+        var manifest = JsonSerializer.Deserialize<VortexInteropManifest>(json, WebJsonOptions);
+        Assert.NotNull(manifest);
+        Assert.Single(manifest!.Mods);
+        Assert.Empty(Directory.EnumerateFiles(root, ".atomic.vortexhandoff.json.partial-*"));
+    }
+
+    [Theory]
+    [InlineData("..\\outside", "MonsterHunterWorld.exe")]
+    [InlineData("nativePC", "..\\MonsterHunterWorld.exe")]
+    public async Task PreviewRejectsUnsafeGameContractPaths(string modPath, string executable)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, $"unsafe-game-{Guid.NewGuid():N}.db"));
+        await db.InitializeAsync(ct);
+        var service = new VortexInteropService(
+            db,
+            GameProfile.MonsterHunterWorld(Path.Combine(root, "game")));
+
+        var handoff = new VortexInteropManifest(
+            1,
+            DateTimeOffset.UtcNow,
+            new("monsterhunterworld", "monsterhunterworld", "582010", modPath, executable),
+            []);
+        var path = Path.Combine(root, $"unsafe-game-{Guid.NewGuid():N}.vortexhandoff.json");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(handoff), ct);
+
+        var error = await Assert.ThrowsAsync<InvalidDataException>(
+            () => service.PreviewAsync(path, ct));
+        Assert.Contains("unsafe game path", error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task PreviewRejectsDifferentVortexGameContract()
     {
         var ct = TestContext.Current.CancellationToken;

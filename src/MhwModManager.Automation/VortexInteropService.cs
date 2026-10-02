@@ -142,11 +142,38 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
             mods);
 
         var fullPath = Path.GetFullPath(destination);
-        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-        await File.WriteAllTextAsync(
-            fullPath,
-            JsonSerializer.Serialize(manifest, AutomationJson.Options),
-            ct);
+        var directory = Path.GetDirectoryName(fullPath)
+            ?? throw new InvalidDataException("Vortex handoff destination has no parent directory.");
+        Directory.CreateDirectory(directory);
+        var tempPath = Path.Combine(
+            directory,
+            $".{Path.GetFileName(fullPath)}.partial-{Guid.NewGuid():N}");
+        try
+        {
+            await File.WriteAllTextAsync(
+                tempPath,
+                JsonSerializer.Serialize(manifest, AutomationJson.Options),
+                ct);
+            ct.ThrowIfCancellationRequested();
+            File.Move(tempPath, fullPath, true);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (IOException)
+            {
+                // Best-effort cleanup must not mask the original export failure.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Best-effort cleanup must not mask the original export failure.
+            }
+        }
+
         return fullPath;
     }
 
@@ -301,6 +328,24 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
         }
 
         var expected = VortexInteropContract.RequireGame(game);
+        string manifestModPath;
+        string expectedModPath;
+        string manifestExecutable;
+        string expectedExecutable;
+        try
+        {
+            manifestModPath = GameProfile.NormalizeRelative(manifest.Game.ModPath, allowEmpty: true);
+            expectedModPath = GameProfile.NormalizeRelative(expected.ModPath, allowEmpty: true);
+            manifestExecutable = GameProfile.NormalizeRelative(manifest.Game.Executable, allowEmpty: false);
+            expectedExecutable = GameProfile.NormalizeRelative(expected.Executable, allowEmpty: false);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new InvalidDataException(
+                "The Vortex handoff contains an unsafe game path.",
+                ex);
+        }
+
         if (!StringComparer.OrdinalIgnoreCase.Equals(
                 manifest.Game.VortexGameId,
                 expected.VortexGameId)
@@ -310,12 +355,10 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
             || !StringComparer.Ordinal.Equals(
                 manifest.Game.SteamAppId ?? string.Empty,
                 expected.SteamAppId ?? string.Empty)
-            || !PathRules.Comparer.Equals(
-                GameProfile.NormalizeRelative(manifest.Game.ModPath, allowEmpty: true),
-                GameProfile.NormalizeRelative(expected.ModPath, allowEmpty: true))
+            || !PathRules.Comparer.Equals(manifestModPath, expectedModPath)
             || !StringComparer.OrdinalIgnoreCase.Equals(
-                GameProfile.NormalizeRelative(manifest.Game.Executable, allowEmpty: false),
-                GameProfile.NormalizeRelative(expected.Executable, allowEmpty: false)))
+                manifestExecutable,
+                expectedExecutable))
         {
             throw new InvalidDataException(
                 "The Vortex handoff belongs to a different or unsupported game contract.");

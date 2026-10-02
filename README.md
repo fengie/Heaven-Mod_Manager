@@ -1,10 +1,19 @@
-# v8.8.75 — MHW Manual Mod Manager
+# v8.8.76 — MHW Manual Mod Manager
 
-Current product version: **8.8.75**.
+Current product version: **8.8.76**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.76 — bounded Vortex handoff interoperability
+
+- Add an explicit local `*.vortexhandoff.json` contract for Monster Hunter: World without reading Vortex private state, credentials, cookies, deployment folders, or authenticated download state.
+- Export only reviewed package/profile identity, desired enable/priority state, optional Nexus mod/file IDs, and optional managed-file SHA-256 values; generic source URLs and unknown fields are rejected.
+- Import is preview-first and fail-closed: wrong-game, unsafe-path, malformed, ambiguous, missing, and hash-mismatched entries never become restorable, and saving creates an isolated manager profile without touching live game files.
+- Harden handoff export with same-directory atomic replacement so interrupted writes cannot replace a previously valid handoff with partial JSON.
+- Keep Steam Workshop unsupported for MHW until a reviewed operation-specific contract exists.
+- Add deterministic interoperability, credential-boundary, path-validation, atomic-export, and isolation regressions.
 
 ## v8.8.75 — Mod Library accessibility labels
 
@@ -21,14 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Keep the existing exact-release resolution inside the Windows E2E as defense in depth after eligibility has been established.
 - Add regression coverage for published, superseded, canonical-missing, divergent, least-privilege classifier, and heavy-job gating behavior.
 
-## v8.8.73 — release build provenance hardening
-
-- Bind the exact updater ZIP name and SHA-256 from `update-manifest.json` to a GitHub SLSA build-provenance attestation before either updater feed is published.
-- Recompute the built ZIP digest before attestation and verify the resulting attestation against `fengie/mhw-mods` with the pinned GitHub CLI before publication.
-- Pin `actions/attest` to its exact v4.2.2 commit and grant only the OIDC/attestation permissions required by the release workflow.
-- Treat private-repository entitlement explicitly: public repos attest automatically; private repos require GitHub Enterprise Cloud plus `MHW_ENABLE_GITHUB_ATTESTATIONS=true`, otherwise the release records an explicit skip rather than claiming provenance.
-- Extend updater publication policy regressions so provenance ordering, action pinning, permissions, exact subject identity, tier gating, and fail-closed digest verification cannot silently regress.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -44,7 +45,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
 - [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
 - [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
-- [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
+- [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; bounded credential-free Vortex handoff interoperability is integrated in v8.8.76, while Steam Workshop remains conditional under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
