@@ -1,3 +1,12 @@
+# v8.8.72 — 2026-10-02
+
+- Prevent torn live-save snapshots by requiring stable source metadata plus matching SHA-256 observations before atomically promoting a copied save into a successful snapshot.
+- Retry bounded concurrent save mutation, remove incomplete snapshot payloads on pre-record failure/cancellation, and add deterministic mutation/cancellation regression coverage.
+- Revalidate the exact workflow SHA against canonical `main` immediately before the first updater publication mutation; stale queued release runs skip both public and canonical publication.
+- Enforce canonical-ready active continuity state in `Test-AgentHandoff.ps1`: `integrationState=canonical-main`, `workingBranch=main`, non-candidate status, and no retained candidate source commit.
+- Add negative fixtures for stale integration state, stale feature working branches, candidate status, and retained candidate source commits.
+- Close audit findings #575, #576, and #577 while leaving issue #578 and the remaining catalog/UX/recovery queues independent.
+
 # v8.8.71 — 2026-10-02
 
 - Add an optional installed-origin snapshot provider contract so exact update checks can reuse one authoritative mod/file hydration when a provider supports it.
