@@ -1,28 +1,23 @@
-# v8.8.76 Vortex handoff interoperability — canonical state
+# v8.8.77 authoritative MHW discovery hardening — canonical state
 
-v8.8.75 source `5d864d4d5189e5ad7c0ec535886c506fcc07c513` is the verified predecessor boundary. v8.8.76 adds bounded Vortex handoff interoperability without making Vortex a catalog backend or credential/state dependency.
+v8.8.76 source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52` is the verified predecessor boundary, closed by hosted Windows run `37060606949` with 26/26 checks passing. v8.8.77 closes two remaining authoritative Monster Hunter: World discovery gaps and repairs the stale canonical verification ledger.
 
 ## Behavior
 
-- Only the explicit v1 MHW handoff schema is accepted.
-- Exported state is allowlisted to package/profile identity, enable/priority intent, optional Nexus IDs, and optional managed-file SHA-256 values.
-- Generic source URLs and unknown fields are not part of the contract, preventing credential-bearing/signed URLs from entering the handoff.
-- Game identity and managed paths are normalized and validated; malformed, wrong-game, traversal, ambiguous, missing, and hash-mismatched entries fail closed.
-- Import re-reads and re-matches immediately before saving, creates only an isolated manager profile, and never mutates live deployment.
-- Export uses same-directory temporary files and atomic replacement to prevent partial writes from replacing a valid handoff.
-- Steam Workshop remains unsupported for MHW until a reviewed operation-specific contract exists.
+- A live generic profile at the authoritative MHW root is rebuilt from `GameProfile.MonsterHunterWorld` when discovery resolves the real `MonsterHunterWorld.exe`.
+- User-owned ID, display name, save path, and explicit store choice survive canonical reconstruction.
+- New Steam app 582010 discovery fails closed when the resolved executable is not `MonsterHunterWorld.exe`.
+- Same-root duplicate ownership, active-marker repointing, non-MHW live-profile behavior, and restart idempotency remain preserved.
 
 ## Verification boundary
 
-Predecessor evidence: hosted Windows verification run `37015488962` passed 26/26 for v8.8.75 source `5d864d4d5189e5ad7c0ec535886c506fcc07c513`, with evidence persisted on canonical main at `43252f835351f40083cf8823d927cf2e24b1a656`.
+Closed predecessor evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.76-heaven-windows-closure.log`, source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52`, hosted Windows run `37060606949`, 26/26 PASS.
 
-Fresh exact-head gates are required for the final v8.8.76 candidate because interoperability code, tests, XAML, schema, continuity validation, and release metadata changed. Persist the exact candidate/run evidence after integration; do not inherit predecessor green status.
+Fresh exact-input verification is required for v8.8.77 because discovery source, integration tests, continuity validation, and release metadata changed.
 
 ## Remaining independent work
 
-- #350: production updater signing trust anchor/private-key provisioning and real signed-release E2E.
-- #354: repository-admin/ruleset protection and stable Windows publisher identity.
-- #281: only the separate Steam Workshop applicability tranche remains after Vortex handoff integration.
-- #558/#559 plus representative RECOVERY-005/RECOVERY-007 acceptance remain independent queues.
+- RECOVERY-007 still needs representative installed Windows/runtime discovery proof.
+- #350/#354 retain external prerequisites; #281 retains Steam Workshop applicability; #558/#559 and RECOVERY-005 remain independent.
 
-Every successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`, preserve the credential-free Vortex boundary, and recursively propagate the continuity obligation.
+Every successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`, preserve the fail-closed discovery boundary, and recursively propagate the continuity obligation.
