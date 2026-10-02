@@ -1,10 +1,17 @@
-# v8.8.77 — MHW Manual Mod Manager
+# v8.8.78 — MHW Manual Mod Manager
 
-Current product version: **8.8.77**.
+Current product version: **8.8.78**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.78 — authoritative MHW discovery hardening
+
+- Canonicalize a live generic same-root profile when authoritative discovery resolves the real `MonsterHunterWorld.exe`, preserving user-owned identity fields and reconciliation invariants.
+- Refuse new Steam app 582010 registration when executable discovery resolves a launcher or any executable other than `MonsterHunterWorld.exe`.
+- Add restart/idempotency and fail-closed regressions for both escaped discovery states.
+- Advance the canonical v8.8.76 verification ledger to hosted Windows run `37060606949` (26/26 PASS) and restore synchronized release metadata after the v8.8.77 runner repair.
 
 ## v8.8.77 — updater E2E runner allocation repair
 
@@ -20,13 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Harden handoff export with same-directory atomic replacement so interrupted writes cannot replace a previously valid handoff with partial JSON.
 - Keep Steam Workshop unsupported for MHW until a reviewed operation-specific contract exists.
 - Add deterministic interoperability, credential-boundary, path-validation, atomic-export, and isolation regressions.
-
-## v8.8.75 — Mod Library accessibility labels
-
-- Give every whole-mod enable checkbox a target-specific UI Automation name bound to the current mod `DisplayName`.
-- Give every advanced component toggle an accessible name bound to its current component `Label` while preserving native WPF `CheckBox` toggle and keyboard semantics.
-- Keep names data-bound so recycled/virtualized rows resolve against their current item rather than retaining stale accessible identity.
-- Add deterministic XAML regression coverage for both mod-level and component-level automation naming.
 
 ## Current plans & progress
 
