@@ -122,6 +122,65 @@ function Get-UpdaterMainDriftDecision {
   return [pscustomobject]@{Publish=$true;Reason='release-inputs-unchanged';RelevantPaths=[string[]]@()}
 }
 
+
+function Get-UpdaterInstalledClientE2EDecision {
+  param(
+    [Parameter(Mandatory=$true)][string]$SourceSha,
+    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
+    [Parameter(Mandatory=$true)][bool]$ExactReleaseFound,
+    [Parameter(Mandatory=$true)][string]$MainRelation
+  )
+
+  foreach($value in @($SourceSha,$RemoteMainSha)){
+    if($value -notmatch '^[0-9a-fA-F]{40}  param(
+    [Parameter(Mandatory=$true)][long]$CurrentBuild,
+    [Parameter(Mandatory=$true)][string]$CurrentSourceSha,
+    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
+
+    [long]$PreviousBuild=0,
+    [string]$PreviousSourceSha='',
+    [string[]]$ChangedPaths=@(),
+    [string[]]$RemoteMainChangedPaths=@()
+  )
+  if($CurrentBuild -le 0){throw 'Current updater build number must be positive.'}
+  $drift=Get-UpdaterMainDriftDecision -CurrentSourceSha $CurrentSourceSha -RemoteMainSha $RemoteMainSha -ChangedPaths $RemoteMainChangedPaths
+  if(-not $drift.Publish){
+    return [pscustomobject]@{Publish=$false;Reason=$drift.Reason}
+  }
+  if($PreviousBuild -gt $CurrentBuild){
+    throw "Updater build $CurrentBuild is older than published build $PreviousBuild."
+  }
+  if($PreviousBuild -eq $CurrentBuild -and $PreviousBuild -gt 0){
+    return [pscustomobject]@{Publish=$false;Reason='already-published-build'}
+  }
+  if(-not [string]::IsNullOrWhiteSpace($PreviousSourceSha)){
+    $relevant=@($ChangedPaths | Where-Object {Test-UpdaterReleaseRelevantPath $_})
+    if($relevant.Count -eq 0){
+      return [pscustomobject]@{Publish=$false;Reason='no-release-input-change'}
+    }
+  }
+  return [pscustomobject]@{Publish=$true;Reason='release-input-change'}
+}
+){
+      throw 'Updater installed-client E2E source/main SHA was malformed.'
+    }
+  }
+
+  if($ExactReleaseFound){
+    return [pscustomobject]@{RunE2E=$true;Reason='exact-release-published'}
+  }
+
+  if([string]::Equals($SourceSha,$RemoteMainSha,[StringComparison]::OrdinalIgnoreCase)){
+    throw "Successful Windows Release Gate for canonical source $SourceSha did not publish an exact immutable updater release."
+  }
+
+  if([string]::Equals($MainRelation,'ahead',[StringComparison]::OrdinalIgnoreCase)){
+    return [pscustomobject]@{RunE2E=$false;Reason='superseded-before-publication'}
+  }
+
+  throw "Successful Windows Release Gate source $SourceSha has no exact immutable updater release and cannot be classified as a canonical-main supersession (main=$RemoteMainSha relation=$MainRelation)."
+}
+
 function Get-UpdaterPublicationDecision {
   param(
     [Parameter(Mandatory=$true)][long]$CurrentBuild,
