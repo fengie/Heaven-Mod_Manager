@@ -318,6 +318,20 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("MinHeight=\"32\"", xaml);
     }
 
+    [Fact]
+    public void ModLibraryTogglesExposeTargetSpecificAutomationNames()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains(
+            "<CheckBox IsChecked=\"{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\" IsThreeState=\"False\" HorizontalAlignment=\"Center\" AutomationProperties.Name=\"{Binding DisplayName}\"",
+            xaml);
+        Assert.Contains(
+            "<CheckBox IsChecked=\"{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\" VerticalAlignment=\"Center\" AutomationProperties.Name=\"{Binding Label}\"",
+            xaml);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
