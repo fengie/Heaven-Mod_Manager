@@ -1,11 +1,14 @@
-# v8.8.68 MHW product — ordered next actions
+# v8.8.69 MHW product — ordered next actions
 
-1. Run Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final v8.8.68 selector peer-value candidate.
-2. Fix concrete failures only; preserve `DisplayName` on the ComboBox automation peer, the `TextSearch.TextPath` fallback, the visual ItemTemplate regression, and raw-`GameProfile` rejection.
-3. Refresh issue #556 ownership/fresh main before merge; integrate only one exact green head.
-4. Freeze release-relevant main while Windows Release Gate publishes the exact v8.8.68 source.
-5. Require Updater Installed Client E2E to pass exact target resolution, real update, visible/bounded selector peer value, stable accessibility name, enabled Switch, enabled Settings, rollback, and evidence verification.
-6. Close #556 only after packaged E2E succeeds; verification/evidence-only persistence after that stays on the same product patch.
-7. Then reconcile #565/#558 on fresh main, preserving #556 and moving the catalog tranche to the next available patch.
+1. Open the reconciled v8.8.69 #558 provider-search PR from `agent/issue-558-provider-search-v8.8.69-20261002-chatgpt` against current `main`.
+2. Require exact-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership gates.
+3. Fix concrete failures only; preserve the v8.8.68 selector peer-value acceptance and raw-`GameProfile` rejection.
+4. Refresh canonical main and live PR/issue state immediately before integration; reconcile again if main moved.
+5. Merge only the exact green v8.8.69 head and verify remote main contains the provider-search behavior.
+6. Close PR #565 as SUPERSEDED only after its useful unique semantics are proven integrated.
+7. Keep #558 open for broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.
+8. Continue #559 separately for filters, sorting, provider health, loading/empty/stale/partial-failure states, and discovery UX.
+
+Issue #556 is closed with packaged E2E evidence at `601496093430214791395ba1bfcfadd3b0262ad2`; do not reopen it without contradictory runtime evidence.
 
 Every successor must read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` onward to the next agent.
