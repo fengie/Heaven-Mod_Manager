@@ -456,8 +456,12 @@ public sealed class UpdaterInstalledClientE2ETests
                     throw new InvalidOperationException(
                         "Installed selector acceptance could not find an enabled Settings button.");
 
+                var confirmedDisplayText = displayText
+                    ?? throw new InvalidOperationException(
+                        "Installed selector matched the expected name but exposed a null display text.");
+
                 return new SelectorUiEvidence(
-                    displayText,
+                    confirmedDisplayText,
                     switchButton.Current.IsEnabled,
                     settingsButton.Current.IsEnabled);
             }
