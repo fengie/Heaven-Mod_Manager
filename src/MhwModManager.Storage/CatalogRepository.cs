@@ -74,7 +74,16 @@ public sealed class CatalogRepository(ManagerDatabase db)
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    public async Task UpsertAsync(CachedCatalogMod cached, CancellationToken ct = default)
+    public Task UpsertAsync(CachedCatalogMod cached, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return UpsertAsync(cached, replaceFiles: true, ct);
+    }
+
+    public async Task UpsertAsync(
+        CachedCatalogMod cached,
+        bool replaceFiles,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(cached);
@@ -85,7 +94,8 @@ public sealed class CatalogRepository(ManagerDatabase db)
 
         await EnsureSourceExistsAsync(c, tx, cached.Mod.ProviderId, ct);
         await UpsertItemAsync(c, tx, cached, ct);
-        await ReplaceFilesAsync(c, tx, cached.Mod, ct);
+        if (replaceFiles)
+            await ReplaceFilesAsync(c, tx, cached.Mod, ct);
         await UpsertProvenanceAsync(c, tx, cached, ct);
         await ReindexAsync(c, tx, cached.Mod, ct);
 
