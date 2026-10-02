@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MhwModManager.Core;
 using MhwModManager.Storage;
 
@@ -108,6 +109,10 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
     private const int CurrentFormat = 1;
     private const long MaxManifestBytes = 32L * 1024 * 1024;
     private const int MaxMods = 10_000;
+    private static readonly JsonSerializerOptions StrictJson = new(AutomationJson.Options)
+    {
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+    };
 
     public async Task<string> ExportAsync(string destination, CancellationToken ct = default)
     {
@@ -123,7 +128,7 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
             mod.DisplayName,
             mod.Enabled,
             mod.Priority,
-            mod.SourceUrl,
+            GetSafePublicSourceUrl(mod.SourceUrl),
             mod.NexusModId,
             mod.NexusFileId,
             mod.NexusVersion,
@@ -286,7 +291,7 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
         await using var stream = File.OpenRead(source);
         var manifest = await JsonSerializer.DeserializeAsync<VortexInteropManifest>(
             stream,
-            AutomationJson.Options,
+            StrictJson,
             ct) ?? throw new InvalidDataException("Vortex handoff is empty.");
 
         if (manifest.Format != CurrentFormat
@@ -336,12 +341,10 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
                 throw new InvalidDataException("Vortex handoff contains an invalid priority.");
 
             if (!string.IsNullOrWhiteSpace(mod.SourceUrl)
-                && (!Uri.TryCreate(mod.SourceUrl, UriKind.Absolute, out var sourceUri)
-                    || sourceUri.Scheme is not ("https" or "http")
-                    || !string.IsNullOrEmpty(sourceUri.UserInfo)))
+                && GetSafePublicSourceUrl(mod.SourceUrl) is null)
             {
                 throw new InvalidDataException(
-                    "Vortex handoff contains an unsafe source URL.");
+                    "Vortex handoff contains an unsafe or credential-bearing source URL.");
             }
 
             if (mod.Files is null)
@@ -371,5 +374,23 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
         }
 
         return manifest;
+    }
+
+    private static string? GetSafePublicSourceUrl(string? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+        if (!Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri)
+            || !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(uri.Host)
+            || !string.IsNullOrEmpty(uri.UserInfo)
+            || !string.IsNullOrEmpty(uri.Query)
+            || !string.IsNullOrEmpty(uri.Fragment))
+            return null;
+
+        return uri.GetComponents(
+            UriComponents.SchemeAndServer | UriComponents.Path,
+            UriFormat.UriEscaped);
     }
 }
