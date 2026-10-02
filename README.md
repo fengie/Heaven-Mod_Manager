@@ -1,10 +1,18 @@
-# v8.8.72 — MHW Manual Mod Manager
+# v8.8.73 — MHW Manual Mod Manager
 
-Current product version: **8.8.72**.
+Current product version: **8.8.73**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.73 — release build provenance hardening
+
+- Bind the exact updater ZIP name and SHA-256 from `update-manifest.json` to a GitHub SLSA build-provenance attestation before either updater feed is published.
+- Recompute the built ZIP digest before attestation and verify the resulting attestation against `fengie/mhw-mods` with the pinned GitHub CLI before publication.
+- Pin `actions/attest` to its exact v4.2.2 commit and grant only the OIDC/attestation permissions required by the release workflow.
+- Treat private-repository entitlement explicitly: public repos attest automatically; private repos require GitHub Enterprise Cloud plus `MHW_ENABLE_GITHUB_ATTESTATIONS=true`, otherwise the release records an explicit skip rather than claiming provenance.
+- Extend updater publication policy regressions so provenance ordering, action pinning, permissions, exact subject identity, tier gating, and fail-closed digest verification cannot silently regress.
 
 ## v8.8.72 — audit reliability hardening
 
@@ -22,20 +30,13 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Keep the existing fallback for other providers and preserve cancellation, provider health/error classification, exact identity validation, and fail-closed replacement selection.
 - Add deterministic coverage that counts GameBanana detail requests and proves the update result remains exact.
 - Track the separate v8.8.70 stale-profile follow-up gaps under issue #578 rather than folding them into this catalog patch.
-## v8.8.70 — stale installed-game profile rediscovery
-
-- Let automatic discovery repair a same-root persisted profile whose executable disappeared instead of permanently suppressing that installed game.
-- Preserve profile identity and the current active-game selection; fill missing store / Steam app metadata from the discovery source without overwriting existing non-empty metadata.
-- Keep live same-root profiles untouched and do not create duplicates.
-- Treat either persisted MHW identity or Steam app `582010` discovery identity as MHW for repair safety, refusing a replacement executable unless it is `MonsterHunterWorld.exe`.
-- Cover the direct and inferred-executable repair paths plus MHW safety regressions deterministically.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
+- [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
