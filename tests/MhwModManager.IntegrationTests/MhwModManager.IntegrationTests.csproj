@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <NoWarn>$(NoWarn);CA1707</NoWarn>
     <WarningsAsErrors>$(WarningsAsErrors);xUnit1051</WarningsAsErrors>
