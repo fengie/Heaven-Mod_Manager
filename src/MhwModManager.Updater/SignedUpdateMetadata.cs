@@ -196,13 +196,14 @@ public static class UpdateSignedMetadataSigner
 
 public sealed class UpdateSignedMetadataVerifier
 {
-    private readonly IReadOnlyDictionary<string, UpdateSigningPublicKey> trustedKeys;
+    private readonly Dictionary<string, UpdateSigningPublicKey> trustedKeys;
     private readonly Func<DateTimeOffset> utcNow;
 
     public UpdateSignedMetadataVerifier(
         IEnumerable<UpdateSigningPublicKey> trustedKeys,
         Func<DateTimeOffset>? utcNow = null)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(trustedKeys);
         var map = new Dictionary<string, UpdateSigningPublicKey>(
             StringComparer.Ordinal);
