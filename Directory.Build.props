@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.70</Version>
-    <InformationalVersion>8.8.70-stale-profile-rediscovery</InformationalVersion>
+    <Version>8.8.71</Version>
+    <InformationalVersion>8.8.71-audit-reliability-hardening</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
