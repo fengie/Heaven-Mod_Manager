@@ -1,45 +1,42 @@
-# v8.8.70 stale-profile rediscovery — current handoff
+# v8.8.72 audit reliability hardening — current handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
-Active branch: `fix/issue571-stale-profile-repair-20261002`
-Issue: #571
-Parent canonical main: `7ee321a349098849b9e4db302b20dfa1595ca13b`
+Delivery branch: `fix/audit-findings-575-577-20261002`
+Issues: #575, #576, #577; partial #559 selection-state tranche
+Parent canonical main: `8dc0294e2415c02a089c845d0d5bbc715c467931`
 
 ## Completed predecessor boundary
 
-v8.8.69 PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then squash-merged to main as `7ee321a349098849b9e4db302b20dfa1595ca13b`. The integrated result keeps per-keystroke Browse Mods filtering local, capability-gates explicit provider search, persists remote rows through the source-aware cache, isolates provider failures, and raises the repository search ceiling to 1000. Issue #558 remains open for broader pagination/scale work.
+v8.8.71 PR #573 exact head `90fe998b2024aa43f7e3999185c87a98cac6a016` passed Workflow Feature `36983859719`, MHW Product Security `36983859681`, and Heaven Toolbox Ownership `36983859667`, then squash-merged as `cd189422d1def33d89f2ebaffb30091f2db4ad23`. Current main also includes #580's reduced release-evidence artifact footprint.
 
-## v8.8.70 candidate
+## v8.8.72 candidate
 
-- Same-root profiles with a live executable remain untouched.
-- Same-root profiles with a missing executable may be repaired from a valid discovered executable.
-- Repair preserves the profile ID and does not change the active-game marker.
-- Missing Store / SteamAppId metadata is filled from discovery without overwriting non-empty persisted values.
-- Executables outside the discovered root fail through the existing relative-path containment validation rather than being rebound silently.
-- MHW repair refuses any non-`MonsterHunterWorld.exe` executable when MHW identity is known from the persisted adapter, persisted Steam app id, or discovered Steam app `582010`.
-- Deterministic tests cover inferred executable discovery, live-profile no-op, persisted-MHW protection, and the stale-generic + MHW-discovery identity edge case.
+- Save snapshots publish only a stable, hash-verified live-save copy; unstable/cancelled capture cleans incomplete payloads and never records success.
+- Same-length/same-timestamp mutation is covered so metadata-only checks cannot falsely certify a torn save.
+- Windows Release Gate re-reads canonical main immediately before the first updater publication mutation and all publication/parity steps require the positive freshness output.
+- `CURRENT_REVISION.json` is post-integration canonical state; candidate/task-branch/active-PR state is rejected mechanically.
+- Browse Mods has an intentional no-selection state; mod controls remain hidden until a mod is selected and install is disabled until an exact file is selected.
 
 ## Verification state
 
-v8.8.70 is not merge-authorized yet. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final PR #572 head after this metadata commit.
+v8.8.72 is not merge-authorized until Workflow Feature, MHW Product Security, Heaven Toolbox Ownership, and the updater publication PR gate pass on the exact final reconciled head. No predecessor verification is inherited.
 
 ## Unresolved risks
 
-- #571 remains open until the exact v8.8.70 head is green and merged.
-- RECOVERY-007 still needs representative installed Windows/runtime discovery proof before the broader recovery item can be marked DONE.
-- #558 remains open for broader provider-aware catalog pagination/discovery and scale/performance work.
-- #559 remains open for Browse Mods filtering, sorting, provider health, and richer discovery states.
-- Existing external signing/ruleset blockers, artifact-storage constraints, and preserved recovery-branch provenance remain unchanged.
-- Local Codex on `heaven` remains usage-limit blocked until 2026-10-07; exact GitHub/Heaven CI is the verification authority for this candidate.
+- Issue #578 still tracks two stale-profile lifecycle edge cases after v8.8.70.
+- #558 remains open for broader provider-aware pagination/discovery and deterministic scale/performance work.
+- #559 remains open for filters, sorting, provider health, loading/stale/partial-failure states, and the rest of the discovery UX overhaul.
+- RECOVERY-005 and RECOVERY-007 still require representative installed Windows/runtime acceptance.
+- External signing/ruleset blockers and preserved recovery-branch provenance remain unchanged.
 
 ## Ordered continuation
 
-1. Mark PR #572 ready and run Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final head.
-2. Repair only concrete failures; preserve the v8.8.69 catalog boundary and all stale-profile invariants above.
-3. Refresh `main`, issue #571 ownership, and PR mergeability immediately before integration.
-4. Squash-merge only the exact green head; verify canonical main and issue closure.
-5. Persist a docs-only closure handoff with exact v8.8.70 integration evidence, then continue remaining #558/#559/RECOVERY-007 work.
+1. Run all required exact-head gates on the final v8.8.72 PR head.
+2. Repair concrete failures only; do not weaken the stable-save, publication-freshness, canonical-continuity, or exact-file selection invariants.
+3. Refresh canonical main and PR mergeability immediately before integration.
+4. Merge only the exact green reconciled head; verify remote main and automatic closure of #575-#577. Keep #559 open for its remaining scope.
+5. Continue #578, #558/#559, RECOVERY-005, and RECOVERY-007 from fresh main.
 
 ## Successor obligation
 
