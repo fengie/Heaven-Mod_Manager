@@ -57,6 +57,89 @@ public sealed class CatalogSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Metadata_only_sync_preserves_authoritative_files_when_search_payload_is_partial()
+    {
+        var repository = await CreateRepositoryAsync("partial-files-preserved");
+        var provider = new FakeProvider
+        {
+            HydrationFiles =
+            [
+                CreateFile("mod-1", "file-1", "Main File"),
+                CreateFile("mod-1", "file-2", "Optional File")
+            ]
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-partial"));
+        var service = new CatalogSyncService(repository);
+
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: true),
+            TestToken);
+
+        provider.SearchResults =
+        [
+            CreateMod("fixture", "mod-1") with
+            {
+                Version = "2.0.0",
+                Files = [CreateFile("mod-1", "latest-only", "Latest Search File")]
+            }
+        ];
+
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game, "dragon"),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(1, provider.FileHydrationCalls);
+        var stored = await repository.GetAsync("fixture:mod-1", TestToken);
+        Assert.NotNull(stored);
+        Assert.Equal("2.0.0", stored!.Mod.Version);
+        Assert.Equal(
+            ["file-1", "file-2"],
+            stored.Mod.Files.Select(file => file.ProviderFileId).Order().ToArray());
+        Assert.DoesNotContain(stored.Mod.Files, file => file.ProviderFileId == "latest-only");
+    }
+
+    [Fact]
+    public async Task Hydrated_sync_replaces_inline_partial_files_with_dedicated_authoritative_list()
+    {
+        var repository = await CreateRepositoryAsync("dedicated-files-authoritative");
+        var provider = new FakeProvider
+        {
+            SearchResults =
+            [
+                CreateMod("fixture", "mod-1") with
+                {
+                    Files = [CreateFile("mod-1", "latest-only", "Latest Search File")]
+                }
+            ],
+            HydrationFiles =
+            [
+                CreateFile("mod-1", "file-1", "Main File"),
+                CreateFile("mod-1", "file-2", "Optional File")
+            ]
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-authoritative"));
+        var service = new CatalogSyncService(repository);
+
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: true),
+            TestToken);
+
+        Assert.Equal(1, provider.FileHydrationCalls);
+        var stored = await repository.GetAsync("fixture:mod-1", TestToken);
+        Assert.NotNull(stored);
+        Assert.Equal(
+            ["file-1", "file-2"],
+            stored!.Mod.Files.Select(file => file.ProviderFileId).Order().ToArray());
+        Assert.DoesNotContain(stored.Mod.Files, file => file.ProviderFileId == "latest-only");
+    }
+
+    [Fact]
     public async Task Invalid_batch_is_rejected_before_any_catalog_item_is_written()
     {
         var repository = await CreateRepositoryAsync("invalid-batch");
@@ -169,6 +252,22 @@ public sealed class CatalogSyncServiceTests : IDisposable
             []);
     }
 
+    private static CatalogModFile CreateFile(
+        string providerModId,
+        string providerFileId,
+        string name) =>
+        new(
+            "fixture",
+            providerModId,
+            providerFileId,
+            name,
+            $"{providerFileId}.zip",
+            CatalogFileCategory.Main,
+            "1.0.0",
+            12345,
+            "Fixture archive",
+            DateTimeOffset.Parse("2026-09-29T01:00:00Z", System.Globalization.CultureInfo.InvariantCulture));
+
     private static string BuildExpectedScope(
         GameProfile game,
         CatalogBrowseMode mode,
@@ -205,6 +304,9 @@ public sealed class CatalogSyncServiceTests : IDisposable
             [CreateMod("fixture", "mod-1")];
 
         public Exception? SearchException { get; set; }
+
+        public IReadOnlyList<CatalogModFile> HydrationFiles { get; set; } =
+            [CreateFile("mod-1", "file-1", "Main File")];
 
         public CatalogProviderHealth Health { get; set; } = new(
             "fixture",
@@ -246,21 +348,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             FileHydrationCalls++;
-            IReadOnlyList<CatalogModFile> files =
-            [
-                new(
-                    ProviderId,
-                    providerModId,
-                    "file-1",
-                    "Main File",
-                    "fixture.zip",
-                    CatalogFileCategory.Main,
-                    "1.0.0",
-                    12345,
-                    "Fixture archive",
-                    DateTimeOffset.Parse("2026-09-29T01:00:00Z", System.Globalization.CultureInfo.InvariantCulture))
-            ];
-            return Task.FromResult(files);
+            return Task.FromResult(HydrationFiles);
         }
 
         public Task<CatalogAcquisitionResolution> ResolveAcquisitionAsync(
