@@ -1,6 +1,7 @@
 using MhwModManager.Core;
 using System.Globalization;
 using System.Text.Json;
+using System.Security.Cryptography;
 using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
@@ -15,34 +16,44 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         var id = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture);
         var root = Path.Combine(SnapshotRoot, id);
         Directory.CreateDirectory(root);
-        var source = FindSaveFile(game);
-        var copied = 0;
-        if (source is not null)
+        var recorded = false;
+        try
         {
-            var saves = Path.Combine(root, "save");
-            Directory.CreateDirectory(saves);
-            await CopyFileAsync(source, Path.Combine(saves, Path.GetFileName(source)), ct);
-            copied++;
-        }
+            var source = FindSaveFile(game);
+            var copied = 0;
+            if (source is not null)
+            {
+                var saves = Path.Combine(root, "save");
+                Directory.CreateDirectory(saves);
+                await CopyStableFileAsync(source, Path.Combine(saves, Path.GetFileName(source)), ct);
+                copied++;
+            }
 
-        var mods = await db.GetModsAsync(ct);
-        var state = mods.ToDictionary(x => x.Id, x => new ModState(x.Enabled, x.Priority), StringComparer.OrdinalIgnoreCase);
-        var build = await db.GetGameBuildFingerprintAsync(ct);
-        var manifest = await ReadManifestAsync(ct);
-        var metadata = new
+            var mods = await db.GetModsAsync(ct);
+            var state = mods.ToDictionary(x => x.Id, x => new ModState(x.Enabled, x.Priority), StringComparer.OrdinalIgnoreCase);
+            var build = await db.GetGameBuildFingerprintAsync(ct);
+            var manifest = await ReadManifestAsync(ct);
+            var metadata = new
+            {
+                id,
+                reason,
+                createdAt = DateTimeOffset.UtcNow,
+                saveSource = source,
+                gameBuildSha256 = build?.Sha256,
+                mods = state,
+                manifest
+            };
+            await File.WriteAllTextAsync(Path.Combine(root, "snapshot.json"), JsonSerializer.Serialize(metadata, AutomationJson.Options), ct);
+            await RecordSnapshotAsync(id, reason, root, source, state, build?.Sha256, manifest, ct);
+            recorded = true;
+            await PruneAsync(30, ct);
+            return new(true, id, root, source, copied, source is null ? $"Snapshot created for {game.DisplayName}; no configured save file was found, so mod/deployment state only was captured." : $"{game.DisplayName} save + mod/deployment snapshot created.");
+        }
+        catch
         {
-            id,
-            reason,
-            createdAt = DateTimeOffset.UtcNow,
-            saveSource = source,
-            gameBuildSha256 = build?.Sha256,
-            mods = state,
-            manifest
-        };
-        await File.WriteAllTextAsync(Path.Combine(root, "snapshot.json"), JsonSerializer.Serialize(metadata, AutomationJson.Options), ct);
-        await RecordSnapshotAsync(id, reason, root, source, state, build?.Sha256, manifest, ct);
-        await PruneAsync(30, ct);
-        return new(true, id, root, source, copied, source is null ? $"Snapshot created for {game.DisplayName}; no configured save file was found, so mod/deployment state only was captured." : $"{game.DisplayName} save + mod/deployment snapshot created.");
+            if (!recorded) TryDeleteSnapshotDirectory(root);
+            throw;
+        }
     }
 
     public static string? FindSaveFile(GameProfile game)
@@ -98,7 +109,87 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    private static async Task CopyFileAsync(string source, string destination, CancellationToken ct)
+    internal static async Task CopyStableFileAsync(
+        string source,
+        string destination,
+        CancellationToken ct,
+        Func<int, CancellationToken, Task>? afterInitialFingerprint = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        const int maxAttempts = 3;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var temporary = destination + ".partial-" + Guid.NewGuid().ToString("N");
+            try
+            {
+                var before = await FingerprintAsync(source, ct);
+                if (afterInitialFingerprint is not null)
+                    await afterInitialFingerprint(attempt, ct);
+
+                await CopyFileOnceAsync(source, temporary, ct);
+
+                var after = await FingerprintAsync(source, ct);
+                var copiedHash = await HashFileAsync(temporary, FileShare.Read, ct);
+                if (before.Length == after.Length
+                    && before.LastWriteTimeUtc == after.LastWriteTimeUtc
+                    && CryptographicOperations.FixedTimeEquals(before.Sha256, after.Sha256)
+                    && CryptographicOperations.FixedTimeEquals(after.Sha256, copiedHash))
+                {
+                    File.Move(temporary, destination);
+                    return;
+                }
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                // The game/Steam may have replaced or rewritten the save mid-read.
+                // Retry from a fresh source observation instead of certifying a torn copy.
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(temporary)) File.Delete(temporary);
+                }
+                catch (IOException)
+                {
+                    // Best-effort cleanup; the snapshot is never indexed unless capture succeeds.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Best-effort cleanup; preserve the primary capture failure.
+                }
+            }
+        }
+
+        throw new IOException($"Save file '{source}' did not remain stable long enough to create a coherent snapshot.");
+    }
+
+    private static async Task<FileFingerprint> FingerprintAsync(string path, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var info = new FileInfo(path);
+        info.Refresh();
+        var length = info.Length;
+        var lastWriteTimeUtc = info.LastWriteTimeUtc;
+        var sha256 = await HashFileAsync(path, FileShare.ReadWrite, ct);
+
+        info.Refresh();
+        if (info.Length != length || info.LastWriteTimeUtc != lastWriteTimeUtc)
+            return new FileFingerprint(-1, DateTime.MinValue, sha256);
+
+        return new FileFingerprint(length, lastWriteTimeUtc, sha256);
+    }
+
+    private static async Task<byte[]> HashFileAsync(string path, FileShare share, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, share, 1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var sha = SHA256.Create();
+        return await sha.ComputeHashAsync(input, ct);
+    }
+
+    private static async Task CopyFileOnceAsync(string source, string destination, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
@@ -106,6 +197,25 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         await input.CopyToAsync(output, 1024 * 1024, ct);
         await output.FlushAsync(ct);
     }
+
+    private static void TryDeleteSnapshotDirectory(string root)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        try
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+        catch (IOException)
+        {
+            // Cleanup must not mask the capture failure; no successful DB row was written.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Cleanup must not mask the capture failure; no successful DB row was written.
+        }
+    }
+
+    private sealed record FileFingerprint(long Length, DateTime LastWriteTimeUtc, byte[] Sha256);
 
     private async Task PruneAsync(int keep, CancellationToken ct)
     {
