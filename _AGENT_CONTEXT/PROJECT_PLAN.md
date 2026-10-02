@@ -34,7 +34,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
-| BROWSE-556 | P1 | ACTIVE | issue #556 reopened; `fix/header-game-selector-selected-template-v8.8.65-20261002` | Finish the header game selector selected-text template against installed-client evidence. |
+| BROWSE-556 | P1 | ACTIVE | issue #556; PR #562 merged `c3f238cbe4f1850763736bac999af0577a4606c5` | Source fix integrated; finish installed Windows/WPF visual acceptance before closing. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche | Expand catalog breadth safely with provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
@@ -56,12 +56,14 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
 
-**Owner:** #556 follow-up active on `fix/header-game-selector-selected-template-v8.8.65-20261002`; #558/#559 must avoid this boundary
-**Integrated PR:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`
+**Owner:** #556 source fix integrated via PR #562; runtime acceptance remains active; #558/#559 must preserve this boundary
+**Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`
 **Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
 
 - [x] v8.8.64 added an explicit `DisplayName` item template for dropdown rows.
-- [ ] v8.8.65 follow-up: make the custom ComboBox closed selected presenter reuse `ItemTemplate`/selector/string format so the selected game cannot fall back to raw `GameProfile` text.
+- [x] v8.8.65 follow-up: make the custom ComboBox closed selected presenter reuse `ItemTemplate`/selector/string format so the selected game cannot fall back to raw `GameProfile` text.
+- [x] Exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed Workflow Feature run `36963458484`, Product Security run `36963458384`, and Toolbox Ownership run `36963458431`, then merged as `c3f238cbe4f1850763736bac999af0577a4606c5`.
+- [ ] Obtain installed Windows/WPF visual/interaction proof for the closed selector and close #556 only after acceptance.
 - [x] Add safe HTTPS thumbnails, summary/author/category/download metadata, provider labels, version and update time to Browse Mods.
 - [x] Add selected-mod artwork and preserve exact-file install/source-page behavior.
 - [x] Enable recycled row virtualization.
@@ -71,7 +73,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [ ] Continue #558 with provider-aware pagination/search beyond the first capacity tranche.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** finish reopened #556 first with exact-head gates, integration, and installed Windows/WPF confirmation; keep #558/#559 non-overlapping.
+**Next action:** obtain installed Windows/WPF confirmation for the integrated v8.8.65 selector fix, then close #556 only if acceptance passes; keep #558/#559 non-overlapping.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 

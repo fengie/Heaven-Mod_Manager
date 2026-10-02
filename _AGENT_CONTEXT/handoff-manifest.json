@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.65",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.64 rich Browse Mods exact head 3ced8b41041909d91b06902631ef36085bfd7489 verified and merged through PR #561 as a39064643f97aa5a0df80bf7c917d260b3d7e7a1; installed-client evidence then reopened #556 and v8.8.65 candidate repairs the closed ComboBox selected-content template path.",
+  "immediateParentRevision": "v8.8.65 selector source fix exact PR #562 head 236d3604f1df245f9c224eda3f21f2177979cfd2 passed Workflow Feature run 36963458484, Product Security run 36963458384, and Toolbox Ownership run 36963458431 and merged as c3f238cbe4f1850763736bac999af0577a4606c5; #556 remains open only for installed Windows/WPF visual acceptance.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/issues; finish reopened #556 selected-template candidate first without weakening HMAC/verification boundaries; preserve installed Windows/WPF acceptance as explicit evidence; recursively preserve the continuity constitution.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/issues; obtain installed Windows/WPF acceptance for the integrated v8.8.65 selector fix and close #556 only if it passes; preserve HMAC/provider safety and recursively preserve the continuity constitution.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

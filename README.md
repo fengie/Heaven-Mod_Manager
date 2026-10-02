@@ -34,7 +34,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
-- [ ] **BROWSE-556 / P1** — reopened after installed-client evidence showed the closed selector still rendered raw `GameProfile` text; v8.8.65 repairs the shared selected-content template path and awaits exact-head/runtime verification.
+- [ ] **BROWSE-556 / P1** — v8.8.65 source fix passed all three exact-head gates and merged via PR #562; installed Windows/WPF visual confirmation remains before closing #556.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 integrated the first cache/provider capacity tranche; deeper provider-aware discovery/pagination remains open under #558.
 - [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.

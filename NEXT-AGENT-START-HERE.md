@@ -1,41 +1,49 @@
-# v8.8.65 header selector selected-text repair — current handoff
+# v8.8.65 header selector selected-text repair — integrated source handoff
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Active branch: `fix/header-game-selector-selected-template-v8.8.65-20261002`
-Production/test source checkpoint: `dbdfd09d475a14615de60badd0421d0bbb2897a5`
-Issue: #556 reopened from installed-client evidence
+Current branch: `main`
+Verified PR head: `236d3604f1df245f9c224eda3f21f2177979cfd2`
+Merge commit: `c3f238cbe4f1850763736bac999af0577a4606c5`
+Issue: #556 remains open for installed-client visual acceptance
 
-## Candidate change
+## Integrated change
 
-The v8.8.64 fix only templated dropdown rows. Installed UI evidence showed the closed header selector still rendered raw `GameProfile { ... }` text.
+Installed UI evidence showed that v8.8.64 templated dropdown rows but the closed header selector could still render raw `GameProfile { ... }` text.
 
-v8.8.65 repairs the actual shared ComboBox selected-content path:
+v8.8.65 fixes the actual shared ComboBox selected-content path:
 
 - the app-owned ComboBox template keeps `SelectionBoxItem` as the selected content;
-- the closed presenter now reuses `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat`;
-- the header's existing `DisplayName` template therefore applies both to dropdown rows and the selected game;
+- the closed presenter reuses `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat`;
+- the header's existing `DisplayName` template therefore applies to both dropdown rows and the selected game;
 - focused regression coverage rejects the broken `SelectionBoxItemTemplate` fallback.
 
 ## Verification state
 
-Source/test changes are implemented on the branch but are not yet an integrated or runtime-verified claim. Required exact-head gates must pass before merge. Installed Windows/WPF confirmation is still required after integration.
+Exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed all required gates:
 
-The local Heaven/Agent Control dispatch route is not exposed in this chat session; this limitation is recorded on issue #556. Do not weaken the signed Heaven Bridge/HMAC boundary to work around it.
+- Workflow Feature PR Gate run `36963458484`;
+- MHW Product Security Gate run `36963458384`;
+- Heaven Toolbox Ownership Gate run `36963458431`.
+
+The verified head merged to canonical `main` as `c3f238cbe4f1850763736bac999af0577a4606c5`. Remote-main readback confirms the selected presenter uses `ItemTemplate`/`ItemTemplateSelector`/`ItemStringFormat`, no longer uses `SelectionBoxItemTemplate`, and the product version is 8.8.65.
+
+The first Workflow Feature attempt `36963151154` is preserved as useful evidence: all builds/tests passed, but the handoff preflight correctly rejected missing explicit unresolved-risk wording. That metadata failure was repaired before the final exact-head run.
 
 ## Unresolved risks and remaining work
 
-- **Unresolved risk:** installed Windows/WPF visual acceptance is still missing for the closed selector. Source/build/test evidence alone does not prove the user-visible selected text is correct in the installed client.
-- The first v8.8.65 Workflow Feature PR Gate run `36963151154` reached 25/26 verification stages: product builds, strict analyzers, 323 core tests, 79 automation tests, 273 integration/fault tests, and self-test passed; only the handoff continuity preflight failed because this section did not explicitly carry an unresolved risk.
-- Product Security run `36963151158` and Heaven Toolbox Ownership run `36963151149` passed on prior PR head `3e4a0be46672c9b57183f08cf0f23969d510e377`. Those greens do not transfer to this changed head; rerun all required gates.
+- **Unresolved risk:** installed Windows/WPF visual acceptance is still missing for the closed selector. Source/build/test evidence does not substitute for confirming the installed app actually shows a human-readable selected game such as `Monster Hunter: World`.
+- Issue #556 must remain open until that installed-client acceptance is recorded.
+- Live remote-thumbnail acceptance from v8.8.64 remains a separate UI evidence gap.
+- #558/#559 remain the next catalog breadth/discovery lanes and must not regress the selector contract.
+- The local Heaven/Agent Control dispatch route was not exposed in the chat session that integrated this source fix; do not weaken the signed Heaven Bridge/HMAC boundary to work around unavailable routing.
 
 ### Ordered continuation
 
-1. Open/verify the v8.8.65 PR and require Workflow Feature PR Gate, MHW Product Security Gate, and Heaven Toolbox Ownership Gate on one exact final head.
-2. Refresh canonical main and ownership before merge; reconcile without dropping concurrent work.
-3. Merge only after exact-head required gates are green, then verify remote main contains the selected-template fix.
-4. Obtain installed Windows/WPF visual proof that the closed header shows the human-readable game name.
-5. Close #556 only after the integrated source and required acceptance evidence are recorded.
+1. Install/run a build containing v8.8.65 on Windows and verify the closed header selector shows `GameProfile.DisplayName`, then open the dropdown and switch games to check both surfaces.
+2. Record the installed-client evidence and close #556 only if the visual/interaction check passes.
+3. If it still fails, attach the new screenshot plus `MHW-DEBUG-ALL.log` and treat that as a new runtime reproduction rather than reopening the already-correct source contract blindly.
+4. Continue #558/#559 after #556 acceptance without weakening provider/acquisition safety.
 
 ## Successor obligation
 
