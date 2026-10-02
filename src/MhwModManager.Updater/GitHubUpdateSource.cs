@@ -7,11 +7,15 @@ using MhwModManager.Core;
 
 namespace MhwModManager.Updater;
 
-public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? log = null)
+public sealed class GitHubUpdateSource(
+    HttpClient httpClient,
+    Action<string>? log = null,
+    UpdateSignedMetadataVerifier? signedMetadataVerifier = null)
 {
     private const string ApiBase = "https://api.github.com";
     private readonly HttpClient http = httpClient;
     private readonly Action<string> writeLog = log ?? (_ => { });
+    private readonly UpdateSignedMetadataVerifier? signatureVerifier = signedMetadataVerifier;
 
     public async Task<UpdateCandidate?> FindLatestAsync(
         UpdateBuildIdentity current,
@@ -56,6 +60,32 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
             ?? throw new InvalidDataException($"Release is missing declared artifact '{manifest.ArtifactName}'.");
         if (artifact.Size != manifest.ArtifactSize)
             throw new InvalidDataException($"Release asset size {artifact.Size} does not match manifest size {manifest.ArtifactSize}.");
+
+        if (signatureVerifier is not null)
+        {
+            var signatureAsset = release.Release.Assets.FirstOrDefault(a =>
+                string.Equals(
+                    a.Name,
+                    UpdateProtocol.SignedMetadataFileName,
+                    StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidDataException(
+                    $"Release {release.Release.TagName} is missing {UpdateProtocol.SignedMetadataFileName}.");
+            if (signatureAsset.Size <= 0
+                || signatureAsset.Size > UpdateProtocol.MaxSignedMetadataBytes)
+                throw new InvalidDataException(
+                    $"Signed update metadata size {signatureAsset.Size} is outside the allowed budget.");
+
+            var signatureBytes = await DownloadBytesAsync(
+                new Uri(signatureAsset.ApiUrl),
+                token,
+                UpdateProtocol.MaxSignedMetadataBytes,
+                ct);
+            var envelope = DeserializeSignedMetadata(signatureBytes);
+            signatureVerifier.Verify(envelope, manifest, current.BuildNumber);
+            writeLog(
+                $"update signature verified build={manifest.BuildNumber} key={envelope.Payload.SigningKeyId}");
+        }
+
         writeLog($"update remote build={manifest.BuildNumber} sha={manifest.SourceSha}");
         return new UpdateCandidate(manifest, new Uri(artifact.ApiUrl), new Uri(manifestAsset.ApiUrl));
     }
@@ -127,6 +157,18 @@ public sealed class GitHubUpdateSource(HttpClient httpClient, Action<string>? lo
             bytes = bytes[3..];
         return JsonSerializer.Deserialize<UpdateManifest>(bytes, UpdateProtocol.Json)
                ?? throw new InvalidDataException("Update manifest is empty.");
+    }
+
+    private static UpdateSignedMetadataEnvelope DeserializeSignedMetadata(
+        ReadOnlySpan<byte> bytes)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"bytes={bytes.Length}");
+        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+            bytes = bytes[3..];
+        return JsonSerializer.Deserialize<UpdateSignedMetadataEnvelope>(
+                   bytes,
+                   UpdateProtocol.Json)
+               ?? throw new InvalidDataException("Signed update metadata is empty.");
     }
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, string uri, string? token)

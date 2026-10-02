@@ -11,6 +11,7 @@ public static class UpdateProtocol
     public const int BuildIdentitySchemaVersion = 1;
     public const int InstallMarkerSchemaVersion = 1;
     public const int LaunchStateSchemaVersion = 1;
+    public const int SignedMetadataSchemaVersion = 1;
     public const string ProductId = "fengie/mhw-mods:MHW-Manual-Mod-Manager";
     public const int UpdaterProtocolVersion = 1;
     public const string Channel = "main";
@@ -18,6 +19,7 @@ public static class UpdateProtocol
     public const string BuildIdentityFileName = "build-identity.json";
     public const string InstallMarkerFileName = "release-install.json";
     public const string PendingFileName = "pending-update.json";
+    public const string SignedMetadataFileName = "update-signature.json";
     public const string HelperDirectoryRelativePath = "UpdaterHelper";
     public const string HelperRelativePath =
         HelperDirectoryRelativePath + "/MHW Mod Manager Updater.exe";
@@ -25,6 +27,7 @@ public static class UpdateProtocol
     public const string Repository = "fengie/mhw-mods";
     public const string PublicReleaseRepository = "fengie/mhw-mod-manager-release";
     public const long MaxArtifactBytes = 1024L * 1024L * 1024L;
+    public const int MaxSignedMetadataBytes = 64 * 1024;
     public const long MaxExtractedBytes = 2L * 1024L * 1024L * 1024L;
     public const int MaxArchiveEntries = 20000;
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
