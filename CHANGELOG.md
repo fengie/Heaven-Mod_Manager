@@ -1,3 +1,13 @@
+# v8.8.73 — 2026-10-02
+
+- Add a documented Vortex handoff v1 manifest for Monster Hunter: World with explicit Vortex/Nexus/Steam/mod-root/executable identity.
+- Export handoffs from the current local package set and preview/import them into saved profiles without reading Vortex private state, credentials, sessions, or deployment folders.
+- Require exact local or Nexus mod+file identity, validate managed paths and SHA-256 values, reject ambiguous/changed payloads, and never mutate the live game tree during handoff import.
+- Expose Vortex handoff open/export/save actions through Advanced Tools & Diagnostics.
+- Classify Steam Workshop as unsupported for the current MHW profile until a reviewed operation-specific Workshop contract exists; never infer Workshop support from Steam app ID alone.
+- Add deterministic Vortex contract, round-trip, wrong-game, and traversal regressions plus a checked-in JSON schema and interoperability documentation.
+- Complete the remaining source-level #281 Steam/Vortex interoperability boundary while keeping #558/#559/#578 independent.
+
 # v8.8.72 — 2026-10-02
 
 - Prevent torn live-save snapshots by requiring stable source metadata plus matching SHA-256 observations before atomically promoting a copied save into a successful snapshot.

@@ -258,8 +258,8 @@ Recovered onto current-main lineage from the stale issue #281 branches, without 
 - generic permitted HTML crawler framework is restored with reviewed terms/robots requirements, same-origin/path containment, response bounds, and environment kill switch.
 
 Still open after the integrated v8.8.62 tranche:
-- Steam Workshop only for a game/profile with a supported Workshop contract and credentials/capabilities;
-- optional Vortex interoperability (metadata/import-export/handoff), not remote catalog browsing;
+- Steam Workshop remains deliberately disabled for the current MHW profile because no reviewed operation-specific Workshop contract exists; Steam app identity alone is not enough to enable it.
+- [implemented v8.8.73] optional Vortex interoperability uses the explicit credential-free handoff v1 metadata/import-export/profile contract in `docs/catalog/vortex-interop.md`; Vortex remains outside remote catalog browsing.
 - any additional HTML adapter remains disabled until a provider-specific compliance manifest and deterministic parser fixtures exist;
 - v8.8.62 source closure is complete: exact head `9c2976ae96533b3d439610ef7c770a73d0e14fe3` passed the required gates and PR #553 merged as `3c19270a9dbf37c434aaa0654fdedcc8c28c6d71` with zero file differences from the verified head.
 
@@ -280,3 +280,14 @@ A provider is not "supported" until:
 ## Execution notes
 
 PR #208 was closed without merge and its task branch was deleted. This project starts from current canonical `main` and selectively recovers ideas/code only after current-state review; it will not resurrect the old branch wholesale.
+
+
+## v8.8.73 Vortex interoperability closure — 2026-10-02
+
+The optional interoperability boundary is now implemented without making Vortex a catalog backend:
+
+- `VortexInteropContract` maps only the reviewed MHW identity (`monsterhunterworld`, Nexus `monsterhunterworld`, Steam `582010`, `nativePC`, `MonsterHunterWorld.exe`).
+- `VortexInteropService` exports, previews, and imports the documented handoff v1 schema using already-local packages.
+- Imports are profile-only and fail closed on wrong-game identity, duplicate mappings, traversal/invalid hashes, ambiguity, and payload mismatch.
+- No Vortex credentials, cookies, Redux/private state, deployment folder, authenticated Nexus session, or signed URL is consumed.
+- Steam Workshop is not registered for MHW because this repository has no reviewed Workshop discovery/acquisition contract. A future game must add and test that contract explicitly before enabling Workshop.

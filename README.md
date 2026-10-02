@@ -1,10 +1,18 @@
-# v8.8.72 — MHW Manual Mod Manager
+# v8.8.73 — MHW Manual Mod Manager
 
-Current product version: **8.8.72**.
+Current product version: **8.8.73**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.73 — Vortex interoperability handoff
+
+- Add an explicit, credential-free Vortex handoff v1 contract for Monster Hunter: World using the reviewed `monsterhunterworld` / `582010` / `nativePC` identity boundary.
+- Export and preview/import handoff manifests through Advanced Tools without reading Vortex private state or bypassing the manager's normal archive/deployment safety boundaries.
+- Match imports by local identity first, then exact Nexus mod+file identity; hashes, when carried, must match before a package can be restored into a saved profile.
+- Keep Steam Workshop fail-closed for MHW: Steam installation identity alone does not authorize or prove a Workshop catalog contract.
+- Close the remaining source-level issue #281 interop work while leaving #558/#559 discovery scale/UX and #578 game-profile repair independent.
 
 ## v8.8.72 — audit reliability hardening
 
@@ -22,14 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Keep the existing fallback for other providers and preserve cancellation, provider health/error classification, exact identity validation, and fail-closed replacement selection.
 - Add deterministic coverage that counts GameBanana detail requests and proves the update result remains exact.
 - Track the separate v8.8.70 stale-profile follow-up gaps under issue #578 rather than folding them into this catalog patch.
-## v8.8.70 — stale installed-game profile rediscovery
-
-- Let automatic discovery repair a same-root persisted profile whose executable disappeared instead of permanently suppressing that installed game.
-- Preserve profile identity and the current active-game selection; fill missing store / Steam app metadata from the discovery source without overwriting existing non-empty metadata.
-- Keep live same-root profiles untouched and do not create duplicates.
-- Treat either persisted MHW identity or Steam app `582010` discovery identity as MHW for repair safety, refusing a replacement executable unless it is `MonsterHunterWorld.exe`.
-- Cover the direct and inferred-executable repair paths plus MHW safety regressions deterministically.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -42,7 +42,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
 - [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
 - [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
-- [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
+- [x] **CATALOG-INTEROP-281 / P1** — v8.8.73 adds explicit Vortex handoff import/export for the canonical MHW identity and keeps Steam Workshop deliberately unsupported until a reviewed per-game contract exists; no Vortex runtime/session becomes a catalog dependency.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.

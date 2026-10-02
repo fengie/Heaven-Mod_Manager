@@ -1,42 +1,41 @@
-# v8.8.72 audit reliability hardening — canonical handoff
+# v8.8.73 Vortex interoperability handoff — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Active branch: `main`
-Integrated issues: #575, #576, #577
-Parent canonical product boundary: `cd189422d1def33d89f2ebaffb30091f2db4ad23`
+Integrated issue: #281
+Parent canonical product boundary: `7e74aba165996c39af9daa3e90a7605793495c56`
 
-## Completed predecessor boundary
+## v8.8.73 canonical state
 
-v8.8.71 PR #573 exact head `90fe998b2024aa43f7e3999185c87a98cac6a016` passed Workflow Feature `36983859719`, MHW Product Security `36983859681`, and Heaven Toolbox Ownership `36983859667`, then squash-merged to main as `cd189422d1def33d89f2ebaffb30091f2db4ad23`. Its GameBanana installed-origin snapshot contract removes duplicate detail hydration while preserving exact identity and fail-closed replacement semantics.
-
-## v8.8.72 canonical state
-
-- Save capture no longer certifies a single permissive read as a coherent recovery snapshot. It takes stable source fingerprints around a private copy, verifies the copied SHA-256, retries bounded mutation, and only then promotes the payload.
-- Pre-record save snapshot failure or cancellation cleans the incomplete snapshot directory and cannot create a successful `save_snapshots` row.
-- Windows updater publication re-reads the repository `main` ref immediately before its first external publication mutation. A queued stale run sets `publish=false` and cannot expose either public or canonical release assets.
-- Active `CURRENT_REVISION.json` describes canonical state, not the branch that produced it. Governance requires `integrationState=canonical-main`, `workingBranch=main`, non-candidate status, and no candidate source commit.
-- Deterministic regressions cover concurrent save mutation/retry, continuous instability rejection, cancellation/no-success-row behavior, release freshness placement/gating, and stale continuity negative fixtures.
+- Vortex remains an optional interoperability boundary, never a remote catalog backend.
+- The reviewed MHW handoff identity is Vortex `monsterhunterworld`, Nexus `monsterhunterworld`, Steam `582010`, mod root `nativePC`, executable `MonsterHunterWorld.exe`.
+- Advanced Tools can export a credential-free `*.vortexhandoff.json`, preview one, and save only exact/verified local matches as a profile.
+- Handoff import never downloads archives or mutates the live game tree; normal import/deployment safety remains authoritative.
+- Steam Workshop remains disabled for MHW because no reviewed operation-specific Workshop contract exists. Never infer Workshop capability from `SteamAppId`.
+- Deterministic tests cover contract identity, export/preview/profile round-trip, wrong-game rejection, and traversal rejection.
 
 ## Verification provenance
 
-The predecessor v8.8.71 gate evidence above is closed and must not be reused as v8.8.72 authorization. Exact v8.8.72 verification belongs to the integration PR and merge provenance for the final head. Future agents must refresh live checks rather than inferring current verification from this handoff.
+The last closed predecessor evidence remains v8.8.71 PR #573 exact head `90fe998b2024aa43f7e3999185c87a98cac6a016`. Do not reuse it as v8.8.73 authorization. The exact final v8.8.73 integration head must pass the repository's required gates before merge, and canonical `main` must be read back afterward.
 
 ## Unresolved risks
 
-- Issue #578 remains live for canonical MHW adapter recovery from a stale generic profile and whole-set handling when multiple profiles share one game root.
-- #558 remains open for broader provider-aware catalog pagination/discovery and deterministic scale/performance work.
-- #559 remains open for Browse Mods filtering, sorting, provider health, and richer discovery states.
+- #558 remains owned separately for broader provider-aware catalog pagination/discovery and deterministic scale/performance work.
+- #559 remains separate for Browse Mods filters, sorting, provider-health and richer loading/stale/partial-failure UX.
+- #578 remains separate for canonical MHW stale-profile repair and complete same-root profile-set handling.
+- #350 still requires a real external production signing key/trust anchor and signed-release E2E before full closure.
+- #354 still has repository-administration/account-tier and Authenticode publisher-identity prerequisites.
 - RECOVERY-007 still needs representative installed Windows/runtime discovery proof.
-- Existing external signing/ruleset blockers, artifact-storage constraints, and preserved recovery-branch provenance remain unchanged.
+- Existing artifact-storage and installed-WPF acceptance constraints remain unchanged.
 
 ## Ordered continuation
 
 1. Refresh canonical `main`, open issues/PRs, and durable ownership before selecting work.
-2. Prefer the oldest actionable unowned issue; do not recreate #575/#576/#577 work after this boundary is canonical.
-3. Keep #578 separate from the completed audit-hardening tranche and preserve the v8.8.71 catalog identity/fail-closed invariants.
-4. Require fresh exact-head verification for every future integration and read back canonical `main` after merge.
-5. Propagate the same continuity obligation onward.
+2. Do not duplicate live #558/#559/#578 owners; support or integrate their verified work when ownership permits.
+3. Treat #350/#354 external prerequisites honestly; source scaffolding is not production-key/ruleset completion.
+4. Require fresh exact-head verification for every integration and read back canonical `main` after merge.
+5. Preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and relevant learned rules.
 
 ## Successor obligation
 
