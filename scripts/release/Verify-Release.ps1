@@ -306,6 +306,7 @@ function Invoke-AgentHandoffPreflight {
     try {
         & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff-NegativeFixtures.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-VerificationContinuitySync.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-VerificationCache.ps1') *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         $sw.Stop()
         Add-Result 'Harness' 'Agent handoff continuity preflight' $true 0 $sw.Elapsed.TotalSeconds $log 'Required continuity context/manifest is present and propagates to the next agent.'

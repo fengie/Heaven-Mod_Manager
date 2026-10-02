@@ -1,23 +1,24 @@
-# v8.8.76 Vortex handoff interoperability — canonical handoff
+# v8.8.77 updater E2E runner + continuity-state repair — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #281 / PR #601 bounded Vortex interoperability
+Change set: updater E2E runner repair plus issue #604 continuity/evidence synchronization
 
-## v8.8.76 behavior
+## v8.8.77 behavior
 
-- Vortex remains an optional interoperability boundary, not a catalog provider or private-state integration.
-- The app imports/exports only the reviewed v1 handoff schema for Monster Hunter: World.
-- Handoffs cannot carry generic source URLs, cookies, API keys, bearer tokens, Vortex databases, deployment folders, or private Redux/state.
-- Wrong-game, malformed, unknown-field, unsafe-path, ambiguous, missing, and hash-mismatched entries fail closed.
-- Import creates an isolated manager profile and never mutates live game files until the normal explicit profile-apply flow.
-- Export uses same-directory temporary files plus atomic replacement so an interrupted write cannot corrupt an existing handoff.
+- The updater publication classifier uses the self-hosted Heaven Windows runner instead of the unavailable GitHub-hosted pool while keeping its read-only and fail-closed decision contract.
+- Hosted-Windows evidence persistence synchronizes exact source/run proof into `CURRENT_REVISION.json`, `CURRENT_STATE.md`, and this handoff before one evidence commit is pushed.
+- The evidence-only commit is not the tested source; exact verification continues to belong to the source SHA recorded inside the closure.
+- Current-version closure evidence is validated against machine-readable and Markdown continuity surfaces, with negative fixtures for stale SHA/run and stale candidate instructions.
+- v8.8.76 bounded Vortex handoff behavior remains credential-free and isolated from live deployment.
 - Steam Workshop remains unsupported for MHW until a reviewed operation-specific contract exists.
 
 ## Verification boundary
 
-The last closed predecessor is v8.8.75 source `5d864d4d5189e5ad7c0ec535886c506fcc07c513` with hosted Windows verification evidence run `37015488962` persisted on canonical main. v8.8.76 requires fresh exact-head PR/security/release gates on the final #601 candidate before integration; predecessor evidence is not authorization for changed interoperability, tests, or version metadata.
+The last closed hosted-Windows boundary is v8.8.76 source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52`, run `37060606949` (26/26 PASS), with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.76-heaven-windows-closure.log` persisted by evidence-only commit `66cbd9cce0df375b114f907afd7a9c1a93ea4742`.
+
+v8.8.77 contains later workflow/verification-infrastructure changes and therefore requires fresh exact-source gates. After successful main verification, evidence persistence must atomically advance this section and the machine-readable boundary before later work inherits green status.
 
 ## Unresolved risks and next work
 

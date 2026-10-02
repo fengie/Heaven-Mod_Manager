@@ -6,11 +6,13 @@ Current product version: **8.8.77**.
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.77 — updater E2E runner allocation repair
+## v8.8.77 — updater E2E runner + continuity-state repair
 
 - Route the upstream publication classifier through the known-good self-hosted Heaven Windows runner instead of the unavailable GitHub-hosted pool.
 - Preserve read-only classifier permissions, exact-publication/supersession policy, and fail-closed heavy-job gating.
 - Update the release-policy regression so hosted-runner routing cannot be accidentally reintroduced while allocation remains unavailable.
+- Bind persisted hosted-Windows verification evidence to the canonical continuity projection in the same evidence commit, preserving the tested-source SHA separately from the later evidence-only commit.
+- Fail closed when current-version closure evidence disagrees with `CURRENT_REVISION.json`, `CURRENT_STATE.md`, or the successor handoff, with synthetic negative fixtures covering stale SHA/run/candidate-state regressions.
 
 ## v8.8.76 — bounded Vortex handoff interoperability
 

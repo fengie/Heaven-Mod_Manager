@@ -1,22 +1,21 @@
-# v8.8.76 Vortex handoff interoperability — canonical state
+# v8.8.77 updater E2E runner + continuity-state repair — canonical state
 
-v8.8.75 source `5d864d4d5189e5ad7c0ec535886c506fcc07c513` is the verified predecessor boundary. v8.8.76 adds bounded Vortex handoff interoperability without making Vortex a catalog backend or credential/state dependency.
+v8.8.77 keeps the bounded Vortex handoff boundary from v8.8.76, repairs updater installed-client E2E classifier allocation, and closes the recurring gap between persisted hosted-Windows evidence and the canonical successor state.
 
 ## Behavior
 
-- Only the explicit v1 MHW handoff schema is accepted.
-- Exported state is allowlisted to package/profile identity, enable/priority intent, optional Nexus IDs, and optional managed-file SHA-256 values.
-- Generic source URLs and unknown fields are not part of the contract, preventing credential-bearing/signed URLs from entering the handoff.
-- Game identity and managed paths are normalized and validated; malformed, wrong-game, traversal, ambiguous, missing, and hash-mismatched entries fail closed.
-- Import re-reads and re-matches immediately before saving, creates only an isolated manager profile, and never mutates live deployment.
-- Export uses same-directory temporary files and atomic replacement to prevent partial writes from replacing a valid handoff.
+- The updater publication classifier runs on the known-good self-hosted Heaven Windows runner while retaining read-only permissions, exact immutable-release classification, canonical-main ancestry checks, and fail-closed heavy E2E gating.
+- Hosted-Windows closure persistence now treats evidence plus continuity as one logical transition: exact source/run evidence, `CURRENT_REVISION.json`, this state surface, and the successor handoff advance together before the bot commit is pushed.
+- Tested-source identity remains distinct from the later evidence-only commit created to persist proof.
+- The continuity validator binds any current-version closure log to its source SHA and run ID and rejects stale candidate/integration prose that contradicts already-persisted proof.
+- The v8.8.76 Vortex interoperability contract remains credential-free, schema-bounded, preview-first, path/hash validated, isolated from live deployment, and atomic on export.
 - Steam Workshop remains unsupported for MHW until a reviewed operation-specific contract exists.
 
 ## Verification boundary
 
-Predecessor evidence: hosted Windows verification run `37015488962` passed 26/26 for v8.8.75 source `5d864d4d5189e5ad7c0ec535886c506fcc07c513`, with evidence persisted on canonical main at `43252f835351f40083cf8823d927cf2e24b1a656`.
+The last closed hosted-Windows boundary is v8.8.76 source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52`, run `37060606949` (26/26 PASS), with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.76-heaven-windows-closure.log` persisted by evidence-only commit `66cbd9cce0df375b114f907afd7a9c1a93ea4742`.
 
-Fresh exact-head gates are required for the final v8.8.76 candidate because interoperability code, tests, XAML, schema, continuity validation, and release metadata changed. Persist the exact candidate/run evidence after integration; do not inherit predecessor green status.
+v8.8.77 changes updater E2E runner routing and verification/continuity infrastructure after that source, so it requires fresh exact-source verification. Once the v8.8.77 closure is produced, the release workflow must synchronize this section and the machine-readable continuity projection before committing the evidence.
 
 ## Remaining independent work
 
@@ -25,4 +24,4 @@ Fresh exact-head gates are required for the final v8.8.76 candidate because inte
 - #281: only the separate Steam Workshop applicability tranche remains after Vortex handoff integration.
 - #558/#559 plus representative RECOVERY-005/RECOVERY-007 acceptance remain independent queues.
 
-Every successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`, preserve the credential-free Vortex boundary, and recursively propagate the continuity obligation.
+Every successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`, preserve exact-input verification and the credential-free Vortex boundary, and recursively propagate the continuity obligation.

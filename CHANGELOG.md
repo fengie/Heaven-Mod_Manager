@@ -3,6 +3,8 @@
 - Route the updater installed-client E2E publication classifier from unavailable GitHub-hosted `ubuntu-latest` capacity to the known-good self-hosted Heaven Windows runner.
 - Preserve the classifier's read-only contents permission, exact immutable-release decision, canonical-main ancestry check, and fail-closed installed-client E2E gating.
 - Replace the stale regression that required `ubuntu-latest` with a job-scoped assertion for the self-hosted runner labels.
+- Make hosted-Windows evidence persistence advance `CURRENT_REVISION.json`, `CURRENT_STATE.md`, and `NEXT-AGENT-START-HERE.md` in the same exact-source evidence commit instead of leaving successor state one release behind.
+- Add current-version closure/source/run consistency validation, adversarial stale-state fixtures, and a focused sync-helper regression so evidence-only commits cannot silently advertise obsolete integration work.
 
 # v8.8.76 — 2026-10-02
 
