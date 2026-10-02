@@ -34,7 +34,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
-| BROWSE-556 | P1 | ACTIVE | issue #556; v8.8.66 published but E2E #289 failed; v8.8.67 candidate on `fix/issue556-uia-diagnostics-v8.8.67-20261002` | Pass raw-tree packaged-client selector acceptance before closing. |
+| BROWSE-556 | P1 | ACTIVE | issue #556; v8.8.67 / updater-main-381 published; E2E #290 proved the closed WPF ComboBox peer has no raw descendants; v8.8.68 candidate on `fix/issue556-selector-automation-v8.8.68-20261002` | Pass packaged ComboBox peer-value selector acceptance before closing. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche | Expand catalog breadth safely with provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
@@ -56,7 +56,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
 
-**Owner:** #556 v8.8.67 raw-tree UI Automation hardening active on `fix/issue556-uia-diagnostics-v8.8.67-20261002`; #558/#559 must preserve this boundary
+**Owner:** #556 v8.8.68 ComboBox peer-value acceptance active on `fix/issue556-selector-automation-v8.8.68-20261002`; #558/#559 must preserve this boundary
 **Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`
 **Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
 
@@ -68,7 +68,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] v8.8.66 passed exact-head PR gates, merged via PR #563, and published immutable updater-main-380.
 - [x] Preserve Updater Installed Client E2E #289 as a real failed selector-acceptance result rather than closing #556.
 - [x] Add v8.8.67 stable selector automation identity, raw-tree UIA traversal, and console-first failure diagnostics.
-- [ ] Pass exact-head v8.8.67 PR gates, publish the exact integrated release, pass packaged updater E2E selector acceptance, then close #556.
+- [x] v8.8.67 exact-head gates passed; PR #566 merged as `af73d3ce55b3bcbeb5d34184506829e57aca9cba`; Windows Release Gate #381 published immutable updater-main-381.
+- [x] Preserve E2E #290 attempt 2 as deterministic evidence that the closed `ActiveGameSelector` peer exposes zero raw descendants; do not waive or loop the failed child-UIA assertion.
+- [x] Add v8.8.68 `AutomationProperties.ItemStatus={Binding SelectedGame.DisplayName}` plus `TextSearch.TextPath=DisplayName` and switch packaged acceptance to the visible/bounded ComboBox peer value.
+- [ ] Pass exact-head v8.8.68 PR gates, publish the exact integrated release, pass packaged updater E2E selector/Switch/Settings/update/rollback acceptance, then close #556.
 - [x] Add safe HTTPS thumbnails, summary/author/category/download metadata, provider labels, version and update time to Browse Mods.
 - [x] Add selected-mod artwork and preserve exact-file install/source-page behavior.
 - [x] Enable recycled row virtualization.
@@ -78,7 +81,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [ ] Continue #558 with provider-aware pagination/search beyond the first capacity tranche.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** verify/integrate/publish v8.8.67 and require successful raw-tree packaged UI Automation evidence before closing #556; keep #558/#559 non-overlapping.
+**Next action:** verify/integrate/publish v8.8.68 and require successful packaged ComboBox peer-value UI Automation evidence before closing #556; then reconcile #565/#558 on the next available patch while preserving this boundary.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
