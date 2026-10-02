@@ -45,6 +45,43 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Explicit_search_only_runs_search_capable_providers_and_isolates_failures()
+    {
+        var repository = await CreateRepositoryAsync("explicit-search");
+        var service = new CatalogDiscoveryService(new CatalogSyncService(repository));
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-search"));
+        var unsupported = new FakeProvider(
+            "alpha",
+            CatalogProviderCapabilities.Browse | CatalogProviderCapabilities.Metadata);
+        var healthy = new FakeProvider("beta");
+        var offline = new FakeProvider("gamma")
+        {
+            SearchException = new HttpRequestException("offline"),
+            Health = new("gamma", CatalogProviderState.Offline, "offline")
+        };
+
+        var result = await service.SearchAsync(
+            [offline, unsupported, healthy],
+            game,
+            "  dragon blade  ",
+            37,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(10), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(0, unsupported.SearchCalls);
+        Assert.Equal(1, healthy.SearchCalls);
+        Assert.Equal(1, offline.SearchCalls);
+        Assert.NotNull(healthy.LastRequest);
+        Assert.Equal("dragon blade", healthy.LastRequest!.Query);
+        Assert.Equal(37, healthy.LastRequest.Limit);
+        Assert.Equal(["beta", "gamma"], result.Providers.Select(provider => provider.ProviderId).ToArray());
+        Assert.Equal(1, result.SuccessfulProviders);
+        Assert.Equal(1, result.FailedProviders);
+        Assert.Equal(CatalogSyncFailureKind.Offline, result.Providers[1].FailureKind);
+        Assert.NotNull(await repository.GetAsync("beta:mod-1", TestToken));
+    }
+
+    [Fact]
     public async Task Duplicate_provider_ids_fail_before_any_provider_runs()
     {
         var repository = await CreateRepositoryAsync("duplicates");
@@ -94,17 +131,21 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         return new CatalogRepository(db);
     }
 
-    private sealed class FakeProvider(string providerId) : IModCatalogProvider
+    private sealed class FakeProvider(
+        string providerId,
+        CatalogProviderCapabilities? capabilities = null) : IModCatalogProvider
     {
         public string ProviderId => providerId;
         public string DisplayName => providerId;
         public CatalogProviderCapabilities Capabilities =>
-            CatalogProviderCapabilities.Search | CatalogProviderCapabilities.Browse | CatalogProviderCapabilities.Metadata;
+            capabilities ??
+            (CatalogProviderCapabilities.Search | CatalogProviderCapabilities.Browse | CatalogProviderCapabilities.Metadata);
         public CatalogProviderCompliance Compliance =>
             NexusV3CatalogPolicy.Compliance with { ProviderId = providerId };
         public Exception? SearchException { get; set; }
         public Action? OnSearch { get; set; }
         public int SearchCalls { get; private set; }
+        public CatalogBrowseRequest? LastRequest { get; private set; }
         public CatalogProviderHealth Health { get; set; } =
             new(providerId, CatalogProviderState.Connected, "connected");
 
@@ -114,6 +155,7 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         public Task<IReadOnlyList<CatalogMod>> SearchModsAsync(CatalogBrowseRequest request, CancellationToken ct = default)
         {
             SearchCalls++;
+            LastRequest = request;
             OnSearch?.Invoke();
             ct.ThrowIfCancellationRequested();
             if (SearchException is not null)
