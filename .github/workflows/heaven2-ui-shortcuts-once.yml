@@ -23,9 +23,24 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:COMPUTERNAME -ine 'heaven2') {
-            throw "Refusing shortcut mutation on unexpected host '$env:COMPUTERNAME'."
+          if ($env:RUNNER_NAME -ne 'heaven-v2') {
+            throw "Refusing shortcut mutation on unexpected runner '$env:RUNNER_NAME'."
           }
+
+          $localHeartbeatPath = Join-Path $env:USERPROFILE 'HeavenBridge\worker-local-heartbeat.json'
+          $heaven2HeartbeatPath = Join-Path $env:USERPROFILE 'HeavenBridgeRepo\heaven-bridge\status\hosts\heaven2\heartbeat.json'
+          if (-not (Test-Path -LiteralPath $localHeartbeatPath -PathType Leaf)) {
+            throw "Local Heaven Bridge heartbeat is missing: $localHeartbeatPath"
+          }
+          if (-not (Test-Path -LiteralPath $heaven2HeartbeatPath -PathType Leaf)) {
+            throw "Local heaven2 relay heartbeat is missing: $heaven2HeartbeatPath"
+          }
+          $localHeartbeat = Get-Content -LiteralPath $localHeartbeatPath -Raw | ConvertFrom-Json
+          $heaven2Heartbeat = Get-Content -LiteralPath $heaven2HeartbeatPath -Raw | ConvertFrom-Json
+          if ([string]$heaven2Heartbeat.host -ne 'heaven2' -or [int]$localHeartbeat.pid -ne [int]$heaven2Heartbeat.pid) {
+            throw "Runner '$env:RUNNER_NAME' is not backed by the local heaven2 bridge worker. LocalPid=$($localHeartbeat.pid) Heaven2Pid=$($heaven2Heartbeat.pid)"
+          }
+          Write-Host ("HEAVEN2_IDENTITY_OK runner='{0}' computer='{1}' bridge_pid={2}" -f $env:RUNNER_NAME,$env:COMPUTERNAME,$localHeartbeat.pid)
 
           $toolbox = Join-Path $env:USERPROFILE 'local-ai-workspaces\heaven-toolbox'
           $desktop = [Environment]::GetFolderPath('Desktop')
