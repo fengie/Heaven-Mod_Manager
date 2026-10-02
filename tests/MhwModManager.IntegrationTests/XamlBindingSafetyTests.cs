@@ -176,6 +176,29 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void BrowseModsExplicitSearchOnlyQueriesProvidersThatAdvertiseSearch()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search)", source);
+        Assert.Contains("SearchCatalogProvidersAsync(query, ct)", source);
+        Assert.Contains("Query: query", source);
+        Assert.Contains("Provider search failed without blocking cache results.", source);
+        Assert.Contains("Nexus Mods and GameBanana are not probed for unsupported full-catalog search.", source);
+        Assert.Contains("Typing filters the local cache.", xaml);
+        Assert.Contains("Unsupported providers are not probed.", xaml);
+
+        var debounceStart = source.IndexOf("private async Task DebounceCatalogQueryAsync", StringComparison.Ordinal);
+        var runtimeStart = source.IndexOf("private void EnsureCatalogRuntime", debounceStart, StringComparison.Ordinal);
+        Assert.True(debounceStart >= 0 && runtimeStart > debounceStart);
+        var debounce = source[debounceStart..runtimeStart];
+        Assert.Contains("SearchCatalogCacheAsync(ct)", debounce);
+        Assert.DoesNotContain("SearchCatalogProvidersAsync", debounce);
+    }
+
+    [Fact]
     public void ConflictCollectionChangesNotifyDerivedAttentionState()
     {
         var root = FindRepositoryRoot();
