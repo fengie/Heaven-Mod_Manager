@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.70",
+  "currentVersion": "8.8.72",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.69 PR #565 exact head fdecfcccf9e04850acb983e91582d3c915283efa passed Workflow Feature 36981898989, MHW Product Security 36981899021, and Heaven Toolbox Ownership 36981898930, then squash-merged as 7ee321a349098849b9e4db302b20dfa1595ca13b. v8.8.70 addresses issue #571 stale same-root installed-game profile rediscovery.",
+  "immediateParentRevision": "v8.8.71 PR #573 exact head 90fe998b2024aa43f7e3999185c87a98cac6a016 passed Workflow Feature 36983859719, MHW Product Security 36983859681, and Heaven Toolbox Ownership 36983859667, then squash-merged as cd189422d1def33d89f2ebaffb30091f2db4ad23. v8.8.72 closes audit issues #575-#577 and delivers the explicit Browse Mods no-selection state from #559.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; refresh live #571 ownership; require all three exact-head gates for PR #572 v8.8.70 before merge; preserve v8.8.69 catalog semantics and MHW repair safety; after integration continue representative RECOVERY-007 Windows/runtime proof and non-overlapping #558/#559 work; propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve v8.8.72 stable save capture, pre-publication exact-main freshness, post-integration CURRENT_REVISION semantics, and Browse Mods selection gating; keep #559 open for remaining filters/sorting/provider-health/loading/stale/partial-failure scope; prioritize #578 and remaining #558/RECOVERY work from fresh main; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
