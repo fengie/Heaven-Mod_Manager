@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.76</Version>
-    <InformationalVersion>8.8.76-vortex-handoff-interop</InformationalVersion>
+    <Version>8.8.78</Version>
+    <InformationalVersion>8.8.78-contextual-accessibility-upgrade-guidance</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
