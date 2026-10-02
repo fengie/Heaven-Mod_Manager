@@ -1,10 +1,17 @@
-# v8.8.77 — MHW Manual Mod Manager
+# v8.8.78 — MHW Manual Mod Manager
 
-Current product version: **8.8.77**.
+Current product version: **8.8.78**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.78 — contextual accessibility and upgrade guidance
+
+- Give Mod Library preview/gallery images and compact thumbnails contextual UI Automation names tied to the current mod instead of exposing anonymous image controls or cache paths.
+- Give every **Clear mark** action a target-specific accessible name while preserving the visible label, command, and mod identifier.
+- Make the safe-upgrade procedure version-neutral so it always directs users to the current release while preserving existing `Mods` and `State`.
+- Add deterministic XAML/documentation regressions for all three user-facing contracts.
 
 ## v8.8.77 — updater E2E runner allocation repair
 
@@ -20,13 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Harden handoff export with same-directory atomic replacement so interrupted writes cannot replace a previously valid handoff with partial JSON.
 - Keep Steam Workshop unsupported for MHW until a reviewed operation-specific contract exists.
 - Add deterministic interoperability, credential-boundary, path-validation, atomic-export, and isolation regressions.
-
-## v8.8.75 — Mod Library accessibility labels
-
-- Give every whole-mod enable checkbox a target-specific UI Automation name bound to the current mod `DisplayName`.
-- Give every advanced component toggle an accessible name bound to its current component `Label` while preserving native WPF `CheckBox` toggle and keyboard semantics.
-- Keep names data-bound so recycled/virtualized rows resolve against their current item rather than retaining stale accessible identity.
-- Add deterministic XAML regression coverage for both mod-level and component-level automation naming.
 
 ## Current plans & progress
 
@@ -148,8 +148,8 @@ When installed, the script uses `dotnet-stack`, `dotnet-counters`, `dotnet-trace
 1. Close MHW and v7.
 2. Back up the manager folder if you want an additional external copy.
 3. **Do not delete `Mods` or `State`.**
-4. Compile/verify v8.5.0 with the scripts above, or use a Windows build produced by them.
-5. Put the published v8.5.0 files in the manager root next to your existing `Mods` and `State`.
+4. Compile/verify the current release with the scripts above, or use a Windows build produced by them.
+5. Put the published files for the current release in the manager root next to your existing `Mods` and `State`.
 6. Launch `MHW Mod Manager.exe`.
 7. Read the migration report before first Apply.
 8. Run Health.
