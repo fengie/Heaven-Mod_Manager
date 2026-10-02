@@ -23,7 +23,13 @@ Source/test changes are implemented on the branch but are not yet an integrated 
 
 The local Heaven/Agent Control dispatch route is not exposed in this chat session; this limitation is recorded on issue #556. Do not weaken the signed Heaven Bridge/HMAC boundary to work around it.
 
-## Remaining work
+## Unresolved risks and remaining work
+
+- **Unresolved risk:** installed Windows/WPF visual acceptance is still missing for the closed selector. Source/build/test evidence alone does not prove the user-visible selected text is correct in the installed client.
+- The first v8.8.65 Workflow Feature PR Gate run `36963151154` reached 25/26 verification stages: product builds, strict analyzers, 323 core tests, 79 automation tests, 273 integration/fault tests, and self-test passed; only the handoff continuity preflight failed because this section did not explicitly carry an unresolved risk.
+- Product Security run `36963151158` and Heaven Toolbox Ownership run `36963151149` passed on prior PR head `3e4a0be46672c9b57183f08cf0f23969d510e377`. Those greens do not transfer to this changed head; rerun all required gates.
+
+### Ordered continuation
 
 1. Open/verify the v8.8.65 PR and require Workflow Feature PR Gate, MHW Product Security Gate, and Heaven Toolbox Ownership Gate on one exact final head.
 2. Refresh canonical main and ownership before merge; reconcile without dropping concurrent work.
