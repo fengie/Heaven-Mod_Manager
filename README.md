@@ -1,11 +1,26 @@
-# v8.8.70 — MHW Manual Mod Manager
+# v8.8.72 — MHW Manual Mod Manager
 
-Current product version: **8.8.70**.
+Current product version: **8.8.72**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.72 — audit reliability and Browse Mods state hardening
+
+- Make save snapshots fail closed on concurrent live-save mutation, verify stable source/copy SHA-256 identity, retry boundedly, clean incomplete snapshot payloads, and cover same-length/same-timestamp mutation plus cancellation.
+- Re-read canonical `main` immediately before the first updater publication mutation so stale queued release runs cannot publish after a newer main revision lands.
+- Make active `CURRENT_REVISION.json` explicitly post-integration canonical state and reject candidate/task-branch continuity through both the primary validator and negative fixtures.
+- Replace the blank Browse Mods detail surface with an explicit no-selection state and keep install disabled until one exact provider file is selected.
+- Preserve v8.8.71 installed-origin provider snapshot deduplication and #580's reduced release-evidence artifact footprint.
+
+## v8.8.71 — installed-origin provider snapshot deduplication
+
+- Let providers return one authoritative installed-origin mod/file snapshot so exact update checks do not have to repeat provider hydration when both views come from the same response.
+- Use that path for GameBanana, reducing each installed-origin update check from two mod-detail requests to one.
+- Keep the existing fallback for other providers and preserve cancellation, provider health/error classification, exact identity validation, and fail-closed replacement selection.
+- Add deterministic coverage that counts GameBanana detail requests and proves the update result remains exact.
+- Track the separate v8.8.70 stale-profile follow-up gaps under issue #578 rather than folding them into this catalog patch.
 ## v8.8.70 — stale installed-game profile rediscovery
 
 - Let automatic discovery repair a same-root persisted profile whose executable disappeared instead of permanently suppressing that installed game.
@@ -13,21 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Keep live same-root profiles untouched and do not create duplicates.
 - Treat either persisted MHW identity or Steam app `582010` discovery identity as MHW for repair safety, refusing a replacement executable unless it is `MonsterHunterWorld.exe`.
 - Cover the direct and inferred-executable repair paths plus MHW safety regressions deterministically.
-
-## v8.8.69 — provider-aware Browse Mods search
-
-- Keep ordinary Browse Mods typing local to the SQLite/FTS cache; only the explicit **Search** action may contact remote providers.
-- Query only configured providers that advertise `CatalogProviderCapabilities.Search`, persist returned rows through `CatalogSyncService`, and isolate per-provider failures so cached matches remain usable.
-- Preserve providers' declared capability contracts instead of probing unsupported full-catalog text-search modes.
-- Make the advertised 1000-row virtualized Browse Mods capacity real by raising the storage search clamp from 500 to 1000, with a deterministic regression proving results can exceed 500.
-- Preserve the completed v8.8.68 selector/updater acceptance boundary; issue #556 remains closed.
-
-## v8.8.68 — packaged selector peer-value acceptance
-
-- Expose the active game's `DisplayName` on the **ComboBox automation peer itself** through `AutomationProperties.ItemStatus`, because the installed WPF ComboBox peer exposes no raw descendants in the closed state.
-- Add `TextSearch.TextPath="DisplayName"` as a control-level text fallback while retaining the existing `DisplayName` item template, character ellipsis, dark chrome, **Switch**, and **Settings** behavior.
-- Make installed-client E2E validate the visible/bounded ComboBox, its stable accessibility name, and its selected `DisplayName` value instead of requiring an unobservable templated child.
-- Preserve the structural XAML regression that prevents the closed selected presenter from falling back to raw `GameProfile { ... }` text.
 
 ## Current plans & progress
 
@@ -38,10 +38,12 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
-- [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
+- [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
+- [x] **AUDIT-575-577 / P1** — v8.8.72 closes torn-save capture, stale updater publication, and canonical continuity-state defects; it also lands the explicit Browse Mods selection-state subtask from #559.
+- [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
-- [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repairs stale same-root discovered profiles without changing active identity and hardens MHW executable repair; representative Windows/runtime discovery proof remains before DONE.
+- [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
 - [ ] **RECOVERY-005 / P1** — v8.8.58 dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
 
