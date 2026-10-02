@@ -28,6 +28,13 @@ This branch reconciles only still-useful #558 semantics from stale PR #565 onto 
 - A behavioral integration regression inserts and retrieves 600 matching cached rows, proving rows beyond 500 are reachable.
 - Product/version metadata is v8.8.69.
 
+## Unresolved risks
+
+- **Unresolved risk:** no v8.8.69 green claim exists until all three exact-head PR gates pass on the same final head.
+- **Unresolved risk:** the default MHW runtime still has no configured remote-search provider that advertises full-catalog Search; Nexus/GameBanana must not be probed for unsupported search, and CurseForge remains configuration-dependent.
+- **Unresolved risk:** broader #558 pagination needs an explicit continuation model; the current catalog request/result contract does not yet carry provider cursors.
+- **Unresolved risk:** GitHub Actions artifact storage has recently been exhausted, so failures must remain diagnosable from console/persisted evidence.
+
 ## Exact-head completion boundary
 
 1. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final v8.8.69 head.
