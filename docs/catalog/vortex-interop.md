@@ -34,10 +34,10 @@ The file contains only:
 - game identity;
 - local package identity and display name;
 - desired enabled state and priority;
-- optional source/Nexus mod+file identity;
+- optional Nexus mod+file identity;
 - optional captured relative-path SHA-256 values.
 
-It does **not** contain mod archives, cookies, API keys, bearer tokens, signed download URLs, Vortex state databases, or deployment instructions.
+It does **not** contain generic source URLs, mod archives, cookies, API keys, bearer tokens, signed download URLs, Vortex state databases, or deployment instructions.
 
 Import is fail-closed:
 
