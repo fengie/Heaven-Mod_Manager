@@ -36,7 +36,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
-| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche | Expand catalog breadth safely with provider-aware scaling. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; stale PR #565 semantic source; v8.8.69 reconciliation on `agent/issue-558-provider-search-v8.8.69-r2-20261002` | Expand catalog breadth safely with provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
@@ -56,7 +56,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
 
-**Owner:** #556 completed via PR #567 / v8.8.68; #558 is the active catalog-scale lane and #559 remains ready. Both must preserve the closed selector boundary.
+**Owner:** #556 completed via PR #567 / v8.8.68; #558 v8.8.69 provider-search reconciliation is active on `agent/issue-558-provider-search-v8.8.69-r2-20261002`; #559 remains ready. Both must preserve the closed selector boundary.
 **Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`; #567 at merge `7def58c1b16d115e1555738ebad51717d1c1f752`
 **Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
 
@@ -78,10 +78,12 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Raise first-tranche refresh/cache limits to 100/provider and 1000 visible cached rows.
 - [x] Add focused source/XAML regression guards.
 - [x] Exact head `3ced8b41041909d91b06902631ef36085bfd7489` passed all required PR #561 gates and integrated #556/#557 as `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`.
-- [ ] Continue #558 with provider-aware pagination/search beyond the first capacity tranche.
+- [x] Reconcile capability-gated explicit provider text search from stale PR #565 onto fresh v8.8.68 main as v8.8.69: typing stays cache-only, explicit Search queries only providers advertising `CatalogProviderCapabilities.Search`, provider failures remain isolated, and unsupported Nexus/GameBanana full-catalog search is not invented.
+- [ ] Pass all three exact-head v8.8.69 PR gates and integrate the reconciled provider-search tranche.
+- [ ] Continue #558 with provider-aware pagination/browse expansion and deterministic scale/performance coverage.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** reconcile the still-useful PR #565 / #558 provider-search semantics onto fresh v8.8.68 main as v8.8.69, preserving the now-verified selector boundary; then run exact-head gates before integration.
+**Next action:** open the v8.8.69 #558 reconciliation PR, require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact head, integrate only that green candidate, then continue broader pagination/scale work.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
