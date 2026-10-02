@@ -331,6 +331,42 @@ public sealed partial class XamlBindingSafetyTests
             "<CheckBox IsChecked=\"{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\" VerticalAlignment=\"Center\" AutomationProperties.Name=\"{Binding Label}\"",
             xaml);
     }
+    [Fact]
+    public void ModLibraryImagesAndIssueActionsExposeContextualAutomationNames()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains(
+            "AutomationProperties.Name=\"{Binding DataContext.DisplayName,RelativeSource={RelativeSource AncestorType=DataGridRow},StringFormat='Preview image for {0}'}\"",
+            xaml);
+        Assert.Contains(
+            "AutomationProperties.Name=\"{Binding DisplayName,StringFormat='Thumbnail for {0}'}\"",
+            xaml);
+        Assert.Contains(
+            "Content=\"Clear mark\" Command=\"{Binding DataContext.ClearIssueSuspectCommand,RelativeSource={RelativeSource AncestorType=Window}}\" CommandParameter=\"{Binding ModId}\"",
+            xaml);
+        Assert.Contains(
+            "AutomationProperties.Name=\"{Binding DisplayName,StringFormat='Clear problem mark for {0}'}\"",
+            xaml);
+        Assert.DoesNotContain("AutomationProperties.Name=\"{Binding}\"", xaml);
+    }
+
+    [Fact]
+    public void SafeUpgradeProcedureUsesCurrentReleaseWording()
+    {
+        var root = FindRepositoryRoot();
+        var readme = File.ReadAllText(Path.Combine(root, "README.md"));
+        var start = readme.IndexOf("## Safe upgrade procedure", StringComparison.Ordinal);
+        var end = readme.IndexOf("## Source layout", start, StringComparison.Ordinal);
+
+        Assert.True(start >= 0 && end > start);
+        var procedure = readme[start..end];
+        Assert.DoesNotContain("v8.5.0", procedure, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("current release", procedure, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("`Mods`", procedure, StringComparison.Ordinal);
+        Assert.Contains("`State`", procedure, StringComparison.Ordinal);
+    }
 
     private static string FindRepositoryRoot()
     {
