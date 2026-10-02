@@ -32,8 +32,7 @@
     "Issue #558 remains open: v8.8.69 adds capability-gated explicit provider text search, but broader provider-aware pagination/browse expansion and deterministic scale/performance coverage remain.",
     "Issue #559 remains open for Browse Mods filtering, sorting, provider-health presentation, loading/empty/partial-failure states, and broader discovery UX.",
     "v8.8.64 live remote-thumbnail rendering still needs installed Windows/WPF visual acceptance.",
-    "Heaven Local Bridge health probes for heaven2/heaven produced no durable status/result/heartbeat during v8.8.66 implementation, so no local-agent verification is available for this candidate.",
-    "GitHub Actions artifact storage quota is exhausted, so installed-client failure evidence must be emitted to the workflow console until quota is available again.",
+    "GitHub Actions artifact storage has recently been exhausted, so failure evidence must remain diagnosable from console/persisted evidence when artifact upload is unavailable.",
     "v8.8.69 production/source changes are unverified until Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership pass on the exact final reconciled head."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
