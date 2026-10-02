@@ -94,6 +94,59 @@ if(Test-Path -LiteralPath $updaterPrGatePath){
     }
 }
 
+
+# Heaven/local-machine telemetry must be allowlisted. Canonical workflows may not
+# serialize arbitrary process command lines or unrestricted local heartbeat/state.
+$identityProbePath=Join-Path $workflowRoot 'heaven2-identity-probe-once.yml'
+if(Test-Path -LiteralPath $identityProbePath){
+    $errors.Add('heaven2-identity-probe-once.yml is a completed one-shot diagnostic and must not remain on canonical main.')
+}
+
+foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.yml','.yaml') })){
+    $workflowText=Get-Content -LiteralPath $workflow.FullName -Raw
+    if($workflowText -match '(?i)\bWin32_Process\b' -or $workflowText -match '(?i)\.CommandLine\b'){
+        $errors.Add("$($workflow.Name): workflows must not enumerate or serialize arbitrary process command lines.")
+    }
+    if($workflowText -match '(?i)worker-local-heartbeat\.json'){
+        $errors.Add("$($workflow.Name): workflows must not publish unrestricted local heartbeat/state files.")
+    }
+    if($workflowText -match '(?is)\bheartbeat\b.{0,500}\bConvertTo-Json\b|\bConvertTo-Json\b.{0,500}\bheartbeat\b'){
+        $errors.Add("$($workflow.Name): heartbeat/state telemetry must be an explicit reviewed allowlist, not arbitrary JSON serialization.")
+    }
+}
+
+# Synthetic canaries exercise the allowlist model used for any future identity/liveness
+# diagnostic: only reviewed non-secret identity fields survive projection.
+$canaryArguments=@(
+    '--token CANARY_TOKEN_SPACE_591',
+    '--token=CANARY_TOKEN_EQUALS_591',
+    '--api-key "CANARY_QUOTED_591"',
+    'Authorization: Bearer CANARY_BEARER_591',
+    'https://user:CANARY_URL_591@example.invalid/path',
+    '--future-secret CANARY_UNKNOWN_591'
+)
+$unsafeHeartbeat=[pscustomobject]@{
+    WorkerId='expected-worker'
+    Classification='heaven-v2'
+    Status='alive'
+    SecretField='CANARY_HEARTBEAT_591'
+    ArbitraryCommandLine=($canaryArguments -join ' ')
+}
+$safeTelemetry=[ordered]@{
+    workerId=[string]$unsafeHeartbeat.WorkerId
+    classification=[string]$unsafeHeartbeat.Classification
+    status=[string]$unsafeHeartbeat.Status
+}
+$serializedSafeTelemetry=$safeTelemetry | ConvertTo-Json -Compress
+foreach($expected in @('"workerId":"expected-worker"','"classification":"heaven-v2"','"status":"alive"')){
+    if(-not $serializedSafeTelemetry.Contains($expected)){
+        $errors.Add("Safe identity telemetry allowlist dropped required liveness field: $expected")
+    }
+}
+if($serializedSafeTelemetry -match 'CANARY_' -or $serializedSafeTelemetry -match '(?i)token|api-key|authorization|password|secret|https?://'){
+    $errors.Add('Safe identity telemetry projection leaked a synthetic credential or unreviewed secret-bearing field.')
+}
+
 if($errors.Count -gt 0){
     Write-Host "MHW product security policy failed with $($errors.Count) violation(s):" -ForegroundColor Red
     foreach($item in $errors){Write-Host " - $item" -ForegroundColor Red}
