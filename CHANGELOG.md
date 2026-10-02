@@ -1,3 +1,11 @@
+# v8.8.67 — 2026-10-02
+
+- Give the active-game ComboBox its own stable Windows UI Automation ID and explicitly expose the rendered game-name TextBlock's accessible name.
+- Make packaged selector acceptance traverse the WPF raw automation tree instead of relying on Control View descendants, while still rejecting any raw `GameProfile { ... }` rendering.
+- Capture bounded raw-tree diagnostics in selector failures so headless/session-specific accessibility behavior can be debugged precisely.
+- Print installed-client E2E logs and failure evidence directly into the Actions console before failing, so diagnostics remain available even when GitHub artifact storage is full.
+- Keep issue #556 open until the exact v8.8.67 package passes update, rendered-selector UI acceptance, adjacent-action checks, and rollback.
+
 # v8.8.66 — 2026-10-02
 
 - Extend the real packaged updater E2E so it inspects the updated WPF application's UI Automation tree and verifies the closed header game selector renders the active profile's human-readable display name.
