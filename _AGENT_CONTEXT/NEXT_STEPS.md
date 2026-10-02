@@ -1,10 +1,9 @@
-# v8.8.70 MHW product — ordered next actions
+# v8.8.72 MHW product — ordered next actions
 
-1. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final PR #572 head.
-2. Fix concrete failures only; preserve profile ID, active-game selection, live-profile no-op behavior, root containment, and the MHW executable identity guard.
-3. Refresh issue #571 ownership and canonical `main` immediately before merge; integrate only one exact green, mergeable head.
-4. Verify remote `main` contains the stale same-root repair and MHW Steam-identity regression after merge; confirm #571 closes.
-5. Persist post-merge continuity evidence for v8.8.70.
-6. Continue #558 provider pagination/scale, #559 discovery UX, and representative RECOVERY-007 Windows/runtime proof as non-overlapping work.
+1. Require Workflow Feature, MHW Product Security, Heaven Toolbox Ownership, and updater-publication PR validation on the exact final v8.8.72 head.
+2. Fix concrete failures only; preserve stable save-copy verification, pre-publication canonical-main freshness, post-integration continuity semantics, and Browse Mods exact-file gating.
+3. Refresh canonical `main` and mergeability immediately before integration; do not reuse predecessor gate results.
+4. Merge only one exact green reconciled head, verify remote `main`, and confirm #575, #576, and #577 close. Keep #559 open for remaining UX scope.
+5. Prioritize issue #578's stale-profile lifecycle edge cases, then continue #558/#559 and representative RECOVERY-005/RECOVERY-007 Windows/runtime acceptance.
 
 Every successor must read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md` context onward to the next agent.
