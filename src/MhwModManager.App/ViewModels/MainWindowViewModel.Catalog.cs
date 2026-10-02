@@ -385,7 +385,83 @@ public sealed partial class MainWindowViewModel
     private async Task SearchCatalog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await SearchCatalogCacheAsync(CancellationToken.None);
+        var query = CatalogQuery.Trim();
+        if (query.Length == 0)
+        {
+            await SearchCatalogCacheAsync(CancellationToken.None);
+            return;
+        }
+
+        await RunBusy(
+            "catalog.search",
+            "Searching mod catalog",
+            "Querying providers that advertise text search, then updating the local cache…",
+            true,
+            ct => SearchCatalogProvidersAsync(query, ct));
+    }
+
+    private async Task SearchCatalogProvidersAsync(string query, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        EnsureCatalogRuntime();
+        var sync = catalogSync ?? throw new InvalidOperationException("Catalog sync runtime is unavailable.");
+        var providers = catalogProviders ?? Array.Empty<IModCatalogProvider>();
+        var searchable = providers
+            .Where(provider => provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search))
+            .ToArray();
+
+        var successes = 0;
+        var failures = 0;
+        var discovered = 0;
+        var details = new List<string>();
+
+        foreach (var provider in searchable)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var result = await sync.SyncAsync(
+                    provider,
+                    new CatalogBrowseRequest(
+                        s.Paths.Game,
+                        Query: query,
+                        Limit: CatalogProviderRefreshLimit),
+                    new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
+                    ct);
+                successes++;
+                discovered += result.ItemCount;
+                details.Add($"{provider.DisplayName}: {result.ItemCount}");
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                failures++;
+                details.Add($"{provider.DisplayName}: unavailable");
+                MasterDebugLog.Write(
+                    "CATALOG-UI",
+                    $"Provider search failed without blocking cache results. provider={provider.ProviderId}",
+                    ex);
+            }
+        }
+
+        await SearchCatalogCacheAsync(ct);
+
+        if (searchable.Length == 0)
+        {
+            CatalogProviderSummary =
+                "No configured provider advertises remote text search; showing matching cached items only.";
+            CatalogStatusText =
+                "Cached search complete. Nexus Mods and GameBanana are not probed for unsupported full-catalog search.";
+            return;
+        }
+
+        CatalogProviderSummary =
+            $"{successes}/{searchable.Length} search-capable provider(s) queried · {discovered} item(s) received" +
+            (failures > 0 ? $" · {failures} isolated failure(s)" : "");
+        CatalogStatusText = string.Join("  •  ", details);
     }
 
     private async Task SearchCatalogCacheAsync(CancellationToken ct)
