@@ -1,3 +1,11 @@
+# v8.8.77 — 2026-10-02
+
+- Canonicalize live generic same-root Monster Hunter: World profiles when authoritative discovery resolves the real `MonsterHunterWorld.exe`.
+- Refuse new Steam app 582010 registration when executable discovery resolves a launcher or other non-MHW executable.
+- Add deterministic canonical-repair, restart-idempotency, and no-mutation rejection regressions.
+- Advance the canonical v8.8.76 verification boundary to source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52` / hosted Windows run `37060606949` (26/26 PASS).
+- Strengthen continuity validation so canonical-main state cannot instruct successors to integrate the version it already declares canonical.
+
 # v8.8.76 — 2026-10-02
 
 - Add a credential-free, schema-bounded Vortex handoff contract for Monster Hunter: World without reading Vortex private state, credentials, cookies, deployment folders, or authenticated download state.
