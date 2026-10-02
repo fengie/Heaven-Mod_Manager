@@ -1,12 +1,12 @@
-# v8.8.78 — MHW Manual Mod Manager
+# v8.8.79 — MHW Manual Mod Manager
 
-Current product version: **8.8.78**.
+Current product version: **8.8.79**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.78 — contextual accessibility and upgrade guidance
+## v8.8.79 — contextual accessibility and upgrade guidance
 
 - Give Mod Library preview/gallery images and compact thumbnails contextual UI Automation names tied to the current mod instead of exposing anonymous image controls or cache paths.
 - Give every **Clear mark** action a target-specific accessible name while preserving the visible label, command, and mod identifier.
