@@ -222,7 +222,7 @@ jobs:
         with:
           name: updater-installed-client-e2e-${{ github.sha }}
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 3
           path: |
             ${{ github.workspace }}\BuildLogs\updater-installed-e2e\**
 
