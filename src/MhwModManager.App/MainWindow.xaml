@@ -47,7 +47,7 @@
                         <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" AutomationProperties.Name="Active game" ToolTip="{Binding SelectedGame.DisplayName}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" AutomationProperties.AutomationId="ActiveGameDisplayName"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>

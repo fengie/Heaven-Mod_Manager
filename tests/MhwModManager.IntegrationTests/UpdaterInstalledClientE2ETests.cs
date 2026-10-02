@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Windows.Automation;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using MhwModManager.Updater;
@@ -15,6 +17,9 @@ public sealed class UpdaterInstalledClientE2ETests
     private const string OldTag = "updater-main-60";
     private const long OldBuild = 60;
     private const string OldSource = "ffd218b6ad4e9f4fea4b143d266712a6fa17a285";
+    private const string ActiveGameSelectorAutomationName = "Active game";
+    private const string ActiveGameDisplayAutomationId = "ActiveGameDisplayName";
+    private const string ExpectedFakeGameDisplayName = "Updater E2E Fake Game";
 
     private static readonly JsonSerializerOptions EvidenceJson = new(UpdateProtocol.Json)
     {
@@ -136,6 +141,12 @@ public sealed class UpdaterInstalledClientE2ETests
             Assert.Equal(targetBuild, installedIdentity.BuildNumber);
             Assert.Equal(targetSource, installedIdentity.SourceSha, ignoreCase: true);
 
+            var selectorUi = await VerifyInstalledSelectorUiAsync(
+                confirmed.Health.ProcessId,
+                ExpectedFakeGameDisplayName,
+                TimeSpan.FromSeconds(30),
+                TestToken);
+
             var targetManifest = await UpdatePackageVerifier.VerifyAsync(
                 confirmed.Request.StagingRoot,
                 confirmed.Request.Manifest.ProductManifestSha256,
@@ -161,6 +172,9 @@ public sealed class UpdaterInstalledClientE2ETests
                 healthAttemptId = confirmed.Health.AttemptId,
                 healthBuild = confirmed.Health.BuildNumber,
                 healthSource = confirmed.Health.SourceSha,
+                selectorDisplayText = selectorUi.DisplayText,
+                switchButtonEnabled = selectorUi.SwitchButtonEnabled,
+                settingsButtonEnabled = selectorUi.SettingsButtonEnabled,
                 journalPhase = confirmed.Journal.Phase.ToString(),
                 sentinelSha256 = successSentinelsAfter
             };
@@ -369,6 +383,144 @@ public sealed class UpdaterInstalledClientE2ETests
             $"Timed out waiting for real installed-client update to confirm build {targetBuild}.");
     }
 
+    private static async Task<SelectorUiEvidence> VerifyInstalledSelectorUiAsync(
+        int processId,
+        string expectedDisplayName,
+        TimeSpan timeout,
+        CancellationToken ct)
+    {
+        var deadline = DateTimeOffset.UtcNow + timeout;
+        Exception? lastError = null;
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                using var process = Process.GetProcessById(processId);
+                if (process.HasExited)
+                    throw new InvalidOperationException(
+                        $"Updated client process {processId} exited before UI acceptance.");
+
+                process.Refresh();
+                AutomationElement? window = null;
+                if (process.MainWindowHandle != IntPtr.Zero)
+                    window = AutomationElement.FromHandle(process.MainWindowHandle);
+
+                window ??= FindTopLevelWindowForProcess(processId);
+                if (window is null)
+                    throw new InvalidOperationException(
+                        $"No top-level WPF window is available for updated client process {processId}.");
+
+                var selector = window.FindFirst(
+                    TreeScope.Descendants,
+                    new AndCondition(
+                        new PropertyCondition(
+                            AutomationElement.ControlTypeProperty,
+                            ControlType.ComboBox),
+                        new PropertyCondition(
+                            AutomationElement.NameProperty,
+                            ActiveGameSelectorAutomationName)));
+
+                if (selector is null)
+                    throw new InvalidOperationException(
+                        $"Could not find the '{ActiveGameSelectorAutomationName}' ComboBox in the updated client.");
+
+                var display = selector.FindFirst(
+                    TreeScope.Descendants,
+                    new PropertyCondition(
+                        AutomationElement.AutomationIdProperty,
+                        ActiveGameDisplayAutomationId));
+
+                var displayText = display?.Current.Name?.Trim();
+                if (!string.Equals(displayText, expectedDisplayName, StringComparison.Ordinal))
+                {
+                    var renderedText = GetRenderedText(selector);
+                    if (renderedText.Any(
+                            text => text.Contains("GameProfile {", StringComparison.Ordinal)))
+                        throw new InvalidOperationException(
+                            "Installed selector rendered raw GameProfile record text instead of DisplayName.");
+
+                    throw new InvalidOperationException(
+                        $"Installed selector display text was '{displayText ?? "<missing>"}'; expected '{expectedDisplayName}'. " +
+                        $"Rendered text: [{string.Join(", ", renderedText.Select(x => $"'{x}'"))}]");
+                }
+
+                var switchButton = FindNamedButton(window, "Switch");
+                if (switchButton is null || !switchButton.Current.IsEnabled)
+                    throw new InvalidOperationException(
+                        "Installed selector acceptance could not find an enabled Switch button.");
+
+                var settingsButton = FindNamedButton(window, "Settings");
+                if (settingsButton is null || !settingsButton.Current.IsEnabled)
+                    throw new InvalidOperationException(
+                        "Installed selector acceptance could not find an enabled Settings button.");
+
+                var confirmedDisplayText = displayText
+                    ?? throw new InvalidOperationException(
+                        "Installed selector matched the expected name but exposed a null display text.");
+
+                return new SelectorUiEvidence(
+                    confirmedDisplayText,
+                    switchButton.Current.IsEnabled,
+                    settingsButton.Current.IsEnabled);
+            }
+            catch (Exception ex) when (
+                ex is ArgumentException
+                    or InvalidOperationException
+                    or ElementNotAvailableException
+                    or COMException)
+            {
+                lastError = ex;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(250), ct);
+        }
+
+        throw new TimeoutException(
+            $"Timed out waiting for installed selector UI acceptance for process {processId}. " +
+            $"Last error: {lastError?.Message ?? "none"}",
+            lastError);
+    }
+
+    private static AutomationElement? FindTopLevelWindowForProcess(int processId)
+    {
+        var windows = AutomationElement.RootElement.FindAll(
+            TreeScope.Children,
+            new PropertyCondition(AutomationElement.ProcessIdProperty, processId));
+        for (var i = 0; i < windows.Count; i++)
+        {
+            var window = windows[i];
+            if (window.Current.ControlType == ControlType.Window)
+                return window;
+        }
+
+        return null;
+    }
+
+    private static AutomationElement? FindNamedButton(AutomationElement root, string name) =>
+        root.FindFirst(
+            TreeScope.Descendants,
+            new AndCondition(
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button),
+                new PropertyCondition(AutomationElement.NameProperty, name)));
+
+    private static string[] GetRenderedText(AutomationElement selector)
+    {
+        var textElements = selector.FindAll(
+            TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text));
+        var rendered = new List<string>(textElements.Count);
+        for (var i = 0; i < textElements.Count; i++)
+        {
+            var text = textElements[i].Current.Name?.Trim();
+            if (!string.IsNullOrWhiteSpace(text))
+                rendered.Add(text);
+        }
+
+        return rendered.Distinct(StringComparer.Ordinal).ToArray();
+    }
+
     private static void PrepareFakeGame(string managerHome, string fakeGameRoot)
     {
         Directory.CreateDirectory(fakeGameRoot);
@@ -381,7 +533,7 @@ public sealed class UpdaterInstalledClientE2ETests
         var registry = new GameProfileRegistry(stateRoot);
         var profile = GameProfile.Generic(
             "updater-e2e-game",
-            "Updater E2E Fake Game",
+            ExpectedFakeGameDisplayName,
             fakeGameRoot,
             "FakeGame.exe",
             "Mods");
@@ -683,6 +835,10 @@ public sealed class UpdaterInstalledClientE2ETests
         }
     }
 
+    private sealed record SelectorUiEvidence(
+        string DisplayText,
+        bool SwitchButtonEnabled,
+        bool SettingsButtonEnabled);
     private sealed record DownloadedRelease(UpdateManifest Manifest, string ArchivePath);
     private sealed record ReleaseAsset(string Name, string ApiUrl, long Size, string? Digest);
     private sealed record ConfirmedTransaction(

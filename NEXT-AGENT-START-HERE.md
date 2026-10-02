@@ -1,52 +1,52 @@
-# v8.8.65 header selector selected-text repair — integrated source handoff
+# v8.8.66 installed selector UI acceptance — current handoff
 
-Canonical MHW product repository: `fengie/mhw-mods`
-Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Current branch: `main`
-Verified PR head: `236d3604f1df245f9c224eda3f21f2177979cfd2`
-Merge commit: `c3f238cbe4f1850763736bac999af0577a4606c5`
-Issue: #556 remains open for installed-client visual acceptance
+Canonical repository: `fengie/mhw-mods`
+Global bootstrap/training: `fengie/heaven-toolbox@main`
+Active branch: `fix/issue556-installed-ui-acceptance-v8.8.66-20261002`
+Issue: #556
+Parent canonical main at task start: `480e7efd0bf85b260594d8386e6162d39ec7b924`
 
-## Integrated change
+## Objective
 
-Installed UI evidence showed that v8.8.64 templated dropdown rows but the closed header selector could still render raw `GameProfile { ... }` text.
+Prevent the escaped header selector regression from passing release validation again. v8.8.65 fixed the shared ComboBox selected-content template, but the previous acceptance only proved source/build/update behavior, not the rendered selected game text in the packaged client.
 
-v8.8.65 fixes the actual shared ComboBox selected-content path:
+## v8.8.66 candidate
 
-- the app-owned ComboBox template keeps `SelectionBoxItem` as the selected content;
-- the closed presenter reuses `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat`;
-- the header's existing `DisplayName` template therefore applies to both dropdown rows and the selected game;
-- focused regression coverage rejects the broken `SelectionBoxItemTemplate` fallback.
+- The header game-name TextBlock now carries `AutomationProperties.AutomationId="ActiveGameDisplayName"` while retaining `TextTrimming="CharacterEllipsis"`.
+- The integration test project enables WPF references and the real packaged updater E2E inspects the newly updated client's Windows UI Automation tree.
+- Packaged acceptance requires:
+  - the `Active game` ComboBox to exist;
+  - its rendered `ActiveGameDisplayName` text to equal `Updater E2E Fake Game`;
+  - no raw `GameProfile { ... }` text;
+  - enabled Switch and Settings buttons.
+- The updater E2E evidence verifier rejects missing/incorrect selector text or disabled adjacent actions and persists those fields in evidence.
 
 ## Verification state
 
-Exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed all required gates:
+Not yet integrated. Exact-head PR gates and the post-merge Windows release / installed-client E2E must still pass.
 
-- Workflow Feature PR Gate run `36963458484`;
-- MHW Product Security Gate run `36963458384`;
-- Heaven Toolbox Ownership Gate run `36963458431`.
+The mandatory local-offload route was attempted before mechanical implementation:
+- bridge health job `chatgpt-20261002-043000-issue556-health-heaven2`;
+- bridge health job `chatgpt-20261002-043000-issue556-health-heaven`.
+Neither produced a status/result, and neither host heartbeat was readable from the relay. No local-agent execution or local build is claimed. Do not weaken HMAC/bridge controls to compensate.
 
-The verified head merged to canonical `main` as `c3f238cbe4f1850763736bac999af0577a4606c5`. Remote-main readback confirms the selected presenter uses `ItemTemplate`/`ItemTemplateSelector`/`ItemStringFormat`, no longer uses `SelectionBoxItemTemplate`, and the product version is 8.8.65.
+## Unresolved risks
 
-The first Workflow Feature attempt `36963151154` is preserved as useful evidence: all builds/tests passed, but the handoff preflight correctly rejected missing explicit unresolved-risk wording. That metadata failure was repaired before the final exact-head run.
+- **Unresolved risk:** UI Automation may expose the WPF DataTemplate differently on the self-hosted runner; exact-head CI is required to prove the test compiles and the packaged E2E can observe the rendered element.
+- **Unresolved risk:** #556 is not DONE until the exact v8.8.66 release is published and the installed-client E2E passes the selector assertions.
+- Live thumbnail visual acceptance remains separate from #556.
 
-## Unresolved risks and remaining work
+## Ordered next actions
 
-- **Unresolved risk:** installed Windows/WPF visual acceptance is still missing for the closed selector. Source/build/test evidence does not substitute for confirming the installed app actually shows a human-readable selected game such as `Monster Hunter: World`.
-- Issue #556 must remain open until that installed-client acceptance is recorded.
-- Live remote-thumbnail acceptance from v8.8.64 remains a separate UI evidence gap.
-- #558/#559 remain the next catalog breadth/discovery lanes and must not regress the selector contract.
-- The local Heaven/Agent Control dispatch route was not exposed in the chat session that integrated this source fix; do not weaken the signed Heaven Bridge/HMAC boundary to work around unavailable routing.
-
-### Ordered continuation
-
-1. Install/run a build containing v8.8.65 on Windows and verify the closed header selector shows `GameProfile.DisplayName`, then open the dropdown and switch games to check both surfaces.
-2. Record the installed-client evidence and close #556 only if the visual/interaction check passes.
-3. If it still fails, attach the new screenshot plus `MHW-DEBUG-ALL.log` and treat that as a new runtime reproduction rather than reopening the already-correct source contract blindly.
-4. Continue #558/#559 after #556 acceptance without weakening provider/acquisition safety.
+1. Open the v8.8.66 PR and run Workflow Feature, Product Security, and Toolbox Ownership gates on one exact head.
+2. Repair concrete failures only; do not weaken UI acceptance.
+3. Refresh main/ownership, merge only when exact-head gates are green, and verify remote main.
+4. Allow Windows Release Gate to publish the exact integrated v8.8.66 source without advancing release-relevant main while publication runs.
+5. Require Updater Installed Client E2E to pass the new selector evidence checks.
+6. Close #556 only after that packaged acceptance passes; then update canonical handoff/state without another product version bump.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full, refresh live ownership/state before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full as required, refresh claims/issues before mutation, preserve the permanent continuity constitution and active Learned Rules, and propagate the same obligation. **Do not break the chain.**
 
 The successor must propagate this continuity obligation to the next agent.

@@ -1,24 +1,20 @@
-# v8.8.65 header selector selected-text repair — source integrated, runtime acceptance pending
+# v8.8.66 installed selector UI acceptance — candidate state
 
-MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
+Issue #556 remains ACTIVE. v8.8.65 fixed the source-level ComboBox selected presenter and published updater-main-379 successfully, but the escaped regression demonstrated that source/XAML verification alone is too weak for this UI boundary.
 
-Issue #556 was reopened from installed Windows/WPF evidence because v8.8.64 fixed dropdown rows but the custom ComboBox closed presenter could still render the selected `GameProfile` through object text.
+## Candidate work
 
-## Current MHW product work
-
-- **BROWSE-556 / P1:** ACTIVE for runtime acceptance. v8.8.65 source/test fix is integrated on canonical main via PR #562; the shared ComboBox selected presenter now reuses `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat`.
-- **BROWSE-557 / P1:** DONE in v8.8.64 via PR #561.
-- **CATALOG-SCALE-558 / P1:** ACTIVE. First capacity tranche is integrated; deeper provider-aware pagination/search remains open.
-- **BROWSE-UX-559 / P1:** READY. Filters, sorting, provider-health and richer discovery states remain follow-up work.
-- **RECOVERY-005 / P1:** source/test dark ComboBox work is integrated; installed WPF interaction acceptance remains an evidence gap.
-- **RECOVERY-007 / P0:** installed-game discovery source is integrated; representative Windows/runtime proof remains.
+- Add a stable UI Automation ID to the rendered active-game TextBlock.
+- Extend the real packaged updater E2E to inspect the updated WPF process and require the active game's rendered display text.
+- Detect raw `GameProfile { ... }` output in the selector automation subtree.
+- Require Switch and Settings to remain enabled.
+- Persist selector evidence and make the E2E workflow reject missing/incorrect evidence.
 
 ## Verification boundary
 
-Exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed Workflow Feature run `36963458484`, Product Security run `36963458384`, and Toolbox Ownership run `36963458431`, then merged as `c3f238cbe4f1850763736bac999af0577a4606c5`.
+Candidate branch: `fix/issue556-installed-ui-acceptance-v8.8.66-20261002`.
+No v8.8.66 green claim exists yet. Required PR gates, Windows release publication, and packaged updater E2E must attach to exact source before #556 can close.
 
-Remote-main readback confirms the v8.8.65 selected presenter contract is present. Installed Windows/WPF visual acceptance is still required before issue #556 can be DONE.
+## Routing
 
-## Coordination
-
-The local Heaven/Agent Control dispatch route was not exposed in the integrating chat session. Do not bypass or weaken the Heaven Bridge HMAC boundary. Future #558/#559 work must preserve the integrated selector contract.
+Heaven Local Bridge health probes for both heaven2 and heaven were submitted but produced no status/result and no readable host heartbeat. Local-agent offload is therefore unavailable for this turn; no local-agent/build result is claimed.

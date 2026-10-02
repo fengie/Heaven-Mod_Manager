@@ -1,10 +1,17 @@
-# v8.8.65 — MHW Manual Mod Manager
+# v8.8.66 — MHW Manual Mod Manager
 
-Current product version: **8.8.65**.
+Current product version: **8.8.66**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.66 — packaged selector UI acceptance
+
+- Extend the **real installed-client updater E2E** to inspect the newly updated WPF app through Windows UI Automation and require the selected game text to equal the active profile's `DisplayName`.
+- Detect the escaped `GameProfile { ... }` rendering regression at the packaged-client boundary instead of trusting source XAML alone.
+- Require the neighboring **Switch** and **Settings** actions to remain enabled during selector acceptance, while preserving character ellipsis for long names.
+- Persist selector text/button evidence and make the updater E2E workflow reject missing or incorrect UI evidence before issue #556 can close.
 
 ## v8.8.65 — selected game text follow-up
 
@@ -21,21 +28,13 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Enable recycled row virtualization and raise the initial provider refresh cap from 60 to 100 items plus the cached visible-result cap from 250 to 1000.
 - Add focused XAML/source regressions; deeper provider-aware pagination/search and discovery controls remain tracked in #558/#559.
 
-## v8.8.63 — crawler containment hardening
-
-- Make permitted-crawler path allowlists segment-safe so a prefix such as `/mods` cannot authorize sibling paths such as `/mods-evil`.
-- Replace arbitrary `HttpClient` injection with a crawler-owned production transport that explicitly disables automatic redirects.
-- Follow only a bounded set of redirects manually, validating HTTPS origin, port, user-info, and approved path before every follow-up request.
-- Reject missing, looping, excessive, off-origin, HTTP, alternate-port, credentialed, and out-of-prefix redirects before a disallowed target is contacted.
-- Add deterministic redirect-attempt and malformed-prefix regressions while preserving compliance review, kill switch, HTML/content-size bounds, and cancellation.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
-- [ ] **BROWSE-556 / P1** — v8.8.65 source fix passed all three exact-head gates and merged via PR #562; installed Windows/WPF visual confirmation remains before closing #556.
+- [ ] **BROWSE-556 / P1** — v8.8.66 adds packaged Windows/WPF UI Automation acceptance for the selected game text plus Switch/Settings availability; exact-head gates, publication, and packaged E2E still must pass before #556 closes.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 integrated the first cache/provider capacity tranche; deeper provider-aware discovery/pagination remains open under #558.
 - [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.

@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.65",
+  "currentVersion": "8.8.66",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.65 selector source fix exact PR #562 head 236d3604f1df245f9c224eda3f21f2177979cfd2 passed Workflow Feature run 36963458484, Product Security run 36963458384, and Toolbox Ownership run 36963458431 and merged as c3f238cbe4f1850763736bac999af0577a4606c5; #556 remains open only for installed Windows/WPF visual acceptance.",
+  "immediateParentRevision": "v8.8.65 selector source fix was integrated through PR #562 and published as updater-main-379; v8.8.66 adds packaged Windows UI Automation acceptance because source-level checks were insufficient to prevent the escaped raw GameProfile rendering regression.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh live claims/issues; obtain installed Windows/WPF acceptance for the integrated v8.8.65 selector fix and close #556 only if it passes; preserve HMAC/provider safety and recursively preserve the continuity constitution.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh issue/claim state; finish v8.8.66 exact-head PR verification, release publication, and installed-client selector UIA acceptance before closing #556; preserve bridge HMAC and recursively preserve continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

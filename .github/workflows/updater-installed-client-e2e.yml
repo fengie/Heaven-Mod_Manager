@@ -170,12 +170,24 @@ jobs:
           if ($doc.scenarioA.status -ne 'PASS') {
             throw "Installed-client update scenario did not pass: $($doc.scenarioA.status)"
           }
+          if ([string]$doc.scenarioA.selectorDisplayText -ne 'Updater E2E Fake Game') {
+            throw "Installed-client selector UI acceptance failed: '$($doc.scenarioA.selectorDisplayText)'."
+          }
+          if (-not [bool]$doc.scenarioA.switchButtonEnabled) {
+            throw 'Installed-client selector UI acceptance did not retain an enabled Switch button.'
+          }
+          if (-not [bool]$doc.scenarioA.settingsButtonEnabled) {
+            throw 'Installed-client selector UI acceptance did not retain an enabled Settings button.'
+          }
           if ($doc.scenarioB.status -ne 'PASS') {
             throw "Injected rollback scenario did not pass: $($doc.scenarioB.status)"
           }
           @(
             'installed_client_e2e=PASS'
             ('scenarioA=' + $doc.scenarioA.status)
+            ('selectorDisplayText=' + [string]$doc.scenarioA.selectorDisplayText)
+            ('switchButtonEnabled=' + [string]$doc.scenarioA.switchButtonEnabled)
+            ('settingsButtonEnabled=' + [string]$doc.scenarioA.settingsButtonEnabled)
             ('scenarioB=' + $doc.scenarioB.status)
             ('restoredBuild=' + $doc.scenarioB.restoredBuild)
             ('restoredSource=' + $doc.scenarioB.restoredSource)
