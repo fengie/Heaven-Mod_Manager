@@ -200,16 +200,17 @@ public sealed class MultiGameTests : IDisposable
         var live=GameProfile.Generic("z-live","Z live profile",game,"Live.exe","");
         registry.Upsert(stale);
         registry.Upsert(live);
+        registry.SetActive(stale.Id);
 
         var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
 
-        Assert.False(result.HasChanges);
         Assert.Empty(result.Added);
-        Assert.Empty(result.Repaired);
-        var persisted=registry.Load();
-        Assert.Equal(2,persisted.Count);
-        Assert.Equal("Missing.exe",Assert.Single(persisted,x=>x.Id==stale.Id).ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("Live.exe",Assert.Single(persisted,x=>x.Id==live.Id).ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        var reconciled=Assert.Single(result.Repaired);
+        Assert.Equal(live.Id,reconciled.Id);
+        var persisted=Assert.Single(registry.Load());
+        Assert.Equal(live.Id,persisted.Id);
+        Assert.Equal("Live.exe",persisted.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(live.Id,registry.GetActive()!.Id);
     }
 
     [Fact]
@@ -239,8 +240,10 @@ public sealed class MultiGameTests : IDisposable
         Assert.Equal(mhw.Id,repaired.Id);
         Assert.True(repaired.IsMonsterHunterWorld);
         Assert.Equal("MonsterHunterWorld.exe",repaired.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
-        var untouched=Assert.Single(registry.Load(),x=>x.Id==generic.Id);
-        Assert.Equal("MissingGeneric.exe",untouched.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        var persisted=Assert.Single(registry.Load());
+        Assert.Equal(mhw.Id,persisted.Id);
+        Assert.True(persisted.IsMonsterHunterWorld);
+        Assert.DoesNotContain(registry.Load(),x=>x.Id==generic.Id);
     }
 
     [Fact]
