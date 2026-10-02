@@ -276,6 +276,7 @@ Assert-Equal $true ($releaseWorkflow.Contains('actions/attest@1e69f48acb82d1966a
 Assert-Equal $true ($releaseWorkflow.Contains('subject-name: ${{ steps.release_artifact.outputs.artifact_name }}')) 'release provenance exact artifact name'
 Assert-Equal $true ($releaseWorkflow.Contains('subject-digest: ${{ steps.release_artifact.outputs.artifact_digest }}')) 'release provenance exact artifact digest'
 Assert-Equal $true ($releaseWorkflow.Contains('gh attestation verify $artifactPath --repo $env:GITHUB_REPOSITORY')) 'release provenance verification command'
+Assert-Equal $true ($releaseWorkflow.Contains('GH_TOKEN: ${{ github.token }}')) 'private provenance verification token wiring'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_ENABLE_GITHUB_ATTESTATIONS')) 'private repository supported-tier attestation opt-in'
 Assert-Equal $true ($releaseWorkflow.Contains('skipped_private_repo_requires_enterprise_cloud')) 'private repository unsupported-tier status evidence'
 Assert-Equal $true ($releaseWorkflow.Contains('Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256')) 'release provenance recomputes exact artifact digest'
