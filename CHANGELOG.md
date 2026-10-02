@@ -1,3 +1,13 @@
+# v8.8.69 — 2026-10-02
+
+- Keep Browse Mods text-entry debounce local to the cached SQLite/FTS search path.
+- Make the explicit Search command query only configured catalog providers advertising `CatalogProviderCapabilities.Search`.
+- Persist provider-returned rows through the existing `CatalogSyncService` and source-aware cache/provenance boundary before displaying results.
+- Isolate provider-search failures so cached matches and other searchable providers remain usable.
+- Preserve current provider contracts by not probing Nexus Mods or GameBanana for unsupported full-catalog text search.
+- Clarify local-cache versus provider-backed search behavior in the UI and add regression coverage for capability gating and cache-only debounce behavior.
+- Record #556 as completed by v8.8.68 installed-client E2E run `36979261045`, with the expected selector DisplayName plus enabled Switch/Settings and successful update/rollback.
+
 # v8.8.68 — 2026-10-02
 
 - Expose the active game's selected `DisplayName` directly on the header ComboBox automation peer with `AutomationProperties.ItemStatus`, preserving the stable `Active game` accessibility name.
