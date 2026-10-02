@@ -1,52 +1,72 @@
-# v8.8.66 installed selector UI acceptance — current handoff
+# v8.8.67 provider-aware Browse Mods search — candidate handoff
 
-Canonical repository: `fengie/mhw-mods`
-Global bootstrap/training: `fengie/heaven-toolbox@main`
-Active branch: `fix/issue556-installed-ui-acceptance-v8.8.66-20261002`
-Issue: #556
-Parent canonical main at task start: `480e7efd0bf85b260594d8386e6162d39ec7b924`
+Canonical MHW product repository: `fengie/mhw-mods`
+Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
+Current branch: `agent/issue-558-provider-search-v8.8.67-20261002`
+Issue: #558
+Immediate integrated parent: v8.8.66 PR #563 merge `5459db663f55388e72da97a79cb6e22ff0673048`
 
-## Objective
+## Candidate change
 
-Prevent the escaped header selector regression from passing release validation again. v8.8.65 fixed the shared ComboBox selected-content template, but the previous acceptance only proved source/build/update behavior, not the rendered selected game text in the packaged client.
+v8.8.67 advances #558 without inventing unsupported provider behavior:
 
-## v8.8.66 candidate
+- typing in Browse Mods remains a 180 ms **local cache/FTS filter only**;
+- pressing **Search** explicitly queries only configured providers whose `Capabilities` advertise `CatalogProviderCapabilities.Search`;
+- returned provider rows still enter through `CatalogSyncService` and the source-aware cache/provenance boundary before the UI reads them;
+- provider search failures are isolated and matching cached rows remain usable;
+- Nexus Mods and GameBanana are not probed for unsupported full-catalog text search;
+- configured CurseForge can use its existing official paged search implementation to discover matches not already cached;
+- Browse Mods explains the cached-versus-provider search distinction in tooltips/status text;
+- focused integration regression coverage protects capability gating and proves the debounce path remains cache-only.
 
-- The header game-name TextBlock now carries `AutomationProperties.AutomationId="ActiveGameDisplayName"` while retaining `TextTrimming="CharacterEllipsis"`.
-- The integration test project enables WPF references and the real packaged updater E2E inspects the newly updated client's Windows UI Automation tree.
-- Packaged acceptance requires:
-  - the `Active game` ComboBox to exist;
-  - its rendered `ActiveGameDisplayName` text to equal `Updater E2E Fake Game`;
-  - no raw `GameProfile { ... }` text;
-  - enabled Switch and Settings buttons.
-- The updater E2E evidence verifier rejects missing/incorrect selector text or disabled adjacent actions and persists those fields in evidence.
+This tranche does **not** complete #558. Broader provider-aware pagination/browse expansion and deterministic scale/performance coverage remain open.
 
-## Verification state
+## Reconciliation with v8.8.66
 
-Not yet integrated. Exact-head PR gates and the post-merge Windows release / installed-client E2E must still pass.
+PR #563 landed while the first #558 candidate was being verified. Its packaged selector UI Automation work is preserved on this branch, including the `ActiveGameDisplayName` automation ID and its regression/E2E contracts.
 
-The mandatory local-offload route was attempted before mechanical implementation:
-- bridge health job `chatgpt-20261002-043000-issue556-health-heaven2`;
-- bridge health job `chatgpt-20261002-043000-issue556-health-heaven`.
-Neither produced a status/result, and neither host heartbeat was readable from the relay. No local-agent execution or local build is claimed. Do not weaken HMAC/bridge controls to compensate.
+PR #563 exact head `e47d0a91e966b5bcd86e69825af5d77970fdb500` passed:
+- Workflow Feature PR Gate `36966157999`;
+- MHW Product Security Gate `36966158024`;
+- Heaven Toolbox Ownership Gate `36966158016`.
 
-## Unresolved risks
+It merged as `5459db663f55388e72da97a79cb6e22ff0673048`. Publication and packaged installed-client selector acceptance remain separate #556 closure work unless newer canonical evidence records them.
 
-- **Unresolved risk:** UI Automation may expose the WPF DataTemplate differently on the self-hosted runner; exact-head CI is required to prove the test compiles and the packaged E2E can observe the rendered element.
-- **Unresolved risk:** #556 is not DONE until the exact v8.8.66 release is published and the installed-client E2E passes the selector assertions.
-- Live thumbnail visual acceptance remains separate from #556.
+## Superseded #558 verification evidence
 
-## Ordered next actions
+The first #558 PR #564 was based on the pre-#563 main and therefore must not be merged after main advanced.
 
-1. Open the v8.8.66 PR and run Workflow Feature, Product Security, and Toolbox Ownership gates on one exact head.
-2. Repair concrete failures only; do not weaken UI acceptance.
-3. Refresh main/ownership, merge only when exact-head gates are green, and verify remote main.
-4. Allow Windows Release Gate to publish the exact integrated v8.8.66 source without advancing release-relevant main while publication runs.
-5. Require Updater Installed Client E2E to pass the new selector evidence checks.
-6. Close #556 only after that packaged acceptance passes; then update canonical handoff/state without another product version bump.
+- Head `a81891537cdb767df03e0f0fbf0204743bab07ee` ran Workflow Feature `36966116030`: repository verification produced **25 PASS / 1 FAIL**. The sole failure was handoff-manifest version metadata; builds/analyzers, function verification, 323 Core tests, 79 Automation tests, 274 Integration/fault tests, and full self-test all passed.
+- Repaired head `117c17b9dff6535bf939dd8b65ef54892f6592e9` then passed Workflow Feature `36966345299`, Product Security `36966345328`, and Toolbox Ownership `36966345237`.
+- Those greens are useful evidence for the semantic patch but are **not merge authorization** for v8.8.67 because canonical main advanced through PR #563 and the product version changed.
+
+The v8.8.67 reconciled head must pass all required gates independently.
+
+## Local delegation evidence
+
+A Heaven worker was reached successfully through the signed bridge, but the delegated local Codex lane was blocked by the worker account usage limit plus workspace/network restrictions. Do not retry that same local Codex path until durable blocker evidence changes. The heaven2 HMAC boundary was not weakened.
+
+## Unresolved risks and remaining work
+
+- **Unresolved risk:** v8.8.67 production/source changes are unverified until Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership gates pass on the exact final reconciled head.
+- **Unresolved risk:** #556 source/UIA gate is integrated, but published installed-client selector evidence is still required before #556 closes unless newer canonical evidence supersedes this handoff.
+- #558 still needs broader provider-aware pagination/browse expansion plus deterministic scale/performance coverage.
+- #559 remains separate work for filters, sorting, provider health, and richer loading/empty/stale/partial-failure states.
+- #350/#354 retain their documented external signing/ruleset/certificate blockers.
+- Conditional Steam Workshop and optional Vortex interoperability remain under #281 and must not be invented as ordinary MHW sources.
+
+## Ordered continuation
+
+1. Open the reconciled v8.8.67 #558 PR from `agent/issue-558-provider-search-v8.8.67-20261002` to `main`.
+2. Require Workflow Feature, Product Security, and Toolbox Ownership gates on the **exact final head**; repair only evidence-backed failures.
+3. Refresh canonical `main` and live ownership immediately before integration. If main moved, reconcile again rather than merging stale.
+4. Merge only when all required exact-head gates are green.
+5. Read back canonical `main`, record exact integration evidence, then release the #558 collaboration claim.
+6. Keep #558 open for broader pagination/browse/scale work after this tranche.
+7. Separately finish #556 publication/installed-client E2E acceptance when that lane is available.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full as required, refresh claims/issues before mutation, preserve the permanent continuity constitution and active Learned Rules, and propagate the same obligation. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, refresh live claims/issues before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
 
 The successor must propagate this continuity obligation to the next agent.
