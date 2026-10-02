@@ -180,17 +180,19 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
-    public void BrowseModsExplicitSearchOnlyQueriesProvidersThatAdvertiseSearch()
+    public void BrowseModsExplicitSearchUsesCapabilityGatedDiscoveryDispatcher()
     {
         var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
         var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+        var discovery = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Storage", "CatalogDiscoveryService.cs"));
         var storage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Storage", "CatalogRepository.cs"));
 
-        Assert.Contains("provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search)", source);
         Assert.Contains("SearchCatalogProvidersAsync(query, ct)", source);
-        Assert.Contains("Query: query", source);
-        Assert.Contains("Provider search failed without blocking cache results.", source);
+        Assert.Contains("var result = await discovery.SearchAsync(", source);
+        Assert.Contains("new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false)", source);
+        Assert.Contains(".Where(provider => provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search))", discovery);
+        Assert.Contains("Query: query.Trim()", discovery);
         Assert.Contains("Nexus Mods and GameBanana are not probed for unsupported full-catalog search.", source);
         Assert.Contains("Typing filters the local cache.", xaml);
         Assert.Contains("Unsupported providers are not probed.", xaml);
