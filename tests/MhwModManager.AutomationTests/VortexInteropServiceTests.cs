@@ -100,6 +100,75 @@ public sealed class VortexInteropServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportDoesNotCarryCredentialBearingSourceUrls()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, "credential-export.db"));
+        await db.InitializeAsync(ct);
+        await db.UpsertModAsync(new ModDescriptor(
+            "local-secret",
+            "Local Secret",
+            "Local Secret",
+            Path.Combine(root, "mods", "secret"),
+            true,
+            1,
+            SourceUrl: "https://example.invalid/mod?token=CANARY_VORTEX_SECRET"), ct);
+
+        var service = new VortexInteropService(
+            db,
+            GameProfile.MonsterHunterWorld(Path.Combine(root, "game")));
+        var path = Path.Combine(root, "credential-export.vortexhandoff.json");
+
+        await service.ExportAsync(path, ct);
+        var json = await File.ReadAllTextAsync(path, ct);
+
+        Assert.DoesNotContain("CANARY_VORTEX_SECRET", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("?token=", json, StringComparison.OrdinalIgnoreCase);
+        var exported = JsonSerializer.Deserialize<VortexInteropManifest>(json);
+        Assert.NotNull(exported);
+        Assert.Null(Assert.Single(exported!.Mods).SourceUrl);
+    }
+
+    [Fact]
+    public async Task PreviewRejectsCredentialBearingUrlsAndUnknownFields()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, "credential-import.db"));
+        await db.InitializeAsync(ct);
+        var service = new VortexInteropService(
+            db,
+            GameProfile.MonsterHunterWorld(Path.Combine(root, "game")));
+
+        var handoff = new VortexInteropManifest(
+            1,
+            DateTimeOffset.UtcNow,
+            new("monsterhunterworld", "monsterhunterworld", "582010", "nativePC", "MonsterHunterWorld.exe"),
+            [
+                new(
+                    "credential-bearing",
+                    "Credential bearing",
+                    true,
+                    1,
+                    SourceUrl: "https://example.invalid/mod?token=CANARY_VORTEX_IMPORT")
+            ]);
+        var credentialPath = Path.Combine(root, "credential-import.vortexhandoff.json");
+        await File.WriteAllTextAsync(credentialPath, JsonSerializer.Serialize(handoff), ct);
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => service.PreviewAsync(credentialPath, ct));
+
+        var unknownFieldPath = Path.Combine(root, "unknown-field.vortexhandoff.json");
+        var validJson = JsonSerializer.Serialize(handoff with { Mods = [] });
+        await File.WriteAllTextAsync(
+            unknownFieldPath,
+            validJson.Insert(1, "\"futureSecret\":\"CANARY_VORTEX_UNKNOWN\","),
+            ct);
+
+        await Assert.ThrowsAsync<JsonException>(
+            () => service.PreviewAsync(unknownFieldPath, ct));
+    }
+
+    [Fact]
     public async Task PreviewRejectsDifferentVortexGameContract()
     {
         var ct = TestContext.Current.CancellationToken;
