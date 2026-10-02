@@ -350,6 +350,7 @@ public sealed partial class XamlBindingSafetyTests
             "AutomationProperties.Name=\"{Binding DisplayName,StringFormat='Clear problem mark for {0}'}\"",
             xaml);
         Assert.DoesNotContain("AutomationProperties.Name=\"{Binding}\"", xaml);
+        Assert.DoesNotContain("ConverterParameter=320}\" Stretch=\"UniformToFill\" ToolTip=\"{Binding}\"", xaml);
     }
 
     [Fact]
