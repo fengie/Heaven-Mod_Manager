@@ -25,6 +25,8 @@ This tranche does **not** claim that #558 is complete. Broader provider-aware pa
 
 This candidate has not inherited v8.8.65 verification. Required exact-head PR gates must run and pass before integration.
 
+The first v8.8.66 Workflow Feature attempt, run `36966116030` on head `a81891537cdb767df03e0f0fbf0204743bab07ee`, produced **25 PASS / 1 FAIL** in the repository verifier. The only failure was the continuity preflight because `_AGENT_CONTEXT/handoff-manifest.json` still reported `8.8.65` while `VERSION.txt` was `8.8.66`. That run nevertheless passed solution/strict builds, 323 Core tests, 79 Automation tests, 274 Integration/fault tests, the function scan, and the full self-test. The manifest mismatch is repaired on the newer head; all required gates must rerun on that exact final head.
+
 The previous closed source baseline remains:
 
 - Workflow Feature PR Gate `36963458484`;
