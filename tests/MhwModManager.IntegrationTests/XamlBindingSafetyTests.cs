@@ -221,6 +221,37 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void BrowseModsSerializesInitialRefreshManualRefreshAndProviderSearch()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("private readonly SemaphoreSlim catalogSyncGate = new(1, 1);", source, StringComparison.Ordinal);
+
+        var ensureStart = source.IndexOf("private async Task EnsureCatalogLoadedAsync", StringComparison.Ordinal);
+        var refreshCommandStart = source.IndexOf("[RelayCommand]\n    private async Task RefreshCatalog()", ensureStart, StringComparison.Ordinal);
+        Assert.True(ensureStart >= 0 && refreshCommandStart > ensureStart);
+        var ensureBody = source[ensureStart..refreshCommandStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", ensureBody, StringComparison.Ordinal);
+        Assert.True(
+            ensureBody.IndexOf("if (catalogLoaded)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
+            "Initial catalog load must re-check catalogLoaded after acquiring the sync gate.");
+
+        var refreshCoreStart = source.IndexOf("private async Task RefreshCatalogCoreAsync", refreshCommandStart, StringComparison.Ordinal);
+        Assert.True(refreshCoreStart > refreshCommandStart);
+        var refreshCommandBody = source[refreshCommandStart..refreshCoreStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", refreshCommandBody, StringComparison.Ordinal);
+        Assert.Contains("catalogSyncGate.Release();", refreshCommandBody, StringComparison.Ordinal);
+
+        var searchCommandStart = source.IndexOf("private async Task SearchCatalog()", refreshCoreStart, StringComparison.Ordinal);
+        var providerSearchStart = source.IndexOf("private async Task SearchCatalogProvidersAsync", searchCommandStart, StringComparison.Ordinal);
+        Assert.True(searchCommandStart >= 0 && providerSearchStart > searchCommandStart);
+        var searchCommandBody = source[searchCommandStart..providerSearchStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", searchCommandBody, StringComparison.Ordinal);
+        Assert.Contains("catalogSyncGate.Release();", searchCommandBody, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ConflictCollectionChangesNotifyDerivedAttentionState()
     {
         var root = FindRepositoryRoot();
