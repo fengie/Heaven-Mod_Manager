@@ -18,6 +18,10 @@ public sealed record CatalogSyncResult(
     DateTimeOffset FetchedAt,
     CatalogProviderHealth? Health);
 
+internal sealed record PreparedCatalogMod(
+    CachedCatalogMod Cached,
+    CatalogFileSetCompleteness FileSetCompleteness);
+
 public sealed class CatalogSyncService
 {
     private readonly CatalogRepository repository;
@@ -65,10 +69,13 @@ public sealed class CatalogSyncService
                 attemptedAt,
                 ct).ConfigureAwait(false);
 
-            foreach (var cached in prepared)
+            foreach (var item in prepared)
             {
                 ct.ThrowIfCancellationRequested();
-                await repository.UpsertAsync(cached, ct).ConfigureAwait(false);
+                await repository.UpsertAsync(
+                    item.Cached,
+                    item.FileSetCompleteness,
+                    ct).ConfigureAwait(false);
             }
 
             var health = await TryGetHealthAsync(provider, ct).ConfigureAwait(false);
@@ -103,7 +110,7 @@ public sealed class CatalogSyncService
         }
     }
 
-    private static async Task<IReadOnlyList<CachedCatalogMod>> PrepareBatchAsync(
+    private static async Task<IReadOnlyList<PreparedCatalogMod>> PrepareBatchAsync(
         IModCatalogProvider provider,
         CatalogBrowseRequest request,
         IReadOnlyList<CatalogMod> discovered,
@@ -115,7 +122,7 @@ public sealed class CatalogSyncService
         ArgumentNullException.ThrowIfNull(discovered);
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var result = new List<CachedCatalogMod>(discovered.Count);
+        var result = new List<PreparedCatalogMod>(discovered.Count);
 
         foreach (var original in discovered)
         {
@@ -123,9 +130,11 @@ public sealed class CatalogSyncService
             ValidateModIdentity(provider.ProviderId, request.Game.Id, original);
 
             var mod = original;
+            var fileSetCompleteness = options.HydrateFiles
+                ? CatalogFileSetCompleteness.Authoritative
+                : CatalogFileSetCompleteness.PartialOrUnknown;
             if (options.HydrateFiles
-                && provider.Capabilities.HasFlag(CatalogProviderCapabilities.FileList)
-                && mod.Files.Count == 0)
+                && provider.Capabilities.HasFlag(CatalogProviderCapabilities.FileList))
             {
                 var files = await provider.GetModFilesAsync(
                     request.Game,
@@ -141,12 +150,14 @@ public sealed class CatalogSyncService
                 throw new InvalidDataException(
                     $"Catalog provider '{provider.ProviderId}' returned duplicate canonical id '{mod.CanonicalId}'.");
 
-            result.Add(new CachedCatalogMod(
-                mod,
-                new CatalogCacheMetadata(
-                    fetchedAt,
-                    fetchedAt.Add(options.FreshFor),
-                    SourceFingerprint: BuildFingerprint(mod))));
+            result.Add(new PreparedCatalogMod(
+                new CachedCatalogMod(
+                    mod,
+                    new CatalogCacheMetadata(
+                        fetchedAt,
+                        fetchedAt.Add(options.FreshFor),
+                        SourceFingerprint: BuildFingerprint(mod, fileSetCompleteness))),
+                fileSetCompleteness));
         }
 
         return result;
@@ -312,9 +323,15 @@ public sealed class CatalogSyncService
         return $"{request.Game.Id}:{request.Mode.ToString().ToLowerInvariant()}:{queryKey}";
     }
 
-    private static string BuildFingerprint(CatalogMod mod)
+    private static string BuildFingerprint(
+        CatalogMod mod,
+        CatalogFileSetCompleteness fileSetCompleteness)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var fileFingerprint = fileSetCompleteness == CatalogFileSetCompleteness.Authoritative
+            ? string.Join(",", mod.Files.Select(file =>
+                $"{file.ProviderFileId}:{file.Version}:{file.FileName}"))
+            : "<files-partial-or-unknown>";
         var payload = string.Join(
             "\n",
             mod.ProviderId,
@@ -323,8 +340,7 @@ public sealed class CatalogSyncService
             mod.Version ?? string.Empty,
             mod.UpdatedAt?.ToUniversalTime().ToString("O") ?? string.Empty,
             mod.SourceUrl,
-            string.Join(",", mod.Files.Select(file =>
-                $"{file.ProviderFileId}:{file.Version}:{file.FileName}")));
+            fileFingerprint);
         return "sha256:" + Convert.ToHexString(
             SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
