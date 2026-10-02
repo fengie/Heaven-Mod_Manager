@@ -1,10 +1,18 @@
-# v8.8.73 — MHW Manual Mod Manager
+# v8.8.74 — MHW Manual Mod Manager
 
-Current product version: **8.8.73**.
+Current product version: **8.8.74**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.74 — updater E2E supersession classification
+
+- Classify successful Windows Release Gate completions before allocating the self-hosted installed-client updater E2E runner.
+- Run the expensive E2E only when an exact immutable updater release exists for the upstream source SHA.
+- Treat a missing exact release as an intentional clean skip only when canonical `main` is proven to be a descendant of that source; canonical or divergent missing-release states fail closed.
+- Keep the existing exact-release resolution inside the Windows E2E as defense in depth after eligibility has been established.
+- Add regression coverage for published, superseded, canonical-missing, divergent, least-privilege classifier, and heavy-job gating behavior.
 
 ## v8.8.73 — release build provenance hardening
 
@@ -23,13 +31,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Add negative governance fixtures that reject the stale continuity forms responsible for #577.
 - Give Browse Mods an intentional no-selection detail state and keep exact-file installation disabled until one provider file is selected; #559 remains open for the rest of the discovery UX.
 
-## v8.8.71 — installed-origin provider snapshot deduplication
-
-- Let providers return one authoritative installed-origin mod/file snapshot so exact update checks do not have to repeat provider hydration when both views come from the same response.
-- Use that path for GameBanana, reducing each installed-origin update check from two mod-detail requests to one.
-- Keep the existing fallback for other providers and preserve cancellation, provider health/error classification, exact identity validation, and fail-closed replacement selection.
-- Add deterministic coverage that counts GameBanana detail requests and proves the update result remains exact.
-- Track the separate v8.8.70 stale-profile follow-up gaps under issue #578 rather than folding them into this catalog patch.
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -37,6 +38,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
 - [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
+- [x] **UPDATER-E2E-587 / P1** — v8.8.74 prevents superseded non-publishing release gates from launching guaranteed-failure installed-client E2E runs while keeping missing-publication states fail-closed.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
