@@ -1,3 +1,11 @@
+# v8.8.66 — 2026-10-02
+
+- Extend the real packaged updater E2E so it inspects the updated WPF application's UI Automation tree and verifies the closed header game selector renders the active profile's human-readable display name.
+- Fail installed-client acceptance when the selected surface exposes raw `GameProfile { ... }` record text, the expected rendered text is missing, or the adjacent Switch/Settings actions are unavailable.
+- Add a stable automation ID to the selector display template while retaining character ellipsis for long game names.
+- Make the updater E2E evidence verifier require selector UI evidence, so future releases cannot claim installed-client success without carrying the rendered selector result.
+- Keep issue #556 open until this exact v8.8.66 candidate is verified, published, and the packaged UI Automation acceptance passes.
+
 # v8.8.65 — 2026-10-02
 
 - Fix the app-owned WPF ComboBox closed-selection presenter to reuse the control's `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat` instead of the unreliable `SelectionBoxItemTemplate` path.
