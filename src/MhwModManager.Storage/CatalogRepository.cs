@@ -7,7 +7,7 @@ namespace MhwModManager.Storage;
 
 public sealed class CatalogRepository(ManagerDatabase db)
 {
-    private const int MaxSearchResults = 500;
+    private const int MaxSearchResults = 1000;
     private const string ItemColumns = """
         i.canonical_id,i.provider_id,i.provider_mod_id,i.game_id,i.name,i.summary,i.description,i.author,
         i.version,i.category,i.tags_json,i.screenshots_json,i.thumbnail,i.created_at,i.updated_at,
