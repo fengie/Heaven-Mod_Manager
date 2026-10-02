@@ -36,7 +36,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
 | BROWSE-556 | P1 | ACTIVE | issue #556; PR #562 merged `c3f238cbe4f1850763736bac999af0577a4606c5` | Source fix integrated; finish installed Windows/WPF visual acceptance before closing. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
-| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche | Expand catalog breadth safely with provider-aware scaling. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; v8.8.66 provider-search candidate | Expand catalog breadth safely with provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
@@ -70,10 +70,12 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Raise first-tranche refresh/cache limits to 100/provider and 1000 visible cached rows.
 - [x] Add focused source/XAML regression guards.
 - [x] Exact head `3ced8b41041909d91b06902631ef36085bfd7489` passed all required PR #561 gates and integrated #556/#557 as `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`.
-- [ ] Continue #558 with provider-aware pagination/search beyond the first capacity tranche.
+- [x] v8.8.66 candidate: explicit Search queries only providers advertising `Search`; typing remains cache-only and unsupported Nexus/GameBanana full-catalog search is never probed.
+- [ ] Verify/integrate the v8.8.66 #558 provider-search tranche on exact-head required gates.
+- [ ] Continue #558 with broader provider-aware pagination/browse expansion beyond the first capacity tranche.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** obtain installed Windows/WPF confirmation for the integrated v8.8.65 selector fix, then close #556 only if acceptance passes; keep #558/#559 non-overlapping.
+**Next action:** verify/integrate the v8.8.66 capability-gated provider-search tranche without weakening the separate #556 installed-client acceptance requirement; then continue #558 pagination and #559 UX as non-overlapping lanes.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
