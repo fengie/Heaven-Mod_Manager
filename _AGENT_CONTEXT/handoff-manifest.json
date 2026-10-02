@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.72",
+  "currentVersion": "8.8.73",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.71 PR #573 exact head 90fe998b2024aa43f7e3999185c87a98cac6a016 passed Workflow Feature 36983859719, MHW Product Security 36983859681, and Heaven Toolbox Ownership 36983859667, then squash-merged as cd189422d1def33d89f2ebaffb30091f2db4ad23. v8.8.72 closes audit findings #575, #576, and #577.",
+  "immediateParentRevision": "v8.8.72 PR #581 exact head c9904b0ba85854ec332bd14778e5e5531a50d582 passed Workflow Feature 36986285577, Updater Publication 36986285827, Heaven Toolbox Ownership 36986285858, and MHW Product Security 36986285763. v8.8.73 adds release build-provenance attestation under issue #583.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; treat CURRENT_REVISION as canonical-state payload rather than feature-branch execution state; do not reopen completed #575/#576/#577; preserve issue #578 plus remaining #558/#559/RECOVERY-007 work and exact-head integration discipline; propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification and release supply-chain rules; after #583 integration refresh live ownership for #281/#558/#559/#578 and external #350/#354 prerequisites; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
