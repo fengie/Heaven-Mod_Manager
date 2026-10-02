@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.68",
+  "currentVersion": "8.8.69",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.67 PR #566 merged as af73d3ce55b3bcbeb5d34184506829e57aca9cba and updater-main-381 published successfully; installed-client E2E #290 then proved the closed WPF ComboBox automation peer exposes no raw descendants, so v8.8.68 moves the selected DisplayName onto the peer itself.",
+  "immediateParentRevision": "v8.8.68 PR #567 exact head 966fe005b279c901b6782f4f3d8c466ba503908a passed all required gates and merged as 7def58c1b16d115e1555738ebad51717d1c1f752; installed-client E2E 36979261045 passed selector/Switch/Settings/update/rollback and #556 is closed. v8.8.69 reconciles #558 provider-search semantics from stale PR #565 onto fresh main.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh #556 claim/state; require exact v8.8.68 PR gates, publication, and packaged ComboBox peer-value selector E2E before closure; preserve HMAC and recursively propagate continuity to the next agent.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and _AGENT_CONTEXT/LEARNED_RULES.md in full; require all three exact-head gates for the v8.8.69 #558 provider-search candidate before merge; preserve completed #556 acceptance; keep #558 open for broader pagination/scale work; recursively propagate this obligation to the next agent.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
