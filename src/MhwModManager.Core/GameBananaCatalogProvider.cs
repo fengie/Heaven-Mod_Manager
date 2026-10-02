@@ -8,6 +8,7 @@ public sealed class GameBananaCatalogProvider :
 {
     private const int MaxBrowseLimit = 100;
     private const int MaxBrowsePages = 10;
+    private const int MaxConcurrentDetailRequests = 4;
 
     private readonly GameBananaTransport transport;
     private CatalogProviderHealth health = new(
@@ -111,21 +112,12 @@ public sealed class GameBananaCatalogProvider :
                 var ids = GameBananaCatalogNormalizer.NormalizeNewModIds(listResponse.Document);
                 if (ids.Count == 0) break;
 
-                foreach (var providerModId in ids)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    if (!seen.Add(providerModId)) continue;
-
-                    using var detailResponse = await transport
-                        .GetModDataAsync(providerModId, ct)
-                        .ConfigureAwait(false);
-                    result.Add(GameBananaCatalogNormalizer.NormalizeMod(
-                        request.Game,
-                        providerModId,
-                        detailResponse.Document));
-
-                    if (result.Count >= limit) break;
-                }
+                var pageIds = ids
+                    .Where(providerModId => seen.Add(providerModId))
+                    .Take(limit - result.Count)
+                    .ToArray();
+                var hydrated = await HydrateModsAsync(request.Game, pageIds, ct).ConfigureAwait(false);
+                result.AddRange(hydrated);
             }
 
             MarkConnected();
@@ -136,6 +128,41 @@ public sealed class GameBananaCatalogProvider :
             TrackFailure(ex, ct);
             throw;
         }
+    }
+
+    private async Task<IReadOnlyList<CatalogMod>> HydrateModsAsync(
+        GameProfile game,
+        IReadOnlyList<string> providerModIds,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var result = new List<CatalogMod>(providerModIds.Count);
+        foreach (var batch in providerModIds.Chunk(MaxConcurrentDetailRequests))
+        {
+            ct.ThrowIfCancellationRequested();
+            var tasks = batch
+                .Select(providerModId => HydrateModAsync(game, providerModId, ct))
+                .ToArray();
+            var hydrated = await Task.WhenAll(tasks).ConfigureAwait(false);
+            result.AddRange(hydrated);
+        }
+
+        return result;
+    }
+
+    private async Task<CatalogMod> HydrateModAsync(
+        GameProfile game,
+        string providerModId,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        using var detailResponse = await transport
+            .GetModDataAsync(providerModId, ct)
+            .ConfigureAwait(false);
+        return GameBananaCatalogNormalizer.NormalizeMod(
+            game,
+            providerModId,
+            detailResponse.Document);
     }
 
     public async Task<CatalogMod?> GetModAsync(
