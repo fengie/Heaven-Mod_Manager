@@ -127,7 +127,7 @@ public sealed class VortexInteropServiceTests : IDisposable
         Assert.DoesNotContain("CANARY_VORTEX_SECRET", json, StringComparison.Ordinal);
         Assert.DoesNotContain("?token=", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("sourceUrl", json, StringComparison.OrdinalIgnoreCase);
-        var exported = JsonSerializer.Deserialize<VortexInteropManifest>(json);
+        var exported = JsonSerializer.Deserialize<VortexInteropManifest>(json, WebJsonOptions);
         Assert.NotNull(exported);
         Assert.Single(exported!.Mods);
     }
