@@ -11,6 +11,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Fix the custom dark ComboBox's **closed selected-value presenter**, which could still call `GameProfile.ToString()` even though dropdown rows correctly showed `DisplayName`.
 - Make the selected surface reuse the same `ItemTemplate`, template selector, and string-format contract as the dropdown, so the header consistently shows names such as **Monster Hunter: World**.
 - Add regression coverage that rejects the broken `SelectionBoxItemTemplate` path and keep issue #556 open until installed Windows/WPF confirmation.
+- Installed-client acceptance must use the published v8.8.65 updater package; source-only `main` is not treated as deployed UI proof.
 
 ## v8.8.64 — richer Browse Mods + selector repair
 
