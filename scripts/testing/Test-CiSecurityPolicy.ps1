@@ -86,6 +86,49 @@ foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Ob
     }
 }
 
+$persistentWriteAllowlist=@('windows-release-gate.yml','updater-installed-client-e2e.yml')
+foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filter '*.yml')){
+    $workflow=Get-Content -LiteralPath $workflowFile.FullName -Raw
+    if($workflow -notmatch '(?im)^\s*runs-on:\s*\[[^\]]*self-hosted[^\]]*\]'){continue}
+
+    $checkoutCount=[regex]::Matches($workflow,'(?im)^\s*uses:\s*actions/checkout@').Count
+    $noPersistCount=[regex]::Matches($workflow,'(?im)^\s*persist-credentials:\s*false\s*$').Count
+    if($checkoutCount -ne $noPersistCount){
+        $errors.Add("$($workflowFile.Name): every checkout on a persistent self-hosted runner must set persist-credentials: false.")
+    }
+
+    $hasPullRequestTrigger=[regex]::IsMatch($workflow,'(?m)^\s{0,2}pull_request\s*:')
+    $hasSameRepoGuard=$workflow -match 'github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository'
+    if($hasPullRequestTrigger -and -not $hasSameRepoGuard){
+        $errors.Add("$($workflowFile.Name): self-hosted pull-request execution must reject fork PR code with an exact head.repo.full_name == github.repository guard.")
+    }
+
+    $jobsMatch=[regex]::Match($workflow,'(?m)^jobs:\s*$')
+    $header=if($jobsMatch.Success){$workflow.Substring(0,$jobsMatch.Index)}else{$workflow}
+    if($header -notmatch '(?m)^permissions:\s*$'){
+        $errors.Add("$($workflowFile.Name): persistent self-hosted workflows must declare explicit top-level permissions.")
+    }
+    $topLevelWrites=[regex]::Matches($header,'(?m)^\s{2,}[A-Za-z0-9_-]+:\s*write\s*$')
+    if($topLevelWrites.Count -gt 0 -and $persistentWriteAllowlist -notcontains $workflowFile.Name){
+        $errors.Add("$($workflowFile.Name): persistent self-hosted workflow has top-level write permission but is not an approved mutation/release workflow.")
+    }
+
+    foreach($match in [regex]::Matches($workflow,'(?im)^\s*uses:\s*([^\.\s][^@\s]+)@([^\s#]+)')){
+        $action=[string]$match.Groups[1].Value
+        $revision=[string]$match.Groups[2].Value
+        if($revision -notmatch '^[0-9a-fA-F]{40}$'){
+            $errors.Add("$($workflowFile.Name): external action $action must be pinned to a full 40-character commit SHA; found '$revision'.")
+        }
+    }
+}
+
+$trackedSecretGate=Join-Path $Root 'scripts\testing\Test-TrackedSecretLeaks.ps1'
+if(!(Test-Path -LiteralPath $trackedSecretGate -PathType Leaf)){
+    $errors.Add('Test-TrackedSecretLeaks.ps1 is missing.')
+}else{
+    try{ & $trackedSecretGate -Root $Root }
+    catch{ $errors.Add("Tracked secret/private-key gate failed: $($_.Exception.Message)") }
+}
 $propsPath=Join-Path $Root 'Directory.Build.props'
 if(!(Test-Path -LiteralPath $propsPath)){
     $errors.Add('Directory.Build.props is missing.')
