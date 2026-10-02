@@ -81,6 +81,7 @@ try{
     Reject 'current revision cannot retain candidate source commit' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"candidateSourceCommit":\s*null','"candidateSourceCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"'}
     Reject 'current revision cannot retain an active PR' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"activePullRequest":\s*null','"activePullRequest": 999'}
     Reject 'current revision cannot retain an active issue' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"activeIssue":\s*null','"activeIssue": 999'}
+    Reject 'canonical current revision cannot instruct self-integration' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $v=(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixture 'VERSION.txt')).Trim(); $x -replace '"nextRequiredAction":\s*"[^"]+"',('"nextRequiredAction": "Integrate v'+$v+' into main."')}
     Reject 'AGENTS exceeds local routing budget' 'AGENTS.md' {param($x) $x + ('noise' * 3000)}
     Reject-ForbiddenRoot 'local training copy cannot return' '_AGENT_TRAINING'
     Reject-ForbiddenRoot 'local plugin toolbox cannot return' 'plugins'
