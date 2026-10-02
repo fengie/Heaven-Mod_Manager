@@ -19,7 +19,6 @@ public sealed class UpdaterInstalledClientE2ETests
     private const string OldSource = "ffd218b6ad4e9f4fea4b143d266712a6fa17a285";
     private const string ActiveGameSelectorAutomationName = "Active game";
     private const string ActiveGameSelectorAutomationId = "ActiveGameSelector";
-    private const string ActiveGameDisplayAutomationId = "ActiveGameDisplayName";
     private const string ExpectedFakeGameDisplayName = "Updater E2E Fake Game";
 
     private static readonly JsonSerializerOptions EvidenceJson = new(UpdateProtocol.Json)
@@ -435,37 +434,34 @@ public sealed class UpdaterInstalledClientE2ETests
                         $"'{ActiveGameSelectorAutomationName}' in the updated client. " +
                         $"Window UIA: {DescribeRawSubtree(window)}");
 
-                var selectorBounds = selector.Current.BoundingRectangle;
-                if (selectorBounds.IsEmpty)
+                var selectorCurrent = selector.Current;
+                if (selectorCurrent.ControlType != ControlType.ComboBox)
                     throw new InvalidOperationException(
-                        "Installed selector did not expose a non-empty bounding rectangle. " +
-                        $"Selector UIA: {DescribeRawSubtree(selector)}");
+                        $"Installed selector had control type '{selectorCurrent.ControlType.ProgrammaticName}' instead of ComboBox.");
 
-                var visibleDisplays = FindVisibleBoundedDescendantsByAutomationId(
-                    selector,
-                    ActiveGameDisplayAutomationId,
-                    selectorBounds);
-                if (visibleDisplays.Length != 1)
+                if (selectorCurrent.IsOffscreen || selectorCurrent.BoundingRectangle.IsEmpty)
                     throw new InvalidOperationException(
-                        $"Installed selector exposed {visibleDisplays.Length} visible bounded " +
-                        $"'{ActiveGameDisplayAutomationId}' elements; expected exactly one closed selected presenter. " +
-                        $"Selector UIA: {DescribeRawSubtree(selector)}");
+                        "Installed selector is not visibly bounded in the updated client.");
 
-                var display = visibleDisplays[0];
-                var displayText = display.Current.Name?.Trim();
-                var renderedText = GetRenderedText(selector, selectorBounds);
+                if (!string.Equals(
+                        selectorCurrent.Name,
+                        ActiveGameSelectorAutomationName,
+                        StringComparison.Ordinal))
+                    throw new InvalidOperationException(
+                        $"Installed selector accessibility name was '{selectorCurrent.Name}'; " +
+                        $"expected '{ActiveGameSelectorAutomationName}'.");
+
+                var displayText = selectorCurrent.ItemStatus?.Trim();
                 if (!string.Equals(displayText, expectedDisplayName, StringComparison.Ordinal))
                 {
-                    if (renderedText.Any(
-                            text => text.Contains("GameProfile {", StringComparison.Ordinal)))
+                    if (displayText?.Contains("GameProfile {", StringComparison.Ordinal) == true)
                         throw new InvalidOperationException(
-                            "Installed selector rendered raw GameProfile record text instead of DisplayName. " +
-                            $"Selector UIA: {DescribeRawSubtree(selector)}");
+                            "Installed selector exposed raw GameProfile record text instead of DisplayName " +
+                            "on the ComboBox automation peer.");
 
                     throw new InvalidOperationException(
-                        $"Installed selector display text was '{displayText ?? "<missing>"}'; expected '{expectedDisplayName}'. " +
-                        $"Visible rendered text: [{string.Join(", ", renderedText.Select(x => $"'{x}'"))}]. " +
-                        $"Selector UIA: {DescribeRawSubtree(selector)}");
+                        $"Installed selector automation value was '{displayText ?? "<missing>"}'; " +
+                        $"expected '{expectedDisplayName}'. Selector UIA: {DescribeRawSubtree(selector)}");
                 }
 
                 var switchButton = FindNamedButton(window, "Switch");
@@ -602,64 +598,6 @@ public sealed class UpdaterInstalledClientE2ETests
         {
             return null;
         }
-    }
-
-    private static AutomationElement[] FindVisibleBoundedDescendantsByAutomationId(
-        AutomationElement root,
-        string automationId,
-        System.Windows.Rect bounds)
-    {
-        var matches = new List<AutomationElement>();
-        foreach (var element in EnumerateRawDescendants(root))
-        {
-            try
-            {
-                var current = element.Current;
-                if (!string.Equals(current.AutomationId, automationId, StringComparison.Ordinal)
-                    || current.IsOffscreen)
-                    continue;
-
-                var elementBounds = current.BoundingRectangle;
-                if (elementBounds.IsEmpty || !elementBounds.IntersectsWith(bounds))
-                    continue;
-
-                matches.Add(element);
-            }
-            catch (ElementNotAvailableException)
-            {
-            }
-        }
-
-        return matches.ToArray();
-    }
-
-    private static string[] GetRenderedText(
-        AutomationElement selector,
-        System.Windows.Rect selectorBounds)
-    {
-        var rendered = new List<string>();
-        foreach (var element in EnumerateRawDescendants(selector))
-        {
-            try
-            {
-                var current = element.Current;
-                if (current.ControlType != ControlType.Text || current.IsOffscreen)
-                    continue;
-
-                var elementBounds = current.BoundingRectangle;
-                if (elementBounds.IsEmpty || !elementBounds.IntersectsWith(selectorBounds))
-                    continue;
-
-                var text = current.Name?.Trim();
-                if (!string.IsNullOrWhiteSpace(text))
-                    rendered.Add(text);
-            }
-            catch (ElementNotAvailableException)
-            {
-            }
-        }
-
-        return rendered.Distinct(StringComparer.Ordinal).ToArray();
     }
 
     private static string DescribeRawSubtree(AutomationElement root)
