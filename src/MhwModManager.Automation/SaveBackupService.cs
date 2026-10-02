@@ -1,5 +1,6 @@
 using MhwModManager.Core;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json;
 using MhwModManager.Storage;
 
@@ -98,14 +99,111 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    private static async Task CopyFileAsync(string source, string destination, CancellationToken ct)
+    internal static async Task CopyFileAsync(
+        string source,
+        string destination,
+        CancellationToken ct,
+        Action<int>? afterCopyAttempt = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 1024, FileOptions.Asynchronous | FileOptions.WriteThrough);
-        await input.CopyToAsync(output, 1024 * 1024, ct);
-        await output.FlushAsync(ct);
+        const int maxAttempts = 3;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var before = CaptureFileFingerprint(source);
+            var partial = destination + ".partial-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            try
+            {
+                await using (var input = new FileStream(
+                    source,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete,
+                    1024 * 1024,
+                    FileOptions.Asynchronous | FileOptions.SequentialScan))
+                {
+                    if (input.Length != before.Length)
+                        continue;
+
+                    await using var output = new FileStream(
+                        partial,
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None,
+                        1024 * 1024,
+                        FileOptions.Asynchronous | FileOptions.WriteThrough);
+                    await input.CopyToAsync(output, 1024 * 1024, ct);
+                    await output.FlushAsync(ct);
+                }
+
+                afterCopyAttempt?.Invoke(attempt);
+
+                var afterCopy = CaptureFileFingerprint(source);
+                if (before != afterCopy)
+                    continue;
+
+                var destinationHash = await ComputeSha256Async(partial, FileShare.Read, ct);
+                var verifyBefore = CaptureFileFingerprint(source);
+                var sourceHash = await ComputeSha256Async(source, FileShare.ReadWrite | FileShare.Delete, ct);
+                var verifyAfter = CaptureFileFingerprint(source);
+
+                if (afterCopy != verifyBefore
+                    || verifyBefore != verifyAfter
+                    || new FileInfo(partial).Length != verifyAfter.Length
+                    || !CryptographicOperations.FixedTimeEquals(destinationHash, sourceHash))
+                    continue;
+
+                File.Move(partial, destination, false);
+                return;
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(partial))
+                        File.Delete(partial);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    MasterDebugLog.Write(
+                        "SAVE-BACKUP",
+                        $"Could not remove unstable partial save copy '{partial}'.",
+                        ex);
+                }
+            }
+        }
+
+        throw new IOException(
+            $"Save file '{source}' changed while it was being captured. Snapshot creation stopped instead of recording a potentially torn save.");
     }
+
+    private static FileFingerprint CaptureFileFingerprint(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var info = new FileInfo(path);
+        info.Refresh();
+        if (!info.Exists)
+            throw new FileNotFoundException("Save file disappeared while a snapshot was being captured.", path);
+        return new FileFingerprint(info.Length, info.LastWriteTimeUtc.Ticks);
+    }
+
+    private static async Task<byte[]> ComputeSha256Async(
+        string path,
+        FileShare share,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            share,
+            1024 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await SHA256.HashDataAsync(stream, ct);
+    }
+
+    private readonly record struct FileFingerprint(long Length, long LastWriteTimeUtcTicks);
 
     private async Task PruneAsync(int keep, CancellationToken ct)
     {
