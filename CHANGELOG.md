@@ -4,7 +4,8 @@
 - Retry bounded concurrent save mutation, remove incomplete snapshot payloads on pre-record failure/cancellation, and add deterministic mutation/cancellation regression coverage.
 - Revalidate the exact workflow SHA against canonical `main` immediately before the first updater publication mutation; stale queued release runs skip both public and canonical publication.
 - Enforce canonical-ready active continuity state in `Test-AgentHandoff.ps1`: `integrationState=canonical-main`, `workingBranch=main`, non-candidate status, and no retained candidate source commit.
-- Add negative fixtures for stale integration state, stale feature working branches, candidate status, and retained candidate source commits.
+- Add negative fixtures for stale integration state, stale feature working branches, candidate status, retained candidate source commits, and active PR/issue state.
+- Add an intentional Browse Mods no-selection detail state and keep install disabled until an exact provider file is selected, while preserving stale-file clearing when mod selection changes.
 - Close audit findings #575, #576, and #577 while leaving issue #578 and the remaining catalog/UX/recovery queues independent.
 
 # v8.8.71 — 2026-10-02
