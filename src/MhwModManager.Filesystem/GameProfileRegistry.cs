@@ -99,11 +99,23 @@ public sealed partial class GameProfileRegistry
     public IReadOnlyList<GameProfile> DiscoverAndRegisterInstalledGames()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return DiscoverAndRegisterInstalledGamesDetailed().Changed;
+    }
+
+    public GameDiscoveryRegistrationResult DiscoverAndRegisterInstalledGamesDetailed()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var candidates=discoveryOverride?.Invoke()??DiscoverInstalledGameCandidates();
-        lock(mutationGate)return RegisterDiscoveredGames(candidates);
+        lock(mutationGate)return RegisterDiscoveredGamesDetailed(candidates);
     }
 
     internal IReadOnlyList<GameProfile> RegisterDiscoveredGames(IEnumerable<GameDiscoveryCandidate> candidates)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return RegisterDiscoveredGamesDetailed(candidates).Changed;
+    }
+
+    internal GameDiscoveryRegistrationResult RegisterDiscoveredGamesDetailed(IEnumerable<GameDiscoveryCandidate> candidates)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(candidates);
@@ -113,68 +125,129 @@ public sealed partial class GameProfileRegistry
             .ToArray();
         var existing=Load().ToList();
         var added=new List<GameProfile>();
+        var repaired=new List<GameProfile>();
+
         foreach(var item in candidateList)
         {
             try
             {
                 var candidateRoot=Path.GetFullPath(item.Root);
-                var sameRoot=existing.FirstOrDefault(x=>
-                    Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase));
-                if(sameRoot is not null&&File.Exists(sameRoot.ExecutablePath))continue;
+                var sameRootProfiles=existing
+                    .Where(x=>Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
 
                 var exe=item.Executable;
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))exe=FindLikelyExecutable(candidateRoot,item.Name);
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))continue;
 
                 var fullExecutable=Path.GetFullPath(exe);
+                var executableName=Path.GetFileName(fullExecutable);
                 var executableRelative=GameProfile.NormalizeRelative(
                     Path.GetRelativePath(candidateRoot,fullExecutable).Replace('/','\\'),
                     false);
+                var candidateIsMonsterHunterWorld=
+                    string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)
+                    || executableName.Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase);
 
-                if(sameRoot is not null)
+                if(sameRootProfiles.Length>0)
                 {
-                    var isMonsterHunterWorld=
-                        sameRoot.IsMonsterHunterWorld
-                        || string.Equals(sameRoot.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase);
-                    if(isMonsterHunterWorld
-                        && !Path.GetFileName(fullExecutable).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
+                    var liveProfiles=sameRootProfiles
+                        .Where(x=>File.Exists(x.ExecutablePath))
+                        .ToArray();
+                    if(liveProfiles.Length>0)
                     {
-                        MasterDebugLog.Write(
-                            "GAME-DISCOVERY",
-                            $"Refused to auto-repair MHW profile '{sameRoot.Id}' with non-MHW executable '{fullExecutable}'.");
+                        var owner=liveProfiles
+                            .OrderByDescending(x=>Path.GetFullPath(x.ExecutablePath).Equals(fullExecutable,StringComparison.OrdinalIgnoreCase))
+                            .ThenByDescending(x=>candidateIsMonsterHunterWorld
+                                && (x.IsMonsterHunterWorld||string.Equals(x.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)))
+                            .ThenByDescending(x=>!string.IsNullOrWhiteSpace(item.SteamAppId)
+                                && string.Equals(x.SteamAppId,item.SteamAppId,StringComparison.OrdinalIgnoreCase))
+                            .ThenBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
+                            .First();
+
+                        if(sameRootProfiles.Length>1)
+                        {
+                            PersistAuthoritativeRootOwner(existing,candidateRoot,sameRootProfiles,owner);
+                            repaired.Add(owner);
+                            MasterDebugLog.Write(
+                                "GAME-DISCOVERY",
+                                $"Reconciled duplicate same-root profiles to live owner id={owner.Id}; root={owner.GameRoot}; removed={sameRootProfiles.Length-1}");
+                        }
                         continue;
                     }
 
-                    var repaired=sameRoot with
+                    var repairTarget=sameRootProfiles
+                        .OrderByDescending(x=>candidateIsMonsterHunterWorld
+                            && (x.IsMonsterHunterWorld||string.Equals(x.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)))
+                        .ThenByDescending(x=>!string.IsNullOrWhiteSpace(item.SteamAppId)
+                            && string.Equals(x.SteamAppId,item.SteamAppId,StringComparison.OrdinalIgnoreCase))
+                        .ThenBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
+                        .First();
+
+                    var repairAsMonsterHunterWorld=
+                        candidateIsMonsterHunterWorld
+                        || repairTarget.IsMonsterHunterWorld
+                        || string.Equals(repairTarget.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase);
+
+                    if(repairAsMonsterHunterWorld
+                        && !executableName.Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
                     {
-                        GameRoot=candidateRoot,
-                        ExecutableRelativePath=executableRelative,
-                        ProcessName=Path.GetFileNameWithoutExtension(fullExecutable),
-                        SteamAppId=string.IsNullOrWhiteSpace(sameRoot.SteamAppId)?item.SteamAppId:sameRoot.SteamAppId,
-                        Store=string.IsNullOrWhiteSpace(sameRoot.Store)?item.Store:sameRoot.Store
-                    };
-                    Upsert(repaired);
-                    var existingIndex=existing.FindIndex(x=>x.Id.Equals(repaired.Id,StringComparison.OrdinalIgnoreCase));
-                    if(existingIndex>=0)existing[existingIndex]=repaired;
-                    added.Add(repaired);
+                        MasterDebugLog.Write(
+                            "GAME-DISCOVERY",
+                            $"Refused to auto-repair MHW profile '{repairTarget.Id}' with non-MHW executable '{fullExecutable}'.");
+                        continue;
+                    }
+
+                    GameProfile repairedProfile;
+                    if(repairAsMonsterHunterWorld)
+                    {
+                        var canonical=GameProfile.MonsterHunterWorld(candidateRoot);
+                        repairedProfile=canonical with
+                        {
+                            Id=repairTarget.Id,
+                            DisplayName=repairTarget.DisplayName,
+                            SavePath=repairTarget.SavePath,
+                            Store=string.IsNullOrWhiteSpace(repairTarget.Store)
+                                ? (string.IsNullOrWhiteSpace(item.Store)?canonical.Store:item.Store)
+                                : repairTarget.Store
+                        };
+                    }
+                    else
+                    {
+                        repairedProfile=repairTarget with
+                        {
+                            GameRoot=candidateRoot,
+                            ExecutableRelativePath=executableRelative,
+                            ProcessName=Path.GetFileNameWithoutExtension(fullExecutable),
+                            SteamAppId=string.IsNullOrWhiteSpace(repairTarget.SteamAppId)?item.SteamAppId:repairTarget.SteamAppId,
+                            Store=string.IsNullOrWhiteSpace(repairTarget.Store)?item.Store:repairTarget.Store
+                        };
+                    }
+
+                    PersistAuthoritativeRootOwner(existing,candidateRoot,sameRootProfiles,repairedProfile);
+                    repaired.Add(repairedProfile);
                     MasterDebugLog.Write(
                         "GAME-DISCOVERY",
-                        $"Repaired stale discovered profile id={repaired.Id}; root={repaired.GameRoot}; exe={repaired.ExecutableRelativePath}");
+                        $"Repaired stale discovered profile id={repairedProfile.Id}; root={repairedProfile.GameRoot}; exe={repairedProfile.ExecutableRelativePath}; canonicalMhw={repairedProfile.IsMonsterHunterWorld}; removedDuplicates={sameRootProfiles.Length-1}");
                     continue;
                 }
 
                 GameProfile profile;
-                if(string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)||Path.GetFileName(fullExecutable).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
+                if(candidateIsMonsterHunterWorld)
                     profile=GameProfile.MonsterHunterWorld(candidateRoot);
                 else profile=CreateFromDiscoveredGame(item with{Root=candidateRoot},fullExecutable);
-                Upsert(profile);existing.Add(profile);added.Add(profile);
+                Upsert(profile);
+                existing.Add(profile);
+                added.Add(profile);
             }
             catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or JsonException or System.Security.SecurityException)
             { MasterDebugLog.Write("GAME-DISCOVERY",$"Skipped discovered game '{item.Name}' at '{item.Root}'.",ex); }
         }
-        MasterDebugLog.Write("GAME-DISCOVERY",$"Discovered={candidateList.Length}; registered={added.Count}");
-        return added;
+
+        MasterDebugLog.Write(
+            "GAME-DISCOVERY",
+            $"Discovered={candidateList.Length}; added={added.Count}; repaired={repaired.Count}");
+        return new(added.ToArray(),repaired.ToArray());
     }
 
     private static List<GameDiscoveryCandidate> DiscoverInstalledGameCandidates()
@@ -194,6 +267,46 @@ public sealed partial class GameProfileRegistry
         try{candidates.AddRange(discover());}
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or System.Security.SecurityException)
         {MasterDebugLog.Write("GAME-DISCOVERY",$"{source} discovery failed; continuing with other installed-game sources.",ex);}
+    }
+
+    private void PersistAuthoritativeRootOwner(
+        List<GameProfile> existing,
+        string candidateRoot,
+        IReadOnlyList<GameProfile> sameRootProfiles,
+        GameProfile owner)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod($"owner={owner.Id}");
+        if(!IsUsable(owner))throw new ArgumentException("Authoritative game profile is invalid.",nameof(owner));
+
+        var removedIds=sameRootProfiles
+            .Where(x=>!x.Id.Equals(owner.Id,StringComparison.OrdinalIgnoreCase))
+            .Select(x=>x.Id)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if(removedIds.Count>0&&File.Exists(activePath))
+        {
+            try
+            {
+                var activeId=File.ReadAllText(activePath).Trim();
+                if(removedIds.Contains(activeId))
+                {
+                    Directory.CreateDirectory(stateRoot);
+                    AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(owner.Id+Environment.NewLine));
+                }
+            }
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException)
+            {
+                MasterDebugLog.Write("GAME-REGISTRY","Could not repoint active profile while reconciling duplicate game records.",ex);
+            }
+        }
+
+        existing.RemoveAll(x=>Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase));
+        existing.Add(owner);
+        var persisted=existing
+            .OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        Directory.CreateDirectory(stateRoot);
+        AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(persisted,JsonOptions));
     }
 
     public void Upsert(GameProfile profile)
@@ -555,6 +668,47 @@ public sealed partial class GameProfileRegistry
     private static string? VdfValue(string text,string key){var m=Regex.Match(text,$"\\\"{Regex.Escape(key)}\\\"\\s+\\\"(?<v>[^\\\"]*)\\\"",RegexOptions.IgnoreCase);return m.Success?m.Groups["v"].Value:null;}
     private static string? GetJson(JsonElement e,string name)=>e.TryGetProperty(name,out var v)&&v.ValueKind==JsonValueKind.String?v.GetString():null;
     private static void AtomicWrite(string path,byte[] bytes){var dir=Path.GetDirectoryName(path)!;Directory.CreateDirectory(dir);var temp=path+".tmp-"+Guid.NewGuid().ToString("N");File.WriteAllBytes(temp,bytes);File.Move(temp,path,true);}
+}
+
+public sealed record GameDiscoveryRegistrationResult(
+    IReadOnlyList<GameProfile> Added,
+    IReadOnlyList<GameProfile> Repaired)
+{
+    public IReadOnlyList<GameProfile> Changed
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Added.Concat(Repaired).ToArray();
+        }
+    }
+
+    public int AddedCount
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Added.Count;
+        }
+    }
+
+    public int RepairedCount
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Repaired.Count;
+        }
+    }
+
+    public bool HasChanges
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return AddedCount>0||RepairedCount>0;
+        }
+    }
 }
 
 internal sealed record GameDiscoveryCandidate(string Name,string Root,string? Executable,string Store,string? SteamAppId);
