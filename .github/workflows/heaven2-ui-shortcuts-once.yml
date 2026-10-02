@@ -1,0 +1,91 @@
+name: Heaven2 UI Shortcuts One-Shot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/heaven2-ui-shortcuts-once.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heaven2-ui-shortcuts-one-shot
+  cancel-in-progress: true
+
+jobs:
+  create-shortcuts:
+    name: Create and verify heaven2 operator UI shortcuts
+    runs-on: [self-hosted, Windows, X64, heaven-v2]
+    timeout-minutes: 5
+    steps:
+      - name: Create and verify shortcuts
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:COMPUTERNAME -ine 'heaven2') {
+            throw "Refusing shortcut mutation on unexpected host '$env:COMPUTERNAME'."
+          }
+
+          $toolbox = Join-Path $env:USERPROFILE 'local-ai-workspaces\heaven-toolbox'
+          $desktop = [Environment]::GetFolderPath('Desktop')
+          if ([string]::IsNullOrWhiteSpace($desktop)) {
+            throw 'Unable to resolve the interactive user desktop.'
+          }
+          New-Item -ItemType Directory -Force -Path $desktop | Out-Null
+
+          $items = @(
+            @{
+              Name = 'Heaven Agent Control'
+              Launcher = Join-Path $toolbox 'tools\agent-control\Start Agent Control.bat'
+              WorkingDirectory = Join-Path $toolbox 'tools\agent-control'
+              Description = 'Open Heaven Agent Control / Agent Manager on heaven2'
+              Icon = Join-Path $env:LOCALAPPDATA 'MHW-Agent-Control\agent-control.ico'
+            },
+            @{
+              Name = 'Agent Work Reports'
+              Launcher = Join-Path $toolbox 'plugins\agent-work-reports\Start Agent Work Reports.bat'
+              WorkingDirectory = Join-Path $toolbox 'plugins\agent-work-reports'
+              Description = 'Open the Agent Work Reports dashboard on heaven2'
+              Icon = ''
+            }
+          )
+
+          $wsh = New-Object -ComObject WScript.Shell
+          foreach ($item in $items) {
+            if (-not (Test-Path -LiteralPath $item.Launcher -PathType Leaf)) {
+              throw "Launcher is missing: $($item.Launcher)"
+            }
+            if (-not (Test-Path -LiteralPath $item.WorkingDirectory -PathType Container)) {
+              throw "Working directory is missing: $($item.WorkingDirectory)"
+            }
+
+            $shortcutPath = Join-Path $desktop ($item.Name + '.lnk')
+            $shortcut = $wsh.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $env:ComSpec
+            $shortcut.Arguments = '/d /c ""{0}""' -f $item.Launcher
+            $shortcut.WorkingDirectory = $item.WorkingDirectory
+            $shortcut.Description = $item.Description
+            if ($item.Icon -and (Test-Path -LiteralPath $item.Icon -PathType Leaf)) {
+              $shortcut.IconLocation = "$($item.Icon),0"
+            } else {
+              $shortcut.IconLocation = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe,0"
+            }
+            $shortcut.Save()
+
+            if (-not (Test-Path -LiteralPath $shortcutPath -PathType Leaf)) {
+              throw "Shortcut was not created: $shortcutPath"
+            }
+            $readback = $wsh.CreateShortcut($shortcutPath)
+            if (-not [string]::Equals([string]$readback.TargetPath,[string]$env:ComSpec,[StringComparison]::OrdinalIgnoreCase)) {
+              throw "Shortcut target mismatch: $shortcutPath"
+            }
+            if ([string]$readback.Arguments -ne ('/d /c ""{0}""' -f $item.Launcher)) {
+              throw "Shortcut arguments mismatch: $shortcutPath"
+            }
+            if (-not [string]::Equals([string]$readback.WorkingDirectory,[string]$item.WorkingDirectory,[StringComparison]::OrdinalIgnoreCase)) {
+              throw "Shortcut working directory mismatch: $shortcutPath"
+            }
+
+            Write-Host ("SHORTCUT_OK name='{0}' path='{1}' launcher='{2}'" -f $item.Name,$shortcutPath,$item.Launcher)
+          }
