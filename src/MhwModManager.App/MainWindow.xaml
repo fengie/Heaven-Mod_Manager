@@ -321,7 +321,7 @@
                                                     <DataTemplate>
                                                         <Grid Margin="0,3">
                                                             <Grid.ColumnDefinitions><ColumnDefinition Width="34"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="110"/><ColumnDefinition Width="1.5*"/></Grid.ColumnDefinitions>
-                                                            <CheckBox IsChecked="{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
+                                                            <CheckBox IsChecked="{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Label}"/>
                                                             <TextBlock Grid.Column="1" Text="{Binding Label}" VerticalAlignment="Center"/>
                                                             <Border Grid.Column="2" Padding="7,2" CornerRadius="9" BorderBrush="#303844" BorderThickness="1" HorizontalAlignment="Left"><TextBlock Text="{Binding Role}" FontSize="10" Foreground="{StaticResource AccentBright}"/></Border>
                                                             <TextBlock Grid.Column="3" Text="{Binding NexusLabel}" Foreground="{StaticResource Muted}" FontSize="10" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
@@ -337,7 +337,7 @@
                                 <DataGridTemplateColumn Header="ENABLED" Width="72">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsThreeState="False" HorizontalAlignment="Center" ToolTip="Turn the whole mod on or off. A partial state means only some add-ons or components are enabled."/>
+                                            <CheckBox IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsThreeState="False" HorizontalAlignment="Center" AutomationProperties.Name="{Binding DisplayName}" ToolTip="Turn the whole mod on or off. A partial state means only some add-ons or components are enabled."/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

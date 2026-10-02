@@ -1,10 +1,17 @@
-# v8.8.74 — MHW Manual Mod Manager
+# v8.8.75 — MHW Manual Mod Manager
 
-Current product version: **8.8.74**.
+Current product version: **8.8.75**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.75 — Mod Library accessibility labels
+
+- Give every whole-mod enable checkbox a target-specific UI Automation name bound to the current mod `DisplayName`.
+- Give every advanced component toggle an accessible name bound to its current component `Label` while preserving native WPF `CheckBox` toggle and keyboard semantics.
+- Keep names data-bound so recycled/virtualized rows resolve against their current item rather than retaining stale accessible identity.
+- Add deterministic XAML regression coverage for both mod-level and component-level automation naming.
 
 ## v8.8.74 — updater E2E supersession classification
 
@@ -22,15 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Treat private-repository entitlement explicitly: public repos attest automatically; private repos require GitHub Enterprise Cloud plus `MHW_ENABLE_GITHUB_ATTESTATIONS=true`, otherwise the release records an explicit skip rather than claiming provenance.
 - Extend updater publication policy regressions so provenance ordering, action pinning, permissions, exact subject identity, tier gating, and fail-closed digest verification cannot silently regress.
 
-## v8.8.72 — audit reliability hardening
-
-- Make save snapshots fail closed against concurrent game/Steam writes: source and copied payload must agree across stable SHA-256 observations before a snapshot can be indexed as successful.
-- Add bounded retry and cleanup behavior plus deterministic concurrent-mutation and cancellation regressions for save backup capture.
-- Re-read canonical `main` immediately before the first updater publication mutation and skip public/private publication when a queued release run is stale.
-- Make active continuity state canonical-ready by construction: `CURRENT_REVISION.json` must declare `integrationState=canonical-main`, use `workingBranch=main`, and cannot ship candidate status/source state.
-- Add negative governance fixtures that reject the stale continuity forms responsible for #577.
-- Give Browse Mods an intentional no-selection detail state and keep exact-file installation disabled until one provider file is selected; #559 remains open for the rest of the discovery UX.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -39,6 +37,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
 - [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
 - [x] **UPDATER-E2E-587 / P1** — v8.8.74 prevents superseded non-publishing release gates from launching guaranteed-failure installed-client E2E runs while keeping missing-publication states fail-closed.
+- [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.

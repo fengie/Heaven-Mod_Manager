@@ -1,31 +1,28 @@
-# v8.8.74 updater E2E supersession classification — canonical-ready handoff
+# v8.8.75 Mod Library accessibility — canonical-ready handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Integrated predecessor: v8.8.73
-Change set: issue #587 updater installed-client E2E supersession classification
+Integrated predecessor: v8.8.74 / PR #588
+Change set: issue #589 Mod Library toggle accessibility
 
-## v8.8.74 behavior
+## v8.8.75 behavior
 
-- `Updater Installed Client E2E` classifies successful `Windows Release Gate` workflow-run completions before allocating the self-hosted Windows test job.
-- An exact immutable updater release for the upstream source explicitly authorizes the expensive installed-client E2E.
-- If no exact release exists, a clean skip is allowed only when current canonical `main` is proven by GitHub compare state to be ahead of that exact source, which identifies the intentional stale-release path.
-- If the missing-release source is still canonical `main`, or the source/main relationship is divergent/ambiguous, classification fails closed rather than masking a publication defect.
-- The existing in-job exact-release resolution remains in place as defense in depth.
-- `Get-UpdaterInstalledClientE2EDecision` centralizes the state machine and `Test-UpdaterReleasePolicy.ps1` covers published, superseded, canonical-missing, divergent, permissions, ancestry, and heavy-job gating invariants.
+- The Mod Library whole-mod enable checkbox exposes a UI Automation name bound to the current mod `DisplayName`.
+- Advanced component toggles expose UI Automation names bound to the current component `Label`.
+- Both controls remain native WPF `CheckBox` instances, preserving TogglePattern state and keyboard Space behavior.
+- Accessible names remain data-bound to the current item, so row/item recycling updates identity instead of retaining a previous item's name.
+- `XamlBindingSafetyTests.ModLibraryTogglesExposeTargetSpecificAutomationNames` guards both bindings.
 
 ## Verification boundary
 
-This patch changes release/CI policy and therefore changes what green means. Require fresh exact-head Workflow Feature, Updater Publication, Heaven Toolbox Ownership, and MHW Product Security gates on the final reconciled v8.8.74 candidate before integration. Earlier green evidence does not authorize this changed workflow/test/version boundary.
+v8.8.74 predecessor exact head `1db52ceace7cc373753b3bac34d7bdfb4e002f01` passed Workflow Feature `36995650793`, Updater Publication `36995650796`, Heaven Toolbox Ownership `36995650860`, and MHW Product Security `36995650986`.
 
-After integration, verify remote `main` contains the classifier job, shared decision helper, regression assertions, and synchronized 8.8.74 metadata. A successful superseded upstream release-gate completion should produce a clean classifier skip, while an exact published source must still run the real installed-client E2E.
+Those results do **not** authorize v8.8.75. Require fresh exact-head gates for the final accessibility candidate before integration, then read back canonical `main`.
 
 ## Unresolved risks and coordination
 
-PRs #582, #585, and #586 were opened against the v8.8.73 era and may contain stale version/continuity surfaces. After v8.8.74 becomes canonical, each active owner must reconcile against fresh `main`, preserve unique work, use a later patch identity as required, and rerun exact-head gates before integration.
-
-Issue #578, #558, #559, RECOVERY-005, RECOVERY-007, external production trust-anchor provisioning for #350, and account-tier ruleset/certificate constraints for #354 remain independent work.
+PRs #582, #585, and #586 predate this patch boundary and must reconcile against fresh canonical `main` before later integration. Issues #558/#559/#578, RECOVERY-005/RECOVERY-007, external production trust-anchor provisioning for #350, and account-tier ruleset/certificate constraints for #354 remain independent work.
 
 ## Successor obligation
 
