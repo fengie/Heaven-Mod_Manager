@@ -136,10 +136,6 @@ public sealed partial class GameProfileRegistry
                     .Where(x=>Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase))
                     .ToArray();
 
-                // A valid profile already owns this root. Never "repair" a stale sibling
-                // merely because it sorts first in the registry.
-                if(sameRootProfiles.Any(x=>File.Exists(x.ExecutablePath)))continue;
-
                 var exe=item.Executable;
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))exe=FindLikelyExecutable(candidateRoot,item.Name);
                 if(string.IsNullOrWhiteSpace(exe)||!File.Exists(exe))continue;
@@ -155,6 +151,31 @@ public sealed partial class GameProfileRegistry
 
                 if(sameRootProfiles.Length>0)
                 {
+                    var liveProfiles=sameRootProfiles
+                        .Where(x=>File.Exists(x.ExecutablePath))
+                        .ToArray();
+                    if(liveProfiles.Length>0)
+                    {
+                        var owner=liveProfiles
+                            .OrderByDescending(x=>Path.GetFullPath(x.ExecutablePath).Equals(fullExecutable,StringComparison.OrdinalIgnoreCase))
+                            .ThenByDescending(x=>candidateIsMonsterHunterWorld
+                                && (x.IsMonsterHunterWorld||string.Equals(x.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)))
+                            .ThenByDescending(x=>!string.IsNullOrWhiteSpace(item.SteamAppId)
+                                && string.Equals(x.SteamAppId,item.SteamAppId,StringComparison.OrdinalIgnoreCase))
+                            .ThenBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
+                            .First();
+
+                        if(sameRootProfiles.Length>1)
+                        {
+                            PersistAuthoritativeRootOwner(existing,candidateRoot,sameRootProfiles,owner);
+                            repaired.Add(owner);
+                            MasterDebugLog.Write(
+                                "GAME-DISCOVERY",
+                                $"Reconciled duplicate same-root profiles to live owner id={owner.Id}; root={owner.GameRoot}; removed={sameRootProfiles.Length-1}");
+                        }
+                        continue;
+                    }
+
                     var repairTarget=sameRootProfiles
                         .OrderByDescending(x=>candidateIsMonsterHunterWorld
                             && (x.IsMonsterHunterWorld||string.Equals(x.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)))
@@ -203,13 +224,11 @@ public sealed partial class GameProfileRegistry
                         };
                     }
 
-                    Upsert(repairedProfile);
-                    var existingIndex=existing.FindIndex(x=>x.Id.Equals(repairedProfile.Id,StringComparison.OrdinalIgnoreCase));
-                    if(existingIndex>=0)existing[existingIndex]=repairedProfile;
+                    PersistAuthoritativeRootOwner(existing,candidateRoot,sameRootProfiles,repairedProfile);
                     repaired.Add(repairedProfile);
                     MasterDebugLog.Write(
                         "GAME-DISCOVERY",
-                        $"Repaired stale discovered profile id={repairedProfile.Id}; root={repairedProfile.GameRoot}; exe={repairedProfile.ExecutableRelativePath}; canonicalMhw={repairedProfile.IsMonsterHunterWorld}");
+                        $"Repaired stale discovered profile id={repairedProfile.Id}; root={repairedProfile.GameRoot}; exe={repairedProfile.ExecutableRelativePath}; canonicalMhw={repairedProfile.IsMonsterHunterWorld}; removedDuplicates={sameRootProfiles.Length-1}");
                     continue;
                 }
 
@@ -248,6 +267,46 @@ public sealed partial class GameProfileRegistry
         try{candidates.AddRange(discover());}
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or System.Security.SecurityException)
         {MasterDebugLog.Write("GAME-DISCOVERY",$"{source} discovery failed; continuing with other installed-game sources.",ex);}
+    }
+
+    private void PersistAuthoritativeRootOwner(
+        List<GameProfile> existing,
+        string candidateRoot,
+        IReadOnlyList<GameProfile> sameRootProfiles,
+        GameProfile owner)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod($"owner={owner.Id}");
+        if(!IsUsable(owner))throw new ArgumentException("Authoritative game profile is invalid.",nameof(owner));
+
+        var removedIds=sameRootProfiles
+            .Where(x=>!x.Id.Equals(owner.Id,StringComparison.OrdinalIgnoreCase))
+            .Select(x=>x.Id)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if(removedIds.Count>0&&File.Exists(activePath))
+        {
+            try
+            {
+                var activeId=File.ReadAllText(activePath).Trim();
+                if(removedIds.Contains(activeId))
+                {
+                    Directory.CreateDirectory(stateRoot);
+                    AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(owner.Id+Environment.NewLine));
+                }
+            }
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException)
+            {
+                MasterDebugLog.Write("GAME-REGISTRY","Could not repoint active profile while reconciling duplicate game records.",ex);
+            }
+        }
+
+        existing.RemoveAll(x=>Path.GetFullPath(x.GameRoot).Equals(candidateRoot,StringComparison.OrdinalIgnoreCase));
+        existing.Add(owner);
+        var persisted=existing
+            .OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        Directory.CreateDirectory(stateRoot);
+        AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(persisted,JsonOptions));
     }
 
     public void Upsert(GameProfile profile)
