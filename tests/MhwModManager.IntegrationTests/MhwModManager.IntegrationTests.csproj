@@ -8,6 +8,9 @@
     <WarningsAsErrors>$(WarningsAsErrors);xUnit1051</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <ProjectReference Include="../../src/MhwModManager.Core/MhwModManager.Core.csproj" />
     <ProjectReference Include="../../src/MhwModManager.Storage/MhwModManager.Storage.csproj" />
