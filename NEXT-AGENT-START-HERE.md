@@ -1,39 +1,38 @@
-# v8.8.64 rich Browse Mods — current handoff
+# v8.8.65 header selector selected-text repair — current handoff
 
 Canonical MHW product repository: `fengie/mhw-mods`
 Global reusable toolbox/training authority: `fengie/heaven-toolbox@main`
-Active PR: none for the integrated v8.8.64 tranche
-Verified source/head: `3ced8b41041909d91b06902631ef36085bfd7489`
-Merge commit: `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`
-Current branch: `main`
+Active branch: `fix/header-game-selector-selected-template-v8.8.65-20261002`
+Production/test source checkpoint: `dbdfd09d475a14615de60badd0421d0bbb2897a5`
+Issue: #556 reopened from installed-client evidence
 
-## Integrated change
+## Candidate change
 
-Issues #556/#557 and the first tranche of #558 are now canonical:
+The v8.8.64 fix only templated dropdown rows. Installed UI evidence showed the closed header selector still rendered raw `GameProfile { ... }` text.
 
-- the header game selector uses an explicit `DisplayName` item template, preventing raw `GameProfile` record text;
-- Browse Mods rows show safe HTTPS artwork plus summary, author, category, download count, provider, version, updated time, and cache state;
-- the selected detail pane shows artwork and version/update context;
-- WPF result rows use recycling virtualization;
-- refresh capacity is 100 items/provider and cached visible results are 1000;
-- focused source/XAML regressions pin these invariants.
+v8.8.65 repairs the actual shared ComboBox selected-content path:
+
+- the app-owned ComboBox template keeps `SelectionBoxItem` as the selected content;
+- the closed presenter now reuses `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat`;
+- the header's existing `DisplayName` template therefore applies both to dropdown rows and the selected game;
+- focused regression coverage rejects the broken `SelectionBoxItemTemplate` fallback.
 
 ## Verification state
 
-Exact head `3ced8b41041909d91b06902631ef36085bfd7489` passed Workflow Feature PR Gate 36895834301, MHW Product Security Gate 36895834289, and Heaven Toolbox Ownership Gate 36895834269, then merged through PR #561 as `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`.
+Source/test changes are implemented on the branch but are not yet an integrated or runtime-verified claim. Required exact-head gates must pass before merge. Installed Windows/WPF confirmation is still required after integration.
 
-The signed Heaven Bridge rejected unsigned ChatGPT dispatch with `AUTH_REQUIRED`; do not weaken HMAC. GitHub Actions provided the authoritative verification for this lane.
+The local Heaven/Agent Control dispatch route is not exposed in this chat session; this limitation is recorded on issue #556. Do not weaken the signed Heaven Bridge/HMAC boundary to work around it.
 
-## Unresolved risks and remaining work
+## Remaining work
 
-- #558 remains open for deeper provider-aware pagination/search and catalog breadth beyond the first capacity bump.
-- #559 remains open for sorting, filters, provider health, richer loading/empty/partial-failure states, and broader discovery UX.
-- Installed Windows/WPF confirmation is still needed for the selector and live remote-thumbnail behavior.
-- Issue #281 still owns real remaining provider contracts; do not fake unsupported Nexus search or Steam mappings.
-- Existing external signing/ruleset/runtime-evidence gaps remain unchanged.
+1. Open/verify the v8.8.65 PR and require Workflow Feature PR Gate, MHW Product Security Gate, and Heaven Toolbox Ownership Gate on one exact final head.
+2. Refresh canonical main and ownership before merge; reconcile without dropping concurrent work.
+3. Merge only after exact-head required gates are green, then verify remote main contains the selected-template fix.
+4. Obtain installed Windows/WPF visual proof that the closed header shows the human-readable game name.
+5. Close #556 only after the integrated source and required acceptance evidence are recorded.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, refresh live ownership/state before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `LEARNED_RULES.md` in full, refresh live ownership/state before mutation, preserve the continuity constitution and active learned rules, and recursively propagate this obligation. **Do not break the chain.**
 
 The successor must propagate this continuity obligation to the next agent.
