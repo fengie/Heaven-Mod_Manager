@@ -1,40 +1,24 @@
-# v8.8.68 selector acceptance closed — #558 reconciliation active
+# v8.8.69 provider-aware Browse Mods search — candidate state
 
-Issue #556 is **DONE**.
+Issue #556 is DONE. v8.8.68 passed exact-head PR gates, hosted Windows verification `36978710736` (26/26), and packaged installed-client acceptance; durable E2E evidence is committed on canonical main at `601496093430214791395ba1bfcfadd3b0262ad2`.
 
-PR #567 merged v8.8.68 as `7def58c1b16d115e1555738ebad51717d1c1f752`. The exact source then passed hosted Windows verification run `36978710736` with 26/26 stages and produced updater build 382 / `MHW-Manual-Mod-Manager-v8.8.68-win-x64.zip` with SHA-256 `E11BB2CF34808A63C0922B85A1391865D17BB1F6EB1EB32FF79FAE91842166CA`.
+Issue #558 remains ACTIVE. Stale PR #565 contains useful provider-search semantics but cannot be merged directly after main advanced through v8.8.68, so this branch replays only the semantic product/test delta on fresh main and moves the tranche to v8.8.69.
 
-Updater Installed Client E2E run `36979261045` passed the full packaged-client boundary:
+## Candidate behavior
 
-- real update to build 382 / source `7def58c1b16d115e1555738ebad51717d1c1f752`;
-- selected game exposed on the ComboBox automation peer as `Updater E2E Fake Game`;
-- Switch enabled;
-- Settings enabled;
-- confirmed update journal;
-- rollback scenario PASS with the previous build/source restored.
+- Typing in Browse Mods remains a local cache/FTS filter.
+- Explicit Search queries only configured providers advertising `CatalogProviderCapabilities.Search`.
+- Provider results flow through `CatalogSyncService` and the existing source-aware cache/provenance boundary.
+- Provider failures are isolated; cached matches remain usable.
+- Nexus Mods and GameBanana are not probed for unsupported full-catalog text search.
+- UI copy explains the distinction between cached filtering and explicit provider search.
 
-Evidence is persisted on canonical main in `_AGENT_CONTEXT/EVIDENCE/v8.8.68-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.68.log`. Issue #556 is closed as completed.
+## Verification boundary
 
-## Preserved selector contract
+PR #565 head `a03e2a73e806c3b49dacf382c2061255fc79521a` previously passed Workflow Feature `36967009248`, MHW Product Security `36967009165`, and Heaven Toolbox Ownership `36967009322`. Those results are evidence for the semantic implementation only; they do not transfer to v8.8.69 after reconciliation.
 
-Do not regress:
-
-- `AutomationProperties.Name="Active game"`;
-- `AutomationProperties.AutomationId="ActiveGameSelector"`;
-- ComboBox peer `AutomationProperties.ItemStatus` bound to `SelectedGame.DisplayName`;
-- `TextSearch.TextPath="DisplayName"`;
-- the visual selected presenter using the item template / human-readable DisplayName path;
-- long-name character ellipsis;
-- enabled Switch and Settings controls.
-
-## Current active catalog work
-
-Issue #558 remains ACTIVE. PR #565 contains the next provider-search tranche but was prepared on the pre-v8.8.68 line and carries v8.8.67 metadata. It is not merge-ready against current main.
-
-The next integration must reconcile its semantic source/tests onto fresh main, preserve the closed #556 selector behavior, advance the product patch to v8.8.69, and require all exact-head repository gates before merge.
-
-Ordinary per-keystroke Browse Mods filtering remains local to SQLite/FTS. Explicit remote search may contact only configured providers that advertise `CatalogProviderCapabilities.Search`; unsupported providers must not be probed.
+The v8.8.69 branch must pass all three required gates on one exact final head before integration.
 
 ## Routing
 
-Current live Heaven Local Bridge heartbeats expose v8 workers on both hosts. `heaven2` remains the HMAC-authenticated control host; `heaven` is the heavy worker. Do not weaken the authentication boundary to force local-agent execution.
+The current ChatGPT route exposes GitHub mutation but no callable Agent Control / Heaven Bridge dispatch surface. No local-agent verification is claimed, and no authentication boundary was weakened.
