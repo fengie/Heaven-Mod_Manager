@@ -124,13 +124,14 @@ public sealed class VortexInteropServiceTests : IDisposable
 
         Assert.DoesNotContain("CANARY_VORTEX_SECRET", json, StringComparison.Ordinal);
         Assert.DoesNotContain("?token=", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("sourceUrl", json, StringComparison.OrdinalIgnoreCase);
         var exported = JsonSerializer.Deserialize<VortexInteropManifest>(json);
         Assert.NotNull(exported);
-        Assert.Null(Assert.Single(exported!.Mods).SourceUrl);
+        Assert.Single(exported!.Mods);
     }
 
     [Fact]
-    public async Task PreviewRejectsCredentialBearingUrlsAndUnknownFields()
+    public async Task PreviewRejectsCredentialUrlFieldsAndUnknownFields()
     {
         var ct = TestContext.Current.CancellationToken;
         var db = new ManagerDatabase(Path.Combine(root, "credential-import.db"));
@@ -148,17 +149,22 @@ public sealed class VortexInteropServiceTests : IDisposable
                     "credential-bearing",
                     "Credential bearing",
                     true,
-                    1,
-                    SourceUrl: "https://example.invalid/mod?token=CANARY_VORTEX_IMPORT")
+                    1)
             ]);
+        var webJson = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var validJson = JsonSerializer.Serialize(handoff, webJson);
+        var credentialJson = validJson.Replace(
+            "\"priority\":1",
+            "\"priority\":1,\"sourceUrl\":\"https://example.invalid/mod?token=CANARY_VORTEX_IMPORT\"",
+            StringComparison.Ordinal);
+        Assert.NotEqual(validJson, credentialJson);
         var credentialPath = Path.Combine(root, "credential-import.vortexhandoff.json");
-        await File.WriteAllTextAsync(credentialPath, JsonSerializer.Serialize(handoff), ct);
+        await File.WriteAllTextAsync(credentialPath, credentialJson, ct);
 
-        await Assert.ThrowsAsync<InvalidDataException>(
+        await Assert.ThrowsAsync<JsonException>(
             () => service.PreviewAsync(credentialPath, ct));
 
         var unknownFieldPath = Path.Combine(root, "unknown-field.vortexhandoff.json");
-        var validJson = JsonSerializer.Serialize(handoff with { Mods = [] });
         await File.WriteAllTextAsync(
             unknownFieldPath,
             validJson.Insert(1, "\"futureSecret\":\"CANARY_VORTEX_UNKNOWN\","),
