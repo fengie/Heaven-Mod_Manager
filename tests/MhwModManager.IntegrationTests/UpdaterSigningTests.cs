@@ -51,6 +51,47 @@ public sealed class UpdaterSigningTests
     }
 
     [Fact]
+    public void Unknown_key_malformed_signature_not_yet_valid_and_product_manifest_mutation_fail_closed()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var manifest = CreateManifest(42);
+        var envelope = UpdateSignedMetadataSigner.Sign(
+            manifest,
+            "release-2026-a",
+            Now.AddMinutes(-5),
+            Now.AddDays(7),
+            key);
+        var verifier = CreateVerifier(key, 1, null);
+
+        var unknownKey = envelope with
+        {
+            Payload = envelope.Payload with { SigningKeyId = "release-unknown" }
+        };
+        Assert.Throws<InvalidDataException>(
+            () => verifier.Verify(unknownKey, manifest, 41));
+
+        var malformedSignature = envelope with { SignatureBase64 = "not-base64!" };
+        Assert.Throws<InvalidDataException>(
+            () => verifier.Verify(malformedSignature, manifest, 41));
+
+        var notYetValid = UpdateSignedMetadataSigner.Sign(
+            manifest,
+            "release-2026-a",
+            Now.AddMinutes(1),
+            Now.AddDays(1),
+            key);
+        Assert.Throws<InvalidDataException>(
+            () => verifier.Verify(notYetValid, manifest, 41));
+
+        var mutatedProductManifest = manifest with
+        {
+            ProductManifestSha256 = new string('D', 64)
+        };
+        Assert.Throws<InvalidDataException>(
+            () => verifier.Verify(envelope, mutatedProductManifest, 41));
+    }
+
+    [Fact]
     public void Expiry_rollback_and_key_rotation_window_fail_closed()
     {
         using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
