@@ -217,6 +217,7 @@ jobs:
         if: success() && steps.release_artifact.outputs.attest == 'true'
         shell: powershell
         env:
+          GH_TOKEN: ${{ github.token }}
           ARTIFACT_NAME: ${{ steps.release_artifact.outputs.artifact_name }}
         run: |
           $artifactPath = Join-Path '.\artifacts' $env:ARTIFACT_NAME
