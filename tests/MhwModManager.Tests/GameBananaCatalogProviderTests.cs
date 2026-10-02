@@ -100,8 +100,9 @@ public sealed class GameBananaCatalogProviderTests
             if (request.RequestUri?.AbsolutePath == "/Core/Item/Data")
             {
                 var query = request.RequestUri?.Query ?? string.Empty;
-                var id = Assert.Single(ids.Where(candidate =>
-                    query.Contains($"itemid={candidate}", StringComparison.Ordinal)));
+                var id = Assert.Single(
+                    ids,
+                    candidate => query.Contains($"itemid={candidate}", StringComparison.Ordinal));
 
                 lock (concurrencyLock)
                 {
