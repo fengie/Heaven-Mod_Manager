@@ -148,6 +148,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("AutomationProperties.Name=\"Active game\"", xaml);
         Assert.Contains("<ComboBox.ItemTemplate>", xaml);
         Assert.Contains("Text=\"{Binding DisplayName}\"", xaml);
+        Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
+        Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameDisplayName\"", xaml);
         Assert.DoesNotContain("DisplayMemberPath=\"DisplayName\"", xaml);
     }
 
