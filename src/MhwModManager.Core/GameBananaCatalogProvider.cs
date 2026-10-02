@@ -2,7 +2,9 @@ using System.Net;
 
 namespace MhwModManager.Core;
 
-public sealed class GameBananaCatalogProvider : IModCatalogProvider
+public sealed class GameBananaCatalogProvider :
+    IModCatalogProvider,
+    IInstalledCatalogOriginSnapshotProvider
 {
     private const int MaxBrowseLimit = 100;
     private const int MaxBrowsePages = 10;
@@ -167,6 +169,18 @@ public sealed class GameBananaCatalogProvider : IModCatalogProvider
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mod = await GetModAsync(game, providerModId, ct).ConfigureAwait(false);
         return mod?.Files ?? Array.Empty<CatalogModFile>();
+    }
+
+    public async Task<InstalledCatalogOriginSnapshot> GetInstalledOriginSnapshotAsync(
+        GameProfile game,
+        string providerModId,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var mod = await GetModAsync(game, providerModId, ct).ConfigureAwait(false);
+        return new InstalledCatalogOriginSnapshot(
+            mod,
+            mod?.Files ?? Array.Empty<CatalogModFile>());
     }
 
     public Task<CatalogAcquisitionResolution> ResolveAcquisitionAsync(

@@ -38,6 +38,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
+| CATALOG-UPDATES-569 | P1 | ACTIVE | issue #569; PR #573 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
+| RECOVERY-578 | P0 | READY | issue #578; follow-up to #571 / PR #572 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
@@ -85,6 +87,20 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
 **Next action:** continue #558 with broader provider-aware pagination/scale work while preserving integrated v8.8.69 behavior; #559 remains a separate UX tranche.
+
+## CATALOG-UPDATES-569 — Installed-origin provider snapshot reuse
+
+**Owner:** issue #569 / PR #573, v8.8.71 candidate
+**Acceptance:** avoid redundant provider detail hydration when one authoritative response can supply both mod metadata and exact file identity; preserve provider capability declarations, cancellation, failure isolation/health state, exact identity validation, and fail-closed replacement selection.
+
+- [x] Add an optional installed-origin snapshot provider contract with the existing two-call provider interface retained as fallback.
+- [x] Implement GameBanana snapshot reuse so one exact installed-origin update check performs one mod-detail request.
+- [x] Add deterministic request-count coverage and preserve exact file/current-state assertions.
+- [x] Reconcile source/tests onto canonical v8.8.70 main and advance synchronized release/continuity metadata to v8.8.71.
+- [ ] Pass Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final PR #573 head.
+- [ ] Squash-merge the exact green head, verify canonical main, and close issue #569.
+
+**Next action:** run all three exact-head gates for v8.8.71 PR #573, refresh main immediately before integration, and merge only that final green candidate.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
@@ -174,19 +190,20 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## RECOVERY-007 — Installed-game discovery
 
-**Owner:** v8.8.70 issue #571 / PR #572 stale-profile lifecycle follow-up; original RECOVERY-007 discovery source is integrated
+**Owner:** v8.8.70 PR #572 integrated the primary stale-profile lifecycle repair; issue #578 tracks post-merge edge cases; original RECOVERY-007 discovery source is integrated
 **Acceptance:** installed-game discovery works beyond MHW, stays off the UI thread, serializes registry mutation safely, avoids false executable filtering, and has lifecycle/regression coverage.
 
 - [x] Preserve exact archived source tip.
 - [x] Reproduce current-main multi-game discovery behavior.
 - [x] Port current-compatible discovery/lifecycle changes and tests.
 - [x] Integrate the original universal installed-game discovery source/lifecycle changes on canonical main.
-- [x] v8.8.70 candidate repairs stale same-root profiles with missing executables while preserving ID/active selection and filling missing discovery metadata.
-- [x] v8.8.70 candidate hardens MHW repair identity using persisted MHW state or Steam app 582010 and adds deterministic regressions.
-- [ ] Pass PR #572 exact-head required gates and integrate issue #571.
+- [x] v8.8.70 PR #572 integrated the primary stale same-root repair while preserving ID/active selection and filling missing discovery metadata.
+- [x] v8.8.70 hardens the known-MHW non-`MonsterHunterWorld.exe` repair guard using persisted MHW state or Steam app 582010.
+- [ ] Resolve issue #578: a stale generic MHW profile repaired with a valid MHW discovery must recover the canonical MHW adapter/integration shape.
+- [ ] Resolve issue #578: when multiple profiles share one root, any live same-root profile must suppress automatic repair/duplicate registration.
 - [ ] Verify on Windows against representative installed games before marking RECOVERY-007 DONE.
 
-**Next action:** verify/integrate v8.8.70 PR #572 exact-head, then perform representative installed-game Windows/runtime proof before marking RECOVERY-007 DONE.
+**Next action:** resolve issue #578's two lifecycle edge cases with deterministic regressions, then perform representative installed-game Windows/runtime proof before marking RECOVERY-007 DONE.
 
 
 ## Cleanup disposition contract
