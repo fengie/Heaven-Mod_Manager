@@ -311,6 +311,32 @@ public sealed class CatalogRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task Search_can_return_more_than_500_rows_up_to_browse_capacity()
+    {
+        var repository = await CreateRepositoryAsync("scale-capacity");
+        for (var i = 0; i < 600; i++)
+        {
+            await repository.UpsertAsync(
+                CreateCached(
+                    canonicalId: $"nexus:scale-{i:D4}",
+                    name: $"Scale Fixture {i:D4}",
+                    summary: "Scale search fixture",
+                    description: "Deterministic catalog capacity regression.",
+                    expiresAt: null,
+                    providerModId: $"scale-{i:D4}"),
+                TestToken);
+        }
+
+        var results = await repository.SearchAsync(
+            "Scale",
+            gameId: "monsterhunterworld",
+            limit: 1000,
+            ct: TestToken);
+
+        Assert.Equal(600, results.Count);
+    }
+
+    [Fact]
     public async Task Same_named_items_from_different_sources_remain_distinct()
     {
         var repository = await CreateRepositoryAsync("source-separation");
