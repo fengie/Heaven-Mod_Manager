@@ -1,10 +1,17 @@
-# v8.8.66 — MHW Manual Mod Manager
+# v8.8.67 — MHW Manual Mod Manager
 
-Current product version: **8.8.66**.
+Current product version: **8.8.67**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.67 — hardened packaged selector acceptance
+
+- Add a stable UI Automation identity to the active-game selector and explicitly expose the rendered game's accessible name.
+- Inspect the selector through the **raw WPF automation tree**, which is more reliable for templated ComboBox content than Control View descendants.
+- Preserve strict acceptance: the packaged client must render the expected game DisplayName, must not expose raw `GameProfile { ... }` text, and must keep **Switch** and **Settings** enabled.
+- Emit the full installed-client failure log/evidence to the Actions console before failure, so UI acceptance stays diagnosable even when artifact storage is exhausted.
 
 ## v8.8.66 — packaged selector UI acceptance
 
@@ -20,21 +27,13 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Add regression coverage that rejects the broken `SelectionBoxItemTemplate` path and keep issue #556 open until installed Windows/WPF confirmation.
 - Installed-client acceptance must use the published v8.8.65 updater package; source-only `main` is not treated as deployed UI proof.
 
-## v8.8.64 — richer Browse Mods + selector repair
-
-- Fix the header game selector so the app-owned dark ComboBox renders the selected game's human-readable name instead of the raw `GameProfile` record.
-- Upgrade **Browse Mods** to show safe HTTPS thumbnails, summaries, author/category/download metadata, readable provider names, version, updated date, and cache freshness.
-- Add selected-mod artwork plus version/update context while preserving exact-file selection and the existing safe install/provider-page flow.
-- Enable recycled row virtualization and raise the initial provider refresh cap from 60 to 100 items plus the cached visible-result cap from 250 to 1000.
-- Add focused XAML/source regressions; deeper provider-aware pagination/search and discovery controls remain tracked in #558/#559.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
-- [ ] **BROWSE-556 / P1** — v8.8.66 adds packaged Windows/WPF UI Automation acceptance for the selected game text plus Switch/Settings availability; exact-head gates, publication, and packaged E2E still must pass before #556 closes.
+- [ ] **BROWSE-556 / P1** — v8.8.66 packaged UI acceptance correctly failed in E2E #289; v8.8.67 hardens raw-tree selector observation and failure diagnostics. Exact-head gates, publication, and packaged E2E must pass before #556 closes.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 integrated the first cache/provider capacity tranche; deeper provider-aware discovery/pagination remains open under #558.
 - [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.

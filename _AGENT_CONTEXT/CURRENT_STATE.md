@@ -1,20 +1,19 @@
-# v8.8.66 installed selector UI acceptance — candidate state
+# v8.8.67 selector UIA raw-tree hardening — candidate state
 
-Issue #556 remains ACTIVE. v8.8.65 fixed the source-level ComboBox selected presenter and published updater-main-379 successfully, but the escaped regression demonstrated that source/XAML verification alone is too weak for this UI boundary.
+Issue #556 remains ACTIVE. v8.8.66 source/build/release succeeded, but packaged E2E #289 failed the new selector UI acceptance. This is retained as a real acceptance failure rather than being waived.
 
-## Candidate work
+## Candidate change
 
-- Add a stable UI Automation ID to the rendered active-game TextBlock.
-- Extend the real packaged updater E2E to inspect the updated WPF process and require the active game's rendered display text.
-- Detect raw `GameProfile { ... }` output in the selector automation subtree.
-- Require Switch and Settings to remain enabled.
-- Persist selector evidence and make the E2E workflow reject missing/incorrect evidence.
+- Stable automation ID on the active-game ComboBox.
+- Explicit accessible name on the rendered DisplayName TextBlock.
+- Raw UI Automation tree traversal for templated selector/display/button discovery.
+- Bounded raw-tree failure diagnostics.
+- Console emission of installed-client failure log/evidence even when artifact upload cannot run because storage quota is exhausted.
 
 ## Verification boundary
 
-Candidate branch: `fix/issue556-installed-ui-acceptance-v8.8.66-20261002`.
-No v8.8.66 green claim exists yet. Required PR gates, Windows release publication, and packaged updater E2E must attach to exact source before #556 can close.
+v8.8.67 has no green claim yet. Exact PR gates, exact release publication, and packaged updater E2E are all required before #556 can close.
 
 ## Routing
 
-Heaven Local Bridge health probes for both heaven2 and heaven were submitted but produced no status/result and no readable host heartbeat. Local-agent offload is therefore unavailable for this turn; no local-agent/build result is claimed.
+Heaven Local Bridge health probes for heaven2 and heaven were previously submitted under this issue and produced no durable status/result/heartbeat. No local-agent execution is claimed; bridge signing/HMAC controls remain intact.
