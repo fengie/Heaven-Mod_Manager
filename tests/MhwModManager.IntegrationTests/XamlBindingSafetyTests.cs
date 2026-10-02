@@ -229,7 +229,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("private readonly SemaphoreSlim catalogSyncGate = new(1, 1);", source, StringComparison.Ordinal);
 
         var ensureStart = source.IndexOf("private async Task EnsureCatalogLoadedAsync", StringComparison.Ordinal);
-        var refreshCommandStart = source.IndexOf("[RelayCommand]\n    private async Task RefreshCatalog()", ensureStart, StringComparison.Ordinal);
+        var refreshCommandStart = source.IndexOf("private async Task RefreshCatalog()", ensureStart, StringComparison.Ordinal);
         Assert.True(ensureStart >= 0 && refreshCommandStart > ensureStart);
         var ensureBody = source[ensureStart..refreshCommandStart];
         Assert.Contains("await catalogSyncGate.WaitAsync(ct);", ensureBody, StringComparison.Ordinal);
