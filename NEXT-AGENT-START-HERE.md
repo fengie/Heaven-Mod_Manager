@@ -32,6 +32,11 @@ No v8.8.69 green claim exists yet. The semantic predecessor in PR #565 passed al
 
 The live ChatGPT route did not expose Agent Control / Heaven Bridge dispatch tools during this reconciliation, so no local-agent build/test result is claimed. The existing HMAC boundary was not weakened.
 
+## Unresolved risks
+
+- **Unresolved risk:** v8.8.69 is not merge-authorized until Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership all pass on one exact final head.
+- **Unresolved risk:** issue #558 remains open after this tranche for provider-aware pagination/browse expansion and deterministic scale/performance coverage; the repository search path currently clamps results below the UI's requested 1000-row capacity and needs a separate follow-up fix.
+
 ## Ordered continuation
 
 1. Open a PR for this v8.8.69 branch against fresh `main`.
