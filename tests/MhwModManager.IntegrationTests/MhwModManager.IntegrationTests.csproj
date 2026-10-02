@@ -8,7 +8,16 @@
     <WarningsAsErrors>$(WarningsAsErrors);xUnit1051</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <!-- UseWPF switches the SDK's generated implicit-usings set. Restore the
+         standard Microsoft.NET.Sdk globals that this existing test project
+         relied on before enabling WPF/UI Automation references. -->
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
     <Using Include="System.Net.Http" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
