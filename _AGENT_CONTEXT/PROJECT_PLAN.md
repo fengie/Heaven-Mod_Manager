@@ -36,8 +36,9 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
-| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 candidate | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
+| GAME-DISCOVERY-571 | P0 | ACTIVE | issue #571; draft PR #572 semantic source; v8.8.70 fresh-main reconciliation | Repair stale same-root installed-game profiles without changing live profiles, profile identity, or MHW executable safety. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
@@ -56,7 +57,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
 
-**Owner:** #556 completed via PR #567 / v8.8.68; #558 v8.8.69 provider-search/capacity reconciliation is active on PR #565; #559 remains ready. Both must preserve the closed selector boundary.
+**Owner:** #556 completed via PR #567 / v8.8.68; #558 provider-search/capacity tranche integrated via PR #565 / v8.8.69; #559 remains ready. Both must preserve the closed selector boundary.
 **Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`; #567 at merge `7def58c1b16d115e1555738ebad51717d1c1f752`
 **Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
 
@@ -78,13 +79,13 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Raise first-tranche refresh/cache limits to 100/provider and 1000 visible cached rows.
 - [x] Add focused source/XAML regression guards.
 - [x] Exact head `3ced8b41041909d91b06902631ef36085bfd7489` passed all required PR #561 gates and integrated #556/#557 as `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`.
-- [x] v8.8.69 candidate: explicit Search queries only providers advertising `CatalogProviderCapabilities.Search`; text-entry debounce remains local-cache-only.
-- [x] v8.8.69 candidate: raise the repository search clamp from 500 to 1000 to match the virtualized UI capacity, with a deterministic >500-row regression.
-- [ ] Verify and integrate PR #565 on exact-head required gates.
+- [x] v8.8.69 integrated: explicit Search queries only providers advertising `CatalogProviderCapabilities.Search`; text-entry debounce remains local-cache-only.
+- [x] v8.8.69 integrated: raise the repository search clamp from 500 to 1000 to match the virtualized UI capacity, with a deterministic >500-row regression.
+- [x] PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then merged as `7ee321a349098849b9e4db302b20dfa1595ca13b`.
 - [ ] Continue #558 with broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** verify and integrate PR #565 v8.8.69 on one exact green head, then keep #558 open for broader pagination/scale work while preserving completed #556 acceptance.
+**Next action:** keep #558 open for broader pagination/scale work while preserving completed v8.8.69 provider-search/capacity semantics and #556 acceptance.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
@@ -172,6 +173,19 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 **Next action:** perform installed-client visual/interaction proof before marking DONE.
 
+### Issue #571 stale-profile lifecycle follow-up
+
+**Owner:** v8.8.70 fresh-main reconciliation on `fix/issue571-stale-profile-repair-v8.8.70-20261002-chatgpt`
+**Acceptance:** live same-root profiles remain untouched; stale same-root profiles are repaired from valid discovery without changing profile ID or active-game selection; missing store/Steam metadata may be filled; MHW never repairs through a non-`MonsterHunterWorld.exe` executable; deterministic regressions cover all boundaries.
+
+- [x] Preserve the unique source/test semantics from draft PR #572.
+- [x] Replay those semantics onto canonical v8.8.69 main and advance release metadata to v8.8.70.
+- [ ] Pass Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final v8.8.70 head.
+- [ ] Merge the exact green candidate, close #571, and close draft #572 as superseded without discarding unique work.
+- [ ] Keep RECOVERY-007 active until representative Windows/runtime installed-game discovery proof is complete.
+
+**Next action:** verify and integrate the v8.8.70 #571 candidate, then perform representative Windows/runtime discovery proof before closing RECOVERY-007.
+
 ## RECOVERY-007 — Installed-game discovery
 
 **Owner:** ChatGPT recovery lane on `fix/installed-game-discovery-v8.8.56-20260930`
@@ -180,9 +194,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Preserve exact archived source tip.
 - [x] Reproduce current-main multi-game discovery behavior.
 - [x] Port current-compatible discovery/lifecycle changes and tests.
-- [ ] Verify on Windows against representative installed games and integrate.
+- [x] Integrate the universal discovery source/test tranche.
+- [ ] Verify on Windows against representative installed games before marking RECOVERY-007 DONE.
 
-**Next action:** run exact-head focused/required gates on the v8.8.56 candidate, reconcile fresh `main`, then integrate and perform Windows installed-game/runtime proof before marking DONE.
+**Next action:** finish the v8.8.70 #571 stale-profile lifecycle repair, then perform representative Windows installed-game/runtime proof before marking RECOVERY-007 DONE.
 
 
 ## Cleanup disposition contract
