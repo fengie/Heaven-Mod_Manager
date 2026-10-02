@@ -21,7 +21,10 @@ jobs:
   classify-workflow-run:
     name: Classify upstream updater publication
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    # GitHub-hosted runners currently fail before allocation (runner_id=0).
+    # Keep classification on the known-good Heaven runner so the release gate can
+    # distinguish exact publications from intentional supersession.
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     permissions:
       contents: read
     outputs:
