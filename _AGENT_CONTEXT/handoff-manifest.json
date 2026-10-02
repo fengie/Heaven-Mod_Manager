@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.71",
+  "currentVersion": "8.8.72",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.70 PR #572 exact head c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2 passed Workflow Feature 36982837749, MHW Product Security 36982837913, and Heaven Toolbox Ownership 36982837948, then squash-merged as 350752d315ba6db1d329f726d181bad173b41514. v8.8.71 addresses issue #569 duplicate GameBanana installed-origin detail hydration; issue #578 separately tracks two post-v8.8.70 stale-profile semantic gaps.",
+  "immediateParentRevision": "v8.8.71 PR #573 exact head 90fe998b2024aa43f7e3999185c87a98cac6a016 passed Workflow Feature 36983859719, MHW Product Security 36983859681, and Heaven Toolbox Ownership 36983859667, then squash-merged as cd189422d1def33d89f2ebaffb30091f2db4ad23. v8.8.72 closes audit findings #575, #576, and #577.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; refresh live #569 ownership; require all three exact-head gates for PR #573 v8.8.71 before merge; preserve exact catalog identity/fail-closed replacement semantics; keep issue #578 live for the known v8.8.70 stale-profile follow-ups; then continue non-overlapping #558/#559/RECOVERY-007 work and propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; treat CURRENT_REVISION as canonical-state payload rather than feature-branch execution state; do not reopen completed #575/#576/#577; preserve issue #578 plus remaining #558/#559/RECOVERY-007 work and exact-head integration discipline; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
@@ -103,5 +103,6 @@
   "projectPlan": "_AGENT_CONTEXT/PROJECT_PLAN.md",
   "globalBootstrapRepository": "fengie/heaven-toolbox",
   "globalBootstrapBranch": "main",
-  "globalGitDirective": "fengie/heaven-toolbox@main:GLOBAL_GIT_DIRECTIVE.md"
+  "globalGitDirective": "fengie/heaven-toolbox@main:GLOBAL_GIT_DIRECTIVE.md",
+  "currentRevisionSemantics": "CURRENT_REVISION.json describes the state safe to exist on canonical main. Feature-branch names, candidate status, retained candidate source commits, and pending self-merge instructions do not belong in active canonical state."
 }
