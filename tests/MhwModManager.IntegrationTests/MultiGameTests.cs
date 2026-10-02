@@ -125,6 +125,28 @@ public sealed class MultiGameTests : IDisposable
     }
 
     [Fact]
+    public void Discovery_refuses_MHW_Steam_candidate_repair_even_when_stale_profile_was_generic()
+    {
+        var game=Path.Combine(root,"mhw-generic-stale");Directory.CreateDirectory(game);
+        var wrongExe=Path.Combine(game,"Launcher.exe");File.WriteAllBytes(wrongExe,[0x4d,0x5a]);
+
+        var registry=new GameProfileRegistry(Path.Combine(root,"mhw-generic-state"),()=>
+        [
+            new GameDiscoveryCandidate("Monster Hunter: World",game,wrongExe,"Steam","582010")
+        ]);
+        var staleGeneric=GameProfile.Generic("legacy-mhw","Monster Hunter: World",game,"Missing.exe","nativePC");
+        registry.Upsert(staleGeneric);
+
+        Assert.Empty(registry.DiscoverAndRegisterInstalledGames());
+
+        var persisted=Assert.Single(registry.Load());
+        Assert.Equal(staleGeneric.Id,persisted.Id);
+        Assert.False(persisted.IsMonsterHunterWorld);
+        Assert.Equal("Missing.exe",persisted.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Null(persisted.SteamAppId);
+    }
+
+    [Fact]
     public void Steam_discovery_reads_every_manifest_across_configured_libraries()
     {
         var steam=Path.Combine(root,"Steam");

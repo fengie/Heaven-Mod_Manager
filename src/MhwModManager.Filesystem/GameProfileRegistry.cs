@@ -133,7 +133,11 @@ public sealed partial class GameProfileRegistry
 
                 if(sameRoot is not null)
                 {
-                    if(sameRoot.IsMonsterHunterWorld
+                    var isMonsterHunterWorld=
+                        sameRoot.IsMonsterHunterWorld
+                        || string.Equals(sameRoot.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.SteamAppId,"582010",StringComparison.OrdinalIgnoreCase);
+                    if(isMonsterHunterWorld
                         && !Path.GetFileName(fullExecutable).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
                     {
                         MasterDebugLog.Write(
