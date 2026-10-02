@@ -1,14 +1,18 @@
-# v8.8.65 MHW product — ordered next actions
+# v8.8.66 MHW product — ordered next actions
 
-1. Obtain installed Windows/WPF acceptance for issue #556: on a build containing v8.8.65, confirm the closed header selector shows the human-readable game name and switching games preserves readable selected/dropdown text.
-2. Record that runtime evidence and close #556 only if the installed-client check passes.
-3. Preserve the verified source boundary from PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` merged as `c3f238cbe4f1850763736bac999af0577a4606c5`.
-4. Continue #558 with provider-aware pagination/search only where provider capabilities actually support it.
-5. Continue #559 with provider/category filters, sorting, provider health, loading/empty/stale/partial-failure states, and clearer result-coverage UX.
-6. Preserve issue #281's real provider contracts, external signing/ruleset constraints, RECOVERY-007 Windows discovery proof, and other documented evidence gaps.
+1. Open and verify the #558 v8.8.66 provider-search candidate from `agent/issue-558-provider-search-20261002` against current `main`.
+2. Require exact-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership gates; queued/cancelled/failed gates are not merge authorization.
+3. Merge only after all required gates are green and fresh-main reconciliation preserves concurrent work.
+4. Read back remote `main`, persist exact integration evidence/handoff, then release the #558 collaboration claim.
+5. Keep #558 open for broader provider-aware pagination/browse expansion after the capability-gated remote-search tranche.
+6. Separately obtain installed Windows/WPF acceptance for #556 and close it only if the published installed client shows readable selected/dropdown game text.
+7. Continue #559 only as a non-overlapping lane for provider/category filters, sorting, provider health, loading/empty/stale/partial-failure states, and discovery UX.
+8. Preserve #281 provider contracts, #350/#354 external constraints, RECOVERY-007 Windows discovery proof, and other documented evidence gaps.
 
 ## Closed verification boundary
 
-v8.8.65 exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed Workflow Feature PR Gate run `36963458484`, MHW Product Security Gate run `36963458384`, and Heaven Toolbox Ownership Gate run `36963458431`, then merged to canonical main as `c3f238cbe4f1850763736bac999af0577a4606c5`.
+v8.8.65 exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed Workflow Feature PR Gate `36963458484`, MHW Product Security Gate `36963458384`, and Heaven Toolbox Ownership Gate `36963458431`, then merged to canonical main as `c3f238cbe4f1850763736bac999af0577a4606c5`.
+
+The v8.8.66 candidate does not inherit that verification.
 
 Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`. Preserve and recursively propagate the MHW continuity constitution. **Do not break the chain.**
