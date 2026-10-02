@@ -60,9 +60,9 @@ if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){
 
 $escaped=[regex]::Escape($version)
 $readme=Active 'README.md'; $changelog=Active 'CHANGELOG.md'; $currentState=Active '_AGENT_CONTEXT/CURRENT_STATE.md'
-Need $currentState "(?m)^#\\s+v$escaped\\b" 'CURRENT_STATE title must show current version.'
-Need $currentState '(?i)\\bcanonical state\\b' 'CURRENT_STATE must describe canonical state.'
-Forbid $currentState '(?i)\\bcanonical-ready\\b' 'CURRENT_STATE must not retain pre-integration canonical-ready wording.'
+Need $currentState "(?m)^#\s+v$escaped\b" 'CURRENT_STATE title must show current version.'
+Need $currentState '(?i)\bcanonical state\b' 'CURRENT_STATE must describe canonical state.'
+Forbid $currentState '(?i)\bcanonical-ready\b' 'CURRENT_STATE must not retain pre-integration canonical-ready wording.'
 Need $readme "(?m)^#\s+v$escaped\b" 'README title must show current version.'
 Need $readme "(?m)^##\s+v$escaped\b" 'README must contain a current-version progress section.'
 Need $changelog "(?m)^#\s+v$escaped\b" 'CHANGELOG must contain a current-version section.'
