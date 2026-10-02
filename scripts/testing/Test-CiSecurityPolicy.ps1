@@ -167,6 +167,23 @@ if(!(Test-Path -LiteralPath $releasePath)){
     )){
         if(-not $release.Contains($required)){$errors.Add("windows-release-gate.yml: verified GitHub CLI bootstrap invariant missing: $required")}
     }
+    foreach($required in @(
+        '.\scripts\release\Sync-VerificationContinuity.ps1',
+        '_AGENT_CONTEXT/CURRENT_REVISION.json',
+        '_AGENT_CONTEXT/CURRENT_STATE.md',
+        'NEXT-AGENT-START-HERE.md'
+    )){
+        if(-not $release.Contains($required)){$errors.Add("windows-release-gate.yml: verification evidence/continuity atomicity invariant missing: $required")}
+    }
+    $syncIndex=$release.IndexOf('.\scripts\release\Sync-VerificationContinuity.ps1')
+    if($syncIndex -ge 0){
+        $postSync=$release.Substring($syncIndex)
+        $postSyncHandoff=$postSync.IndexOf('.\scripts\testing\Test-AgentHandoff.ps1')
+        $postSyncStage=$postSync.IndexOf("git add -- '.verification/function-status.json'")
+        if($postSyncHandoff -lt 0 -or $postSyncStage -lt 0 -or $postSyncHandoff -ge $postSyncStage){
+            $errors.Add('windows-release-gate.yml: synchronized continuity must pass the handoff validator before verification/evidence state is staged.')
+        }
+    }
     $publicPublishIndex=$release.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
     $privatePublishIndex=$release.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
     $parityIndex=$release.IndexOf('Verify public and canonical updater release parity')
