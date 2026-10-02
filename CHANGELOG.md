@@ -1,3 +1,9 @@
+# v8.8.77 — 2026-10-02
+
+- Route the updater installed-client E2E publication classifier from unavailable GitHub-hosted `ubuntu-latest` capacity to the known-good self-hosted Heaven Windows runner.
+- Preserve the classifier's read-only contents permission, exact immutable-release decision, canonical-main ancestry check, and fail-closed installed-client E2E gating.
+- Replace the stale regression that required `ubuntu-latest` with a job-scoped assertion for the self-hosted runner labels.
+
 # v8.8.76 — 2026-10-02
 
 - Add a credential-free, schema-bounded Vortex handoff contract for Monster Hunter: World without reading Vortex private state, credentials, cookies, deployment folders, or authenticated download state.
