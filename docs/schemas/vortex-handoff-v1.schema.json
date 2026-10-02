@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fengie/mhw-mods/docs/schemas/vortex-handoff-v1.schema.json",
+  "title": "Universal Mod Manager Vortex handoff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "exportedAt", "game", "mods"],
+  "properties": {
+    "format": { "const": 1 },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "game": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vortexGameId", "modPath", "executable"],
+      "properties": {
+        "vortexGameId": { "type": "string", "minLength": 1 },
+        "nexusPageId": { "type": ["string", "null"] },
+        "steamAppId": { "type": ["string", "null"] },
+        "modPath": { "type": "string" },
+        "executable": { "type": "string", "minLength": 1 }
+      }
+    },
+    "mods": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["localModId", "displayName", "enabled", "priority"],
+        "properties": {
+          "localModId": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "enabled": { "type": "boolean" },
+          "priority": { "type": "integer", "minimum": 0 },
+          "nexusModId": { "type": ["string", "null"] },
+          "nexusFileId": { "type": ["string", "null"] },
+          "version": { "type": ["string", "null"] },
+          "files": {
+            "type": ["object", "null"],
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

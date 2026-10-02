@@ -1,3 +1,14 @@
+# v8.8.76 — 2026-10-02
+
+- Add a credential-free, schema-bounded Vortex handoff contract for Monster Hunter: World without reading Vortex private state, credentials, cookies, deployment folders, or authenticated download state.
+- Export only reviewed local package/profile identity, enable/priority intent, optional Nexus mod/file IDs, and optional managed-file SHA-256 values; generic source URLs are excluded and unknown fields fail closed.
+- Validate the exact MHW game contract, normalized managed paths, hashes, duplicate identities/targets, manifest size, and mod count before any handoff can be saved as a profile.
+- Re-read and re-match at import time so stale previews cannot authorize changed local content; missing, ambiguous, wrong-game, malformed, and hash-mismatched entries remain disabled.
+- Save imports as isolated manager profiles only; Vortex-specific failures do not mutate live deployment or normal manual-mod-manager state.
+- Write exported handoffs through same-directory temporary files and atomic replacement so an interrupted export cannot replace a previously valid handoff with partial JSON.
+- Add deterministic credential-boundary, traversal/game-path validation, round-trip, ambiguity, atomic-export, and isolation regression coverage.
+- Extend the continuity preflight so CURRENT_STATE must identify the exact current patch, preventing stale canonical-state handoffs from silently surviving later integrations.
+
 # v8.8.75 — 2026-10-02
 
 - Give the Mod Library whole-mod enable checkbox an accessible name bound to the current mod `DisplayName`.

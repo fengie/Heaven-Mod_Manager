@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.75",
+  "currentVersion": "8.8.76",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.74 is the integrated predecessor. v8.8.75 / issue #589 gives Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and deterministic regression coverage.",
   "canonicalRepository": "fengie/mhw-mods",

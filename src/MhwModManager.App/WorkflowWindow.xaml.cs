@@ -21,6 +21,7 @@ public partial class WorkflowWindow : Window
     private bool busy;
     private string folderPrefix = "";
     private string? recipePath;
+    private string? vortexHandoffPath;
     private string? editingRule;
     private (string older, string newer)? reviewedUpdate;
     public IReadOnlyDictionary<string, (bool enabled, int priority)>? RequestedStage { get; private set; }
@@ -127,7 +128,7 @@ public partial class WorkflowWindow : Window
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var dialog = new OpenFileDialog { Filter = "Portable mod lists|*.ummpack;*.mhwrecipe;*.json" };
         if (dialog.ShowDialog(this) != true) return;
-        await RunAsync(async () => { recipePath = null; var preview = await services.Recipe.PreviewAsync(dialog.FileName); RecipeRows.ItemsSource = preview.Matches; recipePath = dialog.FileName; Status.Text = $"{preview.Matches.Count(m => m.CanRestore)}/{preview.Matches.Count} entries can be restored. Inspect unresolved entries before saving."; });
+        await RunAsync(async () => { recipePath = null; vortexHandoffPath = null; var preview = await services.Recipe.PreviewAsync(dialog.FileName); RecipeRows.ItemsSource = preview.Matches; recipePath = dialog.FileName; Status.Text = $"{preview.Matches.Count(m => m.CanRestore)}/{preview.Matches.Count} entries can be restored. Inspect unresolved entries before saving."; });
     }
     private async void ExportRecipe(object sender, RoutedEventArgs e)
     {
@@ -135,6 +136,65 @@ public partial class WorkflowWindow : Window
         var dialog = new SaveFileDialog { Filter = "Portable mod list|*.mhwrecipe|Universal Mod Manager list|*.ummpack", FileName = "mod-list.mhwrecipe" };
         if (dialog.ShowDialog(this) != true) return;
         await RunAsync(async () => { await services.Recipe.ExportAsync(dialog.FileName); Status.Text = "Exported the current mod list: " + dialog.FileName; });
+    }
+
+    private async void OpenVortexHandoff(object sender, RoutedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var dialog = new OpenFileDialog { Filter = "Vortex handoff|*.vortexhandoff.json|JSON files|*.json" };
+        if (dialog.ShowDialog(this) != true) return;
+        await RunAsync(async () =>
+        {
+            recipePath = null;
+            vortexHandoffPath = null;
+            var service = new VortexInteropService(services.Database, services.Paths.Game);
+            var preview = await service.PreviewAsync(dialog.FileName);
+            RecipeRows.ItemsSource = preview.Matches;
+            vortexHandoffPath = dialog.FileName;
+            Status.Text = $"{preview.Matches.Count(match => match.CanRestore)}/{preview.Matches.Count} Vortex handoff entries can be restored. Missing, ambiguous, or hash-mismatched packages stay disabled.";
+        });
+    }
+
+    private async void ExportVortexHandoff(object sender, RoutedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var support = VortexInteropContract.TryGetGame(services.Paths.Game);
+        if (support is null)
+        {
+            Status.Text = "Vortex handoff is not configured for this game profile.";
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Filter = "Vortex handoff|*.vortexhandoff.json",
+            FileName = "vortex-handoff.vortexhandoff.json"
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        await RunAsync(async () =>
+        {
+            var service = new VortexInteropService(services.Database, services.Paths.Game);
+            await service.ExportAsync(dialog.FileName);
+            Status.Text = "Exported a credential-free Vortex handoff: " + dialog.FileName;
+        });
+    }
+
+    private async void ImportVortexHandoff(object sender, RoutedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await RunAsync(async () =>
+        {
+            if (vortexHandoffPath is null)
+                throw new InvalidOperationException("Open and review a Vortex handoff first.");
+
+            await EnsureNewProfileNameAsync(RecipeName.Text);
+            var service = new VortexInteropService(services.Database, services.Paths.Game);
+            var id = await service.ImportAsProfileAsync(vortexHandoffPath, RecipeName.Text);
+            await RefreshAsync();
+            ProfileB.SelectedItem = ((IReadOnlyList<ProfileSummary>)ProfileB.ItemsSource)
+                .First(profile => profile.Id == id);
+            Status.Text = "Saved the matched Vortex handoff as a profile. Missing or uncertain packages remain disabled; live game files are unchanged until you apply the profile.";
+        });
     }
     private async void ImportRecipe(object sender, RoutedEventArgs e)
     {
