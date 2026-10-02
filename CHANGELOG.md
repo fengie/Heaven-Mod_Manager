@@ -1,3 +1,19 @@
+# v8.8.72 — 2026-10-02
+
+- Make live-save snapshots transactional around a stable-copy boundary: bounded retry, pre/post SHA-256 fingerprints, exact copy hash verification, cleanup of incomplete snapshot directories, and no successful database record for failed/cancelled capture.
+- Add deterministic regressions for concurrent mutation including same-length/same-timestamp content changes, plus cancellation cleanup.
+- Add a fail-closed exact-main freshness guard immediately before the first updater publication mutation and require its positive output for public publication, canonical publication, and parity verification.
+- Convert active `CURRENT_REVISION.json` to explicit post-integration canonical semantics and mechanically reject candidate status, task-branch ownership, candidate source commits, or active PR state.
+- Give Browse Mods an intentional no-selection detail state and disable exact-file installation until a file is selected while preserving stale-file clearing on mod changes.
+- Preserve v8.8.71 provider snapshot deduplication and the v8.8.71/#580 current-main CI/evidence behavior.
+
+# v8.8.71 — 2026-10-02
+
+- Add an optional installed-origin snapshot provider contract so exact update checks can reuse one authoritative mod/file hydration when a provider supports it.
+- Implement the snapshot path for GameBanana, eliminating the duplicate `/Core/Item/Data` detail request previously made for each installed-origin update check.
+- Preserve the existing two-call fallback for other providers plus cancellation, provider health/failure classification, exact mod/file identity validation, and the rule that replacement files are never guessed.
+- Add a deterministic request-count regression proving one GameBanana installed-origin check performs exactly one detail request.
+- Reconcile the change onto canonical v8.8.70 main; the two stale-profile edge cases found after PR #572 are tracked separately in issue #578.
 # v8.8.70 — 2026-10-02
 
 - Repair a persisted same-root game profile when its executable is missing instead of allowing that stale record to suppress automatic installed-game discovery indefinitely.
