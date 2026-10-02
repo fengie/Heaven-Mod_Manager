@@ -52,6 +52,35 @@ public sealed class CatalogDiscoveryService
         this.syncService = syncService;
     }
 
+    public Task<CatalogDiscoveryResult> SearchAsync(
+        IEnumerable<IModCatalogProvider> providers,
+        GameProfile game,
+        string query,
+        int limit,
+        CatalogSyncOptions? options = null,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(providers);
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentException.ThrowIfNullOrWhiteSpace(query);
+        if (limit <= 0) throw new ArgumentOutOfRangeException(nameof(limit));
+
+        var providerList = providers.ToArray();
+        ValidateProviders(providerList);
+        var searchable = providerList
+            .Where(provider => provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search))
+            .ToArray();
+        return RefreshAsync(
+            searchable,
+            new CatalogBrowseRequest(
+                game,
+                Query: query.Trim(),
+                Limit: limit),
+            options,
+            ct);
+    }
+
     public async Task<CatalogDiscoveryResult> RefreshAsync(
         IEnumerable<IModCatalogProvider> providers,
         CatalogBrowseRequest request,
