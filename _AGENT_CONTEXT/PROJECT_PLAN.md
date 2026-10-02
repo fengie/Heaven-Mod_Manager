@@ -45,6 +45,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
+| ACCESSIBILITY-605 | P1 | DONE | issue #605; v8.8.78 | Give Mod Library preview images/thumbnails and Needs attention actions contextual UI Automation names, and keep safe-upgrade guidance pinned to the current release rather than an obsolete version. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
