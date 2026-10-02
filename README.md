@@ -1,10 +1,19 @@
-# v8.8.71 — MHW Manual Mod Manager
+# v8.8.72 — MHW Manual Mod Manager
 
-Current product version: **8.8.71**.
+Current product version: **8.8.72**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.72 — audit reliability hardening
+
+- Make save snapshots fail closed against concurrent game/Steam writes: source and copied payload must agree across stable SHA-256 observations before a snapshot can be indexed as successful.
+- Add bounded retry and cleanup behavior plus deterministic concurrent-mutation and cancellation regressions for save backup capture.
+- Re-read canonical `main` immediately before the first updater publication mutation and skip public/private publication when a queued release run is stale.
+- Make active continuity state canonical-ready by construction: `CURRENT_REVISION.json` must declare `integrationState=canonical-main`, use `workingBranch=main`, and cannot ship candidate status/source state.
+- Add negative governance fixtures that reject the stale continuity forms responsible for #577.
+- Give Browse Mods an intentional no-selection detail state and keep exact-file installation disabled until one provider file is selected; #559 remains open for the rest of the discovery UX.
 
 ## v8.8.71 — installed-origin provider snapshot deduplication
 
@@ -21,25 +30,18 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Treat either persisted MHW identity or Steam app `582010` discovery identity as MHW for repair safety, refusing a replacement executable unless it is `MonsterHunterWorld.exe`.
 - Cover the direct and inferred-executable repair paths plus MHW safety regressions deterministically.
 
-## v8.8.69 — provider-aware Browse Mods search
-
-- Keep ordinary Browse Mods typing local to the SQLite/FTS cache; only the explicit **Search** action may contact remote providers.
-- Query only configured providers that advertise `CatalogProviderCapabilities.Search`, persist returned rows through `CatalogSyncService`, and isolate per-provider failures so cached matches remain usable.
-- Preserve providers' declared capability contracts instead of probing unsupported full-catalog text-search modes.
-- Make the advertised 1000-row virtualized Browse Mods capacity real by raising the storage search clamp from 500 to 1000, with a deterministic regression proving results can exceed 500.
-- Preserve the completed v8.8.68 selector/updater acceptance boundary; issue #556 remains closed.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
+- [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
 - [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
-- [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
+- [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.

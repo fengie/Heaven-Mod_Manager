@@ -248,10 +248,18 @@ $releaseWorkflow=Get-Content -LiteralPath $releaseWorkflowPath -Raw
 $privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
 $publicPublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
 $parityIndex=$releaseWorkflow.IndexOf('Verify public and canonical updater release parity')
+$freshnessIndex=$releaseWorkflow.IndexOf('Confirm release source is still canonical main')
 if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical updater publisher.'}
 if($publicPublishIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater publisher.'}
+if($freshnessIndex -lt 0){throw 'Windows release workflow no longer checks exact-main freshness before publication.'}
+if($freshnessIndex -ge $publicPublishIndex){throw 'Exact-main freshness must be checked before the first updater publication mutation.'}
 if($publicPublishIndex -ge $privatePublishIndex){throw 'Public updater feed must publish before canonical private release visibility.'}
 if($parityIndex -le $privatePublishIndex){throw 'Updater parity verification must run after both publication steps.'}
+Assert-Equal $true ($releaseWorkflow.Contains('id: release_freshness')) 'release freshness output step id'
+Assert-Equal $true ($releaseWorkflow.Contains('/git/ref/heads/main')) 'release freshness reads canonical main ref'
+Assert-Equal $true ($releaseWorkflow.Contains('[string]::Equals($remoteMain,$env:GITHUB_SHA')) 'release freshness compares canonical main with exact run SHA'
+$publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_freshness\.outputs\.publish == 'true'").Count
+Assert-Equal 3 $publicationFreshnessGuards 'public/private/parity publication freshness guards'
 Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 

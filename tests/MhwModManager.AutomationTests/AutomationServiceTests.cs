@@ -30,6 +30,84 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveSnapshotStableCopyRetriesAfterConcurrentMutation()
+    {
+        var source=Path.Combine(root,"stable-source.bin");
+        var destination=Path.Combine(root,"stable-copy.bin");
+        await File.WriteAllTextAsync(source,"version-one",TestContext.Current.CancellationToken);
+        var mutationCount=0;
+
+        await SaveBackupService.CopyStableFileAsync(
+            source,
+            destination,
+            TestContext.Current.CancellationToken,
+            async (attempt,ct) =>
+            {
+                if(attempt!=1)return;
+                mutationCount++;
+                await File.WriteAllTextAsync(source,"version-two",ct);
+                File.SetLastWriteTimeUtc(source,DateTime.UtcNow.AddSeconds(1));
+            });
+
+        Assert.Equal(1,mutationCount);
+        Assert.Equal("version-two",await File.ReadAllTextAsync(destination,TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SaveSnapshotStableCopyRejectsSameLengthSameTimestampMutation()
+    {
+        var source=Path.Combine(root,"unstable-source.bin");
+        var destination=Path.Combine(root,"unstable-copy.bin");
+        var baseline=new string('A',4096);
+        await File.WriteAllTextAsync(source,baseline,TestContext.Current.CancellationToken);
+        var fixedTimestamp=DateTime.UtcNow.AddMinutes(-5);
+        File.SetLastWriteTimeUtc(source,fixedTimestamp);
+        var mutationCount=0;
+
+        await Assert.ThrowsAsync<IOException>(() => SaveBackupService.CopyStableFileAsync(
+            source,
+            destination,
+            TestContext.Current.CancellationToken,
+            async (attempt,ct) =>
+            {
+                mutationCount++;
+                var replacement=new string((char)('B'+attempt),baseline.Length);
+                await File.WriteAllTextAsync(source,replacement,ct);
+                File.SetLastWriteTimeUtc(source,fixedTimestamp);
+            }));
+
+        Assert.Equal(3,mutationCount);
+        Assert.False(File.Exists(destination));
+        Assert.Empty(Directory.EnumerateFiles(root,"unstable-copy.bin.partial-*"));
+    }
+
+    [Fact]
+    public async Task SaveSnapshotCancellationDoesNotRecordSuccess()
+    {
+        var db=await CreateDbAsync("backup-cancel.db");
+        var save=Path.Combine(root,"SAVEDATA1000-cancel");
+        await File.WriteAllTextAsync(save,"save",TestContext.Current.CancellationToken);
+        var old=Environment.GetEnvironmentVariable("MHW_SAVE_PATH");
+        try
+        {
+            Environment.SetEnvironmentVariable("MHW_SAVE_PATH",save);
+            var service=new SaveBackupService(db,Path.Combine(root,"cancel-state"),GameProfile.MonsterHunterWorld(Path.Combine(root,"game")));
+            using var cts=new CancellationTokenSource();
+            cts.Cancel();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.CreateAsync("cancelled",cts.Token));
+
+            await using var c=await db.OpenAsync(TestContext.Current.CancellationToken);
+            await using var cmd=c.CreateCommand();
+            cmd.CommandText="SELECT COUNT(*) FROM save_snapshots";
+            Assert.Equal(0L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+            if(Directory.Exists(service.SnapshotRoot))
+                Assert.Empty(Directory.EnumerateDirectories(service.SnapshotRoot));
+        }
+        finally{Environment.SetEnvironmentVariable("MHW_SAVE_PATH",old);}
+    }
+
+    [Fact]
     public async Task SaveSnapshotPruneKeepsDatabaseIndexAlignedWithPayloads()
     {
         var db=await CreateDbAsync("backup-prune.db");
