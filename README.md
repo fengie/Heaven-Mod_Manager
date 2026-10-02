@@ -1,10 +1,16 @@
-# v8.8.76 — MHW Manual Mod Manager
+# v8.8.77 — MHW Manual Mod Manager
 
-Current product version: **8.8.76**.
+Current product version: **8.8.77**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.77 — updater E2E runner allocation repair
+
+- Route the upstream publication classifier through the known-good self-hosted Heaven Windows runner instead of the unavailable GitHub-hosted pool.
+- Preserve read-only classifier permissions, exact-publication/supersession policy, and fail-closed heavy-job gating.
+- Update the release-policy regression so hosted-runner routing cannot be accidentally reintroduced while allocation remains unavailable.
 
 ## v8.8.76 — bounded Vortex handoff interoperability
 
@@ -21,14 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Give every advanced component toggle an accessible name bound to its current component `Label` while preserving native WPF `CheckBox` toggle and keyboard semantics.
 - Keep names data-bound so recycled/virtualized rows resolve against their current item rather than retaining stale accessible identity.
 - Add deterministic XAML regression coverage for both mod-level and component-level automation naming.
-
-## v8.8.74 — updater E2E supersession classification
-
-- Classify successful Windows Release Gate completions before allocating the self-hosted installed-client updater E2E runner.
-- Run the expensive E2E only when an exact immutable updater release exists for the upstream source SHA.
-- Treat a missing exact release as an intentional clean skip only when canonical `main` is proven to be a descendant of that source; canonical or divergent missing-release states fail closed.
-- Keep the existing exact-release resolution inside the Windows E2E as defense in depth after eligibility has been established.
-- Add regression coverage for published, superseded, canonical-missing, divergent, least-privilege classifier, and heavy-job gating behavior.
 
 ## Current plans & progress
 
