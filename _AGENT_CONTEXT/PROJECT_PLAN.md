@@ -37,9 +37,12 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
-| BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
-| CATALOG-UPDATES-569 | P1 | ACTIVE | issue #569; PR #573 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
+| BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.72 explicit selection-state tranche | Add filters, sorting, provider health, and richer discovery states. |
+| CATALOG-UPDATES-569 | P1 | DONE | issue #569; PR #573; v8.8.71 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
 | RECOVERY-578 | P0 | READY | issue #578; follow-up to #571 / PR #572 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
+| AUDIT-575 | P1 | DONE | issue #575; v8.8.72 | Prevent torn live-save snapshots with stable-copy verification, cleanup, and mutation/cancellation coverage. |
+| AUDIT-576 | P1 | DONE | issue #576; v8.8.72 | Reject stale queued release sources before the first updater publication mutation. |
+| AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
@@ -84,9 +87,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] v8.8.69 candidate: raise the repository search clamp from 500 to 1000 to match the virtualized UI capacity, with a deterministic >500-row regression.
 - [x] PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then squash-merged as `7ee321a349098849b9e4db302b20dfa1595ca13b`.
 - [ ] Continue #558 with broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.
-- [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
+- [x] v8.8.72: add an explicit no-selection detail state, hide mod-specific controls until selection, and disable install until an exact file is selected.
+- [ ] Continue #559 with filters/sorting/provider health/loading/stale/partial-failure states.
 
-**Next action:** continue #558 with broader provider-aware pagination/scale work while preserving integrated v8.8.69 behavior; #559 remains a separate UX tranche.
+**Next action:** continue #558 with broader provider-aware pagination/scale work; continue #559's remaining filters/sorting/provider-health/loading/stale/partial-failure scope while preserving v8.8.72 selection gating.
 
 ## CATALOG-UPDATES-569 — Installed-origin provider snapshot reuse
 
