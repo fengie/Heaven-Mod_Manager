@@ -1,3 +1,11 @@
+# v8.8.71 — 2026-10-02
+
+- Make live-save snapshots fail closed on concurrent source mutation with bounded retries, metadata stability checks, SHA-256 source/destination verification, private partial files, and deterministic same-length mutation coverage.
+- Add a current-main freshness gate immediately before the first updater publication mutation so a queued stale release run cannot publish after canonical `main` advances.
+- Convert active `CURRENT_REVISION.json` to structured post-integration canonical semantics and add negative validation that rejects candidate state or task-branch ownership from canonical bootstrap state.
+- Give Browse Mods an explicit no-selection detail state and keep exact-file installation disabled until a file is selected, while preserving stale-file clearing when the selected mod changes.
+- Preserve the integrated v8.8.70 stale-profile repair and keep #558/#559/RECOVERY-007 follow-up work open where still applicable.
+
 # v8.8.70 — 2026-10-02
 
 - Repair a persisted same-root game profile when its executable is missing instead of allowing that stale record to suppress automatic installed-game discovery indefinitely.
