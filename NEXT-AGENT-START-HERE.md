@@ -48,3 +48,5 @@ Neither produced a status/result, and neither host heartbeat was readable from t
 ## Successor obligation
 
 Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full as required, refresh claims/issues before mutation, preserve the permanent continuity constitution and active Learned Rules, and propagate the same obligation. **Do not break the chain.**
+
+The successor must propagate this continuity obligation to the next agent.
