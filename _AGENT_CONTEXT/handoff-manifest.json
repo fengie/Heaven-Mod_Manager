@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.69",
+  "currentVersion": "8.8.70",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.68 PR #567 merged as 7def58c1b16d115e1555738ebad51717d1c1f752 and Updater Installed Client E2E 36979261045 passed packaged update, selector DisplayName, Switch/Settings, and rollback; issue #556 is closed. v8.8.69 reconciles PR #565 provider-aware search and the 1000-row storage-cap repair onto that completed boundary.",
+  "immediateParentRevision": "v8.8.69 PR #565 exact head fdecfcccf9e04850acb983e91582d3c915283efa passed Workflow Feature 36981898989, MHW Product Security 36981899021, and Heaven Toolbox Ownership 36981898930, then merged as 7ee321a349098849b9e4db302b20dfa1595ca13b. v8.8.70 replays issue #571 stale-profile repair semantics from draft PR #572 onto that fresh main.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; refresh live #558 ownership; require all three exact-head gates for PR #565 v8.8.69 before merge; keep #558 open for broader pagination/scale work; preserve completed #556 evidence; the successor must propagate this continuity obligation to the next agent.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; require all three exact-head gates for the v8.8.70 issue #571 candidate before merge; preserve v8.8.69 catalog behavior; keep RECOVERY-007 open for representative Windows/runtime proof; the successor must propagate this continuity obligation to the next agent.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
