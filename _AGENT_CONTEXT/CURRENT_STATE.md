@@ -1,40 +1,29 @@
-# v8.8.68 selector acceptance closed — #558 reconciliation active
+# v8.8.69 provider-search + cache-capacity candidate
 
-Issue #556 is **DONE**.
+Issue #556 is **DONE** on verified v8.8.68. Issue #558 is the active catalog-scale lane.
 
-PR #567 merged v8.8.68 as `7def58c1b16d115e1555738ebad51717d1c1f752`. The exact source then passed hosted Windows verification run `36978710736` with 26/26 stages and produced updater build 382 / `MHW-Manual-Mod-Manager-v8.8.68-win-x64.zip` with SHA-256 `E11BB2CF34808A63C0922B85A1391865D17BB1F6EB1EB32FF79FAE91842166CA`.
+## Verified parent
 
-Updater Installed Client E2E run `36979261045` passed the full packaged-client boundary:
+PR #567 merged source `7def58c1b16d115e1555738ebad51717d1c1f752`. Hosted Windows verification `36978710736` passed 26/26 and installed-client E2E `36979261045` passed real update, selected game DisplayName on the ComboBox peer, enabled Switch/Settings, and rollback. Preserve that selector boundary.
 
-- real update to build 382 / source `7def58c1b16d115e1555738ebad51717d1c1f752`;
-- selected game exposed on the ComboBox automation peer as `Updater E2E Fake Game`;
-- Switch enabled;
-- Settings enabled;
-- confirmed update journal;
-- rollback scenario PASS with the previous build/source restored.
+## Current candidate
 
-Evidence is persisted on canonical main in `_AGENT_CONTEXT/EVIDENCE/v8.8.68-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.68.log`. Issue #556 is closed as completed.
+Branch: `fix/issue558-provider-search-v8.8.69-20261002`
 
-## Preserved selector contract
+The stale PR #565 provider-search semantics have been reconciled onto post-#556 main without importing stale v8.8.67 metadata.
 
-Do not regress:
+- per-keystroke Browse Mods filtering remains local to SQLite/FTS;
+- explicit Search queries only configured providers whose capabilities include `CatalogProviderCapabilities.Search`;
+- provider failures are isolated and successful results are persisted through the existing catalog sync/cache path;
+- unsupported Nexus/GameBanana full-catalog search is not probed;
+- the repository search ceiling is aligned with `CatalogVisibleResultLimit = 1000` instead of silently clamping to 500;
+- integration coverage proves 600 matching cached rows can be returned through `SearchAsync(... limit: 1000)`.
 
-- `AutomationProperties.Name="Active game"`;
-- `AutomationProperties.AutomationId="ActiveGameSelector"`;
-- ComboBox peer `AutomationProperties.ItemStatus` bound to `SelectedGame.DisplayName`;
-- `TextSearch.TextPath="DisplayName"`;
-- the visual selected presenter using the item template / human-readable DisplayName path;
-- long-name character ellipsis;
-- enabled Switch and Settings controls.
+## Verification boundary
 
-## Current active catalog work
+No v8.8.69 green claim exists until Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership all pass on one exact final head. Refresh `main` immediately before integration and merge only that exact green head.
 
-Issue #558 remains ACTIVE. PR #565 contains the next provider-search tranche but was prepared on the pre-v8.8.68 line and carries v8.8.67 metadata. It is not merge-ready against current main.
+## Remaining #558 scope
 
-The next integration must reconcile its semantic source/tests onto fresh main, preserve the closed #556 selector behavior, advance the product patch to v8.8.69, and require all exact-head repository gates before merge.
+This tranche does not make a default MHW install magically searchable across every remote catalog. The currently configured default providers remain Nexus + GameBanana, neither of which advertises supported full-catalog text Search; CurseForge Search is active only when its required configuration is supplied. #558 remains open for provider-aware discovery/pagination and additional deterministic scale/performance work.
 
-Ordinary per-keystroke Browse Mods filtering remains local to SQLite/FTS. Explicit remote search may contact only configured providers that advertise `CatalogProviderCapabilities.Search`; unsupported providers must not be probed.
-
-## Routing
-
-Current live Heaven Local Bridge heartbeats expose v8 workers on both hosts. `heaven2` remains the HMAC-authenticated control host; `heaven` is the heavy worker. Do not weaken the authentication boundary to force local-agent execution.
