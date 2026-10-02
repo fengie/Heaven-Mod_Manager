@@ -29,7 +29,7 @@
     "Issue #354 repository rulesets are externally blocked on the current private-repository/account tier; stable Authenticode publisher identity also requires external certificate provisioning.",
     "RECOVERY-007 installed-game discovery still needs representative Windows/runtime proof and RECOVERY-005 retains installed WPF interaction acceptance.",
     "The preserved issue #281 recovery branches still contain unique historical commits; do not delete them until their unique ancestry is classified as integrated, superseded, or intentionally rejected.",
-    "Issue #559 remains open for Browse Mods filtering, sorting, provider-health presentation, loading/empty/partial-failure states, and broader discovery UX.",
+    "Issue #559 remains open for Browse Mods filtering, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX after the v8.8.72 explicit no-selection state fix.",
     "v8.8.64 live remote-thumbnail rendering still needs installed Windows/WPF visual acceptance.",
     "GitHub Actions artifact storage quota has recently been exhausted, so failure evidence must remain diagnosable from console/persisted evidence when artifact upload is unavailable.",
     "Issue #558 remains open after the v8.8.69 provider-search tranche for broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.",
@@ -42,5 +42,8 @@
   "globalBootstrapRepository": "fengie/heaven-toolbox",
   "globalBootstrapBranch": "main",
   "toolboxTransferredWork": "Reusable Agent Control, Heaven Bridge, plugin/toolbox, and global coordination remain owned by fengie/heaven-toolbox.",
-  "integrationState": "canonical-main"
+  "integrationState": "canonical-main",
+  "stateSemantics": "post-integration-canonical",
+  "activePullRequest": null,
+  "activeIssue": null
 }
