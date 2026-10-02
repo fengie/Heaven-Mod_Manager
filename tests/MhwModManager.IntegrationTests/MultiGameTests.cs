@@ -61,7 +61,7 @@ public sealed class MultiGameTests : IDisposable
 
         var registry=new GameProfileRegistry(Path.Combine(root,"repair-state"),()=>
         [
-            new GameDiscoveryCandidate("Some Game",game,liveExe,"Steam","123456")
+            new GameDiscoveryCandidate("Some Game",game,null,"Steam","123456")
         ]);
         var stale=GameProfile.Generic("some-game","Some Game",game,"Missing.exe","Mods");
         var active=GameProfile.Generic("active-game","Active Game",activeRoot,"Active.exe","");
