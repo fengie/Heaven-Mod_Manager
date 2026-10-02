@@ -19,7 +19,10 @@ public sealed class UpdateClientService : IDisposable
     private readonly UpdatePackageStager stager;
     private bool disposed;
 
-    public UpdateClientService(HttpClient? httpClient = null, Action<string>? log = null)
+    public UpdateClientService(
+        HttpClient? httpClient = null,
+        Action<string>? log = null,
+        UpdateSignedMetadataVerifier? signedMetadataVerifier = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         http = httpClient ?? new HttpClient
@@ -28,7 +31,7 @@ public sealed class UpdateClientService : IDisposable
         };
         ownsHttpClient = httpClient is null;
         writeLog = log ?? (_ => { });
-        source = new GitHubUpdateSource(http, writeLog);
+        source = new GitHubUpdateSource(http, writeLog, signedMetadataVerifier);
         stager = new UpdatePackageStager(source, writeLog);
     }
 
