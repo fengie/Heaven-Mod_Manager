@@ -1,11 +1,13 @@
-# v8.8.68 MHW product — ordered next actions
+# v8.8.69 MHW product — ordered next actions
 
-1. Treat issue #556 as closed: v8.8.68 source `7def58c1b16d115e1555738ebad51717d1c1f752` passed hosted Windows run `36978710736` and installed-client E2E `36979261045`, including peer-level selected DisplayName, enabled Switch/Settings, update, and rollback.
-2. Refresh current `main`, #558 ownership, and PR #565 before mutation.
-3. Reconcile only the still-useful #565 provider-search source/tests onto fresh main. Preserve v8.8.68 selector behavior and do not reuse stale v8.8.67 release/continuity metadata.
-4. Preserve the provider capability contract: per-keystroke filtering stays local to SQLite/FTS; explicit remote search contacts only providers advertising `CatalogProviderCapabilities.Search`; unsupported Nexus/GameBanana full-catalog search is not invented.
-5. Advance the reconciled product tranche to v8.8.69 with synchronized `VERSION.txt`, README, CHANGELOG, and continuity metadata.
-6. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final head. Refresh main immediately before integration and merge only that exact green candidate.
-7. Continue #558 with provider-aware pagination/browse expansion and deterministic scale/performance coverage, then take #559 filtering/sorting/provider-health/discovery-state UX.
+1. Verify `fix/issue558-provider-search-v8.8.69-20261002` on one exact head with Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership.
+2. Fix concrete failures only; preserve local-only query typing, capability-gated explicit provider Search, failure isolation, source-aware persistence, the 1,000-row repository/UI capacity contract, and v8.8.68 selector acceptance.
+3. Refresh issue #558, PR #565, ownership, and canonical `main` immediately before integration. If main moved, reconcile and rerun exact-head gates.
+4. Merge only the exact green v8.8.69 head and verify remote-main readback.
+5. Mark stale PR #565 superseded only after its unique provider-search semantics are confirmed on canonical main.
+6. Keep #558 open and continue provider-aware discovery/pagination. The default MHW provider set still lacks a search-capable remote provider unless CurseForge is explicitly configured.
+7. Add deterministic scale/performance coverage for broader cached/provider result sets, then continue #559 filters/sorting/provider-health/loading/empty/stale/partial-failure UX.
 
-Every successor must read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md` context onward to the next agent.
+Verified parent: v8.8.68 source `7def58c1b16d115e1555738ebad51717d1c1f752`; hosted Windows `36978710736` PASS 26/26; installed-client E2E `36979261045` PASS update + selector DisplayName + Switch/Settings + rollback.
+
+Every successor must bootstrap from current `fengie/heaven-toolbox@main`, refresh current MHW main, read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`, and propagate this obligation onward.
