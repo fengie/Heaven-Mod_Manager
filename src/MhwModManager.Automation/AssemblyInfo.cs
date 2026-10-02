@@ -1,1 +1,3 @@
-using System.Runtime.CompilerServices;\n\n[assembly: InternalsVisibleTo("MhwModManager.AutomationTests")]\n
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("MhwModManager.AutomationTests")]
