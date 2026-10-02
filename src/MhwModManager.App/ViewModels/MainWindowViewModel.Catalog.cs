@@ -187,6 +187,7 @@ public sealed partial class MainWindowViewModel
     private CatalogAcquisitionService? catalogAcquisition;
     private IReadOnlyList<IModCatalogProvider>? catalogProviders;
     private bool catalogLoaded;
+    private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private CancellationTokenSource? catalogQueryCts;
 
     public ObservableRangeCollection<CatalogModRow> CatalogItems { get; } = [];
@@ -307,8 +308,22 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        await RefreshCatalogCoreAsync(ct);
-        catalogLoaded = true;
+        await catalogSyncGate.WaitAsync(ct);
+        try
+        {
+            if (catalogLoaded)
+            {
+                await SearchCatalogCacheAsync(ct);
+                return;
+            }
+
+            await RefreshCatalogCoreAsync(ct);
+            catalogLoaded = true;
+        }
+        finally
+        {
+            catalogSyncGate.Release();
+        }
     }
 
     [RelayCommand]
@@ -322,8 +337,16 @@ public sealed partial class MainWindowViewModel
             true,
             async ct =>
             {
-                await RefreshCatalogCoreAsync(ct);
-                catalogLoaded = true;
+                await catalogSyncGate.WaitAsync(ct);
+                try
+                {
+                    await RefreshCatalogCoreAsync(ct);
+                    catalogLoaded = true;
+                }
+                finally
+                {
+                    catalogSyncGate.Release();
+                }
             });
     }
 
@@ -397,7 +420,18 @@ public sealed partial class MainWindowViewModel
             "Searching mod catalog",
             "Querying providers that advertise text search, then updating the local cache…",
             true,
-            ct => SearchCatalogProvidersAsync(query, ct));
+            async ct =>
+            {
+                await catalogSyncGate.WaitAsync(ct);
+                try
+                {
+                    await SearchCatalogProvidersAsync(query, ct);
+                }
+                finally
+                {
+                    catalogSyncGate.Release();
+                }
+            });
     }
 
     private async Task SearchCatalogProvidersAsync(string query, CancellationToken ct)
