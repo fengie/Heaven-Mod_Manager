@@ -39,8 +39,14 @@ on:
       - 'tests/MhwModManager.Tests/**'
       - '_AGENT_CONTEXT/handoff-manifest.json'
       - '_AGENT_CONTEXT/CURRENT_REVISION.json'
+      - '_AGENT_CONTEXT/CURRENT_STATE.md'
+      - 'NEXT-AGENT-START-HERE.md'
+      - '_AGENT_CONTEXT/EVIDENCE/*-heaven-windows-closure.log'
+      - 'scripts/release/Sync-VerificationContinuity.ps1'
       - 'scripts/testing/Test-AgentHandoff.ps1'
       - 'scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1'
+      - 'scripts/testing/Test-VerificationContinuitySync.ps1'
+      - '.github/workflows/windows-release-gate.yml'
       - '.github/workflows/workflow-feature-pr-gate.yml'
   workflow_dispatch:
 

@@ -367,9 +367,14 @@ jobs:
             (Get-Content -LiteralPath $build.FullName -Raw)
           ) | Set-Content -LiteralPath $evidencePath -Encoding UTF8
 
+          # Evidence and successor state are one logical transition. The exact tested
+          # source remains GITHUB_SHA even though the persistence commit advances main.
+          & .\scripts\release\Sync-VerificationContinuity.ps1 -Root (Get-Location).Path -SourceSha $env:GITHUB_SHA -RunId $env:GITHUB_RUN_ID -EvidencePath $evidencePath
+          & .\scripts\testing\Test-AgentHandoff.ps1 -Root (Get-Location).Path
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath
+          git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath '_AGENT_CONTEXT/CURRENT_REVISION.json' '_AGENT_CONTEXT/CURRENT_STATE.md' 'NEXT-AGENT-START-HERE.md'
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m 'Persist hosted Windows verification evidence [skip ci]'

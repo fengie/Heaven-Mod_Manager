@@ -50,7 +50,7 @@ try{
         'docs/REPOSITORY-LAYOUT.md',
         '_AGENT_CONTEXT/CURRENT_REVISION.json','_AGENT_CONTEXT/README_FIRST.md','_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md',
         '_AGENT_CONTEXT/handoff-manifest.json','.verification/function-status.json','.verification/stage-status.json',
-        'scripts/testing/Test-AgentHandoff.ps1','scripts/testing/Test-HeavenToolboxOwnership.ps1'
+        'scripts/testing/Test-AgentHandoff.ps1','scripts/testing/Test-HeavenToolboxOwnership.ps1','scripts/release/Sync-VerificationContinuity.ps1'
     )
     $files += @($manifest.requiredContextFiles | ForEach-Object {[string]$_})
     $files += @($manifest.requiredVerificationFiles | ForEach-Object {[string]$_})
@@ -86,6 +86,32 @@ try{
     Reject-ForbiddenRoot 'local plugin toolbox cannot return' 'plugins'
     Reject-ForbiddenRoot 'local Heaven Bridge cannot return' 'heaven-bridge'
     Reject-ForbiddenRoot 'root tools cannot return' 'tools'
+
+    # Once a current-version closure exists, every active continuity surface must agree with it.
+    $fixtureVersion=(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixture 'VERSION.txt')).Trim()
+    $fixtureSource='0123456789abcdef0123456789abcdef01234567'
+    $fixtureRun='424242'
+    $fixtureEvidenceRelative="_AGENT_CONTEXT/EVIDENCE/v$fixtureVersion-heaven-windows-closure.log"
+    $fixtureEvidencePath=Join-Path $fixture ($fixtureEvidenceRelative.Replace([char]47,[char]92))
+    $fixtureEvidenceParent=Split-Path -Parent $fixtureEvidencePath
+    if(-not (Test-Path -LiteralPath $fixtureEvidenceParent)){New-Item -ItemType Directory -Force -Path $fixtureEvidenceParent | Out-Null}
+    @"
+MHW Manual Mod Manager v$fixtureVersion Heaven Windows closure
+source_sha=$fixtureSource
+run_id=$fixtureRun
+runner_os=Windows
+
+=== VERIFICATION REPORT ===
+Overall: **PASS** - 26 passed / 0 failed
+"@ | Set-Content -LiteralPath $fixtureEvidencePath -Encoding utf8
+    & (Join-Path $fixture 'scripts\release\Sync-VerificationContinuity.ps1') -Root $fixture -SourceSha $fixtureSource -RunId $fixtureRun -EvidencePath $fixtureEvidenceRelative *> $null
+    & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
+    Write-Host 'PASS: synthetic current-version closure fixture accepted after continuity synchronization.' -ForegroundColor Green
+
+    Reject 'current closure cannot retain stale verification SHA' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"verificationAppliesToCommit":\s*"[^"]+"','"verificationAppliesToCommit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"'}
+    Reject 'current state cannot call closed current version a candidate' '_AGENT_CONTEXT/CURRENT_STATE.md' {param($x) $v=(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixture 'VERSION.txt')).Trim(); [regex]::Replace($x,'(?ms)^## Verification boundary\s*.*?(?=^## |\z)',"## Verification boundary`r`n`r`nv$v requires fresh exact-source gates for the final v$v candidate.`r`n`r`n")}
+    Reject 'current handoff cannot call closed current version a candidate' 'NEXT-AGENT-START-HERE.md' {param($x) $v=(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixture 'VERSION.txt')).Trim(); [regex]::Replace($x,'(?ms)^## Verification boundary\s*.*?(?=^## |\z)',"## Verification boundary`r`n`r`nv$v requires fresh exact-source gates for the final v$v candidate.`r`n`r`n")}
+    Reject 'current closure run must match projected state' $fixtureEvidenceRelative {param($x) $x -replace "run_id=$fixtureRun",'run_id=424243'}
 
     Write-Host 'PASS: MHW project-governance negative fixtures fail closed after Toolbox takeover.' -ForegroundColor Green
 }finally{

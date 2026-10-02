@@ -26,6 +26,11 @@ function Continuity([string]$Text,[string]$Name){
     Forbid $Text '(?is)(?:\bsuccessor\b|\bagent after\b).{0,100}(?:must|should|may|can)\s+not\b.{0,120}(?:inherit|preserve|propagate|obey)' "$Name must not negate successor continuity."
 }
 
+function VerificationSection([string]$Text,[string]$Name){
+    $match=[regex]::Match($Text,'(?ms)^## Verification boundary\s*\r?\n.*?(?=^## |\z)')
+    if(-not $match.Success){throw "$Name must contain a bounded Verification boundary section."}
+    return $match.Value
+}
 foreach($forbidden in @('_AGENT_TRAINING','plugins','heaven-bridge','tools','GLOBAL_GIT_DIRECTIVE.md')){
     if(Test-Path -LiteralPath (Join-Path $Root $forbidden)){throw "MHW must not contain migrated global ownership path: $forbidden"}
 }
@@ -107,6 +112,118 @@ Need $start '(?i)risk' 'Current handoff must carry unresolved risk.'
 Need $start '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'Current handoff must link the permanent constitution.'
 Need $start 'LEARNED_RULES\.md' 'Current handoff must link active Learned Rules.'
 Continuity $start 'Current handoff'
+
+$currentClosureRelative="_AGENT_CONTEXT/EVIDENCE/v$version-heaven-windows-closure.log"
+$currentClosurePath=Join-Path $Root ($currentClosureRelative.Replace([char]47,[char]92))
+if(Test-Path -LiteralPath $currentClosurePath -PathType Leaf){
+    $closure=Active $currentClosureRelative
+    Need $closure "(?m)^MHW Manual Mod Manager v$escaped Heaven Windows closure\s*$" 'Current-version closure evidence header/version mismatch.'
+    Need $closure '(?im)^Overall:\s+\*\*PASS\*\*.*\b0 failed\b' 'Current-version closure evidence must contain a 0-failure PASS report.'
+    $sourceMatch=[regex]::Match($closure,'(?im)^source_sha=([0-9a-f]{40})\s*
+Need $constitution '(?i)Core Rule' 'Continuity constitution must protect Core Rules.'
+Need $constitution '(?i)recursive and indefinite' 'Continuity constitution must preserve recursive propagation.'
+Need $constitution '(?i)exact verification' 'Continuity constitution must preserve exact verification.'
+Need $constitution '(?i)SQLite transaction' 'Continuity constitution must preserve SQLite transaction discipline.'
+Need $constitution '(?i)append-only' 'Continuity constitution must preserve Learned Rules audit history.'
+Need $constitution '(?i)explicit user authorization' 'Continuity constitution must protect changes to Core Rules.'
+Need $constitution '(?i)preservation mode' 'Continuity constitution must preserve resource-low recovery.'
+Continuity $constitution 'Continuity constitution'
+
+$learned=Active '_AGENT_CONTEXT/LEARNED_RULES.md'
+foreach($concept in @('append-only','Rule ID','Active','Superseded','Core Rules')){Need $learned ([regex]::Escape($concept)) "Learned Rules must preserve $concept."}
+
+$total=0
+$total+=MaxBytes 'AGENTS.md' 9000
+$total+=MaxBytes 'NEXT-AGENT-START-HERE.md' 7000
+$total+=MaxBytes '_AGENT_CONTEXT/README_FIRST.md' 5500
+if($total -gt 21500){throw "Active MHW routing/context set is $total bytes; 21500-byte regression budget exceeded."}
+
+foreach($relative in @($manifest.requiredContextFiles)+@($manifest.requiredVerificationFiles)+@($manifest.requiredToolingFiles)){
+    if([string]::IsNullOrWhiteSpace([string]$relative)){continue}
+    $path=Join-Path $Root ([string]$relative).Replace([char]47,[char]92)
+    if(-not (Test-Path -LiteralPath $path)){throw "Manifest-required local file missing: $relative"}
+}
+
+$functionStatus=Active '.verification/function-status.json' | ConvertFrom-Json
+$functionIds=@{}
+foreach($entry in @($functionStatus.functions)){
+    if($functionIds.ContainsKey([string]$entry.id)){throw "Duplicate function id: $($entry.id)"}
+    $functionIds[[string]$entry.id]=$true
+    if([string]::IsNullOrWhiteSpace([string]$entry.fingerprint)){throw "Missing fingerprint: $($entry.id)"}
+}
+$stageStatus=Active '.verification/stage-status.json' | ConvertFrom-Json
+$stageIds=@{}
+foreach($entry in @($stageStatus.stages)){
+    if($stageIds.ContainsKey([string]$entry.id)){throw "Duplicate stage id: $($entry.id)"}
+    $stageIds[[string]$entry.id]=$true
+    if([string]::IsNullOrWhiteSpace([string]$entry.fingerprint)){throw "Missing stage fingerprint: $($entry.id)"}
+}
+
+& (Join-Path $Root 'scripts\testing\Test-HeavenToolboxOwnership.ps1') -Root $Root
+Write-Host ("PASS: MHW project governance preflight. Version="+$version+"; activeBytes="+$total+"; globalBootstrap=fengie/heaven-toolbox@main") -ForegroundColor Green
+)
+    $runMatch=[regex]::Match($closure,'(?im)^run_id=([0-9]+)\s*
+Need $constitution '(?i)Core Rule' 'Continuity constitution must protect Core Rules.'
+Need $constitution '(?i)recursive and indefinite' 'Continuity constitution must preserve recursive propagation.'
+Need $constitution '(?i)exact verification' 'Continuity constitution must preserve exact verification.'
+Need $constitution '(?i)SQLite transaction' 'Continuity constitution must preserve SQLite transaction discipline.'
+Need $constitution '(?i)append-only' 'Continuity constitution must preserve Learned Rules audit history.'
+Need $constitution '(?i)explicit user authorization' 'Continuity constitution must protect changes to Core Rules.'
+Need $constitution '(?i)preservation mode' 'Continuity constitution must preserve resource-low recovery.'
+Continuity $constitution 'Continuity constitution'
+
+$learned=Active '_AGENT_CONTEXT/LEARNED_RULES.md'
+foreach($concept in @('append-only','Rule ID','Active','Superseded','Core Rules')){Need $learned ([regex]::Escape($concept)) "Learned Rules must preserve $concept."}
+
+$total=0
+$total+=MaxBytes 'AGENTS.md' 9000
+$total+=MaxBytes 'NEXT-AGENT-START-HERE.md' 7000
+$total+=MaxBytes '_AGENT_CONTEXT/README_FIRST.md' 5500
+if($total -gt 21500){throw "Active MHW routing/context set is $total bytes; 21500-byte regression budget exceeded."}
+
+foreach($relative in @($manifest.requiredContextFiles)+@($manifest.requiredVerificationFiles)+@($manifest.requiredToolingFiles)){
+    if([string]::IsNullOrWhiteSpace([string]$relative)){continue}
+    $path=Join-Path $Root ([string]$relative).Replace([char]47,[char]92)
+    if(-not (Test-Path -LiteralPath $path)){throw "Manifest-required local file missing: $relative"}
+}
+
+$functionStatus=Active '.verification/function-status.json' | ConvertFrom-Json
+$functionIds=@{}
+foreach($entry in @($functionStatus.functions)){
+    if($functionIds.ContainsKey([string]$entry.id)){throw "Duplicate function id: $($entry.id)"}
+    $functionIds[[string]$entry.id]=$true
+    if([string]::IsNullOrWhiteSpace([string]$entry.fingerprint)){throw "Missing fingerprint: $($entry.id)"}
+}
+$stageStatus=Active '.verification/stage-status.json' | ConvertFrom-Json
+$stageIds=@{}
+foreach($entry in @($stageStatus.stages)){
+    if($stageIds.ContainsKey([string]$entry.id)){throw "Duplicate stage id: $($entry.id)"}
+    $stageIds[[string]$entry.id]=$true
+    if([string]::IsNullOrWhiteSpace([string]$entry.fingerprint)){throw "Missing stage fingerprint: $($entry.id)"}
+}
+
+& (Join-Path $Root 'scripts\testing\Test-HeavenToolboxOwnership.ps1') -Root $Root
+Write-Host ("PASS: MHW project governance preflight. Version="+$version+"; activeBytes="+$total+"; globalBootstrap=fengie/heaven-toolbox@main") -ForegroundColor Green
+)
+    if(-not $sourceMatch.Success -or -not $runMatch.Success){throw 'Current-version closure evidence must identify exact source_sha and run_id.'}
+    $closedSource=$sourceMatch.Groups[1].Value.ToLowerInvariant()
+    $closedRun=$runMatch.Groups[1].Value
+    if(([string]$revision.verificationAppliesToCommit).ToLowerInvariant() -ne $closedSource){throw 'CURRENT_REVISION verificationAppliesToCommit disagrees with current-version closure evidence.'}
+    if(([string]$revision.lastClosedVerificationCommit).ToLowerInvariant() -ne $closedSource){throw 'CURRENT_REVISION lastClosedVerificationCommit disagrees with current-version closure evidence.'}
+    if(([string]$revision.lastClosedVerificationRun -notmatch [regex]::Escape($closedSource)) -or ([string]$revision.lastClosedVerificationRun -notmatch [regex]::Escape($closedRun))){throw 'CURRENT_REVISION lastClosedVerificationRun must carry the current closure source and run.'}
+    if(([string]$revision.verificationScopeNote -notmatch [regex]::Escape($closedSource)) -or ([string]$revision.verificationScopeNote -notmatch [regex]::Escape($closedRun))){throw 'CURRENT_REVISION verificationScopeNote must carry the current closure source and run.'}
+
+    $stateVerification=VerificationSection $currentState 'CURRENT_STATE'
+    $handoffVerification=VerificationSection $start 'Current handoff'
+    foreach($surface in @(@('CURRENT_STATE',$stateVerification),@('Current handoff',$handoffVerification))){
+        $name=[string]$surface[0]
+        $section=[string]$surface[1]
+        Need $section ([regex]::Escape($closedSource)) "$name verification boundary must carry exact current closure source."
+        Need $section ([regex]::Escape($closedRun)) "$name verification boundary must carry exact current closure run."
+        Forbid $section "(?i)\bv$escaped\b.{0,180}\bcandidate\b" "$name cannot describe already-closed current-version verification as a candidate."
+        Forbid $section "(?i)\bv$escaped\b.{0,180}\brequires?\s+fresh\s+exact-(?:head|source|input)\b" "$name cannot require fresh verification for an already-closed current-version source."
+    }
+}
 
 $constitution=Active '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md'
 Need $constitution '(?i)Core Rule' 'Continuity constitution must protect Core Rules.'
