@@ -1,9 +1,10 @@
-# v8.8.72 MHW product — ordered next actions
+# v8.8.71 MHW product — ordered next actions
 
-1. Require Workflow Feature, MHW Product Security, Heaven Toolbox Ownership, and updater-publication PR validation on the exact final v8.8.72 head.
-2. Fix concrete failures only; preserve stable save-copy verification, pre-publication canonical-main freshness, post-integration continuity semantics, and Browse Mods exact-file gating.
-3. Refresh canonical `main` and mergeability immediately before integration; do not reuse predecessor gate results.
-4. Merge only one exact green reconciled head, verify remote `main`, and confirm #575, #576, and #577 close. Keep #559 open for remaining UX scope.
-5. Prioritize issue #578's stale-profile lifecycle edge cases, then continue #558/#559 and representative RECOVERY-005/RECOVERY-007 Windows/runtime acceptance.
+1. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final PR #573 head.
+2. Fix concrete failures only; preserve capability gating, provider failure isolation, cancellation, exact mod/file identity validation, and fail-closed replacement selection.
+3. Refresh issue #569 ownership and canonical `main` immediately before merge; integrate only one exact green, mergeable head.
+4. Verify remote `main` contains v8.8.71, the GameBanana one-request installed-origin snapshot path, and the request-count regression; confirm #569 closes.
+5. Keep issue #578 open for the two v8.8.70 stale-profile semantic follow-ups and continue representative RECOVERY-007 Windows/runtime proof.
+6. Continue #558 provider pagination/scale and #559 discovery UX as non-overlapping work after the v8.8.71 boundary is canonical.
 
 Every successor must read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md` context onward to the next agent.

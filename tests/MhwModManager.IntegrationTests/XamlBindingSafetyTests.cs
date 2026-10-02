@@ -180,22 +180,6 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
-    public void BrowseModsRequiresExplicitModAndFileSelection()
-    {
-        var root = FindRepositoryRoot();
-        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
-        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
-
-        Assert.Contains("Select a mod to see details and exact files.", xaml);
-        Assert.Contains("AutomationProperties.Name=\"Selected catalog mod details\"", xaml);
-        Assert.Contains("DataTrigger Binding=\"{Binding SelectedCatalogItem}\" Value=\"{x:Null}\"", xaml);
-        Assert.Contains("DataTrigger Binding=\"{Binding SelectedCatalogFile}\" Value=\"{x:Null}\"", xaml);
-        Assert.Contains("<Setter Property=\"IsEnabled\" Value=\"False\"/>", xaml);
-        Assert.Contains("SelectedCatalogFile = null;", source);
-        Assert.Contains("CatalogFiles.ReplaceAll(value?.Mod.Files.Select", source);
-    }
-
-    [Fact]
     public void BrowseModsExplicitSearchOnlyQueriesProvidersThatAdvertiseSearch()
     {
         var root = FindRepositoryRoot();

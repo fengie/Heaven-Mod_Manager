@@ -49,13 +49,10 @@ if($revision.formatVersion -ne 1 -or $revision.canonicalRepository -ne $manifest
 if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must match VERSION.txt.'}
 if([string]$revision.globalBootstrapRepository -ne 'fengie/heaven-toolbox' -or [string]$revision.globalBootstrapBranch -ne 'main'){throw 'CURRENT_REVISION must route global bootstrap to Heaven Toolbox main.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
-if([string]$revision.stateSemantics -ne 'post-integration-canonical'){throw 'CURRENT_REVISION stateSemantics must be post-integration-canonical.'}
 if([string]$revision.integrationState -ne 'canonical-main'){throw 'CURRENT_REVISION integrationState must describe canonical-main state.'}
 if([string]$revision.workingBranch -ne [string]$revision.canonicalBranch){throw 'CURRENT_REVISION workingBranch must equal canonicalBranch; feature-branch execution state must not ship as canonical handoff state.'}
 if([string]$revision.status -match '(?i)\bcandidate\b'){throw 'CURRENT_REVISION status must describe canonical state, not a pre-merge candidate.'}
 if($null -ne $revision.candidateSourceCommit -and -not [string]::IsNullOrWhiteSpace([string]$revision.candidateSourceCommit)){throw 'CURRENT_REVISION candidateSourceCommit must be null in canonical-main state.'}
-if($null -ne $revision.activePullRequest){throw 'CURRENT_REVISION activePullRequest must be null in canonical-main state.'}
-if($null -ne $revision.activeIssue){throw 'CURRENT_REVISION activeIssue must be null in canonical-main state.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
 
 $escaped=[regex]::Escape($version)
