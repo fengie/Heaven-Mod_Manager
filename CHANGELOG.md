@@ -1,3 +1,12 @@
+# v8.8.70 — 2026-10-02
+
+- Repair same-root persisted game profiles whose executable no longer exists when discovery provides a valid replacement executable.
+- Preserve the existing profile ID and active-game selection during repair so profile-scoped state is not orphaned.
+- Fill missing store and Steam app metadata from the discovered candidate without mutating already-live same-root profiles.
+- Refuse automatic Monster Hunter: World repair through non-`MonsterHunterWorld.exe` executables.
+- Add deterministic integration regressions for stale repair, live-profile no-op behavior, active-game preservation, and the MHW executable guard.
+- Preserve v8.8.69 provider-search and 1000-row catalog capacity semantics integrated via PR #565.
+
 # v8.8.69 — 2026-10-02
 
 - Make explicit Browse Mods searches contact only configured providers that advertise `CatalogProviderCapabilities.Search`, while keeping per-keystroke filtering cache-only.
