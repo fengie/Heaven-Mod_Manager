@@ -3,17 +3,17 @@
   "project": "MHW Manual Mod Manager",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
-  "workingBranch": "fix/issue571-stale-profile-repair-20261002",
+  "workingBranch": "main",
   "currentVersion": "8.8.70",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.70-stale-profile-rediscovery-candidate",
-  "nextMilestone": "Verify and integrate PR #572 / issue #571 stale same-root profile repair while preserving v8.8.69 catalog behavior.",
-  "nextRequiredAction": "Run Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final v8.8.70 PR #572 head; merge only after a fresh-main mergeability check.",
-  "verificationAppliesToCommit": "fdecfcccf9e04850acb983e91582d3c915283efa",
-  "lastClosedVerificationCommit": "fdecfcccf9e04850acb983e91582d3c915283efa",
-  "lastClosedVerificationRun": "Workflow Feature 36981898989; MHW Product Security 36981899021; Heaven Toolbox Ownership 36981898930; merged as 7ee321a349098849b9e4db302b20dfa1595ca13b",
-  "verificationScopeNote": "v8.8.69 PR #565 exact head fdecfcccf9e04850acb983e91582d3c915283efa passed all three required gates and squash-merged as 7ee321a349098849b9e4db302b20dfa1595ca13b. v8.8.70 PR #572 repairs stale same-root discovered profiles and adds MHW identity hardening; no v8.8.70 merge authorization exists until all three gates pass on its exact final head.",
+  "status": "v8.8.70-stale-profile-rediscovery-integrated",
+  "nextMilestone": "Integrate issue #569 provider installed-origin fetch deduplication as the next product patch, then continue the remaining #558/#559/RECOVERY-007 work.",
+  "nextRequiredAction": "Preserve canonical v8.8.70 state while the active #569 owner reconciles its source checkpoint onto fresh main, synchronizes the next patch metadata, and reruns the required exact-head gates.",
+  "verificationAppliesToCommit": "c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2",
+  "lastClosedVerificationCommit": "c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2",
+  "lastClosedVerificationRun": "PR #572 exact head c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2: Workflow Feature 36982837749 PASS; MHW Product Security 36982837913 PASS; Heaven Toolbox Ownership 36982837948 PASS; merged as 350752d315ba6db1d329f726d181bad173b41514",
+  "verificationScopeNote": "v8.8.70 PR #572 exact head c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2 passed all three required gates and merged as canonical product commit 350752d315ba6db1d329f726d181bad173b41514. CURRENT_REVISION describes canonical-main state rather than the feature branch that produced it; successor work must preserve that invariant.",
   "lastClosedVerification": {
     "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
     "updaterBuild": 382,
@@ -33,14 +33,14 @@
     "v8.8.64 live remote-thumbnail rendering still needs installed Windows/WPF visual acceptance.",
     "GitHub Actions artifact storage quota has recently been exhausted, so failure evidence must remain diagnosable from console/persisted evidence when artifact upload is unavailable.",
     "Issue #558 remains open after the v8.8.69 provider-search tranche for broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.",
-    "Issue #571 remains open until v8.8.70 PR #572 passes all required exact-head gates and integrates.",
     "RECOVERY-007 still needs representative installed Windows/runtime discovery proof after the stale-profile source repair.",
-    "Local Codex on heaven remains usage-limit blocked until 2026-10-07; exact GitHub/Heaven CI is the verification authority for v8.8.70."
+    "Issues #575, #576, and #577 track save-snapshot consistency, pre-publication exact-main freshness, and canonical continuity-state enforcement until their verified integration."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
   "maintenanceHandoff": "_AGENT_CONTEXT/HANDOFFS/junior-maintenance-2026-09-30.md",
   "globalBootstrapRepository": "fengie/heaven-toolbox",
   "globalBootstrapBranch": "main",
-  "toolboxTransferredWork": "Reusable Agent Control, Heaven Bridge, plugin/toolbox, and global coordination remain owned by fengie/heaven-toolbox."
+  "toolboxTransferredWork": "Reusable Agent Control, Heaven Bridge, plugin/toolbox, and global coordination remain owned by fengie/heaven-toolbox.",
+  "integrationState": "canonical-main"
 }
