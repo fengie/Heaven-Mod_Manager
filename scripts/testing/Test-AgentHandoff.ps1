@@ -57,7 +57,7 @@ if($null -ne $revision.candidateSourceCommit -and -not [string]::IsNullOrWhiteSp
 if($null -ne $revision.activePullRequest){throw 'CURRENT_REVISION activePullRequest must be null in canonical-main state.'}
 if($null -ne $revision.activeIssue){throw 'CURRENT_REVISION activeIssue must be null in canonical-main state.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
-$selfIntegrationPattern='(?i)\\bintegrat(?:e|es|ed|ing|ion)\\b[^\\r\\n]{0,160}\\bv'+[regex]::Escape($version)+'\\b'
+$selfIntegrationPattern='(?i)\bintegrat(?:e|es|ed|ing|ion)\b[^\r\n]{0,160}\bv'+[regex]::Escape($version)+'\b'
 if([string]$revision.nextRequiredAction -match $selfIntegrationPattern -or [string]$revision.nextMilestone -match $selfIntegrationPattern){
     throw 'CURRENT_REVISION canonical-main state must not instruct successors to integrate the version it already declares canonical.'
 }
