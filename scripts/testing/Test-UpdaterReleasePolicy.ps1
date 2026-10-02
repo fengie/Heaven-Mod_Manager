@@ -247,12 +247,18 @@ $releaseWorkflowPath=Join-Path $repoRoot '.github\workflows\windows-release-gate
 $releaseWorkflow=Get-Content -LiteralPath $releaseWorkflowPath -Raw
 $privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
 $publicPublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
+$freshnessIndex=$releaseWorkflow.IndexOf('Verify release source is still current main')
 $parityIndex=$releaseWorkflow.IndexOf('Verify public and canonical updater release parity')
 if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical updater publisher.'}
 if($publicPublishIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater publisher.'}
+if($freshnessIndex -lt 0 -or $freshnessIndex -ge $publicPublishIndex){throw 'Current-main freshness must be verified before the first updater publication mutation.'}
 if($publicPublishIndex -ge $privatePublishIndex){throw 'Public updater feed must publish before canonical private release visibility.'}
 if($parityIndex -le $privatePublishIndex){throw 'Updater parity verification must run after both publication steps.'}
 Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
+Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,"(?s)- name: Publish public updater client feed.*?if:.*?steps\.publication_freshness\.outputs\.publish == 'true'")) 'public publication requires current-main freshness output'
+Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,"(?s)- name: Publish immutable canonical updater release.*?if:.*?steps\.publication_freshness\.outputs\.publish == 'true'")) 'canonical publication requires current-main freshness output'
+Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,"(?s)- name: Verify public and canonical updater release parity.*?if:.*?steps\.publication_freshness\.outputs\.publish == 'true'")) 'parity verification requires a publication-authorized run'
+Assert-Equal $true ($releaseWorkflow.Contains('Skipping updater publication for stale source')) 'stale release source is explicitly skipped before publication'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 
 $publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicUpdaterRelease.ps1') -Raw
