@@ -1,3 +1,10 @@
+# v8.8.75 — 2026-10-02
+
+- Give the Mod Library whole-mod enable checkbox an accessible name bound to the current mod `DisplayName`.
+- Give advanced component toggles accessible names bound to their current `Label` while retaining native WPF checkbox TogglePattern and keyboard behavior.
+- Keep accessible identity data-bound so DataGrid/ItemsControl recycling cannot retain a previous item's name.
+- Add deterministic XAML regression coverage for both toggle surfaces.
+
 # v8.8.74 — 2026-10-02
 
 - Add a lightweight `workflow_run` classifier ahead of the self-hosted updater installed-client E2E.
