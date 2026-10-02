@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.70",
+  "currentVersion": "8.8.71",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.69 PR #565 exact head fdecfcccf9e04850acb983e91582d3c915283efa passed Workflow Feature 36981898989, MHW Product Security 36981899021, and Heaven Toolbox Ownership 36981898930, then squash-merged as 7ee321a349098849b9e4db302b20dfa1595ca13b. v8.8.70 addresses issue #571 stale same-root installed-game profile rediscovery.",
+  "immediateParentRevision": "v8.8.70 PR #572 exact head c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2 passed Workflow Feature 36982837749, MHW Product Security 36982837913, and Heaven Toolbox Ownership 36982837948, then squash-merged as 350752d315ba6db1d329f726d181bad173b41514. v8.8.71 closes audit issues #575-#577 and adds the #559 explicit selection-state tranche.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; refresh live #571 ownership; require all three exact-head gates for PR #572 v8.8.70 before merge; preserve v8.8.69 catalog semantics and MHW repair safety; after integration continue representative RECOVERY-007 Windows/runtime proof and non-overlapping #558/#559 work; propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve v8.8.71 stable save capture, stale-release suppression, post-integration CURRENT_REVISION semantics, and Browse Mods selection gating; reconcile concurrent PR #573 onto fresh main before advancing its release metadata; continue #558/#559/RECOVERY-007 only where still open; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
