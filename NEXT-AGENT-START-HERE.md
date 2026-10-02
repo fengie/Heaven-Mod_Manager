@@ -1,9 +1,9 @@
 # v8.8.68 selector peer-value acceptance — current handoff
 
-Canonical repository: `fengie/mhw-mods`  
-Global bootstrap/training: `fengie/heaven-toolbox@main`  
-Active branch: `fix/issue556-selector-automation-v8.8.68-20261002`  
-Issue: #556  
+Canonical repository: `fengie/mhw-mods`
+Global bootstrap/training: `fengie/heaven-toolbox@main`
+Active branch: `fix/issue556-selector-automation-v8.8.68-20261002`
+Issue: #556
 Parent canonical main at task start: `658e5311f731f49eaf4d91dc0be55919260c9dfb`
 
 ## Why this tranche exists
