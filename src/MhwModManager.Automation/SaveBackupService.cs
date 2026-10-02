@@ -170,13 +170,16 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var info = new FileInfo(path);
         info.Refresh();
+        if (!info.Exists)
+            throw new FileNotFoundException("Save file disappeared while a snapshot was being captured.", path);
+
         var length = info.Length;
         var lastWriteTimeUtc = info.LastWriteTimeUtc;
-        var sha256 = await HashFileAsync(path, FileShare.ReadWrite, ct);
+        var sha256 = await HashFileAsync(path, FileShare.ReadWrite | FileShare.Delete, ct);
 
         info.Refresh();
-        if (info.Length != length || info.LastWriteTimeUtc != lastWriteTimeUtc)
-            return new FileFingerprint(-1, DateTime.MinValue, sha256);
+        if (!info.Exists || info.Length != length || info.LastWriteTimeUtc != lastWriteTimeUtc)
+            throw new IOException($"Save file '{path}' changed while it was being fingerprinted.");
 
         return new FileFingerprint(length, lastWriteTimeUtc, sha256);
     }
@@ -192,7 +195,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
     private static async Task CopyFileOnceAsync(string source, string destination, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
         await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 1024, FileOptions.Asynchronous | FileOptions.WriteThrough);
         await input.CopyToAsync(output, 1024 * 1024, ct);
         await output.FlushAsync(ct);
