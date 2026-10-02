@@ -1,3 +1,12 @@
+# v8.8.66 — 2026-10-02
+
+- Make explicit Browse Mods searches contact only configured providers that advertise `CatalogProviderCapabilities.Search`, then persist returned items through the existing catalog sync/cache boundary.
+- Keep the 180 ms text-entry debounce cache-only so typing never turns into repeated provider API traffic.
+- Preserve Nexus Mods and GameBanana's current no-full-text-search contracts instead of probing unsupported query modes; configured CurseForge search can expand beyond already-cached matches.
+- Keep provider-search failures isolated and continue showing local cached matches when a searchable provider is unavailable.
+- Clarify Browse Mods search tooltips/status text so users can distinguish local cached filtering from explicit provider-backed search.
+- Add integration regression coverage for capability gating and the cache-only debounce contract. Broader #558 pagination/browse expansion remains open.
+
 # v8.8.65 — 2026-10-02
 
 - Fix the app-owned WPF ComboBox closed-selection presenter to reuse the control's `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat` instead of the unreliable `SelectionBoxItemTemplate` path.
