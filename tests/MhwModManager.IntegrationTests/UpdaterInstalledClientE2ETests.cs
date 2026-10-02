@@ -18,6 +18,7 @@ public sealed class UpdaterInstalledClientE2ETests
     private const long OldBuild = 60;
     private const string OldSource = "ffd218b6ad4e9f4fea4b143d266712a6fa17a285";
     private const string ActiveGameSelectorAutomationName = "Active game";
+    private const string ActiveGameSelectorAutomationId = "ActiveGameSelector";
     private const string ActiveGameDisplayAutomationId = "ActiveGameDisplayName";
     private const string ExpectedFakeGameDisplayName = "Updater E2E Fake Game";
 
@@ -412,38 +413,49 @@ public sealed class UpdaterInstalledClientE2ETests
                     throw new InvalidOperationException(
                         $"No top-level WPF window is available for updated client process {processId}.");
 
-                var selector = window.FindFirst(
-                    TreeScope.Descendants,
-                    new AndCondition(
-                        new PropertyCondition(
-                            AutomationElement.ControlTypeProperty,
-                            ControlType.ComboBox),
-                        new PropertyCondition(
-                            AutomationElement.NameProperty,
-                            ActiveGameSelectorAutomationName)));
+                var selector = FindRawDescendant(
+                    window,
+                    element =>
+                    {
+                        var current = element.Current;
+                        return string.Equals(
+                                   current.AutomationId,
+                                   ActiveGameSelectorAutomationId,
+                                   StringComparison.Ordinal)
+                               || (current.ControlType == ControlType.ComboBox
+                                   && string.Equals(
+                                       current.Name,
+                                       ActiveGameSelectorAutomationName,
+                                       StringComparison.Ordinal));
+                    });
 
                 if (selector is null)
                     throw new InvalidOperationException(
-                        $"Could not find the '{ActiveGameSelectorAutomationName}' ComboBox in the updated client.");
+                        $"Could not find selector id '{ActiveGameSelectorAutomationId}' / name " +
+                        $"'{ActiveGameSelectorAutomationName}' in the updated client. " +
+                        $"Window UIA: {DescribeRawSubtree(window)}");
 
-                var display = selector.FindFirst(
-                    TreeScope.Descendants,
-                    new PropertyCondition(
-                        AutomationElement.AutomationIdProperty,
-                        ActiveGameDisplayAutomationId));
+                var display = FindRawDescendant(
+                    selector,
+                    element => string.Equals(
+                        element.Current.AutomationId,
+                        ActiveGameDisplayAutomationId,
+                        StringComparison.Ordinal));
 
                 var displayText = display?.Current.Name?.Trim();
+                var renderedText = GetRenderedText(selector);
                 if (!string.Equals(displayText, expectedDisplayName, StringComparison.Ordinal))
                 {
-                    var renderedText = GetRenderedText(selector);
                     if (renderedText.Any(
                             text => text.Contains("GameProfile {", StringComparison.Ordinal)))
                         throw new InvalidOperationException(
-                            "Installed selector rendered raw GameProfile record text instead of DisplayName.");
+                            "Installed selector rendered raw GameProfile record text instead of DisplayName. " +
+                            $"Selector UIA: {DescribeRawSubtree(selector)}");
 
                     throw new InvalidOperationException(
                         $"Installed selector display text was '{displayText ?? "<missing>"}'; expected '{expectedDisplayName}'. " +
-                        $"Rendered text: [{string.Join(", ", renderedText.Select(x => $"'{x}'"))}]");
+                        $"Rendered text: [{string.Join(", ", renderedText.Select(x => $"'{x}'"))}]. " +
+                        $"Selector UIA: {DescribeRawSubtree(selector)}");
                 }
 
                 var switchButton = FindNamedButton(window, "Switch");
@@ -499,26 +511,130 @@ public sealed class UpdaterInstalledClientE2ETests
     }
 
     private static AutomationElement? FindNamedButton(AutomationElement root, string name) =>
-        root.FindFirst(
-            TreeScope.Descendants,
-            new AndCondition(
-                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button),
-                new PropertyCondition(AutomationElement.NameProperty, name)));
+        FindRawDescendant(
+            root,
+            element =>
+            {
+                var current = element.Current;
+                return current.ControlType == ControlType.Button
+                       && string.Equals(current.Name, name, StringComparison.Ordinal);
+            });
+
+    private static AutomationElement? FindRawDescendant(
+        AutomationElement root,
+        Func<AutomationElement, bool> predicate)
+    {
+        foreach (var element in EnumerateRawDescendants(root))
+        {
+            try
+            {
+                if (predicate(element))
+                    return element;
+            }
+            catch (ElementNotAvailableException)
+            {
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<AutomationElement> EnumerateRawDescendants(
+        AutomationElement root,
+        int maxElements = 512)
+    {
+        var walker = TreeWalker.RawViewWalker;
+        var stack = new Stack<AutomationElement>();
+        var first = TryGetFirstChild(walker, root);
+        if (first is not null)
+            stack.Push(first);
+
+        var seen = 0;
+        while (stack.Count > 0 && seen < maxElements)
+        {
+            var element = stack.Pop();
+            seen++;
+            yield return element;
+
+            var sibling = TryGetNextSibling(walker, element);
+            if (sibling is not null)
+                stack.Push(sibling);
+
+            var child = TryGetFirstChild(walker, element);
+            if (child is not null)
+                stack.Push(child);
+        }
+    }
+
+    private static AutomationElement? TryGetFirstChild(
+        TreeWalker walker,
+        AutomationElement element)
+    {
+        try
+        {
+            return walker.GetFirstChild(element);
+        }
+        catch (ElementNotAvailableException)
+        {
+            return null;
+        }
+    }
+
+    private static AutomationElement? TryGetNextSibling(
+        TreeWalker walker,
+        AutomationElement element)
+    {
+        try
+        {
+            return walker.GetNextSibling(element);
+        }
+        catch (ElementNotAvailableException)
+        {
+            return null;
+        }
+    }
 
     private static string[] GetRenderedText(AutomationElement selector)
     {
-        var textElements = selector.FindAll(
-            TreeScope.Descendants,
-            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text));
-        var rendered = new List<string>(textElements.Count);
-        for (var i = 0; i < textElements.Count; i++)
+        var rendered = new List<string>();
+        foreach (var element in EnumerateRawDescendants(selector))
         {
-            var text = textElements[i].Current.Name?.Trim();
-            if (!string.IsNullOrWhiteSpace(text))
-                rendered.Add(text);
+            try
+            {
+                var current = element.Current;
+                if (current.ControlType != ControlType.Text)
+                    continue;
+                var text = current.Name?.Trim();
+                if (!string.IsNullOrWhiteSpace(text))
+                    rendered.Add(text);
+            }
+            catch (ElementNotAvailableException)
+            {
+            }
         }
 
         return rendered.Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    private static string DescribeRawSubtree(AutomationElement root)
+    {
+        var snapshots = new List<string>();
+        foreach (var element in EnumerateRawDescendants(root, maxElements: 96))
+        {
+            try
+            {
+                var current = element.Current;
+                snapshots.Add(
+                    $"{current.ControlType.ProgrammaticName}" +
+                    $" id='{current.AutomationId}' name='{current.Name}' offscreen={current.IsOffscreen}");
+            }
+            catch (ElementNotAvailableException)
+            {
+                snapshots.Add("<element unavailable>");
+            }
+        }
+
+        return snapshots.Count == 0 ? "<empty>" : string.Join(" | ", snapshots);
     }
 
     private static void PrepareFakeGame(string managerHome, string fakeGameRoot)
