@@ -95,11 +95,11 @@ jobs:
           name: updater-publication-pr-evidence-${{ github.event.pull_request.head.sha }}
           include-hidden-files: true
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 3
           path: |
             BuildLogs/**
-            artifacts/**
-            release/**
+            artifacts/**/*.json
+            release/**/*.json
             .verification/function-status.json
             .verification/stage-status.json
             MHW-DEBUG-ALL.log
