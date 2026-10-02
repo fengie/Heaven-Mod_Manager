@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.67",
+  "currentVersion": "8.8.68",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.66 PR #563 merged as 5459db663f55388e72da97a79cb6e22ff0673048 and updater-main-380 published successfully, but installed-client E2E #289 failed selector UI acceptance; v8.8.67 hardens automation identity, raw-tree observation, and console diagnostics.",
+  "immediateParentRevision": "v8.8.67 PR #566 merged as af73d3ce55b3bcbeb5d34184506829e57aca9cba and updater-main-381 published successfully; installed-client E2E #290 then proved the closed WPF ComboBox automation peer exposes no raw descendants, so v8.8.68 moves the selected DisplayName onto the peer itself.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh #556 claim/state; require exact v8.8.67 PR gates, publication, and raw-tree packaged selector E2E before closure; preserve HMAC and recursively propagate continuity to the next agent.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; refresh #556 claim/state; require exact v8.8.68 PR gates, publication, and packaged ComboBox peer-value selector E2E before closure; preserve HMAC and recursively propagate continuity to the next agent.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
