@@ -16,6 +16,13 @@ function Active([string]$Relative){
 }
 function Need([string]$Text,[string]$Pattern,[string]$Message){if($Text -notmatch $Pattern){throw $Message}}
 function Forbid([string]$Text,[string]$Pattern,[string]$Message){if($Text -match $Pattern){throw $Message}}
+function Assert-CurrentRevisionCanonicalState($Revision,[string]$Label){
+    if([string]$Revision.stateSemantics -ne 'post-integration-canonical'){throw "$Label must use post-integration-canonical state semantics."}
+    if([string]$Revision.integrationState -ne 'integrated'){throw "$Label must describe the state intended to exist after canonical integration."}
+    if([string]$Revision.workingBranch -ne 'main'){throw "$Label workingBranch must be main; candidate/task branches belong in PR/handoff context, not canonical bootstrap state."}
+    if($null -ne $Revision.activePullRequest){throw "$Label activePullRequest must be null in canonical bootstrap state."}
+    if($null -ne $Revision.activeIssue){throw "$Label activeIssue must be null in canonical bootstrap state."}
+}
 function MaxBytes([string]$Relative,[int]$Limit){
     $bytes=(SourceBytes $Relative).Length
     if($bytes -gt $Limit){throw "$Relative is $bytes UTF-8 bytes; limit is $Limit."}
@@ -50,6 +57,19 @@ if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION curren
 if([string]$revision.globalBootstrapRepository -ne 'fengie/heaven-toolbox' -or [string]$revision.globalBootstrapBranch -ne 'main'){throw 'CURRENT_REVISION must route global bootstrap to Heaven Toolbox main.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){throw 'CURRENT_REVISION must identify verificationAppliesToCommit.'}
+Assert-CurrentRevisionCanonicalState $revision 'CURRENT_REVISION'
+
+$staleCandidateFixture=($revision | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
+$staleCandidateFixture.integrationState='candidate'
+$staleCandidateRejected=$false
+try{Assert-CurrentRevisionCanonicalState $staleCandidateFixture 'candidate fixture'}catch{$staleCandidateRejected=$true}
+if(-not $staleCandidateRejected){throw 'CURRENT_REVISION validator must reject candidate integration state.'}
+
+$staleBranchFixture=($revision | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
+$staleBranchFixture.workingBranch='fix/stale-candidate'
+$staleBranchRejected=$false
+try{Assert-CurrentRevisionCanonicalState $staleBranchFixture 'branch fixture'}catch{$staleBranchRejected=$true}
+if(-not $staleBranchRejected){throw 'CURRENT_REVISION validator must reject task-branch ownership in canonical bootstrap state.'}
 
 $escaped=[regex]::Escape($version)
 $readme=Active 'README.md'; $changelog=Active 'CHANGELOG.md'
