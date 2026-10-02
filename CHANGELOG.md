@@ -1,3 +1,12 @@
+# v8.8.73 — 2026-10-02
+
+- Resolve the exact updater ZIP identity from `update-manifest.json`, recompute its SHA-256, and fail closed on any manifest/artifact mismatch before provenance or publication.
+- Generate GitHub SLSA build provenance with SHA-pinned `actions/attest` and verify the attestation against `fengie/mhw-mods` before the first updater publication mutation.
+- Grant the release workflow the required OIDC and attestation permissions while keeping the existing non-cancellable public/private publication transaction and stale-main guard intact.
+- Make private-repository availability explicit: public repositories attest automatically; private repositories require GitHub Enterprise Cloud and `MHW_ENABLE_GITHUB_ATTESTATIONS=true`; unsupported private runs record an explicit skip instead of claiming provenance.
+- Add updater publication policy regressions covering action pinning, permissions, provenance ordering, exact subject name/digest wiring, private-tier gating, digest recomputation, and pre-publication attestation verification.
+- Close #583 as implementation-complete while retaining external GitHub plan entitlement as an explicit operational constraint.
+
 # v8.8.72 — 2026-10-02
 
 - Prevent torn live-save snapshots by requiring stable source metadata plus matching SHA-256 observations before atomically promoting a copied save into a successful snapshot.
