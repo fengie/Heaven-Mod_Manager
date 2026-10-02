@@ -17,6 +17,7 @@ public sealed class GameBananaCatalogProviderTests
 
         Assert.True(provider.Capabilities.HasFlag(CatalogProviderCapabilities.Browse));
         Assert.True(provider.Capabilities.HasFlag(CatalogProviderCapabilities.BrowserAssistedDownload));
+        Assert.True(provider.Capabilities.HasFlag(CatalogProviderCapabilities.Updates));
         Assert.False(provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search));
         Assert.False(provider.Capabilities.HasFlag(CatalogProviderCapabilities.DirectDownload));
     }
@@ -150,6 +151,42 @@ public sealed class GameBananaCatalogProviderTests
         var file = Assert.Single(files);
         Assert.Equal("1625805", file.ProviderFileId);
         Assert.Equal("653359", file.ProviderModId);
+    }
+
+    [Fact]
+    public async Task Installed_origin_check_reuses_one_detail_request_for_mod_and_files()
+    {
+        var detailCalls = 0;
+        var handler = new RoutingHandler((request, _) =>
+        {
+            Assert.Equal("/Core/Item/Data", request.RequestUri?.AbsolutePath);
+            detailCalls++;
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, ReadFixture("mod.json")));
+        });
+
+        using var client = new HttpClient(handler);
+        var provider = new GameBananaCatalogProvider(new GameBananaTransport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var origin = new InstalledCatalogOrigin(
+            "local-mod-1",
+            "gamebanana",
+            "653359",
+            "1625805",
+            null,
+            new DateTimeOffset(2026, 10, 2, 8, 0, 0, TimeSpan.Zero),
+            "https://gamebanana.com/mods/653359",
+            new string('a', 64));
+        var checker = new InstalledCatalogOriginChecker();
+
+        var result = await checker.CheckAsync(
+            provider,
+            game,
+            origin,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(InstalledCatalogOriginCheckState.Current, result.State);
+        Assert.Equal("1625805", result.ExactFile?.ProviderFileId);
+        Assert.Equal(1, detailCalls);
     }
 
     [Fact]
