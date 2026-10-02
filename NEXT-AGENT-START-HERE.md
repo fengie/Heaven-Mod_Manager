@@ -1,45 +1,47 @@
-# v8.8.68 selector closure — #558 continuation handoff
+# v8.8.69 catalog-scale candidate — #558 provider search + cache capacity
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
-Canonical source: `7def58c1b16d115e1555738ebad51717d1c1f752`
-Evidence-bearing main: `601496093430214791395ba1bfcfadd3b0262ad2`
-Closed issue: #556
-Next active issue: #558
-Open continuation PR: #565 (`agent/issue-558-provider-search-v8.8.67-20261002`)
+Working branch: `fix/issue558-provider-search-v8.8.69-20261002`
+Parent canonical main: `3291b4c9270c4cb2a4beac2900ce724dd00ef0e6`
+Active issue: #558
+Superseded semantic source: PR #565 / `agent/issue-558-provider-search-v8.8.67-20261002`
 
-## #556 closure
+## Verified parent boundary
 
-The header-selector regression is closed by exact packaged-client evidence, not by source inspection alone.
+Issue #556 is closed on v8.8.68. Preserve its exact selector contract:
 
-- PR #567 merged v8.8.68 as `7def58c1b16d115e1555738ebad51717d1c1f752`.
-- Hosted Windows verification run `36978710736` passed 26/26 stages for that exact source and produced updater build 382.
-- Release artifact: `MHW-Manual-Mod-Manager-v8.8.68-win-x64.zip`.
-- Artifact SHA-256: `E11BB2CF34808A63C0922B85A1391865D17BB1F6EB1EB32FF79FAE91842166CA`.
-- Updater Installed Client E2E run `36979261045` passed real update, selector acceptance, enabled Switch, enabled Settings, and rollback.
-- The packaged selector exposed `selectorDisplayText = "Updater E2E Fake Game"`, proving the ComboBox peer carries the human-readable selected DisplayName cross-process.
-- Evidence is persisted at `_AGENT_CONTEXT/EVIDENCE/v8.8.68-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.68.log`.
-- Issue #556 is closed as completed.
+- source merge `7def58c1b16d115e1555738ebad51717d1c1f752`;
+- hosted Windows verification run `36978710736` passed 26/26;
+- installed-client E2E `36979261045` passed update, peer-level selected DisplayName, enabled Switch, enabled Settings, and rollback;
+- `ActiveGameSelector`, `AutomationProperties.ItemStatus={Binding SelectedGame.DisplayName}`, `TextSearch.TextPath="DisplayName"`, the visual ItemTemplate regression, and character ellipsis must not regress.
 
-Preserve the v8.8.68 selector contract: stable `ActiveGameSelector` automation identity, `AutomationProperties.ItemStatus` bound to `SelectedGame.DisplayName`, `TextSearch.TextPath="DisplayName"`, the visual ItemTemplate regression, readable ellipsis, and enabled Switch/Settings behavior.
+## v8.8.69 candidate
 
-## Current continuation
+This branch reconciles only still-useful #558 semantics from stale PR #565 onto the verified v8.8.68 line and fixes the review-discovered storage/UI capacity mismatch.
 
-PR #565 carries the next #558 provider-search tranche but was authored against the pre-v8.8.68 line and still advertises v8.8.67 metadata. Treat it as semantic source to reconcile, not as merge-ready state.
+- Ordinary query typing remains local to SQLite/FTS.
+- Explicit **Search** contacts only configured providers advertising `CatalogProviderCapabilities.Search`.
+- Provider failures remain isolated and successful remote rows flow through `CatalogSyncService` into the normal source-aware cache before display.
+- Unsupported Nexus/GameBanana full-catalog search is not probed or invented.
+- `CatalogRepository.SearchAsync` now allows the UI's existing 1,000-row virtualized window instead of truncating at 500.
+- A behavioral integration regression inserts and retrieves 600 matching cached rows, proving rows beyond 500 are reachable.
+- Product/version metadata is v8.8.69.
 
-Next work must:
+## Exact-head completion boundary
 
-1. refresh current `main`, #558 ownership, and PR #565;
-2. preserve the provider-capability boundary: explicit remote search contacts only providers that advertise `CatalogProviderCapabilities.Search`; ordinary per-keystroke filtering remains local to SQLite/FTS;
-3. reconcile only still-useful #565 source/tests onto fresh main while preserving the now-closed #556 selector behavior;
-4. advance the reconciled product tranche to the next available patch (v8.8.69) with synchronized `VERSION.txt`, README, CHANGELOG, and continuity metadata;
-5. require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final head before integration;
-6. after integration, continue #558 with provider-aware pagination/browse expansion and deterministic scale/performance coverage, then #559 UX work.
+1. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final v8.8.69 head.
+2. Repair only concrete failures; do not weaken provider capability gating, cache/provenance identity, or the v8.8.68 selector contract.
+3. Refresh current `main` immediately before integration. If main moved, reconcile first and rerun exact-head gates.
+4. Merge only the exact green candidate and verify remote `main` readback.
+5. Close/supersede stale PR #565 after its unique semantics are confirmed integrated.
+6. Keep #558 open: default installs still need broader provider-aware discovery/pagination because Nexus/GameBanana do not expose supported full-catalog text search and CurseForge Search is configuration-dependent.
+7. Continue deterministic scale/performance coverage before moving to #559 discovery UX.
 
 ## Routing and safety
 
-Current Heaven Local Bridge host heartbeats show v8 workers on both `heaven2` and `heaven`. The `heaven2` control path remains HMAC-authenticated. Do not weaken or bypass that signing boundary merely to gain a local-agent route. Heavy execution belongs on `heaven`; operator/control actions belong on `heaven2`.
+Use current `fengie/heaven-toolbox@main` as the global bootstrap source. Do not weaken Heaven/Agent Control authentication. If local execution is unavailable from the current chat, use the authorized GitHub fallback and record only verification actually produced.
 
 ## Successor obligation
 
-The successor must bootstrap from current `fengie/heaven-toolbox@main`, refresh current MHW `main`, read and preserve `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant learned rules, and propagate this continuity obligation to the next agent. **Do not break the chain.**
+Read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` plus task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Refresh live main/issues/PRs before mutation. **Do not break the chain.**
