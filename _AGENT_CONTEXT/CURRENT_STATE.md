@@ -13,9 +13,9 @@ v8.8.77 keeps the bounded Vortex handoff boundary from v8.8.76, repairs updater 
 
 ## Verification boundary
 
-The last closed hosted-Windows boundary is v8.8.76 source `afc3ec4f0be8ba36a93b2b880edc6a3cd9de0f52`, run `37060606949` (26/26 PASS), with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.76-heaven-windows-closure.log` persisted by evidence-only commit `66cbd9cce0df375b114f907afd7a9c1a93ea4742`.
+Current hosted-Windows closure: v8.8.77 source `cd90cff3cec585b6c09e2bb68992247753f6efb9` passed run `37072838484` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.77-heaven-windows-closure.log`.
 
-v8.8.77 changes updater E2E runner routing and verification/continuity infrastructure after that source, so it requires fresh exact-source verification. Once the v8.8.77 closure is produced, the release workflow must synchronize this section and the machine-readable continuity projection before committing the evidence.
+The tested source remains `cd90cff3cec585b6c09e2bb68992247753f6efb9` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
