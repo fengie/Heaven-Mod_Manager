@@ -146,10 +146,14 @@ public sealed partial class XamlBindingSafetyTests
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
 
         Assert.Contains("AutomationProperties.Name=\"Active game\"", xaml);
+        Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameSelector\"", xaml);
+        Assert.Contains("AutomationProperties.ItemStatus=\"{Binding SelectedGame.DisplayName}\"", xaml);
+        Assert.Contains("TextSearch.TextPath=\"DisplayName\"", xaml);
         Assert.Contains("<ComboBox.ItemTemplate>", xaml);
         Assert.Contains("Text=\"{Binding DisplayName}\"", xaml);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
         Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameDisplayName\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"{Binding DisplayName}\"", xaml);
         Assert.DoesNotContain("DisplayMemberPath=\"DisplayName\"", xaml);
     }
 
@@ -181,6 +185,7 @@ public sealed partial class XamlBindingSafetyTests
         var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
         var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+        var storage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Storage", "CatalogRepository.cs"));
 
         Assert.Contains("provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search)", source);
         Assert.Contains("SearchCatalogProvidersAsync(query, ct)", source);
@@ -189,6 +194,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Nexus Mods and GameBanana are not probed for unsupported full-catalog search.", source);
         Assert.Contains("Typing filters the local cache.", xaml);
         Assert.Contains("Unsupported providers are not probed.", xaml);
+        Assert.Contains("private const int MaxSearchResults = 1000;", storage);
 
         var debounceStart = source.IndexOf("private async Task DebounceCatalogQueryAsync", StringComparison.Ordinal);
         var runtimeStart = source.IndexOf("private void EnsureCatalogRuntime", debounceStart, StringComparison.Ordinal);

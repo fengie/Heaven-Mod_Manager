@@ -1,21 +1,11 @@
-# v8.8.67 MHW product — ordered next actions
+# v8.8.68 MHW product — ordered next actions
 
-1. Open and verify the reconciled #558 v8.8.67 provider-search candidate from `agent/issue-558-provider-search-v8.8.67-20261002` against current `main`.
-2. Require exact-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership gates; queued, cancelled, failed, or stale-head gates are not merge authorization.
-3. Refresh canonical main and the #558 claim immediately before integration; if main moved, reconcile again and rerun exact-head gates.
-4. Merge only after all required gates are green, then read back canonical main and persist exact integration evidence.
-5. Release the #558 collaboration claim only after canonical integration is confirmed.
-6. Keep #558 open for broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.
-7. Separately finish #556 publication/installed-client selector E2E acceptance if it has not already been closed by newer canonical evidence.
-8. Continue #559 only as a non-overlapping lane for provider/category filters, sorting, provider health, loading/empty/stale/partial-failure states, and discovery UX.
-9. Preserve #281 provider contracts, #350/#354 external constraints, RECOVERY-007 Windows discovery proof, and other documented evidence gaps.
+1. Treat issue #556 as closed: v8.8.68 source `7def58c1b16d115e1555738ebad51717d1c1f752` passed hosted Windows run `36978710736` and installed-client E2E `36979261045`, including peer-level selected DisplayName, enabled Switch/Settings, update, and rollback.
+2. Refresh current `main`, #558 ownership, and PR #565 before mutation.
+3. Reconcile only the still-useful #565 provider-search source/tests onto fresh main. Preserve v8.8.68 selector behavior and do not reuse stale v8.8.67 release/continuity metadata.
+4. Preserve the provider capability contract: per-keystroke filtering stays local to SQLite/FTS; explicit remote search contacts only providers advertising `CatalogProviderCapabilities.Search`; unsupported Nexus/GameBanana full-catalog search is not invented.
+5. Advance the reconciled product tranche to v8.8.69 with synchronized `VERSION.txt`, README, CHANGELOG, and continuity metadata.
+6. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final head. Refresh main immediately before integration and merge only that exact green candidate.
+7. Continue #558 with provider-aware pagination/browse expansion and deterministic scale/performance coverage, then take #559 filtering/sorting/provider-health/discovery-state UX.
 
-## Verification lineage
-
-v8.8.66 PR #563 exact head `e47d0a91e966b5bcd86e69825af5d77970fdb500` passed Workflow Feature `36966157999`, MHW Product Security `36966158024`, and Heaven Toolbox Ownership `36966158016`, then merged as `5459db663f55388e72da97a79cb6e22ff0673048`.
-
-The earlier #558 PR #564 also reached green gates on head `117c17b9dff6535bf939dd8b65ef54892f6592e9`, but those runs are superseded by the later main reconciliation and v8.8.67 version boundary.
-
-Every successor bootstraps from current `fengie/heaven-toolbox@main` first, then current MHW `main`, reads `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md`, and recursively propagates the continuity obligation. **Do not break the chain.**
-
-The successor must propagate this continuity obligation to the next agent.
+Every successor must read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md` context onward to the next agent.

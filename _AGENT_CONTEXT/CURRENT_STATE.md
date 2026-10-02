@@ -1,26 +1,40 @@
-# v8.8.67 provider-aware Browse Mods search — candidate state
+# v8.8.68 selector acceptance closed — #558 reconciliation active
 
-MHW is the **MHW Manual Mod Manager product repository only**. Global reusable training, Agent Control, Heaven Bridge, plugins, shared Git doctrine, and reusable repository policy are owned by `fengie/heaven-toolbox@main`.
+Issue #556 is **DONE**.
 
-## Current MHW product work
+PR #567 merged v8.8.68 as `7def58c1b16d115e1555738ebad51717d1c1f752`. The exact source then passed hosted Windows verification run `36978710736` with 26/26 stages and produced updater build 382 / `MHW-Manual-Mod-Manager-v8.8.68-win-x64.zip` with SHA-256 `E11BB2CF34808A63C0922B85A1391865D17BB1F6EB1EB32FF79FAE91842166CA`.
 
-- **BROWSE-556 / P1:** ACTIVE for installed-client closure. PR #563's v8.8.66 packaged selector UI Automation source gate is integrated on canonical main; publication/installed-client selector evidence remains before closure unless newer evidence supersedes this state.
-- **BROWSE-557 / P1:** DONE in v8.8.64 via PR #561.
-- **CATALOG-SCALE-558 / P1:** ACTIVE. v8.8.67 candidate adds explicit provider-backed text search only for configured providers advertising the `Search` capability while preserving cache-only debounce behavior. Broader pagination/browse/scale work remains open.
-- **BROWSE-UX-559 / P1:** READY. Filters, sorting, provider health, and richer discovery states remain separate follow-up work.
-- **RECOVERY-005 / P1:** source/test dark ComboBox work is integrated; installed WPF interaction evidence remains relevant.
-- **RECOVERY-007 / P0:** installed-game discovery source is integrated; representative Windows/runtime proof remains.
+Updater Installed Client E2E run `36979261045` passed the full packaged-client boundary:
 
-## Candidate behavior
+- real update to build 382 / source `7def58c1b16d115e1555738ebad51717d1c1f752`;
+- selected game exposed on the ComboBox automation peer as `Updater E2E Fake Game`;
+- Switch enabled;
+- Settings enabled;
+- confirmed update journal;
+- rollback scenario PASS with the previous build/source restored.
 
-Typing in Browse Mods continues to filter the local FTS cache. The explicit Search command now queries only configured providers that advertise `CatalogProviderCapabilities.Search`, syncs returned rows through the existing cache/provenance boundary, isolates remote failures, then displays matching cached results. Nexus Mods and GameBanana are not probed for unsupported full-catalog text search.
+Evidence is persisted on canonical main in `_AGENT_CONTEXT/EVIDENCE/v8.8.68-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.68.log`. Issue #556 is closed as completed.
 
-## Verification boundary
+## Preserved selector contract
 
-The immediate integrated parent is v8.8.66 PR #563 exact head `e47d0a91e966b5bcd86e69825af5d77970fdb500`, which passed Workflow Feature `36966157999`, Product Security `36966158024`, and Toolbox Ownership `36966158016`, then merged as `5459db663f55388e72da97a79cb6e22ff0673048`.
+Do not regress:
 
-An earlier #558 PR #564 reached a green reconciled pre-#563 head `117c17b9dff6535bf939dd8b65ef54892f6592e9`, but canonical main advanced and took v8.8.66. Those old greens are not inherited. v8.8.67 is a new exact-head verification boundary.
+- `AutomationProperties.Name="Active game"`;
+- `AutomationProperties.AutomationId="ActiveGameSelector"`;
+- ComboBox peer `AutomationProperties.ItemStatus` bound to `SelectedGame.DisplayName`;
+- `TextSearch.TextPath="DisplayName"`;
+- the visual selected presenter using the item template / human-readable DisplayName path;
+- long-name character ellipsis;
+- enabled Switch and Settings controls.
 
-## Coordination
+## Current active catalog work
 
-Issue #558 remains owned through Toolbox fallback claim `chatgpt-catalog-scale-558-20261002-0441`. The signed heaven2 HMAC boundary was not weakened. A delegated Heaven Codex attempt hit account quota plus workspace/network blockers; do not repeat that lane until durable blocker evidence changes.
+Issue #558 remains ACTIVE. PR #565 contains the next provider-search tranche but was prepared on the pre-v8.8.68 line and carries v8.8.67 metadata. It is not merge-ready against current main.
+
+The next integration must reconcile its semantic source/tests onto fresh main, preserve the closed #556 selector behavior, advance the product patch to v8.8.69, and require all exact-head repository gates before merge.
+
+Ordinary per-keystroke Browse Mods filtering remains local to SQLite/FTS. Explicit remote search may contact only configured providers that advertise `CatalogProviderCapabilities.Search`; unsupported providers must not be probed.
+
+## Routing
+
+Current live Heaven Local Bridge heartbeats expose v8 workers on both hosts. `heaven2` remains the HMAC-authenticated control host; `heaven` is the heavy worker. Do not weaken the authentication boundary to force local-agent execution.

@@ -34,9 +34,9 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
-| BROWSE-556 | P1 | ACTIVE | issue #556; PR #562 + PR #563 merged | Source + packaged-client UIA gate integrated; require published installed-client selector evidence before closing. |
+| BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
-| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; v8.8.67 provider-search candidate | Expand catalog breadth safely with provider-aware scaling. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche | Expand catalog breadth safely with provider-aware scaling. |
 | BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
@@ -56,8 +56,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## BROWSE-556 / BROWSE-557 / CATALOG-SCALE-558 / BROWSE-UX-559 — Catalog UX modernization
 
-**Owner:** #556 v8.8.66 UI Automation source gate integrated via PR #563; #558 v8.8.67 provider-search candidate active; #559 must remain non-overlapping
-**Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`; #563 at merge `5459db663f55388e72da97a79cb6e22ff0673048`
+**Owner:** #556 completed via PR #567 / v8.8.68; #558 is the active catalog-scale lane and #559 remains ready. Both must preserve the closed selector boundary.
+**Integrated PRs:** #561 at merge `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`; #562 at merge `c3f238cbe4f1850763736bac999af0577a4606c5`; #567 at merge `7def58c1b16d115e1555738ebad51717d1c1f752`
 **Acceptance:** selector displays a human game name; Browse Mods exposes artwork and useful metadata without weakening safe acquisition; larger result sets remain virtualized; provider breadth grows only through capabilities each provider actually supports.
 
 - [x] v8.8.64 added an explicit `DisplayName` item template for dropdown rows.
@@ -65,20 +65,23 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Exact PR #562 head `236d3604f1df245f9c224eda3f21f2177979cfd2` passed Workflow Feature run `36963458484`, Product Security run `36963458384`, and Toolbox Ownership run `36963458431`, then merged as `c3f238cbe4f1850763736bac999af0577a4606c5`.
 - [x] Add a packaged-client UI Automation hook for the rendered selected game text while retaining character ellipsis.
 - [x] Extend the real updater installed-client E2E to assert the rendered game DisplayName plus enabled Switch/Settings actions and persist that evidence.
-- [x] PR #563 exact head `e47d0a91e966b5bcd86e69825af5d77970fdb500` passed Workflow Feature `36966157999`, Product Security `36966158024`, and Toolbox Ownership `36966158016`, then merged as `5459db663f55388e72da97a79cb6e22ff0673048`.
-- [ ] Publish the exact integrated v8.8.66 selector-acceptance source, pass packaged updater E2E selector acceptance, then close #556.
+- [x] v8.8.66 passed exact-head PR gates, merged via PR #563, and published immutable updater-main-380.
+- [x] Preserve Updater Installed Client E2E #289 as a real failed selector-acceptance result rather than closing #556.
+- [x] Add v8.8.67 stable selector automation identity, raw-tree UIA traversal, and console-first failure diagnostics.
+- [x] v8.8.67 exact-head gates passed; PR #566 merged as `af73d3ce55b3bcbeb5d34184506829e57aca9cba`; Windows Release Gate #381 published immutable updater-main-381.
+- [x] Preserve E2E #290 attempt 2 as deterministic evidence that the closed `ActiveGameSelector` peer exposes zero raw descendants; do not waive or loop the failed child-UIA assertion.
+- [x] Add v8.8.68 `AutomationProperties.ItemStatus={Binding SelectedGame.DisplayName}` plus `TextSearch.TextPath=DisplayName` and switch packaged acceptance to the visible/bounded ComboBox peer value.
+- [x] v8.8.68 PR #567 merged as `7def58c1b16d115e1555738ebad51717d1c1f752`; hosted Windows run `36978710736` passed 26/26 and installed-client E2E `36979261045` passed selector peer DisplayName, Switch/Settings, real update, and rollback; issue #556 closed.
 - [x] Add safe HTTPS thumbnails, summary/author/category/download metadata, provider labels, version and update time to Browse Mods.
 - [x] Add selected-mod artwork and preserve exact-file install/source-page behavior.
 - [x] Enable recycled row virtualization.
 - [x] Raise first-tranche refresh/cache limits to 100/provider and 1000 visible cached rows.
 - [x] Add focused source/XAML regression guards.
 - [x] Exact head `3ced8b41041909d91b06902631ef36085bfd7489` passed all required PR #561 gates and integrated #556/#557 as `a39064643f97aa5a0df80bf7c917d260b3d7e7a1`.
-- [x] v8.8.67 candidate: explicit Search queries only providers advertising `CatalogProviderCapabilities.Search`; text-entry debounce remains local-cache-only and unsupported Nexus/GameBanana full-catalog search is not probed.
-- [ ] Verify/integrate the v8.8.67 #558 provider-search tranche on exact-head required gates.
-- [ ] Continue #558 with broader provider-aware pagination/browse expansion and deterministic scale coverage beyond this search tranche.
+- [ ] Continue #558 with provider-aware pagination/search beyond the first capacity tranche.
 - [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
 
-**Next action:** verify/integrate/publish v8.8.66 and require packaged UI Automation evidence before closing #556; keep #558/#559 non-overlapping.
+**Next action:** reconcile the still-useful PR #565 / #558 provider-search semantics onto fresh v8.8.68 main as v8.8.69, preserving the now-verified selector boundary; then run exact-head gates before integration.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 

@@ -149,7 +149,19 @@ jobs:
           }
 
           if ($process.ExitCode -ne 0) {
-            throw "Installed-client updater E2E failed with exit code $($process.ExitCode). See $log."
+            Write-Host '=== INSTALLED-CLIENT E2E FAILURE LOG ==='
+            if (Test-Path -LiteralPath $log) {
+              Get-Content -LiteralPath $log | ForEach-Object { Write-Host $_ }
+            } else {
+              Write-Host '<missing installed-client-e2e-test.log>'
+            }
+            Write-Host '=== INSTALLED-CLIENT E2E FAILURE EVIDENCE ==='
+            if (Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH) {
+              Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH | ForEach-Object { Write-Host $_ }
+            } else {
+              Write-Host '<missing evidence.json>'
+            }
+            throw "Installed-client updater E2E failed with exit code $($process.ExitCode). See console diagnostics above."
           }
           if (!(Test-Path -LiteralPath $env:MHW_E2E_EVIDENCE_PATH)) {
             throw 'Installed-client updater E2E returned success without producing updater E2E evidence.json.'

@@ -1,19 +1,24 @@
-# v8.8.67 — MHW Manual Mod Manager
+# v8.8.68 — MHW Manual Mod Manager
 
-Current product version: **8.8.67**.
+Current product version: **8.8.68**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.67 — provider-aware Browse Mods search
+## v8.8.68 — packaged selector peer-value acceptance
 
-- Make the explicit **Search** action query only configured catalog providers that advertise `CatalogProviderCapabilities.Search`, then persist results through the existing source-aware sync/cache boundary.
-- Keep the 180 ms text-entry debounce local to the SQLite/FTS cache, so ordinary typing never becomes repeated provider API traffic.
-- Preserve the current Nexus Mods and GameBanana contracts instead of probing unsupported full-catalog text search; configured CurseForge search can discover matching mods that were not already cached.
-- Keep provider-search failures isolated so cached matches remain usable when a searchable provider is unavailable.
-- Clarify cached-vs-provider search behavior in Browse Mods and add regression coverage for capability gating and cache-only debounce behavior.
-- This is a bounded #558 tranche; broader provider-aware pagination/browse expansion and scale coverage remain open.
+- Expose the active game's `DisplayName` on the **ComboBox automation peer itself** through `AutomationProperties.ItemStatus`, because the installed WPF ComboBox peer exposes no raw descendants in the closed state.
+- Add `TextSearch.TextPath="DisplayName"` as a control-level text fallback while retaining the existing `DisplayName` item template, character ellipsis, dark chrome, **Switch**, and **Settings** behavior.
+- Make installed-client E2E validate the visible/bounded ComboBox, its stable accessibility name, and its selected `DisplayName` value instead of requiring an unobservable templated child.
+- Preserve the structural XAML regression that prevents the closed selected presenter from falling back to raw `GameProfile { ... }` text.
+
+## v8.8.67 — hardened packaged selector acceptance
+
+- Add a stable UI Automation identity to the active-game selector and explicitly expose the rendered game's accessible name.
+- Inspect the selector through the **raw WPF automation tree**, which is more reliable for templated ComboBox content than Control View descendants.
+- Preserve strict acceptance: the packaged client must render the expected game DisplayName, must not expose raw `GameProfile { ... }` text, and must keep **Switch** and **Settings** enabled.
+- Emit the full installed-client failure log/evidence to the Actions console before failure, so UI acceptance stays diagnosable even when artifact storage is exhausted.
 
 ## v8.8.66 — packaged selector UI acceptance
 
@@ -22,22 +27,15 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Require the neighboring **Switch** and **Settings** actions to remain enabled during selector acceptance, while preserving character ellipsis for long names.
 - Persist selector text/button evidence and make the updater E2E workflow reject missing or incorrect UI evidence before issue #556 can close.
 
-## v8.8.65 — selected game text follow-up
-
-- Fix the custom dark ComboBox's **closed selected-value presenter**, which could still call `GameProfile.ToString()` even though dropdown rows correctly showed `DisplayName`.
-- Make the selected surface reuse the same `ItemTemplate`, template selector, and string-format contract as the dropdown, so the header consistently shows names such as **Monster Hunter: World**.
-- Add regression coverage that rejects the broken `SelectionBoxItemTemplate` path and keep issue #556 open until installed Windows/WPF confirmation.
-- Installed-client acceptance must use the published v8.8.65 updater package; source-only `main` is not treated as deployed UI proof.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
-- [ ] **BROWSE-556 / P1** — v8.8.66 source UI Automation acceptance merged via PR #563 with exact-head gates green; publication and packaged installed-client E2E acceptance still remain before #556 closes.
+- [ ] **BROWSE-556 / P1** — v8.8.67 published successfully, but E2E #290 proved the closed WPF ComboBox peer has no raw descendants. v8.8.68 moves the selected DisplayName onto the ComboBox peer and keeps the visual template fallback; exact-head gates, publication, and packaged E2E must pass before #556 closes.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
-- [ ] **CATALOG-SCALE-558 / P1** — v8.8.67 candidate adds capability-gated explicit provider text search on top of the first capacity tranche; broader provider-aware pagination/browse expansion remains open under #558.
+- [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 integrated the first cache/provider capacity tranche; deeper provider-aware discovery/pagination remains open under #558.
 - [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
