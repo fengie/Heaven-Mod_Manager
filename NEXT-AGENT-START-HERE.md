@@ -1,55 +1,47 @@
-# v8.8.68 selector peer-value acceptance — current handoff
+# v8.8.69 provider-aware Browse Mods search — current handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
-Active branch: `fix/issue556-selector-automation-v8.8.68-20261002`
-Issue: #556
-Parent canonical main at task start: `658e5311f731f49eaf4d91dc0be55919260c9dfb`
+Active branch: `agent/issue-558-provider-search-v8.8.69-20261002-chatgpt`
+Issue: #558
+Canonical main at reconciliation start: `601496093430214791395ba1bfcfadd3b0262ad2`
 
-## Why this tranche exists
+## Closed predecessor
 
-v8.8.67 passed all exact-head PR gates and Windows Release Gate #381, publishing immutable `updater-main-381` from source `af73d3ce55b3bcbeb5d34184506829e57aca9cba`. Updater Installed Client E2E #290 then proved that the closed custom WPF ComboBox automation peer exposes no raw descendants. Therefore a child `ActiveGameDisplayName` probe cannot verify the selected value cross-process even though the XAML template is present.
+Issue #556 is complete. v8.8.68 PR #567 exact head `966fe005b279c901b6782f4f3d8c466ba503908a` passed Workflow Feature `36978477603`, MHW Product Security `36978477581`, and Heaven Toolbox Ownership `36978477580`, then merged as `7def58c1b16d115e1555738ebad51717d1c1f752`.
 
-E2E #290 attempt 1 also hit a transient GitHub release-asset HTTP 500. A single failed-job rerun cleared that transport failure and reached the deterministic selector failure; do not loop retries.
+Updater Installed Client E2E `36979261045` passed the real packaged update path with `selectorDisplayText = "Updater E2E Fake Game"`, Switch enabled, Settings enabled, and rollback PASS. Durable evidence is on canonical main at `601496093430214791395ba1bfcfadd3b0262ad2`.
 
-## v8.8.68 candidate
+## v8.8.69 candidate
 
-- Preserve `AutomationProperties.Name="Active game"` and `AutomationProperties.AutomationId="ActiveGameSelector"`.
-- Bind `AutomationProperties.ItemStatus` to `SelectedGame.DisplayName` so the ComboBox automation peer itself exposes the selected human-readable value.
-- Add `TextSearch.TextPath="DisplayName"` as a control-level text fallback.
-- Keep the existing `DisplayName` ItemTemplate and character ellipsis.
-- Make packaged E2E require a visible/bounded ComboBox, exact accessibility name, exact ItemStatus DisplayName, and enabled Switch/Settings.
-- Keep the structural regression that rejects the old SelectionBoxItemTemplate/raw-object visual path.
+This reconciles the useful #558 work from stale/conflicting PR #565 onto current v8.8.68 main without importing its old version/continuity snapshots.
+
+- Keep per-keystroke Browse Mods filtering local to SQLite/FTS.
+- Make explicit Search contact only configured providers advertising `CatalogProviderCapabilities.Search`.
+- Persist provider-returned rows through `CatalogSyncService` and the source-aware cache before display.
+- Preserve per-provider failure isolation and matching cached results.
+- Do not probe Nexus Mods or GameBanana for unsupported full-catalog text search.
+- Clarify cached filtering versus explicit provider search in the UI.
+- Add focused regression coverage proving capability gating and cache-only debounce behavior.
+
+This tranche does **not** complete #558. Broader provider-aware pagination/browse expansion and deterministic scale/performance coverage remain open.
 
 ## Verification state
 
-No v8.8.68 green claim exists yet.
+No v8.8.69 green claim exists yet. The semantic predecessor in PR #565 passed all three required exact-head gates on `a03e2a73e806c3b49dacf382c2061255fc79521a`, but those greens do not authorize this reconciled candidate because main advanced through v8.8.68.
 
-Last release evidence:
-- v8.8.67 merge: `af73d3ce55b3bcbeb5d34184506829e57aca9cba`;
-- Windows Release Gate #381: `36976475498`, success;
-- immutable release: `updater-main-381`;
-- package digest: `sha256:c1cc1fc9e62b41f5cc9d0a4020689b32a60d9c28daf4d0eedfd08c66729261dd`;
-- Updater Installed Client E2E #290: attempt 1 transient HTTP 500; attempt 2 deterministic selector child-UIA failure.
-
-Mandatory local Heaven offload was attempted earlier in this issue with both heaven2/heaven bridge health jobs; neither produced durable status/result/heartbeat. No local-agent verification is claimed and the HMAC boundary must not be weakened.
-
-## Unresolved risks
-
-- **Unresolved risk:** v8.8.68 still needs exact-head verification, exact release publication, and packaged ComboBox peer-value UI Automation proof before issue #556 can close.
-- **Unresolved risk:** GitHub Actions artifact storage remains exhausted, so installed-client failures must remain diagnosable from console-emitted evidence.
-- **Unresolved risk:** the release-asset API returned a transient HTTP 500 during E2E #290 attempt 1; one bounded rerun cleared it, but repeated transport failures must not be mistaken for product failures.
+The live ChatGPT route did not expose Agent Control / Heaven Bridge dispatch tools during this reconciliation, so no local-agent build/test result is claimed. The existing HMAC boundary was not weakened.
 
 ## Ordered continuation
 
-1. Open the v8.8.68 PR from this branch.
-2. Require all three exact-head PR gates and repair only concrete failures.
-3. Refresh main/ownership and merge only the exact green head.
-4. Freeze release-relevant main while Windows Release Gate publishes v8.8.68.
-5. Require Updater Installed Client E2E to pass the ComboBox peer-value selector assertion, Switch/Settings, update, and rollback.
-6. Close #556 only after packaged E2E success.
-7. Reconcile #565/#558 after #556 closure and advance its patch to avoid version collision.
+1. Open a PR for this v8.8.69 branch against fresh `main`.
+2. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final head.
+3. Repair only concrete failures; preserve #556's selector peer-value behavior.
+4. Refresh canonical main and issue/PR ownership immediately before integration.
+5. Merge only the exact green head and verify the intended tree on remote main.
+6. Close stale PR #565 as superseded only after its unique provider-search semantics are integrated.
+7. Keep #558 open for pagination/browse/scale work, then continue #559 as a separate UX tranche.
 
 ## Successor obligation
 
-The successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, bootstrap from current `fengie/heaven-toolbox@main` before current MHW `main`, and propagate this continuity obligation to the next agent. **Do not break the chain.**
+The successor must bootstrap from current `fengie/heaven-toolbox@main` before current MHW `main`, read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, preserve this exact verification/integration boundary, and recursively propagate the same obligation to the next agent. **Do not break the chain.**
