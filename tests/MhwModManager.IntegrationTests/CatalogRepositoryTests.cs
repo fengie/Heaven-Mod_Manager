@@ -334,6 +334,29 @@ public sealed class CatalogRepositoryTests : IDisposable
             ct: TestToken);
 
         Assert.Equal(600, results.Count);
+        Assert.All(results, result => Assert.Single(result.Mod.Files));
+    }
+
+    [Fact]
+    public void Search_batches_file_hydration_instead_of_materializing_each_row_individually()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var source = File.ReadAllText(
+            Path.Combine(repositoryRoot, "src", "MhwModManager.Storage", "CatalogRepository.cs"));
+        var searchStart = source.IndexOf(
+            "public async Task<IReadOnlyList<CachedCatalogMod>> SearchAsync(",
+            StringComparison.Ordinal);
+        var searchEnd = source.IndexOf(
+            "public async Task UpsertSyncStateAsync(",
+            searchStart,
+            StringComparison.Ordinal);
+
+        Assert.True(searchStart >= 0 && searchEnd > searchStart);
+        var searchBody = source[searchStart..searchEnd];
+        Assert.Contains("LoadFilesBatchAsync(", searchBody, StringComparison.Ordinal);
+        Assert.Contains("Materialize(row, files)", searchBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("await MaterializeAsync(c, row, ct)", searchBody, StringComparison.Ordinal);
+        Assert.Contains("private const int FileHydrationBatchSize = 400;", source, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -435,5 +458,18 @@ public sealed class CatalogRepositoryTests : IDisposable
                 "\"fixture-etag\"",
                 fetched.AddMinutes(-1),
                 "sha256:fixture"));
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "MhwModManager.sln")))
+                return current.FullName;
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate repository root from test base directory.");
     }
 }
