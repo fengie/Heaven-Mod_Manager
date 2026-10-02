@@ -285,18 +285,14 @@ public sealed partial class GameProfileRegistry
 
         if(removedIds.Count>0&&File.Exists(activePath))
         {
-            try
+            // Repoint the active marker before deleting duplicate owners. If this write
+            // fails, propagate the error so the outer discovery transaction leaves the
+            // existing registry untouched and a later scan can retry deterministically.
+            var activeId=File.ReadAllText(activePath).Trim();
+            if(removedIds.Contains(activeId))
             {
-                var activeId=File.ReadAllText(activePath).Trim();
-                if(removedIds.Contains(activeId))
-                {
-                    Directory.CreateDirectory(stateRoot);
-                    AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(owner.Id+Environment.NewLine));
-                }
-            }
-            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException)
-            {
-                MasterDebugLog.Write("GAME-REGISTRY","Could not repoint active profile while reconciling duplicate game records.",ex);
+                Directory.CreateDirectory(stateRoot);
+                AtomicWrite(activePath,System.Text.Encoding.UTF8.GetBytes(owner.Id+Environment.NewLine));
             }
         }
 
