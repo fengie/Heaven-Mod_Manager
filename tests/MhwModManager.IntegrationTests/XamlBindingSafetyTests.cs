@@ -146,10 +146,12 @@ public sealed partial class XamlBindingSafetyTests
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
 
         Assert.Contains("AutomationProperties.Name=\"Active game\"", xaml);
+        Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameSelector\"", xaml);
         Assert.Contains("<ComboBox.ItemTemplate>", xaml);
         Assert.Contains("Text=\"{Binding DisplayName}\"", xaml);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
         Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameDisplayName\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"{Binding DisplayName}\"", xaml);
         Assert.DoesNotContain("DisplayMemberPath=\"DisplayName\"", xaml);
     }
 
