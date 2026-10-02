@@ -214,6 +214,43 @@ public sealed class MultiGameTests : IDisposable
     }
 
     [Fact]
+    public void Discovery_leaves_registry_unchanged_when_active_duplicate_cannot_be_repointed()
+    {
+        var game=Path.Combine(root,"same-root-repoint-failure");Directory.CreateDirectory(game);
+        var liveExe=Path.Combine(game,"Live.exe");File.WriteAllBytes(liveExe,[0x4d,0x5a]);
+
+        var stateRoot=Path.Combine(root,"same-root-repoint-failure-state");
+        var registry=new GameProfileRegistry(stateRoot,()=>
+        [
+            new GameDiscoveryCandidate("Same Root Game",game,liveExe,"Steam","333333")
+        ]);
+        var stale=GameProfile.Generic("a-stale-locked","A stale locked",game,"Missing.exe","");
+        var live=GameProfile.Generic("z-live-owner","Z live owner",game,"Live.exe","");
+        registry.Upsert(stale);
+        registry.Upsert(live);
+        registry.SetActive(stale.Id);
+
+        var activePath=Path.Combine(stateRoot,"active-game.txt");
+        using(var locked=new FileStream(activePath,FileMode.Open,FileAccess.ReadWrite,FileShare.None))
+        {
+            var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
+            Assert.False(result.HasChanges);
+            Assert.Empty(result.Added);
+            Assert.Empty(result.Repaired);
+            var persisted=registry.Load();
+            Assert.Equal(2,persisted.Count);
+            Assert.Contains(persisted,x=>x.Id==stale.Id);
+            Assert.Contains(persisted,x=>x.Id==live.Id);
+        }
+
+        var retry=registry.DiscoverAndRegisterInstalledGamesDetailed();
+        Assert.Single(retry.Repaired);
+        var final=Assert.Single(registry.Load());
+        Assert.Equal(live.Id,final.Id);
+        Assert.Equal(live.Id,registry.GetActive()!.Id);
+    }
+
+    [Fact]
     public void Discovery_prefers_stale_MHW_identity_when_all_same_root_profiles_need_repair()
     {
         var game=Path.Combine(root,"same-root-stale-mhw");Directory.CreateDirectory(game);
