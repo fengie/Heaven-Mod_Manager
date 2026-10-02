@@ -26,7 +26,6 @@ public sealed record VortexInteropMod(
     string DisplayName,
     bool Enabled,
     int Priority,
-    string? SourceUrl = null,
     string? NexusModId = null,
     string? NexusFileId = null,
     string? Version = null,
@@ -128,7 +127,6 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
             mod.DisplayName,
             mod.Enabled,
             mod.Priority,
-            GetSafePublicSourceUrl(mod.SourceUrl),
             mod.NexusModId,
             mod.NexusFileId,
             mod.NexusVersion,
@@ -340,13 +338,6 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
             if (mod.Priority < 0)
                 throw new InvalidDataException("Vortex handoff contains an invalid priority.");
 
-            if (!string.IsNullOrWhiteSpace(mod.SourceUrl)
-                && GetSafePublicSourceUrl(mod.SourceUrl) is null)
-            {
-                throw new InvalidDataException(
-                    "Vortex handoff contains an unsafe or credential-bearing source URL.");
-            }
-
             if (mod.Files is null)
                 continue;
 
@@ -376,21 +367,5 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
         return manifest;
     }
 
-    private static string? GetSafePublicSourceUrl(string? value)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (string.IsNullOrWhiteSpace(value))
-            return null;
-        if (!Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri)
-            || !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-            || string.IsNullOrWhiteSpace(uri.Host)
-            || !string.IsNullOrEmpty(uri.UserInfo)
-            || !string.IsNullOrEmpty(uri.Query)
-            || !string.IsNullOrEmpty(uri.Fragment))
-            return null;
 
-        return uri.GetComponents(
-            UriComponents.SchemeAndServer | UriComponents.Path,
-            UriFormat.UriEscaped);
-    }
 }
