@@ -1,10 +1,18 @@
-# v8.8.70 — MHW Manual Mod Manager
+# v8.8.71 — MHW Manual Mod Manager
 
-Current product version: **8.8.70**.
+Current product version: **8.8.71**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.71 — audit reliability and Browse Mods state hardening
+
+- Capture live save files through a stable-copy boundary that detects concurrent mutation, verifies source/destination SHA-256 identity, retries boundedly, and never records an unstable save snapshot as successful.
+- Revalidate authoritative current `main` immediately before the first updater publication mutation; stale queued release runs skip publication while the non-cancellable publication transaction remains intact once authorized.
+- Make `CURRENT_REVISION.json` canonical bootstrap state explicitly post-integration and mechanically reject candidate/task-branch continuity from landing as canonical state.
+- Replace the blank Browse Mods detail card with an intentional selection state and keep install unavailable until one exact provider file is selected.
+- Add deterministic regressions for same-length save mutation, release-workflow guard ordering, continuity-state rejection, and Browse Mods selection gating.
 
 ## v8.8.70 — stale installed-game profile rediscovery
 
@@ -22,13 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Make the advertised 1000-row virtualized Browse Mods capacity real by raising the storage search clamp from 500 to 1000, with a deterministic regression proving results can exceed 500.
 - Preserve the completed v8.8.68 selector/updater acceptance boundary; issue #556 remains closed.
 
-## v8.8.68 — packaged selector peer-value acceptance
-
-- Expose the active game's `DisplayName` on the **ComboBox automation peer itself** through `AutomationProperties.ItemStatus`, because the installed WPF ComboBox peer exposes no raw descendants in the closed state.
-- Add `TextSearch.TextPath="DisplayName"` as a control-level text fallback while retaining the existing `DisplayName` item template, character ellipsis, dark chrome, **Switch**, and **Settings** behavior.
-- Make installed-client E2E validate the visible/bounded ComboBox, its stable accessibility name, and its selected `DisplayName` value instead of requiring an unobservable templated child.
-- Preserve the structural XAML regression that prevents the closed selected presenter from falling back to raw `GameProfile { ... }` text.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -38,10 +39,10 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
-- [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
+- [ ] **BROWSE-UX-559 / P1** — v8.8.71 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
-- [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repairs stale same-root discovered profiles without changing active identity and hardens MHW executable repair; representative Windows/runtime discovery proof remains before DONE.
+- [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 integrated stale same-root profile repair and MHW executable hardening; representative Windows/runtime discovery proof remains before DONE.
 - [x] **RECOVERY-003 / P1** — v8.8.59 persistent Settings/manual-update preference lane is integrated with exact-head gates green.
 - [ ] **RECOVERY-005 / P1** — v8.8.58 dark ComboBox source/tests are integrated; installed Windows/WPF visual/interaction acceptance remains before DONE.
 
