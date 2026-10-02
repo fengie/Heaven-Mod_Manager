@@ -1,47 +1,46 @@
-# v8.8.69 provider-aware Browse Mods search — current handoff
+# v8.8.70 stale installed-game profile repair — current handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
-Active branch: `agent/issue-558-provider-search-v8.8.67-20261002`
-Issue: #558
-Parent canonical main at reconciliation: `3291b4c9270c4cb2a4beac2900ce724dd00ef0e6`
+Active branch: `fix/issue571-stale-profile-repair-v8.8.70-20261002-chatgpt`
+Issue: #571
+Parent canonical main: `7ee321a349098849b9e4db302b20dfa1595ca13b`
 
 ## Completed predecessor boundary
 
-Issue #556 is DONE on v8.8.68. PR #567 merged as `7def58c1b16d115e1555738ebad51717d1c1f752`; hosted Windows run `36978710736` passed 26/26, and Updater Installed Client E2E run `36979261045` passed real update, selected `DisplayName`, enabled Switch/Settings, and rollback. Preserve that selector/updater contract.
+v8.8.69 PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then merged as `7ee321a349098849b9e4db302b20dfa1595ca13b`. Preserve its capability-gated provider search and 1000-row storage/UI capacity agreement.
 
-## v8.8.69 candidate
+## v8.8.70 candidate
 
-- Typing in Browse Mods remains a local SQLite/FTS cache filter.
-- Explicit Search queries only configured providers advertising `CatalogProviderCapabilities.Search`.
-- Remote rows enter through `CatalogSyncService` before the UI reads them.
-- Provider failures remain isolated and cached matches remain available.
-- Unsupported full-catalog text-search modes are not invented or probed.
-- The storage search ceiling now matches the virtualized UI's 1000-row capacity instead of silently truncating at 500.
-- Focused regressions cover capability gating, cache-only debounce behavior, and a deterministic >500-row local search.
+- If discovery sees the same game root as a persisted profile whose executable is missing, repair that profile instead of suppressing rediscovery.
+- Preserve the existing profile ID and active-game selection.
+- Fill missing Store and SteamAppId values from the discovered candidate.
+- Leave same-root profiles with a live executable untouched.
+- Refuse to repair a Monster Hunter: World profile through any executable other than `MonsterHunterWorld.exe`.
+- Deterministic integration tests cover stale repair, live-profile no-op behavior, active-game preservation, and the MHW executable guard.
 
-This tranche does **not** finish #558. Broader provider-aware pagination/browse expansion and additional deterministic scale/performance work remain open.
+This candidate addresses issue #571 but does **not** close RECOVERY-007 by itself; representative Windows/runtime installed-game discovery proof remains required.
 
 ## Verification state
 
-The prior PR #565 head `a03e2a73e806c3b49dacf382c2061255fc79521a` had green required gates, but those results are superseded because main advanced through completed v8.8.68 and this reconciliation changes the candidate tree. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership again on the exact final v8.8.69 head.
-
-The Toolbox Heaven Bridge is healthy on `heaven`. A read-only local Codex review was dispatched but the local Codex account is usage-limit blocked until 2026-10-07, so no local-agent review/build is claimed.
+No v8.8.70 green claim exists yet. The source/test checkpoint from draft PR #572 was replayed onto fresh v8.8.69 main and release/continuity metadata was advanced to v8.8.70. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final v8.8.70 head before merge.
 
 ## Unresolved risks
 
-- v8.8.69 is unverified until all required exact-head PR gates pass.
-- #558 still needs broader provider-aware pagination/browse expansion and additional scale/performance coverage.
-- #559 remains separate work for filters, sorting, provider health, and richer loading/empty/stale/partial-failure states.
-- Existing external signing/ruleset blockers and preserved recovery-branch provenance remain unchanged.
+- **Unresolved risk:** v8.8.70 is not merge-authorized until all three required exact-head PR gates pass.
+- **Unresolved risk:** RECOVERY-007 still requires representative Windows/runtime discovery proof after this stale-profile lifecycle repair.
+- **Unresolved risk:** #558 remains open for broader provider-aware pagination/browse scaling and #559 remains open for Browse Mods discovery UX.
+- Existing external signing/ruleset blockers and preserved issue #281 recovery-branch provenance remain unchanged.
 
 ## Ordered continuation
 
-1. Run Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final v8.8.69 PR head.
-2. Repair only concrete failures; preserve completed v8.8.68 selector/updater behavior and the provider capability/cache invariants above.
-3. Refresh `main`, issue #558 ownership, and PR mergeability immediately before integration.
-4. Merge #565 only when one exact final head is green and cleanly reconciled.
-5. Read back canonical `main`, record exact integration evidence, and keep #558 open for remaining pagination/scale work.
+1. Open the v8.8.70 replacement PR for #571 from this fresh-main branch.
+2. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on the exact final head.
+3. Repair only concrete failures and preserve the completed v8.8.69 catalog boundary.
+4. Refresh canonical `main`, issue #571, and PR mergeability immediately before integration.
+5. Merge only the exact green head and verify the intended tree on remote `main`.
+6. Close the old draft PR #572 as superseded only after its unique two-file semantics are integrated.
+7. Close issue #571 after integration evidence is confirmed; keep RECOVERY-007 active for runtime proof.
 
 ## Successor obligation
 
