@@ -13,6 +13,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Re-read canonical `main` immediately before the first updater publication mutation and skip public/private publication when a queued release run is stale.
 - Make active continuity state canonical-ready by construction: `CURRENT_REVISION.json` must declare `integrationState=canonical-main`, use `workingBranch=main`, and cannot ship candidate status/source state.
 - Add negative governance fixtures that reject the stale continuity forms responsible for #577.
+- Give Browse Mods an intentional no-selection detail state and keep exact-file installation disabled until one provider file is selected; #559 remains open for the rest of the discovery UX.
 
 ## v8.8.71 — installed-origin provider snapshot deduplication
 
@@ -40,7 +41,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
 - [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
-- [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
+- [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.
