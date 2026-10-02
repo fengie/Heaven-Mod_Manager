@@ -311,6 +311,35 @@ public sealed class CatalogRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task Search_limit_supports_virtualized_window_beyond_500()
+    {
+        var repository = await CreateRepositoryAsync("search-capacity");
+        const int expectedCount = 600;
+
+        for (var index = 0; index < expectedCount; index++)
+        {
+            var providerModId = $"capacity-{index:D4}";
+            await repository.UpsertAsync(
+                CreateCached(
+                    $"nexus:{providerModId}",
+                    $"Capacity Fixture {index:D4}",
+                    "Virtualized catalog capacity fixture.",
+                    "Capacity regression fixture.",
+                    null,
+                    providerModId: providerModId),
+                TestToken);
+        }
+
+        var results = await repository.SearchAsync(
+            "Capacity",
+            gameId: "monsterhunterworld",
+            limit: 1000,
+            ct: TestToken);
+
+        Assert.Equal(expectedCount, results.Count);
+    }
+
+    [Fact]
     public async Task Same_named_items_from_different_sources_remain_distinct()
     {
         var repository = await CreateRepositoryAsync("source-separation");
