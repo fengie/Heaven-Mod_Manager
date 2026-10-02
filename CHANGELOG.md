@@ -1,3 +1,11 @@
+# v8.8.68 — 2026-10-02
+
+- Expose the active game's selected `DisplayName` directly on the header ComboBox automation peer with `AutomationProperties.ItemStatus`, preserving the stable `Active game` accessibility name.
+- Add `TextSearch.TextPath="DisplayName"` so the selector has a control-level human-readable text fallback in addition to the existing `DisplayName` data template.
+- Change packaged selector acceptance to validate the visible/bounded ComboBox peer value because installed v8.8.67 E2E #290 proved the closed WPF ComboBox exposes zero raw UI Automation descendants.
+- Preserve strict failure behavior for missing/raw `GameProfile { ... }` selected values plus enabled Switch/Settings checks, and retain the structural XAML guard for the visual selected-content template.
+- Record updater-main-381 as a successful immutable v8.8.67 publication; #556 remains open because its second installed-client E2E attempt failed at selector acceptance after the first attempt hit a transient GitHub asset HTTP 500.
+
 # v8.8.67 — 2026-10-02
 
 - Give the active-game ComboBox its own stable Windows UI Automation ID and explicitly expose the rendered game-name TextBlock's accessible name.
