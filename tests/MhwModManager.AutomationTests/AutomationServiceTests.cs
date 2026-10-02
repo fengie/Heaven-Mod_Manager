@@ -54,22 +54,26 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveSnapshotStableCopyRejectsContinuouslyMutatingSource()
+    public async Task SaveSnapshotStableCopyRejectsSameLengthSameTimestampMutation()
     {
         var source=Path.Combine(root,"unstable-source.bin");
         var destination=Path.Combine(root,"unstable-copy.bin");
-        await File.WriteAllTextAsync(source,"version-zero",TestContext.Current.CancellationToken);
+        var baseline=new string('A',4096);
+        await File.WriteAllTextAsync(source,baseline,TestContext.Current.CancellationToken);
+        var fixedTimestamp=DateTime.UtcNow.AddMinutes(-5);
+        File.SetLastWriteTimeUtc(source,fixedTimestamp);
         var mutationCount=0;
 
         await Assert.ThrowsAsync<IOException>(() => SaveBackupService.CopyStableFileAsync(
             source,
             destination,
             TestContext.Current.CancellationToken,
-            async (_,ct) =>
+            async (attempt,ct) =>
             {
                 mutationCount++;
-                await File.WriteAllTextAsync(source,$"version-{mutationCount}-{Guid.NewGuid():N}",ct);
-                File.SetLastWriteTimeUtc(source,DateTime.UtcNow.AddSeconds(mutationCount));
+                var replacement=new string((char)('B'+attempt),baseline.Length);
+                await File.WriteAllTextAsync(source,replacement,ct);
+                File.SetLastWriteTimeUtc(source,fixedTimestamp);
             }));
 
         Assert.Equal(3,mutationCount);

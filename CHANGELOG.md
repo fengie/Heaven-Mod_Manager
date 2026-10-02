@@ -1,11 +1,11 @@
 # v8.8.72 — 2026-10-02
 
-- Prevent torn live-save snapshots by requiring stable source metadata plus matching SHA-256 observations before atomically promoting a copied save into a successful snapshot.
-- Retry bounded concurrent save mutation, remove incomplete snapshot payloads on pre-record failure/cancellation, and add deterministic mutation/cancellation regression coverage.
-- Revalidate the exact workflow SHA against canonical `main` immediately before the first updater publication mutation; stale queued release runs skip both public and canonical publication.
-- Enforce canonical-ready active continuity state in `Test-AgentHandoff.ps1`: `integrationState=canonical-main`, `workingBranch=main`, non-candidate status, and no retained candidate source commit.
-- Add negative fixtures for stale integration state, stale feature working branches, candidate status, and retained candidate source commits.
-- Close audit findings #575, #576, and #577 while leaving issue #578 and the remaining catalog/UX/recovery queues independent.
+- Make live-save snapshots transactional around a stable-copy boundary: bounded retry, pre/post SHA-256 fingerprints, exact copy hash verification, cleanup of incomplete snapshot directories, and no successful database record for failed/cancelled capture.
+- Add deterministic regressions for concurrent mutation including same-length/same-timestamp content changes, plus cancellation cleanup.
+- Add a fail-closed exact-main freshness guard immediately before the first updater publication mutation and require its positive output for public publication, canonical publication, and parity verification.
+- Convert active `CURRENT_REVISION.json` to explicit post-integration canonical semantics and mechanically reject candidate status, task-branch ownership, candidate source commits, or active PR state.
+- Give Browse Mods an intentional no-selection detail state and disable exact-file installation until a file is selected while preserving stale-file clearing on mod changes.
+- Preserve v8.8.71 provider snapshot deduplication and the v8.8.71/#580 current-main CI/evidence behavior.
 
 # v8.8.71 — 2026-10-02
 
