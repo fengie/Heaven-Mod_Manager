@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.73</Version>
-    <InformationalVersion>8.8.73-build-provenance-attestation</InformationalVersion>
+    <Version>8.8.74</Version>
+    <InformationalVersion>8.8.74-updater-e2e-supersession-classifier</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

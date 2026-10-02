@@ -1,3 +1,11 @@
+# v8.8.74 — 2026-10-02
+
+- Add a lightweight `workflow_run` classifier ahead of the self-hosted updater installed-client E2E.
+- Execute the expensive E2E only when the upstream source has an exact immutable updater release.
+- Classify a missing exact release as an intentional supersession only when canonical `main` is proven to be a descendant of that source; canonical or divergent missing-release states remain hard failures.
+- Share the decision logic through `UpdaterReleasePolicy.ps1` and add deterministic policy/workflow regressions covering published, superseded, canonical-missing, divergent, least-privilege, and heavy-job gating behavior.
+- Keep exact-source release resolution inside the installed-client E2E as defense in depth.
+
 # v8.8.73 — 2026-10-02
 
 - Resolve the exact updater ZIP identity from `update-manifest.json`, recompute its SHA-256, and fail closed on any manifest/artifact mismatch before provenance or publication.

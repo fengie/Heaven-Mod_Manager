@@ -122,6 +122,36 @@ function Get-UpdaterMainDriftDecision {
   return [pscustomobject]@{Publish=$true;Reason='release-inputs-unchanged';RelevantPaths=[string[]]@()}
 }
 
+
+function Get-UpdaterInstalledClientE2EDecision {
+  param(
+    [Parameter(Mandatory=$true)][string]$SourceSha,
+    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
+    [Parameter(Mandatory=$true)][bool]$ExactReleaseFound,
+    [Parameter(Mandatory=$true)][string]$MainRelation
+  )
+
+  foreach($value in @($SourceSha,$RemoteMainSha)){
+    if($value -notmatch '^[0-9a-fA-F]{40}$'){
+      throw 'Updater installed-client E2E source/main SHA was malformed.'
+    }
+  }
+
+  if($ExactReleaseFound){
+    return [pscustomobject]@{RunE2E=$true;Reason='exact-release-published'}
+  }
+
+  if([string]::Equals($SourceSha,$RemoteMainSha,[StringComparison]::OrdinalIgnoreCase)){
+    throw "Successful Windows Release Gate for canonical source $SourceSha did not publish an exact immutable updater release."
+  }
+
+  if([string]::Equals($MainRelation,'ahead',[StringComparison]::OrdinalIgnoreCase)){
+    return [pscustomobject]@{RunE2E=$false;Reason='superseded-before-publication'}
+  }
+
+  throw "Successful Windows Release Gate source $SourceSha has no exact immutable updater release and cannot be classified as a canonical-main supersession (main=$RemoteMainSha relation=$MainRelation)."
+}
+
 function Get-UpdaterPublicationDecision {
   param(
     [Parameter(Mandatory=$true)][long]$CurrentBuild,

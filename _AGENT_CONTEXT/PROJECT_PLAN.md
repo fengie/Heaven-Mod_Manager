@@ -43,6 +43,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | AUDIT-575 | P1 | DONE | issue #575; v8.8.72 | Prevent torn live-save snapshots with stable-copy verification, cleanup, and mutation/cancellation coverage. |
 | AUDIT-576 | P1 | DONE | issue #576; v8.8.72 | Reject stale queued release sources before the first updater publication mutation. |
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
+| UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
