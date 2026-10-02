@@ -11,6 +11,81 @@ if([string]::IsNullOrWhiteSpace($Root)){
 $errors=New-Object System.Collections.Generic.List[string]
 $workflowRoot=Join-Path $Root '.github\workflows'
 
+function Get-UnsafeWorkflowTelemetryViolations {
+    param(
+        [Parameter(Mandatory=$true)][string]$Text,
+        [Parameter(Mandatory=$true)][string]$DisplayName
+    )
+
+    $violations=New-Object System.Collections.Generic.List[string]
+    if(
+        [regex]::IsMatch($Text,'(?is)\bWin32_Process\b.{0,4000}\bCommandLine\b') -or
+        [regex]::IsMatch($Text,'(?is)\bCommandLine\b.{0,4000}\bWin32_Process\b')
+    ){
+        $violations.Add("${DisplayName}: workflows must not inspect or serialize Win32_Process.CommandLine.")
+    }
+    if($Text -match '(?i)worker-local-heartbeat\.json'){
+        $violations.Add("${DisplayName}: workflows must not read the unrestricted Heaven Bridge local heartbeat object.")
+    }
+    return @($violations)
+}
+
+# Regression for issue #591. These synthetic values deliberately exercise secret
+# spellings that blacklist-style redaction routinely misses. The policy blocks
+# the source telemetry channel itself; the safe projection must contain no canary.
+$telemetryCanaries=@(
+    'MHW591_TOKEN_SPACE_C7C8A1',
+    'MHW591_TOKEN_EQUALS_F908D2',
+    'MHW591_QUOTED_PASSWORD_41EA33',
+    'MHW591_BEARER_74321B',
+    'MHW591_URL_CREDENTIAL_A02D11',
+    'MHW591_FUTURE_SECRET_ARG_6B1E57',
+    'MHW591_HEARTBEAT_SECRET_0C9D44'
+)
+$unsafeProcessFixture=@"
+Get-CimInstance Win32_Process |
+  Select-Object ProcessId,Name,CommandLine
+# synthetic argv only; values are never emitted:
+--token $($telemetryCanaries[0])
+--token=$($telemetryCanaries[1])
+--password "$($telemetryCanaries[2])"
+Authorization: Bearer $($telemetryCanaries[3])
+https://user:$($telemetryCanaries[4])@example.invalid/
+--future-secret-option $($telemetryCanaries[5])
+"@
+if((Get-UnsafeWorkflowTelemetryViolations -Text $unsafeProcessFixture -DisplayName 'synthetic-process-fixture').Count -eq 0){
+    $errors.Add('CI telemetry regression: Win32_Process.CommandLine fixture was not rejected.')
+}
+
+$unsafeHeartbeatFixture=@"
+`$localHeartbeatPath = Join-Path `$env:USERPROFILE 'HeavenBridge\worker-local-heartbeat.json'
+`$local = Get-Content -LiteralPath `$localHeartbeatPath -Raw | ConvertFrom-Json
+`$local | Add-Member -NotePropertyName FutureSecret -NotePropertyValue '$($telemetryCanaries[6])'
+Write-Host ("LOCAL_HEARTBEAT=" + (`$local | ConvertTo-Json -Compress -Depth 5))
+"@
+if((Get-UnsafeWorkflowTelemetryViolations -Text $unsafeHeartbeatFixture -DisplayName 'synthetic-heartbeat-fixture').Count -eq 0){
+    $errors.Add('CI telemetry regression: unrestricted local heartbeat fixture was not rejected.')
+}
+
+$safeTelemetry=[ordered]@{
+    executable='python.exe'
+    classification='heaven-bridge-worker'
+    running=$true
+} | ConvertTo-Json -Compress
+foreach($canary in $telemetryCanaries){
+    if($safeTelemetry.Contains($canary)){
+        $errors.Add('CI telemetry regression: allowlisted telemetry exposed a synthetic canary.')
+        break
+    }
+}
+
+foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Object { $_.Extension -in @('.yml','.yaml') })){
+    $workflowText=Get-Content -LiteralPath $workflow.FullName -Raw
+    foreach($violation in @(Get-UnsafeWorkflowTelemetryViolations -Text $workflowText -DisplayName $workflow.Name)){
+        $errors.Add($violation)
+    }
+}
+
 $propsPath=Join-Path $Root 'Directory.Build.props'
 if(!(Test-Path -LiteralPath $propsPath)){
     $errors.Add('Directory.Build.props is missing.')
