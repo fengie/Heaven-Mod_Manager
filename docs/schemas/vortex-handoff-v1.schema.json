@@ -32,7 +32,6 @@
           "displayName": { "type": "string", "minLength": 1 },
           "enabled": { "type": "boolean" },
           "priority": { "type": "integer", "minimum": 0 },
-          "sourceUrl": { "type": ["string", "null"] },
           "nexusModId": { "type": ["string", "null"] },
           "nexusFileId": { "type": ["string", "null"] },
           "version": { "type": ["string", "null"] },
