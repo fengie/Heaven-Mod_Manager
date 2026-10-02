@@ -167,6 +167,18 @@ public sealed record InstalledCatalogOrigin(
     string ArchiveSha256,
     string? ProviderMetadata = null);
 
+public sealed record InstalledCatalogOriginSnapshot(
+    CatalogMod? Mod,
+    IReadOnlyList<CatalogModFile> Files);
+
+public interface IInstalledCatalogOriginSnapshotProvider
+{
+    Task<InstalledCatalogOriginSnapshot> GetInstalledOriginSnapshotAsync(
+        GameProfile game,
+        string providerModId,
+        CancellationToken ct = default);
+}
+
 public interface IModCatalogProvider
 {
     string ProviderId { get; }
