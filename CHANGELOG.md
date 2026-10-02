@@ -1,3 +1,12 @@
+# v8.8.70 — 2026-10-02
+
+- Add an explicit `CatalogFileSetCompleteness` boundary so metadata/search sync can update catalog item metadata without deleting or replacing authoritative cached file identities when the incoming provider payload is partial or unknown.
+- Treat `HydrateFiles:false` provider-search results as partial/unknown and omit their file list from the authoritative source fingerprint; existing hydrated file rows survive both empty and nonempty partial search payloads.
+- When `HydrateFiles:true` and a provider advertises `FileList`, refresh from the dedicated file-list endpoint even if discovery metadata already includes files, preventing partial `latestFiles`-style payloads from masquerading as complete.
+- Centralize explicit remote search in `CatalogDiscoveryService.SearchAsync`; only providers advertising `CatalogProviderCapabilities.Search` run, while individual provider failures remain isolated.
+- Add behavioral integration regressions for rich-file-cache preservation, dedicated authoritative hydration, Search-capability routing, exact trimmed query/limit propagation, and failure isolation.
+- Preserve v8.8.69's 1,000-row catalog capacity and completed v8.8.68 selector acceptance.
+
 # v8.8.69 — 2026-10-02
 
 - Make explicit Browse Mods searches contact only configured providers that advertise `CatalogProviderCapabilities.Search`, while keeping per-keystroke filtering cache-only.
