@@ -126,6 +126,12 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("<Style TargetType=\"ComboBoxItem\">", appXaml);
         Assert.Contains("<ControlTemplate TargetType=\"ComboBox\">", appXaml);
         Assert.Contains("x:Name=\"PART_Popup\"", appXaml);
+        Assert.Contains("Content=\"{TemplateBinding SelectionBoxItem}\"", appXaml);
+        Assert.Contains("ContentTemplate=\"{TemplateBinding ItemTemplate}\"", appXaml);
+        Assert.Contains("ContentTemplateSelector=\"{TemplateBinding ItemTemplateSelector}\"", appXaml);
+        Assert.Contains("ContentStringFormat=\"{TemplateBinding ItemStringFormat}\"", appXaml);
+        Assert.DoesNotContain("ContentTemplate=\"{TemplateBinding SelectionBoxItemTemplate}\"", appXaml);
+        Assert.DoesNotContain("ContentStringFormat=\"{TemplateBinding SelectionBoxItemStringFormat}\"", appXaml);
         Assert.Contains("Property=\"Foreground\" Value=\"{StaticResource Text}\"", appXaml);
         Assert.Contains("Property=\"Background\" Value=\"#0C1015\"", appXaml);
         Assert.Contains("Background=\"{StaticResource Panel2}\"", appXaml);

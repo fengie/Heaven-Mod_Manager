@@ -1,3 +1,10 @@
+# v8.8.65 — 2026-10-02
+
+- Fix the app-owned WPF ComboBox closed-selection presenter to reuse the control's `ItemTemplate`, `ItemTemplateSelector`, and `ItemStringFormat` instead of the unreliable `SelectionBoxItemTemplate` path.
+- Keep the header game selector's `DisplayName` item template for dropdown rows while now applying the same template to the selected game, preventing raw `GameProfile { ... }` record text.
+- Strengthen XAML regression coverage so the custom dark ComboBox template cannot silently revert to `SelectionBoxItemTemplate`/raw-object rendering.
+- Reopen issue #556 based on installed-client evidence; installed Windows/WPF visual confirmation remains required after the source fix.
+
 # v8.8.64 — 2026-10-01
 
 - Fix the main-window game selector so the custom dark ComboBox renders `GameProfile.DisplayName` rather than raw record/debug text.

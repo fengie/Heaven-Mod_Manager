@@ -1,10 +1,16 @@
-# v8.8.64 — MHW Manual Mod Manager
+# v8.8.65 — MHW Manual Mod Manager
 
-Current product version: **8.8.64**.
+Current product version: **8.8.65**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.65 — selected game text follow-up
+
+- Fix the custom dark ComboBox's **closed selected-value presenter**, which could still call `GameProfile.ToString()` even though dropdown rows correctly showed `DisplayName`.
+- Make the selected surface reuse the same `ItemTemplate`, template selector, and string-format contract as the dropdown, so the header consistently shows names such as **Monster Hunter: World**.
+- Add regression coverage that rejects the broken `SelectionBoxItemTemplate` path and keep issue #556 open until installed Windows/WPF confirmation.
 
 ## v8.8.64 — richer Browse Mods + selector repair
 
@@ -22,21 +28,14 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Reject missing, looping, excessive, off-origin, HTTP, alternate-port, credentialed, and out-of-prefix redirects before a disallowed target is contacted.
 - Add deterministic redirect-attempt and malformed-prefix regressions while preserving compliance review, kill switch, HTML/content-size bounds, and cancellation.
 
-## v8.8.62 — federated catalog browser + safe acquisition
-
-- Added a **Browse Mods** tab backed by the existing source-aware SQLite/FTS catalog cache, with isolated provider refresh failures and stale-cache browsing.
-- Routed direct provider downloads through bounded HTTPS staging and the existing hardened archive import pipeline; assisted providers keep their provider-authorized browser flow.
-- Added exact installed-origin persistence/checks so update detection uses the recorded provider mod/file identity and never guesses a replacement.
-- Recovered the official CurseForge API adapter and fail-closed permitted crawler framework from stale issue #281 branches onto current main lineage, with deterministic fixtures and policy tests.
-- CurseForge remains opt-in through environment-provided API/game IDs; no credential is written into catalog rows or durable URLs.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
-- [x] **BROWSE-556/BROWSE-557 / P1** — v8.8.64 selector repair and rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
+- [ ] **BROWSE-556 / P1** — reopened after installed-client evidence showed the closed selector still rendered raw `GameProfile` text; v8.8.65 repairs the shared selected-content template path and awaits exact-head/runtime verification.
+- [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.64 integrated the first cache/provider capacity tranche; deeper provider-aware discovery/pagination remains open under #558.
 - [ ] **BROWSE-UX-559 / P1** — filters, sorting, provider-health presentation, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; conditional Steam Workshop / optional Vortex remain tracked under issue #281.
