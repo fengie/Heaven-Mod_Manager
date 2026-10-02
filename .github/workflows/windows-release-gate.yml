@@ -122,8 +122,32 @@ jobs:
           [IO.File]::AppendAllText($env:GITHUB_PATH, ($ghDir + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding($false)))
           Write-Host "Using verified GitHub CLI $version with SHA-256 $expectedSha256."
 
-      - name: Publish public updater client feed
+      - name: Verify release source is still current main
+        id: publication_freshness
         if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
+            throw 'Repository token was not supplied to the pre-publication freshness check.'
+          }
+          $remoteMain = @(& gh api repos/fengie/mhw-mods/commits/main --jq .sha)
+          if ($LASTEXITCODE -ne 0 -or $remoteMain.Count -ne 1 -or [string]::IsNullOrWhiteSpace([string]$remoteMain[0])) {
+            throw 'Could not resolve one authoritative origin/main SHA before updater publication.'
+          }
+          $remoteMainSha = ([string]$remoteMain[0]).Trim().ToLowerInvariant()
+          $candidateSha = ([string]$env:GITHUB_SHA).Trim().ToLowerInvariant()
+          if ($remoteMainSha -ne $candidateSha) {
+            Write-Host "::notice::Skipping updater publication for stale source $candidateSha because current main is $remoteMainSha."
+            "publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            exit 0
+          }
+          "publish=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Updater publication freshness check passed for exact current main $candidateSha."
+
+      - name: Publish public updater client feed
+        if: success() && github.ref == 'refs/heads/main' && steps.publication_freshness.outputs.publish == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
@@ -134,7 +158,7 @@ jobs:
           .\scripts\release\Publish-PublicUpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
       - name: Publish immutable canonical updater release
-        if: success() && github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main' && steps.publication_freshness.outputs.publish == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
@@ -142,7 +166,7 @@ jobs:
           .\scripts\release\Publish-UpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
       - name: Verify public and canonical updater release parity
-        if: success() && github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main' && steps.publication_freshness.outputs.publish == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
