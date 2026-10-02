@@ -50,10 +50,43 @@ public sealed class InstalledCatalogOriginChecker
                 $"Provider '{provider.ProviderId}' does not advertise exact update checks.");
         }
 
-        var mod = await provider.GetModAsync(
-            game,
-            origin.ProviderModId,
-            ct).ConfigureAwait(false);
+        CatalogMod? mod;
+        IReadOnlyList<CatalogModFile> files;
+
+        if (provider is IInstalledCatalogOriginSnapshotProvider snapshotProvider)
+        {
+            var snapshot = await snapshotProvider
+                .GetInstalledOriginSnapshotAsync(game, origin.ProviderModId, ct)
+                .ConfigureAwait(false);
+            if (snapshot is null)
+                throw new InvalidDataException("Catalog provider returned a null installed-origin snapshot.");
+
+            mod = snapshot.Mod;
+            files = snapshot.Files
+                ?? throw new InvalidDataException("Catalog provider returned a null installed-origin file list.");
+        }
+        else
+        {
+            mod = await provider.GetModAsync(
+                game,
+                origin.ProviderModId,
+                ct).ConfigureAwait(false);
+
+            if (mod is null)
+            {
+                return new InstalledCatalogOriginCheckResult(
+                    origin,
+                    InstalledCatalogOriginCheckState.SourceModMissing,
+                    null,
+                    null,
+                    "The exact provider mod identity no longer resolves.");
+            }
+
+            files = await provider.GetModFilesAsync(
+                game,
+                origin.ProviderModId,
+                ct).ConfigureAwait(false);
+        }
 
         if (mod is null)
         {
@@ -66,11 +99,6 @@ public sealed class InstalledCatalogOriginChecker
         }
 
         ValidateModIdentity(provider.ProviderId, game.Id, origin.ProviderModId, mod);
-
-        var files = await provider.GetModFilesAsync(
-            game,
-            origin.ProviderModId,
-            ct).ConfigureAwait(false);
         ValidateFileIdentities(provider.ProviderId, origin.ProviderModId, files);
 
         var exactMatches = files
