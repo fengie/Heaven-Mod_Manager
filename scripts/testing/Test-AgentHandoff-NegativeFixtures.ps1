@@ -74,10 +74,13 @@ try{
     Reject 'project plan loses recovery queue' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) [regex]::Replace($x,'(?m)^\|\s*RECOVERY-.*$','')}
     Reject 'project plan loses archive non-terminal rule' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) $x -replace '(?i)ARCHIVED.{0,120}not.{0,120}terminal work disposition','ARCHIVED is a terminal work disposition'}
     Reject 'manifest cannot route trainer back to MHW' '_AGENT_CONTEXT/handoff-manifest.json' {param($x) $x -replace 'fengie/heaven-toolbox@main:_AGENT_TRAINING/README\.md','fengie/mhw-mods@main:_AGENT_TRAINING/README.md'}
+    Reject 'current revision cannot lose post-integration semantics' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"stateSemantics":\s*"post-integration-canonical"','"stateSemantics": "candidate"'}
     Reject 'current revision cannot ship candidate integration state' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"integrationState":\s*"canonical-main"','"integrationState": "candidate"'}
     Reject 'current revision cannot ship a feature working branch' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"workingBranch":\s*"main"','"workingBranch": "feature/stale-candidate"'}
     Reject 'current revision status cannot remain candidate state' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"status":\s*"[^"]+"','"status": "v-current-release-candidate"'}
     Reject 'current revision cannot retain candidate source commit' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"candidateSourceCommit":\s*null','"candidateSourceCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"'}
+    Reject 'current revision cannot retain an active PR' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"activePullRequest":\s*null','"activePullRequest": 999'}
+    Reject 'current revision cannot retain an active issue' '_AGENT_CONTEXT/CURRENT_REVISION.json' {param($x) $x -replace '"activeIssue":\s*null','"activeIssue": 999'}
     Reject 'AGENTS exceeds local routing budget' 'AGENTS.md' {param($x) $x + ('noise' * 3000)}
     Reject-ForbiddenRoot 'local training copy cannot return' '_AGENT_TRAINING'
     Reject-ForbiddenRoot 'local plugin toolbox cannot return' 'plugins'
