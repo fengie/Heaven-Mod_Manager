@@ -1,11 +1,11 @@
-# v8.8.78 contextual accessibility and upgrade guidance — canonical handoff
+# v8.8.79 contextual accessibility and upgrade guidance — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
 Change set: issue #605 contextual accessibility + upgrade guidance
 
-## v8.8.78 behavior
+## v8.8.79 behavior
 
 - Mod Library gallery previews expose contextual UI Automation names derived from the current mod rather than raw cache paths.
 - Compact Mod Library thumbnails expose target-specific accessible names.
@@ -15,9 +15,9 @@ Change set: issue #605 contextual accessibility + upgrade guidance
 
 ## Verification boundary
 
-- v8.8.77 canonical predecessor head at task start: `51e8693f9d113d2ade6f1f0b2d6c2131bceb78a1`.
-- Do not inherit verification from v8.8.76 or earlier for changed v8.8.78 XAML, tests, documentation, or version metadata.
-- Require fresh exact-head gates on the final v8.8.78 candidate before integration, then verify canonical `main` contains the intended tree.
+- v8.8.78 is reserved by PR #607 as the immediate predecessor; reconcile that verified integrated tree before v8.8.79 integration.
+- Do not inherit verification from v8.8.76 or earlier for changed v8.8.79 XAML, tests, documentation, or version metadata.
+- Require fresh exact-head gates on the final v8.8.79 candidate before integration, then verify canonical `main` contains the intended tree.
 
 ## Coordination
 
