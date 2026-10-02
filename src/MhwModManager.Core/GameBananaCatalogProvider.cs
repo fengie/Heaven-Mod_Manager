@@ -132,11 +132,11 @@ public sealed class GameBananaCatalogProvider :
 
     private async Task<IReadOnlyList<CatalogMod>> HydrateModsAsync(
         GameProfile game,
-        IReadOnlyList<string> providerModIds,
+        string[] providerModIds,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var result = new List<CatalogMod>(providerModIds.Count);
+        var result = new List<CatalogMod>(providerModIds.Length);
         foreach (var batch in providerModIds.Chunk(MaxConcurrentDetailRequests))
         {
             ct.ThrowIfCancellationRequested();
