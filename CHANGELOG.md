@@ -1,3 +1,10 @@
+# v8.8.71 — 2026-10-02
+
+- Add an optional installed-origin snapshot provider contract so exact update checks can reuse one authoritative mod/file hydration when a provider supports it.
+- Implement the snapshot path for GameBanana, eliminating the duplicate `/Core/Item/Data` detail request previously made for each installed-origin update check.
+- Preserve the existing two-call fallback for other providers plus cancellation, provider health/failure classification, exact mod/file identity validation, and the rule that replacement files are never guessed.
+- Add a deterministic request-count regression proving one GameBanana installed-origin check performs exactly one detail request.
+- Reconcile the change onto canonical v8.8.70 main; the two stale-profile edge cases found after PR #572 are tracked separately in issue #578.
 # v8.8.70 — 2026-10-02
 
 - Repair a persisted same-root game profile when its executable is missing instead of allowing that stale record to suppress automatic installed-game discovery indefinitely.
