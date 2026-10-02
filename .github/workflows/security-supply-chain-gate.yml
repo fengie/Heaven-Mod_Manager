@@ -4,9 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/windows-release-gate.yml'
-      - '.github/workflows/updater-publication-pr-gate.yml'
-      - '.github/workflows/security-supply-chain-gate.yml'
+      - '.github/workflows/**'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'SECURITY.md'
@@ -20,9 +18,7 @@ on:
       - 'NuGet.config'
   pull_request:
     paths:
-      - '.github/workflows/windows-release-gate.yml'
-      - '.github/workflows/updater-publication-pr-gate.yml'
-      - '.github/workflows/security-supply-chain-gate.yml'
+      - '.github/workflows/**'
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'SECURITY.md'
