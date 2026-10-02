@@ -1,52 +1,51 @@
-# v8.8.66 installed selector UI acceptance — current handoff
+# v8.8.67 selector UIA raw-tree hardening — current handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
-Active branch: `fix/issue556-installed-ui-acceptance-v8.8.66-20261002`
+Active branch: `fix/issue556-uia-diagnostics-v8.8.67-20261002`
 Issue: #556
-Parent canonical main at task start: `480e7efd0bf85b260594d8386e6162d39ec7b924`
+Parent canonical main at task start: `ca7978f5d8f6d420c9216ca7f83f7bdca09a8af1`
 
-## Objective
+## Why this tranche exists
 
-Prevent the escaped header selector regression from passing release validation again. v8.8.65 fixed the shared ComboBox selected-content template, but the previous acceptance only proved source/build/update behavior, not the rendered selected game text in the packaged client.
+v8.8.66 successfully compiled, merged, and published as immutable updater-main-380, but Updater Installed Client E2E #289 (`36966823595`) failed in the new selector UI acceptance step. Package build, release publication, exact target resolution, and pre-acceptance updater flow all succeeded.
 
-## v8.8.66 candidate
+The failed test redirected its detailed xUnit/evidence output to files, while GitHub artifact upload then hit the repository Actions storage quota. The next acceptance layer therefore must both observe templated WPF content more robustly and emit diagnostics to the console before failing.
 
-- The header game-name TextBlock now carries `AutomationProperties.AutomationId="ActiveGameDisplayName"` while retaining `TextTrimming="CharacterEllipsis"`.
-- The integration test project enables WPF references and the real packaged updater E2E inspects the newly updated client's Windows UI Automation tree.
-- Packaged acceptance requires:
-  - the `Active game` ComboBox to exist;
-  - its rendered `ActiveGameDisplayName` text to equal `Updater E2E Fake Game`;
-  - no raw `GameProfile { ... }` text;
-  - enabled Switch and Settings buttons.
-- The updater E2E evidence verifier rejects missing/incorrect selector text or disabled adjacent actions and persists those fields in evidence.
+## v8.8.67 candidate
+
+- Add `AutomationProperties.AutomationId="ActiveGameSelector"` to the header ComboBox.
+- Keep `ActiveGameDisplayName` on the rendered TextBlock and explicitly bind its automation Name to `DisplayName`.
+- Traverse `TreeWalker.RawViewWalker` for selector/display/button discovery instead of relying only on Control View descendants.
+- On mismatch, report a bounded raw UIA subtree and preserve the existing raw-`GameProfile` rejection.
+- Print installed-client E2E stdout/stderr plus `evidence.json` into the workflow console before throwing when the test process fails.
+- Product version is 8.8.67 because the shipped WPF accessibility surface changed.
 
 ## Verification state
 
-Not yet integrated. Exact-head PR gates and the post-merge Windows release / installed-client E2E must still pass.
+No v8.8.67 green claim exists yet. v8.8.66 remains the last published baseline:
+- PR #563 merge: `5459db663f55388e72da97a79cb6e22ff0673048`;
+- Windows Release Gate #380: `36966406969`, success;
+- immutable updater-main-380 package digest: `sha256:4ac1be2a01eb78b70d304c758564eb888fcc169022f1f907885414fbe49d31a9`;
+- Updater Installed Client E2E #289: `36966823595`, failed in selector UI acceptance.
 
-The mandatory local-offload route was attempted before mechanical implementation:
-- bridge health job `chatgpt-20261002-043000-issue556-health-heaven2`;
-- bridge health job `chatgpt-20261002-043000-issue556-health-heaven`.
-Neither produced a status/result, and neither host heartbeat was readable from the relay. No local-agent execution or local build is claimed. Do not weaken HMAC/bridge controls to compensate.
+Mandatory local Heaven offload was attempted earlier in this issue with both heaven2/heaven bridge health jobs; neither produced durable status/result/heartbeat. No local-agent verification is claimed and the HMAC boundary must not be weakened.
 
 ## Unresolved risks
 
-- **Unresolved risk:** UI Automation may expose the WPF DataTemplate differently on the self-hosted runner; exact-head CI is required to prove the test compiles and the packaged E2E can observe the rendered element.
-- **Unresolved risk:** #556 is not DONE until the exact v8.8.66 release is published and the installed-client E2E passes the selector assertions.
-- Live thumbnail visual acceptance remains separate from #556.
+- **Unresolved risk:** the raw WPF automation tree shape on the self-hosted session still needs exact packaged proof.
+- **Unresolved risk:** #556 remains open until the exact v8.8.67 release passes packaged rendered-text, Switch/Settings, update, and rollback acceptance.
+- Artifact storage quota remains exhausted, so console-first failure diagnostics are required.
 
-## Ordered next actions
+## Ordered continuation
 
-1. Open the v8.8.66 PR and run Workflow Feature, Product Security, and Toolbox Ownership gates on one exact head.
-2. Repair concrete failures only; do not weaken UI acceptance.
-3. Refresh main/ownership, merge only when exact-head gates are green, and verify remote main.
-4. Allow Windows Release Gate to publish the exact integrated v8.8.66 source without advancing release-relevant main while publication runs.
-5. Require Updater Installed Client E2E to pass the new selector evidence checks.
-6. Close #556 only after that packaged acceptance passes; then update canonical handoff/state without another product version bump.
+1. Open the v8.8.67 PR and require Workflow Feature, Product Security, and Toolbox Ownership gates on one exact head.
+2. Repair only concrete compile/analyzer/test failures without weakening selector acceptance.
+3. Refresh claim and main, merge only when exact-head gates are green.
+4. Freeze release-relevant main while Windows Release Gate publishes v8.8.67.
+5. Require Updater Installed Client E2E to pass the raw-tree selector assertions and evidence verification.
+6. Only after packaged E2E success, close #556 and persist integrated evidence without another product patch bump.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full as required, refresh claims/issues before mutation, preserve the permanent continuity constitution and active Learned Rules, and propagate the same obligation. **Do not break the chain.**
-
-The successor must propagate this continuity obligation to the next agent.
+The successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` in full, bootstrap from current `fengie/heaven-toolbox@main` before current MHW `main`, and must propagate this continuity obligation to the next agent. **Do not break the chain.**
