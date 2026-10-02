@@ -259,9 +259,28 @@ Assert-Equal $true ($releaseWorkflow.Contains('id: release_freshness')) 'release
 Assert-Equal $true ($releaseWorkflow.Contains('/git/ref/heads/main')) 'release freshness reads canonical main ref'
 Assert-Equal $true ($releaseWorkflow.Contains('[string]::Equals($remoteMain,$env:GITHUB_SHA')) 'release freshness compares canonical main with exact run SHA'
 $publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_freshness\.outputs\.publish == 'true'").Count
-Assert-Equal 3 $publicationFreshnessGuards 'public/private/parity publication freshness guards'
+Assert-Equal 4 $publicationFreshnessGuards 'artifact subject plus public/private/parity freshness guards'
 Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
+
+$subjectIndex=$releaseWorkflow.IndexOf('Resolve release artifact provenance subject')
+$attestIndex=$releaseWorkflow.IndexOf('Attest release artifact provenance')
+$verifyAttestationIndex=$releaseWorkflow.IndexOf('Verify release artifact provenance')
+if($subjectIndex -le $freshnessIndex){throw 'Release provenance subject must be resolved only after exact-main freshness is established.'}
+if($attestIndex -le $subjectIndex){throw 'Build provenance attestation must follow exact artifact identity resolution.'}
+if($verifyAttestationIndex -le $attestIndex){throw 'Build provenance must be verified after creation.'}
+if($publicPublishIndex -le $verifyAttestationIndex){throw 'Updater publication must not begin before provenance verification/skip resolution.'}
+Assert-Equal $true ($releaseWorkflow.Contains('id-token: write')) 'release provenance OIDC permission'
+Assert-Equal $true ($releaseWorkflow.Contains('attestations: write')) 'release provenance persistence permission'
+Assert-Equal $true ($releaseWorkflow.Contains('actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2')) 'release provenance action immutable pin'
+Assert-Equal $true ($releaseWorkflow.Contains('subject-name: ${{ steps.release_artifact.outputs.artifact_name }}')) 'release provenance exact artifact name'
+Assert-Equal $true ($releaseWorkflow.Contains('subject-digest: ${{ steps.release_artifact.outputs.artifact_digest }}')) 'release provenance exact artifact digest'
+Assert-Equal $true ($releaseWorkflow.Contains('gh attestation verify $artifactPath --repo $env:GITHUB_REPOSITORY')) 'release provenance verification command'
+Assert-Equal $true ($releaseWorkflow.Contains('GH_TOKEN: ${{ github.token }}')) 'private provenance verification token wiring'
+Assert-Equal $true ($releaseWorkflow.Contains('MHW_ENABLE_GITHUB_ATTESTATIONS')) 'private repository supported-tier attestation opt-in'
+Assert-Equal $true ($releaseWorkflow.Contains('skipped_private_repo_requires_enterprise_cloud')) 'private repository unsupported-tier status evidence'
+Assert-Equal $true ($releaseWorkflow.Contains('Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256')) 'release provenance recomputes exact artifact digest'
+Assert-Equal $true ($releaseWorkflow.Contains('Release provenance artifact digest mismatch')) 'release provenance digest mismatch fails closed'
 
 $publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicUpdaterRelease.ps1') -Raw
 Assert-Equal $true ($publicPublisherSource.Contains('fengie/mhw-mod-manager-release')) 'canonical public release repository'
