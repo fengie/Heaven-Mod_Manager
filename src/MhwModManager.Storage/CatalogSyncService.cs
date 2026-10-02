@@ -68,7 +68,8 @@ public sealed class CatalogSyncService
             foreach (var cached in prepared)
             {
                 ct.ThrowIfCancellationRequested();
-                await repository.UpsertAsync(cached, ct).ConfigureAwait(false);
+                var replaceFiles = options.HydrateFiles || cached.Mod.Files.Count > 0;
+                await repository.UpsertAsync(cached, replaceFiles, ct).ConfigureAwait(false);
             }
 
             var health = await TryGetHealthAsync(provider, ct).ConfigureAwait(false);
