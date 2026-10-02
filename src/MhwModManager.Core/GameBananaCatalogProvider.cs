@@ -2,7 +2,9 @@ using System.Net;
 
 namespace MhwModManager.Core;
 
-public sealed class GameBananaCatalogProvider : IModCatalogProvider
+public sealed class GameBananaCatalogProvider :
+    IModCatalogProvider,
+    IInstalledCatalogOriginSnapshotProvider
 {
     private const int MaxBrowseLimit = 100;
     private const int MaxBrowsePages = 10;
