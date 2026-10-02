@@ -319,6 +319,7 @@ $installedE2EWorkflowPath=Join-Path $repoRoot '.github\workflows\updater-install
 $installedE2EWorkflow=Get-Content -LiteralPath $installedE2EWorkflowPath -Raw
 Assert-Equal $true ($installedE2EWorkflow.Contains('classify-workflow-run:')) 'installed-client E2E upstream classifier job'
 Assert-Equal $true ($installedE2EWorkflow.Contains('runs-on: ubuntu-latest')) 'installed-client E2E classifier uses lightweight hosted runner'
+Assert-Equal $true ($installedE2EWorkflow.Contains('ref: main')) 'installed-client E2E classifier loads policy from canonical main rather than the possibly older upstream source'
 Assert-Equal $true ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?permissions:\s*contents:\s*read')) 'installed-client E2E classifier is read-only'
 Assert-Equal $true ($installedE2EWorkflow.Contains('Get-UpdaterInstalledClientE2EDecision')) 'installed-client E2E workflow calls shared classification policy'
 Assert-Equal $true ($installedE2EWorkflow.Contains('/git/ref/heads/main')) 'installed-client E2E classifier reads canonical main'
