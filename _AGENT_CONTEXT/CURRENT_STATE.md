@@ -1,25 +1,24 @@
-# v8.8.68 selector peer-value acceptance — candidate state
+# v8.8.69 provider-aware Browse Mods search — candidate state
 
-Issue #556 remains ACTIVE.
+Issue #556 is DONE. v8.8.68 passed exact-head PR gates and packaged installed-client acceptance; durable E2E evidence is committed on canonical main at `601496093430214791395ba1bfcfadd3b0262ad2`.
 
-v8.8.67 source merged as `af73d3ce55b3bcbeb5d34184506829e57aca9cba`, Windows Release Gate #381 (`36976475498`) passed, and immutable `updater-main-381` published `MHW-Manual-Mod-Manager-v8.8.67-win-x64.zip` with digest `sha256:c1cc1fc9e62b41f5cc9d0a4020689b32a60d9c28daf4d0eedfd08c66729261dd`.
+Issue #558 remains ACTIVE. Stale PR #565 contains useful provider-search semantics but cannot be merged directly after main advanced through v8.8.68, so this branch replays only the semantic product/test delta on fresh main and moves the tranche to v8.8.69.
 
-Updater Installed Client E2E #290 (`36976965567`) then produced two useful results:
-- attempt 1 stopped before app launch on a transient GitHub release-asset HTTP 500; one bounded rerun cleared that external fault;
-- attempt 2 reached the packaged client and failed deterministically because the closed WPF `ActiveGameSelector` ComboBox automation peer exposes zero raw descendants, so the templated `ActiveGameDisplayName` child is not observable cross-process.
+## Candidate behavior
 
-## Candidate change
-
-- Keep `AutomationProperties.Name="Active game"` and the stable `ActiveGameSelector` automation ID.
-- Expose `SelectedGame.DisplayName` on the ComboBox peer through `AutomationProperties.ItemStatus`.
-- Add `TextSearch.TextPath="DisplayName"` as a control-level human-readable text fallback.
-- Make installed-client E2E assert the visible/bounded ComboBox peer, its stable accessibility name, its exact selected DisplayName, and enabled Switch/Settings actions.
-- Retain the existing structural XAML guard that forces the closed selected presenter through the ItemTemplate/DisplayName path.
+- Typing in Browse Mods remains a local cache/FTS filter.
+- Explicit Search queries only configured providers advertising `CatalogProviderCapabilities.Search`.
+- Provider results flow through `CatalogSyncService` and the existing source-aware cache/provenance boundary.
+- Provider failures are isolated; cached matches remain usable.
+- Nexus Mods and GameBanana are not probed for unsupported full-catalog text search.
+- UI copy explains the distinction between cached filtering and explicit provider search.
 
 ## Verification boundary
 
-v8.8.68 has no green claim yet. Require Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership on one exact final head, then publish that exact source and require packaged updater update + selector + Switch/Settings + rollback acceptance before closing #556.
+PR #565 head `a03e2a73e806c3b49dacf382c2061255fc79521a` previously passed Workflow Feature `36967009248`, MHW Product Security `36967009165`, and Heaven Toolbox Ownership `36967009322`. Those results are evidence for the semantic implementation only; they do not transfer to v8.8.69 after reconciliation.
+
+The v8.8.69 branch must pass all three required gates on one exact final head before integration.
 
 ## Routing
 
-Heaven Local Bridge health probes for heaven2 and heaven previously produced no durable status/result/heartbeat. No local-agent verification is claimed; signing/HMAC controls remain intact.
+The current ChatGPT route exposes GitHub mutation but no callable Agent Control / Heaven Bridge dispatch surface. No local-agent verification is claimed, and no authentication boundary was weakened.
