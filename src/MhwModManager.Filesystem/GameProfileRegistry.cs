@@ -674,10 +674,41 @@ public sealed record GameDiscoveryRegistrationResult(
     IReadOnlyList<GameProfile> Added,
     IReadOnlyList<GameProfile> Repaired)
 {
-    public IReadOnlyList<GameProfile> Changed=>Added.Concat(Repaired).ToArray();
-    public int AddedCount=>Added.Count;
-    public int RepairedCount=>Repaired.Count;
-    public bool HasChanges=>AddedCount>0||RepairedCount>0;
+    public IReadOnlyList<GameProfile> Changed
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Added.Concat(Repaired).ToArray();
+        }
+    }
+
+    public int AddedCount
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Added.Count;
+        }
+    }
+
+    public int RepairedCount
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Repaired.Count;
+        }
+    }
+
+    public bool HasChanges
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return AddedCount>0||RepairedCount>0;
+        }
+    }
 }
 
 internal sealed record GameDiscoveryCandidate(string Name,string Root,string? Executable,string Store,string? SteamAppId);
