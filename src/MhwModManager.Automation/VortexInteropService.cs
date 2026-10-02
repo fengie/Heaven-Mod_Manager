@@ -349,7 +349,17 @@ public sealed class VortexInteropService(ManagerDatabase db, GameProfile game)
 
             foreach (var file in mod.Files)
             {
-                _ = PathRules.Normalize(file.Key);
+                try
+                {
+                    _ = PathRules.Normalize(file.Key);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new InvalidDataException(
+                        "Vortex handoff contains an unsafe managed path.",
+                        ex);
+                }
+
                 if (string.IsNullOrWhiteSpace(file.Value)
                     || file.Value.Length != 64
                     || !file.Value.All(Uri.IsHexDigit))
