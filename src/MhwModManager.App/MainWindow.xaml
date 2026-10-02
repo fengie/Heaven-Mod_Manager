@@ -985,8 +985,13 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox Text="{Binding CatalogQuery,UpdateSourceTrigger=PropertyChanged}"
                                              AutomationProperties.Name="Search provider catalog"
-                                             ToolTip="Search cached catalog names, authors, summaries, tags, categories, and descriptions."/>
-                                    <Button Grid.Column="1" Margin="8,0,0,0" Content="Search" Command="{Binding SearchCatalogCommand}" Style="{StaticResource QuietButton}"/>
+                                             ToolTip="Typing filters the local cache. Choose Search to also query configured providers that explicitly advertise text-search support."/>
+                                    <Button Grid.Column="1"
+                                            Margin="8,0,0,0"
+                                            Content="Search"
+                                            Command="{Binding SearchCatalogCommand}"
+                                            Style="{StaticResource QuietButton}"
+                                            ToolTip="Search supported provider APIs, then show matching cached results. Unsupported providers are not probed."/>
                                 </Grid>
                             </Border>
                             <Grid Grid.Row="1" Margin="2,8,2,8">
