@@ -1,3 +1,12 @@
+# v8.8.69 — 2026-10-02
+
+- Make explicit Browse Mods searches contact only configured providers that advertise `CatalogProviderCapabilities.Search`, while keeping per-keystroke filtering cache-only.
+- Persist provider search results through the existing source-aware `CatalogSyncService` cache boundary and isolate provider failures so cached matches remain usable.
+- Preserve providers' declared capability contracts rather than probing unsupported full-catalog text-search modes.
+- Raise `CatalogRepository`'s bounded search result ceiling from 500 to 1000 so the already-virtualized 1000-row Browse Mods capacity is actually reachable.
+- Add regressions for capability gating, cache-only debounce behavior, and deterministic search results beyond the former 500-row ceiling.
+- Preserve the completed v8.8.68 selector/updater acceptance boundary; #558 remains open for broader provider-aware pagination and scale work.
+
 # v8.8.68 — 2026-10-02
 
 - Expose the active game's selected `DisplayName` directly on the header ComboBox automation peer with `AutomationProperties.ItemStatus`, preserving the stable `Active game` accessibility name.
