@@ -132,36 +132,7 @@ function Get-UpdaterInstalledClientE2EDecision {
   )
 
   foreach($value in @($SourceSha,$RemoteMainSha)){
-    if($value -notmatch '^[0-9a-fA-F]{40}  param(
-    [Parameter(Mandatory=$true)][long]$CurrentBuild,
-    [Parameter(Mandatory=$true)][string]$CurrentSourceSha,
-    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
-
-    [long]$PreviousBuild=0,
-    [string]$PreviousSourceSha='',
-    [string[]]$ChangedPaths=@(),
-    [string[]]$RemoteMainChangedPaths=@()
-  )
-  if($CurrentBuild -le 0){throw 'Current updater build number must be positive.'}
-  $drift=Get-UpdaterMainDriftDecision -CurrentSourceSha $CurrentSourceSha -RemoteMainSha $RemoteMainSha -ChangedPaths $RemoteMainChangedPaths
-  if(-not $drift.Publish){
-    return [pscustomobject]@{Publish=$false;Reason=$drift.Reason}
-  }
-  if($PreviousBuild -gt $CurrentBuild){
-    throw "Updater build $CurrentBuild is older than published build $PreviousBuild."
-  }
-  if($PreviousBuild -eq $CurrentBuild -and $PreviousBuild -gt 0){
-    return [pscustomobject]@{Publish=$false;Reason='already-published-build'}
-  }
-  if(-not [string]::IsNullOrWhiteSpace($PreviousSourceSha)){
-    $relevant=@($ChangedPaths | Where-Object {Test-UpdaterReleaseRelevantPath $_})
-    if($relevant.Count -eq 0){
-      return [pscustomobject]@{Publish=$false;Reason='no-release-input-change'}
-    }
-  }
-  return [pscustomobject]@{Publish=$true;Reason='release-input-change'}
-}
-){
+    if($value -notmatch '^[0-9a-fA-F]{40}$'){
       throw 'Updater installed-client E2E source/main SHA was malformed.'
     }
   }
