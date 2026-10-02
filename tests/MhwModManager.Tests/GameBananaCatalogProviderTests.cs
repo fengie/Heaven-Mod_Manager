@@ -81,6 +81,65 @@ public sealed class GameBananaCatalogProviderTests
     }
 
     [Fact]
+    public async Task Latest_browse_hydrates_details_with_bounded_parallelism_and_preserves_order()
+    {
+        string[] ids = ["653359", "556536", "111111", "222222", "333333", "444444"];
+        var activeDetails = 0;
+        var maxActiveDetails = 0;
+        var detailCalls = 0;
+        var concurrencyLock = new object();
+
+        var handler = new RoutingHandler(async (request, ct) =>
+        {
+            if (request.RequestUri?.AbsolutePath == "/Core/List/New")
+            {
+                var listJson = "[" + string.Join(",", ids.Select(id => $"[\\\"Mod\\\",{id}]")) + "]";
+                return JsonResponse(HttpStatusCode.OK, listJson);
+            }
+
+            if (request.RequestUri?.AbsolutePath == "/Core/Item/Data")
+            {
+                var query = request.RequestUri?.Query ?? string.Empty;
+                var id = Assert.Single(ids.Where(candidate =>
+                    query.Contains($"itemid={candidate}", StringComparison.Ordinal)));
+
+                lock (concurrencyLock)
+                {
+                    activeDetails++;
+                    detailCalls++;
+                    maxActiveDetails = Math.Max(maxActiveDetails, activeDetails);
+                }
+
+                try
+                {
+                    await Task.Delay(40, ct);
+                    return JsonResponse(HttpStatusCode.OK, ReadFixture("mod.json")
+                        .Replace("/653359", $"/{id}", StringComparison.Ordinal));
+                }
+                finally
+                {
+                    lock (concurrencyLock)
+                        activeDetails--;
+                }
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+        });
+
+        using var client = new HttpClient(handler);
+        var provider = new GameBananaCatalogProvider(new GameBananaTransport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        var result = await provider.SearchModsAsync(
+            new CatalogBrowseRequest(game, Mode: CatalogBrowseMode.Latest, Limit: ids.Length),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(ids, result.Select(mod => mod.ProviderModId));
+        Assert.Equal(ids.Length, detailCalls);
+        Assert.InRange(maxActiveDetails, 2, 4);
+    }
+
+    [Fact]
     public async Task Recently_updated_browse_sets_include_updated_without_inventing_search()
     {
         var handler = new RoutingHandler((request, _) =>
