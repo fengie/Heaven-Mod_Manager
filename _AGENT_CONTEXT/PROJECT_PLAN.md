@@ -37,7 +37,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
-| BROWSE-UX-559 | P1 | READY | issue #559 | Add filters, sorting, provider health, and richer discovery states. |
+| BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.71 explicit selection-state tranche | Add filters, sorting, provider health, and richer discovery states. |
+| AUDIT-575 | P1 | DONE | issue #575; v8.8.71 | Prevent torn live-save snapshots with stable-copy verification and deterministic mutation coverage. |
+| AUDIT-576 | P1 | DONE | issue #576; v8.8.71 | Reject stale queued release sources before the first updater publication mutation. |
+| AUDIT-577 | P1 | DONE | issue #577; v8.8.71 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
@@ -82,9 +85,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] v8.8.69 candidate: raise the repository search clamp from 500 to 1000 to match the virtualized UI capacity, with a deterministic >500-row regression.
 - [x] PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then squash-merged as `7ee321a349098849b9e4db302b20dfa1595ca13b`.
 - [ ] Continue #558 with broader provider-aware pagination/browse expansion and deterministic scale/performance coverage.
-- [ ] Continue #559 with filters/sorting/provider health/loading/empty/partial-failure states.
+- [x] v8.8.71: add an explicit no-selection detail state, hide mod-specific controls until selection, and disable install until an exact file is selected.
+- [ ] Continue #559 with filters/sorting/provider health/loading/stale/partial-failure states.
 
-**Next action:** continue #558 with broader provider-aware pagination/scale work while preserving integrated v8.8.69 behavior; #559 remains a separate UX tranche.
+**Next action:** continue #558 with broader provider-aware pagination/scale work while preserving integrated v8.8.69 behavior; continue the remaining #559 filters/sorting/provider-health/loading/stale/partial-failure scope while preserving the v8.8.71 explicit selection state.
 
 ## RECOVERY-001 — Central planning + safe branch cleanup
 
@@ -183,10 +187,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Integrate the original universal installed-game discovery source/lifecycle changes on canonical main.
 - [x] v8.8.70 candidate repairs stale same-root profiles with missing executables while preserving ID/active selection and filling missing discovery metadata.
 - [x] v8.8.70 candidate hardens MHW repair identity using persisted MHW state or Steam app 582010 and adds deterministic regressions.
-- [ ] Pass PR #572 exact-head required gates and integrate issue #571.
+- [x] PR #572 exact head `c99cf0cd9e3998f2f1ea01f2b6c1612b045b0cb2` passed Workflow Feature `36982837749`, MHW Product Security `36982837913`, and Heaven Toolbox Ownership `36982837948`, then squash-merged as `350752d315ba6db1d329f726d181bad173b41514`; issue #571 closed.
 - [ ] Verify on Windows against representative installed games before marking RECOVERY-007 DONE.
 
-**Next action:** verify/integrate v8.8.70 PR #572 exact-head, then perform representative installed-game Windows/runtime proof before marking RECOVERY-007 DONE.
+**Next action:** perform representative installed-game Windows/runtime proof against current main before marking RECOVERY-007 DONE.
 
 
 ## Cleanup disposition contract
