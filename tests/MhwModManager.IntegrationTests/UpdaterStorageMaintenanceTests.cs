@@ -4,6 +4,7 @@ using Xunit;
 
 namespace MhwModManager.IntegrationTests;
 
+[Collection(UpdaterGlobalStateFixture.Name)]
 public sealed class UpdaterStorageMaintenanceTests : IDisposable
 {
     private readonly string root = Path.Combine(

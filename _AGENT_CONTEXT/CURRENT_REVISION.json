@@ -4,16 +4,16 @@
     "canonicalRepository":  "fengie/mhw-mods",
     "canonicalBranch":  "main",
     "workingBranch":  "main",
-    "currentVersion":  "8.8.83",
+    "currentVersion":  "8.8.86",
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
-    "status":  "v8.8.83-test-scratch-cleanup-canonical-awaiting-exact-verification",
-    "nextMilestone":  "Current v8.8.83 hosted Windows verification is closed; continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md while preserving unresolved external security gates.",
-    "nextRequiredAction":  "Refresh canonical main and live ownership, then continue the next non-overlapping actionable project-plan item; do not reintegrate or rerun the already-verified v8.8.83 source solely because the evidence-only persistence commit advanced main.",
-    "verificationAppliesToCommit":  "ed7006e18d1fdbbdedd2209d4b766b5db938add9",
-    "lastClosedVerificationCommit":  "ed7006e18d1fdbbdedd2209d4b766b5db938add9",
-    "lastClosedVerificationRun":  "v8.8.83 source ed7006e18d1fdbbdedd2209d4b766b5db938add9: hosted Windows verification run 37108647747 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.83-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.83 exact source ed7006e18d1fdbbdedd2209d4b766b5db938add9 passed hosted Windows verification run 37108647747. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "status":  "v8.8.86-storage-filesystem-hardening-canonical-awaiting-exact-verification",
+    "nextMilestone":  "Current v8.8.85 hosted Windows verification is closed; continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md while preserving unresolved external security gates.",
+    "nextRequiredAction":  "Refresh canonical main and live ownership, then continue the next non-overlapping actionable project-plan item; do not reintegrate or rerun the already-verified v8.8.85 source solely because the evidence-only persistence commit advanced main.",
+    "verificationAppliesToCommit":  "271b9d8d7303a6136b574af52d43d95efff26f34",
+    "lastClosedVerificationCommit":  "271b9d8d7303a6136b574af52d43d95efff26f34",
+    "lastClosedVerificationRun":  "v8.8.85 source 271b9d8d7303a6136b574af52d43d95efff26f34: hosted Windows verification run 37130638298 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.85 exact source 271b9d8d7303a6136b574af52d43d95efff26f34 passed hosted Windows verification run 37130638298. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -23,7 +23,7 @@
                                },
     "candidateSourceCommit":  null,
     "unresolvedRisks":  [
-                            "v8.8.83 test-scratch cleanup requires fresh exact-source Windows verification; the v8.8.82 closure does not cover the new cleanup and stale-reaper paths.",
+                            "v8.8.85 changes verification workflow/scripts and release metadata; source-only PR evidence is historical after metadata synchronization, so only a fresh exact-final-head green PR #678 may authorize integration.",
                             "Issue #350 cannot be fully closed until a real production public updater trust anchor is embedded, its private key is provisioned outside the repository/ordinary release credentials, and one real signed release is verified end to end.",
                             "Issue #354 repository rulesets remain externally blocked on the current private-repository/account tier and this GitHub App cannot administer branch protection; stable Authenticode publisher identity also requires external certificate provisioning.",
                             "Steam Workshop remains unsupported for Monster Hunter: World until a reviewed operation-specific Workshop discovery/acquisition contract exists; a Steam app ID alone is not capability evidence.",
@@ -46,8 +46,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "ed7006e18d1fdbbdedd2209d4b766b5db938add9",
-                                          "runId":  37108647747,
-                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.83-heaven-windows-closure.log"
+                                          "sourceSha":  "271b9d8d7303a6136b574af52d43d95efff26f34",
+                                          "runId":  37130638298,
+                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log"
                                       }
 }

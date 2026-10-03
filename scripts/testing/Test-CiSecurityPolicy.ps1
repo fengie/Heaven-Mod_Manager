@@ -136,7 +136,7 @@ foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Ob
     }
 }
 
-$persistentWriteAllowlist=@('windows-release-gate.yml','updater-installed-client-e2e.yml','heaven2-temp-backlog-cleanup-once.yml')
+$persistentWriteAllowlist=@('windows-release-gate.yml','updater-installed-client-e2e.yml')
 foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filter '*.yml')){
     $workflow=Get-Content -LiteralPath $workflowFile.FullName -Raw
     if($workflow -notmatch '(?im)^\s*runs-on:\s*\[[^\]]*self-hosted[^\]]*\]'){continue}
@@ -255,6 +255,44 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
     }
 }
 
+$verifyReleasePath=Join-Path $Root 'scripts\release\Verify-Release.ps1'
+$handoffGatePath=Join-Path $Root 'scripts\testing\Test-AgentHandoff.ps1'
+if(!(Test-Path -LiteralPath $verifyReleasePath -PathType Leaf)){
+    $errors.Add('Verify-Release.ps1 is missing.')
+}else{
+    $verifyRelease=Get-Content -LiteralPath $verifyReleasePath -Raw
+    foreach($required in @(
+        '[switch]$FeatureCandidate',
+        '$handoffArgs=@{Root=$Root}',
+        'if($FeatureCandidate){$handoffArgs.FeatureCandidate=$true}',
+        'Test-AgentHandoff.ps1'
+    )){
+        if(-not $verifyRelease.Contains($required)){
+            $errors.Add("Verify-Release.ps1: feature-candidate verification routing invariant missing: $required")
+        }
+    }
+}
+if(!(Test-Path -LiteralPath $handoffGatePath -PathType Leaf)){
+    $errors.Add('Test-AgentHandoff.ps1 is missing.')
+}else{
+    $handoffGate=Get-Content -LiteralPath $handoffGatePath -Raw
+    foreach($required in @(
+        '[switch]$FeatureCandidate',
+        'if(-not $FeatureCandidate){',
+        'feature-candidate mode defers canonical release-version surface parity'
+    )){
+        if(-not $handoffGate.Contains($required)){
+            $errors.Add("Test-AgentHandoff.ps1: feature-candidate/canonical separation invariant missing: $required")
+        }
+    }
+}
+if(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf){
+    $workflowFeatureGate=Get-Content -LiteralPath $workflowFeatureGatePath -Raw
+    if(-not $workflowFeatureGate.Contains('Verify-Release.ps1" -FeatureCandidate')){
+        $errors.Add('workflow-feature-pr-gate.yml: feature PRs must invoke Verify-Release.ps1 with -FeatureCandidate.')
+    }
+}
+
 $trackedSecretGate=Join-Path $Root 'scripts\testing\Test-TrackedSecretLeaks.ps1'
 if(!(Test-Path -LiteralPath $trackedSecretGate -PathType Leaf)){
     $errors.Add('Test-TrackedSecretLeaks.ps1 is missing.')
@@ -291,6 +329,9 @@ if(!(Test-Path -LiteralPath $releasePath)){
     if($release.Contains('repos/cli/cli/releases/latest') -or $release.Contains('Get-Command gh')){
         $errors.Add('windows-release-gate.yml: privileged release tooling must not trust a moving latest release or arbitrary preinstalled gh.exe.')
     }
+    if($release.Contains('-FeatureCandidate')){
+        $errors.Add('windows-release-gate.yml: canonical main/release verification must never use feature-candidate metadata relaxation.')
+    }
     foreach($required in @(
         '$version = ''2.101.0''',
         'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794',
@@ -324,6 +365,13 @@ if(!(Test-Path -LiteralPath $releasePath)){
         $errors.Add('windows-release-gate.yml: public updater client feed must publish before canonical/private release visibility.')
     }
     if($parityIndex -le $privatePublishIndex){$errors.Add('windows-release-gate.yml: public/private updater parity verification must run after both publication steps.')}
+    if(-not $release.Contains('id: public_updater_release')){
+        $errors.Add('windows-release-gate.yml: public updater publication must expose a step outcome for downstream gating.')
+    }
+    $publicReadyGuard="steps.public_updater_release.outputs.published == 'true'"
+    if(([regex]::Matches($release,[regex]::Escape($publicReadyGuard))).Count -lt 2){
+        $errors.Add('windows-release-gate.yml: canonical publication and public/private parity must both require a successful public updater publication outcome.')
+    }
     if(-not [regex]::IsMatch($release,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')){
         $errors.Add('windows-release-gate.yml: cross-repository updater publication must not be cancelled in progress.')
     }
@@ -348,7 +396,7 @@ if(!(Test-Path -LiteralPath $publicPublisherPath)){
     $errors.Add('Publish-PublicUpdaterRelease.ps1 is missing.')
 }else{
     $text=Get-Content -LiteralPath $publicPublisherPath -Raw
-    foreach($required in @('ExpectedSourceSha=$env:GITHUB_SHA','Recovering abandoned public updater draft','Invoke-UpdaterDraftPublication','-RefreshMain','-EvaluateRefreshedMain','stale-main-unclassified-large-diff')){
+    foreach($required in @('ExpectedSourceSha=$env:GITHUB_SHA','OutcomePath=$env:GITHUB_OUTPUT','Write-UpdaterPublicationStepOutcome','-Published $false','-Published $true','Recovering abandoned public updater draft','Invoke-UpdaterDraftPublication','-RefreshMain','-EvaluateRefreshedMain','stale-main-unclassified-large-diff')){
         if(-not $text.Contains($required)){$errors.Add("Publish-PublicUpdaterRelease.ps1: updater transaction invariant missing: $required")}
     }
     if($text.Contains('Canonical private updater release')){$errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')}

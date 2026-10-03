@@ -7,6 +7,27 @@ function Assert-Equal {
   if($Expected -ne $Actual){throw "$Label expected '$Expected' but got '$Actual'."}
 }
 
+$outcomeFixture=Join-Path ([IO.Path]::GetTempPath()) ('mhw-updater-publication-outcome-'+[Guid]::NewGuid().ToString('N')+'.txt')
+try{
+  Write-UpdaterPublicationStepOutcome -Path $outcomeFixture -Published $false -Reason 'stale-main-release-input-change'
+  $outcomeLines=@(Get-Content -LiteralPath $outcomeFixture)
+  Assert-Equal 2 $outcomeLines.Count 'publication outcome line count'
+  Assert-Equal 'published=false' $outcomeLines[0] 'publication outcome published flag'
+  Assert-Equal 'reason=stale-main-release-input-change' $outcomeLines[1] 'publication outcome reason'
+
+  Write-UpdaterPublicationStepOutcome -Path $outcomeFixture -Published $true -Reason 'published'
+  $outcomeLines=@(Get-Content -LiteralPath $outcomeFixture)
+  Assert-Equal 'published=true' $outcomeLines[2] 'publication success flag'
+  Assert-Equal 'reason=published' $outcomeLines[3] 'publication success reason'
+
+  $unsafeOutcomeRejected=$false
+  $unsafeReason='unsafe'+[Environment]::NewLine+'reason'
+  try{Write-UpdaterPublicationStepOutcome -Path $outcomeFixture -Published $false -Reason $unsafeReason}catch{$unsafeOutcomeRejected=$true}
+  Assert-Equal $true $unsafeOutcomeRejected 'publication outcome rejects multiline reason'
+}finally{
+  Remove-Item -LiteralPath $outcomeFixture -Force -ErrorAction SilentlyContinue
+}
+
 Assert-Equal 42 (Get-UpdaterBuildFromTag 'updater-main-42') 'tag build'
 Assert-Equal -1 (Get-UpdaterBuildFromTag 'v8.8.0') 'foreign tag'
 Assert-Equal $true (Test-UpdaterReleaseRelevantPath 'src/MhwModManager.App/App.xaml.cs') 'src relevant'

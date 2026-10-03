@@ -531,6 +531,129 @@ public sealed class HardeningTests : IDisposable
     }
 
     [Fact]
+    public async Task Adoption_concurrent_runs_use_distinct_owned_roots_and_isolated_cleanup()
+    {
+        var (game, db, hashing, _) = await CreateAsync("adoption-concurrent-ownership");
+        var modsRoot = Path.Combine(root, "adoption-concurrent-ownership", "Mods");
+        Directory.CreateDirectory(modsRoot);
+        var liveRoot = Path.Combine(game, "nativePC");
+        await File.WriteAllTextAsync(Path.Combine(liveRoot, "manual.tex"), "MANUAL", TestToken);
+
+        using var barrier = new Barrier(2);
+        string? failedRoot = null;
+        string? successfulRoot = null;
+        var failed = new UnmanagedAdoptionService(
+            db, new PlannerSnapshotRepository(db), hashing, modsRoot, GameProfile.MonsterHunterWorld(game),
+            (point, path) =>
+            {
+                if(point != UnmanagedAdoptionFaultPoint.AfterPackageRootCreated)return;
+                failedRoot = path;
+                if(!barrier.SignalAndWait(TimeSpan.FromSeconds(10)))
+                    throw new TimeoutException("Concurrent adoption failure lane did not rendezvous.");
+                throw new IOException("injected adoption failure after owned-root creation");
+            });
+        var successful = new UnmanagedAdoptionService(
+            db, new PlannerSnapshotRepository(db), hashing, modsRoot, GameProfile.MonsterHunterWorld(game),
+            (point, path) =>
+            {
+                if(point != UnmanagedAdoptionFaultPoint.AfterPackageRootCreated)return;
+                successfulRoot = path;
+                if(!barrier.SignalAndWait(TimeSpan.FromSeconds(10)))
+                    throw new TimeoutException("Concurrent adoption success lane did not rendezvous.");
+            });
+
+        var failedTask = failed.AdoptAsync(TestToken);
+        var successfulTask = successful.AdoptAsync(TestToken);
+        var failure = await Assert.ThrowsAsync<IOException>(async () => await failedTask);
+        var result = await successfulTask;
+
+        Assert.Contains("injected adoption failure", failure.Message, StringComparison.Ordinal);
+        Assert.NotNull(failedRoot);
+        Assert.NotNull(successfulRoot);
+        Assert.NotEqual(Path.GetFullPath(failedRoot!), Path.GetFullPath(successfulRoot!));
+        Assert.False(Directory.Exists(failedRoot!));
+        Assert.True(result.Created);
+        Assert.Equal(Path.GetFullPath(successfulRoot!), Path.GetFullPath(result.SourceFolder!));
+        Assert.Equal("MANUAL", await File.ReadAllTextAsync(Path.Combine(result.SourceFolder!, "nativePC", "manual.tex"), TestToken));
+    }
+
+    [Fact]
+    public async Task Adoption_rejects_ancestor_junction_substitution_after_discovery()
+    {
+        if(!OperatingSystem.IsWindows())return;
+        var (game, db, hashing, _) = await CreateAsync("adoption-post-discovery-junction");
+        var modsRoot = Path.Combine(root, "adoption-post-discovery-junction", "Mods");
+        Directory.CreateDirectory(modsRoot);
+        var liveRoot = Path.Combine(game, "nativePC");
+        var nested = Path.Combine(liveRoot, "nested");
+        Directory.CreateDirectory(nested);
+        await File.WriteAllTextAsync(Path.Combine(nested, "manual.tex"), "DISCOVERED", TestToken);
+
+        var external = Path.Combine(root, "adoption-post-discovery-junction-external");
+        Directory.CreateDirectory(external);
+        var externalFile = Path.Combine(external, "manual.tex");
+        await File.WriteAllTextAsync(externalFile, "OUTSIDE", TestToken);
+        var swapped = false;
+        var adoption = new UnmanagedAdoptionService(
+            db, new PlannerSnapshotRepository(db), hashing, modsRoot, GameProfile.MonsterHunterWorld(game),
+            (point, _) =>
+            {
+                if(point != UnmanagedAdoptionFaultPoint.BeforeCopy || swapped)return;
+                swapped = true;
+                Directory.Delete(nested, true);
+                CreateDirectoryJunction(nested, external);
+            });
+
+        try
+        {
+            var failure = await Assert.ThrowsAsync<IOException>(() => adoption.AdoptAsync(TestToken));
+            Assert.True(swapped);
+            Assert.Contains("reparse", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("OUTSIDE", await File.ReadAllTextAsync(externalFile, TestToken));
+            Assert.Empty(Directory.EnumerateDirectories(modsRoot));
+            await using var connection = await db.OpenAsync(TestToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT (SELECT COUNT(*) FROM adoption_runs) + (SELECT COUNT(*) FROM adopted_live_files)";
+            Assert.Equal(0L, (long)(await command.ExecuteScalarAsync(TestToken))!);
+        }
+        finally
+        {
+            if(Directory.Exists(nested) && (File.GetAttributes(nested) & FileAttributes.ReparsePoint) != 0)
+                Directory.Delete(nested);
+        }
+    }
+
+    [Fact]
+    public async Task Adoption_rejects_content_mutation_after_discovery_and_cleans_owned_package()
+    {
+        var (game, db, hashing, _) = await CreateAsync("adoption-post-discovery-content");
+        var modsRoot = Path.Combine(root, "adoption-post-discovery-content", "Mods");
+        Directory.CreateDirectory(modsRoot);
+        var live = Path.Combine(game, "nativePC", "manual.tex");
+        await File.WriteAllTextAsync(live, "DISCOVERED", TestToken);
+        var mutated = false;
+        var adoption = new UnmanagedAdoptionService(
+            db, new PlannerSnapshotRepository(db), hashing, modsRoot, GameProfile.MonsterHunterWorld(game),
+            (point, path) =>
+            {
+                if(point != UnmanagedAdoptionFaultPoint.BeforeCopy || mutated)return;
+                mutated = true;
+                File.WriteAllText(path, "MUTATED");
+            });
+
+        var failure = await Assert.ThrowsAsync<IOException>(() => adoption.AdoptAsync(TestToken));
+
+        Assert.True(mutated);
+        Assert.Contains("changed while it was being adopted", failure.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("MUTATED", await File.ReadAllTextAsync(live, TestToken));
+        Assert.Empty(Directory.EnumerateDirectories(modsRoot));
+        await using var connection = await db.OpenAsync(TestToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT (SELECT COUNT(*) FROM adoption_runs) + (SELECT COUNT(*) FROM adopted_live_files)";
+        Assert.Equal(0L, (long)(await command.ExecuteScalarAsync(TestToken))!);
+    }
+
+    [Fact]
     public async Task Archive_extraction_rejects_parent_traversal()
     {
         var zip = Path.Combine(root, "evil.zip");
