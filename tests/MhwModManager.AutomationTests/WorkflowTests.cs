@@ -87,6 +87,31 @@ public sealed class WorkflowTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() => profiles.SaveAsync("a", state, b, Token));
         Assert.Equal((true, 1), (await profiles.LoadAsync(a, Token))["a"]);
     }
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task PathPrefixRulesRequireNonBlankPatternBeforeKindValidation(string? pattern)
+    {
+        var db = await DatabaseAsync();
+        var service = new RulesEditorService(db);
+        await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(
+            new("prefix", RuleKind.Overlay, RuleScope.PathPrefix, null, null, null, pattern, "prefix", true, DateTimeOffset.UtcNow),
+            Token));
+        Assert.Empty((await db.LoadPlannerSnapshotAsync(Token)).Rules);
+    }
+
+    [Fact]
+    public async Task PathPrefixRulesRejectUnsafePathsBeforeKindValidation()
+    {
+        var db = await DatabaseAsync();
+        var service = new RulesEditorService(db);
+        await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(
+            new("prefix", RuleKind.Overlay, RuleScope.PathPrefix, null, null, null, @"..\escape", "prefix", true, DateTimeOffset.UtcNow),
+            Token));
+        Assert.Empty((await db.LoadPlannerSnapshotAsync(Token)).Rules);
+    }
+
     [Fact]
     public async Task RulesRejectCyclesAndInvalidExactProviders()
     {
