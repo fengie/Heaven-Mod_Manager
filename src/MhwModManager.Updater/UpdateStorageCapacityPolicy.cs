@@ -63,7 +63,16 @@ public static class UpdateStorageCapacityPolicy
                 $"Could not resolve the updater storage volume for '{fullRoot}'.");
 
         var drive = new DriveInfo(volumeRoot);
-        var estimate = Estimate(manifest, drive.AvailableFreeSpace);
+        return EnsureCanStage(manifest, drive.AvailableFreeSpace);
+    }
+
+    public static UpdateStorageCapacityEstimate EnsureCanStage(
+        UpdateManifest manifest,
+        long availableBytes)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"build={manifest.BuildNumber}; available={availableBytes}");
+        var estimate = Estimate(manifest, availableBytes);
         if (!estimate.HasCapacity)
         {
             throw new IOException(
