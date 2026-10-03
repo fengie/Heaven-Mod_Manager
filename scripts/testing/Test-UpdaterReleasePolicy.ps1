@@ -411,10 +411,15 @@ $privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-Updater
 $publicPublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
 $parityIndex=$releaseWorkflow.IndexOf('Verify public and canonical updater release parity')
 $freshnessIndex=$releaseWorkflow.IndexOf('Confirm release source is still canonical main')
+$releaseIntentIndex=$releaseWorkflow.IndexOf('Resolve updater release intent')
+$ghBootstrapIndex=$releaseWorkflow.IndexOf('Install verified GitHub CLI for publication')
 if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical updater publisher.'}
 if($publicPublishIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater publisher.'}
 if($freshnessIndex -lt 0){throw 'Windows release workflow no longer checks exact-main freshness before publication.'}
 if($freshnessIndex -ge $publicPublishIndex){throw 'Exact-main freshness must be checked before the first updater publication mutation.'}
+if($releaseIntentIndex -le $freshnessIndex){throw 'Semantic release intent must be resolved only after exact-main freshness.'}
+if($ghBootstrapIndex -le $releaseIntentIndex){throw 'Privileged GitHub CLI bootstrap must occur only after positive semantic release intent is available.'}
+if($ghBootstrapIndex -ge $publicPublishIndex){throw 'Verified GitHub CLI must be available before canonical updater publication can require it.'}
 if($publicPublishIndex -ge $privatePublishIndex){throw 'Public updater feed must publish before canonical private release visibility.'}
 if($parityIndex -le $privatePublishIndex){throw 'Updater parity verification must run after both publication steps.'}
 Assert-Equal $true ($releaseWorkflow.Contains('id: release_freshness')) 'release freshness output step id'
