@@ -1,3 +1,10 @@
+# v8.8.83 — 2026-10-03
+
+- Reclaim unindexed immediate-child save-snapshot directories left behind by interrupted captures or failed best-effort capture cleanup.
+- Preserve snapshot-root containment while unlinking orphan reparse points without traversing or deleting their external targets.
+- Keep orphan cleanup best-effort so locked or inaccessible entries remain retryable without aborting the prune pass.
+- Add regressions for ordinary orphan deletion, simulated orphan unlink failure, and Windows junction target preservation.
+
 # v8.8.82 — 2026-10-03
 
 - Bind updater helper handoff transaction identity to the target manifest plus canonical install, staging, and manager-home roots.
