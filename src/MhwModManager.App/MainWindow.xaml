@@ -1319,7 +1319,9 @@
                                     <StackPanel Grid.Row="3" Margin="0,10,0,0">
                                         <Button Content="Install Selected File"
                                                 Command="{Binding InstallCatalogFileCommand}"
-                                                HorizontalAlignment="Left">
+                                                HorizontalAlignment="Left"
+                                                AutomationProperties.Name="Install selected catalog file"
+                                                AutomationProperties.HelpText="{Binding CatalogInstallGuidance}">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                                                     <Setter Property="IsEnabled" Value="True"/>
@@ -1331,7 +1333,13 @@
                                                 </Style>
                                             </Button.Style>
                                         </Button>
-                                        <TextBlock Margin="0,8,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogStatusText}" TextWrapping="Wrap"/>
+                                        <TextBlock Margin="0,8,0,0"
+                                                   Foreground="{StaticResource Muted}"
+                                                   FontSize="11"
+                                                   Text="{Binding CatalogInstallGuidance}"
+                                                   TextWrapping="Wrap"
+                                                   AutomationProperties.LiveSetting="Polite"/>
+                                        <TextBlock Margin="0,5,0,0" Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogStatusText}" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Grid>
                             </Grid>
