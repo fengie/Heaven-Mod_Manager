@@ -1,25 +1,26 @@
-# v8.8.85 import descendant-reparse hardening — candidate state
+# v8.8.86 import descendant-reparse hardening — canonical state candidate
 
-Issue #676 closes an import-publication filesystem trust gap: manager-owned staging/published roots were checked for reparse status, but descendants were not revalidated immediately before publication or recursive deletion.
+v8.8.86 closes issue #676 by applying the repository's fail-closed reparse topology invariant to import publication and recursive import cleanup/rollback.
 
-## Candidate behavior
+## Behavior
 
-- `SafeRecursiveTraversal.EnsureNoReparsePoints` traverses a tree without following reparse points and rejects any descendant file/directory reparse entry.
-- Import publication invokes that guard immediately before the final same-volume directory move.
-- Cleanup and rollback invoke the same guard before recursive deletion; unsafe trees are preserved for controlled recovery rather than traversed.
-- Existing containment/root-reparse/same-volume/destination checks are preserved.
-- Windows regressions create real junctions and prove external sentinel bytes remain unchanged for both pre-publication and rollback substitution cases.
+- `SafeRecursiveTraversal.EnsureNoReparsePoints` walks an existing tree without following reparse points and rejects any descendant file or directory reparse entry.
+- Import publication invokes the guard immediately before the final same-volume directory move into `ModsRoot`.
+- Import cleanup and Smart Inbox rollback invoke the same guard before recursive deletion. Unsafe trees remain in place for controlled recovery rather than being traversed.
+- Existing direct-child containment, root-reparse, destination-exists, and same-volume protections are preserved.
+- Windows regressions inject real directory junctions before publication and after publication/before rollback and prove external target bytes remain untouched.
+- The v8.8.85 feature-candidate/canonical-release verification separation remains unchanged.
 
 ## Verification boundary
 
-Last closed hosted-Windows source: v8.8.84 `2ea6d6dd3851f24a40e562074a816d9bd1e61883`, run `37124460532`.
+The last closed canonical Windows release source remains v8.8.84 `2ea6d6dd3851f24a40e562074a816d9bd1e61883`, run `37124460532`.
 
-Current v8.8.85 source/test checkpoint: `e2a63c6a653426b014c189e8b2e44c41981229bf`, followed by release/continuity metadata. Exact-final-head verification is still required. No v8.8.84 green result applies to the changed source/test/release inputs.
+PR #679 must pass Product Security and Workflow Feature gates on its exact reconciled v8.8.86 head before merge. After integration, canonical `main` must still pass the full Windows release gate without `-FeatureCandidate`.
 
-Residual TOCTOU remains between final path-based validation and move/delete. This change closes the previously unvalidated descendant topology without claiming handle-level atomicity.
+Residual TOCTOU remains between final path-based validation and the subsequent move/delete operation. The change closes the previously unvalidated descendant topology but does not claim handle-level atomicity.
 
-## Independent work
+## Remaining independent work
 
-#673/#674 unmanaged adoption hardening remains a separate boundary and must reconcile from fresh `main` after this patch; its stale v8.8.85 metadata is not canonical. #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
+#673/#674 unmanaged adoption hardening remains separate and must reconcile against v8.8.86 rather than replay stale release metadata. #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
 
-Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, and durable-evidence privacy boundary, and recursively propagate the same obligation.
+Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, durable-evidence privacy, and candidate-vs-canonical verification separation, and recursively propagate the same obligation.
