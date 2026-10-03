@@ -1,23 +1,25 @@
-# v8.8.84 updater test-state isolation — canonical state
+# v8.8.85 import descendant-reparse hardening — candidate state
 
-v8.8.84 closes issue #671 by removing a verification-only race in updater integration tests. The production updater is unchanged.
+Issue #676 closes an import-publication filesystem trust gap: manager-owned staging/published roots were checked for reparse status, but descendants were not revalidated immediately before publication or recursive deletion.
 
-## Behavior
+## Candidate behavior
 
-- `UpdateInstallerTests`, `UpdateRuntimeTests`, `UpdaterCoreTests`, `UpdaterInstalledClientE2ETests`, and `UpdaterStorageMaintenanceTests` share one xUnit collection with `DisableParallelization = true`.
-- Those classes are serialized because they share the process-global updater root and canonical pending-state file.
-- Other integration-test classes remain parallel.
-- Existing per-test unique directories remain intact.
-- Production request topology, pending-state validation, rollback, storage maintenance, and updater publication behavior are unchanged.
+- `SafeRecursiveTraversal.EnsureNoReparsePoints` traverses a tree without following reparse points and rejects any descendant file/directory reparse entry.
+- Import publication invokes that guard immediately before the final same-volume directory move.
+- Cleanup and rollback invoke the same guard before recursive deletion; unsafe trees are preserved for controlled recovery rather than traversed.
+- Existing containment/root-reparse/same-volume/destination checks are preserved.
+- Windows regressions create real junctions and prove external sentinel bytes remain unchanged for both pre-publication and rollback substitution cases.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.84 source `2ea6d6dd3851f24a40e562074a816d9bd1e61883` passed run `37124460532` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log`.
+Last closed hosted-Windows source: v8.8.84 `2ea6d6dd3851f24a40e562074a816d9bd1e61883`, run `37124460532`.
 
-The tested source remains `2ea6d6dd3851f24a40e562074a816d9bd1e61883` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+Current v8.8.85 source/test checkpoint: `e2a63c6a653426b014c189e8b2e44c41981229bf`, followed by release/continuity metadata. Exact-final-head verification is still required. No v8.8.84 green result applies to the changed source/test/release inputs.
 
-## Remaining independent work
+Residual TOCTOU remains between final path-based validation and move/delete. This change closes the previously unvalidated descendant topology without claiming handle-level atomicity.
 
-#673 adoption hardening, #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent. Reconcile them against v8.8.84 rather than replaying stale release metadata.
+## Independent work
+
+#673/#674 unmanaged adoption hardening remains a separate boundary and must reconcile from fresh `main` after this patch; its stale v8.8.85 metadata is not canonical. #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
 
 Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, and durable-evidence privacy boundary, and recursively propagate the same obligation.
