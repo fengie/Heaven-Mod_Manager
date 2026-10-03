@@ -220,7 +220,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
 
     private sealed record FileFingerprint(long Length, DateTime LastWriteTimeUtc, byte[] Sha256);
 
-    private async Task PruneAsync(int keep, CancellationToken ct)
+    internal async Task PruneAsync(int keep, CancellationToken ct, Action<string>? unlinkReparsePoint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentOutOfRangeException.ThrowIfNegative(keep);
@@ -259,7 +259,12 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
             {
                 if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
                 {
+                    // Remove only the immediate link. Never recurse through an untrusted
+                    // reparse target, and retain the DB row if unlinking fails so pruning
+                    // can retry instead of manufacturing an unmanaged orphan.
+                    (unlinkReparsePoint ?? UnlinkReparsePoint)(fullPath);
                     await DeleteSnapshotRecordAsync(snapshot.Id, ct);
+                    directories.Remove(fullPath);
                     continue;
                 }
             }
@@ -282,6 +287,12 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
             await DeleteSnapshotRecordAsync(snapshot.Id, ct);
             directories.Remove(fullPath);
         }
+    }
+
+    private static void UnlinkReparsePoint(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        Directory.Delete(path, false);
     }
 
     private static bool TryNormalizeOwnedSnapshotDirectory(string fullSnapshotRoot, string candidate, out string fullPath)

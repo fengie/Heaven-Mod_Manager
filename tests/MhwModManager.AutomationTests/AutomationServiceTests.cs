@@ -181,6 +181,100 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveSnapshotPruneUnlinksReparsePointWithoutTraversingTarget()
+    {
+        if(!OperatingSystem.IsWindows()) return;
+        var db=await CreateDbAsync("backup-prune-reparse.db");
+        var stateRoot=Path.Combine(root,"backup-prune-reparse-state");
+        var game=GameProfile.Generic("backup-prune-reparse","Backup Prune Reparse",Path.Combine(root,"backup-prune-reparse-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var external=Path.Combine(root,"backup-prune-reparse-external");
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"preserve",TestContext.Current.CancellationToken);
+        var id="20000101-000000-000";
+        var linkedRoot=Path.Combine(service.SnapshotRoot,id);
+        CreateDirectoryJunction(linkedRoot,external);
+        await InsertSaveSnapshotAsync(db,id,DateTimeOffset.UtcNow.AddDays(-1),linkedRoot,TestContext.Current.CancellationToken);
+
+        Assert.True((await service.CreateAsync("reparse-prune",TestContext.Current.CancellationToken)).Success);
+
+        Assert.False(Directory.Exists(linkedRoot));
+        Assert.True(Directory.Exists(external));
+        Assert.Equal("preserve",await File.ReadAllTextAsync(sentinel,TestContext.Current.CancellationToken));
+        await using var c=await db.OpenAsync(TestContext.Current.CancellationToken);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT COUNT(*) FROM save_snapshots WHERE id=$i";
+        cmd.Parameters.AddWithValue("$i",id);
+        Assert.Equal(0L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+    }
+
+    [Fact]
+    public async Task SaveSnapshotPruneRetainsReparsePointIndexWhenUnlinkFails()
+    {
+        if(!OperatingSystem.IsWindows()) return;
+        var db=await CreateDbAsync("backup-prune-reparse-retry.db");
+        var stateRoot=Path.Combine(root,"backup-prune-reparse-retry-state");
+        var game=GameProfile.Generic("backup-prune-reparse-retry","Backup Prune Reparse Retry",Path.Combine(root,"backup-prune-reparse-retry-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var external=Path.Combine(root,"backup-prune-reparse-retry-external");
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"preserve",TestContext.Current.CancellationToken);
+        var id="20000101-000000-001";
+        var linkedRoot=Path.Combine(service.SnapshotRoot,id);
+        CreateDirectoryJunction(linkedRoot,external);
+        await InsertSaveSnapshotAsync(db,id,DateTimeOffset.UtcNow.AddDays(-1),linkedRoot,TestContext.Current.CancellationToken);
+
+        await service.PruneAsync(
+            0,
+            TestContext.Current.CancellationToken,
+            _=>throw new IOException("simulated unlink failure"));
+
+        Assert.True(Directory.Exists(linkedRoot));
+        Assert.True(Directory.Exists(external));
+        Assert.Equal("preserve",await File.ReadAllTextAsync(sentinel,TestContext.Current.CancellationToken));
+        await using var c=await db.OpenAsync(TestContext.Current.CancellationToken);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT COUNT(*) FROM save_snapshots WHERE id=$i";
+        cmd.Parameters.AddWithValue("$i",id);
+        Assert.Equal(1L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+    }
+
+    [Fact]
+    public async Task LastKnownGoodChangedSinceReportsRemovedAndChangedModsSymmetrically()
+    {
+        var db=await CreateDbAsync("last-known-good-changes.db");
+        await db.UpsertModAsync(new("a","A","A",Path.Combine(root,"lkg-a"),true,1),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("b","B","B",Path.Combine(root,"lkg-b"),true,2),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("case-id","Case","Case",Path.Combine(root,"lkg-case"),false,3),TestContext.Current.CancellationToken);
+        var service=new LastKnownGoodService(db);
+        await service.RecordAsync(null,TestContext.Current.CancellationToken);
+
+        await db.ExecuteAsync("DELETE FROM mods WHERE id IN ('b','case-id')",ct:TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("a","A","A",Path.Combine(root,"lkg-a"),false,1),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("CASE-ID","Case","Case",Path.Combine(root,"lkg-case"),false,3),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("c","C","C",Path.Combine(root,"lkg-c"),true,4),TestContext.Current.CancellationToken);
+
+        var changed=await service.ChangedSinceLastGoodAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(["a","b","c"],changed);
+    }
+
+    [Fact]
+    public async Task LastKnownGoodChangedSinceReturnsEmptyForUnchangedStateAndWithoutBaseline()
+    {
+        var db=await CreateDbAsync("last-known-good-unchanged.db");
+        var service=new LastKnownGoodService(db);
+        Assert.Empty(await service.ChangedSinceLastGoodAsync(TestContext.Current.CancellationToken));
+        await SeedModAsync(db,"stable-lkg","Stable");
+        await service.RecordAsync(null,TestContext.Current.CancellationToken);
+        Assert.Empty(await service.ChangedSinceLastGoodAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task UpdateDiffCountsStructuralAndTextureChanges()
     {
         var db=await CreateDbAsync("diff.db");

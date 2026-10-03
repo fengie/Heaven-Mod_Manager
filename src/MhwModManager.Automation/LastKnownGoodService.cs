@@ -40,7 +40,17 @@ public sealed class LastKnownGoodService(ManagerDatabase db)
         var known = await LoadAsync(ct);
         if (known is null) return [];
         var current = await db.GetModsAsync(ct);
-        return current.Where(m => !known.Mods.TryGetValue(m.Id, out var old) || old.Enabled != m.Enabled || old.Priority != m.Priority)
-            .Select(m => m.Id).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        var currentById = current.ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
+        return known.Mods.Keys
+            .Concat(currentById.Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(id =>
+            {
+                var hasKnown = known.Mods.TryGetValue(id, out var old);
+                var hasCurrent = currentById.TryGetValue(id, out var now);
+                return !hasKnown || !hasCurrent || old!.Enabled != now!.Enabled || old.Priority != now.Priority;
+            })
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 }

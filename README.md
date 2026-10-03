@@ -1,10 +1,17 @@
-# v8.8.78 — MHW Manual Mod Manager
+# v8.8.79 — MHW Manual Mod Manager
 
-Current product version: **8.8.78**.
+Current product version: **8.8.79**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.79 — automation state integrity
+
+- Keep indexed save-snapshot reparse entries retryable: unlink only the immediate reparse entry and delete its database row only after unlink succeeds.
+- Preserve the no-traversal boundary so pruning never recursively follows an untrusted junction/symlink target.
+- Make last-known-good change detection symmetric so removed mods are reported alongside additions, enable-state changes, and priority changes.
+- Add Windows junction and mixed last-known-good state regressions.
 
 ## v8.8.78 — actionable Browse Mods empty states
 
@@ -21,15 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Update the release-policy regression so hosted-runner routing cannot be accidentally reintroduced while allocation remains unavailable.
 - Bind persisted hosted-Windows verification evidence to the canonical continuity projection in the same evidence commit, preserving the tested-source SHA separately from the later evidence-only commit.
 - Fail closed when current-version closure evidence disagrees with `CURRENT_REVISION.json`, `CURRENT_STATE.md`, or the successor handoff, with synthetic negative fixtures covering stale SHA/run/candidate-state regressions.
-
-## v8.8.76 — bounded Vortex handoff interoperability
-
-- Add an explicit local `*.vortexhandoff.json` contract for Monster Hunter: World without reading Vortex private state, credentials, cookies, deployment folders, or authenticated download state.
-- Export only reviewed package/profile identity, desired enable/priority state, optional Nexus mod/file IDs, and optional managed-file SHA-256 values; generic source URLs and unknown fields are rejected.
-- Import is preview-first and fail-closed: wrong-game, unsafe-path, malformed, ambiguous, missing, and hash-mismatched entries never become restorable, and saving creates an isolated manager profile without touching live game files.
-- Harden handoff export with same-directory atomic replacement so interrupted writes cannot replace a previously valid handoff with partial JSON.
-- Keep Steam Workshop unsupported for MHW until a reviewed operation-specific contract exists.
-- Add deterministic interoperability, credential-boundary, path-validation, atomic-export, and isolation regressions.
 
 ## Current plans & progress
 
