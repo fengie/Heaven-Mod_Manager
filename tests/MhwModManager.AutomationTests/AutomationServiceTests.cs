@@ -264,6 +264,26 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task LastKnownGoodRestoreDisablesModsAddedAfterBaseline()
+    {
+        var db=await CreateDbAsync("last-known-good-restore-added.db");
+        await db.UpsertModAsync(new("baseline","Baseline","Baseline",Path.Combine(root,"lkg-baseline"),true,7),TestContext.Current.CancellationToken);
+        var service=new LastKnownGoodService(db);
+        await service.RecordAsync(null,TestContext.Current.CancellationToken);
+
+        await db.UpsertModAsync(new("baseline","Baseline","Baseline",Path.Combine(root,"lkg-baseline"),false,99),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("added","Added","Added",Path.Combine(root,"lkg-added"),true,11),TestContext.Current.CancellationToken);
+
+        Assert.Equal(2,await service.StageRestoreAsync(TestContext.Current.CancellationToken));
+
+        var restored=(await db.GetModsAsync(TestContext.Current.CancellationToken)).ToDictionary(x=>x.Id,StringComparer.OrdinalIgnoreCase);
+        Assert.True(restored["baseline"].Enabled);
+        Assert.Equal(7,restored["baseline"].Priority);
+        Assert.False(restored["added"].Enabled);
+        Assert.Equal(11,restored["added"].Priority);
+    }
+
+    [Fact]
     public async Task LastKnownGoodChangedSinceReturnsEmptyForUnchangedStateAndWithoutBaseline()
     {
         var db=await CreateDbAsync("last-known-good-unchanged.db");
