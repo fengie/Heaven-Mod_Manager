@@ -395,6 +395,7 @@ public sealed class NexusV3Transport
         if (string.IsNullOrEmpty(raw))
             return null;
 
+        raw = NormalizeCompactUtcOffset(raw);
         if (DateTimeOffset.TryParse(
                 raw,
                 CultureInfo.InvariantCulture,
@@ -417,6 +418,25 @@ public sealed class NexusV3Transport
         }
 
         return null;
+    }
+
+    private static string NormalizeCompactUtcOffset(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (value.Length < 5)
+            return value;
+
+        var offsetStart = value.Length - 5;
+        if ((value[offsetStart] == '+' || value[offsetStart] == '-')
+            && char.IsDigit(value[offsetStart + 1])
+            && char.IsDigit(value[offsetStart + 2])
+            && char.IsDigit(value[offsetStart + 3])
+            && char.IsDigit(value[offsetStart + 4]))
+        {
+            return value.Insert(value.Length - 2, ":");
+        }
+
+        return value;
     }
 
     private static TimeSpan? ParseRetryAfter(RetryConditionHeaderValue? header)
