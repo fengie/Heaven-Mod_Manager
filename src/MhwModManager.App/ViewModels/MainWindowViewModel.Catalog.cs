@@ -201,6 +201,107 @@ public sealed record CatalogBrowseResultState(
     }
 }
 
+public enum CatalogPresentationKind
+{
+    Idle,
+    Loading,
+    Fresh,
+    Stale,
+    PartialFailure,
+    Unavailable,
+    CachedOnly
+}
+
+public sealed record CatalogPresentationState(
+    CatalogPresentationKind Kind,
+    string Title,
+    string Detail,
+    bool CanRetry)
+{
+    public static CatalogPresentationState From(
+        bool isLoading,
+        bool providerAttempted,
+        int configuredProviderCount,
+        int successfulProviderCount,
+        int failedProviderCount,
+        int resultCount,
+        int staleResultCount)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (isLoading)
+        {
+            return new CatalogPresentationState(
+                CatalogPresentationKind.Loading,
+                "Refreshing providers",
+                "Keeping cached results visible while provider data refreshes.",
+                false);
+        }
+
+        if (!providerAttempted)
+        {
+            return resultCount > 0
+                ? new CatalogPresentationState(
+                    CatalogPresentationKind.CachedOnly,
+                    "Cached results ready",
+                    staleResultCount > 0
+                        ? $"{staleResultCount} cached result(s) may be stale. Refresh providers to check for newer metadata."
+                        : "Cached results are ready. Refresh providers to check for newer metadata.",
+                    false)
+                : new CatalogPresentationState(
+                    CatalogPresentationKind.Idle,
+                    "Provider status not checked yet",
+                    "Refresh configured providers to load or validate browseable mod metadata.",
+                    false);
+        }
+
+        if (configuredProviderCount == 0)
+        {
+            return new CatalogPresentationState(
+                CatalogPresentationKind.CachedOnly,
+                "Cached-only mode",
+                resultCount > 0
+                    ? "No live catalog provider is configured for this game; cached results remain available."
+                    : "No live catalog provider is configured for this game and no cached results are available yet.",
+                false);
+        }
+
+        if (failedProviderCount > 0 && successfulProviderCount == 0)
+        {
+            return new CatalogPresentationState(
+                CatalogPresentationKind.Unavailable,
+                "Live providers unavailable",
+                resultCount > 0
+                    ? "Showing cached results because no configured provider refreshed successfully. Retry when provider access is available."
+                    : "No configured provider refreshed successfully and there are no cached results to show. Retry when provider access is available.",
+                true);
+        }
+
+        if (failedProviderCount > 0)
+        {
+            return new CatalogPresentationState(
+                CatalogPresentationKind.PartialFailure,
+                "Some providers unavailable",
+                "Showing results from working providers and the local cache. Retry to check the failed sources.",
+                true);
+        }
+
+        if (staleResultCount > 0)
+        {
+            return new CatalogPresentationState(
+                CatalogPresentationKind.Stale,
+                "Cached results may be stale",
+                $"{staleResultCount} of {resultCount} visible result(s) are older than the refresh window. Refresh providers to update them.",
+                false);
+        }
+
+        return new CatalogPresentationState(
+            CatalogPresentationKind.Fresh,
+            "Providers current",
+            "The latest provider refresh completed without isolated failures.",
+            false);
+    }
+}
+
 public sealed partial class MainWindowViewModel
 {
     private const int CatalogProviderRefreshLimit = 100;
@@ -215,6 +316,11 @@ public sealed partial class MainWindowViewModel
     private IReadOnlyList<IModCatalogProvider>? catalogProviders;
     private bool catalogLoaded;
     private CancellationTokenSource? catalogQueryCts;
+    private bool catalogProviderOperationInProgress;
+    private bool catalogProviderAttempted;
+    private int catalogConfiguredProviderCount;
+    private int catalogProviderSuccessCount;
+    private int catalogProviderFailureCount;
 
     public ObservableRangeCollection<CatalogModRow> CatalogItems { get; } = [];
     public ObservableRangeCollection<CatalogFileRow> CatalogFiles { get; } = [];
@@ -306,6 +412,58 @@ public sealed partial class MainWindowViewModel
             return HasCatalogQuery ? Visibility.Collapsed : Visibility.Visible;
         }
     }
+    public int CatalogStaleItemCount
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogItems.Count(row => row.IsStale);
+        }
+    }
+
+    private CatalogPresentationState CurrentCatalogPresentation
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogPresentationState.From(
+                catalogProviderOperationInProgress,
+                catalogProviderAttempted,
+                catalogConfiguredProviderCount,
+                catalogProviderSuccessCount,
+                catalogProviderFailureCount,
+                CatalogItemCount,
+                CatalogStaleItemCount);
+        }
+    }
+
+    public string CatalogPresentationTitle
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogPresentation.Title;
+        }
+    }
+
+    public string CatalogPresentationDetail
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogPresentation.Detail;
+        }
+    }
+
+    public Visibility CatalogProviderRetryVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogPresentation.CanRetry ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
     public int CatalogOriginAttentionCount
     {
         get
@@ -339,6 +497,39 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(CatalogEmptyVisibility));
         OnPropertyChanged(nameof(CatalogClearSearchVisibility));
         OnPropertyChanged(nameof(CatalogRefreshEmptyVisibility));
+        NotifyCatalogPresentationState();
+    }
+
+    private void NotifyCatalogPresentationState()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(CatalogStaleItemCount));
+        OnPropertyChanged(nameof(CatalogPresentationTitle));
+        OnPropertyChanged(nameof(CatalogPresentationDetail));
+        OnPropertyChanged(nameof(CatalogProviderRetryVisibility));
+    }
+
+    private void SetCatalogProviderOperationInProgress(bool value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
+        if (catalogProviderOperationInProgress == value) return;
+        catalogProviderOperationInProgress = value;
+        NotifyCatalogPresentationState();
+    }
+
+    private void SetCatalogProviderHealth(
+        int configured,
+        int successful,
+        int failed,
+        bool attempted)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"configured={configured}; successful={successful}; failed={failed}; attempted={attempted}");
+        catalogConfiguredProviderCount = Math.Max(0, configured);
+        catalogProviderSuccessCount = Math.Max(0, successful);
+        catalogProviderFailureCount = Math.Max(0, failed);
+        catalogProviderAttempted = attempted;
+        NotifyCatalogPresentationState();
     }
 
     partial void OnSelectedCatalogItemChanged(CatalogModRow? value)
@@ -422,24 +613,40 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        await RefreshCatalogCoreAsync(ct);
-        catalogLoaded = true;
+        SetCatalogProviderOperationInProgress(true);
+        try
+        {
+            await RefreshCatalogCoreAsync(ct);
+            catalogLoaded = true;
+        }
+        finally
+        {
+            SetCatalogProviderOperationInProgress(false);
+        }
     }
 
     [RelayCommand]
     private async Task RefreshCatalog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunBusy(
-            "catalog.refresh",
-            "Refreshing mod catalog",
-            "Contacting supported providers independently, then updating the local searchable cache…",
-            true,
-            async ct =>
-            {
-                await RefreshCatalogCoreAsync(ct);
-                catalogLoaded = true;
-            });
+        SetCatalogProviderOperationInProgress(true);
+        try
+        {
+            await RunBusy(
+                "catalog.refresh",
+                "Refreshing mod catalog",
+                "Contacting supported providers independently, then updating the local searchable cache…",
+                true,
+                async ct =>
+                {
+                    await RefreshCatalogCoreAsync(ct);
+                    catalogLoaded = true;
+                });
+        }
+        finally
+        {
+            SetCatalogProviderOperationInProgress(false);
+        }
     }
 
     private async Task RefreshCatalogCoreAsync(CancellationToken ct)
@@ -487,6 +694,7 @@ public sealed partial class MainWindowViewModel
         }
 
         await SearchCatalogCacheAsync(ct);
+        SetCatalogProviderHealth(providers.Count, successes, failures, attempted: true);
         CatalogProviderSummary = providers.Count == 0
             ? "No live catalog provider is configured for this game yet; cached items remain searchable."
             : $"{successes}/{providers.Count} providers refreshed · {discovered} item(s) received" +
@@ -521,12 +729,20 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        await RunBusy(
-            "catalog.search",
-            "Searching mod catalog",
-            "Querying providers that advertise text search, then updating the local cache…",
-            true,
-            ct => SearchCatalogProvidersAsync(query, ct));
+        SetCatalogProviderOperationInProgress(true);
+        try
+        {
+            await RunBusy(
+                "catalog.search",
+                "Searching mod catalog",
+                "Querying providers that advertise text search, then updating the local cache…",
+                true,
+                ct => SearchCatalogProvidersAsync(query, ct));
+        }
+        finally
+        {
+            SetCatalogProviderOperationInProgress(false);
+        }
     }
 
     private async Task SearchCatalogProvidersAsync(string query, CancellationToken ct)
@@ -577,6 +793,7 @@ public sealed partial class MainWindowViewModel
         }
 
         await SearchCatalogCacheAsync(ct);
+        SetCatalogProviderHealth(searchable.Length, successes, failures, attempted: true);
 
         if (searchable.Length == 0)
         {
