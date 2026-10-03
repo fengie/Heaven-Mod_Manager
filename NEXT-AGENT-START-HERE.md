@@ -15,9 +15,9 @@ Change set: issue #650
 
 ## Verification boundary
 
-Last closed exact-head Windows verification is v8.8.82 source `0e78e56a18955390cfaa5f17b0787c6111fbaa38`, Workflow Feature PR Gate run `37106871213`, with the repository verifier and all focused regressions green. v8.8.83 changes cleanup behavior and requires fresh exact-source verification; do not reuse the v8.8.82 closure.
+The last closed hosted-Windows boundary is v8.8.82 source `f46793a18700524ac7b5fb34770200206d6595f2`, run `37107057966`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log`. The later commits `00dcf4a5076335b69c636a2c0cb4c84ac333a43e` and `d57e888f392b1180c563e80c96df31fd9fd8cdc0` persist verification/updater-E2E evidence only and do not change the tested-source identity.
 
-Required verification includes focused disposable-harness contract checks, self-test cleanup proof, integration tests, PowerShell syntax/policy checks, and the normal Windows release gate on the exact source.
+v8.8.83 changes cleanup behavior and therefore requires fresh exact-source verification; do not inherit the v8.8.82 closure. Required verification includes focused disposable-harness contract checks, self-test cleanup proof, integration tests, PowerShell syntax/policy checks, and the normal Windows release gate on the exact source.
 
 ## Unresolved risks and next work
 
