@@ -15,7 +15,7 @@ v8.8.89 turns the user's 20-point compliance checklist into native-desktop produ
 
 ## Verification boundary
 
-Last closed canonical Windows evidence remains v8.8.88 source `d0816f3c495ff055df517ce0b021e41dd19596f6` / run `37143560604`.
+Last closed canonical Windows evidence remains v8.8.88 source `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
 
 v8.8.89 changes application source, XAML, tests, bundled content, and release metadata. No v8.8.88 green result is verification for v8.8.89. The exact integrated v8.8.89 source requires fresh canonical Windows verification before release closure is claimed.
 
