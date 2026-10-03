@@ -222,6 +222,57 @@ public sealed partial class XamlBindingSafetyTests
         }
     }
 
+    [Theory]
+    [InlineData(true, false, 2, 0, 0, 5, 2, CatalogPresentationKind.Loading, false)]
+    [InlineData(false, true, 2, 1, 1, 5, 0, CatalogPresentationKind.PartialFailure, true)]
+    [InlineData(false, true, 2, 0, 2, 5, 1, CatalogPresentationKind.Unavailable, true)]
+    [InlineData(false, true, 2, 2, 0, 5, 2, CatalogPresentationKind.Stale, false)]
+    [InlineData(false, true, 2, 2, 0, 5, 0, CatalogPresentationKind.Fresh, false)]
+    [InlineData(false, true, 0, 0, 0, 5, 1, CatalogPresentationKind.CachedOnly, false)]
+    public void BrowseModsPresentationStateDistinguishesProviderHealthAndCacheFreshness(
+        bool isLoading,
+        bool attempted,
+        int configured,
+        int successful,
+        int failed,
+        int results,
+        int stale,
+        CatalogPresentationKind expectedKind,
+        bool expectedRetry)
+    {
+        var state = CatalogPresentationState.From(
+            isLoading,
+            attempted,
+            configured,
+            successful,
+            failed,
+            results,
+            stale);
+
+        Assert.Equal(expectedKind, state.Kind);
+        Assert.Equal(expectedRetry, state.CanRetry);
+        Assert.NotEmpty(state.Title);
+        Assert.NotEmpty(state.Detail);
+    }
+
+    [Fact]
+    public void BrowseModsProviderHealthBannerKeepsRecoveryVisibleAboveResults()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Text=\"{Binding CatalogPresentationTitle}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogPresentationDetail}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogProviderRetryVisibility}\"", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Retry failed catalog providers\"", xaml);
+        Assert.Contains("SetCatalogProviderOperationInProgress(true);", source);
+        Assert.Contains("SetCatalogProviderHealth(providers.Count, successes, failures, attempted: true);", source);
+        Assert.Contains("SetCatalogProviderHealth(searchable.Length, successes, failures, attempted: true);", source);
+        Assert.Contains("return CatalogItems.Count(row => row.IsStale);", source);
+    }
+
     [Fact]
     public void BrowseModsEmptyStatesExposeRecoveryActionsAndHideDeadEndSelectionPrompt()
     {
