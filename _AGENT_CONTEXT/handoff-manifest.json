@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.80",
+  "currentVersion": "8.8.81",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.79 source 6a10008fdcaae5112653593d62b41f5ef4668b36 passed hosted Windows verification and installed-client E2E, but shallow checkout history prevented durable E2E evidence persistence after the evidence-only main commit. v8.8.80 repairs that persistence boundary.",
+  "immediateParentRevision": "v8.8.80 is the last closed hosted-Windows source boundary. v8.8.81 fixes case-sensitive identity drift inside update migration.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification and release safety; verify/persist v8.8.80 Windows + installed-client E2E closure, then continue non-overlapping #559/#558 work; propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification and case-insensitive mod identity; verify/persist v8.8.81 then continue non-overlapping project work; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
