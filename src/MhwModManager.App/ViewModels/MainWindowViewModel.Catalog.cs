@@ -538,11 +538,50 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    public string CatalogFilePresentationTitle => CurrentCatalogFilePresentation.Title;
-    public string CatalogFilePresentationDetail => CurrentCatalogFilePresentation.Detail;
-    public Visibility CatalogFilesVisibility => CurrentCatalogFilePresentation.ShowFiles ? Visibility.Visible : Visibility.Collapsed;
-    public Visibility CatalogFileStateVisibility => CurrentCatalogFilePresentation.ShowFiles ? Visibility.Collapsed : Visibility.Visible;
-    public Visibility CatalogFileRetryVisibility => CurrentCatalogFilePresentation.CanRetry ? Visibility.Visible : Visibility.Collapsed;
+    public string CatalogFilePresentationTitle
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.Title;
+        }
+    }
+
+    public string CatalogFilePresentationDetail
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.Detail;
+        }
+    }
+
+    public Visibility CatalogFilesVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.ShowFiles ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    public Visibility CatalogFileStateVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.ShowFiles ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    public Visibility CatalogFileRetryVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.CanRetry ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
 
     private void SetCatalogFilePresentation(CatalogFilePresentationKind kind, string? failureDetail = null)
     {
