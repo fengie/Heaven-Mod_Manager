@@ -10,7 +10,7 @@ using Xunit;
 
 namespace MhwModManager.IntegrationTests;
 
-[Collection(UpdaterGlobalStateCollection.Name)]
+[Collection(UpdaterGlobalStateFixture.Name)]
 public sealed class UpdaterCoreTests : IDisposable
 {
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
