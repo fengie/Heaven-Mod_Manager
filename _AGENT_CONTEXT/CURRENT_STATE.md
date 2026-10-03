@@ -13,9 +13,9 @@ v8.8.85 closes issue #675 by separating feature-candidate product verification f
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.85 source `0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c` passed run `37126561159` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.85 source `d50b5defe23209119b417b56e7047e14e4c37032` passed run `37127511216` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
 
-The tested source remains `0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `d50b5defe23209119b417b56e7047e14e4c37032` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
