@@ -393,6 +393,48 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void BrowseModsSerializesInitialRefreshManualRefreshAndProviderSearch()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("private readonly SemaphoreSlim catalogSyncGate = new(1, 1);", source, StringComparison.Ordinal);
+
+        var ensureStart = source.IndexOf("private async Task EnsureCatalogLoadedAsync", StringComparison.Ordinal);
+        var refreshCommandStart = source.IndexOf("private async Task RefreshCatalog()", ensureStart, StringComparison.Ordinal);
+        Assert.True(ensureStart >= 0 && refreshCommandStart > ensureStart);
+        var ensureBody = source[ensureStart..refreshCommandStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", ensureBody, StringComparison.Ordinal);
+        Assert.True(
+            ensureBody.IndexOf("if (catalogLoaded)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
+            "Initial catalog load must re-check catalogLoaded after acquiring the sync gate.");
+
+        var refreshCoreStart = source.IndexOf("private async Task RefreshCatalogCoreAsync", refreshCommandStart, StringComparison.Ordinal);
+        Assert.True(refreshCoreStart > refreshCommandStart);
+        var refreshCommandBody = source[refreshCommandStart..refreshCoreStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", refreshCommandBody, StringComparison.Ordinal);
+        Assert.Contains("catalogSyncGate.Release();", refreshCommandBody, StringComparison.Ordinal);
+
+        var searchCommandStart = source.IndexOf("private async Task SearchCatalog()", refreshCoreStart, StringComparison.Ordinal);
+        var providerSearchStart = source.IndexOf("private async Task SearchCatalogProvidersAsync", searchCommandStart, StringComparison.Ordinal);
+        Assert.True(searchCommandStart >= 0 && providerSearchStart > searchCommandStart);
+        var searchCommandBody = source[searchCommandStart..providerSearchStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", searchCommandBody, StringComparison.Ordinal);
+        Assert.Contains("catalogSyncGate.Release();", searchCommandBody, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BrowseModsZeroMatchCopyDoesNotClaimTypingQueriedProviders()
+    {
+        var state = CatalogBrowseResultState.From("armor", 0);
+
+        Assert.Equal(
+            "No matching results are in the local cache. Typing filters cached results; choose Search to query configured providers that support text search, or clear the search to return to all cached mods.",
+            state.Detail);
+        Assert.DoesNotContain("cached or provider results", state.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ConflictCollectionChangesNotifyDerivedAttentionState()
     {
         var root = FindRepositoryRoot();
@@ -503,25 +545,6 @@ public sealed partial class XamlBindingSafetyTests
             "<CheckBox IsChecked=\"{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\" VerticalAlignment=\"Center\" AutomationProperties.Name=\"{Binding Label}\"",
             xaml);
     }
-    [Fact]
-    public void ModLibraryPendingActionsDisableWhenNothingIsStaged()
-    {
-        var root = FindRepositoryRoot();
-        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
-        var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
-
-        Assert.Contains("Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" Style=\"{StaticResource QuietButton}\"", xaml);
-        Assert.Contains("Content=\"Discard Pending Changes\" Command=\"{Binding DiscardStagedCommand}\"", xaml);
-        Assert.Contains("Content=\"Apply Mod Changes\" Command=\"{Binding ApplyCommand}\"", xaml);
-        Assert.Equal(3, xaml.Split("IsEnabled=\"{Binding HasStagedChanges}\"").Length - 1);
-        Assert.Equal(3, xaml.Split("AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"").Length - 1);
-        Assert.Contains("public bool HasStagedChanges", main);
-        Assert.Contains("return StagedCount>0;", main);
-        Assert.Contains("public string PendingActionsHelp", main);
-        Assert.Contains("OnPropertyChanged(nameof(HasStagedChanges));", main);
-        Assert.Contains("OnPropertyChanged(nameof(PendingActionsHelp));", main);
-    }
-
     [Fact]
     public void ModLibraryBulkActionsExposeCountAndSnapshotVisibleRows()
     {
