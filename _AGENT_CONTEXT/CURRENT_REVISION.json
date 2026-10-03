@@ -10,10 +10,10 @@
     "status": "v8.8.86-import-reparse-hardening-canonical-awaiting-exact-verification",
     "nextMilestone": "Require fresh exact-final-head Product Security and Workflow Feature verification for PR #679, merge only that exact green head, then observe the canonical main Windows release gate.",
     "nextRequiredAction": "Observe exact-final-head PR #679 gates after v8.8.85 reconciliation; merge only the exact green head, verify remote main contains both v8.8.85 verification decoupling and v8.8.86 import hardening, then require canonical Windows release verification.",
-    "verificationAppliesToCommit": "2ea6d6dd3851f24a40e562074a816d9bd1e61883",
-    "lastClosedVerificationCommit": "2ea6d6dd3851f24a40e562074a816d9bd1e61883",
-    "lastClosedVerificationRun": "v8.8.84 source 2ea6d6dd3851f24a40e562074a816d9bd1e61883: hosted Windows verification run 37124460532 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote": "v8.8.84 exact source 2ea6d6dd3851f24a40e562074a816d9bd1e61883 / run 37124460532 remains the last closed canonical Windows evidence. v8.8.85 verification-decoupling is canonical on main at de896dab613070944bf107d339f89722f0200272. v8.8.86 PR #679 changes production filesystem behavior/tests/release metadata and requires fresh exact-final-head PR verification before integration, followed by canonical main Windows release verification.",
+    "verificationAppliesToCommit": "0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c",
+    "lastClosedVerificationCommit": "0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c",
+    "lastClosedVerificationRun": "v8.8.85 source 0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c: hosted Windows verification run 37126561159 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log. The later evidence-only commit does not change tested-source identity.",
+    "verificationScopeNote": "v8.8.85 exact source 0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c passed hosted Windows verification run 37126561159 and is the last closed canonical Windows baseline. v8.8.86 PR #679 changes production filesystem behavior/tests/release metadata and requires fresh exact-final-head PR verification before integration, followed by canonical main Windows release verification; v8.8.85 evidence does not transfer.",
     "lastClosedVerification": {
         "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
         "updaterBuild": 382,
@@ -46,8 +46,8 @@
     "activePullRequest": null,
     "activeIssue": null,
     "lastClosedWindowsVerification": {
-        "sourceSha": "2ea6d6dd3851f24a40e562074a816d9bd1e61883",
-        "runId": 37124460532,
-        "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log"
+        "sourceSha": "0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c",
+        "runId": 37126561159,
+        "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log"
     }
 }
