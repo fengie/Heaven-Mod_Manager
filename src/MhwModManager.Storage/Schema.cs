@@ -189,6 +189,11 @@ CREATE TABLE IF NOT EXISTS catalog_items(
 );
 CREATE INDEX IF NOT EXISTS ix_catalog_items_provider_game ON catalog_items(provider_id,game_id);
 CREATE INDEX IF NOT EXISTS ix_catalog_items_updated ON catalog_items(updated_at DESC);
+CREATE INDEX IF NOT EXISTS ix_catalog_items_game_sort ON catalog_items(
+    game_id,
+    COALESCE(updated_at,fetched_at) DESC,
+    name COLLATE NOCASE
+);
 CREATE TABLE IF NOT EXISTS catalog_files(
     provider_id TEXT NOT NULL,
     provider_mod_id TEXT NOT NULL,
