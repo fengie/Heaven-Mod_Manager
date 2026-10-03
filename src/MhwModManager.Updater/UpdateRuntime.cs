@@ -494,6 +494,7 @@ public static class UpdateRequestStore
                 $"Updater transaction identity is malformed or does not match build {request.Manifest.BuildNumber}.");
 
         var installRoot = NormalizeDirectoryPath(request.InstallRoot);
+        RequireCanonicalInput(request.InstallRoot, installRoot, nameof(request.InstallRoot));
         if (!Directory.Exists(installRoot))
             throw new DirectoryNotFoundException($"Install root is missing: {installRoot}");
         if ((File.GetAttributes(installRoot) & FileAttributes.ReparsePoint) != 0)
@@ -503,6 +504,7 @@ public static class UpdateRequestStore
                 "Self-update is disabled for a repository/development release layout.");
 
         var stagingRoot = NormalizeDirectoryPath(request.StagingRoot);
+        RequireCanonicalInput(request.StagingRoot, stagingRoot, nameof(request.StagingRoot));
         ValidateStagingRoot(updaterRoot, stagingRoot, request.Manifest.BuildNumber);
         UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, stagingRoot);
 
@@ -510,6 +512,7 @@ public static class UpdateRequestStore
         if (!string.IsNullOrWhiteSpace(request.ManagerHomeRoot))
         {
             managerHomeRoot = NormalizeDirectoryPath(request.ManagerHomeRoot);
+            RequireCanonicalInput(request.ManagerHomeRoot, managerHomeRoot, nameof(request.ManagerHomeRoot));
             if (!Directory.Exists(managerHomeRoot))
                 throw new DirectoryNotFoundException(
                     $"Updater restart manager home is missing: {managerHomeRoot}");
@@ -544,10 +547,14 @@ public static class UpdateRequestStore
         UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, healthFile);
         UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, pendingPath);
 
-        if (request.HealthToken.Length != 64 || request.HealthToken.Any(c => !Uri.IsHexDigit(c)))
+        if (string.IsNullOrWhiteSpace(request.HealthToken)
+            || request.HealthToken.Length != 64
+            || request.HealthToken.Any(c => !Uri.IsHexDigit(c)))
             throw new InvalidDataException("Updater request health token is malformed.");
         if (request.CurrentProcessId <= 0)
             throw new InvalidDataException("Updater request process id must be positive.");
+        if (request.RestartArguments is null)
+            throw new InvalidDataException("Updater request restart arguments are missing.");
         var sanitizedArguments = UpdateArgumentSanitizer.RemoveHealthArguments(request.RestartArguments);
         if (!sanitizedArguments.SequenceEqual(request.RestartArguments, StringComparer.Ordinal))
             throw new InvalidDataException(
@@ -652,6 +659,20 @@ public static class UpdateRequestStore
         Path.GetFullPath(path)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
+    private static void RequireCanonicalInput(
+        string actual,
+        string canonical,
+        string label)
+    {
+        var trimmed = actual.TrimEnd(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar);
+        if (!Path.IsPathFullyQualified(actual)
+            || !string.Equals(trimmed, canonical, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(
+                $"Updater request {label} is not a canonical absolute path.");
+    }
+
     private static void RequireSamePath(
         string actual,
         string expected,
@@ -661,6 +682,7 @@ public static class UpdateRequestStore
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var fullExpected = Path.GetFullPath(expected)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        RequireCanonicalInput(actual, fullActual, label);
         if (!string.Equals(fullActual, fullExpected, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException(
                 $"Updater request {label} does not match its canonical transaction topology.");
