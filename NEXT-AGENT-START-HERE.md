@@ -1,35 +1,36 @@
-# v8.8.85 import descendant-reparse hardening — candidate handoff
+# v8.8.86 import descendant-reparse hardening — canonical handoff candidate
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Working branch: `fix/676-import-reparse-hardening`
-Change set: issue #676
+Change set: issue #676 / PR #679
+Immediate parent: v8.8.85 feature-verification decoupling on canonical `main` at `de896dab613070944bf107d339f89722f0200272`
 
-## v8.8.85 behavior
+## v8.8.86 behavior
 
 - `SafeRecursiveTraversal.EnsureNoReparsePoints` provides an allocation-light fail-closed tree-topology check that never follows descendant reparse points.
 - `ImportPublicationWorkspace.Publish` rejects unsafe descendant topology immediately before the final same-volume move into `ModsRoot`.
-- `ImportPublicationWorkspace.Cleanup` and `RollbackPublished` reject unsafe descendant topology before recursive deletion, preserving the suspect tree rather than traversing it.
-- Existing direct-child containment, root reparse, destination-exists, and same-volume guards remain in force.
+- `ImportPublicationWorkspace.Cleanup` and `RollbackPublished` reject unsafe descendant topology before recursive deletion, preserving the suspect tree instead of traversing it.
+- Existing direct-child containment, root-reparse, destination-exists, and same-volume guards remain in force.
 - Windows junction regressions cover pre-publication descendant substitution and post-publication rollback substitution while proving external sentinel bytes remain untouched.
+- v8.8.85's `-FeatureCandidate` verification separation is preserved unchanged; canonical main/release verification remains strict.
 
 ## Verification boundary
 
-The last closed hosted-Windows source remains v8.8.84 `2ea6d6dd3851f24a40e562074a816d9bd1e61883` / run `37124460532`.
+The last closed canonical Windows source remains v8.8.84 `2ea6d6dd3851f24a40e562074a816d9bd1e61883` / run `37124460532`.
 
-The v8.8.85 source/test checkpoint is `e2a63c6a653426b014c189e8b2e44c41981229bf`, followed by release/continuity metadata. It is **not yet exact-head verified**. Prior green evidence does not transfer to this changed production/test/release input.
+The v8.8.86 PR #679 final head requires fresh exact-head Product Security and Workflow Feature verification. Prior green evidence, including the pre-reconciliation #679 run and the v8.8.85 source-only verification, does not authorize this changed head.
 
-Residual limitation: tree validation is path-based and narrows the unsafe descendant case, but a topology swap after the final validation and before the filesystem operation remains a TOCTOU risk. Do not claim handle-atomic containment.
+Residual limitation: tree validation is path-based and closes the unvalidated-descendant case, but a topology swap after final validation and before move/delete remains a TOCTOU risk. Do not claim handle-atomic containment.
 
 ## Coordination
 
-Issue #673 / PR #674 is a separate unmanaged-adoption boundary and must not be merged into this change. Its stale branch currently claims v8.8.85 metadata from an older base; after this patch integrates it must reconcile onto fresh `main` and take the next available patch identity.
+Issue #673 / PR #674 is a separate unmanaged-adoption boundary. Its stale branch claimed v8.8.85 from an older base; it must reconcile onto fresh `main` after v8.8.86 and take the next available patch identity rather than replay stale metadata.
 
 ## Exact next action
 
-Open/refresh the PR for #676, require exact-final-head CI/Windows verification, merge only that exact green head, verify remote `main` contains the intended source and metadata, close #676, then retire the temporary branch/ownership claim. Do not inherit v8.8.84 verification for this source.
+Require exact-final-head PR #679 gates after reconciliation with v8.8.85. Merge only that exact green head, verify remote `main` contains both the v8.8.85 verification changes and v8.8.86 import hardening, then observe the canonical main Windows release gate and persist exact closure evidence normally. Close #676 and retire the temporary branch/ownership claim only after verified integration.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, filesystem containment, fail-closed destructive boundaries, and durable-evidence privacy. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, filesystem containment, fail-closed destructive boundaries, durable-evidence privacy, and candidate-vs-canonical verification separation. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
