@@ -406,6 +406,39 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void AdvancedToolsInputsExposeContextualAutomationNames()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "WorkflowWindow.xaml"));
+
+        var expectedNames = new[]
+        {
+            "Search file decisions",
+            "Imported profile name",
+            "Profile name",
+            "Parent profile",
+            "Left profile",
+            "Right profile",
+            "Rule type",
+            "First mod",
+            "Second mod or preferred winner",
+            "Rule path or scope",
+            "Rule reason",
+            "Mod to inspect relationships",
+            "Current mod",
+            "Updated mod",
+        };
+
+        foreach (var name in expectedNames)
+            Assert.Contains($"AutomationProperties.Name=\"{name}\"", xaml);
+
+        Assert.Contains("x:Name=\"ProfileA\" Width=\"220\" DisplayMemberPath=\"Name\" AutomationProperties.Name=\"Left profile\"", xaml);
+        Assert.Contains("x:Name=\"ProfileB\" Width=\"220\" DisplayMemberPath=\"Name\" AutomationProperties.Name=\"Right profile\"", xaml);
+        Assert.Contains("x:Name=\"OldMod\" Width=\"260\" DisplayMemberPath=\"DisplayName\" AutomationProperties.Name=\"Current mod\"", xaml);
+        Assert.Contains("x:Name=\"NewMod\" Width=\"260\" DisplayMemberPath=\"DisplayName\" AutomationProperties.Name=\"Updated mod\"", xaml);
+    }
+
+    [Fact]
     public void SafeUpgradeProcedureUsesCurrentReleaseWording()
     {
         var root = FindRepositoryRoot();
