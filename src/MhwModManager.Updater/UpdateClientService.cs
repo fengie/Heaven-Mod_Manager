@@ -222,6 +222,11 @@ public sealed class UpdateClientService : IDisposable
         UpdatePathSafety.CreateDirectorySafely(
             updaterRoot,
             transactionRoot);
+        await UpdatePreparedTransactionLeaseStore.WriteAsync(
+            transactionRoot,
+            staged.Manifest.BuildNumber,
+            currentProcessId,
+            ct);
 
         var helperExecutionRoot = Path.Combine(
             transactionRoot,

@@ -76,6 +76,30 @@ function Get-UpdaterBuildFromTag {
   return $build
 }
 
+function Get-UpdaterReleasePages {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)][scriptblock]$FetchPage,
+    [ValidateRange(1,100)][int]$PageSize=100,
+    [ValidateRange(1,1000)][int]$MaxPages=100
+  )
+
+  $all=New-Object System.Collections.Generic.List[object]
+  for($page=1;$page -le $MaxPages;$page++){
+    $items=@(& $FetchPage $page $PageSize)
+    foreach($item in $items){
+      if($null -eq $item){throw "GitHub updater release page $page contained a null entry."}
+      $all.Add($item)
+    }
+    if($items.Count -lt $PageSize){
+      return $all.ToArray()
+    }
+  }
+
+  throw "GitHub updater release enumeration reached the safety cap of $MaxPages pages without observing a terminal partial page."
+}
+
+
 function Test-UpdaterReleaseRelevantPath {
   param([Parameter(Mandatory=$true)][string]$Path)
   $normalized=$Path.Replace('\','/').TrimStart('/')
@@ -123,11 +147,72 @@ function Get-UpdaterMainDriftDecision {
 }
 
 
+function Get-UpdaterReleaseProductVersion {
+  param([Parameter(Mandatory=$true)]$Release)
+
+  $tag=[string]$Release.tag_name
+  if((Get-UpdaterBuildFromTag -Tag $tag) -le 0){return ''}
+
+  foreach($property in @('draft','prerelease','immutable','assets')){
+    if($null -eq $Release.PSObject.Properties[$property]){
+      throw "Updater release $tag omitted required API property '$property'."
+    }
+  }
+  if([bool]$Release.draft -or [bool]$Release.prerelease -or -not [bool]$Release.immutable){return ''}
+
+  $pattern='^MHW-Manual-Mod-Manager-v([0-9]+\.[0-9]+\.[0-9]+)-win-x64\.zip$'
+  $artifactNames=@($Release.assets | ForEach-Object {[string]$_.name})
+  $matches=@($artifactNames | Where-Object {$_ -match $pattern})
+  if($matches.Count -ne 1){
+    throw "Stable immutable updater release $tag does not expose exactly one versioned Windows artifact."
+  }
+  $match=[regex]::Match([string]$matches[0],$pattern)
+  if(-not $match.Success){throw "Updater release $tag versioned artifact could not be parsed."}
+  return [string]$match.Groups[1].Value
+}
+
+function Get-UpdaterReleaseIntentDecision {
+  param(
+    [Parameter(Mandatory=$true)][string]$CurrentVersion,
+    [Parameter(Mandatory=$true)][bool]$ForcePublish,
+    [object[]]$Releases=@()
+  )
+
+  if($CurrentVersion -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$'){
+    throw "Updater product version '$CurrentVersion' is malformed."
+  }
+  if($ForcePublish){
+    return [pscustomobject]@{Publish=$true;Reason='manual-force-publish';ExistingTag=''}
+  }
+
+  $sameVersion=New-Object System.Collections.Generic.List[object]
+  foreach($release in @($Releases)){
+    if($null -eq $release){throw 'Updater release intent received a null release entry.'}
+    $version=Get-UpdaterReleaseProductVersion -Release $release
+    if([string]::IsNullOrWhiteSpace($version)){continue}
+    if([string]::Equals($version,$CurrentVersion,[StringComparison]::Ordinal)){
+      $sameVersion.Add([pscustomobject]@{
+        Build=(Get-UpdaterBuildFromTag -Tag ([string]$release.tag_name))
+        Tag=[string]$release.tag_name
+      })
+    }
+  }
+
+  if($sameVersion.Count -gt 0){
+    $existing=@($sameVersion | Sort-Object Build -Descending | Select-Object -First 1)
+    return [pscustomobject]@{Publish=$false;Reason='same-version-already-published';ExistingTag=[string]$existing[0].Tag}
+  }
+
+  return [pscustomobject]@{Publish=$true;Reason='new-product-version';ExistingTag=''}
+}
+
+
 function Get-UpdaterInstalledClientE2EDecision {
   param(
     [Parameter(Mandatory=$true)][string]$SourceSha,
     [Parameter(Mandatory=$true)][string]$RemoteMainSha,
     [Parameter(Mandatory=$true)][bool]$ExactReleaseFound,
+    [Parameter(Mandatory=$true)][bool]$SameVersionReleaseFound,
     [Parameter(Mandatory=$true)][string]$MainRelation
   )
 
@@ -141,6 +226,12 @@ function Get-UpdaterInstalledClientE2EDecision {
     return [pscustomobject]@{RunE2E=$true;Reason='exact-release-published'}
   }
 
+  $canonicalOrDescendant=[string]::Equals($SourceSha,$RemoteMainSha,[StringComparison]::OrdinalIgnoreCase) -or
+    [string]::Equals($MainRelation,'ahead',[StringComparison]::OrdinalIgnoreCase)
+  if($SameVersionReleaseFound -and $canonicalOrDescendant){
+    return [pscustomobject]@{RunE2E=$false;Reason='same-version-already-published'}
+  }
+
   if([string]::Equals($SourceSha,$RemoteMainSha,[StringComparison]::OrdinalIgnoreCase)){
     throw "Successful Windows Release Gate for canonical source $SourceSha did not publish an exact immutable updater release."
   }
@@ -151,7 +242,6 @@ function Get-UpdaterInstalledClientE2EDecision {
 
   throw "Successful Windows Release Gate source $SourceSha has no exact immutable updater release and cannot be classified as a canonical-main supersession (main=$RemoteMainSha relation=$MainRelation)."
 }
-
 
 function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   param(
