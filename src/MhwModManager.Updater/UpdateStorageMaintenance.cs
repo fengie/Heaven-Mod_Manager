@@ -274,6 +274,7 @@ public static class UpdateStorageMaintenance
 
     private static void EnsureCleanupRootAllowed(string updaterRoot)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var canonicalRoot = NormalizeDirectory(
             UpdatePackageStager.GetUpdaterRoot());
         UpdatePackageStager.EnsureUpdaterRoot(canonicalRoot);
@@ -299,6 +300,7 @@ public static class UpdateStorageMaintenance
         string stagingRoot,
         long buildNumber)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var fullStaging = NormalizeDirectory(stagingRoot);
         var trimmedInput = stagingRoot.TrimEnd(
             Path.DirectorySeparatorChar,
@@ -357,6 +359,7 @@ public static class UpdateStorageMaintenance
         string attemptName,
         out long buildNumber)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         buildNumber = 0;
         var parts = attemptName.Split(
             '-',
@@ -375,6 +378,7 @@ public static class UpdateStorageMaintenance
         string transactionName,
         out long buildNumber)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         buildNumber = 0;
         var parts = transactionName.Split(
             '-',
@@ -407,6 +411,7 @@ public static class UpdateStorageMaintenance
         string directory,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         UpdatePathSafety.EnsureExistingComponentsNotReparse(
             updaterRoot,
             directory);
@@ -453,6 +458,7 @@ public static class UpdateStorageMaintenance
         string directory,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         // First validate the whole tree so a discovered reparse point cannot
         // cause a partial recursive cleanup.
         _ = InspectSafeTreeNewestWriteUtc(
@@ -502,21 +508,30 @@ public static class UpdateStorageMaintenance
     private static bool IsOldEnough(
         DateTimeOffset newestWriteUtc,
         DateTimeOffset nowUtc,
-        TimeSpan minimumAge) =>
-        newestWriteUtc <= nowUtc - minimumAge;
+        TimeSpan minimumAge)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return newestWriteUtc <= nowUtc - minimumAge;
+    }
 
     private static bool SamePath(
         string left,
-        string? right) =>
-        right is not null
-        && string.Equals(
-            NormalizeDirectory(left),
-            NormalizeDirectory(right),
-            StringComparison.OrdinalIgnoreCase);
+        string? right)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return right is not null
+            && string.Equals(
+                NormalizeDirectory(left),
+                NormalizeDirectory(right),
+                StringComparison.OrdinalIgnoreCase);
+    }
 
-    private static string NormalizeDirectory(string path) =>
-        Path.GetFullPath(path)
+    private static string NormalizeDirectory(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return Path.GetFullPath(path)
             .TrimEnd(
                 Path.DirectorySeparatorChar,
                 Path.AltDirectorySeparatorChar);
+    }
 }
