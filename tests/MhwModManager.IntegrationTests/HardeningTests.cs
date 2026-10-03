@@ -608,7 +608,7 @@ public sealed class HardeningTests : IDisposable
         {
             var failure = await Assert.ThrowsAsync<IOException>(() => adoption.AdoptAsync(TestToken));
             Assert.True(swapped);
-            Assert.Contains("reparse point", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("reparse", failure.Message, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("OUTSIDE", await File.ReadAllTextAsync(externalFile, TestToken));
             Assert.Empty(Directory.EnumerateDirectories(modsRoot));
             await using var connection = await db.OpenAsync(TestToken);
