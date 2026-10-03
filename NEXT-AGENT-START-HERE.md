@@ -1,31 +1,26 @@
-# v8.8.80 updater E2E evidence persistence — canonical handoff
+# v8.8.81 allowlisted updater E2E evidence — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #622
+Change set: issue #632
 
-## v8.8.80 behavior
+## v8.8.81 behavior
 
-- Updater installed-client E2E persistence restores complete canonical-main history before deciding whether the tested release source is an ancestor of current main.
-- The persistence step explicitly refreshes `refs/remotes/origin/main` before ancestry and path-drift classification.
-- Divergent/release-relevant drift remains fail-closed; evidence/cache-only advancement remains eligible for durable E2E closure persistence.
-- Regression coverage enforces unshallow-before-`merge-base` ordering.
-- Uploaded E2E artifact names bind to the exact tested release SHA rather than the later workflow/evidence commit.
+- Persist only the versioned allowlisted installed-client updater E2E projection; keep raw runtime diagnostics transient.
+- Bind durable target-source identity to the exact workflow-tested source SHA.
+- Validate old release identity, successful update confirmation, rollback restoration, UI acceptance, and fixed sentinel hashes before persistence.
+- Exclude runner-local paths/usernames, process/attempt IDs, target-only path inventories, logs, timestamps, runner environment metadata, and unknown future fields.
+- Preserve the raw evidence SHA-256 as provenance without embedding raw JSON in Git history.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.80 source `e7af34331b608fca3d115d2dfe20f5c8e69a5973` passed run `37092891133` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.80-heaven-windows-closure.log`.
-
-The tested source remains `e7af34331b608fca3d115d2dfe20f5c8e69a5973` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+Pre-version implementation head `b574ab7ffd0c15cf50dfe6c5af1b216a979e2616` passed Product Security `37096061393`, Updater Publication `37096061412`, and independent Heaven release verification/build. Because the synchronized v8.8.81 metadata changes release inputs, the final exact head requires fresh verification before integration.
 
 ## Unresolved risks and next work
 
-- #559 remains active for broader Browse Mods UX; #558 retains catalog scale/performance work.
-- #350/#354 retain external signing/repository-administration prerequisites.
-- Representative RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent.
-- Actions artifact upload is currently quota-constrained; repository-persisted E2E evidence must remain a reliable fallback.
+#559/#558 retain Browse Mods work; #350/#354 retain external prerequisites; RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent. Any continuation of stale #602/#603 or other v8.8.81 branches must rebase on canonical main and take a later patch version.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and release-safety rules. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that agent to continue the same recursive handoff. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and the durable-evidence privacy boundary. The successor **must propagate** this obligation onward. **Do not break the chain.**
