@@ -91,6 +91,165 @@ foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filte
     $workflow=Get-Content -LiteralPath $workflowFile.FullName -Raw
     if($workflow -notmatch '(?im)^\s*runs-on:\s*\[[^\]]*self-hosted[^\]]*\]'){continue}
 
+    if($workflow -match '(?im)^\s*runs-on:\s*\[[^\]]*Windows[^\]]*mhw-mods[^\]]*\]' -and $workflow -match '(?im)^\s*shell:\s*pwsh\s*    $noPersistCount=[regex]::Matches($workflow,'(?im)^\s*persist-credentials:\s*false\s*$').Count
+    if($checkoutCount -ne $noPersistCount){
+        $errors.Add("$($workflowFile.Name): every checkout on a persistent self-hosted runner must set persist-credentials: false.")
+    }
+
+    $hasPullRequestTrigger=[regex]::IsMatch($workflow,'(?m)^\s{0,2}pull_request\s*:')
+    $hasSameRepoGuard=$workflow -match 'github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository'
+    if($hasPullRequestTrigger -and -not $hasSameRepoGuard){
+        $errors.Add("$($workflowFile.Name): self-hosted pull-request execution must reject fork PR code with an exact head.repo.full_name == github.repository guard.")
+    }
+
+    $jobsMatch=[regex]::Match($workflow,'(?m)^jobs:\s*$')
+    $header=if($jobsMatch.Success){$workflow.Substring(0,$jobsMatch.Index)}else{$workflow}
+    if($header -notmatch '(?m)^permissions:\s*$'){
+        $errors.Add("$($workflowFile.Name): persistent self-hosted workflows must declare explicit top-level permissions.")
+    }
+    $topLevelWrites=[regex]::Matches($header,'(?m)^\s{2,}[A-Za-z0-9_-]+:\s*write\s*$')
+    if($topLevelWrites.Count -gt 0 -and $persistentWriteAllowlist -notcontains $workflowFile.Name){
+        $errors.Add("$($workflowFile.Name): persistent self-hosted workflow has top-level write permission but is not an approved mutation/release workflow.")
+    }
+
+    foreach($match in [regex]::Matches($workflow,'(?im)^\s*uses:\s*([^\.\s][^@\s]+)@([^\s#]+)')){
+        $action=[string]$match.Groups[1].Value
+        $revision=[string]$match.Groups[2].Value
+        if($revision -notmatch '^[0-9a-fA-F]{40}$'){
+            $errors.Add("$($workflowFile.Name): external action $action must be pinned to a full 40-character commit SHA; found '$revision'.")
+        }
+    }
+}
+
+$workflowFeatureGatePath=Join-Path $workflowRoot 'workflow-feature-pr-gate.yml'
+if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
+    $errors.Add('workflow-feature-pr-gate.yml is missing.')
+}else{
+    $workflowFeatureGate=Get-Content -LiteralPath $workflowFeatureGatePath -Raw
+    foreach($requiredPath in @("      - 'src/**'","      - 'tests/**'")){
+        if(-not $workflowFeatureGate.Contains($requiredPath)){
+            $errors.Add("workflow-feature-pr-gate.yml must cover all product source and test paths; missing $requiredPath")
+        }
+    }
+}
+
+$trackedSecretGate=Join-Path $Root 'scripts\testing\Test-TrackedSecretLeaks.ps1'
+if(!(Test-Path -LiteralPath $trackedSecretGate -PathType Leaf)){
+    $errors.Add('Test-TrackedSecretLeaks.ps1 is missing.')
+}else{
+    try{ & $trackedSecretGate -Root $Root }
+    catch{ $errors.Add("Tracked secret/private-key gate failed: $($_.Exception.Message)") }
+}
+$propsPath=Join-Path $Root 'Directory.Build.props'
+if(!(Test-Path -LiteralPath $propsPath)){
+    $errors.Add('Directory.Build.props is missing.')
+}else{
+    $props=Get-Content -LiteralPath $propsPath -Raw
+    foreach($required in @('<NuGetAudit>true</NuGetAudit>','<NuGetAuditMode>all</NuGetAuditMode>','<NuGetAuditLevel>low</NuGetAuditLevel>')){
+        if(-not $props.Contains($required)){$errors.Add("Directory.Build.props: required vulnerability-audit invariant is missing: $required")}
+    }
+    if($props -match '(?i)<NuGetAudit>\s*false\s*</NuGetAudit>'){$errors.Add('Directory.Build.props: NuGet vulnerability auditing must not be disabled.')}
+}
+
+$updaterRoot=Join-Path $Root 'src\MhwModManager.Updater'
+if(Test-Path -LiteralPath $updaterRoot){
+    foreach($file in @(Get-ChildItem -LiteralPath $updaterRoot -Recurse -File -Filter '*.cs')){
+        $text=Get-Content -LiteralPath $file.FullName -Raw
+        $relative=$file.FullName.Substring($Root.Length).TrimStart([char[]]'\/').Replace('\','/')
+        if($text -match '(?i)http://'){$errors.Add("PATH: possible plaintext HTTP updater endpoint: $relative")}
+        if($text -match '\bZipFile\.ExtractToDirectory\s*\('){$errors.Add("PATH: updater must use bounded path-safe extraction: $relative")}
+    }
+}
+
+$releasePath=Join-Path $workflowRoot 'windows-release-gate.yml'
+if(!(Test-Path -LiteralPath $releasePath)){
+    $errors.Add('windows-release-gate.yml is missing.')
+}else{
+    $release=Get-Content -LiteralPath $releasePath -Raw
+    if($release.Contains('repos/cli/cli/releases/latest') -or $release.Contains('Get-Command gh')){
+        $errors.Add('windows-release-gate.yml: privileged release tooling must not trust a moving latest release or arbitrary preinstalled gh.exe.')
+    }
+    foreach($required in @(
+        '$version = ''2.101.0''',
+        'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794',
+        'Get-FileHash',
+        '$actualSha256 -ne $expectedSha256',
+        'https://github.com/cli/cli/releases/download/v${version}/${assetName}'
+    )){
+        if(-not $release.Contains($required)){$errors.Add("windows-release-gate.yml: verified GitHub CLI bootstrap invariant missing: $required")}
+    }
+    foreach($required in @(
+        '.\scripts\release\Sync-VerificationContinuity.ps1',
+        '_AGENT_CONTEXT/CURRENT_REVISION.json',
+        '_AGENT_CONTEXT/CURRENT_STATE.md',
+        'NEXT-AGENT-START-HERE.md'
+    )){
+        if(-not $release.Contains($required)){$errors.Add("windows-release-gate.yml: verification evidence/continuity atomicity invariant missing: $required")}
+    }
+    $syncIndex=$release.IndexOf('.\scripts\release\Sync-VerificationContinuity.ps1')
+    if($syncIndex -ge 0){
+        $postSync=$release.Substring($syncIndex)
+        $postSyncHandoff=$postSync.IndexOf('.\scripts\testing\Test-AgentHandoff.ps1')
+        $postSyncStage=$postSync.IndexOf("git add -- '.verification/function-status.json'")
+        if($postSyncHandoff -lt 0 -or $postSyncStage -lt 0 -or $postSyncHandoff -ge $postSyncStage){
+            $errors.Add('windows-release-gate.yml: synchronized continuity must pass the handoff validator before verification/evidence state is staged.')
+        }
+    }
+    $publicPublishIndex=$release.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
+    $privatePublishIndex=$release.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
+    $parityIndex=$release.IndexOf('Verify public and canonical updater release parity')
+    if($publicPublishIndex -lt 0 -or $privatePublishIndex -lt 0 -or $publicPublishIndex -ge $privatePublishIndex){
+        $errors.Add('windows-release-gate.yml: public updater client feed must publish before canonical/private release visibility.')
+    }
+    if($parityIndex -le $privatePublishIndex){$errors.Add('windows-release-gate.yml: public/private updater parity verification must run after both publication steps.')}
+    if(-not [regex]::IsMatch($release,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')){
+        $errors.Add('windows-release-gate.yml: cross-repository updater publication must not be cancelled in progress.')
+    }
+}
+
+$privatePublisherPath=Join-Path $Root 'scripts\release\Publish-UpdaterRelease.ps1'
+if(!(Test-Path -LiteralPath $privatePublisherPath)){
+    $errors.Add('Publish-UpdaterRelease.ps1 is missing.')
+}else{
+    $text=Get-Content -LiteralPath $privatePublisherPath -Raw
+    foreach($required in @(
+        "publicRepository='fengie/mhw-mod-manager-release'",
+        'Public updater client feed $tag must be published before canonical updater release publication.',
+        'Assert-UpdaterReleaseAssets -Release $publicRelease'
+    )){
+        if(-not $text.Contains($required)){$errors.Add("Publish-UpdaterRelease.ps1: canonical publisher precondition missing: $required")}
+    }
+}
+
+$publicPublisherPath=Join-Path $Root 'scripts\release\Publish-PublicUpdaterRelease.ps1'
+if(!(Test-Path -LiteralPath $publicPublisherPath)){
+    $errors.Add('Publish-PublicUpdaterRelease.ps1 is missing.')
+}else{
+    $text=Get-Content -LiteralPath $publicPublisherPath -Raw
+    foreach($required in @('ExpectedSourceSha=$env:GITHUB_SHA','Recovering abandoned public updater draft','Invoke-UpdaterDraftPublication','-RefreshMain','-EvaluateRefreshedMain','stale-main-unclassified-large-diff')){
+        if(-not $text.Contains($required)){$errors.Add("Publish-PublicUpdaterRelease.ps1: updater transaction invariant missing: $required")}
+    }
+    if($text.Contains('Canonical private updater release')){$errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')}
+}
+
+$updaterPrGatePath=Join-Path $workflowRoot 'updater-publication-pr-gate.yml'
+if(Test-Path -LiteralPath $updaterPrGatePath){
+    $gate=Get-Content -LiteralPath $updaterPrGatePath -Raw
+    if(-not $gate.Contains("      - '.github/workflows/windows-release-gate.yml'")){
+        $errors.Add('updater-publication-pr-gate.yml: release workflow ordering changes must trigger the updater publication PR gate.')
+    }
+}
+
+if($errors.Count -gt 0){
+    Write-Host "MHW product security policy failed with $($errors.Count) violation(s):" -ForegroundColor Red
+    foreach($item in $errors){Write-Host " - $item" -ForegroundColor Red}
+    throw 'MHW product security policy rejected the source tree.'
+}
+Write-Host 'PASS: MHW product/update/release security policy.' -ForegroundColor Green
+){
+        $errors.Add("$($workflowFile.Name): Heaven Windows self-hosted jobs must use the supported Windows PowerShell shell unless pwsh is explicitly provisioned.")
+    }
+
     $checkoutCount=[regex]::Matches($workflow,'(?im)^\s*uses:\s*actions/checkout@').Count
     $noPersistCount=[regex]::Matches($workflow,'(?im)^\s*persist-credentials:\s*false\s*$').Count
     if($checkoutCount -ne $noPersistCount){
