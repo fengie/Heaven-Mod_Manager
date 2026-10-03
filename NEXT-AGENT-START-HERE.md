@@ -11,5 +11,8 @@ Update migration resolves old/replacement IDs with `PathRules.Comparer`, canonic
 ## Verification boundary
 v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` passed hosted Windows run `37098443475`. v8.8.82 changes Automation source/tests and release metadata, so fresh exact-input verification is required.
 
+## Unresolved risks
+External updater signing/ruleset prerequisites and installed-Windows acceptance remain unresolved risks; preserve the current canonical risk ledger in `_AGENT_CONTEXT/CURRENT_REVISION.json`.
+
 ## Successor obligation
 The successor **must propagate** this continuity obligation to the **next agent after them**, and require that agent to continue the same recursive handoff. **Do not break the chain.**
