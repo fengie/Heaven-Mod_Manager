@@ -116,25 +116,53 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private void OpenPrivacyPolicy() => OpenBundledComplianceDocument("PRIVACY.md");
+    private void OpenPrivacyPolicy()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("PRIVACY.md");
+    }
 
     [RelayCommand]
-    private void OpenTermsOfUse() => OpenBundledComplianceDocument("TERMS.md");
+    private void OpenTermsOfUse()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("TERMS.md");
+    }
 
     [RelayCommand]
-    private void OpenRefundPolicy() => OpenBundledComplianceDocument("REFUND_POLICY.md");
+    private void OpenRefundPolicy()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("REFUND_POLICY.md");
+    }
 
     [RelayCommand]
-    private void OpenCookiePolicy() => OpenBundledComplianceDocument("COOKIE_POLICY.md");
+    private void OpenCookiePolicy()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("COOKIE_POLICY.md");
+    }
 
     [RelayCommand]
-    private void OpenThirdPartyNotices() => OpenBundledComplianceDocument("THIRD_PARTY_NOTICES.md");
+    private void OpenThirdPartyNotices()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("THIRD_PARTY_NOTICES.md");
+    }
 
     [RelayCommand]
-    private void OpenDataDeletionGuide() => OpenBundledComplianceDocument("DATA-DELETION.md");
+    private void OpenDataDeletionGuide()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("DATA-DELETION.md");
+    }
 
     [RelayCommand]
-    private void OpenSupportDetails() => OpenBundledComplianceDocument("SUPPORT.md");
+    private void OpenSupportDetails()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenBundledComplianceDocument("SUPPORT.md");
+    }
 
     [RelayCommand]
     private void OpenAppDataFolder()
