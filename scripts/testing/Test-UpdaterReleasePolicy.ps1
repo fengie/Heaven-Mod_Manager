@@ -129,6 +129,15 @@ try{
 }catch{$unsafeDurableRejected=$true}
 Assert-Equal $true $unsafeDurableRejected 'durable updater E2E rejects unexpected allowlisted-field value'
 
+$unsafeTagFixture=ConvertFrom-Json -InputObject $durableRawJson
+$unsafeTagFixture.oldTag='CANARY_OLD_TAG'
+$unsafeTagRejected=$false
+try{
+  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json ($unsafeTagFixture | ConvertTo-Json -Depth 8))
+}catch{$unsafeTagRejected=$true}
+Assert-Equal $true $unsafeTagRejected 'durable updater E2E rejects arbitrary old release tag'
+
+
 $staleUnknown=Get-UpdaterPublicationDecision -CurrentBuild 20 -CurrentSourceSha $current -RemoteMainSha $previous
 Assert-Equal $false $staleUnknown.Publish 'unclassified stale main publish'
 Assert-Equal 'stale-main-unclassified' $staleUnknown.Reason 'unclassified stale main reason'
@@ -423,7 +432,7 @@ Assert-Equal $true ($installedE2EWorkflow.Contains('name: updater-installed-clie
 Assert-Equal $true ($installedE2EWorkflow.Contains('ConvertTo-UpdaterInstalledClientDurableEvidenceJson')) 'installed-client E2E persistence projects raw runtime evidence through durable allowlist'
 Assert-Equal $true ($installedE2EWorkflow.Contains('=== DURABLE_EVIDENCE.JSON ===')) 'installed-client E2E closure labels durable evidence'
 Assert-Equal $false ($installedE2EWorkflow.Contains("'=== EVIDENCE.JSON ==='")) 'installed-client E2E closure never embeds raw evidence JSON'
-Assert-Equal $true ($installedE2EWorkflow.Contains('raw_evidence_sha256=')) 'installed-client E2E closure retains raw artifact hash without raw artifact contents'
+Assert-Equal $true ($installedE2EWorkflow.Contains('evidence_sha256=')) 'installed-client E2E closure preserves compatible raw artifact hash header without raw artifact contents'
 
 Assert-Equal $false ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ github.sha }}')) 'installed-client E2E artifact name must not bind to the later workflow/evidence commit'
 Assert-Equal $true ($installedE2EWorkflow.Contains('git rev-parse --is-shallow-repository')) 'installed-client E2E persistence detects shallow checkout history'
