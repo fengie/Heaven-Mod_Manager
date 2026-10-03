@@ -1,3 +1,9 @@
+# v8.8.84 — 2026-10-03
+
+- Close #673 by giving each unmanaged-adoption run an invocation-unique package root, preventing concurrent cleanup from deleting another run's package.
+- Revalidate live-root containment and reject reparse-point source components immediately around the copy boundary.
+- Hash the copied payload and require it to match the discovery-time candidate before any adoption record is committed, failing closed on concurrent source mutation.
+
 # v8.8.83 — 2026-10-03
 
 - Close #650 by making self-test and installed-client updater E2E temp roots self-clean on success and failure instead of silently accumulating under the Windows temp directory.
