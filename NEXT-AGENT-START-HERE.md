@@ -15,7 +15,9 @@ Change set: issue #622
 
 ## Verification boundary
 
-v8.8.79 source `6a10008fdcaae5112653593d62b41f5ef4668b36` passed hosted-Windows run `37085548752` and installed-client E2E run `37085941626`, but the E2E repository-persistence fallback skipped against evidence-only main `dc114b07935ca44ba19af82ae5c77a3ead09f4db` because the checkout was shallow. v8.8.80 changes release workflow/test inputs and version metadata, so it requires fresh exact-input Windows verification and a fresh installed-client E2E with durable evidence persistence.
+Current hosted-Windows closure: v8.8.80 source `6e97751252ce1875550a6cd35630bb63e25a1de3` passed run `37091006888` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.80-heaven-windows-closure.log`.
+
+The tested source remains `6e97751252ce1875550a6cd35630bb63e25a1de3` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and next work
 

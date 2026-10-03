@@ -12,7 +12,9 @@ v8.8.79 source `6a10008fdcaae5112653593d62b41f5ef4668b36` passed hosted-Windows 
 
 ## Verification boundary
 
-v8.8.79 source `6a10008fdcaae5112653593d62b41f5ef4668b36` remains the last closed hosted-Windows source boundary. v8.8.80 changes release workflow/test inputs and version metadata, so it requires fresh exact-input Windows verification and a fresh installed-client E2E whose durable evidence is successfully persisted. Do not inherit v8.8.79 green status.
+Current hosted-Windows closure: v8.8.80 source `6e97751252ce1875550a6cd35630bb63e25a1de3` passed run `37091006888` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.80-heaven-windows-closure.log`.
+
+The tested source remains `6e97751252ce1875550a6cd35630bb63e25a1de3` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
