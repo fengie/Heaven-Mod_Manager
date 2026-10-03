@@ -19,6 +19,7 @@ public sealed class NexusV3TransportTests
             Assert.Null(request.Headers.Authorization);
             Assert.False(request.Headers.Contains("apikey"));
             Assert.Contains("MHW-Manual-Mod-Manager", request.Headers.GetValues("User-Agent"));
+            Assert.Equal("test-8.8.90", Assert.Single(request.Headers.GetValues("Application-Version")));
 
             var response = JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json"));
             response.Headers.ETag = new EntityTagHeaderValue("\"trend-v1\"");
@@ -26,7 +27,7 @@ public sealed class NexusV3TransportTests
         });
 
         using var client = new HttpClient(handler);
-        var transport = new NexusV3Transport(client);
+        var transport = new NexusV3Transport(client, applicationVersion: "test-8.8.90");
         using var result = await transport.GetTrendingModsAsync(
             "monsterhunterworld",
             ct: TestContext.Current.CancellationToken);
@@ -40,6 +41,59 @@ public sealed class NexusV3TransportTests
                 .GetProperty("data")
                 .GetProperty("mods")
                 .GetArrayLength());
+    }
+
+    [Fact]
+    public async Task Successful_response_carries_nexus_quota_headers_and_reset_times()
+    {
+        var hourlyReset = new DateTimeOffset(2026, 10, 3, 21, 0, 0, TimeSpan.Zero);
+        var dailyReset = new DateTimeOffset(2026, 10, 4, 0, 0, 0, TimeSpan.Zero);
+        var handler = new RecordingHandler((_, _) =>
+        {
+            var response = JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json"));
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Limit", "500");
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Remaining", "41");
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Limit", "20000");
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Remaining", "12345");
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Reset", hourlyReset.ToString("O"));
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Reset", dailyReset.ToString("O"));
+            return Task.FromResult(response);
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new NexusV3Transport(client);
+        using var result = await transport.GetTrendingModsAsync(
+            "monsterhunterworld",
+            ct: TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.RateLimit);
+        Assert.Equal(500, result.RateLimit!.HourlyLimit);
+        Assert.Equal(41, result.RateLimit.HourlyRemaining);
+        Assert.Equal(20000, result.RateLimit.DailyLimit);
+        Assert.Equal(12345, result.RateLimit.DailyRemaining);
+        Assert.Equal(hourlyReset, result.RateLimit.HourlyReset);
+        Assert.Equal(dailyReset, result.RateLimit.DailyReset);
+    }
+
+    [Fact]
+    public async Task Malformed_quota_headers_degrade_to_unknown_without_rejecting_payload()
+    {
+        var handler = new RecordingHandler((_, _) =>
+        {
+            var response = JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json"));
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Remaining", "not-a-number");
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Reset", "not-a-date");
+            return Task.FromResult(response);
+        });
+
+        using var client = new HttpClient(handler);
+        var transport = new NexusV3Transport(client);
+        using var result = await transport.GetTrendingModsAsync(
+            "monsterhunterworld",
+            ct: TestContext.Current.CancellationToken);
+
+        Assert.NotNull(result.Document);
+        Assert.Null(result.RateLimit);
     }
 
     [Fact]
@@ -111,6 +165,9 @@ public sealed class NexusV3TransportTests
             calls++;
             var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
             response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(17));
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Limit", "500");
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Remaining", "0");
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Reset", "2026-10-03T21:00:00Z");
             return Task.FromResult(response);
         });
 
@@ -126,6 +183,11 @@ public sealed class NexusV3TransportTests
 
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
         Assert.Equal(TimeSpan.FromSeconds(17), exception.RetryAfter);
+        Assert.Equal(500, exception.RateLimit?.HourlyLimit);
+        Assert.Equal(0, exception.RateLimit?.HourlyRemaining);
+        Assert.Equal(
+            new DateTimeOffset(2026, 10, 3, 21, 0, 0, TimeSpan.Zero),
+            exception.RateLimit?.HourlyReset);
         Assert.DoesNotContain(secret, exception.Message, StringComparison.Ordinal);
         Assert.Equal(1, calls);
     }
