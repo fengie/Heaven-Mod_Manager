@@ -223,6 +223,17 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void BrowseModsZeroMatchCopyDoesNotClaimTypingQueriedProviders()
+    {
+        var state = CatalogBrowseResultState.From("armor", 0);
+
+        Assert.Equal(
+            "No matching results are in the local cache. Typing filters cached results; choose Search to query configured providers that support text search, or clear the search to return to all cached mods.",
+            state.Detail);
+        Assert.DoesNotContain("cached or provider results", state.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BrowseModsEmptyStatesExposeRecoveryActionsAndHideDeadEndSelectionPrompt()
     {
         var root = FindRepositoryRoot();
