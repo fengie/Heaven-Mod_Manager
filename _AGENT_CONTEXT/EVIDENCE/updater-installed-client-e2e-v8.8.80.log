@@ -1,12 +1,12 @@
 ﻿MHW Manual Mod Manager v8.8.80 installed-client updater E2E closure
-source_sha=6e97751252ce1875550a6cd35630bb63e25a1de3
-run_id=37091391234
+source_sha=e7af34331b608fca3d115d2dfe20f5c8e69a5973
+run_id=37093206937
 runner_os=Windows
 runner_arch=X64
 dotnet_sdk=10.0.401
-evidence_sha256=82FC9A246B386C1F2635079DDC8ACFFA4610A3D0A43D976A63B9C216A119B3D2
-provenance_sha256=530E84BD90A4A066CEADB41399D7ADEB68D2F0B18DF0BA8D66C4F30471DD0235
-installed_client_test_log_sha256=8DD0A283E0BCD285EE7B7766AE68C3F71FE2134E714A6E14CC36C558EFC303BF
+evidence_sha256=D446D68628AA3ECFAF2C5F2F23CA1E177D59729B6D3D87A2CAA10E7A0E929037
+provenance_sha256=ECF9A4ED44D6DBA9A98EFC19EF2F5A66A12616700AAAA9E1109532614D5D03CB
+installed_client_test_log_sha256=3ACFBEA99B8F795DBA12CF43A289D4B030B4ECFF4AF495E6B01F9CF139E6B5FD
 rollback_regression_log_sha256=67D26151BEE2A7F6C739344825041EFB2E36A1246BEE07429F57D6754DA872C8
 
 === EVIDENCE.JSON ===
@@ -15,20 +15,20 @@ rollback_regression_log_sha256=67D26151BEE2A7F6C739344825041EFB2E36A1246BEE07429
   "oldTag": "updater-main-60",
   "oldBuild": 60,
   "oldSource": "ffd218b6ad4e9f4fea4b143d266712a6fa17a285",
-  "targetBuild": 424,
-  "targetSource": "6e97751252ce1875550a6cd35630bb63e25a1de3",
-  "startedUtc": "2026-10-03T02:55:14.7845843+00:00",
+  "targetBuild": 425,
+  "targetSource": "e7af34331b608fca3d115d2dfe20f5c8e69a5973",
+  "startedUtc": "2026-10-03T03:27:44.1549919+00:00",
   "scenarioA": {
     "status": "PASS",
-    "installRoot": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-installed-e2e-8f9eb8426fdc4cee886b3e6c5c2e863e\\success-install",
-    "requestPath": "C:\\Users\\Xxkan\\AppData\\Local\\MhwModManager\\Updater\\transactions\\424-c35491255e704f9b9f41a2d49832e8f5\\apply-request.json",
-    "targetBuild": 424,
-    "targetSource": "6e97751252ce1875550a6cd35630bb63e25a1de3",
+    "installRoot": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-installed-e2e-697cde46ed444405a755efe934b5a642\\success-install",
+    "requestPath": "C:\\Users\\Xxkan\\AppData\\Local\\MhwModManager\\Updater\\transactions\\425-98eb59487ecd4130bf3fd686b74d9fe6\\apply-request.json",
+    "targetBuild": 425,
+    "targetSource": "e7af34331b608fca3d115d2dfe20f5c8e69a5973",
     "oldClientExitCode": 0,
-    "healthProcessId": 47268,
-    "healthAttemptId": "96da5ccb461c440998975b3c1d04e575",
-    "healthBuild": 424,
-    "healthSource": "6e97751252ce1875550a6cd35630bb63e25a1de3",
+    "healthProcessId": 18424,
+    "healthAttemptId": "02f6f2755f024564931546a815f47dd3",
+    "healthBuild": 425,
+    "healthSource": "e7af34331b608fca3d115d2dfe20f5c8e69a5973",
     "selectorDisplayText": "Updater E2E Fake Game",
     "switchButtonEnabled": true,
     "settingsButtonEnabled": true,
@@ -41,7 +41,7 @@ rollback_regression_log_sha256=67D26151BEE2A7F6C739344825041EFB2E36A1246BEE07429
   },
   "scenarioB": {
     "status": "PASS",
-    "installRoot": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-installed-e2e-8f9eb8426fdc4cee886b3e6c5c2e863e\\rollback-install",
+    "installRoot": "C:\\Users\\Xxkan\\AppData\\Local\\Temp\\mhw-updater-installed-e2e-697cde46ed444405a755efe934b5a642\\rollback-install",
     "journalPhase": "RolledBack",
     "restoredBuild": 60,
     "restoredSource": "ffd218b6ad4e9f4fea4b143d266712a6fa17a285",
@@ -192,5 +192,5 @@ rollback_regression_log_sha256=67D26151BEE2A7F6C739344825041EFB2E36A1246BEE07429
     "update backup created files=689",
     "update rollback restored files=689"
   ],
-  "completedUtc": "2026-10-03T02:56:14.802165+00:00"
+  "completedUtc": "2026-10-03T03:28:44.4018001+00:00"
 }
