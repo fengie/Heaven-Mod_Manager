@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.87",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.86 source 21e7dbd1c71d66be542095be4e6d397879b7b134 passed hosted Windows verification run 37132556908; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.86-heaven-windows-closure.log. v8.8.87 changes HPN package composition behavior and requires fresh exact-final-head feature verification plus fresh canonical Windows closure after integration.",
+  "immediateParentRevision": "v8.8.86 source 7a8b602cf87be65c0dfefbaac84288b6b010df23 passed hosted Windows verification run 37135652874; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.86-heaven-windows-closure.log. v8.8.87 changes HPN package composition behavior and requires fresh exact-final-head feature verification plus fresh canonical Windows closure after integration.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
