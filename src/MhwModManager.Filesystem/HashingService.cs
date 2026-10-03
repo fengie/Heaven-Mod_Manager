@@ -16,6 +16,7 @@ public sealed class HashingService
     public Task<HashResult> HashFileAsync(string path, bool authoritative = true, CancellationToken ct = default) =>
         HashFileCoreAsync(path, authoritative, afterInitialRead: null, ct);
 
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Test seam remains on the injectable service surface for focused source-mutation regressions.")]
     internal Task<HashResult> HashFileForTestingAsync(
         string path,
         bool authoritative,
@@ -23,7 +24,7 @@ public sealed class HashingService
         CancellationToken ct = default) =>
         HashFileCoreAsync(path, authoritative, afterInitialRead, ct);
 
-    private async Task<HashResult> HashFileCoreAsync(
+    private static async Task<HashResult> HashFileCoreAsync(
         string path,
         bool authoritative,
         Func<string, CancellationToken, Task>? afterInitialRead,
