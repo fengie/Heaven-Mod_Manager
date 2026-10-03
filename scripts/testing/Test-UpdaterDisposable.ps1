@@ -79,10 +79,9 @@ function Assert-Owned([string]$Root,$Product) {
     }
 }
 
-$script:ScratchMarkerName='.mhw-test-scratch.json'
 function Write-ScratchMarker([string]$Root,[string]$Owner,[string]$Token) {
     $process=Get-Process -Id $PID
-    Write-Json (Join-Path $Root $script:ScratchMarkerName) @{
+    Write-Json (Join-Path $Root '.mhw-test-scratch.json') @{
         schema='mhw-test-scratch/v1'
         owner=$Owner
         token=$Token
@@ -94,7 +93,7 @@ function Write-ScratchMarker([string]$Root,[string]$Owner,[string]$Token) {
 function Remove-OwnedScratchRoot([string]$Root,[string]$Token) {
     if(-not (Test-Path -LiteralPath $Root)){ return }
     Assert-NoReparse $Root
-    $markerPath=Join-Path $Root $script:ScratchMarkerName
+    $markerPath=Join-Path $Root '.mhw-test-scratch.json'
     Assert-That (Test-Path -LiteralPath $markerPath -PathType Leaf) 'Refusing to delete unmarked disposable scratch root.'
     $marker=Read-Json $markerPath
     Assert-That ($marker.schema -ceq 'mhw-test-scratch/v1') 'Disposable scratch marker schema mismatch.'
