@@ -11,6 +11,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Unshallow canonical `main` history before updater installed-client E2E ancestry/drift classification so evidence-only release commits cannot look falsely divergent.
 - Refresh the explicit `origin/main` remote-tracking ref before classifying evidence-only versus release-relevant drift.
 - Regress ordering so complete-history recovery must occur before `merge-base --is-ancestor`.
+- Bind E2E artifact names to the exact tested release SHA instead of the workflow-run/evidence commit.
 - Close the durable-evidence gap exposed after the successful v8.8.79 installed-client update/rollback run.
 
 ## v8.8.79 — automation state integrity
