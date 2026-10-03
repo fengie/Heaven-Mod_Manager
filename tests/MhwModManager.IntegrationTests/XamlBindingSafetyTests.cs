@@ -496,7 +496,7 @@ public sealed partial class XamlBindingSafetyTests
             Directory.CreateDirectory(nested);
             File.WriteAllBytes(Path.Combine(nested, "b.bin"), new byte[2048]);
 
-            Assert.Equal(3072, StorageUsageProbe.MeasureTree(root));
+            Assert.Equal(3072, StorageUsageProbe.MeasureTree(root, TestContext.Current.CancellationToken));
             Assert.Equal("3.0 KiB", MainWindowViewModel.FormatStorageBytes(3072));
         }
         finally
