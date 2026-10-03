@@ -1,10 +1,18 @@
-# v8.8.81 — MHW Manual Mod Manager
+# v8.8.82 — MHW Manual Mod Manager
 
-Current product version: **8.8.81**.
+Current product version: **8.8.82**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.82 — updater helper request topology binding
+
+- Bind each helper handoff transaction identity to the exact target manifest plus canonical install, staging, and manager-home roots.
+- Validate the request topology before the helper acquires the update mutex or reads recovery state.
+- Require backup, journal, health, pending, and staging paths to match the canonical transaction layout; reject noncanonical path spellings and cross-attempt substitutions.
+- Bind helper consumption to the canonical pending update state, while preserving the already-confirmed terminal no-op after pending cleanup.
+- Add adversarial coverage for path substitution, traversal aliases, malformed request identity, updater-owned health arguments, and Windows reparse-point substitution.
 
 ## v8.8.81 — allowlisted updater E2E evidence
 
@@ -21,13 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Regress ordering so complete-history recovery must occur before `merge-base --is-ancestor`.
 - Bind E2E artifact names to the exact tested release SHA instead of the workflow-run/evidence commit.
 - Close the durable-evidence gap exposed after the successful v8.8.79 installed-client update/rollback run.
-
-## v8.8.79 — automation state integrity
-
-- Keep indexed save-snapshot reparse entries retryable: unlink only the immediate reparse entry and delete its database row only after unlink succeeds.
-- Preserve the no-traversal boundary so pruning never recursively follows an untrusted junction/symlink target.
-- Make last-known-good change detection symmetric so removed mods are reported alongside additions, enable-state changes, and priority changes.
-- Add Windows junction and mixed last-known-good state regressions.
 
 ## Current plans & progress
 
