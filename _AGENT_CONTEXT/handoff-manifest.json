@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.82",
+  "currentVersion": "8.8.83",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.81 is the last closed hosted-Windows source boundary. v8.8.82 makes MHW self-test and updater verification scratch self-cleaning, preserves only durable evidence, and adds conservative marker-based stale scratch maintenance.",
+  "immediateParentRevision": "v8.8.82 source 0e78e56a18955390cfaa5f17b0787c6111fbaa38 passed exact-head Workflow Feature PR Gate run 37106871213 and integrated via PR #658. v8.8.83 makes MHW self-test and updater verification scratch self-cleaning, preserves only durable evidence, and adds conservative marker-based stale scratch maintenance.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, destructive-filesystem containment, and the durable updater E2E evidence privacy boundary. Verify v8.8.82 on exact source before treating it as closed. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, the v8.8.82 updater request-topology/storage-retention boundary, destructive-filesystem containment, and the durable updater E2E evidence privacy boundary. Verify v8.8.83 on exact source before treating it as closed. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

@@ -1,6 +1,6 @@
-# v8.8.82 self-cleaning test scratch — canonical state
+# v8.8.83 self-cleaning test scratch — canonical state
 
-v8.8.82 closes the unbounded disposable-test scratch leak reported in issue #650. Raw self-test/updater workspaces are transient again; durable evidence remains outside scratch where required.
+v8.8.83 closes the unbounded disposable-test scratch leak reported in issue #650. Raw self-test/updater workspaces are transient again; durable evidence remains outside scratch where required.
 
 ## Behavior
 
@@ -12,9 +12,9 @@ v8.8.82 closes the unbounded disposable-test scratch leak reported in issue #650
 
 ## Verification boundary
 
-The last closed hosted-Windows boundary remains v8.8.81 source `aa5e56afa5bf8db73bcb7ac0af0c9825874c736a`, run `37105670926`. That evidence does **not** attest v8.8.82.
+The last closed exact-head Windows boundary is v8.8.82 source `0e78e56a18955390cfaa5f17b0787c6111fbaa38`, Workflow Feature PR Gate run `37106871213`. That evidence does **not** attest v8.8.83.
 
-v8.8.82 requires fresh exact-source verification covering PowerShell parsing/contract tests, self-test scratch deletion, the integration suite, and the normal Windows release gate. Do not promote the previous closure to this source.
+v8.8.83 requires fresh exact-source verification covering PowerShell parsing/contract tests, self-test scratch deletion, the integration suite, and the normal Windows release gate. Preserve the already-integrated v8.8.82 updater topology/storage-retention boundary while verifying this source.
 
 ## Remaining independent work
 

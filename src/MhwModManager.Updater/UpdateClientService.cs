@@ -210,8 +210,11 @@ public sealed class UpdateClientService : IDisposable
 
         var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
         UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
-        var transactionId =
-            $"{staged.Manifest.BuildNumber}-{Guid.NewGuid():N}";
+        var transactionId = UpdateRequestStore.CreateBoundTransactionId(
+            staged.Manifest,
+            fullInstallRoot,
+            staged.StagingRoot,
+            fullManagerHomeRoot);
         var transactionRoot = Path.Combine(
             updaterRoot,
             "transactions",

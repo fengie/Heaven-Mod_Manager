@@ -123,6 +123,10 @@ public sealed class UpdateInstaller(
         await WriteJournalAsync(request, UpdateJournalPhase.Confirmed, null, ct);
         try { if (File.Exists(request.PendingPath)) File.Delete(request.PendingPath); } catch { }
         try { if (Directory.Exists(request.BackupRoot)) Directory.Delete(request.BackupRoot, true); } catch (Exception ex) { writeLog($"update backup cleanup deferred: {ex.Message}"); }
+        UpdateStorageMaintenance.DeleteConfirmedStagingBestEffort(
+            request.StagingRoot,
+            request.Manifest.BuildNumber,
+            writeLog);
     }
 
     public async Task RollbackAsync(UpdateApplyRequest request, CancellationToken ct)
