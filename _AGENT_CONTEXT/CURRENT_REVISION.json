@@ -10,10 +10,10 @@
     "status":  "v8.8.87-hpn-composition-precedence-canonical-awaiting-exact-verification",
     "nextMilestone":  "Current v8.8.87 hosted Windows verification is closed; continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md while preserving unresolved external security gates.",
     "nextRequiredAction":  "Refresh canonical main and live ownership, then continue the next non-overlapping actionable project-plan item; do not reintegrate or rerun the already-verified v8.8.87 source solely because the evidence-only persistence commit advanced main.",
-    "verificationAppliesToCommit":  "166369c60d6b5a726fbccd1eecac073ebdaa7ce3",
-    "lastClosedVerificationCommit":  "166369c60d6b5a726fbccd1eecac073ebdaa7ce3",
-    "lastClosedVerificationRun":  "v8.8.87 source 166369c60d6b5a726fbccd1eecac073ebdaa7ce3: hosted Windows verification run 37140984099 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.87 exact source 166369c60d6b5a726fbccd1eecac073ebdaa7ce3 passed hosted Windows verification run 37140984099. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "verificationAppliesToCommit":  "4d94e6700d6d027449ef45eeab9c753d8ce56c26",
+    "lastClosedVerificationCommit":  "4d94e6700d6d027449ef45eeab9c753d8ce56c26",
+    "lastClosedVerificationRun":  "v8.8.87 source 4d94e6700d6d027449ef45eeab9c753d8ce56c26: hosted Windows verification run 37142564667 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.87 exact source 4d94e6700d6d027449ef45eeab9c753d8ce56c26 passed hosted Windows verification run 37142564667. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -46,8 +46,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "166369c60d6b5a726fbccd1eecac073ebdaa7ce3",
-                                          "runId":  37140984099,
+                                          "sourceSha":  "4d94e6700d6d027449ef45eeab9c753d8ce56c26",
+                                          "runId":  37142564667,
                                           "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log"
                                       }
 }
