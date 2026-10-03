@@ -1,8 +1,8 @@
 # v8.8.89 privacy, legal & accessibility baseline — handoff
 
-Canonical repository: `fengie/mhw-mods`  
-Global bootstrap/training: `fengie/heaven-toolbox@main`  
-Canonical target branch: `main`  
+Canonical repository: `fengie/mhw-mods`
+Global bootstrap/training: `fengie/heaven-toolbox@main`
+Canonical target branch: `main`
 Change set: issue #710
 
 ## v8.8.89 behavior
@@ -20,6 +20,10 @@ Change set: issue #710
 Last closed canonical Windows source remains v8.8.88 `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
 
 v8.8.89 changes shipped app source/XAML/tests/content and release metadata, so earlier greens do not authorize release closure. Require fresh exact-input canonical Windows verification for the integrated v8.8.89 source before calling the patch closed/released.
+
+## Unresolved risk
+
+Risk: v8.8.89 has not yet completed exact integrated Windows closure. Even if the PR gates pass, do not call the patch closed or released until canonical main is verified by a fresh Windows run and that exact-source evidence is persisted.
 
 ## Execution/offload note
 
