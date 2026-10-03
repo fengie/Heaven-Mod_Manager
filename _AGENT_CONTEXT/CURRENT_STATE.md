@@ -12,9 +12,9 @@ v8.8.83 closes the unbounded disposable-test scratch leak reported in issue #650
 
 ## Verification boundary
 
-The last closed exact-head Windows boundary is v8.8.82 source `0e78e56a18955390cfaa5f17b0787c6111fbaa38`, Workflow Feature PR Gate run `37106871213`. That evidence does **not** attest v8.8.83.
+The last closed exact-head Windows boundary is v8.8.82 source `f46793a18700524ac7b5fb34770200206d6595f2`, hosted-Windows run `37107057966`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log`. Evidence-only commits `00dcf4a5076335b69c636a2c0cb4c84ac333a43e` and `d57e888f392b1180c563e80c96df31fd9fd8cdc0` do not change that tested-source identity.
 
-v8.8.83 requires fresh exact-source verification covering PowerShell parsing/contract tests, self-test scratch deletion, the integration suite, and the normal Windows release gate. Preserve the already-integrated v8.8.82 updater topology/storage-retention boundary while verifying this source.
+That evidence does **not** attest v8.8.83. v8.8.83 requires fresh exact-source verification covering PowerShell parsing/contract tests, self-test scratch deletion, integration tests, and the normal Windows release gate. Preserve the already-integrated v8.8.82 updater topology/storage-retention boundary while verifying this source.
 
 ## Remaining independent work
 
