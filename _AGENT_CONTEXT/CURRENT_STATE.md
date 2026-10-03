@@ -1,8 +1,12 @@
-# v8.8.85 feature verification decoupling — canonical state
+# v8.8.86 storage/filesystem hardening — canonical state
 
-v8.8.85 closes issue #675 by separating feature-candidate product verification from canonical release-version metadata without weakening the exact-main release/publication boundary.
+v8.8.86 adds updater staging-capacity preflight plus unmanaged-adoption and import-filesystem hardening on top of the verified v8.8.85 publication/verification baseline.
 
 ## Behavior
+
+- Updater staging fails before download when the actual staging volume cannot satisfy the bounded capacity budget.
+- Unmanaged adoption uses invocation-owned roots and copy-time containment/reparse plus SHA-256 certification.
+- Import publication and recursive cleanup/rollback fail closed on descendant reparse topology.
 
 - Workflow Feature PR Gate invokes `Verify-Release.ps1 -FeatureCandidate` on the exact PR head.
 - Feature-candidate mode defers only global release-version surface parity: VERSION/build version, current-version README/CHANGELOG/handoff parity, and current-version closure projection.

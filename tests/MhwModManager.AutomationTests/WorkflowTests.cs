@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Text.Json;
 using MhwModManager.Automation;
@@ -26,6 +27,27 @@ public sealed class WorkflowTests : IDisposable
         await db.UpsertModAsync(new(id, id, id, Path.Combine(root, id), enabled, 1, NexusModId: "42", NexusFileId: nexusFile, NexusVersion: "1"), Token);
         await db.ReplaceModFilesAsync(id, [new(id, @"nativePC\a.tex", new string('a', 64), null, 1, DateTimeOffset.UtcNow, FileClass.Texture)], Token);
     }
+    private static void CreateDirectoryJunction(string link, string target)
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException();
+        var info = new ProcessStartInfo("cmd.exe", $"/d /c mklink /J \"{link}\" \"{target}\"")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        using var process = Process.Start(info) ?? throw new InvalidOperationException("Could not start cmd.exe to create junction.");
+        process.WaitForExit();
+        if (process.ExitCode != 0)
+        {
+            var error = process.StandardError.ReadToEnd();
+            var output = process.StandardOutput.ReadToEnd();
+            throw new IOException($"Could not create test junction '{link}' -> '{target}'. Exit={process.ExitCode}; stdout={output}; stderr={error}");
+        }
+        Assert.True((File.GetAttributes(link) & FileAttributes.ReparsePoint) != 0);
+    }
+
     [Fact]
     public async Task RecipeRoundTripRemapsNexusIdentityWithoutEnablingLiveMods()
     {
@@ -370,6 +392,121 @@ public sealed class WorkflowTests : IDisposable
 
         Assert.True(Directory.Exists(outside));
         Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+    }
+
+    [Fact]
+    public async Task ArchiveImportRejectsDescendantReparsePointBeforePublication()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "import-descendant-reparse-mods");
+        var state = Path.Combine(root, "import-descendant-reparse-state");
+        var external = Path.Combine(root, "import-descendant-reparse-external");
+        Directory.CreateDirectory(mods);
+        Directory.CreateDirectory(external);
+        var sentinel = Path.Combine(external, "sentinel.txt");
+        await File.WriteAllTextAsync(sentinel, "KEEP", Token);
+
+        var archivePath = Path.Combine(root, "Nested Reparse.zip");
+        await WriteZipAsync(archivePath, new Dictionary<string, string> { ["nativePC/item.bin"] = "ITEM" });
+
+        var injected = false;
+        string? redirect = null;
+        var inspector = new ArchiveInspector((point, destination) =>
+        {
+            if (point != ArchiveExtractionFaultPoint.BeforePayloadWrite || injected) return;
+            injected = true;
+            var parent = Path.GetDirectoryName(destination)
+                ?? throw new InvalidOperationException("Archive destination has no parent.");
+            var staging = Directory.GetParent(parent)?.FullName
+                ?? throw new InvalidOperationException("Archive staging path has no parent.");
+            redirect = Path.Combine(staging, "redirect");
+            CreateDirectoryJunction(redirect, external);
+        });
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var importer = new ArchiveImportService(inspector, catalog, mods);
+
+        try
+        {
+            var failure = await Assert.ThrowsAsync<IOException>(() => importer.ImportAsync(archivePath, Token));
+
+            Assert.True(injected);
+            Assert.Contains("reparse point", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+            Assert.Empty(Directory.EnumerateDirectories(mods));
+
+            var workspace = Path.Combine(
+                Path.GetDirectoryName(Path.GetFullPath(mods))!,
+                $".{Path.GetFileName(Path.GetFullPath(mods))}.import-work");
+            var residue = Assert.Single(Directory.EnumerateDirectories(workspace));
+            Assert.Equal(Path.Combine(residue, "redirect"), redirect);
+            Assert.True(Directory.Exists(redirect));
+        }
+        finally
+        {
+            if (redirect is not null && Directory.Exists(redirect))
+                Directory.Delete(redirect);
+        }
+    }
+
+    [Fact]
+    public async Task SmartInboxRollbackRefusesDescendantReparsePoint()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var db = await DatabaseAsync();
+        var mods = Path.Combine(root, "inbox-descendant-reparse-mods");
+        var inbox = Path.Combine(root, "inbox-descendant-reparse-inbox");
+        var state = Path.Combine(root, "inbox-descendant-reparse-state");
+        var external = Path.Combine(root, "inbox-descendant-reparse-external");
+        Directory.CreateDirectory(mods);
+        Directory.CreateDirectory(inbox);
+        Directory.CreateDirectory(external);
+        var sentinel = Path.Combine(external, "sentinel.txt");
+        await File.WriteAllTextAsync(sentinel, "KEEP", Token);
+
+        var source = Path.Combine(inbox, "Pack");
+        Directory.CreateDirectory(Path.Combine(source, "nativePC"));
+        await File.WriteAllTextAsync(Path.Combine(source, "nativePC", "item.tex"), "ITEM", Token);
+
+        var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
+        var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
+        var categories = new AutoCategoryService(db);
+        var nexus = new NexusMetadataService(db, new PlannerSnapshotRepository(db), state);
+        string? redirect = null;
+        var service = new SmartInboxService(
+            db,
+            new ArchiveInspector(),
+            catalog,
+            nexus,
+            categories,
+            inbox,
+            mods,
+            faultInjector: (point, destination) =>
+            {
+                if (point != SmartInboxFaultPoint.AfterPublishBeforeSourceArchive) return;
+                redirect = Path.Combine(destination, "redirect");
+                CreateDirectoryJunction(redirect, external);
+                throw new IOException("injected source archival failure after descendant reparse substitution");
+            });
+
+        try
+        {
+            var failure = await Assert.ThrowsAsync<IOException>(() => service.ProcessAsync(Token));
+
+            Assert.Contains("rollback", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+            Assert.True(Directory.Exists(source));
+            Assert.True(Directory.Exists(Path.Combine(mods, "Pack")));
+            Assert.Empty(await db.GetModsAsync(Token));
+        }
+        finally
+        {
+            if (redirect is not null && Directory.Exists(redirect))
+                Directory.Delete(redirect);
+        }
     }
 
     [Fact]
