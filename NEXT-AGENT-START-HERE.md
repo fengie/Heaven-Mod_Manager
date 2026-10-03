@@ -1,28 +1,32 @@
-# v8.8.81 allowlisted updater E2E evidence — canonical handoff
+# v8.8.82 updater helper request topology — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #632
+Change set: issues #635 and #647
 
-## v8.8.81 behavior
+## v8.8.82 behavior
 
-- Persist only the versioned allowlisted installed-client updater E2E projection; keep raw runtime diagnostics transient.
-- Bind durable target-source identity to the exact workflow-tested source SHA.
-- Validate old release identity, successful update confirmation, rollback restoration, UI acceptance, and fixed sentinel hashes before persistence.
-- Exclude runner-local paths/usernames, process/attempt IDs, target-only path inventories, logs, timestamps, runner environment metadata, and unknown future fields.
-- Preserve the raw evidence SHA-256 as provenance without embedding raw JSON in Git history.
+- Bind each updater helper transaction identity to the target manifest plus canonical install, staging, and manager-home roots.
+- Validate the complete helper request topology before mutex acquisition or recovery-state access.
+- Require request, backup, journal, health, pending, and staging paths to match the canonical updater layout; reject cross-attempt/root substitution and noncanonical path aliases.
+- Reject malformed health/process identity, updater-owned health arguments, and existing reparse-point substitution.
+- Require canonical pending-update state to agree with the request manifest and staging root while preserving already-confirmed terminal no-op behavior after pending cleanup.
+- Stop retaining the verified release ZIP once extraction and product verification are complete.
+- Retire confirmed staging immediately and clean sufficiently old orphan staging / terminal confirmed-or-rolled-back transaction directories without touching pending or recovery-required state.
+- Fail closed on malformed pending state and refuse reparse-point traversal during cleanup.
+- Preserve the v8.8.81 durable installed-client E2E privacy boundary unchanged.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.81 source `b46f7324d860c66dd3572013dbba571dec319c87` passed run `37103097571` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+The last closed hosted-Windows verification is v8.8.81 source `b46f7324d860c66dd3572013dbba571dec319c87`, run `37103097571`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
-The tested source remains `b46f7324d860c66dd3572013dbba571dec319c87` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+v8.8.82 changes updater topology, staging/retention behavior, startup maintenance, integration tests, and synchronized release metadata, so the final exact source requires fresh verification before integration/publication. Never inherit v8.8.81 or an earlier v8.8.82 intermediate-head result onto changed source.
 
 ## Unresolved risks and next work
 
-#559/#558 retain Browse Mods work; #350/#354 retain external prerequisites; RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent. Any continuation of stale #602/#603 or other v8.8.81 branches must rebase on canonical main and take a later patch version.
+#559/#558 retain Browse Mods work; #350/#354 retain external prerequisites; RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent. Any stale branch that predates v8.8.82 must reconcile against current canonical main and allocate a later patch before integration.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and the durable-evidence privacy boundary. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, the updater request-topology boundary, the bounded/state-aware updater storage-retention boundary, and the durable-evidence privacy boundary. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
