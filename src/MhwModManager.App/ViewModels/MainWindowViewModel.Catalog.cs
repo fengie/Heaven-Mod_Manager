@@ -978,7 +978,7 @@ public sealed partial class MainWindowViewModel
                     SetCatalogFilePresentation(CatalogFilePresentationKind.NotLoaded);
                     throw;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     SetCatalogFilePresentation(
                         CatalogFilePresentationKind.Failed,
