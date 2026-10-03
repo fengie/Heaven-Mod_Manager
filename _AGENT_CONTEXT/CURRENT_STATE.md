@@ -7,6 +7,7 @@ v8.8.87 repairs package-level composition for real HPN/Nexus layouts without wea
 - A recognized literal/manual `Main` or base package is dependency-like inside its logical family: when any sibling layer is active, the Mod Library stages that required base on as well.
 - Same-Nexus base + sibling packages may compose as a base/overlay relationship on actual overlapping paths.
 - Explicit same-Nexus package generations such as `Ver3.1`, `Ver3.10`, and `Ver4.2` may coexist. The newer generation wins only shared paths; files unique to the older generation remain provided by the older source.
+- For Nexus 1965, selecting an HPN 4.x body auto-stages the newest matching 3.x compatibility generation and required Main/base package. This does not auto-enable old 4.x revisions or equal-version sibling bodies.
 - Version labels alone are insufficient. Unrelated same-page packages and equal-version sibling variants still require stronger evidence or a user choice.
 - Advanced component rows identify inferred Main, Optional, and Revision roles instead of reducing these packages to generic Component labels.
 - Regression coverage models the observed Nexus 4678 `Main + No Bats` layout, Nexus 1965 `3.1 → 4.2` and `3.10 → 4.2` precedence, the full `Main → 3.10 → 4.2` stack, and equal-version v4.2 sibling safety.
