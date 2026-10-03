@@ -129,6 +129,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public int UpdateCount=>Mods.Count(x=>x.HasUpdate);
     public int SupersededCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.FullySuperseded);
     public int VisibleModCount=>ModsView.Cast<object>().Count();
+    public bool HasVisibleMods=>VisibleModCount>0;
+    public string EnableVisibleLabel=>$"Enable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+    public string DisableVisibleLabel=>$"Disable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+
     public int StagedEnableCount=>Mods.Count(x=>x.WillEnable);
     public int StagedDisableCount=>Mods.Count(x=>x.WillDisable);
     public int OverlapCount=>OverlapRows.Count;
@@ -415,7 +419,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         MasterDebugLog.Write("UI-FILTER",$"Mod smart view changed to {value}");
         ModsView.Refresh();
-        OnPropertyChanged(nameof(VisibleModCount));
+        NotifyVisibleModState();
     }
 
     partial void OnSearchTextChanged(string value)
@@ -435,7 +439,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             await Application.Current.Dispatcher.InvokeAsync(()=>
             {
                 ModsView.Refresh();
-                OnPropertyChanged(nameof(VisibleModCount));
+                NotifyVisibleModState();
             });
         }
         catch(OperationCanceledException){}
@@ -467,6 +471,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                (m.IssueReason?.Contains(q,StringComparison.OrdinalIgnoreCase)??false);
     }
 
+    private void NotifyVisibleModState()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(VisibleModCount));
+        OnPropertyChanged(nameof(HasVisibleMods));
+        OnPropertyChanged(nameof(EnableVisibleLabel));
+        OnPropertyChanged(nameof(DisableVisibleLabel));
+    }
+
     private void Changed()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -488,7 +501,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(SupersededViewLabel));
         OnPropertyChanged(nameof(HeaderSummary));
         if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))ModsView.Refresh();
-        OnPropertyChanged(nameof(VisibleModCount));
+        NotifyVisibleModState();
         FooterText=StagedCount==0?"No pending changes":$"{StagedCount} pending change(s) — game files stay unchanged until you apply them";
     }
 
@@ -736,7 +749,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             OnPropertyChanged(nameof(ComposedCount));
             OnPropertyChanged(nameof(RevalidationCount));
             OnPropertyChanged(nameof(SupersededCount));
-            OnPropertyChanged(nameof(VisibleModCount));
+            NotifyVisibleModState();
             OnPropertyChanged(nameof(RevalidateViewLabel));
             OnPropertyChanged(nameof(SupersededViewLabel));
             OnPropertyChanged(nameof(HeaderSummary));
@@ -983,9 +996,26 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void StageVisible(bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var targets=ModsView.Cast<ModRowViewModel>().ToArray();
+        if(targets.Length==0)
+        {
+            StatusText="No visible mods match the current search and filters.";
+            return;
+        }
+        if(targets.Length>1&&MessageBox.Show(
+            $"{(enabled?"Enable":"Disable")} {targets.Length} currently visible mods? This only stages the changes; game files stay unchanged until you choose Apply Mod Changes.",
+            $"{(enabled?"Enable":"Disable")} visible mods",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question)!=MessageBoxResult.Yes)
+        {
+            StatusText="Bulk change cancelled. No additional changes were staged.";
+            return;
+        }
+
         suppressChanged=true;
-        try{foreach(var m in ModsView.Cast<ModRowViewModel>().ToArray())m.StagedEnabled=enabled;}
+        try{foreach(var m in targets)m.StagedEnabled=enabled;}
         finally{suppressChanged=false;Changed();}
+        StatusText=$"Staged {(enabled?"enable":"disable")} for {targets.Length} visible {(targets.Length==1?"mod":"mods")}. Apply Mod Changes when you are ready.";
     }
 
     [RelayCommand]
@@ -1141,7 +1171,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             ModsView.Refresh();
             OnPropertyChanged(nameof(IssueCount));
             OnPropertyChanged(nameof(IssuesViewLabel));
-            OnPropertyChanged(nameof(VisibleModCount));
+            NotifyVisibleModState();
             OnPropertyChanged(nameof(HeaderSummary));
         });
     }
