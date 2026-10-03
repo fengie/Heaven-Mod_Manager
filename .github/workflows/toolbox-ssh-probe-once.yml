@@ -1,0 +1,38 @@
+name: Toolbox SSH Probe Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/toolbox-ssh-probe-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe Toolbox SSH access on Heaven
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 5
+    steps:
+      - name: Probe exact Toolbox main ref over SSH
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $saved = $env:GIT_SSH_COMMAND
+          try {
+            $env:GIT_SSH_COMMAND = 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new'
+            $rows = @(& git ls-remote 'git@github.com:fengie/heaven-toolbox.git' 'refs/heads/main' 2>$null)
+            if ($LASTEXITCODE -eq 0 -and $rows.Count -eq 1) {
+              $parts = $rows[0] -split '\\s+'
+              if ($parts.Count -ge 2 -and $parts[0] -match '^[0-9a-f]{40}$' -and $parts[1] -eq 'refs/heads/main') {
+                Write-Output ('TOOLBOX_SSH_ACCESS_OK main_sha=' + $parts[0])
+                exit 0
+              }
+            }
+            Write-Output ('TOOLBOX_SSH_ACCESS_UNAVAILABLE exit=' + $LASTEXITCODE)
+            exit 1
+          } finally {
+            $env:GIT_SSH_COMMAND = $saved
+          }
