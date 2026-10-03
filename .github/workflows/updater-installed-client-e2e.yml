@@ -397,7 +397,7 @@ jobs:
             ('runner_os=' + $env:RUNNER_OS)
             ('runner_arch=' + $env:RUNNER_ARCH)
             ('dotnet_sdk=' + (& dotnet --version))
-            ('raw_evidence_sha256=' + $evidenceHash)
+            ('evidence_sha256=' + $evidenceHash)
             ('provenance_sha256=' + $provenanceHash)
             ('installed_client_test_log_sha256=' + $testLogHash)
             ('rollback_regression_log_sha256=' + $rollbackLogHash)
