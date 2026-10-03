@@ -49,6 +49,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | CI-675 | P1 | DONE | issue #675; PR #678; v8.8.85 | Separate feature-candidate product verification from canonical release metadata while preserving full exact-main release/publication verification. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
+| CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
 
 ## UPDATER-STORAGE-647 — Bounded updater staging and terminal-state retention
 
@@ -256,3 +257,22 @@ For every future branch cleanup, record one of these outcomes before deleting th
 4. **REJECTED** — reviewed and intentionally not wanted; preserve useful evidence/rationale where appropriate.
 
 `ARCHIVED` by itself is only a preservation mechanism and is **not** a terminal work disposition.
+
+## CI-NUGET-709 — Reproducible NuGet restore
+
+**Owner:** unclaimed / issue #709
+**Status:** DEFERRED
+**Prerequisite:** mandatory PR-drain queue has no actionable integration/recovery lane unless the user explicitly reprioritizes this work.
+**Acceptance:** exact .NET SDK 10.0.401 generates the canonical lock graph; committed lock files are stable across repeat restore; authoritative CI/release restore runs in locked mode; stale package constraints fail locked restore; NuGet audit/transitive audit remains active; no force-evaluate path defeats the lock contract.
+
+- [ ] Refresh exact main, current PR queue, issue #709, and ownership before starting.
+- [ ] Execute on heaven with exact SDK 10.0.401 and generate real `packages.lock.json` files from the authoritative restore roots; never hand-author lock JSON.
+- [ ] Determine the committed lock surface from the actual solution/application/test graph rather than blindly locking every class library independently.
+- [ ] Enable `RestorePackagesWithLockFile` at the correct central scope while preserving normal .NET 10 package-pruning behavior.
+- [ ] Require a second unchanged restore to produce zero lock-file diff.
+- [ ] Make authoritative feature/security/release restore paths use locked mode and reject contradictory force-evaluation behavior.
+- [ ] Add deterministic policy/regression coverage proving a package-constraint change without lock regeneration fails CI-style restore.
+- [ ] Preserve existing `NuGetAudit=true`, `NuGetAuditMode=all`, and `NuGetAuditLevel=low`.
+- [ ] Run focused policy tests and repository-required exact-head gates, reconcile fresh main, merge promptly when green, verify remote main, and retire temporary branch state.
+
+**Next action:** after PR drain is clear, claim issue #709 and run exact 10.0.401 lock generation on heaven before editing CI around the generated graph.
