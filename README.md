@@ -1,10 +1,17 @@
-# v8.8.82 — MHW Manual Mod Manager
+# v8.8.83 — MHW Manual Mod Manager
 
-Current product version: **8.8.82**.
+Current product version: **8.8.83**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.83 — reclaim interrupted save-snapshot orphans
+
+- Reclaim immediate-child snapshot directories that have no live `save_snapshots` row, closing the retention leak left by interrupted captures or failed best-effort cleanup.
+- Preserve snapshot-root containment and never recurse through orphan reparse points; unlink only the immediate link and leave external targets untouched.
+- Treat orphan cleanup failures as retryable best-effort work so one locked/inaccessible orphan cannot abort pruning.
+- Add regressions for ordinary orphan deletion, failed orphan unlink retry behavior, and Windows junction target preservation.
 
 ## v8.8.82 — updater topology + bounded storage retention
 
@@ -23,14 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Exclude runner-local paths and usernames, process/attempt IDs, target-only path inventories, product logs, timestamps, runner environment metadata, and unknown future properties.
 - Preserve the transient raw evidence SHA-256 for provenance while keeping raw diagnostics in short-lived workflow artifacts rather than durable repository evidence.
 - Add canary regressions for machine-local data, unknown fields, invalid release identity, unexpected UI values, and tested-source mismatch.
-
-## v8.8.80 — updater E2E evidence persistence
-
-- Unshallow canonical `main` history before updater installed-client E2E ancestry/drift classification so evidence-only release commits cannot look falsely divergent.
-- Refresh the explicit `origin/main` remote-tracking ref before classifying evidence-only versus release-relevant drift.
-- Regress ordering so complete-history recovery must occur before `merge-base --is-ancestor`.
-- Bind E2E artifact names to the exact tested release SHA instead of the workflow-run/evidence commit.
-- Close the durable-evidence gap exposed after the successful v8.8.79 installed-client update/rollback run.
 
 ## Current plans & progress
 
