@@ -316,6 +316,81 @@ public sealed class AutoCompatibilityTests
     }
 
     [Fact]
+    public void Same_nexus_literal_main_and_no_bats_compose_with_main_files_preserved()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("main","Main","Main","main",true,10,FamilyId:"nexus:4678",NexusModId:"4678"),
+            new ModDescriptor("no-bats","No Bats","No Bats","no-bats",true,20,FamilyId:"nexus:4678",NexusModId:"4678")
+        };
+        var shared = @"nativePC\pl\f_equip\pl162_0000\body\mod\f_body162_0000.mod3";
+        var mainOnly = @"nativePC\pl\f_equip\pl162_0000\body\tex\f_body162_BM.tex";
+        var files = new[]
+        {
+            new ModFileDescriptor("main",shared,"main-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("no-bats",shared,"option-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("main",mainOnly,"main-only",null,100,Now,FileClass.Texture)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.True(AutoCompatibility.IsRequiredBasePackage(mods[0]));
+        Assert.True(AutoCompatibility.IsOptionalPackage(mods[1]));
+        Assert.False(plan.IsBlocked);
+        Assert.Equal("no-bats",plan.Conflicts.Single(x=>PathRules.Comparer.Equals(x.Path,shared)).WinnerModId);
+        Assert.Equal("main",plan.Changes.Single(x=>PathRules.Comparer.Equals(x.Path,mainOnly)).ProviderAfter);
+    }
+
+    [Fact]
+    public void Hpn_ver42_overrides_ver310_only_on_shared_paths_while_both_remain_active()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("v310","Ver3.10 Beautiful_Tits_Highpoly Nude MOD with jiggle animation (Iceborne Compatible)","Ver3.10 Beautiful_Tits_Highpoly Nude MOD with jiggle animation (Iceborne Compatible)","v310",true,500,FamilyId:"nexus:1965",NexusModId:"1965"),
+            new ModDescriptor("v42","Ver4.2 Normal_Highpoly Nude MOD with jiggle animation","Ver4.2 Normal_Highpoly Nude MOD with jiggle animation","v42",true,10,FamilyId:"nexus:1965",NexusModId:"1965")
+        };
+        var shared = @"nativePC\pl\f_equip\pl501_0000\body\mod\f_body501_0000.mod3";
+        var legacyOnly = @"nativePC\pl\f_equip\legacy_hpn\f_skin_legacy.tex";
+        var files = new[]
+        {
+            new ModFileDescriptor("v310",shared,"v310-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("v42",shared,"v42-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("v310",legacyOnly,"v310-only",null,100,Now,FileClass.Texture)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.True(AutoCompatibility.TryGetPackageVersion(mods[0],out var oldVersion));
+        Assert.True(AutoCompatibility.TryGetPackageVersion(mods[1],out var newVersion));
+        Assert.Equal([3,10],oldVersion);
+        Assert.Equal([4,2],newVersion);
+        Assert.False(plan.IsBlocked);
+        Assert.Equal("v42",plan.Conflicts.Single(x=>PathRules.Comparer.Equals(x.Path,shared)).WinnerModId);
+        Assert.Equal("v310",plan.Changes.Single(x=>PathRules.Comparer.Equals(x.Path,legacyOnly)).ProviderAfter);
+    }
+
+    [Fact]
+    public void Same_nexus_version_numbers_do_not_order_unrelated_sibling_features()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("audio","Ver1.0 Audio Replacer","Ver1.0 Audio Replacer","audio",true,10,FamilyId:"nexus:9000",NexusModId:"9000"),
+            new ModDescriptor("armor","Ver2.0 Armor Mesh","Ver2.0 Armor Mesh","armor",true,20,FamilyId:"nexus:9000",NexusModId:"9000")
+        };
+        var path = @"nativePC\pl\f_equip\pl200_0000\body\mod\f_body200_0000.mod3";
+        var files = new[]
+        {
+            new ModFileDescriptor("audio",path,"aa",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("armor",path,"bb",null,100,Now,FileClass.Structural)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.True(plan.IsBlocked);
+        Assert.Null(Assert.Single(plan.Conflicts).WinnerModId);
+    }
+
+    [Fact]
     public void Local_name_only_plugin_update_does_not_override_binary_code()
     {
         var mods = new[]
