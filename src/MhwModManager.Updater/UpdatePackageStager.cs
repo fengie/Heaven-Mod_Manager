@@ -17,6 +17,12 @@ public sealed class UpdatePackageStager(GitHubUpdateSource source, Action<string
         candidate.Manifest.Validate();
         var updaterRoot = GetUpdaterRoot();
         EnsureUpdaterRoot(updaterRoot);
+        var capacity = UpdateStorageCapacityPolicy.EnsureCanStage(
+            candidate.Manifest,
+            updaterRoot);
+        writeLog(
+            $"update storage preflight passed build={candidate.Manifest.BuildNumber} "
+            + $"available={capacity.AvailableBytes} required={capacity.RequiredAvailableBytes}");
         var stageRoot = Path.Combine(updaterRoot, "staging",
             $"{candidate.Manifest.BuildNumber}-{Guid.NewGuid():N}");
         UpdatePathSafety.CreateDirectorySafely(updaterRoot, stageRoot);
