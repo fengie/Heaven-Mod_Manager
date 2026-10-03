@@ -20,6 +20,11 @@ v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed hosted Windows 
 
 Those receipts apply to v8.8.91 only. This v8.8.92 source change requires fresh exact-head feature/repository verification and the repository-required post-integration verification before release closure.
 
+## Unresolved risk
+
+- v8.8.92 is not verified or released until the final exact-head feature/repository gates pass, the exact candidate is integrated, and the required post-integration verification succeeds on canonical `main`.
+- Issue #669 remains open after this reclaim slice: lifecycle/generation bounds and immutable-content reuse still have acceptance work beyond the unified reclaim action.
+
 ## Next action
 
 Run the narrow storage/UI regressions first, then the required exact-head MHW gates. Integrate only the exact green head after refreshing `main`, read back remote `main`, reconcile issue #669, and retire the temporary branch after unique work is proven integrated.
