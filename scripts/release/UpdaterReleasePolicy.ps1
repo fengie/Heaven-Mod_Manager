@@ -76,6 +76,30 @@ function Get-UpdaterBuildFromTag {
   return $build
 }
 
+function Get-UpdaterReleasePages {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)][scriptblock]$FetchPage,
+    [ValidateRange(1,100)][int]$PageSize=100,
+    [ValidateRange(1,1000)][int]$MaxPages=100
+  )
+
+  $all=New-Object System.Collections.Generic.List[object]
+  for($page=1;$page -le $MaxPages;$page++){
+    $items=@(& $FetchPage $page $PageSize)
+    foreach($item in $items){
+      if($null -eq $item){throw "GitHub updater release page $page contained a null entry."}
+      $all.Add($item)
+    }
+    if($items.Count -lt $PageSize){
+      return $all.ToArray()
+    }
+  }
+
+  throw "GitHub updater release enumeration reached the safety cap of $MaxPages pages without observing a terminal partial page."
+}
+
+
 function Test-UpdaterReleaseRelevantPath {
   param([Parameter(Mandatory=$true)][string]$Path)
   $normalized=$Path.Replace('\','/').TrimStart('/')

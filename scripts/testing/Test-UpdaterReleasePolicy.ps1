@@ -55,6 +55,57 @@ $releaseFixture=@(
   [pscustomobject]@{tag_name='updater-main-442';draft=$false;prerelease=$false;immutable=$true;assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.85-win-x64.zip'},[pscustomobject]@{name='update-manifest.json'})},
   [pscustomobject]@{tag_name='updater-main-443';draft=$false;prerelease=$false;immutable=$true;assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.86-win-x64.zip'},[pscustomobject]@{name='update-manifest.json'})}
 )
+$pageOne=@(
+  1..100 | ForEach-Object {
+    [pscustomobject]@{
+      tag_name=("updater-main-{0}" -f $_)
+      draft=$false
+      prerelease=$false
+      immutable=$true
+      assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.85-win-x64.zip'})
+    }
+  }
+)
+$pageTwo=@(
+  [pscustomobject]@{
+    tag_name='updater-main-101'
+    draft=$false
+    prerelease=$false
+    immutable=$true
+    assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.86-win-x64.zip'})
+  }
+)
+$paginationCalls=New-Object System.Collections.Generic.List[string]
+$paginatedReleases=@(Get-UpdaterReleasePages -PageSize 100 -MaxPages 3 -FetchPage {
+  param($page,$pageSize)
+  $paginationCalls.Add("$page/$pageSize")
+  if($page -eq 1){return $pageOne}
+  if($page -eq 2){return $pageTwo}
+  throw "Unexpected pagination request for page $page."
+})
+Assert-Equal 101 $paginatedReleases.Count 'release pagination includes page two'
+Assert-Equal 2 $paginationCalls.Count 'release pagination stops on partial page'
+Assert-Equal '1/100' $paginationCalls[0] 'release pagination first request'
+Assert-Equal '2/100' $paginationCalls[1] 'release pagination second request'
+$pageTwoIntent=Get-UpdaterReleaseIntentDecision -CurrentVersion '8.8.86' -ForcePublish $false -Releases $paginatedReleases
+Assert-Equal $false $pageTwoIntent.Publish 'same semantic version beyond first API page does not republish'
+Assert-Equal 'updater-main-101' $pageTwoIntent.ExistingTag 'page-two semantic version existing tag'
+
+$paginationCapRejected=$false
+try{
+  [void]@(Get-UpdaterReleasePages -PageSize 1 -MaxPages 2 -FetchPage {
+    param($page,$pageSize)
+    return [pscustomobject]@{
+      tag_name=("updater-main-{0}" -f $page)
+      draft=$false
+      prerelease=$false
+      immutable=$true
+      assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.85-win-x64.zip'})
+    }
+  })
+}catch{$paginationCapRejected=$true}
+Assert-Equal $true $paginationCapRejected 'release pagination safety cap fails closed'
+
 $sameVersionIntent=Get-UpdaterReleaseIntentDecision -CurrentVersion '8.8.86' -ForcePublish $false -Releases $releaseFixture
 Assert-Equal $false $sameVersionIntent.Publish 'same semantic version does not republish'
 Assert-Equal 'same-version-already-published' $sameVersionIntent.Reason 'same semantic version reason'
