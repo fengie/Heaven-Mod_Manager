@@ -2,22 +2,40 @@ using System.Net;
 
 namespace MhwModManager.Core;
 
+public sealed class NexusV3QuotaExhaustedException : InvalidOperationException
+{
+    public NexusV3QuotaExhaustedException(DateTimeOffset retryAt)
+        : base($"Nexus API quota is exhausted until {retryAt:O}.")
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        RetryAt = retryAt;
+    }
+
+    public DateTimeOffset RetryAt { get; }
+}
+
 public sealed class NexusV3CatalogProvider : IModCatalogProvider
 {
     private readonly NexusV3Transport transport;
     private readonly NexusV3Credential? credential;
+    private readonly TimeProvider timeProvider;
+    private NexusV3RateLimitSnapshot? lastRateLimit;
     private CatalogProviderHealth health = new(
         "nexus",
         CatalogProviderState.Limited,
         "Nexus public discovery is available; credentials are required for mod details and file variants.",
         CheckedAt: DateTimeOffset.UtcNow);
 
-    public NexusV3CatalogProvider(NexusV3Transport transport, NexusV3Credential? credential = null)
+    public NexusV3CatalogProvider(
+        NexusV3Transport transport,
+        NexusV3Credential? credential = null,
+        TimeProvider? timeProvider = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(transport);
         this.transport = transport;
         this.credential = credential;
+        this.timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public string ProviderId
@@ -85,9 +103,11 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         var domain = RequireGameDomain(request.Game);
         try
         {
+            EnsureQuotaAvailable();
             using var response = await transport
                 .GetTrendingModsAsync(domain, ct: ct)
                 .ConfigureAwait(false);
+            ObserveRateLimit(response.RateLimit);
             var document = response.Document
                 ?? throw new InvalidDataException("Nexus v3 trending response did not contain a JSON document.");
 
@@ -136,9 +156,11 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
             var normalized = await GetModDetailsAsync(game, providerModId, ct).ConfigureAwait(false);
             var auth = RequireCredential();
 
+            EnsureQuotaAvailable();
             using var groupsResponse = await transport
                 .GetModFilesAsync(normalized.GlobalModId, auth, ct: ct)
                 .ConfigureAwait(false);
+            ObserveRateLimit(groupsResponse.RateLimit);
             var groupsDocument = groupsResponse.Document
                 ?? throw new InvalidDataException("Nexus v3 mod-files response did not contain a JSON document.");
             var groups = NexusV3CatalogNormalizer.NormalizeModFileGroups(groupsDocument);
@@ -147,9 +169,11 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
             foreach (var group in groups)
             {
                 ct.ThrowIfCancellationRequested();
+                EnsureQuotaAvailable();
                 using var versionsResponse = await transport
                     .GetModFileVersionsAsync(group.Id, auth, ct: ct)
                     .ConfigureAwait(false);
+                ObserveRateLimit(versionsResponse.RateLimit);
                 var versionsDocument = versionsResponse.Document
                     ?? throw new InvalidDataException("Nexus v3 mod-file versions response did not contain a JSON document.");
 
@@ -228,9 +252,11 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         var domain = RequireGameDomain(game);
         var auth = RequireCredential();
 
+        EnsureQuotaAvailable();
         using var response = await transport
             .GetModAsync(domain, providerModId, auth, ct: ct)
             .ConfigureAwait(false);
+        ObserveRateLimit(response.RateLimit);
         var document = response.Document
             ?? throw new InvalidDataException("Nexus v3 mod-details response did not contain a JSON document.");
         var normalized = NexusV3CatalogNormalizer.NormalizeModDetails(
@@ -261,13 +287,29 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
     private void MarkConnected(bool publicOnly)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"publicOnly={publicOnly}");
+        var now = timeProvider.GetUtcNow();
+        var rateLimit = lastRateLimit?.ToCatalogRateLimit(now);
+        var blockedUntil = lastRateLimit?.GetBlockedUntil(now);
+
+        if (blockedUntil is not null)
+        {
+            health = new(
+                ProviderId,
+                CatalogProviderState.RateLimited,
+                BuildRateLimitedMessage(blockedUntil.Value),
+                rateLimit,
+                now);
+            return;
+        }
+
         health = new(
             ProviderId,
             publicOnly ? CatalogProviderState.Limited : CatalogProviderState.Connected,
             publicOnly
                 ? "Nexus public trending discovery is connected; credentials are required for mod details and file variants."
                 : "Connected to Nexus Mods API v3.",
-            CheckedAt: DateTimeOffset.UtcNow);
+            rateLimit,
+            now);
     }
 
     private void TrackFailure(Exception ex, CancellationToken ct)
@@ -276,8 +318,13 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
         if (ex is OperationCanceledException && ct.IsCancellationRequested)
             return;
 
+        if (ex is NexusV3QuotaExhaustedException)
+            return;
+
         if (ex is NexusV3TransportException transportException)
         {
+            ObserveRateLimit(transportException.RateLimit);
+
             if (transportException.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
                 health = new(
@@ -290,20 +337,16 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
 
             if (transportException.StatusCode == HttpStatusCode.TooManyRequests)
             {
+                var now = timeProvider.GetUtcNow();
+                var rateLimit = BuildRateLimitForFailure(transportException, now);
                 health = new(
                     ProviderId,
                     CatalogProviderState.RateLimited,
-                    "Nexus API rate limit reached.",
-                    new CatalogRateLimit(
-                        null,
-                        null,
-                        null,
-                        null,
-                        transportException.RetryAfter is null
-                            ? null
-                            : DateTimeOffset.UtcNow.Add(transportException.RetryAfter.Value),
-                        DateTimeOffset.UtcNow),
-                    DateTimeOffset.UtcNow);
+                    rateLimit?.RetryAfter is DateTimeOffset retryAt
+                        ? BuildRateLimitedMessage(retryAt)
+                        : "Nexus API rate limit reached; cached catalog data remains usable.",
+                    rateLimit,
+                    now);
                 return;
             }
 
@@ -337,6 +380,61 @@ public sealed class NexusV3CatalogProvider : IModCatalogProvider
 
             _ => health
         };
+    }
+
+    private void ObserveRateLimit(NexusV3RateLimitSnapshot? rateLimit)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (rateLimit is not null)
+            lastRateLimit = rateLimit;
+    }
+
+    private void EnsureQuotaAvailable()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var now = timeProvider.GetUtcNow();
+        var blockedUntil = lastRateLimit?.GetBlockedUntil(now);
+        if (blockedUntil is null)
+            return;
+
+        health = new(
+            ProviderId,
+            CatalogProviderState.RateLimited,
+            BuildRateLimitedMessage(blockedUntil.Value),
+            lastRateLimit!.ToCatalogRateLimit(now),
+            now);
+        throw new NexusV3QuotaExhaustedException(blockedUntil.Value);
+    }
+
+    private CatalogRateLimit? BuildRateLimitForFailure(
+        NexusV3TransportException transportException,
+        DateTimeOffset now)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var rateLimit = lastRateLimit?.ToCatalogRateLimit(now);
+        var retryAt = transportException.RetryAfter is null
+            ? (DateTimeOffset?)null
+            : now.Add(transportException.RetryAfter.Value);
+
+        if (retryAt is null)
+            return rateLimit;
+
+        if (rateLimit is null)
+            return new CatalogRateLimit(null, null, null, null, retryAt, now);
+
+        return rateLimit with
+        {
+            RetryAfter = rateLimit.RetryAfter is null || retryAt > rateLimit.RetryAfter
+                ? retryAt
+                : rateLimit.RetryAfter,
+            ObservedAt = now
+        };
+    }
+
+    private static string BuildRateLimitedMessage(DateTimeOffset retryAt)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return $"Nexus API quota exhausted; cached catalog data remains usable. Requests resume after {retryAt.ToUniversalTime():yyyy-MM-dd HH:mm 'UTC'}.";
     }
 
     private static string RequireGameDomain(GameProfile game)

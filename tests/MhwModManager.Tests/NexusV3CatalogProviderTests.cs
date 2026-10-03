@@ -305,6 +305,67 @@ public sealed class NexusV3CatalogProviderTests
     }
 
     [Fact]
+    public async Task Exhausted_successful_quota_blocks_followup_request_until_reset_then_recovers()
+    {
+        var now = new DateTimeOffset(2026, 10, 3, 20, 0, 0, TimeSpan.Zero);
+        var reset = now.AddMinutes(30);
+        var clock = new MutableTimeProvider(now);
+        var calls = 0;
+        var handler = new RoutingHandler((_, _) =>
+        {
+            calls++;
+            var response = JsonResponse(HttpStatusCode.OK, ReadFixture("trending.json"));
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Limit", "500");
+            response.Headers.TryAddWithoutValidation(
+                "X-RL-Hourly-Remaining",
+                calls == 1 ? "0" : "499");
+            response.Headers.TryAddWithoutValidation(
+                "X-RL-Hourly-Reset",
+                (calls == 1 ? reset : clock.GetUtcNow().AddHours(1)).ToString("O"));
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Limit", "20000");
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Remaining", "15000");
+            return Task.FromResult(response);
+        });
+
+        using var client = new HttpClient(handler);
+        var provider = new NexusV3CatalogProvider(
+            new NexusV3Transport(client),
+            timeProvider: clock);
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        var first = await provider.SearchModsAsync(
+            new CatalogBrowseRequest(game),
+            TestContext.Current.CancellationToken);
+        Assert.NotEmpty(first);
+        Assert.Equal(1, calls);
+
+        var exhaustedHealth = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(CatalogProviderState.RateLimited, exhaustedHealth.State);
+        Assert.Equal(0, exhaustedHealth.RateLimit?.HourlyRemaining);
+        Assert.Equal(reset, exhaustedHealth.RateLimit?.RetryAfter);
+        Assert.Contains("cached catalog data remains usable", exhaustedHealth.Message, StringComparison.OrdinalIgnoreCase);
+
+        var blocked = await Assert.ThrowsAsync<NexusV3QuotaExhaustedException>(
+            () => provider.SearchModsAsync(
+                new CatalogBrowseRequest(game),
+                TestContext.Current.CancellationToken));
+        Assert.Equal(reset, blocked.RetryAt);
+        Assert.Equal(1, calls);
+
+        clock.UtcNow = reset.AddSeconds(1);
+        var recovered = await provider.SearchModsAsync(
+            new CatalogBrowseRequest(game),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotEmpty(recovered);
+        Assert.Equal(2, calls);
+        var recoveredHealth = await provider.GetHealthAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(CatalogProviderState.Limited, recoveredHealth.State);
+        Assert.Equal(499, recoveredHealth.RateLimit?.HourlyRemaining);
+        Assert.Null(recoveredHealth.RateLimit?.RetryAfter);
+    }
+
+    [Fact]
     public async Task Auth_failure_marks_provider_authentication_required()
     {
         var handler = new RoutingHandler((_, _) =>
@@ -451,6 +512,13 @@ public sealed class NexusV3CatalogProviderTests
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public DateTimeOffset UtcNow { get; set; } = utcNow;
+
+        public override DateTimeOffset GetUtcNow() => UtcNow;
     }
 
     private sealed class RoutingHandler(
