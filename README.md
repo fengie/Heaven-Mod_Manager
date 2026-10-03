@@ -1,10 +1,16 @@
-# v8.8.83 — MHW Manual Mod Manager
+# v8.8.84 — MHW Manual Mod Manager
 
-Current product version: **8.8.83**.
+Current product version: **8.8.84**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.84 — hardened unmanaged adoption
+
+- Give each unmanaged-adoption invocation a GUID-backed package root so concurrent runs cannot share or destructively clean each other's source package.
+- Revalidate live-root containment and reject reparse-point source components at the copy boundary and again after copying.
+- Certify copied payload hashes against discovery-time candidates before publishing adoption records; concurrent source mutation fails closed.
 
 ## v8.8.83 — self-cleaning test scratch
 
@@ -22,15 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Retire the whole staging attempt immediately after an update is confirmed, and reclaim sufficiently old orphan staging plus terminal confirmed/rolled-back transactions on startup.
 - Preserve the exact pending staging attempt and every nonterminal/recovery-required transaction; malformed pending state fails closed, and cleanup refuses reparse-point traversal.
 - Add adversarial coverage for topology substitution plus deterministic storage-retention coverage for pending, orphaned, terminal, recent, and reparse-point state.
-
-## v8.8.81 — allowlisted updater E2E evidence
-
-- Persist only a versioned, explicitly allowlisted projection of installed-client updater E2E evidence into Git history.
-- Bind durable target-source identity to the exact workflow-tested source SHA and fail closed on release/update/rollback/UI assertion mismatches.
-- Exclude runner-local paths and usernames, process/attempt IDs, target-only path inventories, product logs, timestamps, runner environment metadata, and unknown future properties.
-- Preserve the transient raw evidence SHA-256 for provenance while keeping raw diagnostics in short-lived workflow artifacts rather than durable repository evidence.
-- Add canary regressions for machine-local data, unknown fields, invalid release identity, unexpected UI values, and tested-source mismatch.
-
 
 ## Current plans & progress
 
