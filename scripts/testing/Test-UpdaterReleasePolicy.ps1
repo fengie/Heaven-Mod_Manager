@@ -88,7 +88,7 @@ $durableRawFixture=[ordered]@{
   }
   productLog=@('CANARY_PRODUCT_LOG')
   completedUtc='CANARY_COMPLETED'
-  tokenLikeValue='CANARY_UNKNOWN_SECRET'
+  unexpectedField='CANARY_UNKNOWN_FIELD'
 }
 $durableRawJson=$durableRawFixture | ConvertTo-Json -Depth 8
 $durableEvidenceJson=ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $durableRawJson
@@ -108,7 +108,7 @@ foreach($forbidden in @(
   'CANARY_NESTED',
   'CANARY_TARGET_ONLY_PATH',
   'CANARY_PRODUCT_LOG',
-  'CANARY_UNKNOWN_SECRET',
+  'CANARY_UNKNOWN_FIELD',
   'CANARY_STARTED',
   'CANARY_COMPLETED',
   'installRoot',
@@ -118,7 +118,7 @@ foreach($forbidden in @(
   'targetOnlyPaths',
   'productLog'
 )){
-  Assert-Equal $false $durableEvidenceJson.Contains($forbidden) "durable updater E2E excludes $forbidden"
+  Assert-Equal $false ($durableEvidenceJson.Contains($forbidden)) "durable updater E2E excludes $forbidden"
 }
 
 $unsafeDurableFixture=ConvertFrom-Json -InputObject $durableRawJson
