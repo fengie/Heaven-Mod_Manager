@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
+using MhwModManager.Filesystem;
 using MhwModManager.Storage;
 using Xunit;
 
@@ -284,8 +285,8 @@ public sealed class AutomationServiceTests : IDisposable
         await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
         await db.ExecuteAsync("INSERT INTO resource_providers(resource_key,mod_id) VALUES('nativepc/shared.tex','old-pack')",ct:TestContext.Current.CancellationToken);
 
-        var planner=new DeploymentPlanner();
-        var executor=new DeploymentExecutor(db,Path.Combine(root,"migration-live"),Path.Combine(root,"migration-state"));
+        var planner=new DeploymentPlanner(new ConflictEngine());
+        var executor=new DeploymentExecutor(db,new BlobStore(Path.Combine(root,"migration-state","blobs"),db),new HashingService(),Path.Combine(root,"migration-live"));
         var service=new UpdateMigrationService(db,planner,executor);
 
         var preview=await service.PreviewAsync("OLD-PACK","NEW-PACK",TestContext.Current.CancellationToken);
@@ -309,8 +310,8 @@ public sealed class AutomationServiceTests : IDisposable
         var db=await CreateDbAsync("migration-same-id-case.db");
         var service=new UpdateMigrationService(
             db,
-            new DeploymentPlanner(),
-            new DeploymentExecutor(db,Path.Combine(root,"migration-same-live"),Path.Combine(root,"migration-same-state")));
+            new DeploymentPlanner(new ConflictEngine()),
+            new DeploymentExecutor(db,new BlobStore(Path.Combine(root,"migration-same-state","blobs"),db),new HashingService(),Path.Combine(root,"migration-same-live")));
 
         await Assert.ThrowsAsync<InvalidDataException>(()=>
             service.PreviewAsync("same-pack","SAME-PACK",TestContext.Current.CancellationToken));
