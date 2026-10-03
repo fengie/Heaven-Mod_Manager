@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.87",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.86 source 21e7dbd1c71d66be542095be4e6d397879b7b134 passed hosted Windows verification run 37132556908; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.86-heaven-windows-closure.log. v8.8.87 changes HPN package composition behavior and requires fresh exact-final-head feature verification plus fresh canonical Windows closure after integration.",
+  "immediateParentRevision": "v8.8.87 source 92bb0162e3a64f2bf6b02f7feaeda8ff6b37eb70 passed hosted Windows verification run 37136719343; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log. PR #698 changes HPN library staging/source tests after that closed source and requires fresh exact-head verification plus fresh canonical Windows closure after integration.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, conflict/dependency proof separation, updater/filesystem containment, and durable-evidence privacy. Require fresh exact-final-head verification for PR #692 v8.8.87 before merge, then fresh canonical Windows closure after integration. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, conflict/dependency proof separation, updater/filesystem containment, and durable-evidence privacy. The #692 source is closed; require exact-final-head verification for PR #698, merge only that head, then obtain fresh canonical Windows closure for resulting main. Propagate this obligation recursively. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
