@@ -136,7 +136,7 @@ foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Ob
     }
 }
 
-$persistentWriteAllowlist=@('windows-release-gate.yml','updater-installed-client-e2e.yml','heaven2-temp-backlog-cleanup-once.yml')
+$persistentWriteAllowlist=@('windows-release-gate.yml','updater-installed-client-e2e.yml')
 foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filter '*.yml')){
     $workflow=Get-Content -LiteralPath $workflowFile.FullName -Raw
     if($workflow -notmatch '(?im)^\s*runs-on:\s*\[[^\]]*self-hosted[^\]]*\]'){continue}
