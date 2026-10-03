@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.86",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.85 feature verification decoupling is canonical on main at de896dab613070944bf107d339f89722f0200272. v8.8.86 hardens import publication, cleanup, and rollback against descendant reparse topology while preserving the v8.8.85 feature-candidate versus canonical-release verification separation.",
+  "immediateParentRevision": "v8.8.85 exact source 0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c passed hosted Windows verification run 37126561159; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log. v8.8.86 hardens import publication, cleanup, and rollback against descendant reparse topology while preserving feature-candidate versus canonical-release verification separation.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
