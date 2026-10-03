@@ -28,6 +28,10 @@ This ChatGPT runtime did not expose callable Heaven Local Bridge or Agent Contro
 
 Observe the exact-final-head PR #692 gate. Merge only that green head. Then verify the resulting remote-main SHA and its strict canonical Windows release gate/evidence before declaring release closure.
 
+## Unresolved risk
+
+The HPN composition behavior is source- and regression-tested on this candidate, but it still requires exact-final-head feature verification before merge and fresh canonical Windows closure after integration. Independent open risks such as #669 storage lifecycle work and external trust prerequisites remain separate and must not be conflated with this change.
+
 ## Successor obligation
 
 Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, conflict/dependency proof separation, updater/filesystem safety, durable-evidence privacy, and candidate-vs-canonical verification separation. The successor must propagate this continuity obligation to the next agent after them.
