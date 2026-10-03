@@ -1,3 +1,9 @@
+# v8.8.85 — 2026-10-03
+
+- Close #676 by rejecting any descendant file or directory reparse point in manager-owned import staging before the final publish move.
+- Reuse the fail-closed recursive filesystem guard before import cleanup and rollback so nested junction substitution cannot redirect recursive deletion.
+- Add Windows junction regressions proving publication and rollback refusal preserves external target bytes and leaves unsafe residue for controlled recovery.
+
 # v8.8.84 — 2026-10-03
 
 - Serialize the updater integration-test classes that share the process-global updater root and canonical `pending-update.json` state.
