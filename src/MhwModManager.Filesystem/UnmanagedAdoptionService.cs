@@ -62,6 +62,7 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
 
     private static void TryCleanupOwnedPackage(string folder)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"folder={folder}");
         try
         {
             if(!Directory.Exists(folder))return;
@@ -124,6 +125,7 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
 
     private static string ValidateLiveCandidate(string liveRoot,string candidate)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"candidate={candidate}");
         var root=Path.GetFullPath(liveRoot).TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
         var file=Path.GetFullPath(candidate);
         var relative=Path.GetRelativePath(root,file);
