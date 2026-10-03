@@ -48,6 +48,8 @@ HPN packages are a concrete case where whole-archive supersession is unsafe. Com
 
 When two enabled packages belong to the same Nexus mod, carry explicit generation labels such as `Ver3.1`, `Ver3.10`, and `Ver4.2`, have strongly related package names, and actually overlap, the newer generation becomes the provider **only for those shared paths**. Files found only in the older generation remain in the deployment. This is source coexistence plus path precedence, not package disablement or binary merging.
 
+Nexus 1965 is an explicit compatibility profile because the HPN author ecosystem documents 3.x-era armor coexisting with 4.x bodies. When a 4.x HPN body from that page is selected, the Mod Library stages the newest matching 3.x package as a retained compatibility layer in addition to the required Main/base package. It does **not** revive older 4.x revisions: author update notes include stale same-major files that must be removed, so this exception is cross-major and source-specific rather than a general “enable old versions” rule.
+
 Equal-version siblings such as Beautiful / Normal / Huge / Small are not ordered just because they share a source page. If they replace the same structural asset and there is no stronger author/user rule, they remain a human choice.
 
 ## Shared textures and HPN resources
