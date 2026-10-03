@@ -47,34 +47,61 @@ jobs:
             }
           }
 
+          function Invoke-GitProbe {
+            param(
+              [Parameter(Mandatory=$true)][string]$GitExe,
+              [Parameter(Mandatory=$true)][string]$Repo,
+              [Parameter(Mandatory=$true)][string[]]$GitArgs
+            )
+            $savedPreference = $ErrorActionPreference
+            try {
+              $ErrorActionPreference = 'Continue'
+              $safeRepo = $Repo.Replace('\','/')
+              $lines = @(& $GitExe '-c' "safe.directory=$safeRepo" '-C' $Repo @GitArgs 2>$null)
+              $exitCode = $LASTEXITCODE
+              return [pscustomobject]@{ ExitCode = $exitCode; Lines = @($lines) }
+            } finally {
+              $ErrorActionPreference = $savedPreference
+            }
+          }
+
           function Test-GitEvidenceSafe([string]$Root) {
             $markers = @(
               Get-ChildItem -LiteralPath $Root -Force -Filter '.git' -Recurse -Depth 2 -ErrorAction SilentlyContinue
             )
-            if ($markers.Count -eq 0) { return [pscustomobject]@{ Safe = $true; Reason = 'no-git-marker' } }
+            if ($markers.Count -eq 0) {
+              return [pscustomobject]@{ Safe = $true; Reason = 'no-git-marker' }
+            }
 
             $git = Get-Command git.exe -ErrorAction SilentlyContinue
-            if (-not $git) { return [pscustomobject]@{ Safe = $false; Reason = 'git-marker-but-git-unavailable' } }
+            if (-not $git) {
+              return [pscustomobject]@{ Safe = $false; Reason = 'git-marker-but-git-unavailable' }
+            }
 
             foreach ($marker in $markers) {
               $repo = Split-Path -Parent $marker.FullName
-              $status = @(& $git.Source -C $repo status --porcelain --untracked-files=normal 2>$null)
-              if ($LASTEXITCODE -ne 0) {
+
+              $status = Invoke-GitProbe -GitExe $git.Source -Repo $repo -GitArgs @('status','--porcelain','--untracked-files=normal')
+              if ($status.ExitCode -ne 0) {
                 return [pscustomobject]@{ Safe = $false; Reason = "git-status-failed:$repo" }
               }
-              if ($status.Count -gt 0) {
+              if ($status.Lines.Count -gt 0) {
                 return [pscustomobject]@{ Safe = $false; Reason = "git-dirty:$repo" }
               }
 
-              $head = ((& $git.Source -C $repo rev-parse HEAD 2>$null) -join '').Trim()
-              if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($head)) {
+              $headProbe = Invoke-GitProbe -GitExe $git.Source -Repo $repo -GitArgs @('rev-parse','HEAD')
+              $head = (($headProbe.Lines -join '')).Trim()
+              if ($headProbe.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($head)) {
                 return [pscustomobject]@{ Safe = $false; Reason = "git-head-unresolved:$repo" }
               }
-              $remoteContaining = @(& $git.Source -C $repo branch -r --contains $head 2>$null | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-              if ($LASTEXITCODE -ne 0 -or $remoteContaining.Count -eq 0) {
+
+              $remoteProbe = Invoke-GitProbe -GitExe $git.Source -Repo $repo -GitArgs @('branch','-r','--contains',$head)
+              $remoteContaining = @($remoteProbe.Lines | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+              if ($remoteProbe.ExitCode -ne 0 -or $remoteContaining.Count -eq 0) {
                 return [pscustomobject]@{ Safe = $false; Reason = "git-head-not-on-remote-tracking-ref:$repo" }
               }
             }
+
             return [pscustomobject]@{ Safe = $true; Reason = 'git-clean-and-remotely-tracked' }
           }
 
@@ -93,7 +120,7 @@ jobs:
           $freeBefore = if ($diskBefore) { [long]$diskBefore.FreeSpace } else { 0L }
 
           $cutoff = [DateTime]::UtcNow.AddHours(-24)
-          $namePattern = '^(?i)(MhwManagerSelfTest-|MhwAgentControlSelfTest-|mhw-|mhwm-|chatgpt-|agent-control-|shipit-|heaven-toolbox-|DiagOutputDir$)'
+          $namePattern = '(?i)^(MhwManagerSelfTest-|MhwAgentControlSelfTest-|mhw-|mhwm-|chatgpt-|agent-control-|shipit-|heaven-toolbox-|DiagOutputDir$)'
 
           $candidates = @(
             Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction Stop |
@@ -163,29 +190,6 @@ jobs:
           $freeAfter = if ($diskAfter) { [long]$diskAfter.FreeSpace } else { 0L }
           $freeDelta = [Math]::Max(0L, $freeAfter - $freeBefore)
 
-          Write-Host "DELETED_COUNT=$($deleted.Count)"
-          Write-Host "SKIPPED_COUNT=$($skipped.Count)"
-          Write-Host "MEASURED_RECLAIMED=$(Format-Bytes $reclaimed)"
-          Write-Host "DISK_FREE_DELTA=$(Format-Bytes $freeDelta)"
-
-          foreach ($row in $skipped) {
-            Write-Host ("SKIP_DETAIL name='{0}' reason='{1}'" -f $row.Name,$row.Reason)
-          }
-
-          if ($env:GITHUB_STEP_SUMMARY) {
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "## Heaven2 temp backlog cleanup"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ""
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- Temp root: `$tempRoot`"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- Cutoff: `$($cutoff.ToString('o'))`"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- Deleted roots: **$($deleted.Count)**"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- Skipped roots: **$($skipped.Count)**"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- Measured bytes in deleted roots: **$(Format-Bytes $reclaimed)**"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "- Disk free-space increase: **$(Format-Bytes $freeDelta)**"
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ""
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "WSL virtual disks and unrelated app/user data were outside the allowlist."
-          }
-
-
           $remaining = @(
             Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction SilentlyContinue |
               Where-Object {
@@ -195,39 +199,65 @@ jobs:
               Sort-Object LastWriteTimeUtc
           )
           [long]$remainingBytes = 0
-          foreach ($row in $remaining) { $remainingBytes += Get-TreeBytes -Path $row.FullName }
+          foreach ($row in $remaining) {
+            $remainingBytes += Get-TreeBytes -Path $row.FullName
+          }
 
-          $deletedText = if ($deleted.Count) {
-            (@($deleted | ForEach-Object { "- " + $_.Name + " (" + (Format-Bytes $_.Bytes) + ")" }) -join [Environment]::NewLine)
-          } else { "- none in this pass" }
-          $skippedText = if ($skipped.Count) {
-            (@($skipped | Select-Object -First 80 | ForEach-Object { "- " + $_.Name + ": " + $_.Reason }) -join [Environment]::NewLine)
-          } else { "- none" }
-          $remainingText = if ($remaining.Count) {
-            (@($remaining | Select-Object -First 80 | ForEach-Object { "- " + $_.Name }) -join [Environment]::NewLine)
-          } else { "- none" }
+          Write-Host "DELETED_COUNT=$($deleted.Count)"
+          Write-Host "SKIPPED_COUNT=$($skipped.Count)"
+          Write-Host "MEASURED_RECLAIMED=$(Format-Bytes $reclaimed)"
+          Write-Host "DISK_FREE_DELTA=$(Format-Bytes $freeDelta)"
+          Write-Host "REMAINING_STALE_COUNT=$($remaining.Count)"
+          Write-Host "REMAINING_STALE_BYTES=$(Format-Bytes $remainingBytes)"
 
-          $body = @"
-## Heaven2 temp backlog cleanup result
+          foreach ($row in $skipped) {
+            Write-Host ("SKIP_DETAIL name='{0}' reason='{1}'" -f $row.Name,$row.Reason)
+          }
 
-- Temp root: `$tempRoot`
-- Stale cutoff: `$($cutoff.ToString('o'))` (24h)
-- Deleted this pass: **$($deleted.Count)** roots / **$(Format-Bytes $reclaimed)**
-- Skipped this pass: **$($skipped.Count)** roots
-- Remaining stale allowlisted roots: **$($remaining.Count)** / **$(Format-Bytes $remainingBytes)**
-- Disk free-space increase in this pass: **$(Format-Bytes $freeDelta)**
+          $bodyLines = New-Object System.Collections.Generic.List[string]
+          $bodyLines.Add('## Heaven2 temp backlog cleanup result')
+          $bodyLines.Add('')
+          $bodyLines.Add("- Temp root: $tempRoot")
+          $bodyLines.Add("- Stale cutoff: $($cutoff.ToString('o')) (24h)")
+          $bodyLines.Add("- Deleted this pass: **$($deleted.Count)** roots / **$(Format-Bytes $reclaimed)**")
+          $bodyLines.Add("- Skipped this pass: **$($skipped.Count)** roots")
+          $bodyLines.Add("- Remaining stale allowlisted roots: **$($remaining.Count)** / **$(Format-Bytes $remainingBytes)**")
+          $bodyLines.Add("- Disk free-space increase in this pass: **$(Format-Bytes $freeDelta)**")
+          $bodyLines.Add('')
+          $bodyLines.Add('### Deleted')
+          if ($deleted.Count -eq 0) {
+            $bodyLines.Add('- none in this pass')
+          } else {
+            foreach ($row in $deleted | Select-Object -First 100) {
+              $bodyLines.Add("- $($row.Name) ($(Format-Bytes $row.Bytes))")
+            }
+          }
+          $bodyLines.Add('')
+          $bodyLines.Add('### Skipped')
+          if ($skipped.Count -eq 0) {
+            $bodyLines.Add('- none')
+          } else {
+            foreach ($row in $skipped | Select-Object -First 100) {
+              $bodyLines.Add("- $($row.Name): $($row.Reason)")
+            }
+          }
+          $bodyLines.Add('')
+          $bodyLines.Add('### Remaining stale allowlisted roots')
+          if ($remaining.Count -eq 0) {
+            $bodyLines.Add('- none')
+          } else {
+            foreach ($row in $remaining | Select-Object -First 100) {
+              $bodyLines.Add("- $($row.Name)")
+            }
+          }
+          $bodyLines.Add('')
+          $bodyLines.Add('WSL virtual disks, unrelated app data, non-temp paths, reparse points, and ambiguous Git work were outside the deletion boundary.')
+          $body = [string]::Join([Environment]::NewLine, $bodyLines)
 
-### Deleted
-$deletedText
+          if ($env:GITHUB_STEP_SUMMARY) {
+            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $body
+          }
 
-### Skipped
-$skippedText
-
-### Remaining stale allowlisted roots
-$remainingText
-
-WSL virtual disks, unrelated app data, non-temp paths, reparse points, and ambiguous Git work were outside the deletion boundary.
-"@
           $headers = @{
             Authorization = "Bearer $env:GH_TOKEN"
             Accept = 'application/vnd.github+json'
