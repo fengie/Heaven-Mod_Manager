@@ -630,6 +630,20 @@ public sealed class UpdaterCoreTests : IDisposable
             prepared.RequestPath,
             request,
             TestToken);
+
+        if (OperatingSystem.IsWindows())
+        {
+            var reparseTarget = Path.Combine(root, "request-reparse-target");
+            Directory.CreateDirectory(reparseTarget);
+            CreateDirectoryJunction(request.BackupRoot, reparseTarget);
+            var reparseError = await Assert.ThrowsAsync<IOException>(
+                () => UpdateRequestStore.ReadForHelperAsync(
+                    prepared.RequestPath,
+                    TestToken));
+            Assert.Contains("reparse point", reparseError.Message, StringComparison.OrdinalIgnoreCase);
+            Directory.Delete(request.BackupRoot);
+        }
+
         var rebound = await UpdateRequestStore.ReadForHelperAsync(
             prepared.RequestPath,
             TestToken);
@@ -723,6 +737,26 @@ public sealed class UpdaterCoreTests : IDisposable
                 TestToken));
 
         Assert.Contains("does not own updater helper", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void CreateDirectoryJunction(string link, string target)
+    {
+        var info = new System.Diagnostics.ProcessStartInfo(
+            "cmd.exe",
+            $"/d /c mklink /J \"{link}\" \"{target}\"")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        using var process = System.Diagnostics.Process.Start(info)
+            ?? throw new InvalidOperationException("Could not start cmd.exe to create updater test junction.");
+        process.WaitForExit();
+        if (process.ExitCode != 0)
+            throw new IOException(
+                $"Could not create updater test junction. stdout={process.StandardOutput.ReadToEnd()} stderr={process.StandardError.ReadToEnd()}");
+        Assert.True((File.GetAttributes(link) & FileAttributes.ReparsePoint) != 0);
     }
 
     private static async Task<ProductFileEntry> EntryAsync(string rootPath, string relative)
