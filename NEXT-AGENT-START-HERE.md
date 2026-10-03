@@ -23,6 +23,10 @@ The v8.8.86 PR #679 final head requires fresh exact-head Product Security and Wo
 
 Residual limitation: tree validation is path-based and closes the unvalidated-descendant case, but a topology swap after final validation and before move/delete remains a TOCTOU risk. Do not claim handle-atomic containment.
 
+## Unresolved risk
+
+The descendant reparse validation is path-based. A topology swap after the final validation and before the subsequent move/delete remains a residual TOCTOU risk; v8.8.86 does not claim handle-atomic containment.
+
 ## Coordination
 
 Issue #673 / PR #674 is a separate unmanaged-adoption boundary. Its stale branch claimed v8.8.85 from an older base; it must reconcile onto fresh `main` after v8.8.86 and take the next available patch identity rather than replay stale metadata.
