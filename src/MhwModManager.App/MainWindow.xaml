@@ -169,7 +169,7 @@
                                     </Border>
                                     <Grid Margin="0,16,0,0">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <Button Margin="0,0,5,0" Style="{StaticResource ActionTile}" Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
+                                        <Button Margin="0,0,5,0" Style="{StaticResource ActionTile}" Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}"/>
                                         <Button Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource ActionTile}" Content="Launch Without Mods" Command="{Binding LaunchSafeModeCommand}"/>
                                     </Grid>
                                     <Grid Margin="0,10,0,0">
@@ -495,7 +495,7 @@
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding PlanPreviewText}"/>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="See exactly what would change without editing game files."/>
+                                <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="See exactly what would change without editing game files." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Discard all pending enable/disable changes. Installed game files are not changed." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Safely install your pending mod changes. Ctrl+Enter." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                             </StackPanel>
