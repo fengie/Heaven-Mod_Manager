@@ -244,6 +244,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
             while (await r.ReadAsync(ct)) snapshots.Add((r.GetString(0), r.GetString(1)));
         }
 
+        var orphanDirectories = new HashSet<string>(directories, StringComparer.OrdinalIgnoreCase);
         var retained = 0;
         foreach (var snapshot in snapshots)
         {
@@ -255,6 +256,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
                 continue;
             }
 
+            orphanDirectories.Remove(fullPath);
             try
             {
                 if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
@@ -291,7 +293,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         // Anything left was discovered as an immediate child of SnapshotRoot but has
         // no live database row. Interrupted captures can leave these directories
         // behind, so reclaim them without ever following a reparse target.
-        foreach (var orphan in directories)
+        foreach (var orphan in orphanDirectories)
         {
             ct.ThrowIfCancellationRequested();
             if (!TryNormalizeOwnedSnapshotDirectory(fullSnapshotRoot, orphan, out var fullPath))
