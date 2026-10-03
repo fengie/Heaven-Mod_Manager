@@ -313,7 +313,7 @@ public sealed class AutomationServiceTests : IDisposable
 
         Assert.Equal("old-pack",preview.OlderId);
         Assert.Equal("new-pack",preview.NewerId);
-        Assert.Equal("new-pack",preview.Snapshot.ResourceProviders[@"nativepc\\mod_shared"]);
+        Assert.Equal("new-pack",preview.Snapshot.ResourceProviders[@"nativepc\mod_shared"]);
         var old=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"old-pack"));
         var replacement=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"new-pack"));
         Assert.True(old.IsSuperseded);
