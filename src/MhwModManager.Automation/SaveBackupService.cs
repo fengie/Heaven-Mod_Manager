@@ -255,6 +255,11 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
                 continue;
             }
 
+            // This path is owned by a live database row, so it must never be
+            // reconsidered by the orphan sweep below, even when it is retained or
+            // a best-effort delete/unlink fails and the row stays retryable.
+            directories.Remove(fullPath);
+
             try
             {
                 if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
@@ -286,6 +291,28 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
 
             await DeleteSnapshotRecordAsync(snapshot.Id, ct);
             directories.Remove(fullPath);
+        }
+
+        // Anything left was discovered as an immediate child of SnapshotRoot but has
+        // no live database row. Interrupted captures can leave these directories
+        // behind, so reclaim them without ever following a reparse target.
+        foreach (var orphan in directories)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!TryNormalizeOwnedSnapshotDirectory(fullSnapshotRoot, orphan, out var fullPath))
+                continue;
+
+            try
+            {
+                if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
+                    (unlinkReparsePoint ?? UnlinkReparsePoint)(fullPath);
+                else
+                    Directory.Delete(fullPath, true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Best-effort orphan reclamation. A later prune can retry.
+            }
         }
     }
 
