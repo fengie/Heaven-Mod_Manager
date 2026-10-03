@@ -13,9 +13,9 @@ v8.8.88 adds an updater-readable provenance/index layer for immutable public rel
 
 ## Verification boundary
 
-Last closed canonical Windows source is v8.8.87 `4d94e6700d6d027449ef45eeab9c753d8ce56c26`, run `37142564667`.
+Current hosted-Windows closure: v8.8.88 source `d0816f3c495ff055df517ce0b021e41dd19596f6` passed run `37143560604` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.88-heaven-windows-closure.log`.
 
-The provenance implementation at pre-version head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after the Windows PowerShell scalar-path repair. The reconciled v8.8.88 candidate includes verified evidence-only main `0f8d5973951d67d78f21815ee82ee650fe368d6a` and changes release metadata/workflow inputs, so it requires fresh exact-final-head verification. After merge, canonical main requires a fresh strict Windows Release Gate and downstream installed-client updater E2E before v8.8.88 closure is claimed.
+The tested source remains `d0816f3c495ff055df517ce0b021e41dd19596f6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
