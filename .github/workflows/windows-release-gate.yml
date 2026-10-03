@@ -26,6 +26,12 @@ on:
       - 'Open Startup Logs.bat'
       - 'OPEN MASTER DEBUG LOG.bat'
   workflow_dispatch:
+    inputs:
+      force_publish:
+        description: 'Force updater publication even when this semantic version is already published'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -52,13 +58,19 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Verify pinned .NET SDK
+      - name: Select writable .NET SDK install root
         shell: powershell
         run: |
-          $version = (& dotnet --version).Trim()
-          if ($version -ne '10.0.401') {
-            throw "Heaven release runner requires .NET SDK 10.0.401; found $version."
-          }
+          $installRoot=Join-Path $env:RUNNER_TEMP 'dotnet'
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Provision repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Verify repository .NET SDK
+        shell: powershell
+        run: .\scripts\ci\Assert-PinnedDotNetSdk.ps1
 
       - name: Record runner provenance
         shell: powershell
@@ -85,8 +97,73 @@ jobs:
         shell: cmd
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-UpdaterReleasePolicy.ps1"
 
-      - name: Install verified GitHub CLI for publication
+      - name: Confirm release source is still canonical main
+        id: release_freshness
         if: success() && github.ref == 'refs/heads/main'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
+            throw 'Repository token was not supplied to the release freshness guard.'
+          }
+
+          $headers=@{
+            Accept='application/vnd.github+json'
+            Authorization="Bearer $env:GH_TOKEN"
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='mhw-mod-manager-release-freshness'
+          }
+          $mainRef=Invoke-RestMethod -UseBasicParsing -Method Get -Headers $headers -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" -TimeoutSec 60
+          $remoteMain=[string]$mainRef.object.sha
+          if ([string]::IsNullOrWhiteSpace($remoteMain) -or $remoteMain.Length -ne 40 -or $remoteMain -match '[^0-9a-fA-F]') {
+            throw "Release freshness guard received malformed main SHA '$remoteMain'."
+          }
+
+          if (-not [string]::Equals($remoteMain,$env:GITHUB_SHA,[StringComparison]::OrdinalIgnoreCase)) {
+            "publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "::notice::Skipping updater publication for stale source $env:GITHUB_SHA because canonical main is $remoteMain."
+            exit 0
+          }
+
+          "publish=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "PASS: release source $env:GITHUB_SHA is still canonical main." -ForegroundColor Green
+
+      - name: Resolve updater release intent
+        id: release_intent
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.force_publish == true }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
+            throw 'Repository token was not supplied to the release-intent guard.'
+          }
+          . .\scripts\release\UpdaterReleasePolicy.ps1
+          $version=(Get-Content -LiteralPath '.\VERSION.txt' -Raw).Trim()
+          $headers=@{
+            Accept='application/vnd.github+json'
+            Authorization="Bearer $env:GH_TOKEN"
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='mhw-mod-manager-release-intent'
+          }
+          $releases=Get-UpdaterReleasePages -FetchPage {
+            param($page,$pageSize)
+            Invoke-RestMethod -UseBasicParsing -Method Get -Headers $headers `
+              -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases?per_page=$pageSize&page=$page" -TimeoutSec 60
+          }
+          $force=[string]::Equals([string]$env:FORCE_PUBLISH,'true',[StringComparison]::OrdinalIgnoreCase)
+          $decision=Get-UpdaterReleaseIntentDecision -CurrentVersion $version -ForcePublish $force -Releases @($releases)
+          "publish=$($decision.Publish.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "reason=$($decision.Reason)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if($decision.Publish){
+            Write-Host "PASS: updater publication authorized for v$version ($($decision.Reason))." -ForegroundColor Green
+          } else {
+            Write-Host "::notice::Skipping updater publication for v$version because it is already published as $($decision.ExistingTag). Full verification/build still completed."
+          }
+      - name: Install verified GitHub CLI for publication
+        if: success() && github.ref == 'refs/heads/main' && steps.release_intent.outputs.publish == 'true'
         shell: powershell
         run: |
           # Release tooling is part of the trusted build chain. Never execute a moving
@@ -124,41 +201,9 @@ jobs:
           [IO.File]::AppendAllText($env:GITHUB_PATH, ($ghDir + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding($false)))
           Write-Host "Using verified GitHub CLI $version with SHA-256 $expectedSha256."
 
-      - name: Confirm release source is still canonical main
-        id: release_freshness
-        if: success() && github.ref == 'refs/heads/main'
-        shell: powershell
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
-            throw 'Repository token was not supplied to the release freshness guard.'
-          }
-
-          $headers=@{
-            Accept='application/vnd.github+json'
-            Authorization="Bearer $env:GH_TOKEN"
-            'X-GitHub-Api-Version'='2022-11-28'
-            'User-Agent'='mhw-mod-manager-release-freshness'
-          }
-          $mainRef=Invoke-RestMethod -UseBasicParsing -Method Get -Headers $headers -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" -TimeoutSec 60
-          $remoteMain=[string]$mainRef.object.sha
-          if ([string]::IsNullOrWhiteSpace($remoteMain) -or $remoteMain.Length -ne 40 -or $remoteMain -match '[^0-9a-fA-F]') {
-            throw "Release freshness guard received malformed main SHA '$remoteMain'."
-          }
-
-          if (-not [string]::Equals($remoteMain,$env:GITHUB_SHA,[StringComparison]::OrdinalIgnoreCase)) {
-            "publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-            Write-Host "::notice::Skipping updater publication for stale source $env:GITHUB_SHA because canonical main is $remoteMain."
-            exit 0
-          }
-
-          "publish=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Host "PASS: release source $env:GITHUB_SHA is still canonical main." -ForegroundColor Green
-
       - name: Resolve release artifact provenance subject
         id: release_artifact
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true'
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true'
         shell: powershell
         env:
           REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
@@ -244,7 +289,7 @@ jobs:
           }
       - name: Publish public updater client feed
         id: public_updater_release
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true'
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
@@ -255,7 +300,7 @@ jobs:
           .\scripts\release\Publish-PublicUpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
       - name: Publish immutable canonical updater release
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.public_updater_release.outputs.published == 'true'
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true' && steps.public_updater_release.outputs.published == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
@@ -263,7 +308,7 @@ jobs:
           .\scripts\release\Publish-UpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
       - name: Verify public and canonical updater release parity
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.public_updater_release.outputs.published == 'true'
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true' && steps.public_updater_release.outputs.published == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
