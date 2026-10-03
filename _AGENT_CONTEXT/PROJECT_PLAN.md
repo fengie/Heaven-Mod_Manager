@@ -66,7 +66,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Regression-check core text/background combinations against WCAG AA 4.5:1 normal-text contrast.
 - [x] Synchronize v8.8.89 release and continuity surfaces.
 
-**Verification:** exact v8.8.89 candidate must pass the feature gate before integration; after integration, obtain fresh strict canonical Windows verification because the patch changes app/XAML/test/content inputs. Last closed Windows source before this patch remains v8.8.88 `d0816f3c495ff055df517ce0b021e41dd19596f6` / run `37143560604`.
+**Verification:** exact v8.8.89 candidate must pass the feature gate before integration; after integration, obtain fresh strict canonical Windows verification because the patch changes app/XAML/test/content inputs. Last closed Windows source before this patch remains v8.8.88 `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
 
 **Next action:** after canonical integration, obtain and persist fresh exact-source Windows verification for v8.8.89; then resume the next non-overlapping project-plan lane.
 
