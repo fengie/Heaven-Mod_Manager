@@ -1,8 +1,9 @@
 # v8.8.82 — 2026-10-03
 
-- Canonicalize update-migration mod IDs with the repository's case-insensitive identity comparer.
-- Apply canonical identity across rules, metadata, family membership, resource providers, staged state, supersession, and diffing.
-- Add casing-variant migration regressions.
+- Canonicalize update-migration mod IDs with the repository's case-insensitive identity comparer across rules, metadata, family membership, resource providers, staged state, supersession, and diffing.
+- Restore LastKnownGood over the complete current mod set: baseline mods recover saved enabled/priority state, while post-baseline mods are disabled without destroying their current priority.
+- Enforce native WPF radio-button semantics for FOMOD `SelectExactlyOne` groups so one selection is always retained; `SelectAtMostOne` remains zero-or-one with checkboxes.
+- Add focused regressions for casing-variant migration identity, post-baseline LastKnownGood restore behavior, and exactly-one installer selection semantics.
 
 # v8.8.81 — 2026-10-03
 
