@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: heaven2-temp-backlog-cleanup-once
@@ -22,6 +23,8 @@ jobs:
     steps:
       - name: Safely remove stale known scratch roots
         shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
           $ProgressPreference = 'SilentlyContinue'
@@ -42,15 +45,6 @@ jobs:
             } catch {
               return 0L
             }
-          }
-
-          function Test-ProcessReference([string]$Path, [string[]]$CommandLines) {
-            $needle = [IO.Path]::GetFullPath($Path).TrimEnd('\').ToLowerInvariant()
-            foreach ($line in $CommandLines) {
-              if ([string]::IsNullOrWhiteSpace($line)) { continue }
-              if ($line.ToLowerInvariant().Contains($needle)) { return $true }
-            }
-            return $false
           }
 
           function Test-GitEvidenceSafe([string]$Root) {
@@ -98,13 +92,8 @@ jobs:
           $diskBefore = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$driveId'" -ErrorAction SilentlyContinue
           $freeBefore = if ($diskBefore) { [long]$diskBefore.FreeSpace } else { 0L }
 
-          $cutoff = [DateTime]::UtcNow.AddHours(-12)
+          $cutoff = [DateTime]::UtcNow.AddHours(-24)
           $namePattern = '^(?i)(MhwManagerSelfTest-|MhwAgentControlSelfTest-|mhw-|mhwm-|chatgpt-|agent-control-|shipit-|heaven-toolbox-|DiagOutputDir$)'
-          $commandLines = @(
-            Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
-              ForEach-Object { [string]$_.CommandLine } |
-              Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-          )
 
           $candidates = @(
             Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction Stop |
@@ -137,10 +126,6 @@ jobs:
             }
             if ($full -match '(?i)\.vhdx$' -or $dir.Name -match '(?i)wsl|ubuntu|canonical') {
               $skipped.Add([pscustomobject]@{ Name = $dir.Name; Reason = 'wsl-protection' })
-              continue
-            }
-            if (Test-ProcessReference -Path $full -CommandLines $commandLines) {
-              $skipped.Add([pscustomobject]@{ Name = $dir.Name; Reason = 'referenced-by-live-process-command-line' })
               continue
             }
 
@@ -199,3 +184,56 @@ jobs:
             Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ""
             Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "WSL virtual disks and unrelated app/user data were outside the allowlist."
           }
+
+
+          $remaining = @(
+            Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction SilentlyContinue |
+              Where-Object {
+                $_.Name -match $namePattern -and
+                $_.LastWriteTimeUtc -lt $cutoff
+              } |
+              Sort-Object LastWriteTimeUtc
+          )
+          [long]$remainingBytes = 0
+          foreach ($row in $remaining) { $remainingBytes += Get-TreeBytes -Path $row.FullName }
+
+          $deletedText = if ($deleted.Count) {
+            (@($deleted | ForEach-Object { "- " + $_.Name + " (" + (Format-Bytes $_.Bytes) + ")" }) -join [Environment]::NewLine)
+          } else { "- none in this pass" }
+          $skippedText = if ($skipped.Count) {
+            (@($skipped | Select-Object -First 80 | ForEach-Object { "- " + $_.Name + ": " + $_.Reason }) -join [Environment]::NewLine)
+          } else { "- none" }
+          $remainingText = if ($remaining.Count) {
+            (@($remaining | Select-Object -First 80 | ForEach-Object { "- " + $_.Name }) -join [Environment]::NewLine)
+          } else { "- none" }
+
+          $body = @"
+## Heaven2 temp backlog cleanup result
+
+- Temp root: `$tempRoot`
+- Stale cutoff: `$($cutoff.ToString('o'))` (24h)
+- Deleted this pass: **$($deleted.Count)** roots / **$(Format-Bytes $reclaimed)**
+- Skipped this pass: **$($skipped.Count)** roots
+- Remaining stale allowlisted roots: **$($remaining.Count)** / **$(Format-Bytes $remainingBytes)**
+- Disk free-space increase in this pass: **$(Format-Bytes $freeDelta)**
+
+### Deleted
+$deletedText
+
+### Skipped
+$skippedText
+
+### Remaining stale allowlisted roots
+$remainingText
+
+WSL virtual disks, unrelated app data, non-temp paths, reparse points, and ambiguous Git work were outside the deletion boundary.
+"@
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'User-Agent' = 'heaven2-temp-backlog-cleanup'
+          }
+          $payload = @{ body = $body } | ConvertTo-Json -Depth 4
+          Invoke-RestMethod -Method Post -Uri 'https://api.github.com/repos/fengie/mhw-mods/issues/665/comments' -Headers $headers -ContentType 'application/json' -Body $payload | Out-Null
+          Write-Host 'RESULT_CALLBACK_POSTED issue=665'
