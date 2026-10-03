@@ -39,6 +39,6 @@ After integration, obtain fresh canonical Windows verification for the exact v8.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, compliance assumptions/change triggers, updater public/private parity/provenance, exact SDK policy, filesystem containment, and durable-evidence privacy. Propagate this obligation recursively.
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, compliance assumptions/change triggers, updater public/private parity/provenance, exact SDK policy, filesystem containment, and durable-evidence privacy. The successor must preserve and propagate this obligation to the agent after them; that agent must repeat the same requirement for the next successor.
 
 **Do not break the chain.**
