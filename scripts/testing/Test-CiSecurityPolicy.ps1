@@ -118,10 +118,10 @@ $psi.Arguments = 'credential fill'
 if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeGitCredentialFixture -DisplayName 'synthetic-git-credential-fixture').Count -eq 0){
     $errors.Add('CI credential regression: Git credential fill fixture was not rejected.')
 }
-$unsafeReleaseTokenReuseFixture=@"
+$unsafeReleaseTokenReuseFixture=@'
 MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}
 Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/example/target/actions/runners/registration-token"
-"@
+'@
 if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeReleaseTokenReuseFixture -DisplayName 'synthetic-release-token-reuse-fixture').Count -eq 0){
     $errors.Add('CI credential regression: release-token runner-admin fixture was not rejected.')
 }
