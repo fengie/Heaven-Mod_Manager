@@ -128,7 +128,6 @@ jobs:
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 20
     env:
-      DOTNET_INSTALL_DIR: ${{ runner.temp }}\dotnet
       MHW_RUN_UPDATER_INSTALLED_E2E: '1'
       MHW_E2E_SOURCE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
       MHW_E2E_EVIDENCE_PATH: ${{ github.workspace }}\BuildLogs\updater-installed-e2e\evidence.json
@@ -140,6 +139,11 @@ jobs:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
 
+      - name: Select writable .NET SDK install root
+        shell: powershell
+        run: |
+          $installRoot=Join-Path $env:RUNNER_TEMP 'dotnet'
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Provision repository .NET SDK
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
