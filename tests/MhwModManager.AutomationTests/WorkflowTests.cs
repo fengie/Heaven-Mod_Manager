@@ -412,6 +412,7 @@ public sealed class WorkflowTests : IDisposable
         await WriteZipAsync(archivePath, new Dictionary<string, string> { ["nativePC/item.bin"] = "ITEM" });
 
         var injected = false;
+        string? redirect = null;
         var inspector = new ArchiveInspector((point, destination) =>
         {
             if (point != ArchiveExtractionFaultPoint.BeforePayloadWrite || injected) return;
@@ -420,24 +421,34 @@ public sealed class WorkflowTests : IDisposable
                 ?? throw new InvalidOperationException("Archive destination has no parent.");
             var staging = Directory.GetParent(parent)?.FullName
                 ?? throw new InvalidOperationException("Archive staging path has no parent.");
-            CreateDirectoryJunction(Path.Combine(staging, "redirect"), external);
+            redirect = Path.Combine(staging, "redirect");
+            CreateDirectoryJunction(redirect, external);
         });
         var blobs = new BlobStore(Path.Combine(state, "Blobs"), db);
         var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
         var importer = new ArchiveImportService(inspector, catalog, mods);
 
-        var failure = await Assert.ThrowsAsync<IOException>(() => importer.ImportAsync(archivePath, Token));
+        try
+        {
+            var failure = await Assert.ThrowsAsync<IOException>(() => importer.ImportAsync(archivePath, Token));
 
-        Assert.True(injected);
-        Assert.Contains("reparse point", failure.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
-        Assert.Empty(Directory.EnumerateDirectories(mods));
+            Assert.True(injected);
+            Assert.Contains("reparse point", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+            Assert.Empty(Directory.EnumerateDirectories(mods));
 
-        var workspace = Path.Combine(
-            Path.GetDirectoryName(Path.GetFullPath(mods))!,
-            $".{Path.GetFileName(Path.GetFullPath(mods))}.import-work");
-        var residue = Assert.Single(Directory.EnumerateDirectories(workspace));
-        Assert.True(Directory.Exists(Path.Combine(residue, "redirect")));
+            var workspace = Path.Combine(
+                Path.GetDirectoryName(Path.GetFullPath(mods))!,
+                $".{Path.GetFileName(Path.GetFullPath(mods))}.import-work");
+            var residue = Assert.Single(Directory.EnumerateDirectories(workspace));
+            Assert.Equal(Path.Combine(residue, "redirect"), redirect);
+            Assert.True(Directory.Exists(redirect));
+        }
+        finally
+        {
+            if (redirect is not null && Directory.Exists(redirect))
+                Directory.Delete(redirect);
+        }
     }
 
     [Fact]
@@ -464,6 +475,7 @@ public sealed class WorkflowTests : IDisposable
         var catalog = new CatalogService(db, new ModScanner(db, blobs, new HashingService()), mods);
         var categories = new AutoCategoryService(db);
         var nexus = new NexusMetadataService(db, new PlannerSnapshotRepository(db), state);
+        string? redirect = null;
         var service = new SmartInboxService(
             db,
             new ArchiveInspector(),
@@ -475,17 +487,26 @@ public sealed class WorkflowTests : IDisposable
             faultInjector: (point, destination) =>
             {
                 if (point != SmartInboxFaultPoint.AfterPublishBeforeSourceArchive) return;
-                CreateDirectoryJunction(Path.Combine(destination, "redirect"), external);
+                redirect = Path.Combine(destination, "redirect");
+                CreateDirectoryJunction(redirect, external);
                 throw new IOException("injected source archival failure after descendant reparse substitution");
             });
 
-        var failure = await Assert.ThrowsAsync<IOException>(() => service.ProcessAsync(Token));
+        try
+        {
+            var failure = await Assert.ThrowsAsync<IOException>(() => service.ProcessAsync(Token));
 
-        Assert.Contains("rollback", failure.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
-        Assert.True(Directory.Exists(source));
-        Assert.True(Directory.Exists(Path.Combine(mods, "Pack")));
-        Assert.Empty(await db.GetModsAsync(Token));
+            Assert.Contains("rollback", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("KEEP", await File.ReadAllTextAsync(sentinel, Token));
+            Assert.True(Directory.Exists(source));
+            Assert.True(Directory.Exists(Path.Combine(mods, "Pack")));
+            Assert.Empty(await db.GetModsAsync(Token));
+        }
+        finally
+        {
+            if (redirect is not null && Directory.Exists(redirect))
+                Directory.Delete(redirect);
+        }
     }
 
     [Fact]
