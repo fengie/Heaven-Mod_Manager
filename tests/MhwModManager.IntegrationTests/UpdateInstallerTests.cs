@@ -933,7 +933,7 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.False(Directory.Exists(fixture.Request.BackupRoot));
     }
 
-    private async Task<CanonicalHelperFixture> CreateCanonicalHelperRequestAsync(
+    private static async Task<CanonicalHelperFixture> CreateCanonicalHelperRequestAsync(
         UpdateApplyRequest source)
     {
         var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
