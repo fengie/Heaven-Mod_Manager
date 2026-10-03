@@ -425,7 +425,11 @@ public sealed class UpdaterCoreTests : IDisposable
     {
         var install = Path.Combine(root, "handoff-install");
         var managerHome = Path.Combine(root, "manager-home");
-        var stage = Path.Combine(UpdatePackageStager.GetUpdaterRoot(), "tests", "handoff-" + Guid.NewGuid().ToString("N"), "stage");
+        var stage = Path.Combine(
+            UpdatePackageStager.GetUpdaterRoot(),
+            "staging",
+            "11-" + Guid.NewGuid().ToString("N"),
+            "payload");
         Directory.CreateDirectory(Path.Combine(install, "UpdaterHelper"));
         Directory.CreateDirectory(managerHome);
         Directory.CreateDirectory(stage);
