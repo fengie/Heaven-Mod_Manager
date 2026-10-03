@@ -10,7 +10,9 @@ v8.8.78 source `e6e6a91b40ac281f38d0f11dc6b7a77052ca4071` remains the last close
 
 ## Verification boundary
 
-Fresh exact-input Windows verification is required for v8.8.79 because Automation production source, tests, and release metadata changed. Do not inherit v8.8.78 green status.
+Current hosted-Windows closure: v8.8.79 source `6a10008fdcaae5112653593d62b41f5ef4668b36` passed run `37085548752` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.79-heaven-windows-closure.log`.
+
+The tested source remains `6a10008fdcaae5112653593d62b41f5ef4668b36` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
