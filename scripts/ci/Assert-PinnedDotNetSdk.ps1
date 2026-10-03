@@ -20,6 +20,7 @@ try{
 }
 
 $expected=[string]$globalJson.sdk.version
+$rollForward=[string]$globalJson.sdk.rollForward
 if($expected -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$'){
   throw "global.json sdk.version '$expected' is missing or malformed."
 }
