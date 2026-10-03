@@ -11,6 +11,8 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Add owner leases for catalog acquisition scratch downloads and reclaim only manager-owned residue whose owner is proven exited, with age and byte-quota bounds.
 - Require new prepared updater transaction leases to carry certified PID + process-start identity; legacy missing-start leases become reclaimable only after the PID exits, while live or ambiguous owners remain preserved.
 - Reclaim abandoned temporary lease files without traversing reparse points, keep unknown/unleased files fail-closed, and add deterministic liveness, quota, cleanup, and updater-handoff regressions.
+- Make Mod Library bulk scope explicit and count-aware; disable visible bulk actions when no rows are visible, and make Refresh Visible target every member of every currently visible row, including disabled and partially enabled composites.
+- Carry the post-#706 residual catalog synchronization, migration/rules, and catalog regression coverage consolidated through #730 into the same v8.8.91 release boundary.
 
 ## v8.8.90 — byte stability + CI reliability
 
