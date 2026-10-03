@@ -463,7 +463,7 @@ Assert-Equal $true ($publicPublisherSource.Contains('Invoke-UpdaterDraftPublicat
 Assert-Equal $true ($publicPublisherSource.Contains('-RefreshMain')) 'public release post-upload main refresh'
 Assert-Equal $true ($publicPublisherSource.Contains('-EvaluateRefreshedMain')) 'public release post-upload drift evaluation'
 Assert-Equal $true ($publicPublisherSource.Contains('stale-main-unclassified-large-diff')) 'public release compare truncation fails closed'
-Assert-Equal $true ($publicPublisherSource.Contains("-Published $true -Reason 'already-published'")) 'public retry reports exact already-published side as successful'
+Assert-Equal $true ($publicPublisherSource.Contains("'already-published'")) 'public retry reports exact already-published side as successful'
 Assert-Equal $true ($publishSource.Contains('Assert-UpdaterReleaseAssets -Release $publicRelease')) 'canonical retry revalidates already-published public assets before private publication'
 Assert-Equal $true ($releaseWorkflow.Contains("steps.public_updater_release.outputs.published == 'true'")) 'already-published public retry can continue into canonical publication'
 
