@@ -4,6 +4,7 @@
         Title="{Binding WindowTitle}"
         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
         WindowStartupLocation="CenterScreen"
+        KeyboardNavigation.TabNavigation="Continue"
         Loaded="OnWindowLoaded">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding ApplyCommand}"/>
@@ -524,7 +525,7 @@
                                         <Border Width="250" Height="160" CornerRadius="7" Background="#090D12" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True" HorizontalAlignment="Left">
                                             <Grid>
                                                 <TextBlock Text="No visual available" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=512}" Stretch="UniformToFill"/>
+                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=512}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Armor,StringFormat='Preview image for {0}'}"/>
                                             </Grid>
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="8,2,0,0">
@@ -546,7 +547,7 @@
                                         <Border Width="108" Height="72" CornerRadius="6" Background="#0B1016" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
                                             <Grid>
                                                 <TextBlock Text="No preview" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=224}" Stretch="UniformToFill"/>
+                                                <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=224}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Armor,StringFormat='Preview image for {0}'}"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -660,7 +661,7 @@
                                         <Border Margin="0,0,10,10" Padding="10" MinWidth="190" MaxWidth="230" Style="{StaticResource Card}">
                                             <StackPanel>
                                                 <Border Width="170" Height="82" Background="#0B0F13" CornerRadius="6" Margin="0,0,0,7" ClipToBounds="True">
-                                                    <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=384}" Stretch="UniformToFill"/>
+                                                    <Image Source="{Binding PreviewPath,Converter={StaticResource SafeImage},ConverterParameter=384}" Stretch="UniformToFill" AutomationProperties.Name="{Binding DisplayName,StringFormat='Preview image for {0}'}"/>
                                                 </Border>
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="205"/>
                                                 <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#D0D5DB" TextWrapping="Wrap" MaxWidth="205" Margin="0,3,0,8"/>
@@ -951,6 +952,39 @@
                             </StackPanel>
                         </Border>
 
+                        <Border Margin="0,0,0,12" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Privacy &amp; legal" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Margin="0,4,0,12"
+                                           Foreground="{StaticResource Muted}"
+                                           TextWrapping="Wrap"
+                                           Text="This release is local-first: no first-party account, ads, browser cookies, in-app payments, consumer-review system, or marketing email. Network features contact only the configured update/mod providers needed for those features."/>
+                                <WrapPanel Margin="-4,0,0,0">
+                                    <Button Content="Privacy policy" Command="{Binding OpenPrivacyPolicyCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open privacy policy"/>
+                                    <Button Content="Terms of use" Command="{Binding OpenTermsOfUseCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open terms of use"/>
+                                    <Button Content="Refund policy" Command="{Binding OpenRefundPolicyCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open refund policy"/>
+                                    <Button Content="Cookie policy" Command="{Binding OpenCookiePolicyCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open cookie policy"/>
+                                </WrapPanel>
+                                <WrapPanel Margin="-4,8,0,0">
+                                    <Button Content="Third-party notices" Command="{Binding OpenThirdPartyNoticesCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open third-party notices"/>
+                                    <Button Content="Data deletion instructions" Command="{Binding OpenDataDeletionGuideCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open data deletion instructions"/>
+                                    <Button Content="Project &amp; support details" Command="{Binding OpenSupportDetailsCommand}" Style="{StaticResource QuietButton}" AutomationProperties.Name="Open project and support details"/>
+                                    <Button Content="Open app data folder" Command="{Binding OpenAppDataFolderCommand}" Style="{StaticResource PrimaryButton}" AutomationProperties.Name="Open manager data folder"/>
+                                </WrapPanel>
+                                <TextBlock Margin="0,10,0,0"
+                                           Foreground="{StaticResource Muted}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Text="Project: Universal Mod Manager / MHW Manual Mod Manager • Publisher: fengie • Formal business-entity/address details are not invented; add them before any commercial release that legally requires them."/>
+                                <TextBlock Margin="0,8,0,0"
+                                           Foreground="{StaticResource Muted}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Text="{Binding LegalStatusText}"
+                                           AutomationProperties.LiveSetting="Polite"/>
+                            </StackPanel>
+                        </Border>
+
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock Text="Storage" Style="{StaticResource SectionTitle}"/>
@@ -1122,7 +1156,7 @@
                                                         <Border Width="64" Height="64" CornerRadius="8" Background="#0A1018" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
                                                             <Grid>
                                                                 <TextBlock Text="No image" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                                <Image Source="{Binding ThumbnailUri}" Stretch="UniformToFill"/>
+                                                                <Image Source="{Binding ThumbnailUri}" Stretch="UniformToFill" AutomationProperties.Name="{Binding Name,StringFormat='Thumbnail for {0}'}"/>
                                                             </Grid>
                                                         </Border>
                                                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
@@ -1253,7 +1287,7 @@
                                         <Border Width="96" Height="72" HorizontalAlignment="Left" VerticalAlignment="Top" CornerRadius="9" Background="#0A1018" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
                                             <Grid>
                                                 <TextBlock Text="No image" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <Image Source="{Binding SelectedCatalogItem.ThumbnailUri}" Stretch="UniformToFill"/>
+                                                <Image Source="{Binding SelectedCatalogItem.ThumbnailUri}" Stretch="UniformToFill" AutomationProperties.Name="{Binding SelectedCatalogItem.Name,StringFormat='Selected mod artwork for {0}'}"/>
                                             </Grid>
                                         </Border>
                                         <StackPanel Grid.Column="1">
