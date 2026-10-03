@@ -527,6 +527,10 @@ public sealed class UpdaterCoreTests : IDisposable
             manifest,
             stage,
             stagedManifestPath);
+        await UpdatePackageStager.WriteJsonAtomicallyAsync(
+            Path.Combine(UpdatePackageStager.GetUpdaterRoot(), UpdateProtocol.PendingFileName),
+            staged,
+            TestToken);
         using var client = new UpdateClientService(
             new HttpClient(new FakeHandler(_ => throw new InvalidOperationException("Network must not be used."))));
 
@@ -553,7 +557,7 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(
             "RUNTIME-CONFIG",
             await File.ReadAllTextAsync(copiedDependency, TestToken));
-        var request = await UpdateRequestStore.ReadAsync(
+        var request = await UpdateRequestStore.ReadForHelperAsync(
             prepared.RequestPath,
             TestToken);
         Assert.Equal(4321, request.CurrentProcessId);
