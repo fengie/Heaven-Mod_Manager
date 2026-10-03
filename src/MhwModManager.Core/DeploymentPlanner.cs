@@ -319,14 +319,15 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     private static bool IsMainRole(ModDescriptor mod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return mod.NexusCategory == NexusFileCategory.Main ||
+        return AutoCompatibility.IsMainPackage(mod) ||
                ContainsFamilyRole(mod.FamilyRole, "main", "base", "core", "root");
     }
 
     private static bool IsDependentRole(ModDescriptor mod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return mod.NexusCategory is NexusFileCategory.Optional or NexusFileCategory.Update ||
+        return AutoCompatibility.IsOptionalPackage(mod) ||
+               AutoCompatibility.TryGetPackageVersion(mod, out _) ||
                ContainsFamilyRole(mod.FamilyRole, "optional", "update", "patch", "addon", "add-on", "child");
     }
 

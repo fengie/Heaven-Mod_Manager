@@ -1,10 +1,16 @@
-# v8.8.86 — MHW Manual Mod Manager
+# v8.8.87 — MHW Manual Mod Manager
 
-Current product version: **8.8.86**.
+Current product version: **8.8.87**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.87 — HPN composition precedence
+
+- Keep a recognized literal Main/base source enabled whenever one of its sibling components is enabled; optional layers override only overlapping files.
+- Compose same-Nexus `Ver3.10` / `Ver4.2`-style generations per path so newer HPN files win shared paths without discarding older-only compatibility files.
+- Keep same-version body variants as explicit choices and show Main / Optional / Revision roles in the advanced component drawer.
 
 ## v8.8.86 — storage + filesystem hardening
 
@@ -18,11 +24,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Defer only release-version/README/changelog/current-version parity in feature-candidate mode; repository identity, canonical-state shape, continuity, security, analyzers, tests, fault injection, and self-tests stay enforced.
 - Keep canonical `main` and updater publication on the default full verifier, and fail CI policy if the release gate ever opts into candidate-mode relaxation.
 
-## v8.8.84 — updater test-state isolation
-
-- Serialize only the five updater integration-test classes that share the process-global updater root and `pending-update.json` state.
-- Keep unrelated integration tests parallel and preserve each updater test's existing per-test subdirectories.
-- Prevent exact-head release verification from racing shared updater pending state without weakening production updater topology or validation checks.
 
 ## Current plans & progress
 
