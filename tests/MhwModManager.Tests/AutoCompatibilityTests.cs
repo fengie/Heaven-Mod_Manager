@@ -370,6 +370,58 @@ public sealed class AutoCompatibilityTests
     }
 
     [Fact]
+    public void Hpn_main_v310_v42_stack_chooses_v42_and_preserves_unique_lower_layer_files()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("main","Main","Main","main",true,5,FamilyId:"nexus:1965",NexusModId:"1965"),
+            new ModDescriptor("v310","Ver3.10 Beautiful_Tits_Highpoly Nude MOD with jiggle animation (Iceborne Compatible)","Ver3.10 Beautiful_Tits_Highpoly Nude MOD with jiggle animation (Iceborne Compatible)","v310",true,10,FamilyId:"nexus:1965",NexusModId:"1965"),
+            new ModDescriptor("v42","Ver4.2 Normal_Highpoly Nude MOD with jiggle animation","Ver4.2 Normal_Highpoly Nude MOD with jiggle animation","v42",true,20,FamilyId:"nexus:1965",NexusModId:"1965")
+        };
+        var shared = @"nativePC\pl\f_equip\pl501_0000\body\mod\f_body501_0000.mod3";
+        var mainOnly = @"nativePC\pl\f_equip\pl501_0000\body\tex\main-only.tex";
+        var oldOnly = @"nativePC\pl\f_equip\legacy_hpn\v310-only.tex";
+        var files = new[]
+        {
+            new ModFileDescriptor("main",shared,"main-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("v310",shared,"v310-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("v42",shared,"v42-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("main",mainOnly,"main-only",null,100,Now,FileClass.Texture),
+            new ModFileDescriptor("v310",oldOnly,"old-only",null,100,Now,FileClass.Texture)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.False(plan.IsBlocked);
+        Assert.Equal("v42",plan.Conflicts.Single(x=>PathRules.Comparer.Equals(x.Path,shared)).WinnerModId);
+        Assert.Equal("main",plan.Changes.Single(x=>PathRules.Comparer.Equals(x.Path,mainOnly)).ProviderAfter);
+        Assert.Equal("v310",plan.Changes.Single(x=>PathRules.Comparer.Equals(x.Path,oldOnly)).ProviderAfter);
+    }
+
+    [Fact]
+    public void Same_nexus_equal_hpn_generation_variants_remain_a_choice()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("beautiful","Ver4.2 Beautiful_Highpoly Nude MOD with jiggle animation","Ver4.2 Beautiful_Highpoly Nude MOD with jiggle animation","beautiful",true,10,FamilyId:"nexus:1965",NexusModId:"1965"),
+            new ModDescriptor("normal","Ver4.2 Normal_Highpoly Nude MOD with jiggle animation","Ver4.2 Normal_Highpoly Nude MOD with jiggle animation","normal",true,20,FamilyId:"nexus:1965",NexusModId:"1965")
+        };
+        var path = @"nativePC\pl\f_equip\pl501_0000\body\mod\f_body501_0000.mod3";
+        var files = new[]
+        {
+            new ModFileDescriptor("beautiful",path,"aa",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("normal",path,"bb",null,100,Now,FileClass.Structural)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.True(plan.IsBlocked);
+        var decision = Assert.Single(plan.Conflicts);
+        Assert.Null(decision.WinnerModId);
+        Assert.Equal(ConflictKind.ModFamilyOption,decision.Kind);
+    }
+
+    [Fact]
     public void Same_nexus_version_numbers_do_not_order_unrelated_sibling_features()
     {
         var mods = new[]
