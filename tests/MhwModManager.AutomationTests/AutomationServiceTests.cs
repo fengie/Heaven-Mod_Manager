@@ -827,6 +827,21 @@ public sealed class AutomationServiceTests : IDisposable
         Assert.True(issue.Confirmed);Assert.Equal(99,issue.Score);
     }
 
+    [Fact]
+    public async Task RulesEditorRejectsPathPrefixWithoutPatternBeforePersistence()
+    {
+        var db=await CreateDbAsync("rules-prefix.db");
+        var service=new RulesEditorService(db);
+        var malformed=new ConflictRule("prefix-missing",(RuleKind)999,RuleScope.PathPrefix,null,null,null,null,"missing prefix",true,DateTimeOffset.UtcNow);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.SaveAsync(malformed,TestContext.Current.CancellationToken));
+
+        await using var c=await db.OpenAsync(TestContext.Current.CancellationToken);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT COUNT(*) FROM conflict_rules WHERE id='prefix-missing'";
+        Assert.Equal(0L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+    }
+
     private static async Task InsertSaveSnapshotAsync(ManagerDatabase db,string id,DateTimeOffset created,string snapshotRoot,CancellationToken ct)
     {
         await db.ExecuteAsync(
