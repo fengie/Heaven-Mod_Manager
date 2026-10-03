@@ -172,13 +172,13 @@ public static partial class AutoCompatibility
         return 0;
     }
 
-    [GeneratedRegex(@"(?<![a-z0-9])(?:version|ver|v)s*([0-9]{1,3}(?:.[0-9]{1,4}){1,3})(?![0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?<![a-z0-9])(?:version|ver|v)\s*([0-9]{1,3}(?:\.[0-9]{1,4}){1,3})(?![0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex PackageVersionRegex();
 
-    [GeneratedRegex(@"-d{2,7}-d+(?:-d+){0,6}(?:s*(d+))?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"-\d{2,7}-\d+(?:-\d+){0,6}(?:\s*\(\d+\))?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex NexusArchiveTailRegex();
 
-    [GeneratedRegex(@"^(?:main|base|core|default)(?:s+(?:file|files|package))?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^(?:main|base|core|default)(?:\s+(?:file|files|package))?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex StandaloneBaseLabelRegex();
 
     [GeneratedRegex(@"[a-z0-9]+(?:-[a-z0-9]+)?", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
