@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.82",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.81 source 1d21a7ee99774c6820e16421837e9451ef2e3ef6 passed hosted Windows verification run 37098443475. v8.8.82 binds updater helper request topology to the exact manifest/install/staging/manager-home transaction identity before helper state consumption.",
+  "immediateParentRevision": "v8.8.81 source 1d21a7ee99774c6820e16421837e9451ef2e3ef6 passed hosted Windows verification run 37098443475. v8.8.82 binds updater helper request topology before helper state consumption and adds bounded, state-aware cleanup so verified archives, confirmed staging attempts, old orphan staging, and terminal transactions do not accumulate indefinitely.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, updater request topology binding, and the durable updater E2E evidence privacy boundary. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, updater request topology binding, bounded/state-aware updater storage retention, and the durable updater E2E evidence privacy boundary. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
