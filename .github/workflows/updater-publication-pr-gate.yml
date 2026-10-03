@@ -32,6 +32,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 90
     env:
+      DOTNET_INSTALL_DIR: ${{ runner.temp }}\dotnet
       MHW_UPDATE_SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
       MHW_UPDATE_BUILD_NUMBER: ${{ github.run_number }}
 
