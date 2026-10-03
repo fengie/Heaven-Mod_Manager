@@ -975,6 +975,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Border Style="{StaticResource SubtleCard}" Padding="10">
@@ -1003,7 +1004,38 @@
                                                AutomationProperties.Name="{Binding CatalogResultCountLabel}"/>
                                 </Border>
                             </Grid>
-                            <Grid Grid.Row="2">
+                            <Border Grid.Row="2"
+                                    Margin="0,0,0,8"
+                                    Style="{StaticResource SubtleCard}"
+                                    Padding="10"
+                                    AutomationProperties.Name="{Binding CatalogPresentationTitle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding CatalogPresentationTitle}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="11"/>
+                                        <TextBlock Margin="0,3,0,0"
+                                                   Text="{Binding CatalogPresentationDetail}"
+                                                   Foreground="{StaticResource Muted}"
+                                                   FontSize="10"
+                                                   TextWrapping="Wrap"
+                                                   AutomationProperties.LiveSetting="Polite"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Margin="10,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Content="Retry Providers"
+                                            Command="{Binding RefreshCatalogCommand}"
+                                            Visibility="{Binding CatalogProviderRetryVisibility}"
+                                            Style="{StaticResource QuietButton}"
+                                            AutomationProperties.Name="Retry failed catalog providers"/>
+                                </Grid>
+                            </Border>
+                            <Grid Grid.Row="3">
                                 <DataGrid ItemsSource="{Binding CatalogItems}"
                                           SelectedItem="{Binding SelectedCatalogItem,Mode=TwoWay}"
                                           AutoGenerateColumns="False"
