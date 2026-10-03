@@ -54,7 +54,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## COMPLIANCE-710 — Native-app privacy, legal, data-control, and accessibility baseline
 
-**Owner:** issue #710 / v8.8.89  
+**Owner:** issue #710 / v8.8.89
 **Acceptance:** all 20 checklist items are either backed by a real product/document/test control or explicitly classified as not applicable to the current native feature set with a change-trigger rule; the application does not invent a business entity/address or show misleading web consent UI; policy/notices ship with the app; accessibility and package-notice invariants are deterministic.
 
 - [x] Bundle Privacy, Terms, Refund, Cookie, Data Deletion, Third-Party Notices, and Project/Support documents and expose them from Settings.
