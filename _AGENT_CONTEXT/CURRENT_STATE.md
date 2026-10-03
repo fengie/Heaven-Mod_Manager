@@ -1,6 +1,6 @@
 # v8.8.82 updater topology + bounded storage retention — canonical state
 
-v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` remains the last closed hosted-Windows verification boundary. v8.8.82 hardens the updater helper handoff trust boundary under issue #635 and closes the unbounded updater staging/terminal retention defect under issue #647.
+v8.8.81 source `b46f7324d860c66dd3572013dbba571dec319c87` remains the last closed hosted-Windows verification boundary. v8.8.82 hardens the updater helper handoff trust boundary under issue #635 and closes the unbounded updater staging/terminal retention defect under issue #647.
 
 ## Behavior
 
@@ -17,7 +17,7 @@ v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` remains the last close
 
 ## Verification boundary
 
-The last closed hosted-Windows verification remains v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6`, run `37098443475`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+The last closed hosted-Windows verification remains v8.8.81 source `b46f7324d860c66dd3572013dbba571dec319c87`, run `37103097571`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
 v8.8.82 changes updater helper/client/runtime/storage source, application startup maintenance, adversarial integration tests, and synchronized release/continuity metadata. Fresh exact-input verification is therefore required; no earlier green result should be inherited onto the final v8.8.82 source.
 
