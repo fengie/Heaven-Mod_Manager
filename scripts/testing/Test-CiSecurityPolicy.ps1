@@ -402,6 +402,41 @@ if(!(Test-Path -LiteralPath $publicPublisherPath)){
     if($text.Contains('Canonical private updater release')){$errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')}
 }
 
+$sdkHelperPath=Join-Path $Root 'scripts\ci\Assert-PinnedDotNetSdk.ps1'
+if(!(Test-Path -LiteralPath $sdkHelperPath)){
+    $errors.Add('Assert-PinnedDotNetSdk.ps1 is missing.')
+}else{
+    $sdkHelper=Get-Content -LiteralPath $sdkHelperPath -Raw
+    foreach($required in @('global.json','sdk.version','dotnet --version','does not match repository pin')){
+        if(-not $sdkHelper.Contains($required)){$errors.Add("Assert-PinnedDotNetSdk.ps1: SDK authority invariant missing: $required")}
+    }
+}
+
+$setupDotnetPin='actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5'
+foreach($workflowName in @('windows-release-gate.yml','updater-publication-pr-gate.yml','updater-installed-client-e2e.yml','workflow-feature-pr-gate.yml')){
+    $workflowPath=Join-Path $workflowRoot $workflowName
+    if(!(Test-Path -LiteralPath $workflowPath)){
+        $errors.Add("$workflowName is missing.")
+        continue
+    }
+    $workflowText=Get-Content -LiteralPath $workflowPath -Raw
+    foreach($required in @($setupDotnetPin,'global-json-file: global.json','.\scripts\ci\Assert-PinnedDotNetSdk.ps1')){
+        if(-not $workflowText.Contains($required)){$errors.Add("$workflowName: repository SDK bootstrap invariant missing: $required")}
+    }
+    if($workflowText.Contains("-ne '10.0.401'")){
+        $errors.Add("$workflowName: duplicated literal SDK-version comparison must defer to global.json.")
+    }
+}
+
+if(Test-Path -LiteralPath $releasePath){
+    if(-not $release.Contains('force_publish:')){$errors.Add('windows-release-gate.yml: manual force-publish input is missing.')}
+    if(-not $release.Contains('id: release_intent')){$errors.Add('windows-release-gate.yml: semantic release-intent step is missing.')}
+    if(-not $release.Contains('Get-UpdaterReleaseIntentDecision')){$errors.Add('windows-release-gate.yml: semantic release intent must use the shared updater policy.')}
+    $intentGuard="steps.release_intent.outputs.publish == 'true'"
+    if(([regex]::Matches($release,[regex]::Escape($intentGuard))).Count -lt 4){
+        $errors.Add('windows-release-gate.yml: provenance and public/private/parity publication must require positive release intent.')
+    }
+}
 $updaterPrGatePath=Join-Path $workflowRoot 'updater-publication-pr-gate.yml'
 if(Test-Path -LiteralPath $updaterPrGatePath){
     $gate=Get-Content -LiteralPath $updaterPrGatePath -Raw
