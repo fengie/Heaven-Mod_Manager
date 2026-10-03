@@ -171,7 +171,7 @@ public sealed partial class MainWindowViewModel
         try
         {
             Directory.CreateDirectory(s.Paths.StateRoot);
-            Process.Start(new ProcessStartInfo(s.Paths.StateRoot) { UseShellExecute = true });
+            ProcessDebug.Start(new ProcessStartInfo(s.Paths.StateRoot) { UseShellExecute = true }, "open-manager-data-folder");
             LegalStatusText = "Opened the manager data folder. Close the app before deleting state files.";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
@@ -193,7 +193,7 @@ public sealed partial class MainWindowViewModel
                 return;
             }
 
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            ProcessDebug.Start(new ProcessStartInfo(path) { UseShellExecute = true }, $"open-compliance-document:{fileName}");
             LegalStatusText = $"Opened {fileName}.";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
