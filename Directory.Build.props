@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.88</Version>
-    <InformationalVersion>8.8.88-public-release-provenance</InformationalVersion>
+    <Version>8.8.89</Version>
+    <InformationalVersion>8.8.89-compliance-baseline</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
