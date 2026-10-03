@@ -527,9 +527,9 @@ public sealed class UpdaterCoreTests : IDisposable
             manifest,
             stage,
             stagedManifestPath);
-        await UpdatePackageStager.WriteJsonAtomicallyAsync(
+        await File.WriteAllTextAsync(
             Path.Combine(UpdatePackageStager.GetUpdaterRoot(), UpdateProtocol.PendingFileName),
-            staged,
+            JsonSerializer.Serialize(staged, UpdateProtocol.Json),
             TestToken);
         using var client = new UpdateClientService(
             new HttpClient(new FakeHandler(_ => throw new InvalidOperationException("Network must not be used."))));
