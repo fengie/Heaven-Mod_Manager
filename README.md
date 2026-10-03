@@ -6,11 +6,12 @@ Current product version: **8.8.82**.
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.82 — canonical update-migration mod identity
+## v8.8.82 — migration identity, recovery, and installer correctness
 
-- Resolve update-migration package IDs case-insensitively and canonicalize them to stored IDs before planning.
-- Apply the same logical identity across conflict rules, metadata, family membership, resource providers, staged state, supersession, and diffing.
-- Preserve rejection of old/new IDs differing only by casing and add focused regressions.
+- Resolve update-migration package IDs case-insensitively and canonicalize them to stored IDs before planning, then apply that identity consistently across migration state.
+- Restore LastKnownGood across the complete current mod set: saved baseline state is restored and mods added after the baseline are safely disabled without losing their current priority.
+- Use native WPF radio buttons for FOMOD `SelectExactlyOne` groups so the UI cannot fall into an invalid zero-selection state; `SelectAtMostOne` remains zero-or-one.
+- Add focused regressions for all three corrected boundaries.
 
 ## v8.8.81 — allowlisted updater E2E evidence
 
