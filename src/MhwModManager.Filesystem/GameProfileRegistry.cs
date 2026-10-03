@@ -165,7 +165,27 @@ public sealed partial class GameProfileRegistry
                             .ThenBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
                             .First();
 
-                        if(sameRootProfiles.Length>1)
+                        if(candidateIsMonsterHunterWorld
+                            && executableName.Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase)
+                            && !owner.IsMonsterHunterWorld)
+                        {
+                            var canonical=GameProfile.MonsterHunterWorld(candidateRoot);
+                            owner=canonical with
+                            {
+                                Id=owner.Id,
+                                DisplayName=owner.DisplayName,
+                                SavePath=owner.SavePath,
+                                Store=string.IsNullOrWhiteSpace(owner.Store)
+                                    ? (string.IsNullOrWhiteSpace(item.Store)?canonical.Store:item.Store)
+                                    : owner.Store
+                            };
+                            PersistAuthoritativeRootOwner(existing,candidateRoot,sameRootProfiles,owner);
+                            repaired.Add(owner);
+                            MasterDebugLog.Write(
+                                "GAME-DISCOVERY",
+                                $"Canonicalized live generic MHW profile id={owner.Id}; root={owner.GameRoot}; removedDuplicates={sameRootProfiles.Length-1}");
+                        }
+                        else if(sameRootProfiles.Length>1)
                         {
                             PersistAuthoritativeRootOwner(existing,candidateRoot,sameRootProfiles,owner);
                             repaired.Add(owner);
@@ -234,7 +254,16 @@ public sealed partial class GameProfileRegistry
 
                 GameProfile profile;
                 if(candidateIsMonsterHunterWorld)
+                {
+                    if(!executableName.Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
+                    {
+                        MasterDebugLog.Write(
+                            "GAME-DISCOVERY",
+                            $"Refused to register MHW candidate with non-MHW executable '{fullExecutable}'.");
+                        continue;
+                    }
                     profile=GameProfile.MonsterHunterWorld(candidateRoot);
+                }
                 else profile=CreateFromDiscoveredGame(item with{Root=candidateRoot},fullExecutable);
                 Upsert(profile);
                 existing.Add(profile);

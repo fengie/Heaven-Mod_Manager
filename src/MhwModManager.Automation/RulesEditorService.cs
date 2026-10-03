@@ -33,7 +33,12 @@ public sealed class RulesEditorService(ManagerDatabase db)
             rule = rule with { PathPattern = path };
         }
         if (rule.Kind == RuleKind.ResourceProvider) throw new InvalidDataException("Use SaveProviderAsync for shared resource namespaces.");
-        if (rule.Scope == RuleScope.PathPrefix && rule.PathPattern is not null) rule = rule with { PathPattern = PathRules.Normalize(rule.PathPattern) };
+        if (rule.Scope == RuleScope.PathPrefix)
+        {
+            if (string.IsNullOrWhiteSpace(rule.PathPattern))
+                throw new InvalidDataException("Path-prefix rules require a path pattern.");
+            rule = rule with { PathPattern = PathRules.Normalize(rule.PathPattern) };
+        }
         var rules = snapshot.Rules.Where(r => r.Id != rule.Id).Append(rule).ToArray();
         var cycle = RuleGraph.FindCycle(rules);
         if (cycle is not null) throw new InvalidDataException("Overlay cycle: " + string.Join(" → ", cycle));
