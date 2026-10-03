@@ -220,7 +220,7 @@ public sealed class AutomationServiceTests : IDisposable
         var service=new LastKnownGoodService(db);
         await service.RecordAsync(null,TestContext.Current.CancellationToken);
 
-        await db.ExecuteAsync("DELETE FROM mods WHERE id='b'",ct:TestContext.Current.CancellationToken);
+        await db.ExecuteAsync("DELETE FROM mods WHERE id IN ('b','case-id')",ct:TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("a","A","A",Path.Combine(root,"lkg-a"),false,1),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("CASE-ID","Case","Case",Path.Combine(root,"lkg-case"),false,3),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("c","C","C",Path.Combine(root,"lkg-c"),true,4),TestContext.Current.CancellationToken);
