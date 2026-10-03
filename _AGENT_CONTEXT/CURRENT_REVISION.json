@@ -10,10 +10,10 @@
   "status": "v8.8.89-compliance-baseline-canonical-awaiting-fresh-windows-verification",
   "nextMilestone": "Obtain fresh canonical Windows verification for the exact integrated v8.8.89 compliance-baseline source, then continue the highest-priority non-overlapping project-plan item.",
   "nextRequiredAction": "Run the strict canonical Windows verification on the exact integrated v8.8.89 source and persist evidence tied to that source; do not reuse v8.8.88 green evidence for changed app/XAML/test/content inputs.",
-  "verificationAppliesToCommit": "d0816f3c495ff055df517ce0b021e41dd19596f6",
-  "lastClosedVerificationCommit": "d0816f3c495ff055df517ce0b021e41dd19596f6",
-  "lastClosedVerificationRun": "v8.8.88 source d0816f3c495ff055df517ce0b021e41dd19596f6: hosted Windows verification run 37143560604 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.88-heaven-windows-closure.log. v8.8.89 changes shipped inputs and requires fresh verification.",
-  "verificationScopeNote": "Last closed canonical Windows evidence is v8.8.88 source d0816f3c495ff055df517ce0b021e41dd19596f6 / run 37143560604. v8.8.89 changes app source, XAML, tests, bundled policy content, and release metadata; no earlier green result applies to the new source.",
+  "verificationAppliesToCommit": "029b105426ef875bcd302dac3fff9305c395637f",
+  "lastClosedVerificationCommit": "029b105426ef875bcd302dac3fff9305c395637f",
+  "lastClosedVerificationRun": "v8.8.88 source 029b105426ef875bcd302dac3fff9305c395637f: hosted Windows verification run 37144494783 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.88-heaven-windows-closure.log. v8.8.89 changes shipped inputs and requires fresh verification.",
+  "verificationScopeNote": "Last closed canonical Windows evidence is v8.8.88 source 029b105426ef875bcd302dac3fff9305c395637f / run 37144494783. v8.8.89 changes app source, XAML, tests, bundled policy content, and release metadata; no earlier green result applies to the new source.",
   "lastClosedVerification": {
     "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
     "updaterBuild": 382,
@@ -45,8 +45,8 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "d0816f3c495ff055df517ce0b021e41dd19596f6",
-    "runId": 37143560604,
+    "sourceSha": "029b105426ef875bcd302dac3fff9305c395637f",
+    "runId": 37144494783,
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.88-heaven-windows-closure.log"
   }
 }
