@@ -130,6 +130,122 @@ jobs:
             }
           }
           if (-not $auth) {
+            $savedSshCommand = $env:GIT_SSH_COMMAND
+            try {
+              $env:GIT_SSH_COMMAND = 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new'
+              $probe = @(& git ls-remote 'git@github.com:fengie/heaven-toolbox.git' 'refs/heads/main' 2>$null)
+              if ($LASTEXITCODE -eq 0 -and $probe.Count -eq 1 -and $probe[0] -match '^(?<sha>[0-9a-f]{40})\s+refs/heads/main Invoke-RestMethod -Method Get -Uri "$api/actions/runners?per_page=100" -Headers $auth.Headers
+          $existing = @($registered.runners | Where-Object { $_.name -eq $runnerName })
+          if ($existing.Count -gt 0 -and $existing[0].status -eq 'online') {
+            Write-Output "TOOLBOX_RUNNER_ALREADY_ONLINE id=$($existing[0].id)"
+            exit 0
+          }
+
+          $registration = Invoke-RestMethod -Method Post -Uri "$api/actions/runners/registration-token" -Headers $auth.Headers
+          if ([string]::IsNullOrWhiteSpace([string]$registration.token)) {
+            throw 'GitHub did not return a Toolbox runner registration token.'
+          }
+          Add-Mask ([string]$registration.token)
+
+          $releaseHeaders = @{} + $commonHeaders
+          $release = Invoke-RestMethod -Method Get -Uri 'https://api.github.com/repos/actions/runner/releases/latest' -Headers $releaseHeaders
+          $version = ([string]$release.tag_name).TrimStart('v')
+          $assetName = "actions-runner-win-x64-$version.zip"
+          $asset = @($release.assets | Where-Object { $_.name -eq $assetName } | Select-Object -First 1)
+          if ($asset.Count -ne 1) {
+            throw "Unable to resolve official GitHub Actions runner asset $assetName."
+          }
+
+          New-Item -ItemType Directory -Force -Path $runnerRoot | Out-Null
+          $archive = Join-Path $env:RUNNER_TEMP $assetName
+          Invoke-WebRequest -UseBasicParsing -Uri $asset[0].browser_download_url -OutFile $archive
+
+          if (-not [string]::IsNullOrWhiteSpace([string]$asset[0].digest) -and [string]$asset[0].digest -match '^sha256:(?<hash>[0-9a-fA-F]{64})$') {
+            $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash
+            if ($actual -ine $Matches.hash) {
+              throw "Official runner archive SHA-256 mismatch for $assetName."
+            }
+            Write-Output "RUNNER_ARCHIVE_SHA256_VERIFIED version=$version"
+          } else {
+            Write-Output "RUNNER_ARCHIVE_DIGEST_UNAVAILABLE version=$version source=github-official-release"
+          }
+
+          $configured = Join-Path $runnerRoot '.runner'
+          if (-not (Test-Path -LiteralPath $configured -PathType Leaf)) {
+            Expand-Archive -LiteralPath $archive -DestinationPath $runnerRoot -Force
+
+            $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+            $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            Push-Location $runnerRoot
+            try {
+              $args = @(
+                '--unattended',
+                '--url', $targetUrl,
+                '--token', [string]$registration.token,
+                '--name', $runnerName,
+                '--labels', $runnerLabel,
+                '--work', '_work',
+                '--replace'
+              )
+              if ($isAdmin) { $args += '--runasservice' }
+              & .\config.cmd @args
+              if ($LASTEXITCODE -ne 0) { throw "Toolbox runner config.cmd failed with exit code $LASTEXITCODE." }
+            } finally {
+              Pop-Location
+            }
+
+            if ($isAdmin) {
+              $service = @(Get-Service | Where-Object { $_.Name -like 'actions.runner.*heaven-toolbox*' } | Select-Object -First 1)
+              if ($service.Count -eq 1 -and $service[0].Status -ne 'Running') {
+                Start-Service -Name $service[0].Name
+              }
+              Write-Output "TOOLBOX_RUNNER_PERSISTENCE mode=windows-service elevated=true"
+            } else {
+              # GitHub Runner removes descendants carrying this job's tracking id.
+              # Clear it only for the second runner process so it can outlive this
+              # one-shot trusted bootstrap job; no credential is passed to run.cmd.
+              $env:RUNNER_TRACKING_ID = ''
+              $log = Join-Path $runnerRoot 'toolbox-runner.log'
+              $cmd = '"' + (Join-Path $runnerRoot 'run.cmd') + '" >> "' + $log + '" 2>&1'
+              Start-Process -FilePath $env:COMSPEC -ArgumentList '/d','/c',$cmd -WorkingDirectory $runnerRoot -WindowStyle Hidden
+              Write-Output "TOOLBOX_RUNNER_PERSISTENCE mode=detached-process elevated=false"
+            }
+          } else {
+            Write-Output 'TOOLBOX_RUNNER_CONFIGURATION already-present'
+            $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+            $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            $service = @(Get-Service | Where-Object { $_.Name -like 'actions.runner.*heaven-toolbox*' } | Select-Object -First 1)
+            if ($service.Count -eq 1) {
+              if ($service[0].Status -ne 'Running') { Start-Service -Name $service[0].Name }
+            } else {
+              $env:RUNNER_TRACKING_ID = ''
+              $log = Join-Path $runnerRoot 'toolbox-runner.log'
+              $cmd = '"' + (Join-Path $runnerRoot 'run.cmd') + '" >> "' + $log + '" 2>&1'
+              Start-Process -FilePath $env:COMSPEC -ArgumentList '/d','/c',$cmd -WorkingDirectory $runnerRoot -WindowStyle Hidden
+            }
+          }
+
+          $deadline = [DateTimeOffset]::UtcNow.AddSeconds(60)
+          do {
+            Start-Sleep -Seconds 2
+            $state = Invoke-RestMethod -Method Get -Uri "$api/actions/runners?per_page=100" -Headers $auth.Headers
+            $runner = @($state.runners | Where-Object { $_.name -eq $runnerName } | Select-Object -First 1)
+            if ($runner.Count -eq 1 -and $runner[0].status -eq 'online') {
+              $labels = (@($runner[0].labels | ForEach-Object { $_.name }) -join ',')
+              Write-Output "TOOLBOX_RUNNER_ONLINE id=$($runner[0].id) name=$runnerName labels=$labels"
+              exit 0
+            }
+          } while ([DateTimeOffset]::UtcNow -lt $deadline)
+
+          throw 'Toolbox runner was registered but did not become online within the bounded verification window.'
+) {
+                Write-Host ("TOOLBOX_SSH_ACCESS_OK main_sha={0}" -f $Matches.sha)
+              } else {
+                Write-Host ("TOOLBOX_SSH_ACCESS_UNAVAILABLE exit={0}" -f $LASTEXITCODE)
+              }
+            } finally {
+              $env:GIT_SSH_COMMAND = $savedSshCommand
+            }
             throw 'No already-authorized machine/account credential can administer Actions runners for fengie/heaven-toolbox. No credential was printed or persisted.'
           }
 
