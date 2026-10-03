@@ -1,10 +1,18 @@
-# v8.8.77 — MHW Manual Mod Manager
+# v8.8.78 — MHW Manual Mod Manager
 
-Current product version: **8.8.77**.
+Current product version: **8.8.78**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.78 — actionable Browse Mods empty states
+
+- Distinguish an empty catalog from a search with zero matches instead of leaving a blank results grid.
+- Show contextual **Refresh Providers** or **Clear Search** recovery actions with keyboard/UI Automation names.
+- Hide the dead-end selection prompt when there are no selectable rows and keep selected details synchronized with the visible result set.
+- Label the browse badge as visible results rather than incorrectly describing filtered matches as total cached items.
+- Add deterministic state and XAML regressions for empty, zero-match, and populated Browse Mods states.
 
 ## v8.8.77 — updater E2E runner + continuity-state repair
 
@@ -23,13 +31,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Keep Steam Workshop unsupported for MHW until a reviewed operation-specific contract exists.
 - Add deterministic interoperability, credential-boundary, path-validation, atomic-export, and isolation regressions.
 
-## v8.8.75 — Mod Library accessibility labels
-
-- Give every whole-mod enable checkbox a target-specific UI Automation name bound to the current mod `DisplayName`.
-- Give every advanced component toggle an accessible name bound to its current component `Label` while preserving native WPF `CheckBox` toggle and keyboard semantics.
-- Keep names data-bound so recycled/virtualized rows resolve against their current item rather than retaining stale accessible identity.
-- Add deterministic XAML regression coverage for both mod-level and component-level automation naming.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -44,7 +45,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
 - [ ] **CATALOG-SCALE-558 / P1** — v8.8.69 integrated capability-gated explicit provider search and aligned storage/UI cache capacity at 1000 rows via PR #565; broader provider-aware pagination/browse scale work remains under #558.
 - [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
-- [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
+- [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating and v8.8.78 adds actionable empty/no-match states; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; bounded credential-free Vortex handoff interoperability is integrated in v8.8.76, while Steam Workshop remains conditional under issue #281.
 - [x] **RECOVERY-004 / P0** — v8.8.60 runtime/updater hardening is integrated via PR #552 with exact-head required gates green.
 - [ ] **RECOVERY-007 / P0** — v8.8.70 PR #572 repaired the primary stale same-root discovery path; issue #578 tracks canonical-MHW repair and multiple-same-root edge cases, and representative Windows/runtime discovery proof remains before DONE.
