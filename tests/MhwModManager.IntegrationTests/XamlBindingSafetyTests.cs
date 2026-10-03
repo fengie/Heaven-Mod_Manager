@@ -384,6 +384,22 @@ public sealed partial class XamlBindingSafetyTests
             xaml);
     }
 
+    [Fact]
+    public void SafeUpgradeProcedureUsesCurrentReleaseWording()
+    {
+        var root = FindRepositoryRoot();
+        var readme = File.ReadAllText(Path.Combine(root, "README.md"));
+        var start = readme.IndexOf("## Safe upgrade procedure", StringComparison.Ordinal);
+        var end = readme.IndexOf("## Source layout", start, StringComparison.Ordinal);
+
+        Assert.True(start >= 0 && end > start);
+        var procedure = readme[start..end];
+        Assert.DoesNotContain("v8.5.0", procedure, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("current release", procedure, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("`Mods`", procedure, StringComparison.Ordinal);
+        Assert.Contains("`State`", procedure, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
