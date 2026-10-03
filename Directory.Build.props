@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.85</Version>
-    <InformationalVersion>8.8.85-feature-verification-decoupling</InformationalVersion>
+    <Version>8.8.86</Version>
+    <InformationalVersion>8.8.86-import-reparse-hardening</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

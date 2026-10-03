@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.85",
+  "currentVersion": "8.8.86",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.84 source 2ea6d6dd3851f24a40e562074a816d9bd1e61883 passed hosted Windows verification run 37124460532; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log. v8.8.85 separates feature-candidate product verification from canonical release-version metadata while keeping the exact-main Windows release/publication path on the full strict verifier.",
+  "immediateParentRevision": "v8.8.85 exact source 271b9d8d7303a6136b574af52d43d95efff26f34 passed hosted Windows verification run 37130638298; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log. v8.8.86 hardens import publication, cleanup, and rollback against descendant reparse topology while preserving feature-candidate versus canonical-release verification separation.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, the v8.8.82 updater request-topology/storage-retention boundary, destructive-filesystem containment, and durable updater E2E evidence privacy. Require fresh exact-final-head verification for v8.8.84 before treating it as closed. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, updater request-topology/storage-retention boundaries, destructive-filesystem containment, durable updater E2E evidence privacy, and v8.8.86 descendant-reparse protection. Require exact-final-head PR #691 verification before integration and canonical Windows closure afterward. Propagate this continuity obligation recursively to the next successor. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

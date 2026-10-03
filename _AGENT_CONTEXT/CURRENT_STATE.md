@@ -1,24 +1,26 @@
-# v8.8.85 feature verification decoupling — canonical state
+# v8.8.86 import descendant-reparse hardening — canonical state
 
-v8.8.85 closes issue #675 by separating feature-candidate product verification from canonical release-version metadata without weakening the exact-main release/publication boundary.
+v8.8.86 integrates issue #676's fail-closed reparse-topology protection into import publication and recursive import cleanup/rollback.
 
 ## Behavior
 
-- Workflow Feature PR Gate invokes `Verify-Release.ps1 -FeatureCandidate` on the exact PR head.
-- Feature-candidate mode defers only global release-version surface parity: VERSION/build version, current-version README/CHANGELOG/handoff parity, and current-version closure projection.
-- Repository identity, canonical-state shape, Toolbox ownership, continuity propagation, context budgets, verification-cache structure, CI security policy, function verification, strict builds/analyzers, tests, integration/fault injection, and self-test remain enforced.
-- The canonical Windows Release Gate continues to invoke the default full verifier with no candidate relaxation.
-- CI policy tests fail if candidate mode disappears from the PR gate or appears in the canonical release gate.
-- A deterministic negative fixture proves release-version drift is rejected by canonical governance but accepted by feature-candidate governance.
+- `SafeRecursiveTraversal.EnsureNoReparsePoints` walks an existing tree without following reparse points and rejects any descendant file or directory reparse entry.
+- Import publication invokes the guard immediately before the final same-volume directory move into `ModsRoot`.
+- Import cleanup and rollback invoke the same guard before recursive deletion. Unsafe trees remain for controlled recovery rather than being traversed.
+- Existing direct-child containment, root-reparse, destination-exists, and same-volume protections are preserved.
+- Windows regressions inject real directory junctions and prove external target bytes remain untouched.
+- v8.8.85 feature-candidate/canonical-release verification separation remains unchanged.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.85 source `271b9d8d7303a6136b574af52d43d95efff26f34` passed run `37130638298` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
+The last closed canonical Windows release source is v8.8.85 `271b9d8d7303a6136b574af52d43d95efff26f34`, run `37130638298`, with exact evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
 
-The tested source remains `271b9d8d7303a6136b574af52d43d95efff26f34` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The final metadata-synchronized v8.8.86 PR #691 head requires fresh exact-head gates before merge. After integration, canonical `main` requires the full Windows release gate without `-FeatureCandidate`.
+
+Residual TOCTOU remains between final path-based validation and the subsequent move/delete operation. This closes the previously unvalidated descendant topology but does not claim handle-level atomicity.
 
 ## Remaining independent work
 
-#673 adoption hardening, #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
+#673/#674 unmanaged adoption hardening, #677 orphan snapshot pruning, #642/#666 atomic recipe export, #669/#685 storage preflight, #686/#687 public provenance, #688 Browse Mods exact-file state, #558/#559 catalog work, and RECOVERY-005/RECOVERY-007 remain independent. Draft #659 must stay until every unique tranche is classified.
 
-Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, and durable-evidence privacy boundary, and recursively propagate the same obligation.
+Every successor must preserve the continuity constitution, active Learned Rules, exact-input verification, filesystem containment, durable-evidence privacy, and candidate-vs-canonical verification separation, then propagate the same obligation onward.

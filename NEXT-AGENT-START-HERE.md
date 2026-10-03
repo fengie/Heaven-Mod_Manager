@@ -1,35 +1,34 @@
-# v8.8.85 feature verification decoupling — canonical handoff
+# v8.8.86 import descendant-reparse hardening — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #675 / PR #678
+Change set: issue #676 / PR #691
 
-## v8.8.85 behavior
+## v8.8.86 behavior
 
-- Feature PRs use `Verify-Release.ps1 -FeatureCandidate` so exact-head product verification does not require the branch to own the next global patch metadata first.
-- Candidate mode defers only release-version/current-version surface parity; it does not skip repository identity, canonical-state shape, security policy, function verification, strict builds/analyzers, tests, integration/fault injection, self-test, or continuity/toolbox ownership.
-- Canonical `windows-release-gate.yml` remains on the default full verifier. CI policy rejects any `-FeatureCandidate` use in that release/publication workflow.
-- Regression coverage mutates VERSION in an isolated governance fixture and proves canonical mode rejects the drift while feature-candidate mode accepts it.
+- `SafeRecursiveTraversal.EnsureNoReparsePoints` rejects descendant file or directory reparse points without following them.
+- Import publication applies that guard immediately before the final same-volume move into `ModsRoot`.
+- Import cleanup and rollback apply the same guard before recursive deletion, preserving suspect trees instead of traversing them.
+- Existing direct-child containment, root-reparse, destination-exists, and same-volume guards remain in force.
+- Windows junction regressions prove external target bytes remain untouched.
+- v8.8.85 feature-candidate verification separation remains unchanged; canonical main/release verification stays strict.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.85 source `271b9d8d7303a6136b574af52d43d95efff26f34` passed run `37130638298` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
+The last closed canonical Windows source remains v8.8.85 `271b9d8d7303a6136b574af52d43d95efff26f34` / run `37130638298`, with evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
 
-The tested source remains `271b9d8d7303a6136b574af52d43d95efff26f34` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+PR #691 source head `6e34b48331fe6943e69210b91094b719e3004ea4` passed its exact-head Workflow Feature admission/build-test gate before release metadata synchronization. The final metadata-synchronized PR #691 head must pass fresh exact-head gates before merge. After integration, canonical `main` must still pass the full Windows release gate without `-FeatureCandidate`; prior v8.8.85 evidence does not transfer.
 
-## Execution/offload note
+Residual limitation: validation is path-based. A topology swap after final validation and before move/delete remains a TOCTOU risk; v8.8.86 does not claim handle-atomic containment.
 
-This ChatGPT runtime did not expose callable Heaven Local Bridge or Agent Control operations. Ownership was therefore acquired through the authorized Toolbox GitHub CAS claim fallback, and implementation used the authenticated GitHub path. No HMAC boundary was weakened, no heaven-to-heaven2 proxy was used, and no local-agent execution was fabricated.
+## Ordered continuation
 
-## Unresolved risk
-
-The final metadata-synchronized PR #678 head still requires fresh exact-head verification before merge. Do not reuse run `37125208523` after the metadata commits.
-
-## Next action
-
-Observe the fresh exact-final-head PR #678 gates. Merge only that exact green head, verify remote `main`, then verify the canonical Windows release path still runs the full strict verifier and persist exact closure evidence normally.
+1. Merge only the exact final green PR #691 head and verify remote `main`.
+2. Observe the canonical Windows release gate, persist exact v8.8.86 closure evidence, and then close #676.
+3. Reconcile #674, #677, #666, #685, #687, and #688 one coherent patch at a time against fresh `main`; preserve their unique work and discard stale release metadata.
+4. Keep draft #659 until every still-unique tranche is either integrated or explicitly extracted/superseded.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, updater topology/storage-retention invariants, filesystem containment, durable-evidence privacy, and the candidate-vs-canonical verification separation. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, filesystem containment, fail-closed destructive boundaries, durable-evidence privacy, and candidate-vs-canonical verification separation. Propagate the same obligation to the next successor. Do not break the chain.

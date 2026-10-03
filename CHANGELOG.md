@@ -1,3 +1,9 @@
+# v8.8.86 — 2026-10-03
+
+- Close the source gap from #676 by rejecting any descendant file or directory reparse point in manager-owned import staging before the final publish move.
+- Reuse the fail-closed recursive filesystem guard before import cleanup and rollback so nested junction substitution cannot redirect recursive deletion.
+- Add Windows junction regressions proving publication and rollback refusal preserves external target bytes and leaves unsafe residue for controlled recovery.
+
 # v8.8.85 — 2026-10-03
 
 - Decouple exact-head feature PR verification from canonical release-version surface parity so concurrent product branches no longer race to own global release metadata.
