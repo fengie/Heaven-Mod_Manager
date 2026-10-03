@@ -16,9 +16,9 @@ Change set: PR #692
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.87 source `8c872e7051b60a4ddc878bf4290c210225a18a59` passed run `37139785007` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.87 source `166369c60d6b5a726fbccd1eecac073ebdaa7ce3` passed run `37140984099` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log`.
 
-The tested source remains `8c872e7051b60a4ddc878bf4290c210225a18a59` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `166369c60d6b5a726fbccd1eecac073ebdaa7ce3` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Execution/offload note
 
