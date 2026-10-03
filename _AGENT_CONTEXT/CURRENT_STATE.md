@@ -7,6 +7,7 @@ v8.8.79 source `6a10008fdcaae5112653593d62b41f5ef4668b36` passed hosted-Windows 
 - Installed-client E2E persistence detects a shallow checkout and fetches complete canonical-main history before ancestry classification.
 - The persistence path explicitly refreshes `refs/remotes/origin/main` so the drift decision cannot reuse a stale remote-tracking ref.
 - Release-policy regression coverage requires complete-history recovery to occur before `git merge-base --is-ancestor`.
+- Uploaded E2E artifact names use `MHW_E2E_SOURCE_SHA`, preventing the later evidence-only workflow commit from being mislabeled as the tested updater source.
 - Divergent or release-relevant main drift remains fail-closed; only evidence/cache-only advancement may receive the E2E closure commit.
 
 ## Verification boundary
