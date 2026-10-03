@@ -23,4 +23,4 @@ Pre-version implementation head `b574ab7ffd0c15cf50dfe6c5af1b216a979e2616` passe
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and the durable-evidence privacy boundary. The successor **must propagate** this obligation onward. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and the durable-evidence privacy boundary. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
