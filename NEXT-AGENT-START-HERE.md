@@ -11,6 +11,7 @@ Change set: issue #622
 - The persistence step explicitly refreshes `refs/remotes/origin/main` before ancestry and path-drift classification.
 - Divergent/release-relevant drift remains fail-closed; evidence/cache-only advancement remains eligible for durable E2E closure persistence.
 - Regression coverage enforces unshallow-before-`merge-base` ordering.
+- Uploaded E2E artifact names bind to the exact tested release SHA rather than the later workflow/evidence commit.
 
 ## Verification boundary
 
