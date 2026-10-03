@@ -1,3 +1,9 @@
+# v8.8.84 — 2026-10-03
+
+- Serialize the updater integration-test classes that share the process-global updater root and canonical `pending-update.json` state.
+- Leave unrelated integration tests parallel and preserve production updater validation semantics.
+- Close #671 by preventing exact-head verification races that could corrupt another updater test's shared pending state.
+
 # v8.8.83 — 2026-10-03
 
 - Close #650 by making self-test and installed-client updater E2E temp roots self-clean on success and failure instead of silently accumulating under the Windows temp directory.
