@@ -35,6 +35,6 @@ This ChatGPT session exposed authenticated GitHub mutation but no callable Heave
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, updater publication/parity/provenance invariants, exact SDK policy, durable-evidence privacy, and recursively propagate this same obligation to the next successor.
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, updater publication/parity/provenance invariants, exact SDK policy, and durable-evidence privacy. The successor must propagate these continuity obligations to the agent after them.
 
 **Do not break the chain.**
