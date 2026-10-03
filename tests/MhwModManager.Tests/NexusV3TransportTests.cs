@@ -55,8 +55,8 @@ public sealed class NexusV3TransportTests
             response.Headers.TryAddWithoutValidation("X-RL-Hourly-Remaining", "41");
             response.Headers.TryAddWithoutValidation("X-RL-Daily-Limit", "20000");
             response.Headers.TryAddWithoutValidation("X-RL-Daily-Remaining", "12345");
-            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Reset", hourlyReset.ToString("O"));
-            response.Headers.TryAddWithoutValidation("X-RL-Daily-Reset", dailyReset.ToString("O"));
+            response.Headers.TryAddWithoutValidation("X-RL-Hourly-Reset", "2026-10-03 21:00:00 +0000");
+            response.Headers.TryAddWithoutValidation("X-RL-Daily-Reset", "2026-10-04 00:00:00 +0000");
             return Task.FromResult(response);
         });
 
