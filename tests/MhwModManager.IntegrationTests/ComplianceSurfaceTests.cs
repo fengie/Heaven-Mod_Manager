@@ -74,10 +74,10 @@ public sealed class ComplianceSurfaceTests
 
         var includes = Regex.Matches(
                 project,
-                "(?:Resource|Content) Include=\\\"(?<path>[^\\\"]+)\\\"",
+                "(?:Resource|Content) Include=\"(?<path>[^\"]+)\"",
                 RegexOptions.CultureInvariant)
             .Cast<Match>()
-            .Select(match => match.Groups["path"].Value.Replace('\\\\', '/'))
+            .Select(match => match.Groups["path"].Value.Replace('\\', '/'))
             .Where(path => assetExtensions.Contains(Path.GetExtension(path)))
             .ToArray();
 
