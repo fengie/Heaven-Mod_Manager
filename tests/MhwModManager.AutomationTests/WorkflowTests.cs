@@ -95,7 +95,8 @@ public sealed class WorkflowTests : IDisposable
     {
         var db = await DatabaseAsync();
         var service = new RulesEditorService(db);
-        await Assert.ThrowsAsync<ArgumentException>(() => service.SaveAsync(
+        var expectedException = pattern is null ? typeof(ArgumentNullException) : typeof(ArgumentException);
+        await Assert.ThrowsAsync(expectedException, () => service.SaveAsync(
             new("prefix", RuleKind.Overlay, RuleScope.PathPrefix, null, null, null, pattern, "prefix", true, DateTimeOffset.UtcNow),
             Token));
         Assert.Empty((await db.LoadPlannerSnapshotAsync(Token)).Rules);
