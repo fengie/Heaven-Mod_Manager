@@ -92,15 +92,25 @@ public sealed class ManagerDatabase
                 ct);
             await tx.CommitAsync(ct);
         }
-        catch
+        catch (Exception ex)
         {
+            MasterDebugLog.Write(
+                "DB-MIGRATION",
+                "Rolling back schema migration after initialization failure.",
+                ex);
             try
             {
                 await tx.RollbackAsync(CancellationToken.None);
+                MasterDebugLog.Write(
+                    "DB-MIGRATION",
+                    "Schema migration rollback completed.");
             }
-            catch (InvalidOperationException)
+            catch (Exception rollbackEx)
             {
-                // The provider already completed or rolled back the transaction.
+                MasterDebugLog.Write(
+                    "DB-MIGRATION",
+                    "Schema migration rollback itself failed; preserving the original initialization failure.",
+                    rollbackEx);
             }
 
             throw;
