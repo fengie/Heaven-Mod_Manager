@@ -583,6 +583,25 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public string CatalogInstallGuidance
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (SelectedCatalogItem is null) return "Select a mod before choosing an exact file to install.";
+            if (SelectedCatalogFile is not null) return $"Ready to install {SelectedCatalogFile.Name}.";
+
+            return catalogFilePresentationKind switch
+            {
+                CatalogFilePresentationKind.Loading => "Loading exact files. Installation will be available after you select one.",
+                CatalogFilePresentationKind.Loaded => "Select one exact file above to enable installation.",
+                CatalogFilePresentationKind.Empty => "No installable exact file is available. Retry loading files or open the provider page.",
+                CatalogFilePresentationKind.Failed => "Exact files could not be loaded. Retry loading files before installing.",
+                _ => "Load exact files first, then select the provider file you want to install."
+            };
+        }
+    }
+
     private void SetCatalogFilePresentation(CatalogFilePresentationKind kind, string? failureDetail = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"kind={kind}");
@@ -593,6 +612,7 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(CatalogFilesVisibility));
         OnPropertyChanged(nameof(CatalogFileStateVisibility));
         OnPropertyChanged(nameof(CatalogFileRetryVisibility));
+        OnPropertyChanged(nameof(CatalogInstallGuidance));
     }
 
     public int CatalogOriginAttentionCount
@@ -670,6 +690,12 @@ public sealed partial class MainWindowViewModel
         CatalogFiles.ReplaceAll(value?.Mod.Files.Select(file => new CatalogFileRow(file)) ?? []);
         SetCatalogFilePresentation(
             CatalogFiles.Count > 0 ? CatalogFilePresentationKind.Loaded : CatalogFilePresentationKind.NotLoaded);
+    }
+
+    partial void OnSelectedCatalogFileChanged(CatalogFileRow? value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(CatalogInstallGuidance));
     }
 
     private async Task DebounceCatalogQueryAsync(CancellationToken ct)
