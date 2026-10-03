@@ -19,7 +19,7 @@ Change set: issues #635 and #647
 
 ## Verification boundary
 
-The last closed hosted-Windows verification is v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6`, run `37098443475`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+The last closed hosted-Windows verification is v8.8.81 source `b46f7324d860c66dd3572013dbba571dec319c87`, run `37103097571`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
 v8.8.82 changes updater topology, staging/retention behavior, startup maintenance, integration tests, and synchronized release metadata, so the final exact source requires fresh verification before integration/publication. Never inherit v8.8.81 or an earlier v8.8.82 intermediate-head result onto changed source.
 
