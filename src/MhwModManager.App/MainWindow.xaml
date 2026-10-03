@@ -1254,23 +1254,54 @@
                                         </StackPanel>
                                     </Grid>
                                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,10">
-                                        <Button Content="Load Exact Files" Command="{Binding LoadCatalogFilesCommand}" Style="{StaticResource QuietButton}"/>
+                                        <Button Content="Load Exact Files"
+                                                Command="{Binding LoadCatalogFilesCommand}"
+                                                Style="{StaticResource QuietButton}"
+                                                AutomationProperties.Name="Load exact provider files"/>
                                         <Button Content="Open Provider Page" Command="{Binding OpenCatalogSourceCommand}" Margin="6,0,0,0"/>
                                     </StackPanel>
-                                    <DataGrid Grid.Row="2"
-                                              ItemsSource="{Binding CatalogFiles}"
-                                              SelectedItem="{Binding SelectedCatalogFile,Mode=TwoWay}"
-                                              AutoGenerateColumns="False"
-                                              IsReadOnly="True"
-                                              AutomationProperties.Name="Exact provider files">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="FILE" Binding="{Binding Name}" Width="1.7*"/>
-                                            <DataGridTextColumn Header="TYPE" Binding="{Binding Category}" Width="92"/>
-                                            <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="90"/>
-                                            <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="86"/>
-                                            <DataGridTextColumn Header="UPLOADED" Binding="{Binding Uploaded}" Width="135"/>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
+                                    <Grid Grid.Row="2">
+                                        <Border Visibility="{Binding CatalogFileStateVisibility}"
+                                                Style="{StaticResource SubtleCard}"
+                                                Padding="14"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.Name="{Binding CatalogFilePresentationTitle}"
+                                                AutomationProperties.LiveSetting="Polite">
+                                            <StackPanel HorizontalAlignment="Center" MaxWidth="330">
+                                                <TextBlock Text="{Binding CatalogFilePresentationTitle}"
+                                                           Style="{StaticResource SectionTitle}"
+                                                           TextAlignment="Center"
+                                                           TextWrapping="Wrap"/>
+                                                <TextBlock Margin="0,7,0,0"
+                                                           Text="{Binding CatalogFilePresentationDetail}"
+                                                           Foreground="{StaticResource Muted}"
+                                                           FontSize="11"
+                                                           TextAlignment="Center"
+                                                           TextWrapping="Wrap"/>
+                                                <Button Margin="0,12,0,0"
+                                                        Content="Retry Loading Files"
+                                                        Command="{Binding LoadCatalogFilesCommand}"
+                                                        Visibility="{Binding CatalogFileRetryVisibility}"
+                                                        Style="{StaticResource QuietButton}"
+                                                        AutomationProperties.Name="Retry loading exact provider files"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <DataGrid Visibility="{Binding CatalogFilesVisibility}"
+                                                  ItemsSource="{Binding CatalogFiles}"
+                                                  SelectedItem="{Binding SelectedCatalogFile,Mode=TwoWay}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  AutomationProperties.Name="Exact provider files">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="FILE" Binding="{Binding Name}" Width="1.7*"/>
+                                                <DataGridTextColumn Header="TYPE" Binding="{Binding Category}" Width="92"/>
+                                                <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="90"/>
+                                                <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="86"/>
+                                                <DataGridTextColumn Header="UPLOADED" Binding="{Binding Uploaded}" Width="135"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
                                     <StackPanel Grid.Row="3" Margin="0,10,0,0">
                                         <Button Content="Install Selected File"
                                                 Command="{Binding InstallCatalogFileCommand}"
