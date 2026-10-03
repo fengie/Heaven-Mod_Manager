@@ -206,7 +206,7 @@ public sealed class ComplianceSurfaceTests
             var directory = new DirectoryInfo(start);
             while (directory is not null)
             {
-                if (File.Exists(Path.Combine(directory.FullName, "MhwModManager.slnx")))
+                if (File.Exists(Path.Combine(directory.FullName, "MhwModManager.sln")))
                 {
                     return directory.FullName;
                 }
