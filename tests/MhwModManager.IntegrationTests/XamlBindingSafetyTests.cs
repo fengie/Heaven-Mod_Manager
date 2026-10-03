@@ -511,9 +511,22 @@ public sealed partial class XamlBindingSafetyTests
         var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
         var rows = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "Rows.cs"));
 
-        Assert.Contains("EnableVisibleLabel", xaml);
-        Assert.Contains("DisableVisibleLabel", xaml);
-        Assert.Contains("HasVisibleMods", xaml);
+        Assert.Contains("Content=\"{Binding EnableVisibleLabel}\" Command=\"{Binding EnableVisibleCommand}\"", xaml);
+        Assert.Contains("Content=\"{Binding DisableVisibleLabel}\" Command=\"{Binding DisableVisibleCommand}\"", xaml);
+        Assert.Contains("Content=\"{Binding RefreshVisibleLabel}\" Command=\"{Binding ReindexVisibleCommand}\"", xaml);
+        Assert.Contains("Text=\"{Binding VisibleBulkScopeHelp}\"", xaml);
+        Assert.Contains("AutomationProperties.HelpText=\"{Binding VisibleBulkScopeHelp}\"", xaml);
+        Assert.Contains("IsEnabled=\"{Binding HasVisibleMods}\"", xaml);
+        Assert.DoesNotContain("EnableSelectedCommand", xaml);
+        Assert.DoesNotContain("DisableSelectedCommand", xaml);
+        Assert.DoesNotContain("ReindexSelectedCommand", xaml);
+        Assert.Contains("public string RefreshVisibleLabel", main);
+        Assert.Contains("public string VisibleBulkScopeHelp", main);
+        Assert.Contains("[RelayCommand]private void EnableVisible()=>StageVisible(true);", main);
+        Assert.Contains("[RelayCommand]private void DisableVisible()=>StageVisible(false);", main);
+        Assert.Contains("private async Task ReindexVisible()", main);
+        Assert.Contains("OnPropertyChanged(nameof(RefreshVisibleLabel));", main);
+        Assert.Contains("OnPropertyChanged(nameof(VisibleBulkScopeHelp));", main);
         Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().ToArray();", main);
         Assert.Contains("if(targets.Length>1&&MessageBox.Show(", main);
         Assert.Contains("public string PendingStateLabel", rows);
