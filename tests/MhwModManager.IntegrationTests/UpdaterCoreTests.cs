@@ -425,7 +425,11 @@ public sealed class UpdaterCoreTests : IDisposable
     {
         var install = Path.Combine(root, "handoff-install");
         var managerHome = Path.Combine(root, "manager-home");
-        var stage = Path.Combine(UpdatePackageStager.GetUpdaterRoot(), "tests", "handoff-" + Guid.NewGuid().ToString("N"), "stage");
+        var stage = Path.Combine(
+            UpdatePackageStager.GetUpdaterRoot(),
+            "staging",
+            "11-" + Guid.NewGuid().ToString("N"),
+            "payload");
         Directory.CreateDirectory(Path.Combine(install, "UpdaterHelper"));
         Directory.CreateDirectory(managerHome);
         Directory.CreateDirectory(stage);
@@ -523,6 +527,10 @@ public sealed class UpdaterCoreTests : IDisposable
             manifest,
             stage,
             stagedManifestPath);
+        await File.WriteAllTextAsync(
+            Path.Combine(UpdatePackageStager.GetUpdaterRoot(), UpdateProtocol.PendingFileName),
+            JsonSerializer.Serialize(staged, UpdateProtocol.Json),
+            TestToken);
         using var client = new UpdateClientService(
             new HttpClient(new FakeHandler(_ => throw new InvalidOperationException("Network must not be used."))));
 
@@ -549,7 +557,7 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(
             "RUNTIME-CONFIG",
             await File.ReadAllTextAsync(copiedDependency, TestToken));
-        var request = await UpdateRequestStore.ReadAsync(
+        var request = await UpdateRequestStore.ReadForHelperAsync(
             prepared.RequestPath,
             TestToken);
         Assert.Equal(4321, request.CurrentProcessId);
@@ -557,6 +565,90 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(stage, request.StagingRoot);
         Assert.Equal(Path.GetFullPath(managerHome), request.ManagerHomeRoot);
         Assert.Equal(11, request.Manifest.BuildNumber);
+
+        var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
+        var foreignTransaction = Path.Combine(
+            updaterRoot,
+            "transactions",
+            $"11-{new string('A', 24)}-{Guid.NewGuid():N}");
+        var foreignStage = Path.Combine(
+            updaterRoot,
+            "staging",
+            $"11-{Guid.NewGuid():N}",
+            "payload");
+        var foreignInstall = Path.Combine(root, "other-install");
+        var foreignManagerHome = Path.Combine(root, "other-manager-home");
+        Directory.CreateDirectory(foreignTransaction);
+        Directory.CreateDirectory(foreignStage);
+        Directory.CreateDirectory(foreignInstall);
+        Directory.CreateDirectory(foreignManagerHome);
+
+        var invalidRequests = new[]
+        {
+            request with { InstallRoot = foreignInstall },
+            request with { StagingRoot = foreignStage },
+            request with { BackupRoot = Path.Combine(foreignTransaction, "backup") },
+            request with { JournalPath = Path.Combine(foreignTransaction, "journal.json") },
+            request with { PendingPath = Path.Combine(foreignTransaction, "pending-update.json") },
+            request with { HealthFile = Path.Combine(foreignTransaction, "health.json") },
+            request with { ManagerHomeRoot = foreignManagerHome },
+            request with { HealthToken = "not-a-health-token" },
+            request with { CurrentProcessId = 0 },
+            request with
+            {
+                BackupRoot = Path.Combine(
+                    Path.GetDirectoryName(request.BackupRoot)!,
+                    "nested",
+                    "..",
+                    "backup")
+            },
+            request with
+            {
+                RestartArguments =
+                [
+                    "--normal",
+                    "value",
+                    UpdateHealthProtocol.TokenArgument,
+                    "tampered"
+                ]
+            }
+        };
+
+        foreach (var invalid in invalidRequests)
+        {
+            await UpdateRequestStore.WriteAsync(
+                prepared.RequestPath,
+                invalid,
+                TestToken);
+            await Assert.ThrowsAnyAsync<Exception>(
+                () => UpdateRequestStore.ReadForHelperAsync(
+                    prepared.RequestPath,
+                    TestToken));
+        }
+
+        await UpdateRequestStore.WriteAsync(
+            prepared.RequestPath,
+            request,
+            TestToken);
+
+        if (OperatingSystem.IsWindows())
+        {
+            var reparseTarget = Path.Combine(root, "request-reparse-target");
+            Directory.CreateDirectory(reparseTarget);
+            CreateDirectoryJunction(request.BackupRoot, reparseTarget);
+            var reparseError = await Assert.ThrowsAsync<IOException>(
+                () => UpdateRequestStore.ReadForHelperAsync(
+                    prepared.RequestPath,
+                    TestToken));
+            Assert.Contains("reparse point", reparseError.Message, StringComparison.OrdinalIgnoreCase);
+            Directory.Delete(request.BackupRoot);
+        }
+
+        var rebound = await UpdateRequestStore.ReadForHelperAsync(
+            prepared.RequestPath,
+            TestToken);
+        Assert.Equal(request.Manifest, rebound.Manifest);
+        Assert.Equal(request.InstallRoot, rebound.InstallRoot);
     }
 
     [Fact]
@@ -645,6 +737,26 @@ public sealed class UpdaterCoreTests : IDisposable
                 TestToken));
 
         Assert.Contains("does not own updater helper", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void CreateDirectoryJunction(string link, string target)
+    {
+        var info = new System.Diagnostics.ProcessStartInfo(
+            "cmd.exe",
+            $"/d /c mklink /J \"{link}\" \"{target}\"")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        using var process = System.Diagnostics.Process.Start(info)
+            ?? throw new InvalidOperationException("Could not start cmd.exe to create updater test junction.");
+        process.WaitForExit();
+        if (process.ExitCode != 0)
+            throw new IOException(
+                $"Could not create updater test junction. stdout={process.StandardOutput.ReadToEnd()} stderr={process.StandardError.ReadToEnd()}");
+        Assert.True((File.GetAttributes(link) & FileAttributes.ReparsePoint) != 0);
     }
 
     private static async Task<ProductFileEntry> EntryAsync(string rootPath, string relative)
