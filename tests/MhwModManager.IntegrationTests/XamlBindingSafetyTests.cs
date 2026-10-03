@@ -196,6 +196,26 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("CatalogFiles.ReplaceAll(value?.Mod.Files.Select", source);
     }
 
+    [Fact]
+    public void BrowseModsInstallActionExplainsWhySelectionIsRequired()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("AutomationProperties.Name=\"Install selected catalog file\"", xaml);
+        Assert.Contains("AutomationProperties.HelpText=\"{Binding CatalogInstallGuidance}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogInstallGuidance}\"", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
+        Assert.Contains("public string CatalogInstallGuidance", source);
+        Assert.Contains("CatalogFilePresentationKind.Loading =>", source);
+        Assert.Contains("CatalogFilePresentationKind.Loaded =>", source);
+        Assert.Contains("CatalogFilePresentationKind.Empty =>", source);
+        Assert.Contains("CatalogFilePresentationKind.Failed =>", source);
+        Assert.Contains("partial void OnSelectedCatalogFileChanged(CatalogFileRow? value)", source);
+        Assert.Contains("OnPropertyChanged(nameof(CatalogInstallGuidance));", source);
+    }
+
     [Theory]
     [InlineData(CatalogFilePresentationKind.NotLoaded, 0, false, false)]
     [InlineData(CatalogFilePresentationKind.Loading, 0, false, false)]
