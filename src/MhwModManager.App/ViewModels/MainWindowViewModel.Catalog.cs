@@ -192,7 +192,7 @@ public sealed record CatalogBrowseResultState(
                 true,
                 false,
                 "No mods match this search",
-                "No cached or provider results match this search. Clear the search to return to all cached mods.")
+                "No matching results are in the local cache. Typing filters cached results; choose Search to query configured providers that support text search, or clear the search to return to all cached mods.")
             : new CatalogBrowseResultState(
                 false,
                 false,
@@ -367,6 +367,7 @@ public sealed partial class MainWindowViewModel
     private const int CatalogProviderRefreshLimit = 100;
     private const int CatalogVisibleResultLimit = 1000;
 
+    private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private HttpClient? catalogHttp;
     private CatalogRepository? catalogRepository;
     private CatalogSyncService? catalogSync;
@@ -772,15 +773,29 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        SetCatalogProviderOperationInProgress(true);
+        await catalogSyncGate.WaitAsync(ct);
         try
         {
-            await RefreshCatalogCoreAsync(ct);
-            catalogLoaded = true;
+            if (catalogLoaded)
+            {
+                await SearchCatalogCacheAsync(ct);
+                return;
+            }
+
+            SetCatalogProviderOperationInProgress(true);
+            try
+            {
+                await RefreshCatalogCoreAsync(ct);
+                catalogLoaded = true;
+            }
+            finally
+            {
+                SetCatalogProviderOperationInProgress(false);
+            }
         }
         finally
         {
-            SetCatalogProviderOperationInProgress(false);
+            catalogSyncGate.Release();
         }
     }
 
@@ -788,23 +803,32 @@ public sealed partial class MainWindowViewModel
     private async Task RefreshCatalog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        SetCatalogProviderOperationInProgress(true);
+        var ct = CancellationToken.None;
+        await catalogSyncGate.WaitAsync(ct);
         try
         {
-            await RunBusy(
-                "catalog.refresh",
-                "Refreshing mod catalog",
-                "Contacting supported providers independently, then updating the local searchable cache…",
-                true,
-                async ct =>
-                {
-                    await RefreshCatalogCoreAsync(ct);
-                    catalogLoaded = true;
-                });
+            SetCatalogProviderOperationInProgress(true);
+            try
+            {
+                await RunBusy(
+                    "catalog.refresh",
+                    "Refreshing mod catalog",
+                    "Contacting supported providers independently, then updating the local searchable cache…",
+                    true,
+                    async busyCt =>
+                    {
+                        await RefreshCatalogCoreAsync(busyCt);
+                        catalogLoaded = true;
+                    });
+            }
+            finally
+            {
+                SetCatalogProviderOperationInProgress(false);
+            }
         }
         finally
         {
-            SetCatalogProviderOperationInProgress(false);
+            catalogSyncGate.Release();
         }
     }
 
@@ -888,19 +912,28 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        SetCatalogProviderOperationInProgress(true);
+        var ct = CancellationToken.None;
+        await catalogSyncGate.WaitAsync(ct);
         try
         {
-            await RunBusy(
-                "catalog.search",
-                "Searching mod catalog",
-                "Querying providers that advertise text search, then updating the local cache…",
-                true,
-                ct => SearchCatalogProvidersAsync(query, ct));
+            SetCatalogProviderOperationInProgress(true);
+            try
+            {
+                await RunBusy(
+                    "catalog.search",
+                    "Searching mod catalog",
+                    "Querying providers that advertise text search, then updating the local cache…",
+                    true,
+                    busyCt => SearchCatalogProvidersAsync(query, busyCt));
+            }
+            finally
+            {
+                SetCatalogProviderOperationInProgress(false);
+            }
         }
         finally
         {
-            SetCatalogProviderOperationInProgress(false);
+            catalogSyncGate.Release();
         }
     }
 
