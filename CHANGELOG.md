@@ -1,8 +1,14 @@
-# v8.8.85 — 2026-10-03
+# v8.8.86 — 2026-10-03
 
 - Close #676 by rejecting any descendant file or directory reparse point in manager-owned import staging before the final publish move.
 - Reuse the fail-closed recursive filesystem guard before import cleanup and rollback so nested junction substitution cannot redirect recursive deletion.
 - Add Windows junction regressions proving publication and rollback refusal preserves external target bytes and leaves unsafe residue for controlled recovery.
+
+# v8.8.85 — 2026-10-03
+
+- Decouple exact-head feature PR verification from canonical release-version surface parity so concurrent product branches no longer race to own global release metadata.
+- Keep repository identity, canonical-state shape, security policy, function verification, builds, analyzers, tests, fault injection, and self-test coverage unchanged in feature-candidate verification.
+- Preserve the full strict canonical metadata/handoff checks in the main Windows release gate, with regression coverage preventing candidate-mode relaxation from reaching publication.
 
 # v8.8.84 — 2026-10-03
 
