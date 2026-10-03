@@ -152,7 +152,7 @@ public partial class ModRowViewModel:ObservableObject
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
-        EnsureRequiredBaseMembers();
+        EnsureRequiredCompositionMembers();
         ThumbnailPath=family.Members.Select(m=>m.PreviewPath).FirstOrDefault(p=>!string.IsNullOrWhiteSpace(p)&&System.IO.File.Exists(p));
         foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
         SetSummaryFromMembers();
@@ -163,7 +163,7 @@ public partial class ModRowViewModel:ObservableObject
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
         if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
-        EnsureRequiredBaseMembers();
+        EnsureRequiredCompositionMembers();
         SyncParts();RaiseStateChanged();_changed();
     }
 
@@ -181,7 +181,7 @@ public partial class ModRowViewModel:ObservableObject
     public void SetMemberEnabled(string memberId,bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredBaseMembers();SetSummaryFromMembers();_changed();
+        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();
     }
     public bool ContainsMember(string memberId)
     {
@@ -193,7 +193,7 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         foreach(var member in Members)_stagedMembers[member.Id]=state.TryGetValue(member.Id,out var value)?value:(false,member.Priority);
-        EnsureRequiredBaseMembers();
+        EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();_changed();
     }
     public void CommitApplied(){
@@ -205,7 +205,7 @@ public partial class ModRowViewModel:ObservableObject
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         _stagedMembers.Clear();
         foreach(var item in _appliedMembers)_stagedMembers[item.Key]=item.Value;
-        EnsureRequiredBaseMembers();
+        EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();
         _changed();
     }
@@ -239,16 +239,27 @@ public partial class ModRowViewModel:ObservableObject
 
     private void OnPartChanged(string id,bool enabled){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);EnsureRequiredBaseMembers();SetSummaryFromMembers();_changed();}
+        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();}
 
-    private void EnsureRequiredBaseMembers()
+    private void EnsureRequiredCompositionMembers()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!_stagedMembers.Values.Any(x=>x.enabled))return;
+
         foreach(var member in Members.Where(AutoCompatibility.IsRequiredBasePackage))
         {
             if(!_stagedMembers.TryGetValue(member.Id,out var state)||state.enabled)continue;
             _stagedMembers[member.Id]=(true,state.priority);
+        }
+
+        var activeMembers=Members
+            .Where(member=>_stagedMembers.TryGetValue(member.Id,out var state)&&state.enabled)
+            .ToArray();
+        foreach(var active in activeMembers)
+        {
+            var legacy=AutoCompatibility.FindRequiredRetainedLegacyGeneration(Members,active);
+            if(legacy is null||!_stagedMembers.TryGetValue(legacy.Id,out var state)||state.enabled)continue;
+            _stagedMembers[legacy.Id]=(true,state.priority);
         }
     }
 
