@@ -39,7 +39,7 @@ jobs:
 
       - name: Classify exact updater publication
         id: classify
-        shell: pwsh
+        shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}

@@ -91,6 +91,10 @@ foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filte
     $workflow=Get-Content -LiteralPath $workflowFile.FullName -Raw
     if($workflow -notmatch '(?im)^\s*runs-on:\s*\[[^\]]*self-hosted[^\]]*\]'){continue}
 
+    if($workflow -match '(?im)^\s*runs-on:\s*\[[^\]]*Windows[^\]]*mhw-mods[^\]]*\]' -and $workflow -match '(?im)^\s*shell:\s*pwsh\s*$'){
+        $errors.Add("$($workflowFile.Name): Heaven Windows self-hosted jobs must use the supported Windows PowerShell shell unless pwsh is explicitly provisioned.")
+    }
+
     $checkoutCount=[regex]::Matches($workflow,'(?im)^\s*uses:\s*actions/checkout@').Count
     $noPersistCount=[regex]::Matches($workflow,'(?im)^\s*persist-credentials:\s*false\s*$').Count
     if($checkoutCount -ne $noPersistCount){
@@ -118,6 +122,18 @@ foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filte
         $revision=[string]$match.Groups[2].Value
         if($revision -notmatch '^[0-9a-fA-F]{40}$'){
             $errors.Add("$($workflowFile.Name): external action $action must be pinned to a full 40-character commit SHA; found '$revision'.")
+        }
+    }
+}
+
+$workflowFeatureGatePath=Join-Path $workflowRoot 'workflow-feature-pr-gate.yml'
+if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
+    $errors.Add('workflow-feature-pr-gate.yml is missing.')
+}else{
+    $workflowFeatureGate=Get-Content -LiteralPath $workflowFeatureGatePath -Raw
+    foreach($requiredPath in @("      - 'src/**'","      - 'tests/**'")){
+        if(-not $workflowFeatureGate.Contains($requiredPath)){
+            $errors.Add("workflow-feature-pr-gate.yml must cover all product source and test paths; missing $requiredPath")
         }
     }
 }
