@@ -283,7 +283,7 @@ public sealed class AutomationServiceTests : IDisposable
         await db.UpsertModAsync(new("new-pack","New Pack","New Pack",Path.Combine(root,"new-pack"),false,2),TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("old-pack",[ModFile("old-pack",@"nativePC\shared.tex","old-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
-        await db.ExecuteAsync("INSERT INTO resource_providers(resource_key,mod_id) VALUES('nativepc/shared.tex','old-pack')",ct:TestContext.Current.CancellationToken);
+        await db.ExecuteAsync("INSERT INTO resource_providers(namespace,mod_id) VALUES('nativepc/shared.tex','old-pack')",ct:TestContext.Current.CancellationToken);
 
         var planner=new DeploymentPlanner(new ConflictEngine());
         var executor=new DeploymentExecutor(db,new BlobStore(Path.Combine(root,"migration-state","blobs"),db),new HashingService(),Path.Combine(root,"migration-live"));
