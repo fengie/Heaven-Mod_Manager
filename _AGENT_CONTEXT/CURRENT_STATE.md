@@ -12,7 +12,9 @@ v8.8.80 source `e7af34331b608fca3d115d2dfe20f5c8e69a5973` remains the last close
 
 ## Verification boundary
 
-Implementation head `b574ab7ffd0c15cf50dfe6c5af1b216a979e2616` passed MHW Product Security Gate `37096061393`, Updater Publication PR Gate `37096061412`, and an independent Heaven release verification/build with 26/26 checks, Core 324/324, Automation 95/95, Integration 298/298, self-test 11/11, and successful ReadyToRun app/updater-helper publication. The v8.8.81 metadata synchronization changes release inputs after that head, so fresh exact-input verification is required before integration; do not inherit those results onto the new head.
+Current hosted-Windows closure: v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` passed run `37098443475` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+
+The tested source remains `1d21a7ee99774c6820e16421837e9451ef2e3ef6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 

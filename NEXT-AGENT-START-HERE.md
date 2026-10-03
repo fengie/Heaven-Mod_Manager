@@ -15,7 +15,9 @@ Change set: issue #632
 
 ## Verification boundary
 
-Pre-version implementation head `b574ab7ffd0c15cf50dfe6c5af1b216a979e2616` passed Product Security `37096061393`, Updater Publication `37096061412`, and independent Heaven release verification/build. Because the synchronized v8.8.81 metadata changes release inputs, the final exact head requires fresh verification before integration.
+Current hosted-Windows closure: v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` passed run `37098443475` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+
+The tested source remains `1d21a7ee99774c6820e16421837e9451ef2e3ef6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and next work
 
