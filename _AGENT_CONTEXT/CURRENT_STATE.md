@@ -17,9 +17,9 @@ Publicly indexed HPN ecosystem material confirms that mixed-generation installs 
 
 ## Verification boundary
 
-Current closed hosted-Windows closure is v8.8.86 source `21e7dbd1c71d66be542095be4e6d397879b7b134`, run `37132556908`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.86-heaven-windows-closure.log`. The later commits on main only persist verification/E2E evidence.
+Current hosted-Windows closure: v8.8.87 source `8c872e7051b60a4ddc878bf4290c210225a18a59` passed run `37139785007` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log`.
 
-v8.8.87 changes product source, tests, and release metadata and therefore requires fresh exact-final-head PR #692 verification before integration plus fresh canonical Windows closure after integration. Historical green runs do not authorize this source.
+The tested source remains `8c872e7051b60a4ddc878bf4290c210225a18a59` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
