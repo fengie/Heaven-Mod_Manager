@@ -75,7 +75,14 @@ public partial class ModRowViewModel:ObservableObject
     public int StagedEnabledMembers=>_stagedMembers.Values.Count(x=>x.enabled);
     public bool WillEnable=>HasStagedChanges&&StagedEnabledMembers>AppliedEnabledMembers;
     public bool WillDisable=>HasStagedChanges&&StagedEnabledMembers<AppliedEnabledMembers;
-    public string PendingStateLabel=>!HasStagedChanges?string.Empty:WillEnable?"Pending enable":WillDisable?"Pending disable":"Pending changes";
+    public string PendingStateLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return !HasStagedChanges?string.Empty:WillEnable?"Pending enable":WillDisable?"Pending disable":"Pending changes";
+        }
+    }
     public string PartsLabel
     {
         get
