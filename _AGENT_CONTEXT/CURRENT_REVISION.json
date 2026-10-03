@@ -10,10 +10,10 @@
   "status": "v8.8.83-test-scratch-cleanup-canonical-awaiting-exact-verification",
   "nextMilestone": "Run fresh exact-source Windows verification for v8.8.83 and prove self-test/updater scratch roots are removed after success and failure paths.",
   "nextRequiredAction": "Verify focused cleanup regressions and the full Windows release gate on exact v8.8.83 source; once required gates are green, integrate only that exact head and publish under the repository release rules.",
-  "verificationAppliesToCommit": "0e78e56a18955390cfaa5f17b0787c6111fbaa38",
-  "lastClosedVerificationCommit": "0e78e56a18955390cfaa5f17b0787c6111fbaa38",
-  "lastClosedVerificationRun": "v8.8.82 source 0e78e56a18955390cfaa5f17b0787c6111fbaa38: Workflow Feature PR Gate run 37106871213 PASS with exact repository verification and focused regressions green.",
-  "verificationScopeNote": "v8.8.82 exact source 0e78e56a18955390cfaa5f17b0787c6111fbaa38 passed Workflow Feature PR Gate run 37106871213. v8.8.83 changes self-test/updater scratch cleanup and stale-reaper behavior, so fresh exact-input verification is required before integration.",
+  "verificationAppliesToCommit": "f46793a18700524ac7b5fb34770200206d6595f2",
+  "lastClosedVerificationCommit": "f46793a18700524ac7b5fb34770200206d6595f2",
+  "lastClosedVerificationRun": "v8.8.82 source f46793a18700524ac7b5fb34770200206d6595f2: hosted Windows verification run 37107057966 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log. Later commits 00dcf4a5076335b69c636a2c0cb4c84ac333a43e and d57e888f392b1180c563e80c96df31fd9fd8cdc0 are evidence-only and do not change the tested source.",
+  "verificationScopeNote": "v8.8.82 exact source f46793a18700524ac7b5fb34770200206d6595f2 passed hosted Windows verification run 37107057966. v8.8.83 changes self-test/updater scratch cleanup and stale-reaper behavior, so fresh exact-input verification is required before integration.",
   "lastClosedVerification": {
     "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
     "updaterBuild": 382,
@@ -46,8 +46,8 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "0e78e56a18955390cfaa5f17b0787c6111fbaa38",
-    "runId": 37106871213,
-    "evidence": "Workflow Feature PR Gate run 37106871213"
+    "sourceSha": "f46793a18700524ac7b5fb34770200206d6595f2",
+    "runId": 37107057966,
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log"
   }
 }
