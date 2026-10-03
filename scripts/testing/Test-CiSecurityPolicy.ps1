@@ -365,6 +365,8 @@ if(!(Test-Path -LiteralPath $releasePath)){
         $errors.Add('windows-release-gate.yml: public updater client feed must publish before canonical/private release visibility.')
     }
     if($parityIndex -le $privatePublishIndex){$errors.Add('windows-release-gate.yml: public/private updater parity verification must run after both publication steps.')}
+    $publicProvenanceIndex=$release.IndexOf('Reconcile public release provenance index')
+    if($publicProvenanceIndex -le $parityIndex){$errors.Add('windows-release-gate.yml: public provenance reconciliation must run after public/private parity.')}
     if(-not $release.Contains('id: public_updater_release')){
         $errors.Add('windows-release-gate.yml: public updater publication must expose a step outcome for downstream gating.')
     }
@@ -400,6 +402,27 @@ if(!(Test-Path -LiteralPath $publicPublisherPath)){
         if(-not $text.Contains($required)){$errors.Add("Publish-PublicUpdaterRelease.ps1: updater transaction invariant missing: $required")}
     }
     if($text.Contains('Canonical private updater release')){$errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')}
+}
+
+$publicProvenancePublisherPath=Join-Path $Root 'scripts\release\Publish-PublicReleaseProvenance.ps1'
+if(!(Test-Path -LiteralPath $publicProvenancePublisherPath)){
+    $errors.Add('Publish-PublicReleaseProvenance.ps1 is missing.')
+}else{
+    $text=Get-Content -LiteralPath $publicProvenancePublisherPath -Raw
+    foreach($required in @(
+        'fengie/mhw-mod-manager-release',
+        'release-index.json',
+        'Get-UpdaterReleasePages',
+        'Add-PublicReleaseProvenanceRecordToIndexJson',
+        'sha=[string]$indexFile.sha',
+        "branch='main'",
+        'MHW_PUBLIC_RELEASE_TOKEN'
+    )){
+        if(-not $text.Contains($required)){$errors.Add("Publish-PublicReleaseProvenance.ps1: provenance publication invariant missing: $required")}
+    }
+    if($text.Contains('Write-Host $publicToken') -or $text.Contains('Write-Output $publicToken')){
+        $errors.Add('Publish-PublicReleaseProvenance.ps1: public release token must never be written to logs.')
+    }
 }
 
 $sdkHelperPath=Join-Path $Root 'scripts\ci\Assert-PinnedDotNetSdk.ps1'

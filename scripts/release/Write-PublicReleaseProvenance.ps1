@@ -97,3 +97,87 @@ function ConvertTo-PublicReleaseProvenanceJson {
 
   return ($Record | ConvertTo-Json -Depth 8)
 }
+
+
+function Test-PublicReleaseProvenanceRecordEquivalent {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)]$Left,
+    [Parameter(Mandatory=$true)]$Right
+  )
+
+  foreach($name in @('version','build','source_repository','source_sha','tag','channel','published_at_utc')){
+    $leftProp=$Left.PSObject.Properties[$name]
+    $rightProp=$Right.PSObject.Properties[$name]
+    if($null -eq $leftProp -or $null -eq $rightProp){return $false}
+    if([string]$leftProp.Value -cne [string]$rightProp.Value){return $false}
+  }
+
+  $leftArtifacts=@($Left.artifacts | Sort-Object -Property name)
+  $rightArtifacts=@($Right.artifacts | Sort-Object -Property name)
+  if($leftArtifacts.Count -ne $rightArtifacts.Count){return $false}
+  for($i=0;$i -lt $leftArtifacts.Count;$i++){
+    foreach($name in @('name','size_bytes','sha256')){
+      $leftProp=$leftArtifacts[$i].PSObject.Properties[$name]
+      $rightProp=$rightArtifacts[$i].PSObject.Properties[$name]
+      if($null -eq $leftProp -or $null -eq $rightProp){return $false}
+      if([string]$leftProp.Value -cne [string]$rightProp.Value){return $false}
+    }
+    $leftKey=$leftArtifacts[$i].PSObject.Properties['signed_metadata_key_id']
+    $rightKey=$rightArtifacts[$i].PSObject.Properties['signed_metadata_key_id']
+    $leftKeyValue=if($null -eq $leftKey){''}else{[string]$leftKey.Value}
+    $rightKeyValue=if($null -eq $rightKey){''}else{[string]$rightKey.Value}
+    if($leftKeyValue -cne $rightKeyValue){return $false}
+  }
+  return $true
+}
+
+function Add-PublicReleaseProvenanceRecordToIndexJson {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)][string]$IndexJson,
+    [Parameter(Mandatory=$true)]$Record
+  )
+
+  if([string]::IsNullOrWhiteSpace($IndexJson)){
+    throw 'Public release provenance index was empty.'
+  }
+  try{
+    $index=ConvertFrom-Json -InputObject $IndexJson -ErrorAction Stop
+  }catch{
+    throw 'Public release provenance index contained invalid JSON.'
+  }
+  if($null -eq $index -or $null -eq $index.PSObject.Properties['schema_version'] -or [int]$index.schema_version -ne 1){
+    throw 'Public release provenance index schema_version must be 1.'
+  }
+  if($null -eq $index.PSObject.Properties['releases']){
+    throw 'Public release provenance index omitted releases.'
+  }
+
+  $releases=@($index.releases)
+  $identity="$([string]$Record.version)|$([long]$Record.build)|$([string]$Record.tag)"
+  $source=[string]$Record.source_sha
+  foreach($existing in $releases){
+    if($null -eq $existing){throw 'Public release provenance index contained a null release.'}
+    $existingIdentity="$([string]$existing.version)|$([long]$existing.build)|$([string]$existing.tag)"
+    if($existingIdentity -ceq $identity){
+      if(Test-PublicReleaseProvenanceRecordEquivalent -Left $existing -Right $Record){
+        return [pscustomobject]@{Added=$false;Json=$IndexJson;Identity=$identity}
+      }
+      throw "Public release provenance index already contains conflicting immutable identity $identity."
+    }
+    if([string]$existing.source_sha -ceq $source){
+      throw "Public release provenance index already binds source SHA $source to a different immutable release."
+    }
+  }
+
+  $next=[ordered]@{
+    schema_version=1
+    releases=@($releases)+@($Record)
+  }
+  $json=($next | ConvertTo-Json -Depth 10)
+  if(-not $json.EndsWith([Environment]::NewLine,[StringComparison]::Ordinal)){
+    $json += [Environment]::NewLine
+  }
+  return [pscustomobject]@{Added=$true;Json=$json;Identity=$identity}
+}

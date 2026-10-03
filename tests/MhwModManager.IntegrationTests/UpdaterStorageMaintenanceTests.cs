@@ -160,6 +160,82 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
     }
 
     [Fact]
+    public async Task Cleanup_reclaims_repeated_old_prepared_transactions_when_lease_owner_is_gone()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        var transactions = Enumerable.Range(0, 3)
+            .Select(index => CreatePreparedTransaction(
+                106 + index,
+                old,
+                int.MaxValue - index,
+                old))
+            .ToArray();
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            CancellationToken.None);
+
+        Assert.All(transactions, transaction => Assert.False(Directory.Exists(transaction)));
+        Assert.Equal(3, result.DeletedTransactions);
+    }
+
+    [Fact]
+    public async Task Cleanup_preserves_old_prepared_transaction_while_recorded_owner_is_alive()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        using var current = System.Diagnostics.Process.GetCurrentProcess();
+        var ownerStartUtc = new DateTimeOffset(
+            current.StartTime.ToUniversalTime());
+        var transaction = CreatePreparedTransaction(
+            109,
+            old,
+            Environment.ProcessId,
+            ownerStartUtc);
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            CancellationToken.None);
+
+        Assert.True(Directory.Exists(transaction));
+        Assert.Equal(0, result.DeletedTransactions);
+        Assert.True(result.DeferredEntries >= 1);
+    }
+
+    [Fact]
+    public async Task Cleanup_preserves_legacy_journal_less_transaction_without_explicit_lease()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        var transaction = Path.Combine(
+            root,
+            "transactions",
+            $"110-{new string('C', 24)}-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(transaction, "helper"));
+        File.WriteAllText(
+            Path.Combine(transaction, "apply-request.json"),
+            "{}");
+        SetTreeLastWriteUtc(transaction, old);
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            CancellationToken.None);
+
+        Assert.True(Directory.Exists(transaction));
+        Assert.Equal(0, result.DeletedTransactions);
+    }
+
+    [Fact]
     public void Confirmed_staging_cleanup_removes_entire_attempt()
     {
         var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
@@ -190,6 +266,39 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
         {
             try { Directory.Delete(attempt, true); } catch { }
         }
+    }
+
+    private string CreatePreparedTransaction(
+        long build,
+        DateTimeOffset writeUtc,
+        int ownerProcessId,
+        DateTimeOffset ownerProcessStartUtc)
+    {
+        var transactionId =
+            $"{build}-{new string('B', 24)}-{Guid.NewGuid():N}";
+        var transaction = Path.Combine(
+            root,
+            "transactions",
+            transactionId);
+        Directory.CreateDirectory(Path.Combine(transaction, "helper"));
+        File.WriteAllText(
+            Path.Combine(transaction, "apply-request.json"),
+            "{}");
+        File.WriteAllText(
+            Path.Combine(
+                transaction,
+                UpdatePreparedTransactionLeaseStore.FileName),
+            JsonSerializer.Serialize(
+                new UpdatePreparedTransactionLease(
+                    UpdatePreparedTransactionLease.CurrentSchemaVersion,
+                    build,
+                    transactionId,
+                    ownerProcessId,
+                    ownerProcessStartUtc,
+                    writeUtc),
+                UpdateProtocol.Json));
+        SetTreeLastWriteUtc(transaction, writeUtc);
+        return transaction;
     }
 
     private string CreateStagingAttempt(

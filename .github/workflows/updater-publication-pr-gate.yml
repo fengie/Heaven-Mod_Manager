@@ -7,6 +7,9 @@ on:
     paths:
       - 'scripts/release/Publish-UpdaterRelease.ps1'
       - 'scripts/release/Publish-PublicUpdaterRelease.ps1'
+      - 'scripts/release/Publish-PublicReleaseProvenance.ps1'
+      - 'scripts/release/Write-PublicReleaseProvenance.ps1'
+      - 'scripts/testing/Test-PublicReleaseProvenance.ps1'
       - 'scripts/release/UpdaterReleasePublication.ps1'
       - 'scripts/release/UpdaterReleasePolicy.ps1'
       - 'scripts/testing/Test-UpdaterReleasePolicy.ps1'
@@ -68,7 +71,7 @@ jobs:
       - name: Parse updater publishers
         shell: powershell
         run: |
-          foreach ($path in @('.\scripts\release\Publish-UpdaterRelease.ps1', '.\scripts\release\Publish-PublicUpdaterRelease.ps1')) {
+          foreach ($path in @('.\scripts\release\Publish-UpdaterRelease.ps1', '.\scripts\release\Publish-PublicUpdaterRelease.ps1', '.\scripts\release\Publish-PublicReleaseProvenance.ps1', '.\scripts\release\Write-PublicReleaseProvenance.ps1')) {
             $tokens=$null
             $errors=$null
             [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)
@@ -83,7 +86,10 @@ jobs:
 
       - name: Run updater publication policy and fault tests
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-UpdaterReleasePolicy.ps1"
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-UpdaterReleasePolicy.ps1"
+          if errorlevel 1 exit /b %errorlevel%
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-PublicReleaseProvenance.ps1"
 
       - name: Run exact repository verification gate
         shell: cmd

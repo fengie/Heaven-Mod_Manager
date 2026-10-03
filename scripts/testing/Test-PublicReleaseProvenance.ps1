@@ -104,6 +104,34 @@ try {
   }
   if($reparseTested){ Assert-True (Test-Path -LiteralPath $a) 'reparse target preserved' }
 
+  $emptyIndex="{`"schema_version`":1,`"releases`":[]}"
+  $append=Add-PublicReleaseProvenanceRecordToIndexJson -IndexJson $emptyIndex -Record $record
+  Assert-True $append.Added 'new provenance record appended'
+  $appended=ConvertFrom-Json -InputObject $append.Json
+  Assert-Equal 1 $appended.releases.Count 'appended provenance count'
+  Assert-Equal $sha $appended.releases[0].source_sha 'appended provenance source'
+
+  $idempotent=Add-PublicReleaseProvenanceRecordToIndexJson -IndexJson $append.Json -Record $record
+  Assert-Equal $false $idempotent.Added 'exact provenance retry is idempotent'
+  Assert-Equal $append.Json $idempotent.Json 'idempotent provenance retry preserves index bytes'
+
+  $conflicting=ConvertFrom-Json -InputObject (ConvertTo-PublicReleaseProvenanceJson -Record $record)
+  $conflicting.published_at_utc='2026-10-03T14:00:01Z'
+  $conflictRejected=$false
+  try{[void](Add-PublicReleaseProvenanceRecordToIndexJson -IndexJson $append.Json -Record $conflicting)}catch{$conflictRejected=$true}
+  Assert-True $conflictRejected 'conflicting immutable provenance identity rejected'
+
+  $duplicateSource=ConvertFrom-Json -InputObject (ConvertTo-PublicReleaseProvenanceJson -Record $record)
+  $duplicateSource.build=4243
+  $duplicateSource.tag='updater-main-4243'
+  $duplicateSourceRejected=$false
+  try{[void](Add-PublicReleaseProvenanceRecordToIndexJson -IndexJson $append.Json -Record $duplicateSource)}catch{$duplicateSourceRejected=$true}
+  Assert-True $duplicateSourceRejected 'one source SHA cannot bind multiple public provenance records'
+
+  $badIndexRejected=$false
+  try{[void](Add-PublicReleaseProvenanceRecordToIndexJson -IndexJson '{"schema_version":2,"releases":[]}' -Record $record)}catch{$badIndexRejected=$true}
+  Assert-True $badIndexRejected 'unsupported provenance index schema rejected'
+
   Write-Host 'PASS: public release provenance generator regressions.'
 }
 finally {
