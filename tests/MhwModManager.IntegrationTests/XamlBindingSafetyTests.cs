@@ -222,6 +222,57 @@ public sealed partial class XamlBindingSafetyTests
         }
     }
 
+    [Theory]
+    [InlineData(true, false, 2, 0, 0, 5, 2, CatalogPresentationKind.Loading, false)]
+    [InlineData(false, true, 2, 1, 1, 5, 0, CatalogPresentationKind.PartialFailure, true)]
+    [InlineData(false, true, 2, 0, 2, 5, 1, CatalogPresentationKind.Unavailable, true)]
+    [InlineData(false, true, 2, 2, 0, 5, 2, CatalogPresentationKind.Stale, false)]
+    [InlineData(false, true, 2, 2, 0, 5, 0, CatalogPresentationKind.Fresh, false)]
+    [InlineData(false, true, 0, 0, 0, 5, 1, CatalogPresentationKind.CachedOnly, false)]
+    public void BrowseModsPresentationStateDistinguishesProviderHealthAndCacheFreshness(
+        bool isLoading,
+        bool attempted,
+        int configured,
+        int successful,
+        int failed,
+        int results,
+        int stale,
+        CatalogPresentationKind expectedKind,
+        bool expectedRetry)
+    {
+        var state = CatalogPresentationState.From(
+            isLoading,
+            attempted,
+            configured,
+            successful,
+            failed,
+            results,
+            stale);
+
+        Assert.Equal(expectedKind, state.Kind);
+        Assert.Equal(expectedRetry, state.CanRetry);
+        Assert.NotEmpty(state.Title);
+        Assert.NotEmpty(state.Detail);
+    }
+
+    [Fact]
+    public void BrowseModsProviderHealthBannerKeepsRecoveryVisibleAboveResults()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Text=\"{Binding CatalogPresentationTitle}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogPresentationDetail}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogProviderRetryVisibility}\"", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Retry failed catalog providers\"", xaml);
+        Assert.Contains("SetCatalogProviderOperationInProgress(true);", source);
+        Assert.Contains("SetCatalogProviderHealth(providers.Count, successes, failures, attempted: true);", source);
+        Assert.Contains("SetCatalogProviderHealth(searchable.Length, successes, failures, attempted: true);", source);
+        Assert.Contains("return CatalogItems.Count(row => row.IsStale);", source);
+    }
+
     [Fact]
     public void BrowseModsEmptyStatesExposeRecoveryActionsAndHideDeadEndSelectionPrompt()
     {
@@ -403,6 +454,88 @@ public sealed partial class XamlBindingSafetyTests
             xaml);
         Assert.DoesNotContain("AutomationProperties.Name=\"{Binding}\"", xaml);
         Assert.DoesNotContain("ConverterParameter=320}\" Stretch=\"UniformToFill\" ToolTip=\"{Binding}\"", xaml);
+    }
+
+    [Fact]
+    public void SettingsStorageCardSeparatesDurableDataFromBoundedUpdaterReclaim()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var settings = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Settings.cs"));
+        var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+
+        Assert.Contains("ItemsSource=\"{Binding StorageCategories}\"", xaml);
+        Assert.Contains("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
+        Assert.Contains("Command=\"{Binding ReclaimUpdaterStorageCommand}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Reclaim disposable updater storage\"", xaml);
+        Assert.Contains("It preserves installed Mods, State, archives, catalog scratch, unknown files, live pending update data, nonterminal recovery data, and reparse paths.", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
+
+        Assert.Contains("\"Installed Mods\"", settings);
+        Assert.Contains("\"Manager State (total)\"", settings);
+        Assert.Contains("\"Catalog Download Scratch\"", settings);
+        Assert.Contains("\"Updater Staging\"", settings);
+        Assert.Contains("\"Updater Recovery\"", settings);
+        Assert.Contains("UpdateStorageMaintenance.RunAsync(", settings);
+        Assert.Contains("SafeRecursiveTraversal.Snapshot(root, ct)", settings);
+        Assert.DoesNotContain("Directory.Delete(", settings);
+        Assert.Contains("if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);", main);
+    }
+
+    [Fact]
+    public void StorageUsageProbeMeasuresOwnedFilesAndFormatsBytes()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "mhwmm-storage-probe-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            File.WriteAllBytes(Path.Combine(root, "a.bin"), new byte[1024]);
+            var nested = Path.Combine(root, "nested");
+            Directory.CreateDirectory(nested);
+            File.WriteAllBytes(Path.Combine(nested, "b.bin"), new byte[2048]);
+
+            Assert.Equal(3072, StorageUsageProbe.MeasureTree(root, TestContext.Current.CancellationToken));
+            Assert.Equal("3.0 KiB", MainWindowViewModel.FormatStorageBytes(3072));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void AdvancedToolsInputsExposeContextualAutomationNames()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "WorkflowWindow.xaml"));
+
+        var expectedNames = new[]
+        {
+            "Search file decisions",
+            "Imported profile name",
+            "Profile name",
+            "Parent profile",
+            "Left profile",
+            "Right profile",
+            "Rule type",
+            "First mod",
+            "Second mod or preferred winner",
+            "Rule path or scope",
+            "Rule reason",
+            "Mod to inspect relationships",
+            "Current mod",
+            "Updated mod",
+        };
+
+        foreach (var name in expectedNames)
+            Assert.Contains($"AutomationProperties.Name=\"{name}\"", xaml);
+
+        Assert.Contains("x:Name=\"ProfileA\" Width=\"220\" DisplayMemberPath=\"Name\" AutomationProperties.Name=\"Left profile\"", xaml);
+        Assert.Contains("x:Name=\"ProfileB\" Width=\"220\" DisplayMemberPath=\"Name\" AutomationProperties.Name=\"Right profile\"", xaml);
+        Assert.Contains("x:Name=\"OldMod\" Width=\"260\" DisplayMemberPath=\"DisplayName\" AutomationProperties.Name=\"Current mod\"", xaml);
+        Assert.Contains("x:Name=\"NewMod\" Width=\"260\" DisplayMemberPath=\"DisplayName\" AutomationProperties.Name=\"Updated mod\"", xaml);
     }
 
     [Fact]

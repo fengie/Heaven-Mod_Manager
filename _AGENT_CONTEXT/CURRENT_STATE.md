@@ -1,23 +1,28 @@
-# v8.8.84 updater test-state isolation — canonical state
+# v8.8.86 storage/filesystem hardening — canonical state
 
-v8.8.84 closes issue #671 by removing a verification-only race in updater integration tests. The production updater is unchanged.
+v8.8.86 adds updater staging-capacity preflight plus unmanaged-adoption and import-filesystem hardening on top of the verified v8.8.85 publication/verification baseline.
 
 ## Behavior
 
-- `UpdateInstallerTests`, `UpdateRuntimeTests`, `UpdaterCoreTests`, `UpdaterInstalledClientE2ETests`, and `UpdaterStorageMaintenanceTests` share one xUnit collection with `DisableParallelization = true`.
-- Those classes are serialized because they share the process-global updater root and canonical pending-state file.
-- Other integration-test classes remain parallel.
-- Existing per-test unique directories remain intact.
-- Production request topology, pending-state validation, rollback, storage maintenance, and updater publication behavior are unchanged.
+- Updater staging fails before download when the actual staging volume cannot satisfy the bounded capacity budget.
+- Unmanaged adoption uses invocation-owned roots and copy-time containment/reparse plus SHA-256 certification.
+- Import publication and recursive cleanup/rollback fail closed on descendant reparse topology.
+
+- Workflow Feature PR Gate invokes `Verify-Release.ps1 -FeatureCandidate` on the exact PR head.
+- Feature-candidate mode defers only global release-version surface parity: VERSION/build version, current-version README/CHANGELOG/handoff parity, and current-version closure projection.
+- Repository identity, canonical-state shape, Toolbox ownership, continuity propagation, context budgets, verification-cache structure, CI security policy, function verification, strict builds/analyzers, tests, integration/fault injection, and self-test remain enforced.
+- The canonical Windows Release Gate continues to invoke the default full verifier with no candidate relaxation.
+- CI policy tests fail if candidate mode disappears from the PR gate or appears in the canonical release gate.
+- A deterministic negative fixture proves release-version drift is rejected by canonical governance but accepted by feature-candidate governance.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.84 source `2ea6d6dd3851f24a40e562074a816d9bd1e61883` passed run `37124460532` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.85 source `271b9d8d7303a6136b574af52d43d95efff26f34` passed run `37130638298` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
 
-The tested source remains `2ea6d6dd3851f24a40e562074a816d9bd1e61883` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `271b9d8d7303a6136b574af52d43d95efff26f34` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
-#673 adoption hardening, #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent. Reconcile them against v8.8.84 rather than replaying stale release metadata.
+#673 adoption hardening, #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
 
 Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, and durable-evidence privacy boundary, and recursively propagate the same obligation.

@@ -1,3 +1,16 @@
+# v8.8.86 — 2026-10-03
+
+- Add updater staging-capacity preflight before staging-directory creation or artifact download, using bounded artifact, extraction, and free-space headroom budgets with actionable low-disk diagnostics.
+- Give unmanaged-adoption invocations intrinsically unique package roots, revalidate containment/reparse ancestry at copy time, certify copied SHA-256 against discovery identity, and keep failure cleanup scoped to the owned package.
+- Add deterministic unmanaged-adoption regressions for concurrent package ownership, post-discovery ancestor-junction substitution, and post-discovery byte mutation.
+- Reject descendant file/directory reparse points immediately before import publication and before recursive cleanup/rollback, with Windows junction regressions proving external targets are preserved.
+
+# v8.8.85 — 2026-10-03
+
+- Decouple exact-head feature PR verification from canonical release-version surface parity so concurrent product branches no longer race to own global release metadata.
+- Keep repository identity, canonical-state shape, security policy, function verification, builds, analyzers, tests, fault injection, and self-test coverage unchanged in feature-candidate verification.
+- Preserve the full strict canonical metadata/handoff checks in the main Windows release gate, with regression coverage preventing candidate-mode relaxation from reaching publication.
+
 # v8.8.84 — 2026-10-03
 
 - Serialize the updater integration-test classes that share the process-global updater root and canonical `pending-update.json` state.

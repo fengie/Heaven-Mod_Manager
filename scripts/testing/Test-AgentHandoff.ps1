@@ -1,4 +1,4 @@
-param([string]$Root)
+param([string]$Root,[switch]$FeatureCandidate)
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 if([string]::IsNullOrWhiteSpace($Root)){$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path}else{$Root=(Resolve-Path -LiteralPath $Root).Path}
@@ -47,11 +47,13 @@ foreach($pointer in @{agentInstructions='AGENTS.md';currentRevisionFile='_AGENT_
 
 $version=(Active 'VERSION.txt').Trim()
 [xml]$props=Active 'Directory.Build.props'
-if([string]$props.Project.PropertyGroup.Version -ne $version){throw 'Directory.Build.props version must match VERSION.txt.'}
-if([string]$manifest.currentVersion -ne $version){throw 'handoff-manifest currentVersion must match VERSION.txt.'}
+if(-not $FeatureCandidate){
+    if([string]$props.Project.PropertyGroup.Version -ne $version){throw 'Directory.Build.props version must match VERSION.txt.'}
+    if([string]$manifest.currentVersion -ne $version){throw 'handoff-manifest currentVersion must match VERSION.txt.'}
+}
 $revision=Active '_AGENT_CONTEXT/CURRENT_REVISION.json' | ConvertFrom-Json
 if($revision.formatVersion -ne 1 -or $revision.canonicalRepository -ne $manifest.canonicalRepository -or $revision.canonicalBranch -ne $manifest.canonicalBranch){throw 'Invalid current revision canonical identity.'}
-if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must match VERSION.txt.'}
+if(-not $FeatureCandidate -and [string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must match VERSION.txt.'}
 if([string]$revision.globalBootstrapRepository -ne 'fengie/heaven-toolbox' -or [string]$revision.globalBootstrapBranch -ne 'main'){throw 'CURRENT_REVISION must route global bootstrap to Heaven Toolbox main.'}
 if([string]::IsNullOrWhiteSpace([string]$revision.status)){throw 'CURRENT_REVISION must contain a non-empty status.'}
 if([string]$revision.stateSemantics -ne 'post-integration-canonical'){throw 'CURRENT_REVISION stateSemantics must be post-integration-canonical.'}
@@ -65,12 +67,14 @@ if([string]::IsNullOrWhiteSpace([string]$revision.verificationAppliesToCommit)){
 
 $escaped=[regex]::Escape($version)
 $readme=Active 'README.md'; $changelog=Active 'CHANGELOG.md'; $currentState=Active '_AGENT_CONTEXT/CURRENT_STATE.md'
-Need $currentState "(?m)^#\s+v$escaped\b" 'CURRENT_STATE title must show current version.'
+if(-not $FeatureCandidate){
+    Need $currentState "(?m)^#\s+v$escaped\b" 'CURRENT_STATE title must show current version.'
+    Need $readme "(?m)^#\s+v$escaped\b" 'README title must show current version.'
+    Need $readme "(?m)^##\s+v$escaped\b" 'README must contain a current-version progress section.'
+    Need $changelog "(?m)^#\s+v$escaped\b" 'CHANGELOG must contain a current-version section.'
+}
 Need $currentState '(?i)\bcanonical state\b' 'CURRENT_STATE must describe canonical state.'
 Forbid $currentState '(?i)\bcanonical-ready\b' 'CURRENT_STATE must not retain pre-integration canonical-ready wording.'
-Need $readme "(?m)^#\s+v$escaped\b" 'README title must show current version.'
-Need $readme "(?m)^##\s+v$escaped\b" 'README must contain a current-version progress section.'
-Need $changelog "(?m)^#\s+v$escaped\b" 'CHANGELOG must contain a current-version section.'
 Need $readme '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'README must link the canonical project plan.'
 
 $plan=Active '_AGENT_CONTEXT/PROJECT_PLAN.md'
@@ -104,7 +108,7 @@ Need $router '_AGENT_CONTEXT/PROJECT_PLAN\.md' 'Context router must link the can
 Need $router '(?i)task-relevant' 'Context router must require task-relevant retrieval.'
 
 $start=Active 'NEXT-AGENT-START-HERE.md'
-Need $start "(?i)v$escaped\b" 'Current handoff must identify current version.'
+if(-not $FeatureCandidate){Need $start "(?i)v$escaped\b" 'Current handoff must identify current version.'}
 Need $start 'fengie/heaven-toolbox@main' 'Current handoff must preserve Toolbox-first bootstrap.'
 Need $start '(?i)successor' 'Current handoff must name successor continuity.'
 Need $start '(?i)verification' 'Current handoff must carry verification state.'
@@ -115,7 +119,7 @@ Continuity $start 'Current handoff'
 
 $currentClosureRelative="_AGENT_CONTEXT/EVIDENCE/v$version-heaven-windows-closure.log"
 $currentClosurePath=Join-Path $Root ($currentClosureRelative.Replace([char]47,[char]92))
-if(Test-Path -LiteralPath $currentClosurePath -PathType Leaf){
+if(-not $FeatureCandidate -and (Test-Path -LiteralPath $currentClosurePath -PathType Leaf)){
     $closure=Active $currentClosureRelative
     Need $closure "(?m)^MHW Manual Mod Manager v$escaped Heaven Windows closure\s*$" 'Current-version closure evidence header/version mismatch.'
     Need $closure '(?im)^Overall:\s+\*\*PASS\*\*.*\b0 failed\b' 'Current-version closure evidence must contain a 0-failure PASS report.'
@@ -182,4 +186,7 @@ foreach($entry in @($stageStatus.stages)){
 }
 
 & (Join-Path $Root 'scripts\testing\Test-HeavenToolboxOwnership.ps1') -Root $Root
+if($FeatureCandidate){
+    Write-Host 'INFO: feature-candidate mode defers canonical release-version surface parity to the exact-main release gate.' -ForegroundColor Yellow
+}
 Write-Host ("PASS: MHW project governance preflight. Version="+$version+"; activeBytes="+$total+"; globalBootstrap=fengie/heaven-toolbox@main") -ForegroundColor Green

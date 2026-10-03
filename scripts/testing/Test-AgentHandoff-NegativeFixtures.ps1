@@ -30,6 +30,19 @@ function Reject {
         Write-Host "PASS: rejected $Name" -ForegroundColor Green
     }finally{[IO.File]::WriteAllBytes($path,$originalBytes)}
 }
+function Accept-FeatureCandidateReleaseDrift {
+    $path=Join-Path $fixture 'VERSION.txt'
+    $originalBytes=[IO.File]::ReadAllBytes($path)
+    try{
+        Set-Content -LiteralPath $path -Value '99.99.99' -Encoding utf8
+        $canonicalRejected=$false
+        try{& (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null}catch{$canonicalRejected=$true}
+        if(-not $canonicalRejected){throw 'Canonical governance unexpectedly accepted release-version drift.'}
+        & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture -FeatureCandidate *> $null
+        Write-Host 'PASS: feature-candidate governance accepts release-version drift while canonical governance rejects it.' -ForegroundColor Green
+    }finally{[IO.File]::WriteAllBytes($path,$originalBytes)}
+}
+
 function Reject-ForbiddenRoot {
     param([string]$Name,[string]$Relative)
     $path=Join-Path $fixture ($Relative.Replace([char]47,[char]92))
@@ -59,6 +72,8 @@ try{
 
     & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
     Write-Host 'PASS: baseline MHW project-governance fixture accepted.' -ForegroundColor Green
+    Accept-FeatureCandidateReleaseDrift
+
 
     Reject 'AGENTS loses Heaven Toolbox authority' 'AGENTS.md' {param($x) $x -replace 'fengie/heaven-toolbox@main','fengie/toolbox-missing@main'}
     Reject 'AGENTS reclaims global training authority for MHW' 'AGENTS.md' {param($x) $x + [Environment]::NewLine + 'This fengie/mhw-mods repository is the global training bootstrap authority.'}
