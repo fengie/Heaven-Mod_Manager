@@ -40,7 +40,7 @@ public partial class ModPartRowViewModel:ObservableObject
         if(n.Contains("fix",StringComparison.Ordinal))return "Fix";
         if(n.Contains("patch",StringComparison.Ordinal))return "Patch";
         if(AutoCompatibility.IsOptionalPackage(mod))return "Optional";
-        if(AutoCompatibility.TryGetPackageVersion(mod,out var version))return $"Revision {string.Join('.',version)}";
+        if(AutoCompatibility.TryGetPackageVersion(mod,out var version))return $"Revision {string.Join(".",version)}";
         if(n.Contains("texture",StringComparison.Ordinal)||n.Contains("skin",StringComparison.Ordinal))return "Texture";
         return "Component";
     }
