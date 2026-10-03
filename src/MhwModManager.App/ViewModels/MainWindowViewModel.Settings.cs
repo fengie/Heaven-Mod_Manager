@@ -1,4 +1,5 @@
 using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -47,6 +48,8 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty] private bool backgroundMetadataRefreshEnabled;
     [ObservableProperty] private string storageStatusText =
         "Storage usage has not been measured yet. Opening Settings measures manager-owned roots without deleting anything.";
+    [ObservableProperty] private string legalStatusText =
+        "Privacy, legal, support, and local-data controls are bundled with this release.";
 
     private bool storageUsageLoaded;
 
@@ -110,6 +113,66 @@ public sealed partial class MainWindowViewModel
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
         s.Settings.Update(settings=>settings.BackgroundMetadataRefreshEnabled=value);
+    }
+
+    [RelayCommand]
+    private void OpenPrivacyPolicy() => OpenBundledComplianceDocument("PRIVACY.md");
+
+    [RelayCommand]
+    private void OpenTermsOfUse() => OpenBundledComplianceDocument("TERMS.md");
+
+    [RelayCommand]
+    private void OpenRefundPolicy() => OpenBundledComplianceDocument("REFUND_POLICY.md");
+
+    [RelayCommand]
+    private void OpenCookiePolicy() => OpenBundledComplianceDocument("COOKIE_POLICY.md");
+
+    [RelayCommand]
+    private void OpenThirdPartyNotices() => OpenBundledComplianceDocument("THIRD_PARTY_NOTICES.md");
+
+    [RelayCommand]
+    private void OpenDataDeletionGuide() => OpenBundledComplianceDocument("DATA-DELETION.md");
+
+    [RelayCommand]
+    private void OpenSupportDetails() => OpenBundledComplianceDocument("SUPPORT.md");
+
+    [RelayCommand]
+    private void OpenAppDataFolder()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        try
+        {
+            Directory.CreateDirectory(s.Paths.StateRoot);
+            Process.Start(new ProcessStartInfo(s.Paths.StateRoot) { UseShellExecute = true });
+            LegalStatusText = "Opened the manager data folder. Close the app before deleting state files.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            LegalStatusText = $"Could not open the manager data folder: {ex.Message}";
+            MasterDebugLog.Write("LEGAL-UI", "Opening manager data folder failed.", ex);
+        }
+    }
+
+    private void OpenBundledComplianceDocument(string fileName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"file={fileName}");
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, fileName);
+            if (!File.Exists(path))
+            {
+                LegalStatusText = $"{fileName} is missing from this installation. Reinstall the current verified build.";
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            LegalStatusText = $"Opened {fileName}.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            LegalStatusText = $"Could not open {fileName}: {ex.Message}";
+            MasterDebugLog.Write("LEGAL-UI", $"Opening compliance document failed: {fileName}", ex);
+        }
     }
 
     private async Task EnsureStorageUsageLoadedAsync(CancellationToken ct)
