@@ -156,6 +156,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     public int StagedEnableCount=>Mods.Count(x=>x.WillEnable);
     public int StagedDisableCount=>Mods.Count(x=>x.WillDisable);
+    public bool HasStagedChanges
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return StagedCount>0;
+        }
+    }
+    public string PendingActionsHelp
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasStagedChanges
+                ? $"{StagedCount} pending {(StagedCount==1?"mod change is":"mod changes are")} ready to preview, discard, or apply."
+                : "No pending mod changes to preview, discard, or apply.";
+        }
+    }
     public int OverlapCount=>OverlapRows.Count;
     public string StagedSummary
     {
@@ -510,6 +528,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(StagedEnableCount));
         OnPropertyChanged(nameof(StagedDisableCount));
         OnPropertyChanged(nameof(StagedSummary));
+        OnPropertyChanged(nameof(HasStagedChanges));
+        OnPropertyChanged(nameof(PendingActionsHelp));
         OnPropertyChanged(nameof(UpdateCount));
         OnPropertyChanged(nameof(AllViewLabel));
         OnPropertyChanged(nameof(EnabledViewLabel));
