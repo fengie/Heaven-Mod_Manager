@@ -27,9 +27,52 @@ public sealed class CollectionRecipeService(ManagerDatabase db, GameProfile? gam
             m.NexusModId, m.NexusFileId, m.NexusModUuid, m.NexusVersionId, m.NexusPreviousVersionId,
             m.NexusCategory.ToString(), m.NexusVersion, m.NexusUploadedAt, m.IsSuperseded, m.SupersededByModId,
             files[m.Id].ToDictionary(f => f.Path, f => f.BlobSha256, PathRules.Comparer), m.FamilyRole)).ToArray(), game?.Id, game?.NexusGameDomain, await db.GetGameBuildFingerprintAsync(ct));
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destination))!);
-        await File.WriteAllTextAsync(destination, JsonSerializer.Serialize(recipe, AutomationJson.Options), ct);
-        return destination;
+        var fullPath = Path.GetFullPath(destination);
+        await WriteTextAtomicallyAsync(
+            fullPath,
+            JsonSerializer.Serialize(recipe, AutomationJson.Options),
+            ct);
+        return fullPath;
+    }
+
+    internal static async Task WriteTextAtomicallyAsync(
+        string destination,
+        string contents,
+        CancellationToken ct,
+        Func<string, string, CancellationToken, Task>? writeAsync = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var fullPath = Path.GetFullPath(destination);
+        var directory = Path.GetDirectoryName(fullPath)
+            ?? throw new InvalidDataException("Recipe destination has no parent directory.");
+        Directory.CreateDirectory(directory);
+        var tempPath = Path.Combine(
+            directory,
+            $".{Path.GetFileName(fullPath)}.partial-{Guid.NewGuid():N}");
+        writeAsync ??= static (path, text, token) => File.WriteAllTextAsync(path, text, token);
+
+        try
+        {
+            await writeAsync(tempPath, contents, ct);
+            ct.ThrowIfCancellationRequested();
+            File.Move(tempPath, fullPath, true);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (IOException)
+            {
+                // Best-effort cleanup must not mask the original export failure.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Best-effort cleanup must not mask the original export failure.
+            }
+        }
     }
 
     public async Task<RecipeImportPreview> PreviewAsync(string source, CancellationToken ct = default)
