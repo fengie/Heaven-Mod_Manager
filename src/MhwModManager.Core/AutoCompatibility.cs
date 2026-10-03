@@ -143,6 +143,15 @@ public static partial class AutoCompatibility
             return true;
         }
 
+        // Same-page source packages frequently encode composition in their package names even when
+        // Nexus category metadata is missing or too coarse (for example literal Main + No Bats, or
+        // Ver3.10 + Ver4.2 body generations). Keep both sources enabled and order only shared paths.
+        if (TryInferSameSourceComposition(a,b,stats,out parent,out child,out reason))
+        {
+            confidence = Confidence.High;
+            return true;
+        }
+
         var an = CleanName(a.Name);
         var bn = CleanName(b.Name);
 

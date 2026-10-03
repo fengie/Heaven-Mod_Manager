@@ -1,3 +1,11 @@
+# v8.8.87 — 2026-10-03
+
+- Keep literal Main/base packages staged on whenever a sibling component in the same logical mod is active, so optional overlays no longer accidentally replace their required base.
+- Recognize same-Nexus `Ver3.10` / `Ver4.2`-style package generations as a path-level revision stack: both sources remain enabled, newer revisions win only overlapping files, and older-only files remain deployed.
+- Preserve sibling-choice safety: same-version variants and unrelated version-labelled packages are not silently ordered.
+- Improve Mod Library component roles so inferred Main, Optional, and explicit Revision packages are visible instead of collapsing to generic Component labels.
+- Add deterministic resolver regressions for Nexus-4678-style `Main → No Bats` composition and Nexus-1965-style mixed HPN generation precedence.
+
 # v8.8.86 — 2026-10-03
 
 - Add updater staging-capacity preflight before staging-directory creation or artifact download, using bounded artifact, extraction, and free-space headroom budgets with actionable low-disk diagnostics.

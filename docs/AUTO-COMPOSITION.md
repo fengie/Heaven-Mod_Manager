@@ -1,4 +1,4 @@
-# Automatic compatibility and composition (v8.5.0)
+# Automatic compatibility and composition (v8.8.87)
 
 v8.5.0 treats the enabled logical-mod set as inputs to one deterministic composed `nativePC` / game-root tree. Source mod folders are immutable. Multiple mods may stay enabled even when one intentionally shadows a subset of another.
 
@@ -19,11 +19,12 @@ Examples used to shape the policy include:
 The manager applies this order when evidence is strong enough:
 
 1. explicit human incompatibility / exact-path winner / pinned resource provider / remembered overlay;
-2. inferred main/base → optional component;
-3. inferred patch/fix/hotfix/update layered over its parent;
-4. for texture paths only, dedicated texture/skin packs over incidental copies embedded in armor packages;
-5. for confidently related texture lineages, newer revision metadata over older: Nexus-style upload timestamp, date/version label, explicit Updated/Fix naming, then file revision time;
-6. configured priority only when no stronger semantic relationship is proven.
+2. inferred literal/declared main/base → same-source optional/component layer;
+3. inferred same-Nexus package revisions (including `Ver3.10` / `Ver4.2` naming) on overlapping paths only;
+4. inferred patch/fix/hotfix/update layered over its parent;
+5. for texture paths only, dedicated texture/skin packs over incidental copies embedded in armor packages;
+6. for confidently related texture lineages, newer revision metadata over older: Nexus-style upload timestamp, date/version label, explicit Updated/Fix naming, then file revision time;
+7. configured priority only when no stronger semantic relationship is proven.
 
 Human rules always win over inference.
 
@@ -31,15 +32,23 @@ Human rules always win over inference.
 
 The library is intentionally one level above source folders. A recognized base package and its additive/overwrite components—Top, Waist, Legs, No Cape, Open Top, Optional, Patch, Fix, Update, and similar author packaging—are displayed as one logical mod. Toggling that row stages every member package together. The underlying folders remain individually indexed so provenance, hashing, rollback, and diagnostics still identify the exact source file.
 
-Old profiles are not rewritten. If an older profile enabled only some members of a newly recognized family, the row reports PARTIAL and preserves those exact physical states until the user intentionally toggles the logical family.
+Old profiles are not broadly rewritten. Partial sibling selections remain partial, but a recognized required Main/base member is dependency-like: if any sibling layer is active while that Main/base member is off, the library stages the Main/base member back on. Disabling the whole logical mod still disables every member. This prevents optional-only states that would silently drop files supplied only by Main.
 
 `Alternative`, `Alt`, and `Variant` remain separate logical mods because they usually mean pick one. Arbitrary structural `v1`/`v2` packages also remain separate. Texture/resource revisions are the exception: related v1/v2/Updated texture packs can be represented as one logical resource family because the exact-path texture provider resolver already proves which revision should win.
 
 ## Main + optional / patch stacks
 
-High-confidence signals include names such as `Base Name - No Cape`, `Base Name - Skimpy Waist`, `Body Size 5`, `Open Top`, `Optional`, `Patch`, `Fix`, `Hotfix`, or `Update`, combined with actual file-overlap shape. A full chain such as `Base → Open Top → Fix` resolves to one logical stack. The child wins only overlapping complete files; files unique to the main package remain in the final tree.
+High-confidence signals include names such as `Base Name - No Cape`, `Base Name - Skimpy Waist`, `Body Size 5`, `Open Top`, `Optional`, `Patch`, `Fix`, `Hotfix`, or `Update`, combined with actual file-overlap shape. A literal `Main` / `Base` package from the same Nexus page is also treated as the required bottom of the stack. A full chain such as `Main → No Bats` or `Base → Open Top → Fix` resolves to one logical stack. The child wins only overlapping complete files; files unique to the main package remain in the final tree.
 
 `Alternative`, `Alt`, or `Variant` alone is deliberately treated as ambiguous. Those labels can mean “choose one instead of the other,” so unrelated structural alternatives still appear for human choice. Same-label packages such as several `Fatalis Patch` archives are also not ordered from timestamps alone.
+
+## Mixed HPN generations
+
+HPN packages are a concrete case where whole-archive supersession is unsafe. Community packages built against the HPN ecosystem document that older armor can still require the 3.x body/resources while newer armor targets 4.x, and some add-ons recommend retaining multiple v4 body/resource variants for compatibility.
+
+When two enabled packages belong to the same Nexus mod, carry explicit generation labels such as `Ver3.10` and `Ver4.2`, have strongly related package names, and actually overlap, the newer generation becomes the provider **only for those shared paths**. Files found only in the older generation remain in the deployment. This is source coexistence plus path precedence, not package disablement or binary merging.
+
+Equal-version siblings such as Beautiful / Normal / Huge / Small are not ordered just because they share a source page. If they replace the same structural asset and there is no stronger author/user rule, they remain a human choice.
 
 ## Shared textures and HPN resources
 

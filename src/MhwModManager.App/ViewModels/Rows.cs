@@ -31,12 +31,16 @@ public partial class ModPartRowViewModel:ObservableObject
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Main"))return "Main (manual)";
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Optional"))return "Optional (manual)";
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Component"))return "Component (manual)";
+        if(AutoCompatibility.IsRequiredBasePackage(mod))return "Main";
+        if(mod.NexusCategory==NexusFileCategory.Main)return "Main";
         if(mod.NexusCategory==NexusFileCategory.Update)return "Update";
         if(mod.NexusCategory==NexusFileCategory.Optional)return "Optional";
         var n=mod.DisplayName.ToLowerInvariant();
         if(n.Contains("hotfix",StringComparison.Ordinal))return "Hotfix";
         if(n.Contains("fix",StringComparison.Ordinal))return "Fix";
         if(n.Contains("patch",StringComparison.Ordinal))return "Patch";
+        if(AutoCompatibility.IsOptionalPackage(mod))return "Optional";
+        if(AutoCompatibility.TryGetPackageVersion(mod,out var version))return $"Revision {string.Join(".",version)}";
         if(n.Contains("texture",StringComparison.Ordinal)||n.Contains("skin",StringComparison.Ordinal))return "Texture";
         return "Component";
     }
@@ -148,6 +152,7 @@ public partial class ModRowViewModel:ObservableObject
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
+        EnsureRequiredBaseMembers();
         ThumbnailPath=family.Members.Select(m=>m.PreviewPath).FirstOrDefault(p=>!string.IsNullOrWhiteSpace(p)&&System.IO.File.Exists(p));
         foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
         SetSummaryFromMembers();
@@ -155,8 +160,10 @@ public partial class ModRowViewModel:ObservableObject
 
     partial void OnStagedEnabledChanged(bool? value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
         if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
+        EnsureRequiredBaseMembers();
         SyncParts();RaiseStateChanged();_changed();
     }
 
@@ -174,7 +181,7 @@ public partial class ModRowViewModel:ObservableObject
     public void SetMemberEnabled(string memberId,bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);SetSummaryFromMembers();_changed();
+        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredBaseMembers();SetSummaryFromMembers();_changed();
     }
     public bool ContainsMember(string memberId)
     {
@@ -186,6 +193,7 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         foreach(var member in Members)_stagedMembers[member.Id]=state.TryGetValue(member.Id,out var value)?value:(false,member.Priority);
+        EnsureRequiredBaseMembers();
         SetSummaryFromMembers();_changed();
     }
     public void CommitApplied(){
@@ -197,6 +205,7 @@ public partial class ModRowViewModel:ObservableObject
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         _stagedMembers.Clear();
         foreach(var item in _appliedMembers)_stagedMembers[item.Key]=item.Value;
+        EnsureRequiredBaseMembers();
         SetSummaryFromMembers();
         _changed();
     }
@@ -230,7 +239,19 @@ public partial class ModRowViewModel:ObservableObject
 
     private void OnPartChanged(string id,bool enabled){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);SetSummaryFromMembers();_changed();}
+        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);EnsureRequiredBaseMembers();SetSummaryFromMembers();_changed();}
+
+    private void EnsureRequiredBaseMembers()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(!_stagedMembers.Values.Any(x=>x.enabled))return;
+        foreach(var member in Members.Where(AutoCompatibility.IsRequiredBasePackage))
+        {
+            if(!_stagedMembers.TryGetValue(member.Id,out var state)||state.enabled)continue;
+            _stagedMembers[member.Id]=(true,state.priority);
+        }
+    }
+
     private void SyncParts(){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         foreach(var part in Parts)if(_stagedMembers.TryGetValue(part.MemberId,out var state))part.SetSilently(state.enabled);}
