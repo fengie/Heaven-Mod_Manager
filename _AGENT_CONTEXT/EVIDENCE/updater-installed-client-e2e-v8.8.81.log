@@ -1,9 +1,9 @@
 ﻿MHW Manual Mod Manager v8.8.81 installed-client updater E2E closure
-source_sha=b46f7324d860c66dd3572013dbba571dec319c87
-run_id=37103385972
-evidence_sha256=639E3408832F69573BDA532C58308F7B11079061F3B8DB6A52538A1D44104E52
-provenance_sha256=63531B89B936640401A682BC154449C636B3BFE3464FB5EEEA328AEE8FA5D98F
-installed_client_test_log_sha256=E5554B9D47F4D0EB0F4A2459B2D9A0581959C0A0F78C89DE792268809C5C1BB6
+source_sha=aa5e56afa5bf8db73bcb7ac0af0c9825874c736a
+run_id=37106066939
+evidence_sha256=0C5BF9805C93022BB59F72640B3CD42C1B8B3806FA9875EDCBC715AD12B4D7A6
+provenance_sha256=4FC6F140B976C181A7B713D776D09F4DC81B86080C2E762814CB7EB194800942
+installed_client_test_log_sha256=BB597AA7DAA8F199ECAA01209AFADDC11761B889B1CC5CE3B311A110F5C19091
 rollback_regression_log_sha256=67D26151BEE2A7F6C739344825041EFB2E36A1246BEE07429F57D6754DA872C8
 durable_evidence_schema=mhw-mod-manager/updater-installed-client-e2e-durable/v1
 
@@ -17,16 +17,16 @@ durable_evidence_schema=mhw-mod-manager/updater-installed-client-e2e-durable/v1
                        "source":  "ffd218b6ad4e9f4fea4b143d266712a6fa17a285"
                    },
     "target":  {
-                   "build":  429,
-                   "source":  "b46f7324d860c66dd3572013dbba571dec319c87"
+                   "build":  432,
+                   "source":  "aa5e56afa5bf8db73bcb7ac0af0c9825874c736a"
                },
     "update":  {
                    "status":  "PASS",
-                   "targetBuild":  429,
-                   "targetSource":  "b46f7324d860c66dd3572013dbba571dec319c87",
+                   "targetBuild":  432,
+                   "targetSource":  "aa5e56afa5bf8db73bcb7ac0af0c9825874c736a",
                    "oldClientExitCode":  0,
-                   "healthBuild":  429,
-                   "healthSource":  "b46f7324d860c66dd3572013dbba571dec319c87",
+                   "healthBuild":  432,
+                   "healthSource":  "aa5e56afa5bf8db73bcb7ac0af0c9825874c736a",
                    "selectorDisplayText":  "Updater E2E Fake Game",
                    "switchButtonEnabled":  true,
                    "settingsButtonEnabled":  true,
