@@ -25,12 +25,14 @@ public sealed class ManagerDatabase
     public ManagerDatabase(string databasePath)
         : this(databasePath, migrationCheckpoint: null)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
     }
 
     internal ManagerDatabase(
         string databasePath,
         Func<ManagerDatabaseMigrationCheckpoint, CancellationToken, ValueTask>? migrationCheckpoint)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         DatabasePath = databasePath;
         this.migrationCheckpoint = migrationCheckpoint;
         connectionString = new SqliteConnectionStringBuilder
