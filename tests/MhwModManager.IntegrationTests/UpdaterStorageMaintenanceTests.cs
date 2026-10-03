@@ -34,8 +34,8 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
                     Path.Combine(
                         protectedPayload,
                         UpdateProtocol.ProductManifestFileName)),
-                UpdateProtocol.Json,
-                TestContext.Current.CancellationToken));
+                UpdateProtocol.Json),
+            TestContext.Current.CancellationToken);
 
         var terminal = CreateTransaction(
             100,
