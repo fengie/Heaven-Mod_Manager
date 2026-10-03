@@ -255,6 +255,11 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
                 continue;
             }
 
+            // This path is owned by a live database row, so it must never be
+            // reconsidered by the orphan sweep below, even when it is retained or
+            // a best-effort delete/unlink fails and the row stays retryable.
+            directories.Remove(fullPath);
+
             try
             {
                 if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
