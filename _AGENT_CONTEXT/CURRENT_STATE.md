@@ -19,7 +19,7 @@ Publicly indexed HPN ecosystem material confirms that mixed-generation installs 
 
 Current closed hosted-Windows closure is v8.8.86 source `7a8b602cf87be65c0dfefbaac84288b6b010df23`, run `37135652874`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.86-heaven-windows-closure.log`. This is the last closed canonical Windows source; current main contains later integrated source changes, so the historical closure does not authorize v8.8.87.
 
-v8.8.87 changes product source, tests, and release metadata and therefore requires fresh exact-final-head PR #692 verification before integration plus fresh canonical Windows closure after integration. Historical green runs do not authorize this source.
+PR #692 exact head `a4b04c99b82ed1efe326e0d8f575469716898fba` passed Workflow Feature PR Gate run `37136336432` and merged to canonical `main` as `92bb0162e3a64f2bf6b02f7feaeda8ff6b37eb70`. The v3.1 follow-up requires its own exact-head feature verification before integration. v8.8.87 still requires fresh canonical Windows closure after the final integration; historical v8.8.86 runs do not authorize this source.
 
 ## Remaining independent work
 
