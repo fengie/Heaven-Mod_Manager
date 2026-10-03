@@ -1,9 +1,9 @@
-# v8.8.87 HPN composition precedence — candidate handoff
+# v8.8.87 HPN composition precedence — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: PR #692
+Integrated change set: PR #692 plus v3.1 precedence/handoff follow-up
 
 ## v8.8.87 behavior
 
@@ -18,7 +18,7 @@ Change set: PR #692
 
 The current closed hosted-Windows source is v8.8.86 `7a8b602cf87be65c0dfefbaac84288b6b010df23`, run `37135652874`; it is the last closed canonical Windows source. Current main has later integrated source changes, so do not reuse that historical evidence for v8.8.87.
 
-PR #692 must pass fresh exact-final-head feature verification before merge. After merge, verify remote `main` and obtain fresh canonical Windows release closure because this change modifies product source/tests/release inputs.
+PR #692 exact head `a4b04c99b82ed1efe326e0d8f575469716898fba` passed Workflow Feature PR Gate run `37136336432` and merged to `main` as `92bb0162e3a64f2bf6b02f7feaeda8ff6b37eb70`. The v3.1 follow-up must also pass exact-head verification before integration. Historical v8.8.86 closure is not reusable for v8.8.87.
 
 ## Execution/offload note
 
@@ -26,11 +26,11 @@ This ChatGPT runtime did not expose callable Heaven Local Bridge or Agent Contro
 
 ## Next action
 
-Observe the exact-final-head PR #692 gate. Merge only that green head. Then verify the resulting remote-main SHA and its strict canonical Windows release gate/evidence before declaring release closure.
+Merge the v3.1 follow-up only after its exact-head gate passes, verify the resulting remote `main`, then obtain and persist fresh strict canonical Windows release closure for v8.8.87.
 
 ## Unresolved risk
 
-The HPN composition behavior is source- and regression-tested on this candidate, but it still requires exact-final-head feature verification before merge and fresh canonical Windows closure after integration. Independent open risks such as external trust prerequisites and remaining recovery/catalog work stay separate and must not be conflated with this change.
+The core HPN composition change passed exact-head feature verification and is integrated; the v3.1 follow-up still requires its own exact-head feature verification, and v8.8.87 still needs fresh canonical Windows closure after the final integration. Independent open risks such as external trust prerequisites and remaining recovery/catalog work stay separate and must not be conflated with this change.
 
 ## Successor obligation
 
