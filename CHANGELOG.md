@@ -1,3 +1,10 @@
+# v8.8.83 — 2026-10-03
+
+- Close #650 by making self-test and installed-client updater E2E temp roots self-clean on success and failure instead of silently accumulating under the Windows temp directory.
+- Clear pooled SQLite handles before self-test teardown, stop updater-owned processes before deletion, and use bounded retry/backoff so transient Windows file locks do not become permanent disk leaks.
+- Persist only the disposable updater harness summary/evidence outside its raw profile, then delete the marked disposable profile in `finally`.
+- Add marker-validated stale scratch maintenance for abandoned MHW self-test/updater E2E roots while refusing unmarked, active, reparse-point, unrelated, user-data, repository, or WSL paths.
+
 # v8.8.82 — 2026-10-03
 
 - Bind updater helper handoff transaction identity to the target manifest plus canonical install, staging, and manager-home roots.
