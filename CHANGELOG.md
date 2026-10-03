@@ -1,3 +1,10 @@
+# v8.8.81 — 2026-10-03
+
+- Replace raw installed-client updater E2E JSON promotion with a versioned allowlisted durable evidence projection.
+- Bind persisted target-source identity to the exact tested workflow SHA and validate release identity plus update, rollback, UI, and sentinel assertions before persistence.
+- Exclude absolute runner paths/usernames, process and attempt IDs, target-only path inventories, product logs, timestamps, runner OS/architecture/SDK metadata, and unknown future properties from Git history.
+- Preserve the compatible raw evidence SHA-256 provenance header and add adversarial canary regressions for machine-local data, unknown fields, invalid release identity, unexpected semantic values, and tested-source mismatch.
+
 # v8.8.80 — 2026-10-02
 
 - Restore complete canonical-main history before installed-client updater E2E evidence ancestry/drift checks so evidence-only main commits are recognized as descendants of the tested release source.

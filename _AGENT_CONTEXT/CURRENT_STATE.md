@@ -1,26 +1,21 @@
-# v8.8.80 updater E2E evidence persistence — canonical state
+# v8.8.81 allowlisted updater E2E evidence — canonical state
 
-v8.8.79 source `6a10008fdcaae5112653593d62b41f5ef4668b36` passed hosted-Windows verification run `37085548752` and installed-client updater E2E run `37085941626`. The E2E update and injected rollback both passed, but durable repository evidence persistence skipped because the exact-source checkout remained shallow and could not prove the later hosted-evidence commit `dc114b07935ca44ba19af82ae5c77a3ead09f4db` descended from the tested source.
+v8.8.80 source `e7af34331b608fca3d115d2dfe20f5c8e69a5973` remains the last closed hosted-Windows verification boundary. v8.8.81 hardens the installed-client updater E2E persistence trust boundary under issue #632.
 
 ## Behavior
 
-- Installed-client E2E persistence detects a shallow checkout and fetches complete canonical-main history before ancestry classification.
-- The persistence path explicitly refreshes `refs/remotes/origin/main` so the drift decision cannot reuse a stale remote-tracking ref.
-- Release-policy regression coverage requires complete-history recovery to occur before `git merge-base --is-ancestor`.
-- Uploaded E2E artifact names use `MHW_E2E_SOURCE_SHA`, preventing the later evidence-only workflow commit from being mislabeled as the tested updater source.
-- Divergent or release-relevant main drift remains fail-closed; only evidence/cache-only advancement may receive the E2E closure commit.
+- Raw runtime E2E diagnostics remain transient; canonical Git history receives only the versioned `mhw-mod-manager/updater-installed-client-e2e-durable/v1` projection.
+- Durable target-source identity must match the exact workflow-tested SHA.
+- Release identity, update/rollback terminal state, installed UI acceptance, and the three preservation sentinel hashes are validated before persistence.
+- Absolute runner paths/usernames, process and attempt IDs, target-only path inventories, product logs, timestamps, runner environment metadata, and unknown future properties are excluded by construction.
+- The compatible `evidence_sha256=` header preserves provenance for the transient raw evidence without embedding its contents.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.80 source `e7af34331b608fca3d115d2dfe20f5c8e69a5973` passed run `37092891133` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.80-heaven-windows-closure.log`.
-
-The tested source remains `e7af34331b608fca3d115d2dfe20f5c8e69a5973` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+Implementation head `b574ab7ffd0c15cf50dfe6c5af1b216a979e2616` passed MHW Product Security Gate `37096061393`, Updater Publication PR Gate `37096061412`, and an independent Heaven release verification/build with 26/26 checks, Core 324/324, Automation 95/95, Integration 298/298, self-test 11/11, and successful ReadyToRun app/updater-helper publication. The v8.8.81 metadata synchronization changes release inputs after that head, so fresh exact-input verification is required before integration; do not inherit those results onto the new head.
 
 ## Remaining independent work
 
-- #559/#558 retain Browse Mods UX and scale work.
-- #350/#354 retain external signing/repository-administration prerequisites.
-- RECOVERY-005/RECOVERY-007 representative installed Windows acceptance remains independent.
-- GitHub Actions artifact storage quota was exhausted during v8.8.79 E2E artifact upload; durable repository evidence is the required fallback and #622 repairs that fallback.
+#559/#558 retain Browse Mods work; #350/#354 retain external prerequisites; RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent. Stale #602/#603 ownership expired without a heartbeat; their product work remains separate and must be reconciled against the post-v8.8.81 main if continued.
 
-Every successor must read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`, preserve exact-input verification and release-safety boundaries, and recursively propagate the continuity obligation.
+Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, and the durable-evidence privacy boundary, and recursively propagate the same obligation.

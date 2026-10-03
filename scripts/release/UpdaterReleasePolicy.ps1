@@ -152,6 +152,142 @@ function Get-UpdaterInstalledClientE2EDecision {
   throw "Successful Windows Release Gate source $SourceSha has no exact immutable updater release and cannot be classified as a canonical-main supersession (main=$RemoteMainSha relation=$MainRelation)."
 }
 
+
+function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
+  param(
+    [Parameter(Mandatory=$true)][string]$Json,
+    [Parameter(Mandatory=$true)][string]$ExpectedTargetSourceSha
+  )
+
+  if([string]::IsNullOrWhiteSpace($Json)){ throw 'Updater installed-client E2E evidence was empty.' }
+  try{$doc=ConvertFrom-Json -InputObject $Json -ErrorAction Stop}catch{
+    throw 'Updater installed-client E2E evidence contained invalid JSON.'
+  }
+  if($null -eq $doc){ throw 'Updater installed-client E2E evidence was null.' }
+
+  $requiredProperty={
+    param($Object,[string]$Name)
+    if($null -eq $Object){ throw "Updater installed-client E2E evidence omitted required object for '$Name'." }
+    $property=$Object.PSObject.Properties[$Name]
+    if($null -eq $property){ throw "Updater installed-client E2E evidence omitted required property '$Name'." }
+    return $property.Value
+  }
+  $requiredSha={
+    param($Object,[string]$Name)
+    $value=[string](& $requiredProperty $Object $Name)
+    if($value -notmatch '^[0-9a-fA-F]{40}$'){ throw "Updater installed-client E2E evidence property '$Name' was not a 40-hex source SHA." }
+    return $value.ToLowerInvariant()
+  }
+  $requiredHash={
+    param($Object,[string]$Name)
+    $value=[string](& $requiredProperty $Object $Name)
+    if($value -notmatch '^[0-9a-fA-F]{64}$'){ throw "Updater installed-client E2E sentinel '$Name' was not a SHA-256 digest." }
+    return $value.ToUpperInvariant()
+  }
+
+  $schemaVersion=[int](& $requiredProperty $doc 'schemaVersion')
+  if($schemaVersion -ne 1){ throw "Unsupported updater installed-client E2E evidence schema version '$schemaVersion'." }
+  if($ExpectedTargetSourceSha -notmatch '^[0-9a-fA-F]{40}$'){
+    throw 'Expected updater installed-client E2E target source was not a 40-hex SHA.'
+  }
+  $expectedTargetSource=$ExpectedTargetSourceSha.ToLowerInvariant()
+
+  $oldTag=[string](& $requiredProperty $doc 'oldTag')
+  $oldBuild=[long](& $requiredProperty $doc 'oldBuild')
+  $oldSource=& $requiredSha $doc 'oldSource'
+  $targetBuild=[long](& $requiredProperty $doc 'targetBuild')
+  $targetSource=& $requiredSha $doc 'targetSource'
+  if($oldTag -notmatch '^updater-main-[0-9]{1,18}$' -or (Get-UpdaterBuildFromTag -Tag $oldTag) -ne $oldBuild -or $oldBuild -lt 0 -or $targetBuild -le $oldBuild){
+    throw 'Updater installed-client E2E evidence contained an invalid old/target release identity.'
+  }
+  if(-not [string]::Equals($targetSource,$expectedTargetSource,[StringComparison]::OrdinalIgnoreCase)){
+    throw "Updater installed-client E2E target source '$targetSource' did not match exact tested source '$expectedTargetSource'."
+  }
+
+  $scenarioA=& $requiredProperty $doc 'scenarioA'
+  $scenarioB=& $requiredProperty $doc 'scenarioB'
+  if([string](& $requiredProperty $scenarioA 'status') -ne 'PASS'){ throw 'Updater installed-client E2E update scenario was not PASS.' }
+  if([string](& $requiredProperty $scenarioB 'status') -ne 'PASS'){ throw 'Updater installed-client E2E rollback scenario was not PASS.' }
+
+  $scenarioATargetBuild=[long](& $requiredProperty $scenarioA 'targetBuild')
+  $scenarioATargetSource=& $requiredSha $scenarioA 'targetSource'
+  $healthBuild=[long](& $requiredProperty $scenarioA 'healthBuild')
+  $healthSource=& $requiredSha $scenarioA 'healthSource'
+  $oldClientExitCode=[int](& $requiredProperty $scenarioA 'oldClientExitCode')
+  $selectorDisplayText=[string](& $requiredProperty $scenarioA 'selectorDisplayText')
+  $switchButtonEnabled=[bool](& $requiredProperty $scenarioA 'switchButtonEnabled')
+  $settingsButtonEnabled=[bool](& $requiredProperty $scenarioA 'settingsButtonEnabled')
+  $scenarioAJournalPhase=[string](& $requiredProperty $scenarioA 'journalPhase')
+  if($scenarioATargetBuild -ne $targetBuild -or
+     -not [string]::Equals($scenarioATargetSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or
+     $healthBuild -ne $targetBuild -or
+     -not [string]::Equals($healthSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or
+     $oldClientExitCode -ne 0 -or
+     $selectorDisplayText -ne 'Updater E2E Fake Game' -or
+     -not $switchButtonEnabled -or
+     -not $settingsButtonEnabled -or
+     $scenarioAJournalPhase -ne 'Confirmed'){
+    throw 'Updater installed-client E2E update evidence failed durable-attestation validation.'
+  }
+
+  $restoredBuild=[long](& $requiredProperty $scenarioB 'restoredBuild')
+  $restoredSource=& $requiredSha $scenarioB 'restoredSource'
+  $oldOwnedFileCount=[long](& $requiredProperty $scenarioB 'oldOwnedFileCount')
+  $targetOnlyFileCount=[long](& $requiredProperty $scenarioB 'targetOnlyFileCount')
+  $scenarioBJournalPhase=[string](& $requiredProperty $scenarioB 'journalPhase')
+  if($restoredBuild -ne $oldBuild -or
+     -not [string]::Equals($restoredSource,$oldSource,[StringComparison]::OrdinalIgnoreCase) -or
+     $oldOwnedFileCount -lt 0 -or
+     $targetOnlyFileCount -lt 0 -or
+     $scenarioBJournalPhase -ne 'RolledBack'){
+    throw 'Updater installed-client E2E rollback evidence failed durable-attestation validation.'
+  }
+
+  $scenarioASentinels=& $requiredProperty $scenarioA 'sentinelSha256'
+  $scenarioBSentinels=& $requiredProperty $scenarioB 'sentinelSha256'
+  $sentinelNames=[ordered]@{
+    mod='Mods/e2e-user.mod'
+    state='State/e2e-state.json'
+    unknownUserFile='e2e-unknown-user-file.txt'
+  }
+  $scenarioAHashes=[ordered]@{}
+  $scenarioBHashes=[ordered]@{}
+  foreach($entry in $sentinelNames.GetEnumerator()){
+    $scenarioAHashes[$entry.Key]=& $requiredHash $scenarioASentinels $entry.Value
+    $scenarioBHashes[$entry.Key]=& $requiredHash $scenarioBSentinels $entry.Value
+  }
+
+  $durable=[ordered]@{
+    schema='mhw-mod-manager/updater-installed-client-e2e-durable/v1'
+    sourceEvidenceSchemaVersion=$schemaVersion
+    oldRelease=[ordered]@{tag=$oldTag;build=$oldBuild;source=$oldSource}
+    target=[ordered]@{build=$targetBuild;source=$targetSource}
+    update=[ordered]@{
+      status='PASS'
+      targetBuild=$scenarioATargetBuild
+      targetSource=$scenarioATargetSource
+      oldClientExitCode=$oldClientExitCode
+      healthBuild=$healthBuild
+      healthSource=$healthSource
+      selectorDisplayText='Updater E2E Fake Game'
+      switchButtonEnabled=$true
+      settingsButtonEnabled=$true
+      journalPhase='Confirmed'
+      sentinelSha256=$scenarioAHashes
+    }
+    rollback=[ordered]@{
+      status='PASS'
+      journalPhase='RolledBack'
+      restoredBuild=$restoredBuild
+      restoredSource=$restoredSource
+      oldOwnedFileCount=$oldOwnedFileCount
+      targetOnlyFileCount=$targetOnlyFileCount
+      sentinelSha256=$scenarioBHashes
+    }
+  }
+  return ($durable | ConvertTo-Json -Depth 8)
+}
+
 function Get-UpdaterPublicationDecision {
   param(
     [Parameter(Mandatory=$true)][long]$CurrentBuild,

@@ -350,6 +350,7 @@ jobs:
             throw 'Failed to fetch complete origin/main history before persisting updater E2E evidence.'
           }
           $remoteMain = (git rev-parse origin/main).Trim()
+          . (Join-Path $PWD 'scripts\release\UpdaterReleasePolicy.ps1')
           $persistenceBaseSha = $remoteMain
           if ($remoteMain -ne $env:MHW_E2E_SOURCE_SHA) {
             git merge-base --is-ancestor $env:MHW_E2E_SOURCE_SHA $remoteMain
@@ -377,7 +378,9 @@ jobs:
           }
 
           $evidenceDir = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          $rawEvidence = Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw
           $evidenceHash = (Get-FileHash -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Algorithm SHA256).Hash
+          $durableEvidenceJson = ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $rawEvidence -ExpectedTargetSourceSha $env:MHW_E2E_SOURCE_SHA
           $provenancePath = Join-Path $evidenceDir 'provenance.txt'
           $testLogPath = Join-Path $evidenceDir 'installed-client-e2e-test.log'
           $rollbackLogPath = Join-Path $evidenceDir 'rollback-regression-tests.log'
@@ -391,16 +394,14 @@ jobs:
             ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
             ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
-            ('runner_os=' + $env:RUNNER_OS)
-            ('runner_arch=' + $env:RUNNER_ARCH)
-            ('dotnet_sdk=' + (& dotnet --version))
             ('evidence_sha256=' + $evidenceHash)
             ('provenance_sha256=' + $provenanceHash)
             ('installed_client_test_log_sha256=' + $testLogHash)
             ('rollback_regression_log_sha256=' + $rollbackLogHash)
+            'durable_evidence_schema=mhw-mod-manager/updater-installed-client-e2e-durable/v1'
             ''
-            '=== EVIDENCE.JSON ==='
-            (Get-Content -LiteralPath $env:MHW_E2E_EVIDENCE_PATH -Raw)
+            '=== DURABLE_EVIDENCE.JSON ==='
+            $durableEvidenceJson
           ) | Set-Content -LiteralPath $closurePath -Encoding UTF8
 
           git config user.name 'github-actions[bot]'
