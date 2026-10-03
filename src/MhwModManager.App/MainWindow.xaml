@@ -286,8 +286,8 @@
                                     <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
                                     <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Content="Enable Visible Mods" Command="{Binding EnableSelectedCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Turn on every mod currently shown by the search and filters."/>
-                                        <Button Content="Disable Visible Mods" Command="{Binding DisableSelectedCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Turn off every mod currently shown by the search and filters."/>
+                                        <Button Content="{Binding EnableVisibleLabel}" Command="{Binding EnableSelectedCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Stage every mod currently shown by the search and filters to be enabled. Game files stay unchanged until Apply Mod Changes." AutomationProperties.Name="{Binding EnableVisibleLabel}"/>
+                                        <Button Content="{Binding DisableVisibleLabel}" Command="{Binding DisableSelectedCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Stage every mod currently shown by the search and filters to be disabled. Game files stay unchanged until Apply Mod Changes." AutomationProperties.Name="{Binding DisableVisibleLabel}"/>
                                         <Button Content="Refresh Mod Info" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Re-read the files and information for every mod currently shown."/>
                                     </StackPanel>
                                 </StackPanel>
@@ -337,7 +337,21 @@
                                 <DataGridTemplateColumn Header="ENABLED" Width="72">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsThreeState="False" HorizontalAlignment="Center" AutomationProperties.Name="{Binding DisplayName}" ToolTip="Turn the whole mod on or off. A partial state means only some add-ons or components are enabled."/>
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <CheckBox IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                                          IsThreeState="False"
+                                                          HorizontalAlignment="Center"
+                                                          AutomationProperties.Name="{Binding DisplayName}"
+                                                          AutomationProperties.HelpText="Stage this mod to be enabled or disabled. Game files stay unchanged until Apply Mod Changes."
+                                                          ToolTip="Stage this mod to be enabled or disabled. Game files stay unchanged until Apply Mod Changes. A partial state means only some add-ons or components are enabled."/>
+                                                <TextBlock Margin="0,3,0,0"
+                                                           Text="{Binding PendingStateLabel}"
+                                                           Foreground="{StaticResource Warn}"
+                                                           FontSize="9"
+                                                           FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center"
+                                                           AutomationProperties.LiveSetting="Polite"/>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
