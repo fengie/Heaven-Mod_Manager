@@ -186,6 +186,67 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
             $errors.Add("workflow-feature-pr-gate.yml must cover all product source and test paths; missing $requiredPath")
         }
     }
+
+    foreach($required in @(
+        'admission:',
+        'runs-on: ubuntu-latest',
+        'pull-requests: read',
+        'gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}"',
+        'PR is explicitly marked superseded',
+        'GitHub reports the current PR head as non-mergeable',
+        'needs: admission'
+    )){
+        if(-not $workflowFeatureGate.Contains($required)){
+            $errors.Add("workflow-feature-pr-gate.yml: stale/superseded PR admission invariant missing: $required")
+        }
+    }
+
+    $admissionStart=$workflowFeatureGate.IndexOf('  admission:')
+    $verifyStart=$workflowFeatureGate.IndexOf('  verify:')
+    if($admissionStart -lt 0 -or $verifyStart -le $admissionStart){
+        $errors.Add('workflow-feature-pr-gate.yml: admission job must precede the self-hosted verify job.')
+    }else{
+        $admissionBlock=$workflowFeatureGate.Substring($admissionStart,$verifyStart-$admissionStart)
+        if($admissionBlock.Contains('self-hosted')){
+            $errors.Add('workflow-feature-pr-gate.yml: admission must not consume the self-hosted Windows runner.')
+        }
+        if($admissionBlock.Contains('actions/checkout@')){
+            $errors.Add('workflow-feature-pr-gate.yml: admission should inspect GitHub PR metadata without checking out candidate code.')
+        }
+    }
+
+    foreach($required in @(
+        'id: repository_verify',
+        'id: restore',
+        'if: ${{ !cancelled() }}',
+        'id: build',
+        "if: ${{ !cancelled() && steps.restore.outcome == 'success' }}",
+        "if: ${{ !cancelled() && steps.build.outcome == 'success' }}"
+    )){
+        if(-not $workflowFeatureGate.Contains($required)){
+            $errors.Add("workflow-feature-pr-gate.yml: diagnostic-continuation invariant missing: $required")
+        }
+    }
+
+    $focusedSteps=@(
+        'Run focused UX and XAML regressions',
+        'Run legacy migration regression',
+        'Run deployment concurrency regressions',
+        'Run catalog sync regressions',
+        'Run focused workflow regressions'
+    )
+    foreach($stepName in $focusedSteps){
+        $stepIndex=$workflowFeatureGate.IndexOf("      - name: $stepName")
+        if($stepIndex -lt 0){
+            $errors.Add("workflow-feature-pr-gate.yml: focused diagnostic step missing: $stepName")
+            continue
+        }
+        $nextIndex=$workflowFeatureGate.IndexOf('      - name:',$stepIndex+1)
+        $stepBlock=if($nextIndex -gt $stepIndex){$workflowFeatureGate.Substring($stepIndex,$nextIndex-$stepIndex)}else{$workflowFeatureGate.Substring($stepIndex)}
+        if(-not $stepBlock.Contains("if: ${{ !cancelled() && steps.build.outcome == 'success' }}")){
+            $errors.Add("workflow-feature-pr-gate.yml: focused diagnostic '$stepName' must continue after unrelated earlier failures when build prerequisites succeeded.")
+        }
+    }
 }
 
 $trackedSecretGate=Join-Path $Root 'scripts\testing\Test-TrackedSecretLeaks.ps1'
