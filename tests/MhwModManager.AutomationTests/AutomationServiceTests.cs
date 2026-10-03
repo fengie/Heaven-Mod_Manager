@@ -283,7 +283,7 @@ public sealed class AutomationServiceTests : IDisposable
         await db.UpsertModAsync(new("new-pack","New Pack","New Pack",Path.Combine(root,"new-pack"),false,2),TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("old-pack",[ModFile("old-pack",@"nativePC\shared.tex","old-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
-        await db.ExecuteAsync("INSERT INTO resource_providers(namespace,mod_id) VALUES('nativepc/shared.tex','old-pack')",ct:TestContext.Current.CancellationToken);
+        await db.ExecuteAsync("INSERT INTO resource_providers(namespace,mod_id) VALUES('nativepc\\mod_shared','old-pack')",ct:TestContext.Current.CancellationToken);
 
         var planner=new DeploymentPlanner(new ConflictEngine());
         var executor=new DeploymentExecutor(db,new BlobStore(Path.Combine(root,"migration-state","blobs"),db),new HashingService(),Path.Combine(root,"migration-live"));
@@ -293,7 +293,7 @@ public sealed class AutomationServiceTests : IDisposable
 
         Assert.Equal("old-pack",preview.OlderId);
         Assert.Equal("new-pack",preview.NewerId);
-        Assert.Equal("new-pack",preview.Snapshot.ResourceProviders["nativepc/shared.tex"]);
+        Assert.Equal("new-pack",preview.Snapshot.ResourceProviders[@"nativepc\\mod_shared"]);
         var old=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"old-pack"));
         var replacement=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"new-pack"));
         Assert.True(old.IsSuperseded);
