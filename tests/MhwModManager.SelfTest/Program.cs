@@ -3,6 +3,7 @@ using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
 using MhwModManager.Storage;
+using Microsoft.Data.Sqlite;
 
 namespace MhwModManager.SelfTest;
 
@@ -10,13 +11,16 @@ internal static class Program
 {
     private sealed record CaseResult(string Name,bool Passed,double Milliseconds,string? Error,string? Detail);
     private static readonly List<CaseResult> Results=[];
+    private const string ScratchMarkerName=".mhw-test-scratch.json";
     private static readonly JsonSerializerOptions JsonOptions=new(){WriteIndented=true};
 
     public static async Task<int> Main(string[] args)
     {
         var reportRoot=args.Length>0?Path.GetFullPath(args[0]):Path.Combine(Environment.CurrentDirectory,"BuildLogs");Directory.CreateDirectory(reportRoot);
         var stamp=DateTimeOffset.Now.ToString("yyyyMMdd-HHmmss",CultureInfo.InvariantCulture);
-        var temp=Path.Combine(Path.GetTempPath(),"MhwManagerSelfTest-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(temp);
+        var temp=Path.Combine(Path.GetTempPath(),"MhwManagerSelfTest-"+Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(temp);
+        await WriteScratchMarkerAsync(temp);
         try
         {
             await Run("Category classifier",()=>{if(AutoCategoryService.ClassifyPaths([@"nativePC\pl\f_equip\x.mod3"])!=AutomationCategory.Armor)throw new InvalidOperationException("Armor category was not inferred.");return Task.CompletedTask;});
@@ -31,7 +35,15 @@ internal static class Program
             await Run("Effective provider inspector",async()=>{var db=await Db("provider.db");await Seed(db,"a","A");await Seed(db,"b","B");await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","a1",FileClass.Texture)]);await db.ReplaceModFilesAsync("b",[ModFile("b",@"nativePC\same.tex","b1",FileClass.Texture)]);await db.ExecuteAsync("INSERT INTO deployment_manifest(path,provider_mod_id,blob_sha256,expected_live_sha256,rule_id,deployed_at) VALUES($p,$m,$b,$e,NULL,$t)",new Dictionary<string,object?>{{"$p",@"nativePC\same.tex"},{"$m","b"},{"$b","b1"},{"$e","b1"},{"$t",DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture)}});var e=await new EffectiveInspectorService(new PlannerSnapshotRepository(db)).ExplainAsync(@"nativePC\same.tex");if(e?.EffectiveModId!="b"||!e.ShadowedModIds.Contains("a"))throw new InvalidOperationException("Provider provenance was wrong.");});
             await Run("Outfit preset inference",()=>{var family=new LogicalModFamily("f","HPN","HPN",[new("m","HPN","HPN","m",false,1),new("w","HPN - Skimpy Waist","HPN - Skimpy Waist","w",false,2)],null);var presets=new OutfitPresetService().Build(family);if(!presets.Any(x=>x.Name=="Skimpy"))throw new InvalidOperationException("Skimpy preset was not inferred.");return Task.CompletedTask;});
         }
-        finally { try{Directory.Delete(temp,true);}catch(IOException){}catch(UnauthorizedAccessException){} }
+        finally
+        {
+            try { CleanupScratchRoot(temp); }
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException)
+            {
+                Results.Add(new("Scratch cleanup",false,0,ex.ToString(),null));
+                Console.WriteLine("FAIL: Scratch cleanup -> "+ex.Message);
+            }
+        }
         var jsonPath=Path.Combine(reportRoot,"selftest-"+stamp+".json");var mdPath=Path.Combine(reportRoot,"selftest-"+stamp+".md");
         await File.WriteAllTextAsync(jsonPath,JsonSerializer.Serialize(new{generatedAt=DateTimeOffset.Now,total=Results.Count,passed=Results.Count(x=>x.Passed),failed=Results.Count(x=>!x.Passed),results=Results},JsonOptions));
         var lines=new List<string>{"# MHW Mod Manager self-test","","Generated: "+DateTimeOffset.Now.ToString("O",CultureInfo.InvariantCulture),"",$"**Result: {Results.Count(x=>x.Passed)}/{Results.Count} passed**","","| Test | Result | ms | Detail |","|---|---:|---:|---|"};
@@ -42,6 +54,41 @@ internal static class Program
 
         async Task<ManagerDatabase> Db(string name){var db=new ManagerDatabase(Path.Combine(temp,name));await db.InitializeAsync();return db;}
         async Task Seed(ManagerDatabase db,string id,string name)=>await db.UpsertModAsync(new(id,name,name,Path.Combine(temp,id),true,1));
+    }
+
+    private static async Task WriteScratchMarkerAsync(string root)
+    {
+        using var process=System.Diagnostics.Process.GetCurrentProcess();
+        var marker=new
+        {
+            schema="mhw-test-scratch/v1",
+            owner="MhwManagerSelfTest",
+            processId=Environment.ProcessId,
+            processStartUtc=process.StartTime.ToUniversalTime().ToString("O",CultureInfo.InvariantCulture),
+            createdUtc=DateTimeOffset.UtcNow.ToString("O",CultureInfo.InvariantCulture)
+        };
+        await File.WriteAllTextAsync(Path.Combine(root,ScratchMarkerName),JsonSerializer.Serialize(marker,JsonOptions));
+    }
+
+    private static void CleanupScratchRoot(string root)
+    {
+        SqliteConnection.ClearAllPools();
+        Exception? last=null;
+        for(var attempt=1;attempt<=8;attempt++)
+        {
+            if(!Directory.Exists(root))return;
+            try
+            {
+                Directory.Delete(root,true);
+                return;
+            }
+            catch(Exception ex) when(ex is IOException or UnauthorizedAccessException)
+            {
+                last=ex;
+                if(attempt<8)System.Threading.Thread.Sleep(100*attempt);
+            }
+        }
+        throw new IOException("Failed to remove self-test scratch root after closing SQLite pools and retrying: "+root,last);
     }
 
     private static ModFileDescriptor ModFile(string mod,string path,string sha,FileClass cls)=>new(mod,path,sha,null,1,DateTimeOffset.UtcNow,cls);
