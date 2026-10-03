@@ -16,9 +16,9 @@ Change set: issue #559 actionable empty/no-match Browse Mods tranche
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.78 source `3b129ae973506ddd7e6d5924c4585617b1d83a77` passed run `37081642946` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.78-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.78 source `e6e6a91b40ac281f38d0f11dc6b7a77052ca4071` passed run `37082825628` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.78-heaven-windows-closure.log`.
 
-The tested source remains `3b129ae973506ddd7e6d5924c4585617b1d83a77` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `e6e6a91b40ac281f38d0f11dc6b7a77052ca4071` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and next work
 
