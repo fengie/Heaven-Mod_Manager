@@ -1,8 +1,14 @@
-# v8.8.84 — 2026-10-03
+# v8.8.85 — 2026-10-03
 
 - Close #673 by giving each unmanaged-adoption run an invocation-unique package root, preventing concurrent cleanup from deleting another run's package.
-- Revalidate live-root containment and reject reparse-point source components immediately around the copy boundary.
-- Hash the copied payload and require it to match the discovery-time candidate before any adoption record is committed, failing closed on concurrent source mutation.
+- Revalidate live-root containment and reject reparse-point source components immediately before and after the copy boundary.
+- Hash copied payloads and require discovery-time SHA-256 agreement before adoption records are committed, failing closed on concurrent source mutation.
+
+# v8.8.84 — 2026-10-03
+
+- Serialize the updater integration-test classes that share the process-global updater root and canonical `pending-update.json` state.
+- Leave unrelated integration tests parallel and preserve production updater validation semantics.
+- Close #671 by preventing exact-head verification races that could corrupt another updater test's shared pending state.
 
 # v8.8.83 — 2026-10-03
 
