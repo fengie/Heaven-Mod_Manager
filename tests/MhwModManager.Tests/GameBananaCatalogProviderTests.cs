@@ -93,7 +93,7 @@ public sealed class GameBananaCatalogProviderTests
         {
             if (request.RequestUri?.AbsolutePath == "/Core/List/New")
             {
-                var listJson = "[" + string.Join(",", ids.Select(id => $"[\\\"Mod\\\",{id}]")) + "]";
+                var listJson = "[" + string.Join(",", ids.Select(id => $"[\"Mod\",{id}]")) + "]";
                 return JsonResponse(HttpStatusCode.OK, listJson);
             }
 
