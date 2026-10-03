@@ -255,6 +255,11 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
                 continue;
             }
 
+            // A directory backed by a live database row is never an orphan, even when
+            // it is retained or a prune/unlink attempt fails and must be retried later.
+            // Remove it from orphan candidates before any pruning decision.
+            directories.Remove(fullPath);
+
             try
             {
                 if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
