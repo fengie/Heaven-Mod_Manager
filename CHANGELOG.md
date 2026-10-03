@@ -1,3 +1,10 @@
+# v8.8.79 — 2026-10-02
+
+- Keep save-snapshot pruning coherent for indexed reparse entries by unlinking only the immediate link and retaining the database row when unlink fails.
+- Preserve external reparse targets and prohibit recursive traversal during pruning.
+- Make last-known-good change detection symmetric across saved/current mod identities so removed mods are no longer silently omitted.
+- Add Windows junction safety plus unchanged/mixed add-remove-change regressions.
+
 # v8.8.78 — 2026-10-02
 
 - Distinguish Browse Mods' initial empty catalog from a query with zero visible matches.
