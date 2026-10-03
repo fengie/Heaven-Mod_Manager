@@ -1,29 +1,28 @@
-# v8.8.85 — MHW Manual Mod Manager
+# v8.8.86 — MHW Manual Mod Manager
 
-Current product version: **8.8.85**.
+Current product version: **8.8.86**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.85 — import reparse hardening
+## v8.8.86 — import reparse hardening
 
 - Reject descendant file or directory reparse points in manager-owned import staging immediately before publication.
 - Apply the same fail-closed tree-topology guard before recursive import cleanup and rollback so nested junction substitution cannot redirect destructive traversal.
 - Add Windows junction regressions proving unsafe publication/rollback is refused while external target bytes remain untouched.
+
+## v8.8.85 — feature verification decoupling
+
+- Let feature PRs run the full exact-head product/security/build/test verifier without first claiming the next global patch metadata.
+- Defer only release-version/README/changelog/current-version parity in feature-candidate mode; repository identity, canonical-state shape, continuity, security, analyzers, tests, fault injection, and self-tests stay enforced.
+- Keep canonical `main` and updater publication on the default full verifier, and fail CI policy if the release gate ever opts into candidate-mode relaxation.
 
 ## v8.8.84 — updater test-state isolation
 
 - Serialize only the five updater integration-test classes that share the process-global updater root and `pending-update.json` state.
 - Keep unrelated integration tests parallel and preserve each updater test's existing per-test subdirectories.
 - Prevent exact-head release verification from racing shared updater pending state without weakening production updater topology or validation checks.
-
-## v8.8.83 — self-cleaning test scratch
-
-- Remove self-test scratch reliably by clearing Microsoft.Data.Sqlite pools before bounded recursive-delete retries instead of silently swallowing locked-directory failures.
-- Make installed-client updater E2E teardown stop owned processes and retry deletion of a marker-validated per-run temp root; cleanup failures now fail visibly.
-- Change the disposable updater harness to retain only a small external evidence JSON while tearing down its disposable profile on both success and failure.
-- Add ownership markers plus a conservative stale-scratch reaper for abandoned marked self-test/updater E2E roots; unmarked, active, reparse-point, user-data, repository, and WSL paths are never touched.
 
 ## Current plans & progress
 
@@ -36,7 +35,8 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **UPDATER-E2E-PERSISTENCE-622 / P0** — v8.8.80 restores complete main history before E2E persistence ancestry checks so successful exact-source updater evidence survives the release evidence-only commit.
 - [x] **UPDATER-STORAGE-647 / P0** — v8.8.82 removes retained staging ZIP/payload duplication and performs conservative state-aware cleanup of historical updater staging/terminal transactions; PR #658 passed exact-head gates and integrated.
 - [x] **UPDATER-TEST-671 / P0** — v8.8.84 serializes the small updater integration-test set that shares process-global pending state, eliminating cross-test races while retaining parallelism elsewhere.
-- [x] **IMPORT-REPARSE-676 / P0** — v8.8.85 rejects descendant reparse topology at import publication/cleanup/rollback boundaries and adds Windows junction regressions.
+- [x] **CI-675 / P1** — v8.8.85 separates feature-candidate verification from canonical release metadata while preserving full exact-main release and publication checks.
+- [x] **IMPORT-REPARSE-676 / P0** — v8.8.86 rejects descendant reparse topology at import publication/cleanup/rollback boundaries and adds Windows junction regressions.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
