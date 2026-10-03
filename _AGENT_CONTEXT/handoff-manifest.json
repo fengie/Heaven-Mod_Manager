@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.82",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.81 source 1d21a7ee99774c6820e16421837e9451ef2e3ef6 passed hosted Windows verification run 37098443475. v8.8.82 binds updater helper request topology before helper state consumption and adds bounded, state-aware cleanup so verified archives, confirmed staging attempts, old orphan staging, and terminal transactions do not accumulate indefinitely.",
+  "immediateParentRevision": "v8.8.81 source b46f7324d860c66dd3572013dbba571dec319c87 passed hosted Windows verification run 37103097571. v8.8.82 binds updater helper request topology before helper state consumption and adds bounded, state-aware cleanup so verified archives, confirmed staging attempts, old orphan staging, and terminal transactions do not accumulate indefinitely.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
