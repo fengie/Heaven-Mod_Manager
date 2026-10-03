@@ -80,12 +80,15 @@ public static class UpdatePreparedTransactionLeaseStore
             throw new DirectoryNotFoundException(
                 $"Updater transaction root is missing: {fullTransactionRoot}");
 
+        var ownerProcessStartUtc = TryGetProcessStartUtc(ownerProcessId)
+            ?? throw new IOException(
+                "Could not certify the updater prepared-transaction owner process identity; refusing to publish a lease that could become permanently ambiguous.");
         var lease = new UpdatePreparedTransactionLease(
             UpdatePreparedTransactionLease.CurrentSchemaVersion,
             buildNumber,
             Path.GetFileName(fullTransactionRoot),
             ownerProcessId,
-            TryGetProcessStartUtc(ownerProcessId),
+            ownerProcessStartUtc,
             DateTimeOffset.UtcNow);
         lease.ValidateFor(
             fullTransactionRoot,
@@ -114,13 +117,19 @@ public static class UpdatePreparedTransactionLeaseStore
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod(
             $"pid={lease.OwnerProcessId}");
-        if (lease.OwnerProcessStartUtc is null)
-            return UpdatePreparedTransactionOwnerState.Unknown;
-
         try
         {
             using var process = Process.GetProcessById(
                 lease.OwnerProcessId);
+            if (lease.OwnerProcessStartUtc is null)
+            {
+                // A legacy lease without a start-time identity cannot prove
+                // that a currently-live PID is the original owner. Preserve it
+                // until that PID no longer exists rather than risking PID-reuse
+                // deletion.
+                return UpdatePreparedTransactionOwnerState.Unknown;
+            }
+
             var actualStartUtc = new DateTimeOffset(
                 process.StartTime.ToUniversalTime());
             return actualStartUtc == lease.OwnerProcessStartUtc.Value

@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.89",
+  "currentVersion": "8.8.91",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.89 adds the native-app privacy/legal/data-control and accessibility baseline on top of verified v8.8.88. Last closed canonical Windows source is 029b105426ef875bcd302dac3fff9305c395637f / run 37144494783; v8.8.89 requires fresh exact integrated-source Windows verification.",
+  "immediateParentRevision": "v8.8.91 advances the verified v8.8.90 baseline with the already-integrated #730 visible-scope/residual regression tranche plus #669 catalog-download and prepared-updater lease lifecycle hardening. The last closed canonical Windows source remains v8.8.89 b13f2210211973d23ff0e6ca2f449dade87919f5 / run 37150713097; v8.8.91 requires fresh exact integrated-source Windows verification.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, v8.8.89 compliance assumptions/change triggers, updater public/private parity and provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification for exact v8.8.89 before release closure, then propagate this obligation recursively.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, v8.8.91 catalog/updater ownership and cleanup invariants, compliance assumptions/change triggers, updater public/private parity and provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification for exact v8.8.91 before release closure, then propagate this obligation recursively.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

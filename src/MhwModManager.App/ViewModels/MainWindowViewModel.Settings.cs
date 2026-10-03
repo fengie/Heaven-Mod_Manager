@@ -312,7 +312,7 @@ public sealed partial class MainWindowViewModel
             (
                 "Catalog Download Scratch",
                 Path.Combine(s.Paths.NextStateRoot, "CatalogDownloads"),
-                "Temporary provider downloads. Successful imports self-delete; failed deletion is visible here but is not deleted by updater cleanup."),
+                "Temporary provider downloads. Successful imports self-delete; crash/deletion residue is lease-owned and reclaimed at startup or before the next direct acquisition after a one-hour grace period, with a 512 MiB reclaimable-residue quota. Active, unknown, and unleased files are preserved."),
             (
                 "Updater Staging",
                 Path.Combine(updaterRoot, "staging"),

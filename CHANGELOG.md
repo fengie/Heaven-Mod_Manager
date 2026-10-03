@@ -1,3 +1,12 @@
+# v8.8.91 — 2026-10-03
+
+- Add manager-owned lease records for catalog acquisition scratch downloads so crashed work can be reclaimed without guessing ownership.
+- Reclaim only exited-owner catalog archives and temporary lease residue under age/byte-quota bounds; preserve active, ambiguous, unknown-shape, unleased, and reparse-point state.
+- Require new prepared updater transaction leases to carry a certified process-start identity and safely classify legacy missing-start leases as exited only after their PID is gone.
+- Add deterministic regressions for active/exited ownership, temporary-lease crashes, quota pressure, reparse containment, legacy updater leases, and real prepared-handoff process identity.
+- Make the Mod Library visible bulk scope explicit and count-aware, disable visible bulk actions at zero rows, and make Refresh Visible target every member of every currently visible row rather than only staged/enabled descriptors.
+- Include the residual catalog synchronization, migration/rules, and catalog regressions consolidated through #730 so the v8.8.91 notes describe the full source shipped since v8.8.90.
+
 # v8.8.90 — 2026-10-03
 
 - Re-certify authoritative SHA-256 file hashing with a second source read before accepting a result, rejecting equal-length mutations even when timestamps are restored.

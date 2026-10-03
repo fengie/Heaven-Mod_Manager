@@ -210,6 +210,79 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
     }
 
     [Fact]
+    public async Task Cleanup_reclaims_legacy_prepared_transaction_with_missing_start_after_owner_exits()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        var transaction = CreatePreparedTransaction(
+            110,
+            old,
+            int.MaxValue,
+            ownerProcessStartUtc: null);
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            CancellationToken.None);
+
+        Assert.False(Directory.Exists(transaction));
+        Assert.Equal(1, result.DeletedTransactions);
+    }
+
+    [Fact]
+    public async Task Cleanup_preserves_legacy_prepared_transaction_with_missing_start_while_pid_exists()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        var transaction = CreatePreparedTransaction(
+            111,
+            old,
+            Environment.ProcessId,
+            ownerProcessStartUtc: null);
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            CancellationToken.None);
+
+        Assert.True(Directory.Exists(transaction));
+        Assert.Equal(0, result.DeletedTransactions);
+        Assert.True(result.DeferredEntries >= 1);
+    }
+
+    [Fact]
+    public async Task Prepared_lease_write_requires_and_records_process_start_identity()
+    {
+        var build = 112L;
+        var transaction = Path.Combine(
+            root,
+            "transactions",
+            $"{build}-{new string('D', 24)}-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(transaction);
+
+        await UpdatePreparedTransactionLeaseStore.WriteAsync(
+            transaction,
+            build,
+            Environment.ProcessId,
+            TestContext.Current.CancellationToken);
+
+        var lease = await UpdatePreparedTransactionLeaseStore.ReadAsync(
+            Path.Combine(
+                transaction,
+                UpdatePreparedTransactionLeaseStore.FileName),
+            TestContext.Current.CancellationToken);
+
+        Assert.NotNull(lease.OwnerProcessStartUtc);
+        Assert.Equal(
+            UpdatePreparedTransactionOwnerState.Active,
+            UpdatePreparedTransactionLeaseStore.GetOwnerState(lease));
+    }
+
+    [Fact]
     public async Task Cleanup_preserves_legacy_journal_less_transaction_without_explicit_lease()
     {
         var now = DateTimeOffset.UtcNow;
@@ -217,7 +290,7 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
         var transaction = Path.Combine(
             root,
             "transactions",
-            $"110-{new string('C', 24)}-{Guid.NewGuid():N}");
+            $"113-{new string('C', 24)}-{Guid.NewGuid():N}");
         Directory.CreateDirectory(Path.Combine(transaction, "helper"));
         File.WriteAllText(
             Path.Combine(transaction, "apply-request.json"),
@@ -272,7 +345,7 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
         long build,
         DateTimeOffset writeUtc,
         int ownerProcessId,
-        DateTimeOffset ownerProcessStartUtc)
+        DateTimeOffset? ownerProcessStartUtc)
     {
         var transactionId =
             $"{build}-{new string('B', 24)}-{Guid.NewGuid():N}";
