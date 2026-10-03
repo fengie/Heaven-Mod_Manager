@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.83",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.82 source 0e78e56a18955390cfaa5f17b0787c6111fbaa38 passed exact-head Workflow Feature PR Gate run 37106871213 and integrated via PR #658. v8.8.83 makes MHW self-test and updater verification scratch self-cleaning, preserves only durable evidence, and adds conservative marker-based stale scratch maintenance.",
+  "immediateParentRevision": "v8.8.82 source f46793a18700524ac7b5fb34770200206d6595f2 passed hosted Windows verification run 37107057966; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log, with later evidence-only commits 00dcf4a5076335b69c636a2c0cb4c84ac333a43e and d57e888f392b1180c563e80c96df31fd9fd8cdc0 preserving closure/E2E evidence without changing tested-source identity. v8.8.83 makes MHW self-test and updater verification scratch self-cleaning, preserves only durable evidence, and adds conservative marker-based stale scratch maintenance.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
