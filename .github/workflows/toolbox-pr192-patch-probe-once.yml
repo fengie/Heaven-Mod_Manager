@@ -1,0 +1,613 @@
+name: Toolbox PR192 Patch Probe Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/toolbox-pr192-patch-probe-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Apply PR192 patch to exact Toolbox main
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 10
+    steps:
+      - name: Verify patch applies without replacing newer main changes
+        shell: powershell
+        env:
+          PATCH_TEXT: |
+            diff --git a/heaven-bridge/repository-identity.mjs b/heaven-bridge/repository-identity.mjs
+            --- /dev/null
+            +++ b/heaven-bridge/repository-identity.mjs
+            @@ -0,0 +1,89 @@
+            +const GITHUB_HOST = "github.com";
+            +const REPOSITORY_SEGMENT = /^[A-Za-z0-9_.-]+$/;
+            +
+            +function clean(value) {
+            +  return String(value ?? "").trim();
+            +}
+            +
+            +function normalizeRepositoryPath(value) {
+            +  let repositoryPath = clean(value);
+            +  if (!repositoryPath || /[\\\r\n\0]/.test(repositoryPath)) return null;
+            +
+            +  try {
+            +    repositoryPath = decodeURIComponent(repositoryPath);
+            +  } catch {
+            +    return null;
+            +  }
+            +
+            +  if (/[\\\r\n\0]/.test(repositoryPath)) return null;
+            +  repositoryPath = repositoryPath.replace(/^\/+|\/+$/g, "");
+            +
+            +  if (repositoryPath.toLowerCase().endsWith(".git")) {
+            +    repositoryPath = repositoryPath.slice(0, -4);
+            +  }
+            +
+            +  const parts = repositoryPath.split("/");
+            +  if (
+            +    parts.length !== 2 ||
+            +    !parts[0] ||
+            +    !parts[1] ||
+            +    parts.some(part => part === "." || part === "..") ||
+            +    !REPOSITORY_SEGMENT.test(parts[0]) ||
+            +    !REPOSITORY_SEGMENT.test(parts[1])
+            +  ) {
+            +    return null;
+            +  }
+            +
+            +  return `${parts[0].toLowerCase()}/${parts[1].toLowerCase()}`;
+            +}
+            +
+            +function hasExplicitUrlPort(value) {
+            +  const authority = /^[A-Za-z][A-Za-z0-9+.-]*:\/\/([^/?#]*)/.exec(value)?.[1] || "";
+            +  const hostPort = authority.slice(authority.lastIndexOf("@") + 1);
+            +  return hostPort.includes(":");
+            +}
+            +
+            +export function parseGitHubRepositoryRemote(remote) {
+            +  const value = clean(remote);
+            +  if (!value || /[\\\r\n\0]/.test(value) || /%[0-9a-f]{2}/i.test(value)) return null;
+            +
+            +  const scp = /^git@github\.com:([^?#]+)$/i.exec(value);
+            +  if (scp) return normalizeRepositoryPath(scp[1]);
+            +  if (hasExplicitUrlPort(value)) return null;
+            +
+            +  const authorityMatch = /^(?:https|ssh):\/\/([^/?#]+)(?:[/?#]|$)/i.exec(value);
+            +  if (!authorityMatch) return null;
+            +  const authorityHost = authorityMatch[1].slice(authorityMatch[1].lastIndexOf("@") + 1);
+            +  if (authorityHost.includes(":")) return null;
+            +
+            +  let parsed;
+            +  try {
+            +    parsed = new URL(value);
+            +  } catch {
+            +    return null;
+            +  }
+            +
+            +  if (!["https:", "ssh:"].includes(parsed.protocol)) return null;
+            +  if (parsed.hostname.toLowerCase() !== GITHUB_HOST) return null;
+            +  if (parsed.port || parsed.password || parsed.search || parsed.hash) return null;
+            +
+            +  if (parsed.protocol === "https:") {
+            +    if (parsed.username) return null;
+            +  } else if (parsed.username !== "git") {
+            +    return null;
+            +  }
+            +
+            +  return normalizeRepositoryPath(parsed.pathname);
+            +}
+            +
+            +export function normalizeGitHubRepositoryIdentity(expected) {
+            +  const value = clean(expected);
+            +  if (!value) return null;
+            +  return normalizeRepositoryPath(value) || parseGitHubRepositoryRemote(value);
+            +}
+            +
+            +export function githubRemoteMatchesRepository(remote, expected) {
+            +  const actual = parseGitHubRepositoryRemote(remote);
+            +  const wanted = normalizeGitHubRepositoryIdentity(expected);
+            +  return Boolean(actual && wanted && actual === wanted);
+            +}
+            diff --git a/heaven-bridge/request-ingress.mjs b/heaven-bridge/request-ingress.mjs
+            --- a/heaven-bridge/request-ingress.mjs
+            +++ b/heaven-bridge/request-ingress.mjs
+            @@ -1,10 +1,11 @@
+             import fs from "node:fs";
+             import os from "node:os";
+             import path from "node:path";
+            -import { createHash } from "node:crypto";
+            +import { createHash, randomUUID } from "node:crypto";
+             import { execFile } from "node:child_process";
+             import { promisify } from "node:util";
+             import { fileURLToPath } from "node:url";
+            +import { githubRemoteMatchesRepository } from "./repository-identity.mjs";
+             
+             const execFileAsync = promisify(execFile);
+             const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
+            @@ -19,6 +20,11 @@ const MAX_TTL_SECONDS = 3600;
+             const MIN_TTL_SECONDS = 30;
+             const MAX_FUTURE_SKEW_MS = 2 * 60_000;
+             const POLL_MS = 2_000;
+            +const SINGLETON_LOCK_SCHEMA = "heaven-bridge/request-ingress-lock/v1";
+            +const DEFAULT_SINGLETON_STALE_MS = 2 * 60_000;
+            +const DEFAULT_SINGLETON_REREAD_ATTEMPTS = 3;
+            +const DEFAULT_SINGLETON_REREAD_DELAY_MS = 25;
+            +const MAX_SINGLETON_OWNER_BYTES = 2_048;
+             const ALLOWED_ACTIONS = new Set(["health", "desktop_shortcut_create"]);
+             
+             function clean(value) {
+            @@ -159,12 +165,6 @@ export function buildJobFromRequest(request, buildBridgeJob) {
+               });
+             }
+             
+            -function remoteMatchesExpected(remote, expected = EXPECTED_REPOSITORY) {
+            -  const normalized = clean(remote).replace(/\\/g, "/").replace(/\.git$/i, "").toLowerCase();
+            -  const suffix = clean(expected).replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "").toLowerCase();
+            -  return normalized.endsWith(`github.com/${suffix}`) || normalized.endsWith(`github.com:${suffix}`);
+            -}
+            -
+             async function git(relayDir, args, timeout = 60_000) {
+               const { stdout, stderr } = await execFileAsync("git", ["-C", relayDir, ...args], {
+                 windowsHide: true,
+            @@ -184,7 +184,7 @@ async function ensureRelayClone(relayDir, repoUrl = DEFAULT_REPO_URL) {
+                 });
+               }
+               const origin = await git(relayDir, ["remote", "get-url", "origin"]);
+            -  if (!remoteMatchesExpected(origin)) fail("RELAY_REPOSITORY_MISMATCH", `request ingress relay origin is not ${EXPECTED_REPOSITORY}`);
+            +  if (!githubRemoteMatchesRepository(origin, EXPECTED_REPOSITORY)) fail("RELAY_REPOSITORY_MISMATCH", `request ingress relay origin is not ${EXPECTED_REPOSITORY}`);
+               const branch = await git(relayDir, ["branch", "--show-current"]);
+               if (clean(branch) !== RELAY_BRANCH) fail("RELAY_BRANCH_MISMATCH", `request ingress relay must be on ${RELAY_BRANCH}`);
+             }
+            @@ -257,25 +257,150 @@ export async function processRequestFile(file, {
+               return publish(relayDir, request.request_id, receipt);
+             }
+             
+            -function acquireSingleton() {
+            -  const stateDir = path.join(os.homedir(), "HeavenBridge");
+            -  fs.mkdirSync(stateDir, { recursive: true });
+            -  const lock = path.join(stateDir, "request-ingress.lock");
+            +function sleepSync(ms) {
+            +  const delay = Math.max(0, Number(ms) || 0);
+            +  if (!delay) return;
+            +  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delay);
+            +}
+            +
+            +function singletonPidAlive(pid) {
+            +  const value = Number(pid);
+            +  if (!Number.isInteger(value) || value <= 0) return false;
+               try {
+            -    const fd = fs.openSync(lock, "wx");
+            -    fs.writeFileSync(fd, `${process.pid} ${new Date().toISOString()}\n`, "utf8");
+            -    return () => { try { fs.closeSync(fd); } catch {} try { fs.unlinkSync(lock); } catch {} };
+            +    process.kill(value, 0);
+            +    return true;
+               } catch (error) {
+            -    if (error?.code !== "EEXIST") throw error;
+            -    let pid = 0;
+            -    try { pid = Number.parseInt(fs.readFileSync(lock, "utf8").trim().split(/\s+/)[0], 10); } catch {}
+            -    let alive = false;
+            -    if (Number.isInteger(pid) && pid > 0) {
+            -      try { process.kill(pid, 0); alive = true; } catch (probe) { alive = probe?.code === "EPERM"; }
+            +    return error?.code === "EPERM";
+            +  }
+            +}
+            +
+            +function parseSingletonOwner(raw) {
+            +  const text = String(raw ?? "");
+            +  if (!text || Buffer.byteLength(text, "utf8") > MAX_SINGLETON_OWNER_BYTES) return null;
+            +
+            +  let owner;
+            +  try {
+            +    owner = JSON.parse(text);
+            +  } catch {
+            +    return null;
+            +  }
+            +  if (!owner || typeof owner !== "object" || Array.isArray(owner)) return null;
+            +
+            +  const keys = Object.keys(owner).sort();
+            +  if (keys.join(",") !== "created_at,nonce,pid,schema") return null;
+            +  if (owner.schema !== SINGLETON_LOCK_SCHEMA) return null;
+            +
+            +  const pid = Number(owner.pid);
+            +  if (!Number.isInteger(pid) || pid <= 0) return null;
+            +
+            +  const nonce = clean(owner.nonce);
+            +  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(nonce)) return null;
+            +
+            +  const createdMs = Date.parse(clean(owner.created_at));
+            +  if (!Number.isFinite(createdMs)) return null;
+            +
+            +  return { pid, nonce, created_at: new Date(createdMs).toISOString(), createdMs };
+            +}
+            +
+            +export function acquireSingleton({
+            +  stateDir = path.join(os.homedir(), "HeavenBridge"),
+            +  now = () => Date.now(),
+            +  staleAfterMs = DEFAULT_SINGLETON_STALE_MS,
+            +  rereadAttempts = DEFAULT_SINGLETON_REREAD_ATTEMPTS,
+            +  rereadDelayMs = DEFAULT_SINGLETON_REREAD_DELAY_MS,
+            +  sleep = sleepSync,
+            +  isPidAlive = singletonPidAlive,
+            +  nonceFactory = randomUUID
+            +} = {}) {
+            +  fs.mkdirSync(stateDir, { recursive: true });
+            +  const lock = path.join(stateDir, "request-ingress.lock");
+            +  const staleMs = Math.max(1_000, Number(staleAfterMs) || DEFAULT_SINGLETON_STALE_MS);
+            +  const attempts = Math.max(1, Math.min(10, Number(rereadAttempts) || DEFAULT_SINGLETON_REREAD_ATTEMPTS));
+            +  const delayMs = Math.max(0, Math.min(1_000, Number(rereadDelayMs) || DEFAULT_SINGLETON_REREAD_DELAY_MS));
+            +
+            +  for (;;) {
+            +    const createdMs = Number(now());
+            +    const owner = {
+            +      schema: SINGLETON_LOCK_SCHEMA,
+            +      pid: process.pid,
+            +      nonce: String(nonceFactory()),
+            +      created_at: new Date(createdMs).toISOString()
+            +    };
+            +    const ownerRaw = `${JSON.stringify(owner)}\n`;
+            +
+            +    try {
+            +      const fd = fs.openSync(lock, "wx");
+            +      try {
+            +        fs.writeFileSync(fd, ownerRaw, "utf8");
+            +        fs.fsyncSync(fd);
+            +      } catch (error) {
+            +        try { fs.closeSync(fd); } catch {}
+            +        try {
+            +          if (fs.readFileSync(lock, "utf8") === ownerRaw) fs.unlinkSync(lock);
+            +        } catch {}
+            +        throw error;
+            +      }
+            +
+            +      return () => {
+            +        try { fs.closeSync(fd); } catch {}
+            +        try {
+            +          const current = fs.readFileSync(lock, "utf8");
+            +          if (current === ownerRaw) fs.unlinkSync(lock);
+            +        } catch {}
+            +      };
+            +    } catch (error) {
+            +      if (error?.code !== "EEXIST") throw error;
+            +    }
+            +
+            +    let observed = null;
+            +    for (let attempt = 0; attempt < attempts; attempt += 1) {
+            +      try {
+            +        const raw = fs.readFileSync(lock, "utf8");
+            +        const parsed = parseSingletonOwner(raw);
+            +        if (parsed) {
+            +          const stat = fs.statSync(lock);
+            +          observed = { raw, owner: parsed, mtimeMs: Number(stat.mtimeMs) };
+            +          break;
+            +        }
+            +      } catch {}
+            +
+            +      if (attempt + 1 < attempts) sleep(delayMs);
+            +    }
+            +
+            +    if (!observed) {
+            +      fail(
+            +        "INGRESS_LOCK_AMBIGUOUS",
+            +        "request ingress lock ownership is incomplete or malformed; refusing to steal ambiguous live ownership"
+            +      );
+            +    }
+            +
+            +    if (isPidAlive(observed.owner.pid)) {
+            +      fail("INGRESS_ALREADY_RUNNING", `request ingress already runs as pid ${observed.owner.pid}`);
+            +    }
+            +
+            +    const ageMs = Number(now()) - Math.max(observed.owner.createdMs, observed.mtimeMs);
+            +    if (!Number.isFinite(ageMs) || ageMs < staleMs) {
+            +      fail(
+            +        "INGRESS_LOCK_RECOVERY_DEFERRED",
+            +        "request ingress lock owner is not proven live, but the lock is too new to recover safely"
+            +      );
+            +    }
+            +
+            +    let currentRaw;
+            +    try {
+            +      currentRaw = fs.readFileSync(lock, "utf8");
+            +    } catch {
+            +      fail("INGRESS_LOCK_CHANGED", "request ingress lock changed during dead-owner recovery");
+            +    }
+            +    if (currentRaw !== observed.raw) {
+            +      fail("INGRESS_LOCK_CHANGED", "request ingress lock owner changed during dead-owner recovery");
+            +    }
+            +
+            +    try {
+            +      fs.unlinkSync(lock);
+            +    } catch {
+            +      fail("INGRESS_LOCK_CHANGED", "request ingress lock changed before dead-owner recovery could unlink it");
+                 }
+            -    if (alive) fail("INGRESS_ALREADY_RUNNING", `request ingress already runs as pid ${pid}`);
+            -    try { fs.unlinkSync(lock); } catch {}
+            -    return acquireSingleton();
+               }
+             }
+             
+            diff --git a/heaven-bridge/request-ingress.test.mjs b/heaven-bridge/request-ingress.test.mjs
+            --- a/heaven-bridge/request-ingress.test.mjs
+            +++ b/heaven-bridge/request-ingress.test.mjs
+            @@ -3,7 +3,8 @@ import assert from "node:assert/strict";
+             import fs from "node:fs";
+             import os from "node:os";
+             import path from "node:path";
+            -import { validateRequest, requestDigest, buildJobFromRequest, processRequestFile } from "./request-ingress.mjs";
+            +import { validateRequest, requestDigest, buildJobFromRequest, processRequestFile, acquireSingleton } from "./request-ingress.mjs";
+            +import { githubRemoteMatchesRepository } from "./repository-identity.mjs";
+             import { buildBridgeJob, signBridgeJob, verifyBridgeDocument } from "../tools/agent-control/lib/heaven-bridge-provider.mjs";
+             
+             const NOW = Date.parse("2026-10-02T04:40:00Z");
+            @@ -89,6 +90,207 @@ test("generated request jobs use the existing canonical Agent Control signer", (
+               assert.equal(verifyBridgeDocument(signed, key), signed);
+             });
+             
+            +test("GitHub relay repository identity accepts only exact canonical GitHub remotes", () => {
+            +  const expected = "fengie/heaven-toolbox";
+            +
+            +  for (const remote of [
+            +    "https://github.com/fengie/heaven-toolbox.git",
+            +    "https://github.com/fengie/heaven-toolbox",
+            +    "git@github.com:fengie/heaven-toolbox.git",
+            +    "ssh://git@github.com/fengie/heaven-toolbox.git"
+            +  ]) {
+            +    assert.equal(githubRemoteMatchesRepository(remote, expected), true, remote);
+            +  }
+            +
+            +  for (const remote of [
+            +    "https://evilgithub.com/fengie/heaven-toolbox.git",
+            +    "https://attacker.example/github.com/fengie/heaven-toolbox.git",
+            +    "https://github.com/attacker/fengie/heaven-toolbox.git",
+            +    "https://github.com/fengie/heaven-toolbox.git/extra",
+            +    "https://user@github.com/fengie/heaven-toolbox.git",
+            +    "https://github.com:443/fengie/heaven-toolbox.git",
+            +    "https://github.com/fengie%2Fheaven-toolbox.git",
+            +    "https://github.com\\fengie\\heaven-toolbox.git",
+            +    "ssh://root@github.com/fengie/heaven-toolbox.git",
+            +    "ssh://git@github.com:22/fengie/heaven-toolbox.git",
+            +    "git://github.com/fengie/heaven-toolbox.git"
+            +  ]) {
+            +    assert.equal(githubRemoteMatchesRepository(remote, expected), false, remote);
+            +  }
+            +});
+            +
+            +test("provider and request ingress share the hardened repository identity helper", () => {
+            +  const ingressSource = fs.readFileSync(new URL("./request-ingress.mjs", import.meta.url), "utf8");
+            +  const providerSource = fs.readFileSync(
+            +    new URL("../tools/agent-control/lib/heaven-bridge-provider.mjs", import.meta.url),
+            +    "utf8"
+            +  );
+            +
+            +  assert.match(ingressSource, /repository-identity\.mjs/);
+            +  assert.match(ingressSource, /githubRemoteMatchesRepository\(origin, EXPECTED_REPOSITORY\)/);
+            +  assert.doesNotMatch(ingressSource, /function remoteMatchesExpected/);
+            +
+            +  assert.match(providerSource, /repository-identity\.mjs/);
+            +  assert.match(providerSource, /githubRemoteMatchesRepository\(remote, expectedRepository\)/);
+            +  assert.doesNotMatch(providerSource, /function remoteMatchesExpected/);
+            +});
+            +
+            +test("singleton contender never steals a lock while owner publication is incomplete", () => {
+            +  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-lock-race-"));
+            +  const lock = path.join(root, "request-ingress.lock");
+            +  fs.writeFileSync(lock, "", "utf8");
+            +  const owner = {
+            +    schema: "heaven-bridge/request-ingress-lock/v1",
+            +    pid: 4242,
+            +    nonce: "00000000-0000-4000-8000-000000000001",
+            +    created_at: new Date(NOW).toISOString()
+            +  };
+            +  let sleeps = 0;
+            +
+            +  try {
+            +    assert.throws(
+            +      () => acquireSingleton({
+            +        stateDir: root,
+            +        now: () => NOW,
+            +        rereadAttempts: 2,
+            +        rereadDelayMs: 1,
+            +        sleep: () => {
+            +          sleeps += 1;
+            +          fs.writeFileSync(lock, `${JSON.stringify(owner)}\n`, "utf8");
+            +        },
+            +        isPidAlive: pid => pid === owner.pid
+            +      }),
+            +      error => error?.code === "INGRESS_ALREADY_RUNNING"
+            +    );
+            +    assert.equal(sleeps, 1);
+            +    assert.deepEqual(JSON.parse(fs.readFileSync(lock, "utf8")), owner);
+            +  } finally {
+            +    fs.rmSync(root, { recursive: true, force: true });
+            +  }
+            +});
+            +
+            +test("singleton malformed ownership fails closed and remains intact", () => {
+            +  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-lock-malformed-"));
+            +  const lock = path.join(root, "request-ingress.lock");
+            +  fs.writeFileSync(lock, "{partial", "utf8");
+            +
+            +  try {
+            +    assert.throws(
+            +      () => acquireSingleton({
+            +        stateDir: root,
+            +        now: () => NOW,
+            +        rereadAttempts: 2,
+            +        rereadDelayMs: 0,
+            +        sleep: () => {}
+            +      }),
+            +      error => error?.code === "INGRESS_LOCK_AMBIGUOUS"
+            +    );
+            +    assert.equal(fs.readFileSync(lock, "utf8"), "{partial");
+            +  } finally {
+            +    fs.rmSync(root, { recursive: true, force: true });
+            +  }
+            +});
+            +
+            +test("singleton never steals a fresh lock even when its recorded pid is dead", () => {
+            +  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-lock-fresh-dead-"));
+            +  const lock = path.join(root, "request-ingress.lock");
+            +  const owner = {
+            +    schema: "heaven-bridge/request-ingress-lock/v1",
+            +    pid: 4242,
+            +    nonce: "00000000-0000-4000-8000-000000000006",
+            +    created_at: new Date(NOW).toISOString()
+            +  };
+            +  fs.writeFileSync(lock, `${JSON.stringify(owner)}\n`, "utf8");
+            +
+            +  try {
+            +    assert.throws(
+            +      () => acquireSingleton({
+            +        stateDir: root,
+            +        now: () => NOW,
+            +        staleAfterMs: 60_000,
+            +        rereadAttempts: 1,
+            +        isPidAlive: () => false
+            +      }),
+            +      error => error?.code === "INGRESS_LOCK_RECOVERY_DEFERRED"
+            +    );
+            +    assert.deepEqual(JSON.parse(fs.readFileSync(lock, "utf8")), owner);
+            +  } finally {
+            +    fs.rmSync(root, { recursive: true, force: true });
+            +  }
+            +});
+            +
+            +test("singleton recovers only a valid sufficiently old dead owner", () => {
+            +  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-lock-dead-"));
+            +  const lock = path.join(root, "request-ingress.lock");
+            +  const oldMs = NOW - 120_000;
+            +  const owner = {
+            +    schema: "heaven-bridge/request-ingress-lock/v1",
+            +    pid: 4242,
+            +    nonce: "00000000-0000-4000-8000-000000000002",
+            +    created_at: new Date(oldMs).toISOString()
+            +  };
+            +  fs.writeFileSync(lock, `${JSON.stringify(owner)}\n`, "utf8");
+            +  fs.utimesSync(lock, new Date(oldMs), new Date(oldMs));
+            +
+            +  try {
+            +    const release = acquireSingleton({
+            +      stateDir: root,
+            +      now: () => NOW,
+            +      staleAfterMs: 60_000,
+            +      rereadAttempts: 1,
+            +      isPidAlive: () => false,
+            +      nonceFactory: () => "00000000-0000-4000-8000-000000000003"
+            +    });
+            +    const replacement = JSON.parse(fs.readFileSync(lock, "utf8"));
+            +    assert.equal(replacement.schema, owner.schema);
+            +    assert.equal(replacement.pid, process.pid);
+            +    assert.equal(replacement.nonce, "00000000-0000-4000-8000-000000000003");
+            +    release();
+            +    assert.equal(fs.existsSync(lock), false);
+            +  } finally {
+            +    fs.rmSync(root, { recursive: true, force: true });
+            +  }
+            +});
+            +
+            +test("singleton dead-owner recovery rechecks exact owner bytes before unlink", () => {
+            +  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-lock-recheck-"));
+            +  const lock = path.join(root, "request-ingress.lock");
+            +  const oldMs = NOW - 120_000;
+            +  const original = {
+            +    schema: "heaven-bridge/request-ingress-lock/v1",
+            +    pid: 4242,
+            +    nonce: "00000000-0000-4000-8000-000000000004",
+            +    created_at: new Date(oldMs).toISOString()
+            +  };
+            +  const replacement = {
+            +    ...original,
+            +    pid: 5252,
+            +    nonce: "00000000-0000-4000-8000-000000000005"
+            +  };
+            +  fs.writeFileSync(lock, `${JSON.stringify(original)}\n`, "utf8");
+            +  fs.utimesSync(lock, new Date(oldMs), new Date(oldMs));
+            +
+            +  try {
+            +    assert.throws(
+            +      () => acquireSingleton({
+            +        stateDir: root,
+            +        now: () => NOW,
+            +        staleAfterMs: 60_000,
+            +        rereadAttempts: 1,
+            +        isPidAlive: () => {
+            +          fs.writeFileSync(lock, `${JSON.stringify(replacement)}\n`, "utf8");
+            +          fs.utimesSync(lock, new Date(oldMs), new Date(oldMs));
+            +          return false;
+            +        }
+            +      }),
+            +      error => error?.code === "INGRESS_LOCK_CHANGED"
+            +    );
+            +    assert.deepEqual(JSON.parse(fs.readFileSync(lock, "utf8")), replacement);
+            +  } finally {
+            +    fs.rmSync(root, { recursive: true, force: true });
+            +  }
+            +});
+            +
+             test("existing receipt makes request replay idempotent and changed-content replay fails closed", async () => {
+               const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-"));
+               const requestDir = path.join(root, "heaven-bridge", "requests", "heaven2");
+            diff --git a/tools/agent-control/lib/heaven-bridge-provider.mjs b/tools/agent-control/lib/heaven-bridge-provider.mjs
+            --- a/tools/agent-control/lib/heaven-bridge-provider.mjs
+            +++ b/tools/agent-control/lib/heaven-bridge-provider.mjs
+            @@ -3,6 +3,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+             import os from "node:os";
+             import path from "node:path";
+             import { execFileHidden as execFileAsync } from "./background-process.mjs";
+            +import { githubRemoteMatchesRepository } from "../../../heaven-bridge/repository-identity.mjs";
+             
+             export const HEAVEN_BRIDGE_PROTOCOL = "chatgpt-heaven-bridge-v2";
+             export const HEAVEN_BRIDGE_BRANCH = "heaven-bridge";
+            @@ -197,15 +198,6 @@ function psQuote(value) {
+               return `'${String(value ?? "").replaceAll("'", "''")}'`;
+             }
+             
+            -function remoteMatchesExpected(remote, expected = DEFAULT_RELAY_REPOSITORY) {
+            -  const value = clean(remote).replace(/\\/g, "/").replace(/\.git$/i, "").toLowerCase();
+            -  const suffix = clean(expected)
+            -    .replace(/^https?:\/\/github\.com\//i, "")
+            -    .replace(/\.git$/i, "")
+            -    .toLowerCase();
+            -  return value.endsWith(`github.com/${suffix}`) || value.endsWith(`github.com:${suffix}`);
+            -}
+            -
+             async function git(relayDir, args, { maxBuffer = 4 * 1024 * 1024, timeoutMs = 60_000 } = {}) {
+               const { stdout, stderr } = await execFileAsync("git", ["-C", relayDir, ...args], {
+                 windowsHide: true,
+            @@ -401,7 +393,7 @@ async function syncUnlocked(relayDir, {
+                 throw new Error(`Dedicated Heaven relay checkout must stay on ${HEAVEN_BRIDGE_BRANCH}; observed ${branch || "detached"}.`);
+               }
+               const remote = await git(relayDir, ["remote", "get-url", "origin"]);
+            -  if (!remoteMatchesExpected(remote, expectedRepository)) {
+            +  if (!githubRemoteMatchesRepository(remote, expectedRepository)) {
+                 throw new Error("Dedicated Heaven relay checkout origin is not the expected private repository.");
+               }
+               if (requireClean) {
+            
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Join-Path $env:USERPROFILE 'HeavenBridgeSource'
+          $safe = 'safe.directory=' + $source
+          & git -c $safe -C $source cat-file -e '8734cf720b39b7bd2ee325f16e427e1b9ebfda4d^{commit}'
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical Toolbox commit missing locally.' }
+          $temp = Join-Path $env:RUNNER_TEMP ('toolbox-pr192-' + [Guid]::NewGuid().ToString('N'))
+          & git -c $safe -C $source worktree add --detach $temp '8734cf720b39b7bd2ee325f16e427e1b9ebfda4d'
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to create exact detached Toolbox worktree.' }
+          try {
+            $patch = Join-Path $temp 'pr192.patch'
+            [IO.File]::WriteAllText($patch, $env:PATCH_TEXT, [Text.UTF8Encoding]::new($false))
+            & git -C $temp apply --check --whitespace=error-all $patch
+            if ($LASTEXITCODE -ne 0) { throw 'PR192 patch does not apply cleanly to current main.' }
+            & git -C $temp apply --whitespace=error-all $patch
+            if ($LASTEXITCODE -ne 0) { throw 'PR192 patch application failed.' }
+            & git -C $temp diff --check
+            if ($LASTEXITCODE -ne 0) { throw 'Merged patch has whitespace errors.' }
+            $changed = @(& git -C $temp diff --name-only)
+            Write-Output ('PR192_PATCH_APPLIES clean=true changed=' + ($changed -join ','))
+          } finally {
+            & git -c $safe -C $source worktree remove --force $temp 2>$null
+          }
