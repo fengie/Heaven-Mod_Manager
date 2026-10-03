@@ -504,6 +504,25 @@ public sealed partial class XamlBindingSafetyTests
             xaml);
     }
     [Fact]
+    public void ModLibraryPendingActionsDisableWhenNothingIsStaged()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+
+        Assert.Contains("Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" Style=\"{StaticResource QuietButton}\"", xaml);
+        Assert.Contains("Content=\"Discard Pending Changes\" Command=\"{Binding DiscardStagedCommand}\"", xaml);
+        Assert.Contains("Content=\"Apply Mod Changes\" Command=\"{Binding ApplyCommand}\"", xaml);
+        Assert.Equal(3, xaml.Split("IsEnabled=\"{Binding HasStagedChanges}\"").Length - 1);
+        Assert.Equal(3, xaml.Split("AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"").Length - 1);
+        Assert.Contains("public bool HasStagedChanges", main);
+        Assert.Contains("return StagedCount>0;", main);
+        Assert.Contains("public string PendingActionsHelp", main);
+        Assert.Contains("OnPropertyChanged(nameof(HasStagedChanges));", main);
+        Assert.Contains("OnPropertyChanged(nameof(PendingActionsHelp));", main);
+    }
+
+    [Fact]
     public void ModLibraryBulkActionsExposeCountAndSnapshotVisibleRows()
     {
         var root = FindRepositoryRoot();
