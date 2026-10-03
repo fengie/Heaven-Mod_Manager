@@ -97,45 +97,6 @@ jobs:
         shell: cmd
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\testing\Test-UpdaterReleasePolicy.ps1"
 
-      - name: Install verified GitHub CLI for publication
-        if: success() && github.ref == 'refs/heads/main' && steps.release_intent.outputs.publish == 'true'
-        shell: powershell
-        run: |
-          # Release tooling is part of the trusted build chain. Never execute a moving
-          # "latest" asset or an arbitrary preinstalled gh.exe in this privileged job.
-          $version = '2.101.0'
-          $expectedSha256 = 'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794'
-          $assetName = "gh_${version}_windows_amd64.zip"
-          $uri = "https://github.com/cli/cli/releases/download/v${version}/${assetName}"
-          $zip = Join-Path $env:RUNNER_TEMP $assetName
-          $toolRoot = Join-Path $env:RUNNER_TEMP "gh-cli-${version}"
-
-          Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
-          Remove-Item -LiteralPath $toolRoot -Recurse -Force -ErrorAction SilentlyContinue
-          Invoke-WebRequest -UseBasicParsing -Headers @{ 'User-Agent'='MHW-Mod-Manager-Release-Gate' } -Uri $uri -OutFile $zip -TimeoutSec 120
-
-          $actualSha256 = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($actualSha256 -ne $expectedSha256) {
-            Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
-            throw "GitHub CLI archive digest mismatch. Expected $expectedSha256 but got $actualSha256."
-          }
-
-          Expand-Archive -LiteralPath $zip -DestinationPath $toolRoot -Force
-          $gh = Get-ChildItem -LiteralPath $toolRoot -Filter 'gh.exe' -Recurse | Select-Object -First 1
-          if (-not $gh) {
-            throw 'Verified GitHub CLI archive did not contain gh.exe.'
-          }
-
-          $versionOutput = @(& $gh.FullName --version)
-          if ($LASTEXITCODE -ne 0 -or $versionOutput.Count -eq 0 -or -not ([string]$versionOutput[0]).Contains($version)) {
-            throw "Verified GitHub CLI executable did not report pinned version $version."
-          }
-
-          $ghDir = $gh.Directory.FullName
-          $env:PATH = "$ghDir;$env:PATH"
-          [IO.File]::AppendAllText($env:GITHUB_PATH, ($ghDir + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding($false)))
-          Write-Host "Using verified GitHub CLI $version with SHA-256 $expectedSha256."
-
       - name: Confirm release source is still canonical main
         id: release_freshness
         if: success() && github.ref == 'refs/heads/main'
@@ -197,6 +158,45 @@ jobs:
           } else {
             Write-Host "::notice::Skipping updater publication for v$version because it is already published as $($decision.ExistingTag). Full verification/build still completed."
           }
+      - name: Install verified GitHub CLI for publication
+        if: success() && github.ref == 'refs/heads/main' && steps.release_intent.outputs.publish == 'true'
+        shell: powershell
+        run: |
+          # Release tooling is part of the trusted build chain. Never execute a moving
+          # "latest" asset or an arbitrary preinstalled gh.exe in this privileged job.
+          $version = '2.101.0'
+          $expectedSha256 = 'bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192794'
+          $assetName = "gh_${version}_windows_amd64.zip"
+          $uri = "https://github.com/cli/cli/releases/download/v${version}/${assetName}"
+          $zip = Join-Path $env:RUNNER_TEMP $assetName
+          $toolRoot = Join-Path $env:RUNNER_TEMP "gh-cli-${version}"
+
+          Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
+          Remove-Item -LiteralPath $toolRoot -Recurse -Force -ErrorAction SilentlyContinue
+          Invoke-WebRequest -UseBasicParsing -Headers @{ 'User-Agent'='MHW-Mod-Manager-Release-Gate' } -Uri $uri -OutFile $zip -TimeoutSec 120
+
+          $actualSha256 = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualSha256 -ne $expectedSha256) {
+            Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
+            throw "GitHub CLI archive digest mismatch. Expected $expectedSha256 but got $actualSha256."
+          }
+
+          Expand-Archive -LiteralPath $zip -DestinationPath $toolRoot -Force
+          $gh = Get-ChildItem -LiteralPath $toolRoot -Filter 'gh.exe' -Recurse | Select-Object -First 1
+          if (-not $gh) {
+            throw 'Verified GitHub CLI archive did not contain gh.exe.'
+          }
+
+          $versionOutput = @(& $gh.FullName --version)
+          if ($LASTEXITCODE -ne 0 -or $versionOutput.Count -eq 0 -or -not ([string]$versionOutput[0]).Contains($version)) {
+            throw "Verified GitHub CLI executable did not report pinned version $version."
+          }
+
+          $ghDir = $gh.Directory.FullName
+          $env:PATH = "$ghDir;$env:PATH"
+          [IO.File]::AppendAllText($env:GITHUB_PATH, ($ghDir + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding($false)))
+          Write-Host "Using verified GitHub CLI $version with SHA-256 $expectedSha256."
+
       - name: Resolve release artifact provenance subject
         id: release_artifact
         if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true'
