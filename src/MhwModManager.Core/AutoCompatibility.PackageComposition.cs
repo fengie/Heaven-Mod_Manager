@@ -72,6 +72,56 @@ public static partial class AutoCompatibility
         return false;
     }
 
+    /// <summary>
+    /// Returns the one legacy HPN generation that must remain staged beneath a selected newer
+    /// generation for the evidence-backed Nexus 1965 body stack. This is intentionally narrow:
+    /// HPN 3.x content is retained under HPN 4.x, while same-major historical revisions are not
+    /// revived automatically because author update notes include stale files that must disappear.
+    /// </summary>
+    public static ModDescriptor? FindRequiredRetainedLegacyGeneration(
+        IReadOnlyList<ModDescriptor> members,
+        ModDescriptor active)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!IsHpn1965BodyPackage(active) ||
+            !TryGetPackageVersion(active, out var activeVersion) ||
+            activeVersion.Length == 0 ||
+            activeVersion[0] != 4)
+            return null;
+
+        ModDescriptor? best = null;
+        int[]? bestVersion = null;
+        var bestSimilarity = 0d;
+
+        foreach (var candidate in members)
+        {
+            if (StringComparer.OrdinalIgnoreCase.Equals(candidate.Id, active.Id) ||
+                !ProvenanceIntelligence.SameNexusMod(candidate, active) ||
+                !IsHpn1965BodyPackage(candidate) ||
+                !TryGetPackageVersion(candidate, out var candidateVersion) ||
+                candidateVersion.Length == 0 ||
+                candidateVersion[0] != 3 ||
+                ComparePackageVersion(candidateVersion, activeVersion) >= 0)
+                continue;
+
+            var similarity = PackageIdentitySimilarity(candidate, active);
+            if (similarity < .45)
+                continue;
+
+            if (best is null ||
+                bestVersion is null ||
+                ComparePackageVersion(candidateVersion, bestVersion) > 0 ||
+                (ComparePackageVersion(candidateVersion, bestVersion) == 0 && similarity > bestSimilarity))
+            {
+                best = candidate;
+                bestVersion = candidateVersion;
+                bestSimilarity = similarity;
+            }
+        }
+
+        return best;
+    }
+
     private static bool TryInferSameSourceComposition(
         ModDescriptor a,
         ModDescriptor b,
@@ -178,6 +228,16 @@ public static partial class AutoCompatibility
             if (a != b) return a.CompareTo(b);
         }
         return 0;
+    }
+
+    private static bool IsHpn1965BodyPackage(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!StringComparer.OrdinalIgnoreCase.Equals(mod.NexusModId, "1965"))
+            return false;
+        var tokens = PackageTokens($"{mod.DisplayName} {mod.Name}");
+        return tokens.Contains("highpoly", StringComparer.OrdinalIgnoreCase) &&
+               tokens.Contains("nude", StringComparer.OrdinalIgnoreCase);
     }
 
     [GeneratedRegex(@"(?<![a-z0-9])(?:version|ver|v)\s*([0-9]{1,3}(?:\.[0-9]{1,4}){1,3})(?![0-9])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
