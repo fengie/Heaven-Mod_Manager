@@ -424,7 +424,7 @@ Assert-Equal $true ($releaseWorkflow.Contains('Get-UpdaterReleaseIntentDecision'
 Assert-Equal $true ($releaseWorkflow.Contains("steps.release_intent.outputs.publish == 'true'")) 'publication chain requires release intent'
 Assert-Equal $true ($releaseWorkflow.Contains('actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5')) 'release SDK setup immutable pin'
 Assert-Equal $true ($releaseWorkflow.Contains('global-json-file: global.json')) 'release SDK derives from global.json'
-Assert-Equal $true ($releaseWorkflow.Contains('.\scripts\ci\Assert-PinnedDotNetSdk.ps1')) 'release SDK exact-pin assertion helper'
+Assert-Equal $true ($releaseWorkflow.Contains('Assert-PinnedDotNetSdk.ps1')) 'release SDK exact-pin assertion helper'
 Assert-Equal $true ($releaseWorkflow.Contains('/git/ref/heads/main')) 'release freshness reads canonical main ref'
 Assert-Equal $true ($releaseWorkflow.Contains('[string]::Equals($remoteMain,$env:GITHUB_SHA')) 'release freshness compares canonical main with exact run SHA'
 $publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_freshness\.outputs\.publish == 'true'").Count
