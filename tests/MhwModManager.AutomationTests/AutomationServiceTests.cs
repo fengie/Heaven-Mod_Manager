@@ -211,6 +211,39 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveSnapshotPruneRetainsReparsePointIndexWhenUnlinkFails()
+    {
+        if(!OperatingSystem.IsWindows()) return;
+        var db=await CreateDbAsync("backup-prune-reparse-retry.db");
+        var stateRoot=Path.Combine(root,"backup-prune-reparse-retry-state");
+        var game=GameProfile.Generic("backup-prune-reparse-retry","Backup Prune Reparse Retry",Path.Combine(root,"backup-prune-reparse-retry-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var external=Path.Combine(root,"backup-prune-reparse-retry-external");
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"preserve",TestContext.Current.CancellationToken);
+        var id="20000101-000000-001";
+        var linkedRoot=Path.Combine(service.SnapshotRoot,id);
+        CreateDirectoryJunction(linkedRoot,external);
+        await InsertSaveSnapshotAsync(db,id,DateTimeOffset.UtcNow.AddDays(-1),linkedRoot,TestContext.Current.CancellationToken);
+
+        await service.PruneAsync(
+            0,
+            TestContext.Current.CancellationToken,
+            _=>throw new IOException("simulated unlink failure"));
+
+        Assert.True(Directory.Exists(linkedRoot));
+        Assert.True(Directory.Exists(external));
+        Assert.Equal("preserve",await File.ReadAllTextAsync(sentinel,TestContext.Current.CancellationToken));
+        await using var c=await db.OpenAsync(TestContext.Current.CancellationToken);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT COUNT(*) FROM save_snapshots WHERE id=$i";
+        cmd.Parameters.AddWithValue("$i",id);
+        Assert.Equal(1L,(long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken))!);
+    }
+
+    [Fact]
     public async Task LastKnownGoodChangedSinceReportsRemovedAndChangedModsSymmetrically()
     {
         var db=await CreateDbAsync("last-known-good-changes.db");
