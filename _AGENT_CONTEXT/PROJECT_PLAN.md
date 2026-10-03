@@ -46,6 +46,8 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | AUDIT-635 | P0 | DONE | issue #635; PR #641; v8.8.82 | Bind updater helper request topology before mutex, journal, recovery, or restart state consumption. |
 | UPDATER-STORAGE-647 | P0 | ACTIVE | issue #647; combined v8.8.82 candidate | Reclaim updater staging/terminal disk safely without deleting pending or recovery-required state. |
 | UPDATER-TEST-671 | P0 | DONE | issue #671; PR #672; v8.8.84 | Serialize updater integration tests that share process-global pending state while retaining parallelism elsewhere. |
+| CI-675 | P1 | DONE | issue #675; PR #678; v8.8.85 | Separate feature-candidate product verification from canonical release metadata while preserving full exact-main release/publication verification. |
+| IMPORT-REPARSE-676 | P0 | ACTIVE | issue #676; PR #679; v8.8.86 candidate | Reject descendant reparse topology before import publication, cleanup, and rollback with Windows junction regressions. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
 
