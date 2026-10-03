@@ -15,9 +15,9 @@ v8.8.89 turns the user's 20-point compliance checklist into native-desktop produ
 
 ## Verification boundary
 
-Last closed canonical Windows evidence remains v8.8.88 source `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
+Current hosted-Windows closure: v8.8.89 source `b13f2210211973d23ff0e6ca2f449dade87919f5` passed run `37150713097` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.89-heaven-windows-closure.log`.
 
-v8.8.89 changes application source, XAML, tests, bundled content, and release metadata. No v8.8.88 green result is verification for v8.8.89. The exact integrated v8.8.89 source requires fresh canonical Windows verification before release closure is claimed.
+The tested source remains `b13f2210211973d23ff0e6ca2f449dade87919f5` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Legal/compliance scope
 

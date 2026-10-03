@@ -17,9 +17,9 @@ Change set: issue #710
 
 ## Verification boundary
 
-Last closed canonical Windows source remains v8.8.88 `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
+Current hosted-Windows closure: v8.8.89 source `b13f2210211973d23ff0e6ca2f449dade87919f5` passed run `37150713097` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.89-heaven-windows-closure.log`.
 
-v8.8.89 changes shipped app source/XAML/tests/content and release metadata, so earlier greens do not authorize release closure. Require fresh exact-input canonical Windows verification for the integrated v8.8.89 source before calling the patch closed/released.
+The tested source remains `b13f2210211973d23ff0e6ca2f449dade87919f5` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk
 
