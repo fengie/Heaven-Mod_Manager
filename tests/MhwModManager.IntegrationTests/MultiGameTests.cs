@@ -105,6 +105,58 @@ public sealed class MultiGameTests : IDisposable
     }
 
     [Fact]
+    public void Discovery_canonicalizes_live_generic_MHW_profile_when_canonical_executable_is_discovered()
+    {
+        var game=Path.Combine(root,"mhw-live-generic");Directory.CreateDirectory(game);
+        var launcher=Path.Combine(game,"Launcher.exe");File.WriteAllBytes(launcher,[0x4d,0x5a]);
+        var mhwExe=Path.Combine(game,"MonsterHunterWorld.exe");File.WriteAllBytes(mhwExe,[0x4d,0x5a,0x01]);
+        var stateRoot=Path.Combine(root,"mhw-live-generic-state");
+        GameDiscoveryCandidate[] Candidates() => [new GameDiscoveryCandidate("Monster Hunter: World",game,mhwExe,"Steam","582010")];
+        var registry=new GameProfileRegistry(stateRoot,Candidates);
+        var generic=GameProfile.Generic("legacy-live-mhw","My Monster Hunter",game,"Launcher.exe","Mods",store:"Manual") with { SavePath="user-save-location" };
+        registry.Upsert(generic);
+
+        var first=registry.DiscoverAndRegisterInstalledGamesDetailed();
+
+        Assert.Empty(first.Added);
+        var repaired=Assert.Single(first.Repaired);
+        Assert.Equal(generic.Id,repaired.Id);
+        Assert.Equal(generic.DisplayName,repaired.DisplayName);
+        Assert.Equal(generic.SavePath,repaired.SavePath);
+        Assert.Equal("Manual",repaired.Store);
+        Assert.True(repaired.IsMonsterHunterWorld);
+        Assert.Equal(GameSupportTier.AdapterEnhanced,repaired.SupportTier);
+        Assert.Equal("mhw",repaired.AdapterId);
+        Assert.Equal("MonsterHunterWorld.exe",repaired.ExecutableRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("MonsterHunterWorld",repaired.ProcessName);
+        Assert.Equal("nativePC",repaired.ModRootRelativePath,StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("monsterhunterworld",repaired.NexusGameDomain);
+        Assert.Equal("582010",repaired.SteamAppId);
+        Assert.Equal(9081,repaired.GameBananaGameId);
+        Assert.True(repaired.SupportsSemanticCoverage);
+        var restarted=new GameProfileRegistry(stateRoot,Candidates);
+        Assert.False(restarted.DiscoverAndRegisterInstalledGamesDetailed().HasChanges);
+        Assert.Equal(repaired,Assert.Single(restarted.Load()));
+    }
+
+    [Fact]
+    public void Discovery_refuses_new_MHW_Steam_candidate_without_canonical_executable()
+    {
+        var game=Path.Combine(root,"mhw-new-wrong-exe");Directory.CreateDirectory(game);
+        var launcher=Path.Combine(game,"Launcher.exe");File.WriteAllBytes(launcher,[0x4d,0x5a]);
+        var stateRoot=Path.Combine(root,"mhw-new-wrong-exe-state");
+        var registry=new GameProfileRegistry(stateRoot,()=> [new GameDiscoveryCandidate("Monster Hunter: World",game,launcher,"Steam","582010")]);
+
+        var result=registry.DiscoverAndRegisterInstalledGamesDetailed();
+
+        Assert.False(result.HasChanges);
+        Assert.Empty(result.Added);
+        Assert.Empty(result.Repaired);
+        Assert.Empty(registry.Load());
+        Assert.False(File.Exists(registry.RegistryPath));
+    }
+
+    [Fact]
     public void Discovery_refuses_to_repair_stale_MHW_profile_with_non_MHW_executable()
     {
         var game=Path.Combine(root,"mhw-stale");Directory.CreateDirectory(game);
