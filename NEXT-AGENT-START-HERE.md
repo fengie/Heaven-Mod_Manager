@@ -17,7 +17,7 @@ Change set: issue #710
 
 ## Verification boundary
 
-Last closed canonical Windows source remains v8.8.88 `d0816f3c495ff055df517ce0b021e41dd19596f6` / run `37143560604`.
+Last closed canonical Windows source remains v8.8.88 `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
 
 v8.8.89 changes shipped app source/XAML/tests/content and release metadata, so earlier greens do not authorize release closure. Require fresh exact-input canonical Windows verification for the integrated v8.8.89 source before calling the patch closed/released.
 
