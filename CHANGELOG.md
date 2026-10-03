@@ -1,3 +1,10 @@
+# v8.8.92 — 2026-10-03
+
+- Expand the Settings storage reclaim action from updater-only cleanup to both updater-owned staging/recovery residue and manager-owned catalog-download scratch.
+- Route catalog scratch cleanup through its existing lease/liveness, age, byte-quota, unknown-file, and reparse-point protections; do not broaden deletion to arbitrary cache or temp paths.
+- Report aggregate and per-domain reclaimed bytes plus removed/deferred counts while preserving installed Mods, State, active/ambiguous ownership, and unknown files.
+- Add UI/binding regression coverage for the unified disposable-storage command and both cleanup engines.
+
 # v8.8.91 — 2026-10-03
 
 - Add manager-owned lease records for catalog acquisition scratch downloads so crashed work can be reclaimed without guessing ownership.
