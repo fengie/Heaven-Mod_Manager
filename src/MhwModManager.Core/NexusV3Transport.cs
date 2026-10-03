@@ -70,14 +70,19 @@ public sealed record NexusV3RateLimitSnapshot(
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         DateTimeOffset? blockedUntil = null;
 
-        if (HourlyRemaining is <= 0 && HourlyReset is > now)
-            blockedUntil = HourlyReset;
+        if (HourlyRemaining is <= 0
+            && HourlyReset is DateTimeOffset hourlyReset
+            && hourlyReset > now)
+        {
+            blockedUntil = hourlyReset;
+        }
 
         if (DailyRemaining is <= 0
-            && DailyReset is > now
-            && (blockedUntil is null || DailyReset > blockedUntil))
+            && DailyReset is DateTimeOffset dailyReset
+            && dailyReset > now
+            && (blockedUntil is null || dailyReset > blockedUntil.Value))
         {
-            blockedUntil = DailyReset;
+            blockedUntil = dailyReset;
         }
 
         return blockedUntil;
