@@ -1,3 +1,11 @@
+# v8.8.84 — 2026-10-03
+
+- Reclaim unindexed immediate-child save-snapshot directories left behind by interrupted captures or failed best-effort capture cleanup.
+- Preserve snapshot-root containment while unlinking orphan reparse points without traversing or deleting their external targets.
+- Keep orphan cleanup best-effort so locked or inaccessible entries remain retryable without aborting the prune pass.
+- Prevent indexed/retained snapshot directories from being reclassified as orphans by removing every live DB-owned path from the orphan candidate set before retention cleanup.
+- Add regressions for ordinary orphan deletion, retryable orphan unlink failure, indexed snapshot preservation, and Windows junction target preservation.
+
 # v8.8.83 — 2026-10-03
 
 - Close #650 by making self-test and installed-client updater E2E temp roots self-clean on success and failure instead of silently accumulating under the Windows temp directory.
