@@ -565,6 +565,76 @@ public sealed class UpdaterCoreTests : IDisposable
         Assert.Equal(stage, request.StagingRoot);
         Assert.Equal(Path.GetFullPath(managerHome), request.ManagerHomeRoot);
         Assert.Equal(11, request.Manifest.BuildNumber);
+
+        var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
+        var foreignTransaction = Path.Combine(
+            updaterRoot,
+            "transactions",
+            $"11-{new string('A', 24)}-{Guid.NewGuid():N}");
+        var foreignStage = Path.Combine(
+            updaterRoot,
+            "staging",
+            $"11-{Guid.NewGuid():N}",
+            "payload");
+        var foreignInstall = Path.Combine(root, "other-install");
+        var foreignManagerHome = Path.Combine(root, "other-manager-home");
+        Directory.CreateDirectory(foreignTransaction);
+        Directory.CreateDirectory(foreignStage);
+        Directory.CreateDirectory(foreignInstall);
+        Directory.CreateDirectory(foreignManagerHome);
+
+        var invalidRequests = new[]
+        {
+            request with { InstallRoot = foreignInstall },
+            request with { StagingRoot = foreignStage },
+            request with { BackupRoot = Path.Combine(foreignTransaction, "backup") },
+            request with { JournalPath = Path.Combine(foreignTransaction, "journal.json") },
+            request with { PendingPath = Path.Combine(foreignTransaction, "pending-update.json") },
+            request with { HealthFile = Path.Combine(foreignTransaction, "health.json") },
+            request with { ManagerHomeRoot = foreignManagerHome },
+            request with { HealthToken = "not-a-health-token" },
+            request with { CurrentProcessId = 0 },
+            request with
+            {
+                BackupRoot = Path.Combine(
+                    Path.GetDirectoryName(request.BackupRoot)!,
+                    "nested",
+                    "..",
+                    "backup")
+            },
+            request with
+            {
+                RestartArguments =
+                [
+                    "--normal",
+                    "value",
+                    UpdateHealthProtocol.TokenArgument,
+                    "tampered"
+                ]
+            }
+        };
+
+        foreach (var invalid in invalidRequests)
+        {
+            await UpdateRequestStore.WriteAsync(
+                prepared.RequestPath,
+                invalid,
+                TestToken);
+            await Assert.ThrowsAnyAsync<Exception>(
+                () => UpdateRequestStore.ReadForHelperAsync(
+                    prepared.RequestPath,
+                    TestToken));
+        }
+
+        await UpdateRequestStore.WriteAsync(
+            prepared.RequestPath,
+            request,
+            TestToken);
+        var rebound = await UpdateRequestStore.ReadForHelperAsync(
+            prepared.RequestPath,
+            TestToken);
+        Assert.Equal(request.Manifest, rebound.Manifest);
+        Assert.Equal(request.InstallRoot, rebound.InstallRoot);
     }
 
     [Fact]
