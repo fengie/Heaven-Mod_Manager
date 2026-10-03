@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.82",
+  "currentVersion": "8.8.83",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.81 source b46f7324d860c66dd3572013dbba571dec319c87 passed hosted Windows verification run 37103097571. v8.8.82 binds updater helper request topology before helper state consumption and adds bounded, state-aware cleanup so verified archives, confirmed staging attempts, old orphan staging, and terminal transactions do not accumulate indefinitely.",
+  "immediateParentRevision": "v8.8.82 source f46793a18700524ac7b5fb34770200206d6595f2 passed hosted Windows verification run 37107057966; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log, with later evidence-only commits 00dcf4a5076335b69c636a2c0cb4c84ac333a43e and d57e888f392b1180c563e80c96df31fd9fd8cdc0 preserving closure/E2E evidence without changing tested-source identity. v8.8.83 makes MHW self-test and updater verification scratch self-cleaning, preserves only durable evidence, and adds conservative marker-based stale scratch maintenance.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, updater request topology binding, bounded/state-aware updater storage retention, and the durable updater E2E evidence privacy boundary. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, the v8.8.82 updater request-topology/storage-retention boundary, destructive-filesystem containment, and the durable updater E2E evidence privacy boundary. Verify v8.8.83 on exact source before treating it as closed. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
