@@ -45,7 +45,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
 | AUDIT-635 | P0 | DONE | issue #635; PR #641; v8.8.82 | Bind updater helper request topology before mutex, journal, recovery, or restart state consumption. |
 | UPDATER-STORAGE-647 | P0 | DONE | issue #647; PR #658; v8.8.82 | Reclaim updater staging/terminal disk safely without deleting pending or recovery-required state. |
-| UPDATER-STORAGE-669 | P0 | ACTIVE | issue #669; PR #702; v8.8.91 candidate | Bound catalog acquisition scratch and prepared updater transactions with fail-closed owner leases, conservative cleanup, and quotas. |
+| UPDATER-STORAGE-669 | P0 | ACTIVE | issue #669; v8.8.91 verified; v8.8.92 reclaim candidate | Bound disposable updater/catalog storage with fail-closed ownership, cleanup, quotas, diagnostics, and a unified safe reclaim action. |
 | UPDATER-TEST-671 | P0 | DONE | issue #671; PR #672; v8.8.84 | Serialize updater integration tests that share process-global pending state while retaining parallelism elsewhere. |
 | CI-675 | P1 | DONE | issue #675; PR #678; v8.8.85 | Separate feature-candidate product verification from canonical release metadata while preserving full exact-main release/publication verification. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
@@ -122,7 +122,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## UPDATER-STORAGE-669 — Crash-safe catalog + prepared updater ownership
 
-**Owner:** issue #669 / PR #702 / v8.8.91 candidate
+**Owner:** issue #669 / v8.8.92 unified reclaim candidate
 **Status:** ACTIVE
 **Acceptance:** catalog acquisition scratch and prepared updater transaction residue are reclaimable only with trustworthy manager ownership/liveness evidence; active, ambiguous, unknown, unleased, malformed, and reparse-point state remains preserved; cleanup stays bounded by age/quota policy.
 
@@ -132,9 +132,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Require newly prepared updater transaction leases to record certifiable process-start identity.
 - [x] Let legacy missing-start updater leases become reclaimable only after their PID no longer exists.
 - [x] Add deterministic catalog/updater liveness, quota, crash-residue, reparse, and handoff regressions.
-- [ ] Pass fresh exact-v8.8.91 candidate gates, integrate to canonical main, verify remote semantics, and obtain the required fresh canonical Windows closure.
+- [x] v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed hosted Windows closure and installed-client updater E2E; durable evidence is persisted on main.
+- [ ] v8.8.92: compose updater cleanup and leased catalog-download cleanup behind one user-facing disposable-storage reclaim action with aggregate/per-domain reporting, then pass exact-head gates and integrate.
 
-**Next action:** run required exact-head gates on PR #702 after the v8.8.91 metadata reconciliation; integrate only the exact green head after refreshing main.
+**Next action:** verify the v8.8.92 unified reclaim slice, integrate only the exact green head after refreshing main, read back remote semantics, then continue only still-unmet #669 lifecycle/generation/content-reuse acceptance.
 
 ## AUDIT-635 — Updater helper request topology binding
 
