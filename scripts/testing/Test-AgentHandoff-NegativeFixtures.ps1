@@ -1,10 +1,12 @@
-param([string]$Root)
+param([string]$Root,[switch]$FeatureCandidate)
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 if([string]::IsNullOrWhiteSpace($Root)){$Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path}else{$Root=(Resolve-Path -LiteralPath $Root).Path}
 
 $manifest=Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $Root '_AGENT_CONTEXT\handoff-manifest.json') | ConvertFrom-Json
 $fixture=Join-Path ([IO.Path]::GetTempPath()) ('mhw-governance-fixture-'+[Guid]::NewGuid().ToString('N'))
+$validationArgs=@{Root=$fixture}
+if($FeatureCandidate){$validationArgs.FeatureCandidate=$true}
 
 function Copy-FixtureFile {
     param([string]$Relative)
@@ -25,7 +27,7 @@ function Reject {
         if($changed -ceq $original){throw "Fixture '$Name' did not change its target."}
         Set-Content -LiteralPath $path -Value $changed -Encoding utf8
         $rejected=$false
-        try{& (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null}catch{$rejected=$true}
+        try{& (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') @validationArgs *> $null}catch{$rejected=$true}
         if(-not $rejected){throw "Negative fixture was accepted: $Name"}
         Write-Host "PASS: rejected $Name" -ForegroundColor Green
     }finally{[IO.File]::WriteAllBytes($path,$originalBytes)}
@@ -50,7 +52,7 @@ function Reject-ForbiddenRoot {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
         Set-Content -LiteralPath (Join-Path $path 'README.md') -Value 'stale global copy' -Encoding utf8
         $rejected=$false
-        try{& (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null}catch{$rejected=$true}
+        try{& (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') @validationArgs *> $null}catch{$rejected=$true}
         if(-not $rejected){throw "Negative fixture was accepted: $Name"}
         Write-Host "PASS: rejected $Name" -ForegroundColor Green
     }finally{if(Test-Path -LiteralPath $path){Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue}}
@@ -70,7 +72,7 @@ try{
     $files += @($manifest.requiredToolingFiles | ForEach-Object {[string]$_})
     foreach($relative in ($files | Where-Object {-not [string]::IsNullOrWhiteSpace($_)} | Select-Object -Unique)){Copy-FixtureFile $relative}
 
-    & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') -Root $fixture *> $null
+    & (Join-Path $fixture 'scripts\testing\Test-AgentHandoff.ps1') @validationArgs *> $null
     Write-Host 'PASS: baseline MHW project-governance fixture accepted.' -ForegroundColor Green
     Accept-FeatureCandidateReleaseDrift
 
