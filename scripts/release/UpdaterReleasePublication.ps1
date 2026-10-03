@@ -1,5 +1,23 @@
 Set-StrictMode -Version Latest
 
+function Write-UpdaterPublicationStepOutcome {
+  [CmdletBinding()]
+  param(
+    [string]$Path,
+    [Parameter(Mandatory=$true)][bool]$Published,
+    [Parameter(Mandatory=$true)][string]$Reason
+  )
+
+  if([string]::IsNullOrWhiteSpace($Path)){return}
+  if([string]::IsNullOrWhiteSpace($Reason) -or $Reason -notmatch '^[a-z0-9][a-z0-9-]*$'){
+    throw "Updater publication outcome reason '$Reason' is not a safe single-line workflow value."
+  }
+
+  $publishedText=$Published.ToString().ToLowerInvariant()
+  $utf8=New-Object System.Text.UTF8Encoding($false)
+  [IO.File]::AppendAllText($Path, "published=$publishedText$([Environment]::NewLine)reason=$Reason$([Environment]::NewLine)", $utf8)
+}
+
 function Invoke-UpdaterDraftPublication {
   [CmdletBinding()]
   param(
