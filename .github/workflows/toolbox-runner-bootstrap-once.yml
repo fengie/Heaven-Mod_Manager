@@ -84,6 +84,27 @@ jobs:
             }
             $auth = Test-TargetAdminToken $ghToken 'machine-local-gh-auth'
           }
+          if (-not $auth -and (Get-Command git -ErrorAction SilentlyContinue)) {
+            $savedTerminalPrompt = $env:GIT_TERMINAL_PROMPT
+            $savedGcmInteractive = $env:GCM_INTERACTIVE
+            try {
+              $env:GIT_TERMINAL_PROMPT = '0'
+              $env:GCM_INTERACTIVE = 'Never'
+              $filled = @("protocol=https","host=github.com","") | & git credential fill 2>$null
+              $passwordLine = @($filled | Where-Object { $_ -like 'password=*' } | Select-Object -First 1)
+              $gitToken = if ($passwordLine.Count -eq 1) {
+                [string]$passwordLine[0].Substring('password='.Length)
+              } else {
+                ''
+              }
+              $auth = Test-TargetAdminToken $gitToken 'machine-local-git-credential-manager'
+              $gitToken = ''
+              $filled = $null
+            } finally {
+              $env:GIT_TERMINAL_PROMPT = $savedTerminalPrompt
+              $env:GCM_INTERACTIVE = $savedGcmInteractive
+            }
+          }
           if (-not $auth) {
             throw 'No already-authorized machine/account credential can administer Actions runners for fengie/heaven-toolbox. No credential was printed or persisted.'
           }
