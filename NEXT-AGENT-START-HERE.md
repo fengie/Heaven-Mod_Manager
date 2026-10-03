@@ -9,7 +9,8 @@ Integrated change set: PR #692 plus v3.1 precedence/handoff follow-up
 
 - Required literal/manual Main/base packages stay enabled beneath active sibling components.
 - Same-source optional/component packages override Main only on overlapping paths.
-- Same-Nexus `Ver3.10` / `Ver4.2`-style generations can remain enabled together; the newer generation wins shared paths while older-only files remain active.
+- Same-Nexus `Ver3.1` / `Ver3.10` / `Ver4.2`-style generations can remain enabled together; the newer generation wins shared paths while older-only files remain active.
+- Nexus 1965 HPN 4.x selections auto-stage the newest matching 3.x compatibility generation plus Main; same-major historical revisions and equal-version alternatives remain off unless explicitly selected.
 - Equal-version sibling variants remain a choice unless stronger metadata or an explicit user rule orders them.
 - Mod Library advanced rows identify Main / Optional / Revision roles.
 - Tests cover Nexus-4678-style `Main → No Bats`, Nexus-1965-style `3.1 → 4.2` and `3.10 → 4.2`, full `Main → 3.10 → 4.2`, and equal-version variant safety.
