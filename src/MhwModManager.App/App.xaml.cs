@@ -194,6 +194,16 @@ public sealed partial class App:Application, IDisposable
             {
                 logger.Error(ex,"Program updater startup-health acknowledgement failed; normal application startup remains available.");
             }
+            try
+            {
+                await Task.Run(()=>UpdateStorageMaintenance.RunAsync(
+                    message=>logger.Information("Program updater: {UpdaterMessage}",message),
+                    CancellationToken.None));
+            }
+            catch(Exception ex)
+            {
+                logger.Warning(ex,"Program updater storage cleanup failed non-fatally.");
+            }
             window.StartProgramUpdater();
         }
         catch(Exception ex)
