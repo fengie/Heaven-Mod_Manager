@@ -50,6 +50,8 @@ jobs:
     # GitHub-hosted Windows currently fails before runner allocation; use the repaired Heaven runner.
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 90
+    env:
+      DOTNET_INSTALL_DIR: ${{ runner.temp }}\dotnet
 
     steps:
       - name: Check out exact revision
