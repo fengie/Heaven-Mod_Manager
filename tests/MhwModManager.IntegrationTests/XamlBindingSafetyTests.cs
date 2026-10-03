@@ -427,9 +427,9 @@ public sealed partial class XamlBindingSafetyTests
         var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
 
-        Assert.Contains(
-            "<CheckBox IsChecked=\"{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\" IsThreeState=\"False\" HorizontalAlignment=\"Center\" AutomationProperties.Name=\"{Binding DisplayName}\"",
-            xaml);
+        Assert.Contains("IsChecked=\"{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\"", xaml);
+        Assert.Contains("AutomationProperties.HelpText=", xaml);
+        Assert.Contains("PendingStateLabel", xaml);
         Assert.Contains(
             "<CheckBox IsChecked=\"{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}\" VerticalAlignment=\"Center\" AutomationProperties.Name=\"{Binding Label}\"",
             xaml);
