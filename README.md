@@ -6,13 +6,15 @@ Current product version: **8.8.82**.
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.82 — updater helper request topology binding
+## v8.8.82 — updater topology + bounded storage retention
 
 - Bind each helper handoff transaction identity to the exact target manifest plus canonical install, staging, and manager-home roots.
 - Validate the request topology before the helper acquires the update mutex or reads recovery state.
 - Require backup, journal, health, pending, and staging paths to match the canonical transaction layout; reject noncanonical path spellings and cross-attempt substitutions.
-- Bind helper consumption to the canonical pending update state, while preserving the already-confirmed terminal no-op after pending cleanup.
-- Add adversarial coverage for path substitution, traversal aliases, malformed request identity, updater-owned health arguments, and Windows reparse-point substitution.
+- Stop retaining two complete update copies while an update is staged: discard the downloaded ZIP after extraction and package verification succeeds.
+- Retire the whole staging attempt immediately after an update is confirmed, and reclaim sufficiently old orphan staging plus terminal confirmed/rolled-back transactions on startup.
+- Preserve the exact pending staging attempt and every nonterminal/recovery-required transaction; malformed pending state fails closed, and cleanup refuses reparse-point traversal.
+- Add adversarial coverage for topology substitution plus deterministic storage-retention coverage for pending, orphaned, terminal, recent, and reparse-point state.
 
 ## v8.8.81 — allowlisted updater E2E evidence
 
@@ -39,6 +41,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
 - [x] **UPDATER-E2E-587 / P1** — v8.8.74 prevents superseded non-publishing release gates from launching guaranteed-failure installed-client E2E runs while keeping missing-publication states fail-closed.
 - [x] **UPDATER-E2E-PERSISTENCE-622 / P0** — v8.8.80 restores complete main history before E2E persistence ancestry checks so successful exact-source updater evidence survives the release evidence-only commit.
+- [ ] **UPDATER-STORAGE-647 / P0** — v8.8.82 removes retained staging ZIP/payload duplication and performs conservative state-aware cleanup of historical updater staging/terminal transactions; exact-head verification/integration remains required.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
