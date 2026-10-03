@@ -116,7 +116,7 @@ public static partial class AutoCompatibility
 
         parent = compare < 0 ? a : b;
         child = compare < 0 ? b : a;
-        reason = $"Auto-composed same-source revision stack: '{child.DisplayName}' is the newer explicit package revision of '{parent.DisplayName}' on the same Nexus mod. Both stay enabled; v{string.Join('.', compare < 0 ? bv : av)} wins only overlapping files, while older-only files remain available.";
+        reason = $"Auto-composed same-source revision stack: '{child.DisplayName}' is the newer explicit package revision of '{parent.DisplayName}' on the same Nexus mod. Both stay enabled; v{string.Join(".", compare < 0 ? bv : av)} wins only overlapping files, while older-only files remain available.";
         return true;
     }
 
