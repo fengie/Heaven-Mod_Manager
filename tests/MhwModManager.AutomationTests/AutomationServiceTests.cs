@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
+using MhwModManager.Filesystem;
 using MhwModManager.Storage;
 using Xunit;
 
