@@ -64,6 +64,38 @@ public sealed class ModLibraryVisibleScopeTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Visible_bulk_toolbar_uses_visible_commands_and_shared_scope_help()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(
+            Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+
+        Assert.Contains(
+            "Content=\"{Binding EnableVisibleLabel}\" Command=\"{Binding EnableVisibleCommand}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Content=\"{Binding DisableVisibleLabel}\" Command=\"{Binding DisableVisibleCommand}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Content=\"{Binding RefreshVisibleLabel}\" Command=\"{Binding ReindexVisibleCommand}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Text=\"{Binding VisibleBulkScopeHelp}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "AutomationProperties.HelpText=\"{Binding VisibleBulkScopeHelp}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("EnableSelectedCommand", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("DisableSelectedCommand", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("ReindexSelectedCommand", xaml, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
