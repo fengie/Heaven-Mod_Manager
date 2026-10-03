@@ -421,10 +421,10 @@ foreach($workflowName in @('windows-release-gate.yml','updater-publication-pr-ga
     }
     $workflowText=Get-Content -LiteralPath $workflowPath -Raw
     foreach($required in @($setupDotnetPin,'global-json-file: global.json','.\scripts\ci\Assert-PinnedDotNetSdk.ps1')){
-        if(-not $workflowText.Contains($required)){$errors.Add("$workflowName: repository SDK bootstrap invariant missing: $required")}
+        if(-not $workflowText.Contains($required)){$errors.Add("${workflowName}: repository SDK bootstrap invariant missing: $required")}
     }
     if($workflowText.Contains("-ne '10.0.401'")){
-        $errors.Add("$workflowName: duplicated literal SDK-version comparison must defer to global.json.")
+        $errors.Add("${workflowName}: duplicated literal SDK-version comparison must defer to global.json.")
     }
 }
 
