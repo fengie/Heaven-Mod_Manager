@@ -1,10 +1,17 @@
-# v8.8.91 — MHW Manual Mod Manager
+# v8.8.92 — MHW Manual Mod Manager
 
-Current product version: **8.8.91**.
+Current product version: **8.8.92**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.92 — unified disposable storage reclaim
+
+- Expand the Settings reclaim action from updater-only cleanup to both fail-closed updater staging/recovery cleanup and manager-owned catalog-download scratch cleanup.
+- Reuse the existing ownership, lease/liveness, age/quota, unknown-file, and reparse-point safety boundaries instead of adding a broader deletion heuristic.
+- Report total, updater, and catalog-scratch reclaimed bytes plus deleted/deferred entry counts while continuing to preserve Mods, State, active work, ambiguous ownership, and unknown paths.
+- Add UI/binding regression coverage so the visible action remains an explicit manager-owned disposable-storage boundary.
 
 ## v8.8.91 — bounded catalog + updater scratch ownership
 
@@ -22,14 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Isolate pinned .NET SDK provisioning per workflow run/attempt/job so stale self-hosted runner state cannot masquerade as a valid install, and mechanically reject the former shared `RUNNER_TEMP\dotnet` root.
 - Make function-verification persistence idempotent: unchanged function/source state keeps existing confirmation timestamps and bytes, while real fingerprint or version changes refresh evidence.
 
-## v8.8.89 — privacy, legal & accessibility baseline
-
-- Bundle Privacy, Terms, Refund, Cookie, data-deletion, project/support, and third-party notices and expose them directly from Settings.
-- Keep the native desktop compliance surface truthful: no first-party accounts, ads, browser cookies, in-app payments, consumer-review system, or marketing email are claimed where those features do not exist.
-- Add local-data reset guidance and one-click access to the manager state folder while preserving Mods and archives as durable user data.
-- Complete UI Automation names for current preview/artwork images, keep explicit keyboard navigation and visible focus behavior, and regression-check the core palette against WCAG AA text-contrast thresholds.
-- Regression-check third-party notice versions against the centrally managed package inventory and document feature changes that require renewed privacy/consent review.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -45,7 +44,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **CI-675 / P1** — v8.8.85 separates feature-candidate verification from canonical release metadata while preserving full exact-main release and publication checks.
 - [x] **RELEASE-RACE-682 / P0** — v8.8.85 source `271b9d8d` makes the public updater publisher's terminal outcome authoritative for canonical publication/parity gating.
 - [x] **FILESYSTEM-HARDENING-673/676 / P0** — v8.8.86 makes unmanaged adoption invocation-owned/hash-certified and rejects descendant reparse topology at import publication and destructive cleanup boundaries.
-- [ ] **UPDATER-STORAGE-669 / P0** — v8.8.86 adds fail-early staging-capacity preflight; broader lifecycle quotas/content reuse remain tracked by issue #669.
+- [ ] **UPDATER-STORAGE-669 / P0** — v8.8.91 closes catalog scratch ownership/quota and prepared-updater lease recovery; v8.8.92 unifies the user-facing reclaim action across updater and leased catalog scratch while preserving durable/unknown data. Broader generation/content-reuse policy remains tracked by issue #669.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **COMPLIANCE-710 / P1** — v8.8.89 adds the native-app privacy/legal/data-control baseline, completes current image automation names, and regression-checks package notices, keyboard focus/navigation, and WCAG AA core palette contrast.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
