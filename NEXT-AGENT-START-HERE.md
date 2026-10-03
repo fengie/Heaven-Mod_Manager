@@ -3,7 +3,7 @@
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #635
+Change set: issues #635 and #647
 
 ## v8.8.82 behavior
 
@@ -12,13 +12,16 @@ Change set: issue #635
 - Require request, backup, journal, health, pending, and staging paths to match the canonical updater layout; reject cross-attempt/root substitution and noncanonical path aliases.
 - Reject malformed health/process identity, updater-owned health arguments, and existing reparse-point substitution.
 - Require canonical pending-update state to agree with the request manifest and staging root while preserving already-confirmed terminal no-op behavior after pending cleanup.
+- Stop retaining the verified release ZIP once extraction and product verification are complete.
+- Retire confirmed staging immediately and clean sufficiently old orphan staging / terminal confirmed-or-rolled-back transaction directories without touching pending or recovery-required state.
+- Fail closed on malformed pending state and refuse reparse-point traversal during cleanup.
 - Preserve the v8.8.81 durable installed-client E2E privacy boundary unchanged.
 
 ## Verification boundary
 
 The last closed hosted-Windows verification is v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6`, run `37098443475`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
-v8.8.82 changes updater source/tests and synchronized release metadata, so the final exact source requires fresh verification before integration/publication. Never inherit v8.8.81 or an earlier v8.8.82 intermediate-head result onto changed source.
+v8.8.82 changes updater topology, staging/retention behavior, startup maintenance, integration tests, and synchronized release metadata, so the final exact source requires fresh verification before integration/publication. Never inherit v8.8.81 or an earlier v8.8.82 intermediate-head result onto changed source.
 
 ## Unresolved risks and next work
 
@@ -26,4 +29,4 @@ v8.8.82 changes updater source/tests and synchronized release metadata, so the f
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, the updater request-topology boundary, and the durable-evidence privacy boundary. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, the updater request-topology boundary, the bounded/state-aware updater storage-retention boundary, and the durable-evidence privacy boundary. The successor **must propagate** this continuity obligation to the **next agent after them**, and require that next agent to preserve and recursively propagate the same rules to their successor. **Do not break the chain.**
