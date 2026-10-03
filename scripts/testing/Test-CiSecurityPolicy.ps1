@@ -443,8 +443,11 @@ foreach($workflowName in @('windows-release-gate.yml','updater-publication-pr-ga
         continue
     }
     $workflowText=Get-Content -LiteralPath $workflowPath -Raw
-    foreach($required in @($setupDotnetPin,'global-json-file: global.json','Assert-PinnedDotNetSdk.ps1','DOTNET_INSTALL_DIR=')){
+    foreach($required in @($setupDotnetPin,'global-json-file: global.json','Assert-PinnedDotNetSdk.ps1','DOTNET_INSTALL_DIR=','$env:GITHUB_RUN_ID','$env:GITHUB_RUN_ATTEMPT','$env:GITHUB_JOB','Remove-Item -LiteralPath $installRoot -Recurse -Force')){
         if(-not $workflowText.Contains($required)){$errors.Add("${workflowName}: repository SDK bootstrap invariant missing: $required")}
+    }
+    if($workflowText.Contains("Join-Path $env:RUNNER_TEMP 'dotnet'")){
+        $errors.Add("${workflowName}: repository SDK install root must be unique per run/attempt/job instead of sharing RUNNER_TEMP\\dotnet.")
     }
     if($workflowText.Contains("-ne '10.0.401'")){
         $errors.Add("${workflowName}: duplicated literal SDK-version comparison must defer to global.json.")
