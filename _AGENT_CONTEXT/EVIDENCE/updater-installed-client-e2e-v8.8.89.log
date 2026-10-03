@@ -1,0 +1,53 @@
+﻿MHW Manual Mod Manager v8.8.89 installed-client updater E2E closure
+source_sha=93ef8af8bbaaf549c1a4bb4db1ba1c2fef71e0b1
+run_id=37149706342
+evidence_sha256=82356CD8D3828CF60C9E7A37169FB34F53A337667B3B9FF5BD16A2AA62B6604E
+provenance_sha256=41F5ED349C7FC3A27253D5DFC1C7E1E8133828DFFAE36FC7E1A1874312CFA58F
+installed_client_test_log_sha256=59A303429769BEF00B1F6AB8D1E6158CAEDBC75102FFB6F890D24AA59445125E
+rollback_regression_log_sha256=67D26151BEE2A7F6C739344825041EFB2E36A1246BEE07429F57D6754DA872C8
+durable_evidence_schema=mhw-mod-manager/updater-installed-client-e2e-durable/v1
+
+=== DURABLE_EVIDENCE.JSON ===
+{
+    "schema":  "mhw-mod-manager/updater-installed-client-e2e-durable/v1",
+    "sourceEvidenceSchemaVersion":  1,
+    "oldRelease":  {
+                       "tag":  "updater-main-60",
+                       "build":  60,
+                       "source":  "ffd218b6ad4e9f4fea4b143d266712a6fa17a285"
+                   },
+    "target":  {
+                   "build":  460,
+                   "source":  "93ef8af8bbaaf549c1a4bb4db1ba1c2fef71e0b1"
+               },
+    "update":  {
+                   "status":  "PASS",
+                   "targetBuild":  460,
+                   "targetSource":  "93ef8af8bbaaf549c1a4bb4db1ba1c2fef71e0b1",
+                   "oldClientExitCode":  0,
+                   "healthBuild":  460,
+                   "healthSource":  "93ef8af8bbaaf549c1a4bb4db1ba1c2fef71e0b1",
+                   "selectorDisplayText":  "Updater E2E Fake Game",
+                   "switchButtonEnabled":  true,
+                   "settingsButtonEnabled":  true,
+                   "journalPhase":  "Confirmed",
+                   "sentinelSha256":  {
+                                          "mod":  "A07B3B13C359CAA1487A6123593EEF4366F9A2FB38182392BE6F04244CFF13BA",
+                                          "state":  "B90D2BB9B54BFFD364F410D926F57FF416A7566E7C39BFDB401BFDB450BB5E44",
+                                          "unknownUserFile":  "16CC71C24DAC23CB320F57C4A5F638DD7B43AEE6105BC5C4799AE119BE02250F"
+                                      }
+               },
+    "rollback":  {
+                     "status":  "PASS",
+                     "journalPhase":  "RolledBack",
+                     "restoredBuild":  60,
+                     "restoredSource":  "ffd218b6ad4e9f4fea4b143d266712a6fa17a285",
+                     "oldOwnedFileCount":  689,
+                     "targetOnlyFileCount":  146,
+                     "sentinelSha256":  {
+                                            "mod":  "A07B3B13C359CAA1487A6123593EEF4366F9A2FB38182392BE6F04244CFF13BA",
+                                            "state":  "B90D2BB9B54BFFD364F410D926F57FF416A7566E7C39BFDB401BFDB450BB5E44",
+                                            "unknownUserFile":  "16CC71C24DAC23CB320F57C4A5F638DD7B43AEE6105BC5C4799AE119BE02250F"
+                                        }
+                 }
+}
