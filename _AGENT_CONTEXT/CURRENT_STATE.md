@@ -17,9 +17,9 @@ v8.8.81 source `aa5e56afa5bf8db73bcb7ac0af0c9825874c736a` remains the last close
 
 ## Verification boundary
 
-The last closed hosted-Windows verification remains v8.8.81 source `aa5e56afa5bf8db73bcb7ac0af0c9825874c736a`, run `37105670926`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.82 source `f46793a18700524ac7b5fb34770200206d6595f2` passed run `37107057966` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.82-heaven-windows-closure.log`.
 
-v8.8.82 changes updater helper/client/runtime/storage source, application startup maintenance, adversarial integration tests, and synchronized release/continuity metadata. Fresh exact-input verification is therefore required; no earlier green result should be inherited onto the final v8.8.82 source.
+The tested source remains `f46793a18700524ac7b5fb34770200206d6595f2` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
