@@ -47,6 +47,35 @@ public static class SafeRecursiveTraversal
         return (directories, files);
     }
 
+    public static string EnsureNoReparsePoints(
+        string root,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"root={root}");
+        var fullRoot = EnsureRootIsNotReparse(root);
+        var pending = new Stack<string>();
+        pending.Push(fullRoot);
+
+        while (pending.Count > 0)
+        {
+            ct.ThrowIfCancellationRequested();
+            var current = pending.Pop();
+            foreach (var entry in Directory.EnumerateFileSystemEntries(
+                         current, "*", SearchOption.TopDirectoryOnly))
+            {
+                ct.ThrowIfCancellationRequested();
+                var attributes = File.GetAttributes(entry);
+                if ((attributes & FileAttributes.ReparsePoint) != 0)
+                    throw new IOException($"Recursive source traversal rejected reparse point: {entry}");
+
+                if ((attributes & FileAttributes.Directory) != 0)
+                    pending.Push(entry);
+            }
+        }
+
+        return fullRoot;
+    }
+
     public static string EnsureRootIsNotReparse(string root)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"root={root}");

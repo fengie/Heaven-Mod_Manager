@@ -1,4 +1,5 @@
 using MhwModManager.Core;
+using MhwModManager.Filesystem;
 
 namespace MhwModManager.Automation;
 
@@ -53,6 +54,7 @@ internal static class ImportPublicationWorkspace
         if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetPathRoot(stagingFull), Path.GetPathRoot(destinationFull)))
             throw new IOException("Import staging and destination must be on the same volume.");
 
+        SafeRecursiveTraversal.EnsureNoReparsePoints(stagingFull);
         Directory.CreateDirectory(fullModsRoot);
         Directory.Move(stagingFull, destinationFull);
     }
@@ -70,6 +72,7 @@ internal static class ImportPublicationWorkspace
             if (!Directory.Exists(candidate)) return null;
             if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
                 throw new InvalidDataException($"Refusing recursive rollback of reparse published path: {candidate}");
+            SafeRecursiveTraversal.EnsureNoReparsePoints(candidate);
             Directory.Delete(candidate, true);
             return null;
         }
@@ -102,6 +105,7 @@ internal static class ImportPublicationWorkspace
                 MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing recursive cleanup of reparse import workspace: {candidate}");
                 return;
             }
+            SafeRecursiveTraversal.EnsureNoReparsePoints(candidate);
             Directory.Delete(candidate, true);
         }
         catch (Exception ex)
