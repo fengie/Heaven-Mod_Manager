@@ -1,3 +1,9 @@
+# v8.8.85 — 2026-10-03
+
+- Decouple exact-head feature PR verification from canonical release-version surface parity so concurrent product branches no longer race to own global release metadata.
+- Keep repository identity, canonical-state shape, security policy, function verification, builds, analyzers, tests, fault injection, and self-test coverage unchanged in feature-candidate verification.
+- Preserve the full strict canonical metadata/handoff checks in the main Windows release gate, with regression coverage preventing candidate-mode relaxation from reaching publication.
+
 # v8.8.84 — 2026-10-03
 
 - Serialize the updater integration-test classes that share the process-global updater root and canonical `pending-update.json` state.

@@ -163,7 +163,7 @@ jobs:
       - name: Run exact repository verification gate
         id: repository_verify
         shell: cmd
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\release\\Verify-Release.ps1"
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\release\\Verify-Release.ps1" -FeatureCandidate
 
       - name: Restore workflow projects
         id: restore
