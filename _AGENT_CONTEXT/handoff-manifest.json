@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, conflict/dependency proof separation, updater/filesystem containment, and durable-evidence privacy. Require fresh exact-final-head verification for PR #692 v8.8.87 before merge, then fresh canonical Windows closure after integration. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, conflict/dependency proof separation, updater/filesystem containment, and durable-evidence privacy. PR #692 is integrated after exact-head verification; require exact-head verification for the v3.1 follow-up, then fresh canonical Windows closure for final v8.8.87 main. The successor must propagate this continuity obligation to the next agent after them and require that next agent to preserve and recursively propagate the same rules to their successor. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
