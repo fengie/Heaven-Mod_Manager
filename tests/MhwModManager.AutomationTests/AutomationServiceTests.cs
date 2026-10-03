@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using MhwModManager.Automation;
 using MhwModManager.Core;
+using MhwModManager.Filesystem;
 using MhwModManager.Storage;
 using Xunit;
 
@@ -292,6 +293,48 @@ public sealed class AutomationServiceTests : IDisposable
         await SeedModAsync(db,"stable-lkg","Stable");
         await service.RecordAsync(null,TestContext.Current.CancellationToken);
         Assert.Empty(await service.ChangedSinceLastGoodAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task UpdateMigrationPreviewTreatsModIdentityCaseInsensitivelyAndReturnsCanonicalIds()
+    {
+        var db=await CreateDbAsync("migration-id-case.db");
+        await db.UpsertModAsync(new("old-pack","Old Pack","Old Pack",Path.Combine(root,"old-pack"),true,7,FamilyId:"family-a",FamilyRole:"main"),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("new-pack","New Pack","New Pack",Path.Combine(root,"new-pack"),false,2),TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("old-pack",[ModFile("old-pack",@"nativePC\shared.tex","old-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ExecuteAsync("INSERT INTO resource_providers(namespace,mod_id) VALUES('nativepc\\mod_shared','old-pack')",ct:TestContext.Current.CancellationToken);
+
+        var planner=new DeploymentPlanner(new ConflictEngine());
+        var executor=new DeploymentExecutor(db,new BlobStore(Path.Combine(root,"migration-state","blobs"),db),new HashingService(),Path.Combine(root,"migration-live"));
+        var service=new UpdateMigrationService(db,planner,executor);
+
+        var preview=await service.PreviewAsync("OLD-PACK","NEW-PACK",TestContext.Current.CancellationToken);
+
+        Assert.Equal("old-pack",preview.OlderId);
+        Assert.Equal("new-pack",preview.NewerId);
+        Assert.Equal("new-pack",preview.Snapshot.ResourceProviders[@"nativepc\\mod_shared"]);
+        var old=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"old-pack"));
+        var replacement=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"new-pack"));
+        Assert.True(old.IsSuperseded);
+        Assert.False(old.Enabled);
+        Assert.Equal("new-pack",old.SupersededByModId);
+        Assert.True(replacement.Enabled);
+        Assert.Equal(7,replacement.Priority);
+        Assert.Equal("family-a",replacement.FamilyId);
+    }
+
+    [Fact]
+    public async Task UpdateMigrationRejectsSameLogicalPackageWhenOnlyCaseDiffers()
+    {
+        var db=await CreateDbAsync("migration-same-id-case.db");
+        var service=new UpdateMigrationService(
+            db,
+            new DeploymentPlanner(new ConflictEngine()),
+            new DeploymentExecutor(db,new BlobStore(Path.Combine(root,"migration-same-state","blobs"),db),new HashingService(),Path.Combine(root,"migration-same-live")));
+
+        await Assert.ThrowsAsync<InvalidDataException>(()=>
+            service.PreviewAsync("same-pack","SAME-PACK",TestContext.Current.CancellationToken));
     }
 
     [Fact]

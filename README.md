@@ -1,10 +1,16 @@
-# v8.8.81 — MHW Manual Mod Manager
+# v8.8.82 — MHW Manual Mod Manager
 
-Current product version: **8.8.81**.
+Current product version: **8.8.82**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.82 — canonical update-migration mod identity
+
+- Resolve update-migration package IDs case-insensitively and canonicalize them to stored IDs before planning.
+- Apply the same logical identity across conflict rules, metadata, family membership, resource providers, staged state, supersession, and diffing.
+- Preserve rejection of old/new IDs differing only by casing and add focused regressions.
 
 ## v8.8.81 — allowlisted updater E2E evidence
 

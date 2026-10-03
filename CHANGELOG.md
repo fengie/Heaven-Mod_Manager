@@ -1,3 +1,9 @@
+# v8.8.82 — 2026-10-03
+
+- Canonicalize update-migration mod IDs with the repository's case-insensitive identity comparer.
+- Apply canonical identity across rules, metadata, family membership, resource providers, staged state, supersession, and diffing.
+- Add casing-variant migration regressions.
+
 # v8.8.81 — 2026-10-03
 
 - Replace raw installed-client updater E2E JSON promotion with a versioned allowlisted durable evidence projection.
