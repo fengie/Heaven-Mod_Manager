@@ -44,8 +44,24 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | AUDIT-576 | P1 | DONE | issue #576; v8.8.72 | Reject stale queued release sources before the first updater publication mutation. |
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
 | AUDIT-635 | P0 | DONE | issue #635; PR #641; v8.8.82 | Bind updater helper request topology before mutex, journal, recovery, or restart state consumption. |
+| UPDATER-STORAGE-647 | P0 | ACTIVE | issue #647; combined v8.8.82 candidate | Reclaim updater staging/terminal disk safely without deleting pending or recovery-required state. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
+
+## UPDATER-STORAGE-647 — Bounded updater staging and terminal-state retention
+
+**Owner:** issue #647 / combined v8.8.82 candidate
+**Acceptance:** staged updates do not retain an unnecessary downloaded ZIP; confirmed staging attempts are retired after durable confirmation; old orphan staging and terminal confirmed/rolled-back transactions are reclaimed; pending, malformed, recent, unknown-shape, and recovery-required state is preserved; cleanup never traverses reparse points.
+
+- [x] Delete the downloaded release archive after successful extraction and package verification.
+- [x] Delete the entire staging attempt immediately after a successful update is confirmed.
+- [x] Add startup maintenance with a one-hour grace period for orphan staging and terminal transaction cleanup.
+- [x] Preserve the exact pending staging attempt and all nonterminal/recovery-required transactions.
+- [x] Fail closed for malformed pending state, unknown updater directory shapes, and reparse-point trees.
+- [x] Add deterministic cleanup regressions for pending, orphan, recent, terminal, recovery-required, and reparse state.
+- [ ] Pass all required exact-head v8.8.82 gates, integrate the combined candidate to canonical main, verify remote main, publish immediately, and persist installed-client updater evidence.
+
+**Next action:** run exact-head gates on the combined #635/#647 v8.8.82 candidate; integrate only after required checks are green.
 
 ## AUDIT-635 — Updater helper request topology binding
 
