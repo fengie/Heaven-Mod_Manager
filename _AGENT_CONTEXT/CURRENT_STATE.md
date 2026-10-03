@@ -1,6 +1,6 @@
-# v8.8.87 HPN composition precedence — canonical state
+# v8.8.87 HPN composition precedence — candidate state
 
-v8.8.87 repairs package-level composition for real HPN/Nexus layouts without weakening the resolver's fail-closed structural-conflict rules.
+v8.8.87 repairs package-level composition for real HPN/Nexus layouts without weakening fail-closed structural-conflict rules.
 
 ## Behavior
 
@@ -9,7 +9,7 @@ v8.8.87 repairs package-level composition for real HPN/Nexus layouts without wea
 - Explicit same-Nexus package generations such as `Ver3.10` and `Ver4.2` may coexist. The newer generation wins only shared paths; files unique to the older generation remain provided by the older source.
 - Version labels alone are insufficient. Unrelated same-page packages and equal-version sibling variants still require stronger evidence or a user choice.
 - Advanced component rows identify inferred Main, Optional, and Revision roles instead of reducing these packages to generic Component labels.
-- Regression coverage models the observed Nexus 4678 `Main + No Bats` layout and Nexus 1965 mixed HPN generation behavior.
+- Regression coverage models the observed Nexus 4678 `Main + No Bats` layout, the full Nexus 1965 `Main → 3.10 → 4.2` stack, and equal-version v4.2 sibling safety.
 
 ## Research/evidence boundary
 
@@ -17,7 +17,9 @@ Publicly indexed HPN ecosystem material confirms that mixed-generation installs 
 
 ## Verification boundary
 
-The last closed hosted-Windows source remains v8.8.85 commit `271b9d8d7303a6136b574af52d43d95efff26f34` / run `37130638298`. v8.8.87 changes product source, tests, and release metadata and therefore requires a fresh exact-final-head PR #692 verification before integration plus fresh canonical Windows closure after integration. Historical green runs do not authorize this source.
+Current closed hosted-Windows closure is v8.8.86 source `21e7dbd1c71d66be542095be4e6d397879b7b134`, run `37132556908`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.86-heaven-windows-closure.log`. The later commits on main only persist verification/E2E evidence.
+
+v8.8.87 changes product source, tests, and release metadata and therefore requires fresh exact-final-head PR #692 verification before integration plus fresh canonical Windows closure after integration. Historical green runs do not authorize this source.
 
 ## Remaining independent work
 
