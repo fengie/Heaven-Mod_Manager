@@ -1,0 +1,32 @@
+name: Toolbox Local Source Probe Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/toolbox-local-source-probe-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Inspect local Toolbox source mirror
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 5
+    steps:
+      - name: Verify canonical commit exists locally
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:USERPROFILE 'HeavenBridgeSource'
+          if (-not (Test-Path (Join-Path $root '.git'))) { throw 'HeavenBridgeSource checkout is missing.' }
+          $head = (& git -C $root rev-parse HEAD).Trim()
+          $branch = (& git -C $root branch --show-current).Trim()
+          $originMain = (& git -C $root rev-parse refs/remotes/origin/main 2>$null).Trim()
+          $dirty = @(& git -C $root status --porcelain)
+          & git -C $root cat-file -e '8734cf720b39b7bd2ee325f16e427e1b9ebfda4d^{commit}'
+          if ($LASTEXITCODE -ne 0) { throw 'Current canonical Toolbox commit is not present in the local object database.' }
+          Write-Output ('TOOLBOX_LOCAL_SOURCE head=' + $head + ' branch=' + $branch + ' origin_main=' + $originMain + ' dirty_count=' + $dirty.Count)
+          Write-Output 'TOOLBOX_CANONICAL_OBJECT_PRESENT sha=8734cf720b39b7bd2ee325f16e427e1b9ebfda4d'
