@@ -1,4 +1,4 @@
-# v8.8.87 HPN composition precedence — candidate state
+# v8.8.87 HPN composition precedence — canonical state
 
 v8.8.87 repairs package-level composition for real HPN/Nexus layouts without weakening fail-closed structural-conflict rules.
 
