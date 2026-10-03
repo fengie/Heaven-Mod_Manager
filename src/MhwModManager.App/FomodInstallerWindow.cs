@@ -59,18 +59,40 @@ public sealed class FomodInstallerWindow : Window
                         _ => string.Empty
                     };
                     var optionLabel = string.IsNullOrWhiteSpace(optionState) ? option.Name : option.Name + " · " + optionState;
-                    var check = new CheckBox { Content = optionLabel, IsChecked = option.Selected, IsEnabled = option.Type is not ("Required" or "NotUsable") && group.Type != "SelectAll", Margin = new Thickness(8), ToolTip = option.Description };
-                    check.Click += (_, _) =>
+                    if (group.Type == "SelectExactlyOne")
                     {
-                        if (check.IsChecked == true)
+                        var radio = new RadioButton
                         {
-                            if (group.Type is "SelectExactlyOne" or "SelectAtMostOne") foreach (var other in group.Options) SelectedOptions.Remove(other.Id);
+                            Content = optionLabel,
+                            IsChecked = option.Selected,
+                            IsEnabled = option.Type is not ("Required" or "NotUsable"),
+                            GroupName = $"fomod-{step.Name}-{group.Name}",
+                            Margin = new Thickness(8),
+                            ToolTip = option.Description
+                        };
+                        radio.Checked += (_, _) =>
+                        {
+                            foreach (var other in group.Options) SelectedOptions.Remove(other.Id);
                             SelectedOptions.Add(option.Id);
-                        }
-                        else SelectedOptions.Remove(option.Id);
-                        try { RenderChoices(); } catch (InvalidDataException ex) { status.Text = "This installer needs a different choice: " + ex.Message; }
-                    };
-                    choices.Children.Add(check);
+                            try { RenderChoices(); } catch (InvalidDataException ex) { status.Text = "This installer needs a different choice: " + ex.Message; }
+                        };
+                        choices.Children.Add(radio);
+                    }
+                    else
+                    {
+                        var check = new CheckBox { Content = optionLabel, IsChecked = option.Selected, IsEnabled = option.Type is not ("Required" or "NotUsable") && group.Type != "SelectAll", Margin = new Thickness(8), ToolTip = option.Description };
+                        check.Click += (_, _) =>
+                        {
+                            if (check.IsChecked == true)
+                            {
+                                if (group.Type == "SelectAtMostOne") foreach (var other in group.Options) SelectedOptions.Remove(other.Id);
+                                SelectedOptions.Add(option.Id);
+                            }
+                            else SelectedOptions.Remove(option.Id);
+                            try { RenderChoices(); } catch (InvalidDataException ex) { status.Text = "This installer needs a different choice: " + ex.Message; }
+                        };
+                        choices.Children.Add(check);
+                    }
                     if (!string.IsNullOrWhiteSpace(option.Description)) choices.Children.Add(new TextBlock { Text = option.Description, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(30, 0, 8, 6), Opacity = 0.75 });
                 }
             }
