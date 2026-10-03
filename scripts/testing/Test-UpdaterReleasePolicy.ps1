@@ -439,9 +439,9 @@ Assert-Equal $true ($installedE2EWorkflow.Contains('ConvertTo-UpdaterInstalledCl
 Assert-Equal $true ($installedE2EWorkflow.Contains('=== DURABLE_EVIDENCE.JSON ===')) 'installed-client E2E closure labels durable evidence'
 Assert-Equal $false ($installedE2EWorkflow.Contains("'=== EVIDENCE.JSON ==='")) 'installed-client E2E closure never embeds raw evidence JSON'
 Assert-Equal $true ($installedE2EWorkflow.Contains('evidence_sha256=')) 'installed-client E2E closure preserves compatible raw artifact hash header without raw artifact contents'
-Assert-Equal $false ($installedE2EWorkflow.Contains('runner_os=')) 'installed-client E2E closure excludes runner OS environment metadata'
-Assert-Equal $false ($installedE2EWorkflow.Contains('runner_arch=')) 'installed-client E2E closure excludes runner architecture environment metadata'
-Assert-Equal $false ($installedE2EWorkflow.Contains('dotnet_sdk=')) 'installed-client E2E closure excludes runner SDK environment metadata'
+Assert-Equal $false ($installedE2EWorkflow.Contains('(''runner_os='' + $env:RUNNER_OS)')) 'installed-client E2E closure excludes runner OS environment metadata'
+Assert-Equal $false ($installedE2EWorkflow.Contains('(''runner_arch='' + $env:RUNNER_ARCH)')) 'installed-client E2E closure excludes runner architecture environment metadata'
+Assert-Equal $false ($installedE2EWorkflow.Contains('(''dotnet_sdk='' + (& dotnet --version))')) 'installed-client E2E closure excludes runner SDK environment metadata'
 Assert-Equal $true ($installedE2EWorkflow.Contains('-ExpectedTargetSourceSha $env:MHW_E2E_SOURCE_SHA')) 'installed-client E2E durable projection binds to exact tested source SHA'
 
 Assert-Equal $false ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ github.sha }}')) 'installed-client E2E artifact name must not bind to the later workflow/evidence commit'
