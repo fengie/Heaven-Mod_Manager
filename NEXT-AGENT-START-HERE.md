@@ -21,6 +21,10 @@ PR #672 previously passed Workflow Feature PR Gate run `37122995254` on source-o
 
 During this integration pass, the canonical `heaven` Bridge heartbeat was healthy but memory-limited to zero worker start slots (2.48 GiB available, 92% load). `heaven2` was healthy, but the protected cloud request ingress did not yet expose Agent Control; that capability is pending Toolbox PR #248. The senior integrator therefore used the authenticated GitHub path and did not weaken HMAC, proxy through heaven, or fabricate a local-agent dispatch.
 
+## Unresolved risk
+
+The final v8.8.84 candidate still requires fresh exact-head Workflow Feature verification after continuity/version synchronization; prior green source-only evidence must not be inherited.
+
 ## Next action
 
 Run/observe the exact-final-head Workflow Feature PR Gate for PR #672. Merge only that exact green head, verify remote `main`, then reconcile every remaining PR against the new v8.8.84 baseline before assigning later patch numbers.
