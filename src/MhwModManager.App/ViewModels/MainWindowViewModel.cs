@@ -130,8 +130,22 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public int SupersededCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.FullySuperseded);
     public int VisibleModCount=>ModsView.Cast<object>().Count();
     public bool HasVisibleMods=>VisibleModCount>0;
-    public string EnableVisibleLabel=>$"Enable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
-    public string DisableVisibleLabel=>$"Disable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+    public string EnableVisibleLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Enable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+        }
+    }
+    public string DisableVisibleLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Disable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+        }
+    }
 
     public int StagedEnableCount=>Mods.Count(x=>x.WillEnable);
     public int StagedDisableCount=>Mods.Count(x=>x.WillDisable);
