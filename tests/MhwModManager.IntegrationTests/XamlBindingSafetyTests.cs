@@ -634,8 +634,8 @@ public sealed partial class XamlBindingSafetyTests
 
         Assert.Contains("ItemsSource=\"{Binding StorageCategories}\"", xaml);
         Assert.Contains("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
-        Assert.Contains("Command=\"{Binding ReclaimUpdaterStorageCommand}\"", xaml);
-        Assert.Contains("AutomationProperties.Name=\"Reclaim disposable updater storage\"", xaml);
+        Assert.Contains("Command=\"{Binding ReclaimDisposableStorageCommand}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Reclaim disposable storage\"", xaml);
         Assert.Contains("It preserves installed Mods, State, archives, catalog scratch, unknown files, live pending update data, nonterminal recovery data, and reparse paths.", xaml);
         Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
 
@@ -645,6 +645,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("\"Updater Staging\"", settings);
         Assert.Contains("\"Updater Recovery\"", settings);
         Assert.Contains("UpdateStorageMaintenance.RunAsync(", settings);
+        Assert.Contains("CatalogDownloadMaintenance.RunAsync(", settings);
+        Assert.Contains("\"storage.reclaim-disposable\"", settings);
         Assert.Contains("SafeRecursiveTraversal.Snapshot(root, ct)", settings);
         Assert.DoesNotContain("Directory.Delete(", settings);
         Assert.Contains("if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);", main);

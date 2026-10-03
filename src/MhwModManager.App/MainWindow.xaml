@@ -1018,10 +1018,10 @@
                                             Style="{StaticResource QuietButton}"
                                             AutomationProperties.Name="Measure manager storage"/>
                                     <Button Margin="8,0,0,0"
-                                            Content="Reclaim disposable updater storage"
-                                            Command="{Binding ReclaimUpdaterStorageCommand}"
+                                            Content="Reclaim disposable storage"
+                                            Command="{Binding ReclaimDisposableStorageCommand}"
                                             Style="{StaticResource PrimaryButton}"
-                                            AutomationProperties.Name="Reclaim disposable updater storage"/>
+                                            AutomationProperties.Name="Reclaim disposable storage"/>
                                 </StackPanel>
                                 <TextBlock Margin="0,8,0,0"
                                            Foreground="{StaticResource Muted}"
