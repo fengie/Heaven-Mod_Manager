@@ -13,7 +13,7 @@ v8.8.86 closes issue #676 by applying the repository's fail-closed reparse topol
 
 ## Verification boundary
 
-The last closed canonical Windows release source remains v8.8.84 `2ea6d6dd3851f24a40e562074a816d9bd1e61883`, run `37124460532`.
+The last closed canonical Windows release source is v8.8.85 `0ce34cf74ee15f33c7bf3b8a1a378a3622b7617c`, run `37126561159`, with exact evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`. The later evidence-only persistence commit does not change that tested-source identity.
 
 PR #679 must pass Product Security and Workflow Feature gates on its exact reconciled v8.8.86 head before merge. After integration, canonical `main` must still pass the full Windows release gate without `-FeatureCandidate`.
 
