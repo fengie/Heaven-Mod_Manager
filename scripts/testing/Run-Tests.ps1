@@ -1,5 +1,6 @@
 $ErrorActionPreference='Stop'
 $Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+& (Join-Path $PSScriptRoot 'Clear-StaleTestScratch.ps1') -MinimumAgeHours 24
 . (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 Start-MhwMasterDebugSession -Root $Root -Area 'RUN-TESTS' -Title 'Standalone test run'
 Push-Location $Root
