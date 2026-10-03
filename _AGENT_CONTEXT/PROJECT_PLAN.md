@@ -39,12 +39,14 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
 | BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.72 selection-state; v8.8.78 empty/no-match tranche | Add filters, sorting, provider health, loading/stale/partial-failure states, and broader discovery UX. |
 | CATALOG-UPDATES-569 | P1 | DONE | issue #569; PR #573; v8.8.71 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
-| RECOVERY-578 | P0 | READY | issue #578; follow-up to #571 / PR #572 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
+| RECOVERY-578 | P0 | DONE | issue #578; PR #599 / v8.8.76 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
 | AUDIT-575 | P1 | DONE | issue #575; v8.8.72 | Prevent torn live-save snapshots with stable-copy verification, cleanup, and mutation/cancellation coverage. |
 | AUDIT-576 | P1 | DONE | issue #576; v8.8.72 | Reject stale queued release sources before the first updater publication mutation. |
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
+| DISCOVERY-602 | P0 | DONE | issue #602; v8.8.81 | Canonicalize a live generic same-root MHW owner when authoritative discovery resolves the real canonical executable. |
+| DISCOVERY-603 | P0 | DONE | issue #603; v8.8.81 | Reject Steam 582010 discovery when canonical MHW executable evidence is absent. |
 
 ## SECURITY-554 — Permitted crawler path + redirect containment
 
