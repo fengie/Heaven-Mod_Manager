@@ -1,3 +1,9 @@
+# v8.8.80 — 2026-10-02
+
+- Restore complete canonical-main history before installed-client updater E2E evidence ancestry/drift checks so evidence-only main commits are recognized as descendants of the tested release source.
+- Refresh the explicit `origin/main` remote-tracking ref before persistence classification instead of relying on shallow checkout state.
+- Add release-policy regression coverage that requires unshallowing before `merge-base --is-ancestor`, closing the v8.8.79 durable-evidence gap exposed by run `37085941626`.
+
 # v8.8.79 — 2026-10-02
 
 - Keep save-snapshot pruning coherent for indexed reparse entries by unlinking only the immediate link and retaining the database row when unlink fails.
