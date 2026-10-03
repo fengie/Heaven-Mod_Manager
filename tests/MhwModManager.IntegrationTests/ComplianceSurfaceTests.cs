@@ -63,6 +63,37 @@ public sealed class ComplianceSurfaceTests
     }
 
     [Fact]
+    public void BundledFontAndVisualAssetsHaveProvenanceEntries()
+    {
+        var root = FindRepositoryRoot();
+        var project = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MhwModManager.App.csproj"));
+        var notices = File.ReadAllText(Path.Combine(root, "THIRD_PARTY_NOTICES.md"));
+        var assetExtensions = new HashSet<string>(
+            [".ico", ".png", ".jpg", ".jpeg", ".bmp", ".webp", ".ttf", ".otf"],
+            StringComparer.OrdinalIgnoreCase);
+
+        var includes = Regex.Matches(
+                project,
+                "(?:Resource|Content) Include=\\\"(?<path>[^\\\"]+)\\\"",
+                RegexOptions.CultureInvariant)
+            .Cast<Match>()
+            .Select(match => match.Groups["path"].Value.Replace('\\\\', '/'))
+            .Where(path => assetExtensions.Contains(Path.GetExtension(path)))
+            .ToArray();
+
+        Assert.NotEmpty(includes);
+        foreach (var include in includes)
+        {
+            Assert.Contains(Path.GetFileName(include), notices, StringComparison.OrdinalIgnoreCase);
+        }
+
+        Assert.DoesNotContain(
+            includes,
+            include => Path.GetExtension(include).Equals(".ttf", StringComparison.OrdinalIgnoreCase)
+                || Path.GetExtension(include).Equals(".otf", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void NativeAppDocumentsWebOnlyConsentTriggersInsteadOfShowingFakeConsent()
     {
         var root = FindRepositoryRoot();
