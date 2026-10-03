@@ -1,23 +1,24 @@
-# v8.8.81 allowlisted updater E2E evidence — canonical state
+# v8.8.82 updater helper request topology — canonical state
 
-v8.8.80 source `e7af34331b608fca3d115d2dfe20f5c8e69a5973` remains the last closed hosted-Windows verification boundary. v8.8.81 hardens the installed-client updater E2E persistence trust boundary under issue #632.
+v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` remains the last closed hosted-Windows verification boundary. v8.8.82 hardens the updater helper handoff trust boundary under issue #635.
 
 ## Behavior
 
-- Raw runtime E2E diagnostics remain transient; canonical Git history receives only the versioned `mhw-mod-manager/updater-installed-client-e2e-durable/v1` projection.
-- Durable target-source identity must match the exact workflow-tested SHA.
-- Release identity, update/rollback terminal state, installed UI acceptance, and the three preservation sentinel hashes are validated before persistence.
-- Absolute runner paths/usernames, process and attempt IDs, target-only path inventories, product logs, timestamps, runner environment metadata, and unknown future properties are excluded by construction.
-- The compatible `evidence_sha256=` header preserves provenance for the transient raw evidence without embedding its contents.
+- Each updater helper transaction directory is bound to the target manifest plus the canonical install root, staging root, and manager-home root.
+- The helper validates the complete request topology before acquiring the update mutex or reading request-selected recovery state.
+- The request file, backup, journal, health, pending, and staging paths must match the canonical updater transaction layout; cross-attempt and foreign-root substitution fail closed.
+- Noncanonical absolute-path spellings, malformed health/process identity, updater-owned health arguments, and existing reparse-point substitutions are rejected before helper state consumption.
+- Canonical pending-update state must agree with the request manifest and staging root. A transaction that is already confirmed may remain a safe no-op after pending cleanup.
+- The v8.8.81 allowlisted durable installed-client E2E evidence boundary remains unchanged.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` passed run `37098443475` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+The last closed hosted-Windows verification remains v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6`, run `37098443475`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
-The tested source remains `1d21a7ee99774c6820e16421837e9451ef2e3ef6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+v8.8.82 changes updater helper/client/runtime source, adversarial integration tests, and synchronized release/continuity metadata. Fresh exact-input verification is therefore required; no earlier green result should be inherited onto the final v8.8.82 source.
 
 ## Remaining independent work
 
-#559/#558 retain Browse Mods work; #350/#354 retain external prerequisites; RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent. Stale #602/#603 ownership expired without a heartbeat; their product work remains separate and must be reconciled against the post-v8.8.81 main if continued.
+#559/#558 retain Browse Mods work; #350/#354 retain external prerequisites; RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent. Stale pre-v8.8.82 branches must reconcile against canonical main and take a later patch if their unique work is continued.
 
-Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, and the durable-evidence privacy boundary, and recursively propagate the same obligation.
+Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, the updater request-topology boundary, and the durable-evidence privacy boundary, and recursively propagate the same obligation.
