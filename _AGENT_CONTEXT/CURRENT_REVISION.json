@@ -10,10 +10,10 @@
   "status": "v8.8.82-updater-topology-storage-canonical",
   "nextMilestone": "Complete fresh exact-input verification for the combined v8.8.82 updater topology and bounded storage-retention fix, then publish the verified release immediately.",
   "nextRequiredAction": "Run all required exact-head gates for the final combined v8.8.82 source, integrate only that green head to canonical main, verify remote main, then complete immediate release/publication and installed-client closure under the repository release rules.",
-  "verificationAppliesToCommit": "1d21a7ee99774c6820e16421837e9451ef2e3ef6",
-  "lastClosedVerificationCommit": "1d21a7ee99774c6820e16421837e9451ef2e3ef6",
-  "lastClosedVerificationRun": "v8.8.81 source 1d21a7ee99774c6820e16421837e9451ef2e3ef6: hosted Windows verification run 37098443475 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-  "verificationScopeNote": "v8.8.81 exact source 1d21a7ee99774c6820e16421837e9451ef2e3ef6 passed hosted Windows verification run 37098443475. v8.8.82 changes updater helper/client/runtime/storage source, application startup maintenance, adversarial integration tests, and synchronized release/continuity metadata, so previous green evidence does not apply and fresh exact-input verification is required.",
+  "verificationAppliesToCommit": "b46f7324d860c66dd3572013dbba571dec319c87",
+  "lastClosedVerificationCommit": "b46f7324d860c66dd3572013dbba571dec319c87",
+  "lastClosedVerificationRun": "v8.8.81 source b46f7324d860c66dd3572013dbba571dec319c87: hosted Windows verification run 37103097571 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+  "verificationScopeNote": "v8.8.81 exact source b46f7324d860c66dd3572013dbba571dec319c87 passed hosted Windows verification run 37103097571. v8.8.82 changes updater helper/client/runtime/storage source, application startup maintenance, adversarial integration tests, and synchronized release/continuity metadata, so previous green evidence does not apply and fresh exact-input verification is required.",
   "lastClosedVerification": {
     "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
     "updaterBuild": 382,
@@ -46,8 +46,8 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "1d21a7ee99774c6820e16421837e9451ef2e3ef6",
-    "runId": 37098443475,
+    "sourceSha": "b46f7324d860c66dd3572013dbba571dec319c87",
+    "runId": 37103097571,
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log"
   }
 }
