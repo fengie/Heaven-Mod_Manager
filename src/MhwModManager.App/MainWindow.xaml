@@ -309,7 +309,7 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border Width="156" Height="102" Margin="0,0,8,8" CornerRadius="6" Background="#090D12" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
-                                                            <Image Source="{Binding Converter={StaticResource SafeImage},ConverterParameter=320}" Stretch="UniformToFill" ToolTip="{Binding}"/>
+                                                            <Image Source="{Binding Converter={StaticResource SafeImage},ConverterParameter=320}" Stretch="UniformToFill" AutomationProperties.Name="{Binding DataContext.DisplayName,RelativeSource={RelativeSource AncestorType=DataGridRow},StringFormat='Preview image for {0}'}"/>
                                                         </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -347,7 +347,7 @@
                                             <Border Width="76" Height="48" CornerRadius="5" Background="#0B1016" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
                                                 <Grid>
                                                     <TextBlock Text="IMG" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    <Image Source="{Binding ThumbnailPath,Converter={StaticResource SafeImage},ConverterParameter=160}" Stretch="UniformToFill"/>
+                                                    <Image Source="{Binding ThumbnailPath,Converter={StaticResource SafeImage},ConverterParameter=160}" Stretch="UniformToFill" AutomationProperties.Name="{Binding DisplayName,StringFormat='Thumbnail for {0}'}"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -586,7 +586,7 @@
                                                 <TextBlock Grid.Column="1" Text="{Binding ConfidenceLabel}" Foreground="{StaticResource Warn}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                                 <StackPanel Grid.Column="2" VerticalAlignment="Center"><TextBlock Text="{Binding FailureLabel}"/><TextBlock Text="{Binding LastSeen}" Foreground="{StaticResource Muted}" FontSize="10"/></StackPanel>
                                                 <TextBlock Grid.Column="3" Text="{Binding Reason}" TextWrapping="Wrap" Foreground="#D0D5DB" FontSize="10" VerticalAlignment="Center" Margin="8,0"/>
-                                                <Button Grid.Column="4" Content="Clear mark" Command="{Binding DataContext.ClearIssueSuspectCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding ModId}" Style="{StaticResource QuietButton}" VerticalAlignment="Center" ToolTip="Remove this problem clue. The mod and game files are not changed."/>
+                                                <Button Grid.Column="4" Content="Clear mark" Command="{Binding DataContext.ClearIssueSuspectCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding ModId}" Style="{StaticResource QuietButton}" VerticalAlignment="Center" AutomationProperties.Name="{Binding DisplayName,StringFormat='Clear problem mark for {0}'}" ToolTip="Remove this problem clue. The mod and game files are not changed."/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
