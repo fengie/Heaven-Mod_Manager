@@ -1,10 +1,17 @@
-# v8.8.79 — MHW Manual Mod Manager
+# v8.8.80 — MHW Manual Mod Manager
 
-Current product version: **8.8.79**.
+Current product version: **8.8.80**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.80 — updater E2E evidence persistence
+
+- Unshallow canonical `main` history before updater installed-client E2E ancestry/drift classification so evidence-only release commits cannot look falsely divergent.
+- Refresh the explicit `origin/main` remote-tracking ref before classifying evidence-only versus release-relevant drift.
+- Regress ordering so complete-history recovery must occur before `merge-base --is-ancestor`.
+- Close the durable-evidence gap exposed after the successful v8.8.79 installed-client update/rollback run.
 
 ## v8.8.79 — automation state integrity
 
@@ -21,14 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Label the browse badge as visible results rather than incorrectly describing filtered matches as total cached items.
 - Add deterministic state and XAML regressions for empty, zero-match, and populated Browse Mods states.
 
-## v8.8.77 — updater E2E runner + continuity-state repair
-
-- Route the upstream publication classifier through the known-good self-hosted Heaven Windows runner instead of the unavailable GitHub-hosted pool.
-- Preserve read-only classifier permissions, exact-publication/supersession policy, and fail-closed heavy-job gating.
-- Update the release-policy regression so hosted-runner routing cannot be accidentally reintroduced while allocation remains unavailable.
-- Bind persisted hosted-Windows verification evidence to the canonical continuity projection in the same evidence commit, preserving the tested-source SHA separately from the later evidence-only commit.
-- Fail closed when current-version closure evidence disagrees with `CURRENT_REVISION.json`, `CURRENT_STATE.md`, or the successor handoff, with synthetic negative fixtures covering stale SHA/run/candidate-state regressions.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -37,6 +36,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
 - [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
 - [x] **UPDATER-E2E-587 / P1** — v8.8.74 prevents superseded non-publishing release gates from launching guaranteed-failure installed-client E2E runs while keeping missing-publication states fail-closed.
+- [x] **UPDATER-E2E-PERSISTENCE-622 / P0** — v8.8.80 restores complete main history before E2E persistence ancestry checks so successful exact-source updater evidence survives the release evidence-only commit.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
