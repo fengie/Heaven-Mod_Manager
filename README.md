@@ -9,7 +9,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.87 — HPN composition precedence
 
 - Keep a recognized literal Main/base source enabled whenever one of its sibling components is enabled; optional layers override only overlapping files.
-- Compose same-Nexus `Ver3.10` / `Ver4.2`-style generations per path so newer HPN files win shared paths without discarding older-only compatibility files.
+- Compose same-Nexus `Ver3.1` / `Ver3.10` / `Ver4.2`-style generations per path so newer HPN files win shared paths without discarding older-only compatibility files.
 - Keep same-version body variants as explicit choices and show Main / Optional / Revision roles in the advanced component drawer.
 
 ## v8.8.86 — storage + filesystem hardening
