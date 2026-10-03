@@ -275,6 +275,48 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateMigrationPreviewTreatsModIdentityCaseInsensitivelyAndReturnsCanonicalIds()
+    {
+        var db=await CreateDbAsync("migration-id-case.db");
+        await db.UpsertModAsync(new("old-pack","Old Pack","Old Pack",Path.Combine(root,"old-pack"),true,7,FamilyId:"family-a",FamilyRole:"main"),TestContext.Current.CancellationToken);
+        await db.UpsertModAsync(new("new-pack","New Pack","New Pack",Path.Combine(root,"new-pack"),false,2),TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("old-pack",[ModFile("old-pack",@"nativePC\shared.tex","old-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ExecuteAsync("INSERT INTO resource_providers(resource_key,mod_id) VALUES('nativepc/shared.tex','old-pack')",ct:TestContext.Current.CancellationToken);
+
+        var planner=new DeploymentPlanner();
+        var executor=new DeploymentExecutor(db,Path.Combine(root,"migration-live"),Path.Combine(root,"migration-state"));
+        var service=new UpdateMigrationService(db,planner,executor);
+
+        var preview=await service.PreviewAsync("OLD-PACK","NEW-PACK",TestContext.Current.CancellationToken);
+
+        Assert.Equal("old-pack",preview.OlderId);
+        Assert.Equal("new-pack",preview.NewerId);
+        Assert.Equal("new-pack",preview.Snapshot.ResourceProviders["nativepc/shared.tex"]);
+        var old=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"old-pack"));
+        var replacement=Assert.Single(preview.Snapshot.Mods,m=>PathRules.Comparer.Equals(m.Id,"new-pack"));
+        Assert.True(old.IsSuperseded);
+        Assert.False(old.Enabled);
+        Assert.Equal("new-pack",old.SupersededByModId);
+        Assert.True(replacement.Enabled);
+        Assert.Equal(7,replacement.Priority);
+        Assert.Equal("family-a",replacement.FamilyId);
+    }
+
+    [Fact]
+    public async Task UpdateMigrationRejectsSameLogicalPackageWhenOnlyCaseDiffers()
+    {
+        var db=await CreateDbAsync("migration-same-id-case.db");
+        var service=new UpdateMigrationService(
+            db,
+            new DeploymentPlanner(),
+            new DeploymentExecutor(db,Path.Combine(root,"migration-same-live"),Path.Combine(root,"migration-same-state")));
+
+        await Assert.ThrowsAsync<InvalidDataException>(()=>
+            service.PreviewAsync("same-pack","SAME-PACK",TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task UpdateDiffCountsStructuralAndTextureChanges()
     {
         var db=await CreateDbAsync("diff.db");
