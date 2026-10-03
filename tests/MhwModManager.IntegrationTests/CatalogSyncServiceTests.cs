@@ -57,6 +57,65 @@ public sealed class CatalogSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Metadata_only_sync_preserves_previously_hydrated_file_identities()
+    {
+        var repository = await CreateRepositoryAsync("metadata-preserves-files");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 20, 0, TimeSpan.Zero);
+        var provider = new FakeProvider();
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-metadata-preserves"));
+        var service = new CatalogSyncService(repository, new FixedTimeProvider(now));
+
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: true),
+            TestToken);
+        Assert.Equal(1, provider.FileHydrationCalls);
+        Assert.Single((await repository.GetAsync("fixture:mod-1", TestToken))!.Mod.Files);
+
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(1, provider.FileHydrationCalls);
+        var stored = await repository.GetAsync("fixture:mod-1", TestToken);
+        Assert.NotNull(stored);
+        var file = Assert.Single(stored!.Mod.Files);
+        Assert.Equal("file-1", file.ProviderFileId);
+    }
+
+    [Fact]
+    public async Task Authoritative_hydration_can_clear_previously_cached_files()
+    {
+        var repository = await CreateRepositoryAsync("hydration-clears-files");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 25, 0, TimeSpan.Zero);
+        var provider = new FakeProvider();
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-hydration-clears"));
+        var service = new CatalogSyncService(repository, new FixedTimeProvider(now));
+
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: true),
+            TestToken);
+        Assert.Single((await repository.GetAsync("fixture:mod-1", TestToken))!.Mod.Files);
+
+        provider.HydratedFiles = [];
+        await service.SyncAsync(
+            provider,
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: true),
+            TestToken);
+
+        Assert.Equal(2, provider.FileHydrationCalls);
+        var stored = await repository.GetAsync("fixture:mod-1", TestToken);
+        Assert.NotNull(stored);
+        Assert.Empty(stored!.Mod.Files);
+    }
+
+    [Fact]
     public async Task Invalid_batch_is_rejected_before_any_catalog_item_is_written()
     {
         var repository = await CreateRepositoryAsync("invalid-batch");
@@ -217,6 +276,21 @@ public sealed class CatalogSyncServiceTests : IDisposable
 
         public int FileHydrationCalls { get; private set; }
 
+        public IReadOnlyList<CatalogModFile> HydratedFiles { get; set; } =
+        [
+            new(
+                "fixture",
+                "mod-1",
+                "file-1",
+                "Main File",
+                "fixture.zip",
+                CatalogFileCategory.Main,
+                "1.0.0",
+                12345,
+                "Fixture archive",
+                DateTimeOffset.Parse("2026-09-29T01:00:00Z", System.Globalization.CultureInfo.InvariantCulture))
+        ];
+
         public Task<IReadOnlyList<CatalogGame>> GetGamesAsync(CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<CatalogGame>>(
                 [new("monster-hunter-world", "Monster Hunter: World", "fixture-game")]);
@@ -246,21 +320,10 @@ public sealed class CatalogSyncServiceTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             FileHydrationCalls++;
-            IReadOnlyList<CatalogModFile> files =
-            [
-                new(
-                    ProviderId,
-                    providerModId,
-                    "file-1",
-                    "Main File",
-                    "fixture.zip",
-                    CatalogFileCategory.Main,
-                    "1.0.0",
-                    12345,
-                    "Fixture archive",
-                    DateTimeOffset.Parse("2026-09-29T01:00:00Z", System.Globalization.CultureInfo.InvariantCulture))
-            ];
-            return Task.FromResult(files);
+            return Task.FromResult<IReadOnlyList<CatalogModFile>>(
+                HydratedFiles
+                    .Select(file => file with { ProviderModId = providerModId })
+                    .ToArray());
         }
 
         public Task<CatalogAcquisitionResolution> ResolveAcquisitionAsync(
