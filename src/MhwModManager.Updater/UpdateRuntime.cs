@@ -598,6 +598,7 @@ public static class UpdateRequestStore
         UpdateManifest manifest,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!File.Exists(journalPath)) return false;
         var journal = JsonSerializer.Deserialize<UpdateJournal>(
                           await File.ReadAllTextAsync(journalPath, ct),
@@ -616,6 +617,7 @@ public static class UpdateRequestStore
         string stagingRoot,
         long buildNumber)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var relative = Path.GetRelativePath(updaterRoot, stagingRoot)
             .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         var segments = relative.Split(
@@ -642,6 +644,7 @@ public static class UpdateRequestStore
         string stagingRoot,
         string? managerHomeRoot)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var material = string.Join(
             "\n",
             manifest.BuildNumber.ToString(System.Globalization.CultureInfo.InvariantCulture),
@@ -655,15 +658,19 @@ public static class UpdateRequestStore
             SHA256.HashData(Encoding.UTF8.GetBytes(material)))[..TopologyBindingHexLength];
     }
 
-    private static string NormalizeDirectoryPath(string path) =>
-        Path.GetFullPath(path)
+    private static string NormalizeDirectoryPath(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return Path.GetFullPath(path)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+    }
 
     private static void RequireCanonicalInput(
         string actual,
         string canonical,
         string label)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var trimmed = actual.TrimEnd(
             Path.DirectorySeparatorChar,
             Path.AltDirectorySeparatorChar);
@@ -678,6 +685,7 @@ public static class UpdateRequestStore
         string expected,
         string label)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var fullActual = Path.GetFullPath(actual)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var fullExpected = Path.GetFullPath(expected)
