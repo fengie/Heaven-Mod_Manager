@@ -156,111 +156,34 @@ function Get-UpdaterInstalledClientE2EDecision {
 function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   param([Parameter(Mandatory=$true)][string]$Json)
 
-  if([string]::IsNullOrWhiteSpace($Json)){
-    throw 'Updater installed-client E2E evidence was empty.'
-  }
-
+  if([string]::IsNullOrWhiteSpace($Json)){ throw 'Updater installed-client E2E evidence was empty.' }
   try{$doc=ConvertFrom-Json -InputObject $Json -ErrorAction Stop}catch{
     throw 'Updater installed-client E2E evidence contained invalid JSON.'
   }
-  if($null -eq $doc){
-    throw 'Updater installed-client E2E evidence was null.'
-  }
+  if($null -eq $doc){ throw 'Updater installed-client E2E evidence was null.' }
 
   $requiredProperty={
     param($Object,[string]$Name)
-    if($null -eq $Object){
-      throw "Updater installed-client E2E evidence omitted required object for '$Name'."
-    }
+    if($null -eq $Object){ throw "Updater installed-client E2E evidence omitted required object for '$Name'." }
     $property=$Object.PSObject.Properties[$Name]
-    if($null -eq $property){
-      throw "Updater installed-client E2E evidence omitted required property '$Name'."
-    }
+    if($null -eq $property){ throw "Updater installed-client E2E evidence omitted required property '$Name'." }
     return $property.Value
   }
-
   $requiredSha={
     param($Object,[string]$Name)
     $value=[string](& $requiredProperty $Object $Name)
-    if($value -notmatch '^[0-9a-fA-F]{40}
-  param(
-    [Parameter(Mandatory=$true)][long]$CurrentBuild,
-    [Parameter(Mandatory=$true)][string]$CurrentSourceSha,
-    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
-
-    [long]$PreviousBuild=0,
-    [string]$PreviousSourceSha='',
-    [string[]]$ChangedPaths=@(),
-    [string[]]$RemoteMainChangedPaths=@()
-  )
-  if($CurrentBuild -le 0){throw 'Current updater build number must be positive.'}
-  $drift=Get-UpdaterMainDriftDecision -CurrentSourceSha $CurrentSourceSha -RemoteMainSha $RemoteMainSha -ChangedPaths $RemoteMainChangedPaths
-  if(-not $drift.Publish){
-    return [pscustomobject]@{Publish=$false;Reason=$drift.Reason}
-  }
-  if($PreviousBuild -gt $CurrentBuild){
-    throw "Updater build $CurrentBuild is older than published build $PreviousBuild."
-  }
-  if($PreviousBuild -eq $CurrentBuild -and $PreviousBuild -gt 0){
-    return [pscustomobject]@{Publish=$false;Reason='already-published-build'}
-  }
-  if(-not [string]::IsNullOrWhiteSpace($PreviousSourceSha)){
-    $relevant=@($ChangedPaths | Where-Object {Test-UpdaterReleaseRelevantPath $_})
-    if($relevant.Count -eq 0){
-      return [pscustomobject]@{Publish=$false;Reason='no-release-input-change'}
-    }
-  }
-  return [pscustomobject]@{Publish=$true;Reason='release-input-change'}
-}
-){
-      throw "Updater installed-client E2E evidence property '$Name' was not a 40-hex source SHA."
-    }
+    if($value -notmatch '^[0-9a-fA-F]{40}$'){ throw "Updater installed-client E2E evidence property '$Name' was not a 40-hex source SHA." }
     return $value.ToLowerInvariant()
   }
-
   $requiredHash={
     param($Object,[string]$Name)
     $value=[string](& $requiredProperty $Object $Name)
-    if($value -notmatch '^[0-9a-fA-F]{64}
-  param(
-    [Parameter(Mandatory=$true)][long]$CurrentBuild,
-    [Parameter(Mandatory=$true)][string]$CurrentSourceSha,
-    [Parameter(Mandatory=$true)][string]$RemoteMainSha,
-
-    [long]$PreviousBuild=0,
-    [string]$PreviousSourceSha='',
-    [string[]]$ChangedPaths=@(),
-    [string[]]$RemoteMainChangedPaths=@()
-  )
-  if($CurrentBuild -le 0){throw 'Current updater build number must be positive.'}
-  $drift=Get-UpdaterMainDriftDecision -CurrentSourceSha $CurrentSourceSha -RemoteMainSha $RemoteMainSha -ChangedPaths $RemoteMainChangedPaths
-  if(-not $drift.Publish){
-    return [pscustomobject]@{Publish=$false;Reason=$drift.Reason}
-  }
-  if($PreviousBuild -gt $CurrentBuild){
-    throw "Updater build $CurrentBuild is older than published build $PreviousBuild."
-  }
-  if($PreviousBuild -eq $CurrentBuild -and $PreviousBuild -gt 0){
-    return [pscustomobject]@{Publish=$false;Reason='already-published-build'}
-  }
-  if(-not [string]::IsNullOrWhiteSpace($PreviousSourceSha)){
-    $relevant=@($ChangedPaths | Where-Object {Test-UpdaterReleaseRelevantPath $_})
-    if($relevant.Count -eq 0){
-      return [pscustomobject]@{Publish=$false;Reason='no-release-input-change'}
-    }
-  }
-  return [pscustomobject]@{Publish=$true;Reason='release-input-change'}
-}
-){
-      throw "Updater installed-client E2E sentinel '$Name' was not a SHA-256 digest."
-    }
+    if($value -notmatch '^[0-9a-fA-F]{64}$'){ throw "Updater installed-client E2E sentinel '$Name' was not a SHA-256 digest." }
     return $value.ToUpperInvariant()
   }
 
   $schemaVersion=[int](& $requiredProperty $doc 'schemaVersion')
-  if($schemaVersion -ne 1){
-    throw "Unsupported updater installed-client E2E evidence schema version '$schemaVersion'."
-  }
+  if($schemaVersion -ne 1){ throw "Unsupported updater installed-client E2E evidence schema version '$schemaVersion'." }
 
   $oldTag=[string](& $requiredProperty $doc 'oldTag')
   $oldBuild=[long](& $requiredProperty $doc 'oldBuild')
@@ -273,12 +196,8 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
 
   $scenarioA=& $requiredProperty $doc 'scenarioA'
   $scenarioB=& $requiredProperty $doc 'scenarioB'
-  if([string](& $requiredProperty $scenarioA 'status') -ne 'PASS'){
-    throw 'Updater installed-client E2E update scenario was not PASS.'
-  }
-  if([string](& $requiredProperty $scenarioB 'status') -ne 'PASS'){
-    throw 'Updater installed-client E2E rollback scenario was not PASS.'
-  }
+  if([string](& $requiredProperty $scenarioA 'status') -ne 'PASS'){ throw 'Updater installed-client E2E update scenario was not PASS.' }
+  if([string](& $requiredProperty $scenarioB 'status') -ne 'PASS'){ throw 'Updater installed-client E2E rollback scenario was not PASS.' }
 
   $scenarioATargetBuild=[long](& $requiredProperty $scenarioA 'targetBuild')
   $scenarioATargetSource=& $requiredSha $scenarioA 'targetSource'
@@ -289,7 +208,15 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   $switchButtonEnabled=[bool](& $requiredProperty $scenarioA 'switchButtonEnabled')
   $settingsButtonEnabled=[bool](& $requiredProperty $scenarioA 'settingsButtonEnabled')
   $scenarioAJournalPhase=[string](& $requiredProperty $scenarioA 'journalPhase')
-  if($scenarioATargetBuild -ne $targetBuild -or -not [string]::Equals($scenarioATargetSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or $healthBuild -ne $targetBuild -or -not [string]::Equals($healthSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or $oldClientExitCode -ne 0 -or $selectorDisplayText -ne 'Updater E2E Fake Game' -or -not $switchButtonEnabled -or -not $settingsButtonEnabled -or $scenarioAJournalPhase -ne 'Confirmed'){
+  if($scenarioATargetBuild -ne $targetBuild -or
+     -not [string]::Equals($scenarioATargetSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or
+     $healthBuild -ne $targetBuild -or
+     -not [string]::Equals($healthSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or
+     $oldClientExitCode -ne 0 -or
+     $selectorDisplayText -ne 'Updater E2E Fake Game' -or
+     -not $switchButtonEnabled -or
+     -not $settingsButtonEnabled -or
+     $scenarioAJournalPhase -ne 'Confirmed'){
     throw 'Updater installed-client E2E update evidence failed durable-attestation validation.'
   }
 
@@ -298,7 +225,11 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   $oldOwnedFileCount=[long](& $requiredProperty $scenarioB 'oldOwnedFileCount')
   $targetOnlyFileCount=[long](& $requiredProperty $scenarioB 'targetOnlyFileCount')
   $scenarioBJournalPhase=[string](& $requiredProperty $scenarioB 'journalPhase')
-  if($restoredBuild -ne $oldBuild -or -not [string]::Equals($restoredSource,$oldSource,[StringComparison]::OrdinalIgnoreCase) -or $oldOwnedFileCount -lt 0 -or $targetOnlyFileCount -lt 0 -or $scenarioBJournalPhase -ne 'RolledBack'){
+  if($restoredBuild -ne $oldBuild -or
+     -not [string]::Equals($restoredSource,$oldSource,[StringComparison]::OrdinalIgnoreCase) -or
+     $oldOwnedFileCount -lt 0 -or
+     $targetOnlyFileCount -lt 0 -or
+     $scenarioBJournalPhase -ne 'RolledBack'){
     throw 'Updater installed-client E2E rollback evidence failed durable-attestation validation.'
   }
 
@@ -319,15 +250,8 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   $durable=[ordered]@{
     schema='mhw-mod-manager/updater-installed-client-e2e-durable/v1'
     sourceEvidenceSchemaVersion=$schemaVersion
-    oldRelease=[ordered]@{
-      tag=$oldTag
-      build=$oldBuild
-      source=$oldSource
-    }
-    target=[ordered]@{
-      build=$targetBuild
-      source=$targetSource
-    }
+    oldRelease=[ordered]@{tag=$oldTag;build=$oldBuild;source=$oldSource}
+    target=[ordered]@{build=$targetBuild;source=$targetSource}
     update=[ordered]@{
       status='PASS'
       targetBuild=$scenarioATargetBuild
@@ -351,7 +275,6 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
       sentinelSha256=$scenarioBHashes
     }
   }
-
   return ($durable | ConvertTo-Json -Depth 8)
 }
 
