@@ -20,6 +20,7 @@ public sealed class UpdaterInstalledClientE2ETests
     private const string ActiveGameSelectorAutomationName = "Active game";
     private const string ActiveGameSelectorAutomationId = "ActiveGameSelector";
     private const string ExpectedFakeGameDisplayName = "Updater E2E Fake Game";
+    private const string ScratchMarkerName = ".mhw-test-scratch.json";
 
     private static readonly JsonSerializerOptions EvidenceJson = new(UpdateProtocol.Json)
     {
@@ -67,6 +68,8 @@ public sealed class UpdaterInstalledClientE2ETests
         if (string.IsNullOrWhiteSpace(evidencePath))
             evidencePath = Path.Combine(root, "evidence.json");
 
+        Directory.CreateDirectory(root);
+        await WriteScratchMarkerAsync(root);
         Directory.CreateDirectory(downloads);
         Directory.CreateDirectory(successInstall);
         Directory.CreateDirectory(rollbackInstall);
@@ -283,7 +286,7 @@ public sealed class UpdaterInstalledClientE2ETests
             Environment.SetEnvironmentVariable("MOD_MANAGER_HOME", previousManagerHome);
             StopProcessesFromInstallRootBestEffort(successInstall);
             StopProcessesFromInstallRootBestEffort(rollbackInstall);
-            try { Directory.Delete(root, true); } catch { }
+            DeleteOwnedScratchDirectory(root);
         }
     }
 
@@ -887,6 +890,64 @@ public sealed class UpdaterInstalledClientE2ETests
     }
 
     private static string Normalize(string path) => path.Replace('\\', '/').Trim('/');
+
+    private static async Task WriteScratchMarkerAsync(string root)
+    {
+        using var process = Process.GetCurrentProcess();
+        var marker = new
+        {
+            schema = "mhw-test-scratch/v1",
+            owner = nameof(UpdaterInstalledClientE2ETests),
+            processId = Environment.ProcessId,
+            processStartUtc = process.StartTime.ToUniversalTime(),
+            createdUtc = DateTimeOffset.UtcNow
+        };
+        await File.WriteAllTextAsync(
+            Path.Combine(root, ScratchMarkerName),
+            JsonSerializer.Serialize(marker, EvidenceJson));
+    }
+
+    private static void DeleteOwnedScratchDirectory(string root)
+    {
+        if (!Directory.Exists(root)) return;
+
+        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
+        var tempRoot = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar)
+                       + Path.DirectorySeparatorChar;
+        if (!fullRoot.StartsWith(tempRoot, StringComparison.OrdinalIgnoreCase)
+            || !Path.GetFileName(fullRoot).StartsWith(
+                "mhw-updater-installed-e2e-",
+                StringComparison.OrdinalIgnoreCase))
+            throw new IOException($"Refusing to delete unexpected updater E2E scratch root: {fullRoot}");
+
+        if ((File.GetAttributes(fullRoot) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"Refusing to recursively delete reparse-point scratch root: {fullRoot}");
+
+        var markerPath = Path.Combine(fullRoot, ScratchMarkerName);
+        if (!File.Exists(markerPath))
+            throw new IOException($"Refusing to delete unmarked updater E2E scratch root: {fullRoot}");
+
+        Exception? last = null;
+        for (var attempt = 1; attempt <= 8; attempt++)
+        {
+            if (!Directory.Exists(fullRoot)) return;
+            try
+            {
+                Directory.Delete(fullRoot, recursive: true);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                last = ex;
+                if (attempt < 8)
+                    Thread.Sleep(100 * attempt);
+            }
+        }
+
+        throw new IOException(
+            $"Failed to remove updater E2E scratch root after stopping owned processes and retrying: {fullRoot}",
+            last);
+    }
 
     private static void StopTrackedProcessBestEffort(int processId)
     {
