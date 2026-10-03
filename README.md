@@ -6,11 +6,13 @@ Current product version: **8.8.90**.
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.90 — byte-stability certification
+## v8.8.90 — byte stability + CI reliability
 
 - Re-certify authoritative file hashes with a second SHA-256 read before accepting the result, closing equal-length/restored-timestamp mutation races.
 - Re-certify blob-capture source bytes before CAS publication or database registration so a torn source cannot be certified by metadata alone.
 - Keep non-authoritative XXH3 hashing single-pass and add deterministic mutation, stable-hash, cancellation, and no-publication regressions.
+- Isolate pinned .NET SDK provisioning per workflow run/attempt/job so stale self-hosted runner state cannot masquerade as a valid install, and mechanically reject the former shared `RUNNER_TEMP\dotnet` root.
+- Make function-verification persistence idempotent: unchanged function/source state keeps existing confirmation timestamps and bytes, while real fingerprint or version changes refresh evidence.
 
 ## v8.8.89 — privacy, legal & accessibility baseline
 
