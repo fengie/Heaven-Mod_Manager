@@ -1,3 +1,15 @@
+# v8.8.82 — 2026-10-03
+
+- Bind updater helper handoff transaction identity to the target manifest plus canonical install, staging, and manager-home roots.
+- Validate helper request topology before mutex acquisition or recovery-journal access, including exact backup, journal, health, pending, and staging path relationships.
+- Reject cross-attempt/root substitution, noncanonical path spellings, malformed health/process identity, updater-owned health arguments, and reparse-point substitution.
+- Require the helper request to agree with canonical pending update state, while retaining safe no-op handling for already-confirmed transactions after pending cleanup.
+- Add adversarial updater handoff regressions covering mutable request paths, traversal aliases, canonical reread, and Windows junction rejection.
+- Delete the downloaded updater ZIP after successful extraction and product-manifest verification so a staged update does not retain both compressed and extracted copies.
+- Delete the entire staging attempt after successful installed-file confirmation, after the recovery journal is durable and pending state is retired.
+- Add conservative startup garbage collection for old orphan staging attempts and terminal confirmed/rolled-back transactions while preserving current pending state and all nonterminal recovery state.
+- Refuse cleanup through reparse points, preserve malformed/unknown updater state instead of guessing, and add deterministic retention/cleanup regressions.
+
 # v8.8.81 — 2026-10-03
 
 - Replace raw installed-client updater E2E JSON promotion with a versioned allowlisted durable evidence projection.
