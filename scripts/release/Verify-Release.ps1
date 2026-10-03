@@ -1,4 +1,4 @@
-param([switch]$RunBenchmarks)
+param([switch]$RunBenchmarks,[switch]$FeatureCandidate)
 $ErrorActionPreference='Stop'
 $Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 . (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
@@ -304,12 +304,15 @@ function Invoke-AgentHandoffPreflight {
     $log=Join-Path $BuildLogs ("agent-handoff-preflight-{0}.log" -f $Stamp)
     $sw=[System.Diagnostics.Stopwatch]::StartNew()
     try {
-        & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
+        $handoffArgs=@{Root=$Root}
+        if($FeatureCandidate){$handoffArgs.FeatureCandidate=$true}
+        & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') @handoffArgs *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff-NegativeFixtures.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-VerificationContinuitySync.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-VerificationCache.ps1') *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         $sw.Stop()
-        Add-Result 'Harness' 'Agent handoff continuity preflight' $true 0 $sw.Elapsed.TotalSeconds $log 'Required continuity context/manifest is present and propagates to the next agent.'
+        $modeDetail=if($FeatureCandidate){'Feature-candidate governance passed; canonical release-version surface parity is deferred to exact-main verification.'}else{'Required continuity context/manifest is present and propagates to the next agent.'}
+        Add-Result 'Harness' 'Agent handoff continuity preflight' $true 0 $sw.Elapsed.TotalSeconds $log $modeDetail
         Write-Host 'PASS: Agent handoff continuity preflight' -ForegroundColor Green
         Write-MhwMasterDebug -Root $Root -Area 'VERIFY-HARNESS' -Message 'PASS agent handoff continuity preflight'
         return $true
