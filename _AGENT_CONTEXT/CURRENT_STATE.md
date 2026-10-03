@@ -1,30 +1,24 @@
-# v8.8.89 privacy, legal & accessibility baseline — canonical state
+# v8.8.91 catalog + updater storage lifecycle — canonical state
 
-v8.8.89 turns the user's 20-point compliance checklist into native-desktop product controls without adding misleading web-only consent UI for features the application does not have.
+v8.8.91 carries forward the v8.8.90 byte-stability/CI baseline, includes the already-integrated #730 visible-scope and residual catalog/migration/rules regressions, and adds #669 ownership-safe cleanup for catalog acquisition scratch and prepared updater leases.
 
 ## Behavior
 
-- Privacy, terms-of-use, refund, cookie, local data-deletion, support/project-detail, and third-party notices are bundled into the application output and reachable from Settings.
-- The current native build explicitly documents that it has no first-party account system, advertising, browser cookies, in-app payments, consumer-review system, or marketing email. Introducing those features is a compliance-review trigger rather than permission to inherit today's assumptions.
-- Settings can open the active manager state directory and the deletion guide explains how to reset local manager data without silently deleting durable Mods or archives.
-- Third-party notices enumerate the centrally managed package inventory; deterministic regression coverage makes package/version drift visible.
-- All current MainWindow preview/artwork Image controls expose UI Automation names.
-- The WPF shell keeps explicit tab navigation and visible keyboard focus behavior.
-- Deterministic tests check the core text/background palette against WCAG AA 4.5:1 normal-text contrast thresholds.
-- `docs/COMPLIANCE-BASELINE.md` maps all 20 checklist items to implemented controls or explicit not-applicable/change-trigger rules.
+- Catalog acquisition scratch uses manager-owned lease records so abandoned downloads can be reclaimed without guessing ownership.
+- Cleanup reclaims only proven exited-owner catalog archives and temporary lease residue under age and byte-quota bounds; active, ambiguous, unknown-shape, unleased, and reparse-point state remains fail-closed.
+- Prepared updater transaction leases require certified process ID plus process-start identity for new writes.
+- Legacy updater leases that lack process-start identity become reclaimable only after their PID is proven gone; live or reused PIDs remain preserved.
+- The v8.8.91 release also includes #730's visible bulk-scope UX and consolidated catalog/migration/rules regression fixes already present on canonical main before this patch.
+- The v8.8.89 privacy/legal/accessibility baseline and all updater provenance, filesystem containment, exact-SDK, and durable-evidence safeguards remain in force.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.89 source `b13f2210211973d23ff0e6ca2f449dade87919f5` passed run `37150713097` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.89-heaven-windows-closure.log`.
+The last closed hosted-Windows source remains v8.8.89 `b13f2210211973d23ff0e6ca2f449dade87919f5`, run `37150713097`, with evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.89-heaven-windows-closure.log`.
 
-The tested source remains `b13f2210211973d23ff0e6ca2f449dade87919f5` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
-
-## Legal/compliance scope
-
-This repository baseline is an engineering control set, not a promise that the application cannot be sued and not a substitute for jurisdiction-specific legal advice. Formal company/entity/address disclosures are intentionally not invented. If the product becomes a paid/commercial service or adds hosted personal data, child-directed collection, analytics/ads, embedded cookie-setting web content, marketing email, reviews/testimonials, or new telemetry uploads, perform a new compliance review before release.
+v8.8.91 has no closed canonical Windows evidence yet. After integration, run fresh exact integrated-source Windows verification and persist the v8.8.91 closure evidence before calling the patch released/closed. Evidence-only persistence commits do not change tested-source identity.
 
 ## Remaining independent work
 
-Keep #669 storage lifecycle, #559/#558 catalog UX/scale, #350/#354 external trust/admin prerequisites, #709 reproducible NuGet restore, and remaining recovery/installed-Windows acceptance independent.
+Keep #559/#558 catalog discovery/browse scale, #350/#354 external trust/admin prerequisites, #709 reproducible NuGet restore, and remaining recovery/installed-Windows acceptance independent unless current live state proves them resolved.
 
-Every successor must preserve the permanent continuity constitution, exact-input verification, updater publication/parity/provenance invariants, exact SDK policy, durable-evidence privacy, and recursively propagate the same obligation.
+Every successor must preserve the permanent continuity constitution, exact-input verification, catalog/updater ownership and cleanup invariants, updater publication/parity/provenance invariants, exact SDK policy, durable-evidence privacy, and recursively propagate the same obligation.
