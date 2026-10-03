@@ -137,8 +137,6 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
 
         try
         {
-            SetTreeLastWriteUtc(root, now - TimeSpan.FromHours(3));
-
             var result = await UpdateStorageMaintenance.CleanupRootAsync(
                 root,
                 now,
