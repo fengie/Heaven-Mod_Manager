@@ -192,7 +192,7 @@ public sealed record CatalogBrowseResultState(
                 true,
                 false,
                 "No mods match this search",
-                "No cached or provider results match this search. Clear the search to return to all cached mods.")
+                "No matching results are in the local cache. Typing filters cached results; choose Search to query configured providers that support text search, or clear the search to return to all cached mods.")
             : new CatalogBrowseResultState(
                 false,
                 false,
