@@ -191,9 +191,9 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
         'admission:',
         'runs-on: ubuntu-latest',
         'pull-requests: read',
-        'gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}"',
+        'urllib.request.urlopen',
         'PR is explicitly marked superseded',
-        'GitHub reports the current PR head as non-mergeable (state=',
+        'GitHub reports the current PR head as non-mergeable',
         'mergeable_state',
         'needs: admission'
     )){
