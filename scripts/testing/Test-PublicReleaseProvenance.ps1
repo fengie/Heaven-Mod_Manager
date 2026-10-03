@@ -44,6 +44,19 @@ try {
   Assert-Equal ((Get-FileHash -LiteralPath $a -Algorithm SHA256).Hash.ToLowerInvariant()) $record.artifacts[0].sha256 'artifact hash'
   Assert-Equal 'release-key-1' $record.artifacts[0].signed_metadata_key_id 'signing key id'
 
+  $singleParams=@{
+    Version='8.8.86'
+    Build=4242
+    SourceSha=$sha
+    Tag='updater-main-4242'
+    Channel='stable'
+    PublishedUtc=[DateTimeOffset]::Parse('2026-10-03T14:00:00Z')
+    ArtifactPaths=@($a)
+  }
+  $singleRecord=New-PublicReleaseProvenanceRecord @singleParams
+  Assert-Equal 1 @($singleRecord.artifacts).Count 'single artifact path remains supported under strict mode'
+  Assert-Equal 'manager.exe' $singleRecord.artifacts[0].name 'single artifact identity'
+
   $json=ConvertTo-PublicReleaseProvenanceJson -Record $record
   $roundTrip=ConvertFrom-Json -InputObject $json
   Assert-Equal $sha $roundTrip.source_sha 'json source sha'

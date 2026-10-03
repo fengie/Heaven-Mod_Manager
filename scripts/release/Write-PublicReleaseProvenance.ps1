@@ -25,7 +25,8 @@ function New-PublicReleaseProvenanceRecord {
   if([string]::IsNullOrWhiteSpace($Tag)){
     throw 'Public release provenance tag may not be blank.'
   }
-  if($ArtifactPaths.Count -lt 1){
+  $artifactPathItems=@($ArtifactPaths)
+  if($artifactPathItems.Count -lt 1){
     throw 'Public release provenance requires at least one artifact path.'
   }
   if(-not [string]::IsNullOrWhiteSpace($SignedMetadataKeyId) -and
@@ -36,17 +37,17 @@ function New-PublicReleaseProvenanceRecord {
   $seen=New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
   $artifacts=New-Object System.Collections.Generic.List[object]
 
-  foreach($inputPath in $ArtifactPaths){
+  foreach($inputPath in $artifactPathItems){
     if([string]::IsNullOrWhiteSpace($inputPath)){
       throw 'Public release provenance artifact path may not be blank.'
     }
 
-    $resolved=Resolve-Path -LiteralPath $inputPath -ErrorAction Stop
-    if($resolved.Count -ne 1){
-      throw "Artifact path '$inputPath' resolved to $($resolved.Count) entries; expected exactly one file."
+    $resolvedItems=@(Resolve-Path -LiteralPath $inputPath -ErrorAction Stop)
+    if($resolvedItems.Count -ne 1){
+      throw "Artifact path '$inputPath' resolved to $($resolvedItems.Count) entries; expected exactly one file."
     }
 
-    $item=Get-Item -LiteralPath $resolved.Path -Force -ErrorAction Stop
+    $item=Get-Item -LiteralPath $resolvedItems[0].Path -Force -ErrorAction Stop
     if($item.PSIsContainer){
       throw "Artifact path '$inputPath' is a directory."
     }
