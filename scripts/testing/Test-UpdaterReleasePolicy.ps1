@@ -331,6 +331,15 @@ Assert-Equal $true ($installedE2EWorkflow.Contains('/compare/$env:SOURCE_SHA...$
 Assert-Equal $true ($installedE2EWorkflow.Contains('needs: classify-workflow-run')) 'installed-client E2E heavy job depends on classifier'
 Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.outputs.run_e2e == 'true'")) 'installed-client E2E heavy job requires explicit eligibility'
 Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.result == 'success'")) 'installed-client E2E heavy job fails closed on classifier failure'
+Assert-Equal $true ($installedE2EWorkflow.Contains('git rev-parse --is-shallow-repository')) 'installed-client E2E persistence detects shallow checkout history'
+Assert-Equal $true ($installedE2EWorkflow.Contains('git fetch --no-tags --prune --unshallow origin $mainRefSpec')) 'installed-client E2E persistence unshallows canonical main history'
+Assert-Equal $true ($installedE2EWorkflow.Contains("'+refs/heads/main:refs/remotes/origin/main'")) 'installed-client E2E persistence refreshes the canonical remote-tracking main ref explicitly'
+$persistenceIndex=$installedE2EWorkflow.IndexOf('Persist successful installed-client E2E evidence')
+$unshallowIndex=$installedE2EWorkflow.IndexOf('git fetch --no-tags --prune --unshallow origin $mainRefSpec',$persistenceIndex)
+$ancestorIndex=$installedE2EWorkflow.IndexOf('git merge-base --is-ancestor $env:MHW_E2E_SOURCE_SHA $remoteMain',$persistenceIndex)
+if($persistenceIndex -lt 0 -or $unshallowIndex -lt 0 -or $ancestorIndex -lt 0 -or $unshallowIndex -ge $ancestorIndex){
+  throw 'Installed-client E2E persistence must restore complete canonical-main history before ancestry classification.'
+}
 $classifierIndex=$installedE2EWorkflow.IndexOf('classify-workflow-run:')
 $restoreIndex=$installedE2EWorkflow.IndexOf('Restore integration test project')
 if($classifierIndex -lt 0 -or $restoreIndex -lt 0 -or $classifierIndex -ge $restoreIndex){
