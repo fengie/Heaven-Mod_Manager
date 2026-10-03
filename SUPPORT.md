@@ -1,8 +1,8 @@
 # Project and Support Details
 
-**Project:** Universal Mod Manager / MHW Manual Mod Manager  
-**Publisher/project owner:** fengie  
-**Primary public distribution repository:** https://github.com/fengie/mhw-mod-manager-release  
+**Project:** Universal Mod Manager / MHW Manual Mod Manager
+**Publisher/project owner:** fengie
+**Primary public distribution repository:** https://github.com/fengie/mhw-mod-manager-release
 **Source/engineering repository:** fengie/mhw-mods
 
 This is an independent software project. The application does not represent itself as a separate incorporated business entity and does not claim affiliation with Capcom, Nexus Mods, Steam, or other third-party providers.
