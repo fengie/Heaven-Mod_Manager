@@ -3,6 +3,7 @@
 - Restore complete canonical-main history before installed-client updater E2E evidence ancestry/drift checks so evidence-only main commits are recognized as descendants of the tested release source.
 - Refresh the explicit `origin/main` remote-tracking ref before persistence classification instead of relying on shallow checkout state.
 - Add release-policy regression coverage that requires unshallowing before `merge-base --is-ancestor`, closing the v8.8.79 durable-evidence gap exposed by run `37085941626`.
+- Name uploaded installed-client E2E evidence artifacts with the exact tested release SHA rather than the later workflow/evidence commit SHA.
 
 # v8.8.79 — 2026-10-02
 
