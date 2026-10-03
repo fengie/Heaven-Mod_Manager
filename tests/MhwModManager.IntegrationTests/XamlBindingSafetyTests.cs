@@ -265,6 +265,26 @@ public sealed partial class XamlBindingSafetyTests
         Assert.DoesNotContain("SelectedCatalogFile = CatalogFiles.FirstOrDefault();", loadBlock);
     }
 
+    [Fact]
+    public void BrowseModsPersistsHydratedFilesWithoutAutoSelecting()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        var loadStart = source.IndexOf("private async Task LoadCatalogFiles()", StringComparison.Ordinal);
+        var installStart = source.IndexOf("private async Task InstallCatalogFile()", loadStart, StringComparison.Ordinal);
+        Assert.True(loadStart >= 0 && installStart > loadStart);
+        var loadBlock = source[loadStart..installStart];
+
+        Assert.Contains("var cached = await repository.GetAsync(selected.Mod.CanonicalId, ct)", loadBlock, StringComparison.Ordinal);
+        Assert.Contains("var hydratedMod = selected.Mod with { Files = files };", loadBlock, StringComparison.Ordinal);
+        Assert.Contains("await repository.UpsertAsync(cached with { Mod = hydratedMod }, ct);", loadBlock, StringComparison.Ordinal);
+        Assert.Contains("SelectedCatalogItem = hydratedRow;", loadBlock, StringComparison.Ordinal);
+        Assert.Contains("SelectedCatalogFile = null;", loadBlock, StringComparison.Ordinal);
+        Assert.DoesNotContain("SelectedCatalogFile = CatalogFiles.FirstOrDefault();", loadBlock, StringComparison.Ordinal);
+    }
+
+
     [Theory]
     [InlineData("", 0, false, false, "No catalog mods yet")]
     [InlineData("armor", 0, true, false, "No mods match this search")]
@@ -290,6 +310,18 @@ public sealed partial class XamlBindingSafetyTests
             Assert.NotEmpty(state.Detail);
         }
     }
+
+    [Fact]
+    public void BrowseModsZeroMatchCopyDoesNotClaimTypingQueriedProviders()
+    {
+        var state = CatalogBrowseResultState.From("armor", 0);
+
+        Assert.Equal(
+            "No matching results are in the local cache. Typing filters cached results; choose Search to query configured providers that support text search, or clear the search to return to all cached mods.",
+            state.Detail);
+        Assert.DoesNotContain("cached or provider results", state.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
 
     [Theory]
     [InlineData(true, false, 2, 0, 0, 5, 2, CatalogPresentationKind.Loading, false)]
@@ -391,6 +423,38 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("SearchCatalogCacheAsync(ct)", debounce);
         Assert.DoesNotContain("SearchCatalogProvidersAsync", debounce);
     }
+
+    [Fact]
+    public void BrowseModsSerializesInitialRefreshManualRefreshAndProviderSearch()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("private readonly SemaphoreSlim catalogSyncGate = new(1, 1);", source, StringComparison.Ordinal);
+
+        var ensureStart = source.IndexOf("private async Task EnsureCatalogLoadedAsync", StringComparison.Ordinal);
+        var refreshCommandStart = source.IndexOf("private async Task RefreshCatalog()", ensureStart, StringComparison.Ordinal);
+        Assert.True(ensureStart >= 0 && refreshCommandStart > ensureStart);
+        var ensureBody = source[ensureStart..refreshCommandStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", ensureBody, StringComparison.Ordinal);
+        Assert.True(
+            ensureBody.IndexOf("if (catalogLoaded)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
+            "Initial catalog load must re-check catalogLoaded after acquiring the sync gate.");
+
+        var refreshCoreStart = source.IndexOf("private async Task RefreshCatalogCoreAsync", refreshCommandStart, StringComparison.Ordinal);
+        Assert.True(refreshCoreStart > refreshCommandStart);
+        var refreshCommandBody = source[refreshCommandStart..refreshCoreStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", refreshCommandBody, StringComparison.Ordinal);
+        Assert.Contains("catalogSyncGate.Release();", refreshCommandBody, StringComparison.Ordinal);
+
+        var searchCommandStart = source.IndexOf("private async Task SearchCatalog()", refreshCoreStart, StringComparison.Ordinal);
+        var providerSearchStart = source.IndexOf("private async Task SearchCatalogProvidersAsync", searchCommandStart, StringComparison.Ordinal);
+        Assert.True(searchCommandStart >= 0 && providerSearchStart > searchCommandStart);
+        var searchCommandBody = source[searchCommandStart..providerSearchStart];
+        Assert.Contains("await catalogSyncGate.WaitAsync(ct);", searchCommandBody, StringComparison.Ordinal);
+        Assert.Contains("catalogSyncGate.Release();", searchCommandBody, StringComparison.Ordinal);
+    }
+
 
     [Fact]
     public void ConflictCollectionChangesNotifyDerivedAttentionState()
