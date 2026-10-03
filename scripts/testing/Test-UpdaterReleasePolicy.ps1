@@ -42,6 +42,93 @@ try{
 }catch{$divergedMissingReleaseRejected=$true}
 Assert-Equal $true $divergedMissingReleaseRejected 'diverged source missing exact release fails closed'
 
+
+$durableSentinels=[pscustomobject]@{
+  'Mods/e2e-user.mod'=('A' * 64)
+  'State/e2e-state.json'=('B' * 64)
+  'e2e-unknown-user-file.txt'=('C' * 64)
+}
+$durableRawFixture=[ordered]@{
+  schemaVersion=1
+  oldTag='updater-main-60'
+  oldBuild=60
+  oldSource=$previous
+  targetBuild=425
+  targetSource=$current
+  startedUtc='CANARY_STARTED'
+  scenarioA=[ordered]@{
+    status='PASS'
+    installRoot='C:\Users\CANARY_USER\AppData\Local\Temp\CANARY_INSTALL'
+    requestPath='\\CANARY_SERVER\transactions\apply-request.json'
+    targetBuild=425
+    targetSource=$current
+    oldClientExitCode=0
+    healthProcessId=424242
+    healthAttemptId='CANARY_ATTEMPT'
+    healthBuild=425
+    healthSource=$current
+    selectorDisplayText='Updater E2E Fake Game'
+    switchButtonEnabled=$true
+    settingsButtonEnabled=$true
+    journalPhase='Confirmed'
+    sentinelSha256=$durableSentinels
+    unexpectedNested='CANARY_NESTED'
+  }
+  scenarioB=[ordered]@{
+    status='PASS'
+    installRoot='C:\Users\CANARY_USER\AppData\Local\Temp\CANARY_ROLLBACK'
+    journalPhase='RolledBack'
+    restoredBuild=60
+    restoredSource=$previous
+    oldOwnedFileCount=689
+    targetOnlyFileCount=133
+    targetOnlyPaths=@('CANARY_TARGET_ONLY_PATH')
+    sentinelSha256=$durableSentinels
+    unexpectedNested='CANARY_ROLLBACK_NESTED'
+  }
+  productLog=@('CANARY_PRODUCT_LOG')
+  completedUtc='CANARY_COMPLETED'
+  tokenLikeValue='CANARY_UNKNOWN_SECRET'
+}
+$durableRawJson=$durableRawFixture | ConvertTo-Json -Depth 8
+$durableEvidenceJson=ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $durableRawJson
+$durableEvidence=ConvertFrom-Json -InputObject $durableEvidenceJson
+Assert-Equal 'mhw-mod-manager/updater-installed-client-e2e-durable/v1' $durableEvidence.schema 'durable updater E2E schema'
+Assert-Equal 425 $durableEvidence.target.build 'durable updater E2E target build'
+Assert-Equal $current $durableEvidence.target.source 'durable updater E2E target source'
+Assert-Equal 'Confirmed' $durableEvidence.update.journalPhase 'durable updater E2E confirmed phase'
+Assert-Equal 'RolledBack' $durableEvidence.rollback.journalPhase 'durable updater E2E rollback phase'
+Assert-Equal 133 $durableEvidence.rollback.targetOnlyFileCount 'durable updater E2E target-only count'
+Assert-Equal ('A' * 64) $durableEvidence.update.sentinelSha256.mod 'durable updater E2E mod sentinel'
+foreach($forbidden in @(
+  'CANARY_USER',
+  'CANARY_SERVER',
+  'CANARY_INSTALL',
+  'CANARY_ATTEMPT',
+  'CANARY_NESTED',
+  'CANARY_TARGET_ONLY_PATH',
+  'CANARY_PRODUCT_LOG',
+  'CANARY_UNKNOWN_SECRET',
+  'CANARY_STARTED',
+  'CANARY_COMPLETED',
+  'installRoot',
+  'requestPath',
+  'healthProcessId',
+  'healthAttemptId',
+  'targetOnlyPaths',
+  'productLog'
+)){
+  Assert-Equal $false $durableEvidenceJson.Contains($forbidden) "durable updater E2E excludes $forbidden"
+}
+
+$unsafeDurableFixture=ConvertFrom-Json -InputObject $durableRawJson
+$unsafeDurableFixture.scenarioA.selectorDisplayText='CANARY_SELECTOR_SECRET'
+$unsafeDurableRejected=$false
+try{
+  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json ($unsafeDurableFixture | ConvertTo-Json -Depth 8))
+}catch{$unsafeDurableRejected=$true}
+Assert-Equal $true $unsafeDurableRejected 'durable updater E2E rejects unexpected allowlisted-field value'
+
 $staleUnknown=Get-UpdaterPublicationDecision -CurrentBuild 20 -CurrentSourceSha $current -RemoteMainSha $previous
 Assert-Equal $false $staleUnknown.Publish 'unclassified stale main publish'
 Assert-Equal 'stale-main-unclassified' $staleUnknown.Reason 'unclassified stale main reason'
@@ -332,6 +419,12 @@ Assert-Equal $true ($installedE2EWorkflow.Contains('needs: classify-workflow-run
 Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.outputs.run_e2e == 'true'")) 'installed-client E2E heavy job requires explicit eligibility'
 Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.result == 'success'")) 'installed-client E2E heavy job fails closed on classifier failure'
 Assert-Equal $true ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ env.MHW_E2E_SOURCE_SHA }}')) 'installed-client E2E artifact name binds to the tested source SHA'
+
+Assert-Equal $true ($installedE2EWorkflow.Contains('ConvertTo-UpdaterInstalledClientDurableEvidenceJson')) 'installed-client E2E persistence projects raw runtime evidence through durable allowlist'
+Assert-Equal $true ($installedE2EWorkflow.Contains('=== DURABLE_EVIDENCE.JSON ===')) 'installed-client E2E closure labels durable evidence'
+Assert-Equal $false ($installedE2EWorkflow.Contains("'=== EVIDENCE.JSON ==='")) 'installed-client E2E closure never embeds raw evidence JSON'
+Assert-Equal $true ($installedE2EWorkflow.Contains('raw_evidence_sha256=')) 'installed-client E2E closure retains raw artifact hash without raw artifact contents'
+
 Assert-Equal $false ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ github.sha }}')) 'installed-client E2E artifact name must not bind to the later workflow/evidence commit'
 Assert-Equal $true ($installedE2EWorkflow.Contains('git rev-parse --is-shallow-repository')) 'installed-client E2E persistence detects shallow checkout history'
 Assert-Equal $true ($installedE2EWorkflow.Contains('git fetch --no-tags --prune --unshallow origin $mainRefSpec')) 'installed-client E2E persistence unshallows canonical main history'
