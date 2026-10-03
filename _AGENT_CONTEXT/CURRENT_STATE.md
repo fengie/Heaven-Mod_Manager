@@ -21,6 +21,6 @@ Residual TOCTOU remains between final path-based validation and the subsequent m
 
 ## Remaining independent work
 
-#673/#674 unmanaged adoption hardening remains separate and must reconcile against v8.8.86 rather than replay stale release metadata. #668 Advanced Tools accessibility reconciliation, #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
+#673/#674 unmanaged adoption hardening remains separate and must reconcile against v8.8.86 rather than replay stale release metadata. Advanced Tools accessibility #668 is already integrated on canonical main at `b4a6d20fdc7a522ba4cbf8b7cec5bab8940846f1`. #642 atomic recipe export, #667 orphan snapshot reconciliation, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and RECOVERY-005/RECOVERY-007 remain independent.
 
 Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, durable-evidence privacy, and candidate-vs-canonical verification separation, and recursively propagate the same obligation.
