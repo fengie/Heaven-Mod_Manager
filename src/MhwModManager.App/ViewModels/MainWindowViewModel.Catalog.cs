@@ -192,7 +192,7 @@ public sealed record CatalogBrowseResultState(
                 true,
                 false,
                 "No mods match this search",
-                "No cached or provider results match this search. Clear the search to return to all cached mods.")
+                "No matching results are in the local cache. Typing filters cached results; choose Search to query configured providers that support text search, or clear the search to return to all cached mods.")
             : new CatalogBrowseResultState(
                 false,
                 false,
@@ -375,6 +375,7 @@ public sealed partial class MainWindowViewModel
     private CatalogAcquisitionService? catalogAcquisition;
     private IReadOnlyList<IModCatalogProvider>? catalogProviders;
     private bool catalogLoaded;
+    private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private CancellationTokenSource? catalogQueryCts;
     private bool catalogProviderOperationInProgress;
     private bool catalogProviderAttempted;
@@ -775,8 +776,22 @@ public sealed partial class MainWindowViewModel
         SetCatalogProviderOperationInProgress(true);
         try
         {
-            await RefreshCatalogCoreAsync(ct);
-            catalogLoaded = true;
+            await catalogSyncGate.WaitAsync(ct);
+            try
+            {
+                if (catalogLoaded)
+                {
+                    await SearchCatalogCacheAsync(ct);
+                    return;
+                }
+
+                await RefreshCatalogCoreAsync(ct);
+                catalogLoaded = true;
+            }
+            finally
+            {
+                catalogSyncGate.Release();
+            }
         }
         finally
         {
@@ -798,8 +813,16 @@ public sealed partial class MainWindowViewModel
                 true,
                 async ct =>
                 {
-                    await RefreshCatalogCoreAsync(ct);
-                    catalogLoaded = true;
+                    await catalogSyncGate.WaitAsync(ct);
+                    try
+                    {
+                        await RefreshCatalogCoreAsync(ct);
+                        catalogLoaded = true;
+                    }
+                    finally
+                    {
+                        catalogSyncGate.Release();
+                    }
                 });
         }
         finally
@@ -896,7 +919,18 @@ public sealed partial class MainWindowViewModel
                 "Searching mod catalog",
                 "Querying providers that advertise text search, then updating the local cache…",
                 true,
-                ct => SearchCatalogProvidersAsync(query, ct));
+                async ct =>
+                {
+                    await catalogSyncGate.WaitAsync(ct);
+                    try
+                    {
+                        await SearchCatalogProvidersAsync(query, ct);
+                    }
+                    finally
+                    {
+                        catalogSyncGate.Release();
+                    }
+                });
         }
         finally
         {
@@ -1030,6 +1064,19 @@ public sealed partial class MainWindowViewModel
                         s.Paths.Game,
                         selected.Mod.ProviderModId,
                         ct);
+
+                    var repository = catalogRepository
+                        ?? throw new InvalidOperationException("Catalog repository is unavailable.");
+                    var cached = await repository.GetAsync(selected.Mod.CanonicalId, ct)
+                        ?? throw new InvalidOperationException("Selected catalog item is no longer present in the local cache.");
+                    var hydratedMod = selected.Mod with { Files = files };
+                    await repository.UpsertAsync(cached with { Mod = hydratedMod }, ct);
+
+                    var hydratedRow = selected with { Mod = hydratedMod };
+                    var rowIndex = CatalogItems.IndexOf(selected);
+                    if (rowIndex >= 0)
+                        CatalogItems[rowIndex] = hydratedRow;
+                    SelectedCatalogItem = hydratedRow;
                     CatalogFiles.ReplaceAll(files.Select(file => new CatalogFileRow(file)));
                     SelectedCatalogFile = null;
                     SetCatalogFilePresentation(
