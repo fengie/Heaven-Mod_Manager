@@ -130,8 +130,12 @@ public static partial class AutoCompatibility
         return StandaloneBaseLabelRegex().IsMatch(leaf);
     }
 
-    private static bool ContainsFamilyRoleValue(string? value, params string[] roles) =>
-        !string.IsNullOrWhiteSpace(value) && roles.Any(role => value.Contains(role, StringComparison.OrdinalIgnoreCase));
+    private static bool ContainsFamilyRoleValue(string? value, params string[] roles)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var tokens = PackageTokens(value);
+        return roles.Any(role => tokens.Contains(role, StringComparer.OrdinalIgnoreCase));
+    }
 
     private static double PackageIdentitySimilarity(ModDescriptor a, ModDescriptor b)
     {
