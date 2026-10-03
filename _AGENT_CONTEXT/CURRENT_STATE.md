@@ -1,6 +1,6 @@
-# v8.8.82 updater helper request topology — canonical state
+# v8.8.82 updater topology + bounded storage retention — canonical state
 
-v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` remains the last closed hosted-Windows verification boundary. v8.8.82 hardens the updater helper handoff trust boundary under issue #635.
+v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` remains the last closed hosted-Windows verification boundary. v8.8.82 hardens the updater helper handoff trust boundary under issue #635 and closes the unbounded updater staging/terminal retention defect under issue #647.
 
 ## Behavior
 
@@ -9,13 +9,17 @@ v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6` remains the last close
 - The request file, backup, journal, health, pending, and staging paths must match the canonical updater transaction layout; cross-attempt and foreign-root substitution fail closed.
 - Noncanonical absolute-path spellings, malformed health/process identity, updater-owned health arguments, and existing reparse-point substitutions are rejected before helper state consumption.
 - Canonical pending-update state must agree with the request manifest and staging root. A transaction that is already confirmed may remain a safe no-op after pending cleanup.
+- A successfully extracted and verified staged update no longer retains its downloaded release ZIP alongside the complete extracted payload.
+- Confirmation retires the entire staging attempt after the recovery journal is durable and pending state has been removed.
+- Startup maintenance removes only sufficiently old orphan staging attempts and terminal Confirmed/RolledBack transactions; it preserves the current pending attempt and every nonterminal/recovery-required transaction.
+- Malformed pending state fails closed for staging cleanup, unknown updater-owned directory shapes are preserved, and cleanup refuses reparse-point traversal.
 - The v8.8.81 allowlisted durable installed-client E2E evidence boundary remains unchanged.
 
 ## Verification boundary
 
 The last closed hosted-Windows verification remains v8.8.81 source `1d21a7ee99774c6820e16421837e9451ef2e3ef6`, run `37098443475`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
-v8.8.82 changes updater helper/client/runtime source, adversarial integration tests, and synchronized release/continuity metadata. Fresh exact-input verification is therefore required; no earlier green result should be inherited onto the final v8.8.82 source.
+v8.8.82 changes updater helper/client/runtime/storage source, application startup maintenance, adversarial integration tests, and synchronized release/continuity metadata. Fresh exact-input verification is therefore required; no earlier green result should be inherited onto the final v8.8.82 source.
 
 ## Remaining independent work
 
