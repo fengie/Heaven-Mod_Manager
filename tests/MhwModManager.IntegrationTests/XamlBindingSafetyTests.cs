@@ -435,6 +435,23 @@ public sealed partial class XamlBindingSafetyTests
             xaml);
     }
     [Fact]
+    public void ModLibraryBulkActionsExposeCountAndSnapshotVisibleRows()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var rows = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "Rows.cs"));
+
+        Assert.Contains("EnableVisibleLabel", xaml);
+        Assert.Contains("DisableVisibleLabel", xaml);
+        Assert.Contains("HasVisibleMods", xaml);
+        Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().ToArray();", main);
+        Assert.Contains("if(targets.Length>1&&MessageBox.Show(", main);
+        Assert.Contains("public string PendingStateLabel", rows);
+        Assert.Contains("OnPropertyChanged(nameof(PendingStateLabel));", rows);
+    }
+
+    [Fact]
     public void ModLibraryImagesAndIssueActionsExposeContextualAutomationNames()
     {
         var root = FindRepositoryRoot();
