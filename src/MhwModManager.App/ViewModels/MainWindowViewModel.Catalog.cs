@@ -174,6 +174,33 @@ public sealed record CatalogOriginStatusRow(
     string State,
     string Message);
 
+public sealed record CatalogBrowseResultState(
+    bool HasQuery,
+    bool HasResults,
+    string Title,
+    string Detail)
+{
+    public static CatalogBrowseResultState From(string? query, int resultCount)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var hasQuery = !string.IsNullOrWhiteSpace(query);
+        var hasResults = resultCount > 0;
+        if (hasResults) return new CatalogBrowseResultState(hasQuery, true, string.Empty, string.Empty);
+
+        return hasQuery
+            ? new CatalogBrowseResultState(
+                true,
+                false,
+                "No mods match this search",
+                "No cached or provider results match this search. Clear the search to return to all cached mods.")
+            : new CatalogBrowseResultState(
+                false,
+                false,
+                "No catalog mods yet",
+                "Refresh configured providers to load browseable mods. Provider errors and configuration problems are reported separately.");
+    }
+}
+
 public sealed partial class MainWindowViewModel
 {
     private const int CatalogProviderRefreshLimit = 100;
@@ -207,6 +234,78 @@ public sealed partial class MainWindowViewModel
             return CatalogItems.Count;
         }
     }
+    public bool HasCatalogQuery
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogBrowseResultState.From(CatalogQuery, CatalogItemCount).HasQuery;
+        }
+    }
+    public bool HasCatalogResults
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogBrowseResultState.From(CatalogQuery, CatalogItemCount).HasResults;
+        }
+    }
+    public string CatalogEmptyTitle
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogBrowseResultState.From(CatalogQuery, CatalogItemCount).Title;
+        }
+    }
+    public string CatalogEmptyDetail
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogBrowseResultState.From(CatalogQuery, CatalogItemCount).Detail;
+        }
+    }
+    public string CatalogResultCountLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"{CatalogItemCount} {(CatalogItemCount == 1 ? "result" : "results")}";
+        }
+    }
+    public Visibility CatalogResultsVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasCatalogResults ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+    public Visibility CatalogEmptyVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasCatalogResults ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+    public Visibility CatalogClearSearchVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasCatalogQuery ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+    public Visibility CatalogRefreshEmptyVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasCatalogQuery ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
     public int CatalogOriginAttentionCount
     {
         get
@@ -220,10 +319,26 @@ public sealed partial class MainWindowViewModel
     partial void OnCatalogQueryChanged(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        NotifyCatalogResultState();
         catalogQueryCts?.Cancel();
         catalogQueryCts?.Dispose();
         var cts = catalogQueryCts = new CancellationTokenSource();
         _ = DebounceCatalogQueryAsync(cts.Token);
+    }
+
+    private void NotifyCatalogResultState()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(CatalogItemCount));
+        OnPropertyChanged(nameof(HasCatalogQuery));
+        OnPropertyChanged(nameof(HasCatalogResults));
+        OnPropertyChanged(nameof(CatalogEmptyTitle));
+        OnPropertyChanged(nameof(CatalogEmptyDetail));
+        OnPropertyChanged(nameof(CatalogResultCountLabel));
+        OnPropertyChanged(nameof(CatalogResultsVisibility));
+        OnPropertyChanged(nameof(CatalogEmptyVisibility));
+        OnPropertyChanged(nameof(CatalogClearSearchVisibility));
+        OnPropertyChanged(nameof(CatalogRefreshEmptyVisibility));
     }
 
     partial void OnSelectedCatalogItemChanged(CatalogModRow? value)
@@ -382,6 +497,20 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
+    private async Task ClearCatalogSearch()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (CatalogQuery.Length == 0) return;
+
+        CatalogQuery = "";
+        catalogQueryCts?.Cancel();
+        catalogQueryCts?.Dispose();
+        catalogQueryCts = null;
+        await SearchCatalogCacheAsync(CancellationToken.None);
+        CatalogStatusText = "Showing cached catalog results.";
+    }
+
+    [RelayCommand]
     private async Task SearchCatalog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -480,10 +609,17 @@ public sealed partial class MainWindowViewModel
         var projected = rows
             .Select(row => new CatalogModRow(row.Mod, row.IsStale(now)))
             .ToArray();
+        var selected = SelectedCatalogItem;
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             CatalogItems.ReplaceAll(projected);
-            OnPropertyChanged(nameof(CatalogItemCount));
+            if (selected is not null)
+            {
+                SelectedCatalogItem = projected.FirstOrDefault(row =>
+                    string.Equals(row.Mod.ProviderId, selected.Mod.ProviderId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(row.Mod.ProviderModId, selected.Mod.ProviderModId, StringComparison.OrdinalIgnoreCase));
+            }
+            NotifyCatalogResultState();
         });
     }
 
