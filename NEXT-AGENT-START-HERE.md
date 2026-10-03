@@ -21,6 +21,10 @@ Last closed canonical Windows source is v8.8.87 `8c872e7051b60a4ddc878bf4290c210
 
 The pre-version provenance head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after repairing Windows PowerShell scalar path handling. The reconciled v8.8.88 final head changes release inputs and includes newer canonical-main work, so those earlier greens are supporting evidence only and must not authorize merge.
 
+## Unresolved risk
+
+The v8.8.88 candidate changes release publication workflow, provenance policy/tests, and release metadata. Until the exact-final-head PR gates pass and the merged source completes the canonical Windows Release Gate plus installed-client updater E2E, v8.8.88 must not be treated as closed or released. Public `release-index.json` mutation is also unproven until the merged release records its exact immutable source and artifact digests.
+
 ## Next action
 
 Require all exact-final-head PR #687 gates to pass. Merge only that exact green head, verify remote `main`, then observe the strict canonical Windows Release Gate and downstream installed-client updater E2E. Confirm the public release repository's `release-index.json` receives the exact immutable release record. Persist closure evidence only for the exact tested source.
