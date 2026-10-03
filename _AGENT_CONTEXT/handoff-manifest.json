@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.82",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.81 is the last closed hosted-Windows source boundary. v8.8.82 fixes update-migration mod identity casing.",
+  "immediateParentRevision": "v8.8.81 is the last closed hosted-Windows source boundary. v8.8.82 combines canonical update-migration identity, complete LastKnownGood restore semantics, and native FOMOD exactly-one selection behavior.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
