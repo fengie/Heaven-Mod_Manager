@@ -1,10 +1,16 @@
-# v8.8.84 — MHW Manual Mod Manager
+# v8.8.85 — MHW Manual Mod Manager
 
-Current product version: **8.8.84**.
+Current product version: **8.8.85**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.85 — import reparse hardening
+
+- Reject descendant file or directory reparse points in manager-owned import staging immediately before publication.
+- Apply the same fail-closed tree-topology guard before recursive import cleanup and rollback so nested junction substitution cannot redirect destructive traversal.
+- Add Windows junction regressions proving unsafe publication/rollback is refused while external target bytes remain untouched.
 
 ## v8.8.84 — updater test-state isolation
 
@@ -19,16 +25,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Change the disposable updater harness to retain only a small external evidence JSON while tearing down its disposable profile on both success and failure.
 - Add ownership markers plus a conservative stale-scratch reaper for abandoned marked self-test/updater E2E roots; unmarked, active, reparse-point, user-data, repository, and WSL paths are never touched.
 
-## v8.8.82 — updater topology + bounded storage retention
-
-- Bind each helper handoff transaction identity to the exact target manifest plus canonical install, staging, and manager-home roots.
-- Validate the request topology before the helper acquires the update mutex or reads recovery state.
-- Require backup, journal, health, pending, and staging paths to match the canonical transaction layout; reject noncanonical path spellings and cross-attempt substitutions.
-- Stop retaining two complete update copies while an update is staged: discard the downloaded ZIP after extraction and package verification succeeds.
-- Retire the whole staging attempt immediately after an update is confirmed, and reclaim sufficiently old orphan staging plus terminal confirmed/rolled-back transactions on startup.
-- Preserve the exact pending staging attempt and every nonterminal/recovery-required transaction; malformed pending state fails closed, and cleanup refuses reparse-point traversal.
-- Add adversarial coverage for topology substitution plus deterministic storage-retention coverage for pending, orphaned, terminal, recent, and reparse-point state.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -40,6 +36,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **UPDATER-E2E-PERSISTENCE-622 / P0** — v8.8.80 restores complete main history before E2E persistence ancestry checks so successful exact-source updater evidence survives the release evidence-only commit.
 - [x] **UPDATER-STORAGE-647 / P0** — v8.8.82 removes retained staging ZIP/payload duplication and performs conservative state-aware cleanup of historical updater staging/terminal transactions; PR #658 passed exact-head gates and integrated.
 - [x] **UPDATER-TEST-671 / P0** — v8.8.84 serializes the small updater integration-test set that shares process-global pending state, eliminating cross-test races while retaining parallelism elsewhere.
+- [x] **IMPORT-REPARSE-676 / P0** — v8.8.85 rejects descendant reparse topology at import publication/cleanup/rollback boundaries and adds Windows junction regressions.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
