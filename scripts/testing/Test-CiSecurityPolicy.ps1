@@ -30,6 +30,31 @@ function Get-UnsafeWorkflowTelemetryViolations {
     return @($violations)
 }
 
+function Get-UnsafeWorkflowCredentialRecoveryViolations {
+    param(
+        [Parameter(Mandatory=$true)][string]$Text,
+        [Parameter(Mandatory=$true)][string]$DisplayName
+    )
+
+    $violations=New-Object System.Collections.Generic.List[string]
+    if($Text -match '(?im)\bgh(?:\.exe)?\s+auth\s+token\b'){
+        $violations.Add("${DisplayName}: workflows must not recover machine-local GitHub CLI credentials.")
+    }
+    if(
+        $Text -match '(?im)\bgit(?:\.exe)?\s+credential\s+fill\b' -or
+        $Text -match '(?im)\.Arguments\s*=\s*[''\"]credential\s+fill[''\"]'
+    ){
+        $violations.Add("${DisplayName}: workflows must not recover machine-local Git Credential Manager credentials.")
+    }
+    if(
+        $Text -match '(?i)MHW_PUBLIC_RELEASE_TOKEN' -and
+        $Text -match '(?i)/actions/runners(?:/|\?|[''\"])'
+    ){
+        $violations.Add("${DisplayName}: MHW_PUBLIC_RELEASE_TOKEN must not be reused for Actions runner administration.")
+    }
+    return @($violations)
+}
+
 # Regression for issue #591. These synthetic values deliberately exercise secret
 # spellings that blacklist-style redaction routinely misses. The policy blocks
 # the source telemetry channel itself; the safe projection must contain no canary.
@@ -79,9 +104,34 @@ foreach($canary in $telemetryCanaries){
     }
 }
 
+# Regression for issue #627. Persistent self-hosted workflows must never
+# scrape machine-local GitHub credentials or repurpose release credentials for
+# cross-repository runner administration.
+$unsafeGhCredentialFixture='gh auth token'
+if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeGhCredentialFixture -DisplayName 'synthetic-gh-credential-fixture').Count -eq 0){
+    $errors.Add('CI credential regression: gh auth token fixture was not rejected.')
+}
+$unsafeGitCredentialFixture=@"
+$psi = New-Object System.Diagnostics.ProcessStartInfo
+$psi.Arguments = 'credential fill'
+"@
+if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeGitCredentialFixture -DisplayName 'synthetic-git-credential-fixture').Count -eq 0){
+    $errors.Add('CI credential regression: Git credential fill fixture was not rejected.')
+}
+$unsafeReleaseTokenReuseFixture=@"
+MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}
+Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/example/target/actions/runners/registration-token"
+"@
+if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeReleaseTokenReuseFixture -DisplayName 'synthetic-release-token-reuse-fixture').Count -eq 0){
+    $errors.Add('CI credential regression: release-token runner-admin fixture was not rejected.')
+}
+
 foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Object { $_.Extension -in @('.yml','.yaml') })){
     $workflowText=Get-Content -LiteralPath $workflow.FullName -Raw
     foreach($violation in @(Get-UnsafeWorkflowTelemetryViolations -Text $workflowText -DisplayName $workflow.Name)){
+        $errors.Add($violation)
+    }
+    foreach($violation in @(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $workflowText -DisplayName $workflow.Name)){
         $errors.Add($violation)
     }
 }
