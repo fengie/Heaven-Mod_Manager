@@ -1049,8 +1049,19 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText=result.Summary+" The setup is applied and ready to launch.";
     }
 
-    [RelayCommand]private void EnableVisible()=>StageVisible(true);
-    [RelayCommand]private void DisableVisible()=>StageVisible(false);
+    [RelayCommand]
+    private void EnableVisible()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        StageVisible(true);
+    }
+
+    [RelayCommand]
+    private void DisableVisible()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        StageVisible(false);
+    }
 
     private void StageVisible(bool enabled)
     {
