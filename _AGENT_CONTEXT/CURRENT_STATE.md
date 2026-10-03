@@ -13,9 +13,9 @@ v8.8.91 carries forward the v8.8.90 byte-stability/CI baseline, includes the alr
 
 ## Verification boundary
 
-The last closed hosted-Windows source remains v8.8.89 `b13f2210211973d23ff0e6ca2f449dade87919f5`, run `37150713097`, with evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.89-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed run `37157439747` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log`.
 
-v8.8.91 has no closed canonical Windows evidence yet. After integration, run fresh exact integrated-source Windows verification and persist the v8.8.91 closure evidence before calling the patch released/closed. Evidence-only persistence commits do not change tested-source identity.
+The tested source remains `936a265994610791f647f5607f162f5539e8a320` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 

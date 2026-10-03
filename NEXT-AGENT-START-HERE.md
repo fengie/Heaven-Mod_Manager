@@ -15,9 +15,9 @@ Change set: issue #669 plus the already-integrated #730 tranche
 
 ## Verification boundary
 
-Last closed canonical Windows verification remains v8.8.89 source `b13f2210211973d23ff0e6ca2f449dade87919f5`, run `37150713097`.
+Current hosted-Windows closure: v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed run `37157439747` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log`.
 
-v8.8.91 requires fresh exact integrated-source Windows verification after integration. Do not call v8.8.91 released/closed until that run passes and truthful evidence is persisted.
+The tested source remains `936a265994610791f647f5607f162f5539e8a320` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk
 
