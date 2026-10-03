@@ -4,23 +4,48 @@ using MhwModManager.Core;
 
 namespace MhwModManager.Storage;
 
+internal enum ManagerDatabaseMigrationCheckpoint
+{
+    AfterVersionRead,
+    AfterArmorIndexRebuild,
+    BeforeVersionWrite,
+    BeforeCommit
+}
+
 /// <summary>
 /// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
 /// shared-cache changes locking semantics and works against the WAL concurrency model.
 /// </summary>
-public sealed class ManagerDatabase(string databasePath)
+public sealed class ManagerDatabase
 {
     private const int BusyTimeoutSeconds = 10;
-    public string DatabasePath { get; } = databasePath;
+    private readonly Func<ManagerDatabaseMigrationCheckpoint, CancellationToken, ValueTask>? migrationCheckpoint;
+    private readonly string connectionString;
 
-    private readonly string connectionString = new SqliteConnectionStringBuilder
+    public ManagerDatabase(string databasePath)
+        : this(databasePath, migrationCheckpoint: null)
     {
-        DataSource = databasePath,
-        Mode = SqliteOpenMode.ReadWriteCreate,
-        Cache = SqliteCacheMode.Default,
-        Pooling = true,
-        DefaultTimeout = BusyTimeoutSeconds
-    }.ToString();
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+    }
+
+    internal ManagerDatabase(
+        string databasePath,
+        Func<ManagerDatabaseMigrationCheckpoint, CancellationToken, ValueTask>? migrationCheckpoint)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        DatabasePath = databasePath;
+        this.migrationCheckpoint = migrationCheckpoint;
+        connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath,
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Cache = SqliteCacheMode.Default,
+            Pooling = true,
+            DefaultTimeout = BusyTimeoutSeconds
+        }.ToString();
+    }
+
+    public string DatabasePath { get; }
 
     public async Task InitializeAsync(CancellationToken ct = default)
     {
@@ -29,16 +54,77 @@ public sealed class ManagerDatabase(string databasePath)
         await using var c = await OpenRawAsync(ct);
         await ExecAsync(c, "PRAGMA journal_mode=WAL;", ct);
         await ExecAsync(c, "PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=10000; PRAGMA wal_autocheckpoint=1000; PRAGMA journal_size_limit=67108864;", ct);
-        await ExecAsync(c, Schema.Sql, ct);
 
-        var version = await GetSchemaVersionAsync(c, ct);
-        if (version < 2)
-            await RebuildArmorIndexAsync(c, ct);
+        await using var tx = c.BeginTransaction(deferred: false);
+        try
+        {
+            await ExecAsync(c, Schema.Sql, ct, tx);
 
-        if (version < 6)
-            await SetSchemaVersionAsync(c, 6, ct);
-        else
-            await ExecAsync(c, "INSERT OR IGNORE INTO schema_info(key,value) VALUES('version','6');", ct);
+            var version = await GetSchemaVersionAsync(c, tx, ct);
+            await ReachMigrationCheckpointAsync(
+                ManagerDatabaseMigrationCheckpoint.AfterVersionRead,
+                ct);
+
+            if (version < 2)
+            {
+                await RebuildArmorIndexAsync(c, tx, ct);
+                await ReachMigrationCheckpointAsync(
+                    ManagerDatabaseMigrationCheckpoint.AfterArmorIndexRebuild,
+                    ct);
+            }
+
+            if (version < 6)
+            {
+                await ReachMigrationCheckpointAsync(
+                    ManagerDatabaseMigrationCheckpoint.BeforeVersionWrite,
+                    ct);
+                await SetSchemaVersionAsync(c, tx, 6, ct);
+            }
+            else
+            {
+                await ExecAsync(
+                    c,
+                    "INSERT OR IGNORE INTO schema_info(key,value) VALUES('version','6');",
+                    ct,
+                    tx);
+            }
+
+            await ReachMigrationCheckpointAsync(
+                ManagerDatabaseMigrationCheckpoint.BeforeCommit,
+                ct);
+            await tx.CommitAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            MasterDebugLog.Write(
+                "DB-MIGRATION",
+                "Rolling back schema migration after initialization failure.",
+                ex);
+            try
+            {
+                await tx.RollbackAsync(CancellationToken.None);
+                MasterDebugLog.Write(
+                    "DB-MIGRATION",
+                    "Schema migration rollback completed.");
+            }
+            catch (Exception rollbackEx)
+            {
+                MasterDebugLog.Write(
+                    "DB-MIGRATION",
+                    "Schema migration rollback itself failed; preserving the original initialization failure.",
+                    rollbackEx);
+            }
+
+            throw;
+        }
+    }
+
+    private ValueTask ReachMigrationCheckpointAsync(
+        ManagerDatabaseMigrationCheckpoint checkpoint,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"checkpoint={checkpoint}");
+        return migrationCheckpoint?.Invoke(checkpoint, ct) ?? ValueTask.CompletedTask;
     }
 
     public async Task<SqliteConnection> OpenAsync(CancellationToken ct = default)
@@ -74,28 +160,39 @@ public sealed class ManagerDatabase(string databasePath)
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    private static async Task<int> GetSchemaVersionAsync(SqliteConnection c, CancellationToken ct)
+    private static async Task<int> GetSchemaVersionAsync(
+        SqliteConnection c,
+        SqliteTransaction tx,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var cmd = c.CreateCommand();
+        cmd.Transaction = tx;
         cmd.CommandText = "SELECT value FROM schema_info WHERE key='version'";
         var value = await cmd.ExecuteScalarAsync(ct) as string;
-        return int.TryParse(value, System.Globalization.NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
     }
 
-    private static async Task SetSchemaVersionAsync(SqliteConnection c, int version, CancellationToken ct)
+    private static async Task SetSchemaVersionAsync(
+        SqliteConnection c,
+        SqliteTransaction tx,
+        int version,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var cmd = c.CreateCommand();
+        cmd.Transaction = tx;
         cmd.CommandText = "INSERT INTO schema_info(key,value) VALUES('version',$v) ON CONFLICT(key) DO UPDATE SET value=excluded.value";
         cmd.Parameters.AddWithValue("$v", version.ToString(CultureInfo.InvariantCulture));
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    private static async Task RebuildArmorIndexAsync(SqliteConnection c, CancellationToken ct)
+    private static async Task RebuildArmorIndexAsync(
+        SqliteConnection c,
+        SqliteTransaction tx,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await using var tx = (SqliteTransaction)await c.BeginTransactionAsync(ct);
         await ExecAsync(c, "DELETE FROM mod_file_armor;", ct, tx);
 
         var rows = new List<(string modId, string path)>();
@@ -127,14 +224,15 @@ public sealed class ManagerDatabase(string databasePath)
             await insert.ExecuteNonQueryAsync(ct);
         }
 
-        await tx.CommitAsync(ct);
     }
 
     public async Task RebuildArmorIndexAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var c = await OpenAsync(ct);
-        await RebuildArmorIndexAsync(c, ct);
+        await using var tx = c.BeginTransaction(deferred: false);
+        await RebuildArmorIndexAsync(c, tx, ct);
+        await tx.CommitAsync(ct);
     }
 
     public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)

@@ -4,4 +4,7 @@
     <ProjectReference Include="../MhwModManager.Core/MhwModManager.Core.csproj" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="MhwModManager.IntegrationTests" />
+  </ItemGroup>
 </Project>
