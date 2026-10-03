@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.77",
+  "currentVersion": "8.8.78",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.76 is the last fully closed hosted-Windows source boundary. v8.8.77 repairs updater E2E runner allocation and makes exact verification evidence advance canonical continuity state in the same persistence commit.",
+  "immediateParentRevision": "v8.8.77 is the last closed hosted-Windows source boundary. v8.8.78 / issue #559 adds actionable Browse Mods empty and zero-match result states while preserving exact-file install safety.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification and release supply-chain rules; require current-version closure evidence to agree with CURRENT_REVISION/CURRENT_STATE/NEXT-AGENT before inheriting green status; continue #558/#559 and representative recovery work after current exact-source verification closes; propagate this obligation onward.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and retrieve task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification and release supply-chain rules; verify/persist the v8.8.78 Browse Mods empty-state boundary, then continue remaining #559 discovery UX and #558 scale work without duplicating active owners; propagate this obligation onward.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

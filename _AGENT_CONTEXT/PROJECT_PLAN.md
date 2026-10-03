@@ -37,7 +37,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
 | CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #561 first tranche; PR #565 v8.8.69 integrated | Expand catalog breadth safely with capability-gated search, coherent cache capacity, and provider-aware scaling. |
-| BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.72 explicit selection-state tranche | Add filters, sorting, provider health, and richer discovery states. |
+| BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.72 selection-state; v8.8.78 empty/no-match tranche | Add filters, sorting, provider health, loading/stale/partial-failure states, and broader discovery UX. |
 | CATALOG-UPDATES-569 | P1 | DONE | issue #569; PR #573; v8.8.71 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
 | RECOVERY-578 | P0 | READY | issue #578; follow-up to #571 / PR #572 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
 | AUDIT-575 | P1 | DONE | issue #575; v8.8.72 | Prevent torn live-save snapshots with stable-copy verification, cleanup, and mutation/cancellation coverage. |

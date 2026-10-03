@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using MhwModManager.App.ViewModels;
 using Xunit;
 
 namespace MhwModManager.IntegrationTests;
@@ -193,6 +194,57 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("<Setter Property=\"IsEnabled\" Value=\"False\"/>", xaml);
         Assert.Contains("SelectedCatalogFile = null;", source);
         Assert.Contains("CatalogFiles.ReplaceAll(value?.Mod.Files.Select", source);
+    }
+
+    [Theory]
+    [InlineData("", 0, false, false, "No catalog mods yet")]
+    [InlineData("armor", 0, true, false, "No mods match this search")]
+    [InlineData("armor", 2, true, true, "")]
+    public void BrowseModsResultStateDistinguishesEmptyCatalogFromZeroMatches(
+        string query,
+        int resultCount,
+        bool expectedHasQuery,
+        bool expectedHasResults,
+        string expectedTitle)
+    {
+        var state = CatalogBrowseResultState.From(query, resultCount);
+
+        Assert.Equal(expectedHasQuery, state.HasQuery);
+        Assert.Equal(expectedHasResults, state.HasResults);
+        Assert.Equal(expectedTitle, state.Title);
+        if (expectedHasResults)
+        {
+            Assert.Empty(state.Detail);
+        }
+        else
+        {
+            Assert.NotEmpty(state.Detail);
+        }
+    }
+
+    [Fact]
+    public void BrowseModsEmptyStatesExposeRecoveryActionsAndHideDeadEndSelectionPrompt()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Text=\"{Binding CatalogEmptyTitle}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogEmptyDetail}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogResultsVisibility}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogEmptyVisibility}\"", xaml);
+        Assert.Contains("Command=\"{Binding RefreshCatalogCommand}\"", xaml);
+        Assert.Contains("Command=\"{Binding ClearCatalogSearchCommand}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Refresh catalog providers\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Clear catalog search\"", xaml);
+        Assert.Contains("<Condition Binding=\"{Binding HasCatalogResults}\" Value=\"True\"/>", xaml);
+        Assert.Contains("Text=\"{Binding CatalogResultCountLabel}\"", xaml);
+        Assert.DoesNotContain("<Run Text=\"{Binding CatalogItemCount,Mode=OneWay}\"/><Run Text=\" cached\"/>", xaml);
+
+        Assert.Contains("private async Task ClearCatalogSearch()", source);
+        Assert.Contains("CatalogQuery = \"\";", source);
+        Assert.Contains("NotifyCatalogResultState();", source);
+        Assert.Contains("SelectedCatalogItem = projected.FirstOrDefault", source);
     }
 
     [Fact]

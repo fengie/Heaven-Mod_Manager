@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.77</Version>
-    <InformationalVersion>8.8.77-updater-e2e-runner-continuity</InformationalVersion>
+    <Version>8.8.78</Version>
+    <InformationalVersion>8.8.78-browse-empty-states</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

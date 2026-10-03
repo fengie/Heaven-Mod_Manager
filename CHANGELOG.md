@@ -1,3 +1,11 @@
+# v8.8.78 — 2026-10-02
+
+- Distinguish Browse Mods' initial empty catalog from a query with zero visible matches.
+- Add in-place **Refresh Providers** and **Clear Search** recovery actions with accessible names, and hide the dead-end selection prompt while no row can be selected.
+- Keep selected details synchronized to the visible provider/mod identity after result replacement so filtered-out selections cannot remain stale.
+- Replace the misleading filtered-result `cached` badge with a truthful visible-result count.
+- Add deterministic state/XAML regressions covering empty, zero-match, populated, recovery-action, and selection-state contracts.
+
 # v8.8.77 — 2026-10-02
 
 - Route the updater installed-client E2E publication classifier from unavailable GitHub-hosted `ubuntu-latest` capacity to the known-good self-hosted Heaven Windows runner.
