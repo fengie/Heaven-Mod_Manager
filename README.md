@@ -1,10 +1,18 @@
-# v8.8.80 — MHW Manual Mod Manager
+# v8.8.81 — MHW Manual Mod Manager
 
-Current product version: **8.8.80**.
+Current product version: **8.8.81**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.81 — allowlisted updater E2E evidence
+
+- Persist only a versioned, explicitly allowlisted projection of installed-client updater E2E evidence into Git history.
+- Bind durable target-source identity to the exact workflow-tested source SHA and fail closed on release/update/rollback/UI assertion mismatches.
+- Exclude runner-local paths and usernames, process/attempt IDs, target-only path inventories, product logs, timestamps, runner environment metadata, and unknown future properties.
+- Preserve the transient raw evidence SHA-256 for provenance while keeping raw diagnostics in short-lived workflow artifacts rather than durable repository evidence.
+- Add canary regressions for machine-local data, unknown fields, invalid release identity, unexpected UI values, and tested-source mismatch.
 
 ## v8.8.80 — updater E2E evidence persistence
 
@@ -20,14 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Preserve the no-traversal boundary so pruning never recursively follows an untrusted junction/symlink target.
 - Make last-known-good change detection symmetric so removed mods are reported alongside additions, enable-state changes, and priority changes.
 - Add Windows junction and mixed last-known-good state regressions.
-
-## v8.8.78 — actionable Browse Mods empty states
-
-- Distinguish an empty catalog from a search with zero matches instead of leaving a blank results grid.
-- Show contextual **Refresh Providers** or **Clear Search** recovery actions with keyboard/UI Automation names.
-- Hide the dead-end selection prompt when there are no selectable rows and keep selected details synchronized with the visible result set.
-- Label the browse badge as visible results rather than incorrectly describing filtered matches as total cached items.
-- Add deterministic state and XAML regressions for empty, zero-match, and populated Browse Mods states.
 
 ## Current plans & progress
 
