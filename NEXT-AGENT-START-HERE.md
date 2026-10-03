@@ -16,9 +16,9 @@ Change set: issue #559 actionable empty/no-match Browse Mods tranche
 
 ## Verification boundary
 
-The last closed hosted-Windows source boundary is v8.8.77 source `cd90cff3cec585b6c09e2bb68992247753f6efb9`, run `37072838484`, with exact evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.77-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.78 source `3b129ae973506ddd7e6d5924c4585617b1d83a77` passed run `37081642946` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.78-heaven-windows-closure.log`.
 
-v8.8.78 changes Browse Mods XAML, view-model state, tests, and release metadata. Verify the canonical v8.8.78 tree on its exact inputs and persist source/run evidence before treating it as a closed verification boundary.
+The tested source remains `3b129ae973506ddd7e6d5924c4585617b1d83a77` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and next work
 
