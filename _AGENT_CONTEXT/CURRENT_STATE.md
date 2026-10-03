@@ -13,9 +13,9 @@ v8.8.88 adds an updater-readable provenance/index layer for immutable public rel
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.88 source `d0816f3c495ff055df517ce0b021e41dd19596f6` passed run `37143560604` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.88-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.88 source `029b105426ef875bcd302dac3fff9305c395637f` passed run `37144494783` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.88-heaven-windows-closure.log`.
 
-The tested source remains `d0816f3c495ff055df517ce0b021e41dd19596f6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `029b105426ef875bcd302dac3fff9305c395637f` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
