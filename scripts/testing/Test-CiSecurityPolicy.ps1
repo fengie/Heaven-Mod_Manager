@@ -435,6 +435,37 @@ if(!(Test-Path -LiteralPath $sdkHelperPath)){
     }
 }
 
+function Get-SharedDotNetInstallRootViolations {
+    param(
+        [Parameter(Mandatory=$true)][string]$Text,
+        [Parameter(Mandatory=$true)][string]$DisplayName
+    )
+
+    $violations=New-Object System.Collections.Generic.List[string]
+    if($Text.Contains('Join-Path $env:RUNNER_TEMP ''dotnet''')){
+        $violations.Add("${DisplayName}: repository SDK install root must be unique per run/attempt/job instead of sharing RUNNER_TEMP\\dotnet.")
+    }
+    return @($violations)
+}
+
+# Regression for #718: the former shared mutable SDK root must remain rejected
+# even when the rest of the bootstrap contract is present.
+$unsafeSharedSdkRootFixture=@'
+actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+global-json-file: global.json
+Assert-PinnedDotNetSdk.ps1
+$env:GITHUB_RUN_ID
+$env:GITHUB_RUN_ATTEMPT
+$env:GITHUB_JOB
+Remove-Item -LiteralPath $installRoot -Recurse -Force
+$installRoot=Join-Path $env:RUNNER_TEMP 'dotnet'
+DOTNET_INSTALL_DIR=$installRoot
+'@
+$sharedRootFixtureViolations=@(Get-SharedDotNetInstallRootViolations -Text $unsafeSharedSdkRootFixture -DisplayName 'synthetic-shared-sdk-root-fixture')
+if($sharedRootFixtureViolations.Count -ne 1 -or $sharedRootFixtureViolations[0] -notmatch 'must be unique'){
+    $errors.Add('CI SDK bootstrap regression: shared RUNNER_TEMP\\dotnet fixture was not specifically rejected.')
+}
+
 $setupDotnetPin='actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5'
 foreach($workflowName in @('windows-release-gate.yml','updater-publication-pr-gate.yml','updater-installed-client-e2e.yml','workflow-feature-pr-gate.yml')){
     $workflowPath=Join-Path $workflowRoot $workflowName
@@ -443,8 +474,11 @@ foreach($workflowName in @('windows-release-gate.yml','updater-publication-pr-ga
         continue
     }
     $workflowText=Get-Content -LiteralPath $workflowPath -Raw
-    foreach($required in @($setupDotnetPin,'global-json-file: global.json','Assert-PinnedDotNetSdk.ps1','DOTNET_INSTALL_DIR=')){
+    foreach($required in @($setupDotnetPin,'global-json-file: global.json','Assert-PinnedDotNetSdk.ps1','DOTNET_INSTALL_DIR=','$env:GITHUB_RUN_ID','$env:GITHUB_RUN_ATTEMPT','$env:GITHUB_JOB','Remove-Item -LiteralPath $installRoot -Recurse -Force')){
         if(-not $workflowText.Contains($required)){$errors.Add("${workflowName}: repository SDK bootstrap invariant missing: $required")}
+    }
+    foreach($violation in @(Get-SharedDotNetInstallRootViolations -Text $workflowText -DisplayName $workflowName)){
+        $errors.Add($violation)
     }
     if($workflowText.Contains("-ne '10.0.401'")){
         $errors.Add("${workflowName}: duplicated literal SDK-version comparison must defer to global.json.")

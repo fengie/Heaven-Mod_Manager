@@ -82,6 +82,57 @@ public sealed class FunctionVerifierBehaviorTests : IDisposable
         Assert.False(ReadVerified());
     }
 
+    [Fact]
+    public void Repeated_confirm_is_byte_stable_for_unchanged_source()
+    {
+        File.WriteAllText(Path.Combine(root, "VERSION.txt"), "1.0.0");
+        WriteSource("class C { void Run() { using var trace = MasterDebugLog.BeginMethod(); Work(); } }");
+
+        Assert.Equal(0, Confirm());
+        var first = File.ReadAllBytes(Baseline);
+
+        Assert.Equal(0, Confirm());
+        Assert.Equal(first, File.ReadAllBytes(Baseline));
+    }
+
+    [Fact]
+    public void Confirm_refreshes_only_changed_function_state_within_the_same_version()
+    {
+        File.WriteAllText(Path.Combine(root, "VERSION.txt"), "1.0.0");
+        WriteSource("class C { void A() { using var trace = MasterDebugLog.BeginMethod(); Work(); } void B() { using var trace = MasterDebugLog.BeginMethod(); Work(); } }");
+        Assert.Equal(0, Confirm());
+        var aBefore = ReadFunctionState("method:A()");
+        var bBefore = ReadFunctionState("method:B()");
+
+        Thread.Sleep(20);
+        WriteSource("class C { void A() { using var trace = MasterDebugLog.BeginMethod(); Work(); } void B() { using var trace = MasterDebugLog.BeginMethod(); Changed(); } }");
+        Assert.Equal(0, Confirm());
+        var aAfter = ReadFunctionState("method:A()");
+        var bAfter = ReadFunctionState("method:B()");
+
+        Assert.Equal(aBefore.Fingerprint, aAfter.Fingerprint);
+        Assert.Equal(aBefore.VerifiedAtUtc, aAfter.VerifiedAtUtc);
+        Assert.NotEqual(bBefore.Fingerprint, bAfter.Fingerprint);
+        Assert.NotEqual(bBefore.VerifiedAtUtc, bAfter.VerifiedAtUtc);
+    }
+
+    [Fact]
+    public void Confirm_refreshes_baseline_when_source_version_changes()
+    {
+        File.WriteAllText(Path.Combine(root, "VERSION.txt"), "1.0.0");
+        WriteSource("class C { void Run() { using var trace = MasterDebugLog.BeginMethod(); Work(); } }");
+        Assert.Equal(0, Confirm());
+        var before = File.ReadAllBytes(Baseline);
+
+        File.WriteAllText(Path.Combine(root, "VERSION.txt"), "1.0.1");
+        Assert.Equal(0, Confirm());
+        var after = File.ReadAllBytes(Baseline);
+
+        Assert.NotEqual(before, after);
+        using var json = JsonDocument.Parse(after);
+        Assert.Equal("1.0.1", json.RootElement.GetProperty("sourceVersion").GetString());
+    }
+
     private void WriteTrustedFixture(bool duplicateEntry)
     {
         const string source = "class C { void Run() { Work(); } }";
@@ -104,8 +155,25 @@ public sealed class FunctionVerifierBehaviorTests : IDisposable
         return json.RootElement.GetProperty("functions")[0].GetProperty("verified").GetBoolean();
     }
 
+    private (string Fingerprint, DateTimeOffset VerifiedAtUtc) ReadFunctionState(string signature)
+    {
+        using var json = JsonDocument.Parse(File.ReadAllText(Baseline));
+        foreach (var function in json.RootElement.GetProperty("functions").EnumerateArray())
+        {
+            var id = function.GetProperty("id").GetString();
+            if (id is not null && id.EndsWith("::" + signature, StringComparison.Ordinal))
+            {
+                return (
+                    function.GetProperty("fingerprint").GetString()!,
+                    function.GetProperty("verifiedAtUtc").GetDateTimeOffset());
+            }
+        }
+        throw new InvalidOperationException($"Missing function state for {signature}.");
+    }
+
     private void WriteSource(string source) => File.WriteAllText(Path.Combine(root, "src", "Fixture.cs"), source);
     private int Scan() => Verifier.Main(["--root", root, "--mode", "scan"]);
+    private int Confirm() => Verifier.Main(["--root", root, "--mode", "confirm"]);
 
     public void Dispose()
     {

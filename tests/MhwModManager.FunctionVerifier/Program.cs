@@ -327,18 +327,24 @@ internal static class Program
         var previousById = previous.Functions
             .Where(x => !string.IsNullOrWhiteSpace(x.Id))
             .ToDictionary(x => x.Id, x => x, StringComparer.Ordinal);
+        var sameSourceVersion = StringComparer.Ordinal.Equals(previous.SourceVersion, result.SourceVersion);
         var now = DateTimeOffset.UtcNow;
         var entries = new List<BaselineEntry>(result.Functions.Count);
         foreach (var function in result.Functions)
         {
             var verified = function.KnownGood;
             DateTimeOffset? verifiedAt = null;
+            var verificationBasis = function.VerificationBasis;
             if (verified)
             {
-                if (previousById.TryGetValue(function.Id, out var old)
+                if (sameSourceVersion
+                    && previousById.TryGetValue(function.Id, out var old)
                     && old.Verified
                     && StringComparer.OrdinalIgnoreCase.Equals(old.Fingerprint, function.Fingerprint))
+                {
                     verifiedAt = old.VerifiedAtUtc ?? now;
+                    verificationBasis = old.VerificationBasis ?? verificationBasis;
+                }
                 else
                     verifiedAt = now;
             }
@@ -348,14 +354,16 @@ internal static class Program
                 Fingerprint = function.Fingerprint,
                 Verified = verified,
                 VerifiedAtUtc = verifiedAt,
-                VerificationBasis = function.VerificationBasis
+                VerificationBasis = verificationBasis
             });
         }
+        var allVerified = entries.All(x => x.Verified);
+        var unchanged = allVerified && HasEquivalentVerificationState(previous, result.SourceVersion, entries);
         var document = new BaselineDocument
         {
             FormatVersion = FormatVersion,
             SourceVersion = result.SourceVersion,
-            VerifiedAtUtc = entries.All(x => x.Verified) ? now : null,
+            VerifiedAtUtc = allVerified ? unchanged ? previous.VerifiedAtUtc ?? now : now : null,
             Functions = entries
         };
         WriteJsonAtomically(path, document);
@@ -363,21 +371,64 @@ internal static class Program
 
     private static void Promote(string path, ScanResult result)
     {
-        var baseline = new BaselineDocument
+        var previous = LoadBaseline(path);
+        ValidateBaseline(previous, path);
+        var previousById = previous.Functions
+            .Where(x => !string.IsNullOrWhiteSpace(x.Id))
+            .ToDictionary(x => x.Id, x => x, StringComparer.Ordinal);
+        var sameSourceVersion = StringComparer.Ordinal.Equals(previous.SourceVersion, result.SourceVersion);
+        var now = DateTimeOffset.UtcNow;
+        var entries = result.Functions.Select(x =>
         {
-            FormatVersion = FormatVersion,
-            SourceVersion = result.SourceVersion,
-            VerifiedAtUtc = DateTimeOffset.UtcNow,
-            Functions = result.Functions.Select(x => new BaselineEntry
+            var verifiedAt = now;
+            if (sameSourceVersion
+                && previousById.TryGetValue(x.Id, out var old)
+                && old.Verified
+                && StringComparer.OrdinalIgnoreCase.Equals(old.Fingerprint, x.Fingerprint)
+                && StringComparer.Ordinal.Equals(old.VerificationBasis, "full-release-confirmation"))
+                verifiedAt = old.VerifiedAtUtc ?? now;
+            return new BaselineEntry
             {
                 Id = x.Id,
                 Fingerprint = x.Fingerprint,
                 Verified = true,
-                VerifiedAtUtc = DateTimeOffset.UtcNow,
+                VerifiedAtUtc = verifiedAt,
                 VerificationBasis = "full-release-confirmation"
-            }).ToList()
+            };
+        }).ToList();
+        var unchanged = HasEquivalentVerificationState(previous, result.SourceVersion, entries);
+        var baseline = new BaselineDocument
+        {
+            FormatVersion = FormatVersion,
+            SourceVersion = result.SourceVersion,
+            VerifiedAtUtc = unchanged ? previous.VerifiedAtUtc ?? now : now,
+            Functions = entries
         };
         WriteJsonAtomically(path, baseline);
+    }
+
+    private static bool HasEquivalentVerificationState(
+        BaselineDocument previous,
+        string sourceVersion,
+        IReadOnlyList<BaselineEntry> entries)
+    {
+        if (!StringComparer.Ordinal.Equals(previous.SourceVersion, sourceVersion)
+            || previous.Functions.Count != entries.Count)
+            return false;
+
+        var previousById = previous.Functions
+            .Where(x => !string.IsNullOrWhiteSpace(x.Id))
+            .ToDictionary(x => x.Id, x => x, StringComparer.Ordinal);
+        foreach (var entry in entries)
+        {
+            if (!previousById.TryGetValue(entry.Id, out var old)
+                || old.Verified != entry.Verified
+                || !StringComparer.OrdinalIgnoreCase.Equals(old.Fingerprint, entry.Fingerprint)
+                || old.VerifiedAtUtc != entry.VerifiedAtUtc
+                || !StringComparer.Ordinal.Equals(old.VerificationBasis, entry.VerificationBasis))
+                return false;
+        }
+        return true;
     }
 
     private static void ValidateBaseline(BaselineDocument baseline, string path)
