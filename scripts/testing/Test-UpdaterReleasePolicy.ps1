@@ -428,7 +428,7 @@ Assert-Equal $true ($releaseWorkflow.Contains('Assert-PinnedDotNetSdk.ps1')) 're
 Assert-Equal $true ($releaseWorkflow.Contains('/git/ref/heads/main')) 'release freshness reads canonical main ref'
 Assert-Equal $true ($releaseWorkflow.Contains('[string]::Equals($remoteMain,$env:GITHUB_SHA')) 'release freshness compares canonical main with exact run SHA'
 $publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_freshness\.outputs\.publish == 'true'").Count
-Assert-Equal 4 $publicationFreshnessGuards 'artifact subject plus public/private/parity freshness guards'
+Assert-Equal 5 $publicationFreshnessGuards 'release intent plus artifact/public/private/parity freshness guards'
 Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 
