@@ -336,9 +336,18 @@ jobs:
             throw 'Successful updater E2E did not produce evidence.json.'
           }
 
-          git fetch origin main
+          $isShallowRepository = (git rev-parse --is-shallow-repository).Trim()
           if ($LASTEXITCODE -ne 0) {
-            throw 'Failed to fetch origin/main before persisting updater E2E evidence.'
+            throw 'Failed to determine whether the updater E2E checkout is shallow.'
+          }
+          $mainRefSpec = '+refs/heads/main:refs/remotes/origin/main'
+          if ($isShallowRepository -eq 'true') {
+            git fetch --no-tags --prune --unshallow origin $mainRefSpec
+          } else {
+            git fetch --no-tags --prune origin $mainRefSpec
+          }
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to fetch complete origin/main history before persisting updater E2E evidence.'
           }
           $remoteMain = (git rev-parse origin/main).Trim()
           $persistenceBaseSha = $remoteMain
