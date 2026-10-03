@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MhwModManager.Automation;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using MhwModManager.Updater;
@@ -244,22 +245,35 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private async Task ReclaimUpdaterStorage()
+    private async Task ReclaimDisposableStorage()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy(
-            "storage.reclaim-updater",
-            "Reclaiming updater storage",
-            "Removing only updater-owned orphan staging and terminal recovery data that the existing safety boundary proves reclaimable…",
+            "storage.reclaim-disposable",
+            "Reclaiming disposable storage",
+            "Removing only manager-owned updater residue and leased catalog-download scratch that existing safety boundaries prove reclaimable…",
             true,
             async ct =>
             {
                 var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
-                var before = await MeasureOwnedRootAsync(updaterRoot, ct);
-                UpdateStorageCleanupResult result;
+                var catalogDownloadRoot = Path.Combine(
+                    s.Paths.NextStateRoot,
+                    "CatalogDownloads");
+                var updaterBefore = await MeasureOwnedRootAsync(
+                    updaterRoot,
+                    ct);
+                var catalogBefore = await MeasureOwnedRootAsync(
+                    catalogDownloadRoot,
+                    ct);
+                UpdateStorageCleanupResult updaterResult;
+                CatalogDownloadCleanupResult catalogResult;
                 try
                 {
-                    result = await UpdateStorageMaintenance.RunAsync(
+                    updaterResult = await UpdateStorageMaintenance.RunAsync(
+                        message => MasterDebugLog.Write("STORAGE-UI", message),
+                        ct);
+                    catalogResult = await CatalogDownloadMaintenance.RunAsync(
+                        catalogDownloadRoot,
                         message => MasterDebugLog.Write("STORAGE-UI", message),
                         ct);
                 }
@@ -269,20 +283,35 @@ public sealed partial class MainWindowViewModel
                         or InvalidDataException)
                 {
                     StorageStatusText =
-                        $"Reclaim stopped safely without touching Mods or State: {ex.Message}";
+                        $"Reclaim stopped safely without touching Mods, State, or unknown paths: {ex.Message}";
                     throw;
                 }
 
-                var after = await MeasureOwnedRootAsync(updaterRoot, ct);
-                var reclaimed = Math.Max(0, before - after);
+                var updaterAfter = await MeasureOwnedRootAsync(
+                    updaterRoot,
+                    ct);
+                var catalogAfter = await MeasureOwnedRootAsync(
+                    catalogDownloadRoot,
+                    ct);
+                var updaterReclaimed = Math.Max(
+                    0,
+                    updaterBefore - updaterAfter);
+                var catalogReclaimed = Math.Max(
+                    0,
+                    catalogBefore - catalogAfter);
+                var reclaimed = checked(
+                    updaterReclaimed + catalogReclaimed);
                 await RefreshStorageUsageCoreAsync(ct);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     StorageStatusText =
-                        $"Reclaimed {FormatStorageBytes(reclaimed)} from updater-owned disposable data. " +
-                        $"Removed {result.DeletedStagingAttempts} orphan staging attempt(s) and " +
-                        $"{result.DeletedTransactions} terminal recovery transaction(s); " +
-                        $"{result.DeferredEntries} entry/entries were preserved or deferred.";
+                        $"Reclaimed {FormatStorageBytes(reclaimed)} from manager-owned disposable data " +
+                        $"(updater {FormatStorageBytes(updaterReclaimed)}, catalog scratch {FormatStorageBytes(catalogReclaimed)}). " +
+                        $"Removed {updaterResult.DeletedStagingAttempts} orphan staging attempt(s), " +
+                        $"{updaterResult.DeletedTransactions} terminal recovery transaction(s), " +
+                        $"{catalogResult.DeletedDownloads} catalog download(s), and " +
+                        $"{catalogResult.DeletedLeases} catalog lease file(s); " +
+                        $"{updaterResult.DeferredEntries + catalogResult.DeferredEntries} entry/entries were preserved or deferred.";
                 });
             });
     }
@@ -360,7 +389,7 @@ public sealed partial class MainWindowViewModel
         {
             StorageCategories.ReplaceAll(measurements);
             StorageStatusText =
-                "Storage totals refreshed from the current manager-owned roots. Durable rows are shown for visibility only; the reclaim action is limited to updater-owned disposable data.";
+                "Storage totals refreshed from the current manager-owned roots. Durable rows are shown for visibility only; reclaim is limited to manager-owned disposable updater and catalog-download data.";
         });
     }
 
