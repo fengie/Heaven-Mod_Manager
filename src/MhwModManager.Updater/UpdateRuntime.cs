@@ -408,6 +408,8 @@ public static class UpdateHealthProtocol
 
 public static class UpdateRequestStore
 {
+    private const int TopologyBindingHexLength = 24;
+
     public static async Task WriteAsync(string path, UpdateApplyRequest request, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"path={path}");
@@ -422,5 +424,245 @@ public static class UpdateRequestStore
                     ?? throw new InvalidDataException("Updater apply request is empty.");
         value.Manifest.Validate();
         return value;
+    }
+
+    public static string CreateBoundTransactionId(
+        UpdateManifest manifest,
+        string installRoot,
+        string stagingRoot,
+        string? managerHomeRoot)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"build={manifest.BuildNumber}");
+        manifest.Validate();
+        var binding = ComputeTopologyBinding(
+            manifest,
+            installRoot,
+            stagingRoot,
+            managerHomeRoot);
+        return $"{manifest.BuildNumber}-{binding}-{Guid.NewGuid():N}";
+    }
+
+    public static async Task<UpdateApplyRequest> ReadForHelperAsync(
+        string requestPath,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"path={requestPath}");
+        var updaterRoot = NormalizeDirectoryPath(UpdatePackageStager.GetUpdaterRoot());
+        UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
+
+        var fullRequestPath = Path.GetFullPath(requestPath);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, fullRequestPath);
+        var request = await ReadAsync(fullRequestPath, ct);
+        return await ValidateHelperTopologyAsync(
+            fullRequestPath,
+            updaterRoot,
+            request,
+            ct);
+    }
+
+    private static async Task<UpdateApplyRequest> ValidateHelperTopologyAsync(
+        string requestPath,
+        string updaterRoot,
+        UpdateApplyRequest request,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"build={request.Manifest.BuildNumber}");
+        var transactionRoot = Path.GetDirectoryName(requestPath)
+            ?? throw new InvalidDataException("Updater request has no transaction directory.");
+        transactionRoot = NormalizeDirectoryPath(transactionRoot);
+        var transactionsRoot = NormalizeDirectoryPath(Path.Combine(updaterRoot, "transactions"));
+        RequireSamePath(
+            Path.GetDirectoryName(transactionRoot)
+                ?? throw new InvalidDataException("Updater transaction has no parent directory."),
+            transactionsRoot,
+            "transaction parent");
+        RequireSamePath(
+            requestPath,
+            Path.Combine(transactionRoot, "apply-request.json"),
+            "request file");
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, transactionRoot);
+
+        var transactionName = Path.GetFileName(transactionRoot);
+        var transactionParts = transactionName.Split('-', StringSplitOptions.None);
+        if (transactionParts.Length != 3
+            || !long.TryParse(transactionParts[0], out var transactionBuild)
+            || transactionBuild != request.Manifest.BuildNumber
+            || transactionParts[1].Length != TopologyBindingHexLength
+            || transactionParts[1].Any(c => !Uri.IsHexDigit(c))
+            || !Guid.TryParseExact(transactionParts[2], "N", out _))
+            throw new InvalidDataException(
+                $"Updater transaction identity is malformed or does not match build {request.Manifest.BuildNumber}.");
+
+        var installRoot = NormalizeDirectoryPath(request.InstallRoot);
+        if (!Directory.Exists(installRoot))
+            throw new DirectoryNotFoundException($"Install root is missing: {installRoot}");
+        if ((File.GetAttributes(installRoot) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException($"Install root may not be a reparse point: {installRoot}");
+        if (UpdatePathSafety.IsDevelopmentLayout(installRoot))
+            throw new InvalidOperationException(
+                "Self-update is disabled for a repository/development release layout.");
+
+        var stagingRoot = NormalizeDirectoryPath(request.StagingRoot);
+        ValidateStagingRoot(updaterRoot, stagingRoot, request.Manifest.BuildNumber);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, stagingRoot);
+
+        string? managerHomeRoot = null;
+        if (!string.IsNullOrWhiteSpace(request.ManagerHomeRoot))
+        {
+            managerHomeRoot = NormalizeDirectoryPath(request.ManagerHomeRoot);
+            if (!Directory.Exists(managerHomeRoot))
+                throw new DirectoryNotFoundException(
+                    $"Updater restart manager home is missing: {managerHomeRoot}");
+            if ((File.GetAttributes(managerHomeRoot) & FileAttributes.ReparsePoint) != 0)
+                throw new IOException(
+                    $"Updater restart manager home may not be a reparse point: {managerHomeRoot}");
+        }
+
+        var expectedBinding = ComputeTopologyBinding(
+            request.Manifest,
+            installRoot,
+            stagingRoot,
+            managerHomeRoot);
+        if (!string.Equals(
+                transactionParts[1],
+                expectedBinding,
+                StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(
+                "Updater request topology does not match its bound transaction identity.");
+
+        var backupRoot = NormalizeDirectoryPath(Path.Combine(transactionRoot, "backup"));
+        var journalPath = Path.GetFullPath(Path.Combine(transactionRoot, "journal.json"));
+        var healthFile = Path.GetFullPath(Path.Combine(transactionRoot, "health.json"));
+        var pendingPath = Path.GetFullPath(Path.Combine(updaterRoot, UpdateProtocol.PendingFileName));
+        RequireSamePath(request.BackupRoot, backupRoot, nameof(request.BackupRoot));
+        RequireSamePath(request.JournalPath, journalPath, nameof(request.JournalPath));
+        RequireSamePath(request.HealthFile, healthFile, nameof(request.HealthFile));
+        RequireSamePath(request.PendingPath, pendingPath, nameof(request.PendingPath));
+
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, backupRoot);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, journalPath);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, healthFile);
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, pendingPath);
+
+        if (request.HealthToken.Length != 64 || request.HealthToken.Any(c => !Uri.IsHexDigit(c)))
+            throw new InvalidDataException("Updater request health token is malformed.");
+        if (request.CurrentProcessId <= 0)
+            throw new InvalidDataException("Updater request process id must be positive.");
+        var sanitizedArguments = UpdateArgumentSanitizer.RemoveHealthArguments(request.RestartArguments);
+        if (!sanitizedArguments.SequenceEqual(request.RestartArguments, StringComparer.Ordinal))
+            throw new InvalidDataException(
+                "Updater request restart arguments contain updater-owned health arguments.");
+
+        if (File.Exists(pendingPath))
+        {
+            var pending = JsonSerializer.Deserialize<StagedUpdate>(
+                              await File.ReadAllTextAsync(pendingPath, ct),
+                              UpdateProtocol.Json)
+                          ?? throw new InvalidDataException("Pending update state is empty.");
+            pending.Manifest.Validate();
+            if (pending.Manifest != request.Manifest)
+                throw new InvalidDataException(
+                    "Updater request manifest does not match canonical pending update state.");
+            RequireSamePath(
+                pending.StagingRoot,
+                stagingRoot,
+                "pending staging root");
+        }
+        else if (!await IsConfirmedTransactionAsync(journalPath, request.Manifest, ct))
+        {
+            throw new InvalidDataException(
+                "Updater request has no matching canonical pending update state.");
+        }
+
+        return request with
+        {
+            InstallRoot = installRoot,
+            StagingRoot = stagingRoot,
+            BackupRoot = backupRoot,
+            JournalPath = journalPath,
+            PendingPath = pendingPath,
+            HealthFile = healthFile,
+            ManagerHomeRoot = managerHomeRoot
+        };
+    }
+
+    private static async Task<bool> IsConfirmedTransactionAsync(
+        string journalPath,
+        UpdateManifest manifest,
+        CancellationToken ct)
+    {
+        if (!File.Exists(journalPath)) return false;
+        var journal = JsonSerializer.Deserialize<UpdateJournal>(
+                          await File.ReadAllTextAsync(journalPath, ct),
+                          UpdateProtocol.Json)
+                      ?? throw new InvalidDataException("Updater recovery journal is empty.");
+        return journal.Phase == UpdateJournalPhase.Confirmed
+            && journal.TargetBuildNumber == manifest.BuildNumber
+            && string.Equals(
+                journal.TargetSourceSha,
+                manifest.SourceSha,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void ValidateStagingRoot(
+        string updaterRoot,
+        string stagingRoot,
+        long buildNumber)
+    {
+        var relative = Path.GetRelativePath(updaterRoot, stagingRoot)
+            .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        var segments = relative.Split(
+            Path.DirectorySeparatorChar,
+            StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length != 3
+            || !string.Equals(segments[0], "staging", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(segments[2], "payload", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(
+                "Updater staging root does not match the canonical staging topology.");
+
+        var attemptParts = segments[1].Split('-', StringSplitOptions.None);
+        if (attemptParts.Length != 2
+            || !long.TryParse(attemptParts[0], out var stagedBuild)
+            || stagedBuild != buildNumber
+            || !Guid.TryParseExact(attemptParts[1], "N", out _))
+            throw new InvalidDataException(
+                "Updater staging identity is malformed or belongs to another build.");
+    }
+
+    private static string ComputeTopologyBinding(
+        UpdateManifest manifest,
+        string installRoot,
+        string stagingRoot,
+        string? managerHomeRoot)
+    {
+        var material = string.Join(
+            "\n",
+            manifest.BuildNumber.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            manifest.SourceSha.ToLowerInvariant(),
+            NormalizeDirectoryPath(installRoot).ToUpperInvariant(),
+            NormalizeDirectoryPath(stagingRoot).ToUpperInvariant(),
+            string.IsNullOrWhiteSpace(managerHomeRoot)
+                ? string.Empty
+                : NormalizeDirectoryPath(managerHomeRoot).ToUpperInvariant());
+        return Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(material)))[..TopologyBindingHexLength];
+    }
+
+    private static string NormalizeDirectoryPath(string path) =>
+        Path.GetFullPath(path)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+    private static void RequireSamePath(
+        string actual,
+        string expected,
+        string label)
+    {
+        var fullActual = Path.GetFullPath(actual)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var fullExpected = Path.GetFullPath(expected)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        if (!string.Equals(fullActual, fullExpected, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(
+                $"Updater request {label} does not match its canonical transaction topology.");
     }
 }
