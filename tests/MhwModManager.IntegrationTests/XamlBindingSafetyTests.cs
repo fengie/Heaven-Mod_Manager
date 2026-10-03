@@ -224,13 +224,13 @@ public sealed partial class XamlBindingSafetyTests
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
         var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
 
-        Assert.Contains("Visibility="{Binding CatalogFileStateVisibility}"", xaml);
-        Assert.Contains("Visibility="{Binding CatalogFilesVisibility}"", xaml);
-        Assert.Contains("Text="{Binding CatalogFilePresentationTitle}"", xaml);
-        Assert.Contains("Text="{Binding CatalogFilePresentationDetail}"", xaml);
-        Assert.Contains("Visibility="{Binding CatalogFileRetryVisibility}"", xaml);
-        Assert.Contains("AutomationProperties.Name="Retry loading exact provider files"", xaml);
-        Assert.Contains("AutomationProperties.LiveSetting="Polite"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogFileStateVisibility}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogFilesVisibility}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogFilePresentationTitle}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogFilePresentationDetail}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogFileRetryVisibility}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Retry loading exact provider files\"", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
         Assert.Contains("SetCatalogFilePresentation(CatalogFilePresentationKind.Loading);", source);
         Assert.Contains("CatalogFilePresentationKind.Empty", source);
         Assert.Contains("CatalogFilePresentationKind.Failed", source);
