@@ -331,6 +331,8 @@ Assert-Equal $true ($installedE2EWorkflow.Contains('/compare/$env:SOURCE_SHA...$
 Assert-Equal $true ($installedE2EWorkflow.Contains('needs: classify-workflow-run')) 'installed-client E2E heavy job depends on classifier'
 Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.outputs.run_e2e == 'true'")) 'installed-client E2E heavy job requires explicit eligibility'
 Assert-Equal $true ($installedE2EWorkflow.Contains("needs.classify-workflow-run.result == 'success'")) 'installed-client E2E heavy job fails closed on classifier failure'
+Assert-Equal $true ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ env.MHW_E2E_SOURCE_SHA }}')) 'installed-client E2E artifact name binds to the tested source SHA'
+Assert-Equal $false ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ github.sha }}')) 'installed-client E2E artifact name must not bind to the later workflow/evidence commit'
 Assert-Equal $true ($installedE2EWorkflow.Contains('git rev-parse --is-shallow-repository')) 'installed-client E2E persistence detects shallow checkout history'
 Assert-Equal $true ($installedE2EWorkflow.Contains('git fetch --no-tags --prune --unshallow origin $mainRefSpec')) 'installed-client E2E persistence unshallows canonical main history'
 Assert-Equal $true ($installedE2EWorkflow.Contains("'+refs/heads/main:refs/remotes/origin/main'")) 'installed-client E2E persistence refreshes the canonical remote-tracking main ref explicitly'
