@@ -599,7 +599,8 @@ public sealed class UpdateInstallerTests : IDisposable
     {
         var fixture = await CreateFixtureAsync();
         var installer = new UpdateInstaller();
-        var helperRequest = fixture.Request with { CurrentProcessId = 0 };
+        var canonical = await CreateCanonicalHelperRequestAsync(fixture.Request);
+        var helperRequest = canonical.Request;
         await installer.ApplyAsync(helperRequest, TestToken);
         var launch = await UpdateLaunchStateStore.BeginAsync(helperRequest, TestToken);
         await WriteJsonAsync(
@@ -611,7 +612,7 @@ public sealed class UpdateInstallerTests : IDisposable
                 helperRequest.Manifest.BuildNumber,
                 helperRequest.Manifest.SourceSha,
                 DateTimeOffset.UtcNow));
-        var requestPath = Path.Combine(updaterTestRoot, "helper-request.json");
+        var requestPath = canonical.RequestPath;
         await UpdateRequestStore.WriteAsync(requestPath, helperRequest, TestToken);
 
         var repositoryRoot = FindRepositoryRoot();
@@ -932,6 +933,65 @@ public sealed class UpdateInstallerTests : IDisposable
         Assert.False(Directory.Exists(fixture.Request.BackupRoot));
     }
 
+    private static async Task<CanonicalHelperFixture> CreateCanonicalHelperRequestAsync(
+        UpdateApplyRequest source)
+    {
+        var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
+        UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
+
+        var stagingAttemptRoot = Path.Combine(
+            updaterRoot,
+            "staging",
+            $"{source.Manifest.BuildNumber}-{Guid.NewGuid():N}");
+        var stagingRoot = Path.Combine(stagingAttemptRoot, "payload");
+        Directory.CreateDirectory(stagingRoot);
+        foreach (var sourceFile in Directory.EnumerateFiles(
+                     source.StagingRoot,
+                     "*",
+                     SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(source.StagingRoot, sourceFile);
+            var destination = Path.Combine(stagingRoot, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.Copy(sourceFile, destination, overwrite: true);
+        }
+
+        var transactionId = UpdateRequestStore.CreateBoundTransactionId(
+            source.Manifest,
+            source.InstallRoot,
+            stagingRoot,
+            managerHomeRoot: null);
+        var transactionRoot = Path.Combine(
+            updaterRoot,
+            "transactions",
+            transactionId);
+        Directory.CreateDirectory(transactionRoot);
+
+        var pendingPath = Path.Combine(
+            updaterRoot,
+            UpdateProtocol.PendingFileName);
+        var request = source with
+        {
+            StagingRoot = stagingRoot,
+            BackupRoot = Path.Combine(transactionRoot, "backup"),
+            JournalPath = Path.Combine(transactionRoot, "journal.json"),
+            PendingPath = pendingPath,
+            HealthFile = Path.Combine(transactionRoot, "health.json"),
+            HealthToken = new string('A', 64),
+            CurrentProcessId = int.MaxValue,
+            ManagerHomeRoot = null
+        };
+        var staged = new StagedUpdate(
+            request.Manifest,
+            stagingRoot,
+            Path.Combine(stagingRoot, UpdateProtocol.ProductManifestFileName));
+        await WriteJsonAsync(pendingPath, staged);
+
+        return new CanonicalHelperFixture(
+            request,
+            Path.Combine(transactionRoot, "apply-request.json"));
+    }
+
     private async Task<UpdateFixture> CreateFixtureAsync(
         string oldExecutable = "app.exe",
         string newExecutable = "app.exe")
@@ -1058,6 +1118,10 @@ public sealed class UpdateInstallerTests : IDisposable
         JsonSerializer.Deserialize<UpdateJournal>(
             await File.ReadAllTextAsync(path, TestToken), UpdateProtocol.Json)
         ?? throw new InvalidDataException("Journal fixture is empty.");
+
+    private sealed record CanonicalHelperFixture(
+        UpdateApplyRequest Request,
+        string RequestPath);
 
     private sealed record UpdateFixture(UpdateApplyRequest Request);
 
