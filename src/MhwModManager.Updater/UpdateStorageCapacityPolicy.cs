@@ -9,7 +9,15 @@ public sealed record UpdateStorageCapacityEstimate(
     long RequiredAvailableBytes,
     long AvailableBytes)
 {
-    public bool HasCapacity => AvailableBytes >= RequiredAvailableBytes;
+    public bool HasCapacity
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod(
+                $"available={AvailableBytes}; required={RequiredAvailableBytes}");
+            return AvailableBytes >= RequiredAvailableBytes;
+        }
+    }
 }
 
 public static class UpdateStorageCapacityPolicy
