@@ -12,15 +12,17 @@ permissions:
 
 jobs:
   probe:
-    name: Apply PR192 patch to exact Toolbox main
+    name: Three-way PR192 onto exact Toolbox main
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 10
     steps:
-      - name: Verify patch applies without replacing newer main changes
+      - name: Three-way merge security patch
         shell: powershell
         env:
           PATCH_TEXT: |
             diff --git a/heaven-bridge/repository-identity.mjs b/heaven-bridge/repository-identity.mjs
+            new file mode 100644
+            index 0000000..809d46a
             --- /dev/null
             +++ b/heaven-bridge/repository-identity.mjs
             @@ -0,0 +1,89 @@
@@ -114,6 +116,7 @@ jobs:
             +  return Boolean(actual && wanted && actual === wanted);
             +}
             diff --git a/heaven-bridge/request-ingress.mjs b/heaven-bridge/request-ingress.mjs
+            index 713b7d5..2796c20 100644
             --- a/heaven-bridge/request-ingress.mjs
             +++ b/heaven-bridge/request-ingress.mjs
             @@ -1,10 +1,11 @@
@@ -331,6 +334,7 @@ jobs:
              }
              
             diff --git a/heaven-bridge/request-ingress.test.mjs b/heaven-bridge/request-ingress.test.mjs
+            index 2986637..736ec41 100644
             --- a/heaven-bridge/request-ingress.test.mjs
             +++ b/heaven-bridge/request-ingress.test.mjs
             @@ -3,7 +3,8 @@ import assert from "node:assert/strict";
@@ -552,6 +556,7 @@ jobs:
                const root = fs.mkdtempSync(path.join(os.tmpdir(), "bridge-ingress-"));
                const requestDir = path.join(root, "heaven-bridge", "requests", "heaven2");
             diff --git a/tools/agent-control/lib/heaven-bridge-provider.mjs b/tools/agent-control/lib/heaven-bridge-provider.mjs
+            index d4ebcd9..cc906ba 100644
             --- a/tools/agent-control/lib/heaven-bridge-provider.mjs
             +++ b/tools/agent-control/lib/heaven-bridge-provider.mjs
             @@ -3,6 +3,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
@@ -600,14 +605,14 @@ jobs:
           try {
             $patch = Join-Path $temp 'pr192.patch'
             [IO.File]::WriteAllText($patch, $env:PATCH_TEXT, [Text.UTF8Encoding]::new($false))
-            & git -C $temp apply --check --whitespace=error-all $patch
-            if ($LASTEXITCODE -ne 0) { throw 'PR192 patch does not apply cleanly to current main.' }
-            & git -C $temp apply --whitespace=error-all $patch
-            if ($LASTEXITCODE -ne 0) { throw 'PR192 patch application failed.' }
+            & git -C $temp apply --3way --whitespace=error-all $patch
+            if ($LASTEXITCODE -ne 0) { throw 'PR192 three-way patch merge failed.' }
             & git -C $temp diff --check
             if ($LASTEXITCODE -ne 0) { throw 'Merged patch has whitespace errors.' }
-            $changed = @(& git -C $temp diff --name-only)
-            Write-Output ('PR192_PATCH_APPLIES clean=true changed=' + ($changed -join ','))
+            $unmerged = @(& git -C $temp diff --name-only --diff-filter=U)
+            if ($unmerged.Count -ne 0) { throw ('PR192 produced unresolved conflicts: ' + ($unmerged -join ',')) }
+            $changed = @(& git -C $temp diff --name-only HEAD)
+            Write-Output ('PR192_3WAY_APPLIES clean=true changed=' + ($changed -join ','))
           } finally {
             & git -c $safe -C $source worktree remove --force $temp 2>$null
           }
