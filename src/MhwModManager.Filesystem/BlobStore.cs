@@ -29,7 +29,21 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
     /// If the CAS already contains the resulting hash, validate its bytes before discarding the temp.
     /// Corrupt existing objects are rejected, never silently trusted or overwritten.
     /// </summary>
-    public async Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default)
+    public Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default) =>
+        CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, ct);
+
+    internal Task<HashResult> CaptureWithHashForTestingAsync(
+        string source,
+        Func<string, CancellationToken, Task> afterInitialCopy,
+        bool registerInDatabase = true,
+        CancellationToken ct = default) =>
+        CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, ct);
+
+    private async Task<HashResult> CaptureWithHashCoreAsync(
+        string source,
+        bool registerInDatabase,
+        Func<string, CancellationToken, Task>? afterInitialCopy,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
         Directory.CreateDirectory(Root);
@@ -59,12 +73,18 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
                 output.Flush(true);
             }
 
+            var shaBytes = sha.GetHashAndReset();
+            var shaHex = Convert.ToHexString(shaBytes).ToLowerInvariant();
+            var xxHex = Convert.ToHexString(xx.GetCurrentHash()).ToLowerInvariant();
+
+            if (afterInitialCopy is not null)
+                await afterInitialCopy(source, ct);
+
+            await VerifySourceStillMatchesAsync(source, shaBytes, ct);
+
             var after = new FileInfo(source);
             if (!after.Exists || after.Length != before.Length || after.LastWriteTimeUtc != before.LastWriteTimeUtc)
                 throw new IOException($"Source changed while it was being captured: {source}");
-
-            var shaHex = Convert.ToHexString(sha.GetHashAndReset()).ToLowerInvariant();
-            var xxHex = Convert.ToHexString(xx.GetCurrentHash()).ToLowerInvariant();
             var dest = PathFor(shaHex);
 
             if (File.Exists(dest))
@@ -116,6 +136,15 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
             replaceBackend: atomicReplaceBackend,
             expectedSha256: sha,
             ct: ct);
+    }
+
+    private static async Task VerifySourceStillMatchesAsync(string source, ReadOnlyMemory<byte> capturedSha256, CancellationToken ct)
+    {
+        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
+            1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        var currentSha256 = await SHA256.HashDataAsync(input, ct);
+        if (!CryptographicOperations.FixedTimeEquals(currentSha256, capturedSha256.Span))
+            throw new IOException($"Source changed while it was being captured: {source}");
     }
 
     private static async Task VerifyExistingAsync(string path, string expectedSha256, CancellationToken ct)
