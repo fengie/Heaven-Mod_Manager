@@ -43,23 +43,42 @@ Assert-Equal $false (Test-UpdaterReleaseRelevantPath '.verification/function-sta
 $current='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 $previous='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
-$publishedE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $true -MainRelation 'ahead'
+$publishedE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $true -SameVersionReleaseFound $false -MainRelation 'ahead'
 Assert-Equal $true $publishedE2E.RunE2E 'exact published source runs installed-client E2E'
 Assert-Equal 'exact-release-published' $publishedE2E.Reason 'exact published source reason'
 
-$supersededE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $false -MainRelation 'ahead'
+$sameVersionE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $current -ExactReleaseFound $false -SameVersionReleaseFound $true -MainRelation 'identical'
+Assert-Equal $false $sameVersionE2E.RunE2E 'same-version intentional nonpublication skips installed-client E2E'
+Assert-Equal 'same-version-already-published' $sameVersionE2E.Reason 'same-version intentional nonpublication reason'
+
+$releaseFixture=@(
+  [pscustomobject]@{tag_name='updater-main-442';draft=$false;prerelease=$false;immutable=$true;assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.85-win-x64.zip'},[pscustomobject]@{name='update-manifest.json'})},
+  [pscustomobject]@{tag_name='updater-main-443';draft=$false;prerelease=$false;immutable=$true;assets=@([pscustomobject]@{name='MHW-Manual-Mod-Manager-v8.8.86-win-x64.zip'},[pscustomobject]@{name='update-manifest.json'})}
+)
+$sameVersionIntent=Get-UpdaterReleaseIntentDecision -CurrentVersion '8.8.86' -ForcePublish $false -Releases $releaseFixture
+Assert-Equal $false $sameVersionIntent.Publish 'same semantic version does not republish'
+Assert-Equal 'same-version-already-published' $sameVersionIntent.Reason 'same semantic version reason'
+Assert-Equal 'updater-main-443' $sameVersionIntent.ExistingTag 'same semantic version existing tag'
+$newVersionIntent=Get-UpdaterReleaseIntentDecision -CurrentVersion '8.8.87' -ForcePublish $false -Releases $releaseFixture
+Assert-Equal $true $newVersionIntent.Publish 'new semantic version publishes'
+Assert-Equal 'new-product-version' $newVersionIntent.Reason 'new semantic version reason'
+$forceIntent=Get-UpdaterReleaseIntentDecision -CurrentVersion '8.8.86' -ForcePublish $true -Releases $releaseFixture
+Assert-Equal $true $forceIntent.Publish 'manual force permits same-version publication'
+Assert-Equal 'manual-force-publish' $forceIntent.Reason 'manual force reason'
+
+$supersededE2E=Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $false -SameVersionReleaseFound $false -MainRelation 'ahead'
 Assert-Equal $false $supersededE2E.RunE2E 'superseded non-publishing source skips installed-client E2E'
 Assert-Equal 'superseded-before-publication' $supersededE2E.Reason 'superseded non-publishing source reason'
 
 $missingCanonicalReleaseRejected=$false
 try{
-  [void](Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $current -ExactReleaseFound $false -MainRelation 'identical')
+  [void](Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $current -ExactReleaseFound $false -SameVersionReleaseFound $false -MainRelation 'identical')
 }catch{$missingCanonicalReleaseRejected=$true}
 Assert-Equal $true $missingCanonicalReleaseRejected 'canonical source missing exact release fails closed'
 
 $divergedMissingReleaseRejected=$false
 try{
-  [void](Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $false -MainRelation 'diverged')
+  [void](Get-UpdaterInstalledClientE2EDecision -SourceSha $current -RemoteMainSha $previous -ExactReleaseFound $false -SameVersionReleaseFound $false -MainRelation 'diverged')
 }catch{$divergedMissingReleaseRejected=$true}
 Assert-Equal $true $divergedMissingReleaseRejected 'diverged source missing exact release fails closed'
 
@@ -392,17 +411,29 @@ $privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-Updater
 $publicPublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
 $parityIndex=$releaseWorkflow.IndexOf('Verify public and canonical updater release parity')
 $freshnessIndex=$releaseWorkflow.IndexOf('Confirm release source is still canonical main')
+$releaseIntentIndex=$releaseWorkflow.IndexOf('Resolve updater release intent')
+$ghBootstrapIndex=$releaseWorkflow.IndexOf('Install verified GitHub CLI for publication')
 if($privatePublishIndex -lt 0){throw 'Windows release workflow no longer invokes the canonical updater publisher.'}
 if($publicPublishIndex -lt 0){throw 'Windows release workflow no longer invokes the public updater publisher.'}
 if($freshnessIndex -lt 0){throw 'Windows release workflow no longer checks exact-main freshness before publication.'}
 if($freshnessIndex -ge $publicPublishIndex){throw 'Exact-main freshness must be checked before the first updater publication mutation.'}
+if($releaseIntentIndex -le $freshnessIndex){throw 'Semantic release intent must be resolved only after exact-main freshness.'}
+if($ghBootstrapIndex -le $releaseIntentIndex){throw 'Privileged GitHub CLI bootstrap must occur only after positive semantic release intent is available.'}
+if($ghBootstrapIndex -ge $publicPublishIndex){throw 'Verified GitHub CLI must be available before canonical updater publication can require it.'}
 if($publicPublishIndex -ge $privatePublishIndex){throw 'Public updater feed must publish before canonical private release visibility.'}
 if($parityIndex -le $privatePublishIndex){throw 'Updater parity verification must run after both publication steps.'}
 Assert-Equal $true ($releaseWorkflow.Contains('id: release_freshness')) 'release freshness output step id'
+Assert-Equal $true ($releaseWorkflow.Contains('id: release_intent')) 'release intent output step id'
+Assert-Equal $true ($releaseWorkflow.Contains('force_publish:')) 'manual force-publish workflow input'
+Assert-Equal $true ($releaseWorkflow.Contains('Get-UpdaterReleaseIntentDecision')) 'release workflow uses shared semantic-version intent policy'
+Assert-Equal $true ($releaseWorkflow.Contains("steps.release_intent.outputs.publish == 'true'")) 'publication chain requires release intent'
+Assert-Equal $true ($releaseWorkflow.Contains('actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5')) 'release SDK setup immutable pin'
+Assert-Equal $true ($releaseWorkflow.Contains('global-json-file: global.json')) 'release SDK derives from global.json'
+Assert-Equal $true ($releaseWorkflow.Contains('Assert-PinnedDotNetSdk.ps1')) 'release SDK exact-pin assertion helper'
 Assert-Equal $true ($releaseWorkflow.Contains('/git/ref/heads/main')) 'release freshness reads canonical main ref'
 Assert-Equal $true ($releaseWorkflow.Contains('[string]::Equals($remoteMain,$env:GITHUB_SHA')) 'release freshness compares canonical main with exact run SHA'
 $publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_freshness\.outputs\.publish == 'true'").Count
-Assert-Equal 4 $publicationFreshnessGuards 'artifact subject plus public/private/parity freshness guards'
+Assert-Equal 5 $publicationFreshnessGuards 'release intent plus artifact/public/private/parity freshness guards'
 Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 
@@ -437,6 +468,9 @@ Assert-Equal $true ($publicPublisherSource.Contains('Invoke-UpdaterDraftPublicat
 Assert-Equal $true ($publicPublisherSource.Contains('-RefreshMain')) 'public release post-upload main refresh'
 Assert-Equal $true ($publicPublisherSource.Contains('-EvaluateRefreshedMain')) 'public release post-upload drift evaluation'
 Assert-Equal $true ($publicPublisherSource.Contains('stale-main-unclassified-large-diff')) 'public release compare truncation fails closed'
+Assert-Equal $true ($publicPublisherSource.Contains("'already-published'")) 'public retry reports exact already-published side as successful'
+Assert-Equal $true ($publishSource.Contains('Assert-UpdaterReleaseAssets -Release $publicRelease')) 'canonical retry revalidates already-published public assets before private publication'
+Assert-Equal $true ($releaseWorkflow.Contains("steps.public_updater_release.outputs.published == 'true'")) 'already-published public retry can continue into canonical publication'
 
 $installedE2EWorkflowPath=Join-Path $repoRoot '.github\workflows\updater-installed-client-e2e.yml'
 $installedE2EWorkflow=Get-Content -LiteralPath $installedE2EWorkflowPath -Raw
@@ -449,6 +483,10 @@ Assert-Equal $false ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-r
 Assert-Equal $true ($installedE2EWorkflow.Contains('ref: main')) 'installed-client E2E classifier loads policy from canonical main rather than the possibly older upstream source'
 Assert-Equal $true ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?permissions:\s*contents:\s*read')) 'installed-client E2E classifier is read-only'
 Assert-Equal $true ($installedE2EWorkflow.Contains('Get-UpdaterInstalledClientE2EDecision')) 'installed-client E2E workflow calls shared classification policy'
+Assert-Equal $true ($installedE2EWorkflow.Contains('Get-UpdaterReleaseIntentDecision')) 'installed-client E2E classifies same-version intentional nonpublication'
+Assert-Equal $true ($installedE2EWorkflow.Contains('-SameVersionReleaseFound $sameVersionReleaseFound')) 'installed-client E2E passes same-version classification to shared policy'
+Assert-Equal $true ($installedE2EWorkflow.Contains('actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5')) 'installed-client E2E SDK setup immutable pin'
+Assert-Equal $true ($installedE2EWorkflow.Contains('global-json-file: global.json')) 'installed-client E2E SDK derives from global.json'
 Assert-Equal $true ($installedE2EWorkflow.Contains('/git/ref/heads/main')) 'installed-client E2E classifier reads canonical main'
 Assert-Equal $true ($installedE2EWorkflow.Contains('/compare/$env:SOURCE_SHA...$remoteMain')) 'installed-client E2E classifier verifies canonical ancestry'
 Assert-Equal $true ($installedE2EWorkflow.Contains('needs: classify-workflow-run')) 'installed-client E2E heavy job depends on classifier'
