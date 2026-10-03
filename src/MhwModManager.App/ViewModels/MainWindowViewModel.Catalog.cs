@@ -302,6 +302,66 @@ public sealed record CatalogPresentationState(
     }
 }
 
+public enum CatalogFilePresentationKind
+{
+    NotLoaded,
+    Loading,
+    Loaded,
+    Empty,
+    Failed
+}
+
+public sealed record CatalogFilePresentationState(
+    CatalogFilePresentationKind Kind,
+    string Title,
+    string Detail,
+    bool ShowFiles,
+    bool CanRetry)
+{
+    public static CatalogFilePresentationState From(
+        CatalogFilePresentationKind kind,
+        int fileCount,
+        string? failureDetail = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return kind switch
+        {
+            CatalogFilePresentationKind.Loading => new(
+                kind,
+                "Loading exact files",
+                "Contacting the selected provider for current file identities. Installation stays unavailable until an exact file is selected.",
+                false,
+                false),
+            CatalogFilePresentationKind.Loaded when fileCount > 0 => new(
+                kind,
+                $"{fileCount} exact provider file(s)",
+                "Select the exact provider file you want to install.",
+                true,
+                false),
+            CatalogFilePresentationKind.Empty => new(
+                kind,
+                "No installable files exposed",
+                "This provider did not expose installable files for the selected mod. You can open the provider page for details or retry.",
+                false,
+                true),
+            CatalogFilePresentationKind.Failed => new(
+                kind,
+                "Exact files could not be loaded",
+                string.IsNullOrWhiteSpace(failureDetail)
+                    ? "The provider request failed. Retry without losing the selected mod."
+                    : failureDetail,
+                false,
+                true),
+            _ => new(
+                CatalogFilePresentationKind.NotLoaded,
+                "Exact files not loaded",
+                "Load exact files to choose what to install. The manager will not guess a provider file.",
+                false,
+                false)
+        };
+    }
+}
+
 public sealed partial class MainWindowViewModel
 {
     private const int CatalogProviderRefreshLimit = 100;
@@ -321,6 +381,8 @@ public sealed partial class MainWindowViewModel
     private int catalogConfiguredProviderCount;
     private int catalogProviderSuccessCount;
     private int catalogProviderFailureCount;
+    private CatalogFilePresentationKind catalogFilePresentationKind = CatalogFilePresentationKind.NotLoaded;
+    private string? catalogFileFailureDetail;
 
     public ObservableRangeCollection<CatalogModRow> CatalogItems { get; } = [];
     public ObservableRangeCollection<CatalogFileRow> CatalogFiles { get; } = [];
@@ -464,6 +526,75 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    private CatalogFilePresentationState CurrentCatalogFilePresentation
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CatalogFilePresentationState.From(
+                catalogFilePresentationKind,
+                CatalogFiles.Count,
+                catalogFileFailureDetail);
+        }
+    }
+
+    public string CatalogFilePresentationTitle
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.Title;
+        }
+    }
+
+    public string CatalogFilePresentationDetail
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.Detail;
+        }
+    }
+
+    public Visibility CatalogFilesVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.ShowFiles ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    public Visibility CatalogFileStateVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.ShowFiles ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    public Visibility CatalogFileRetryVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CurrentCatalogFilePresentation.CanRetry ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    private void SetCatalogFilePresentation(CatalogFilePresentationKind kind, string? failureDetail = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"kind={kind}");
+        catalogFilePresentationKind = kind;
+        catalogFileFailureDetail = failureDetail;
+        OnPropertyChanged(nameof(CatalogFilePresentationTitle));
+        OnPropertyChanged(nameof(CatalogFilePresentationDetail));
+        OnPropertyChanged(nameof(CatalogFilesVisibility));
+        OnPropertyChanged(nameof(CatalogFileStateVisibility));
+        OnPropertyChanged(nameof(CatalogFileRetryVisibility));
+    }
+
     public int CatalogOriginAttentionCount
     {
         get
@@ -537,6 +668,8 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         SelectedCatalogFile = null;
         CatalogFiles.ReplaceAll(value?.Mod.Files.Select(file => new CatalogFileRow(file)) ?? []);
+        SetCatalogFilePresentation(
+            CatalogFiles.Count > 0 ? CatalogFilePresentationKind.Loaded : CatalogFilePresentationKind.NotLoaded);
     }
 
     private async Task DebounceCatalogQueryAsync(CancellationToken ct)
@@ -851,6 +984,9 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
+        SelectedCatalogFile = null;
+        CatalogFiles.ReplaceAll([]);
+        SetCatalogFilePresentation(CatalogFilePresentationKind.Loading);
         await RunBusy(
             "catalog.files",
             "Loading mod files",
@@ -858,19 +994,37 @@ public sealed partial class MainWindowViewModel
             true,
             async ct =>
             {
-                EnsureCatalogRuntime();
-                var provider = FindCatalogProvider(selected.Mod.ProviderId)
-                    ?? throw new InvalidOperationException(
-                        $"Provider '{selected.Mod.ProviderId}' is not available in this app session.");
-                var files = await provider.GetModFilesAsync(
-                    s.Paths.Game,
-                    selected.Mod.ProviderModId,
-                    ct);
-                CatalogFiles.ReplaceAll(files.Select(file => new CatalogFileRow(file)));
-                SelectedCatalogFile = CatalogFiles.FirstOrDefault();
-                CatalogStatusText = files.Count == 0
-                    ? "This provider did not expose installable files for the selected mod."
-                    : $"Loaded {files.Count} exact provider file(s). Select one before installing.";
+                try
+                {
+                    EnsureCatalogRuntime();
+                    var provider = FindCatalogProvider(selected.Mod.ProviderId)
+                        ?? throw new InvalidOperationException(
+                            $"Provider '{selected.Mod.ProviderId}' is not available in this app session.");
+                    var files = await provider.GetModFilesAsync(
+                        s.Paths.Game,
+                        selected.Mod.ProviderModId,
+                        ct);
+                    CatalogFiles.ReplaceAll(files.Select(file => new CatalogFileRow(file)));
+                    SelectedCatalogFile = null;
+                    SetCatalogFilePresentation(
+                        files.Count == 0 ? CatalogFilePresentationKind.Empty : CatalogFilePresentationKind.Loaded);
+                    CatalogStatusText = files.Count == 0
+                        ? "This provider did not expose installable files for the selected mod."
+                        : $"Loaded {files.Count} exact provider file(s). Select one before installing.";
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    SetCatalogFilePresentation(CatalogFilePresentationKind.NotLoaded);
+                    throw;
+                }
+                catch (Exception)
+                {
+                    SetCatalogFilePresentation(
+                        CatalogFilePresentationKind.Failed,
+                        "The provider request failed. Retry loading exact files; the selected mod is preserved.");
+                    CatalogStatusText = "Exact provider files could not be loaded. Retry or open the provider page.";
+                    throw;
+                }
             });
     }
 

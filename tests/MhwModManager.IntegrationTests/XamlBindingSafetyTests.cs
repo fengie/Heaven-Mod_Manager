@@ -197,6 +197,55 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Theory]
+    [InlineData(CatalogFilePresentationKind.NotLoaded, 0, false, false)]
+    [InlineData(CatalogFilePresentationKind.Loading, 0, false, false)]
+    [InlineData(CatalogFilePresentationKind.Loaded, 3, true, false)]
+    [InlineData(CatalogFilePresentationKind.Empty, 0, false, true)]
+    [InlineData(CatalogFilePresentationKind.Failed, 0, false, true)]
+    public void BrowseModsExactFileStateDistinguishesLoadRecoveryPaths(
+        CatalogFilePresentationKind kind,
+        int fileCount,
+        bool expectedShowFiles,
+        bool expectedRetry)
+    {
+        var state = CatalogFilePresentationState.From(kind, fileCount, "provider failed");
+
+        Assert.Equal(kind, state.Kind);
+        Assert.Equal(expectedShowFiles, state.ShowFiles);
+        Assert.Equal(expectedRetry, state.CanRetry);
+        Assert.NotEmpty(state.Title);
+        Assert.NotEmpty(state.Detail);
+    }
+
+    [Fact]
+    public void BrowseModsExactFileStateExposesAccessibleRecoveryAndClearsStaleSelection()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var source = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Visibility=\"{Binding CatalogFileStateVisibility}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogFilesVisibility}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogFilePresentationTitle}\"", xaml);
+        Assert.Contains("Text=\"{Binding CatalogFilePresentationDetail}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogFileRetryVisibility}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Retry loading exact provider files\"", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
+        Assert.Contains("SetCatalogFilePresentation(CatalogFilePresentationKind.Loading);", source);
+        Assert.Contains("CatalogFilePresentationKind.Empty", source);
+        Assert.Contains("CatalogFilePresentationKind.Failed", source);
+
+        var loadStart = source.IndexOf("private async Task LoadCatalogFiles()", StringComparison.Ordinal);
+        var installStart = source.IndexOf("private async Task InstallCatalogFile()", loadStart, StringComparison.Ordinal);
+        Assert.True(loadStart >= 0 && installStart > loadStart);
+        var loadBlock = source[loadStart..installStart];
+        var clearSelection = loadBlock.IndexOf("SelectedCatalogFile = null;", StringComparison.Ordinal);
+        var loadState = loadBlock.IndexOf("SetCatalogFilePresentation(CatalogFilePresentationKind.Loading);", StringComparison.Ordinal);
+        Assert.True(clearSelection >= 0 && loadState > clearSelection);
+        Assert.DoesNotContain("SelectedCatalogFile = CatalogFiles.FirstOrDefault();", loadBlock);
+    }
+
+    [Theory]
     [InlineData("", 0, false, false, "No catalog mods yet")]
     [InlineData("armor", 0, true, false, "No mods match this search")]
     [InlineData("armor", 2, true, true, "")]
