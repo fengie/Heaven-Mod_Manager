@@ -280,7 +280,13 @@ if(!(Test-Path -LiteralPath $negativeFixtureGatePath -PathType Leaf)){
     $errors.Add('Test-AgentHandoff-NegativeFixtures.ps1 is missing.')
 }else{
     $negativeFixtureGate=Get-Content -LiteralPath $negativeFixtureGatePath -Raw
-    foreach($required in @('[switch]$FeatureCandidate','$validationArgs=@{Root=$fixture}','if($FeatureCandidate){$validationArgs.FeatureCandidate=$true}')){
+    foreach($required in @(
+        '[switch]$FeatureCandidate',
+        '$validationArgs=@{Root=$fixture}',
+        'if($FeatureCandidate){$validationArgs.FeatureCandidate=$true}',
+        'feature-candidate mode defers current-version handoff identity fixtures to canonical verification',
+        'feature-candidate mode defers synthetic current-version closure projection fixtures to canonical verification'
+    )){
         if(-not $negativeFixtureGate.Contains($required)){
             $errors.Add("Test-AgentHandoff-NegativeFixtures.ps1: feature-candidate propagation invariant missing: $required")
         }
