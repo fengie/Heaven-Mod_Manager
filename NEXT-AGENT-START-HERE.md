@@ -13,9 +13,9 @@ Change set: issue #671 / PR #672
 
 ## Verification boundary
 
-v8.8.83 source `ed7006e18d1fdbbdedd2209d4b766b5db938add9` remains the last closed hosted-Windows verification (run `37108647747`). It does not verify v8.8.84 because v8.8.84 changes test and release-input metadata.
+Current hosted-Windows closure: v8.8.84 source `2ea6d6dd3851f24a40e562074a816d9bd1e61883` passed run `37124460532` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log`.
 
-PR #672 previously passed Workflow Feature PR Gate run `37122995254` on source-only head `b12d9eeb31b9e069d63a9983b26fe1e0dc80401c`. That evidence is historical after the v8.8.84 metadata/continuity synchronization. Require a fresh exact-final-head gate before integration.
+The tested source remains `2ea6d6dd3851f24a40e562074a816d9bd1e61883` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Execution/offload note
 

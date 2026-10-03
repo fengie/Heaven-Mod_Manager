@@ -12,7 +12,9 @@ v8.8.84 closes issue #671 by removing a verification-only race in updater integr
 
 ## Verification boundary
 
-v8.8.83 source `ed7006e18d1fdbbdedd2209d4b766b5db938add9` passed hosted-Windows verification run `37108647747` and remains the last closed source. The earlier v8.8.84 source-only PR head `b12d9eeb31b9e069d63a9983b26fe1e0dc80401c` passed Workflow Feature PR Gate run `37122995254`, but later version/continuity changes invalidate inheritance of that exact-head result. The final PR #672 head requires fresh verification before integration.
+Current hosted-Windows closure: v8.8.84 source `2ea6d6dd3851f24a40e562074a816d9bd1e61883` passed run `37124460532` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log`.
+
+The tested source remains `2ea6d6dd3851f24a40e562074a816d9bd1e61883` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
