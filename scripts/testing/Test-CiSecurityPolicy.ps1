@@ -220,8 +220,8 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
         'id: restore',
         'if: ${{ !cancelled() }}',
         'id: build',
-        "if: ${{ !cancelled() && steps.restore.outcome == 'success' }}",
-        "if: ${{ !cancelled() && steps.build.outcome == 'success' }}"
+        'if: ${{ !cancelled() && steps.restore.outcome == ''success'' }}',
+        'if: ${{ !cancelled() && steps.build.outcome == ''success'' }}'
     )){
         if(-not $workflowFeatureGate.Contains($required)){
             $errors.Add("workflow-feature-pr-gate.yml: diagnostic-continuation invariant missing: $required")
@@ -243,7 +243,7 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
         }
         $nextIndex=$workflowFeatureGate.IndexOf('      - name:',$stepIndex+1)
         $stepBlock=if($nextIndex -gt $stepIndex){$workflowFeatureGate.Substring($stepIndex,$nextIndex-$stepIndex)}else{$workflowFeatureGate.Substring($stepIndex)}
-        if(-not $stepBlock.Contains("if: ${{ !cancelled() && steps.build.outcome == 'success' }}")){
+        if(-not $stepBlock.Contains('if: ${{ !cancelled() && steps.build.outcome == ''success'' }}')){
             $errors.Add("workflow-feature-pr-gate.yml: focused diagnostic '$stepName' must continue after unrelated earlier failures when build prerequisites succeeded.")
         }
     }
