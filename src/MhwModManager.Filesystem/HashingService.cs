@@ -13,7 +13,21 @@ public sealed class HashingService
     private const int BufferSize = 256 * 1024;
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance service is intentionally injectable and shared across hashing consumers/tests.")]
-    public async Task<HashResult> HashFileAsync(string path, bool authoritative = true, CancellationToken ct = default)
+    public Task<HashResult> HashFileAsync(string path, bool authoritative = true, CancellationToken ct = default) =>
+        HashFileCoreAsync(path, authoritative, afterInitialRead: null, ct);
+
+    internal Task<HashResult> HashFileForTestingAsync(
+        string path,
+        bool authoritative,
+        Func<string, CancellationToken, Task> afterInitialRead,
+        CancellationToken ct = default) =>
+        HashFileCoreAsync(path, authoritative, afterInitialRead, ct);
+
+    private async Task<HashResult> HashFileCoreAsync(
+        string path,
+        bool authoritative,
+        Func<string, CancellationToken, Task>? afterInitialRead,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"path={path}; authoritative={authoritative}");
         var before = new FileInfo(path);
@@ -41,12 +55,25 @@ public sealed class HashingService
             ArrayPool<byte>.Shared.Return(buffer);
         }
 
+        var shaBytes = sha?.GetHashAndReset();
+        if (afterInitialRead is not null)
+            await afterInitialRead(path, ct);
+
+        if (shaBytes is not null)
+        {
+            await using var verificationStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            var verificationSha = await SHA256.HashDataAsync(verificationStream, ct);
+            if (!CryptographicOperations.FixedTimeEquals(shaBytes, verificationSha))
+                throw new IOException($"File changed while it was being hashed: {path}");
+        }
+
         var after = new FileInfo(path);
         if (!after.Exists || after.Length != beforeLength || after.LastWriteTimeUtc != beforeWrite)
             throw new IOException($"File changed while it was being hashed: {path}");
 
         var fast = Convert.ToHexString(xx.GetCurrentHash()).ToLowerInvariant();
-        var crypt = sha is null ? string.Empty : Convert.ToHexString(sha.GetHashAndReset()).ToLowerInvariant();
+        var crypt = shaBytes is null ? string.Empty : Convert.ToHexString(shaBytes).ToLowerInvariant();
         return new(crypt,fast,after.Length,after.LastWriteTimeUtc);
     }
 }
