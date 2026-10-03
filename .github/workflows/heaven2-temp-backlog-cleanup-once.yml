@@ -17,314 +17,151 @@ concurrency:
 
 jobs:
   cleanup:
-    name: Salvage unique stale temp work then purge
+    name: Final raw preservation purge
     runs-on: [self-hosted, Windows, X64, heaven-v2]
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
-      - name: Preserve ambiguous Git state and delete bulky temp roots
+      - name: Preserve exact residual contents and delete stale roots
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $ErrorActionPreference = 'Stop'
-          $ProgressPreference = 'SilentlyContinue'
+          $ErrorActionPreference='Stop'
+          $ProgressPreference='SilentlyContinue'
           Add-Type -AssemblyName System.IO.Compression.FileSystem
 
           function Format-Bytes([long]$Bytes) {
-            if ($Bytes -ge 1TB) { return ('{0:N2} TB' -f ($Bytes / 1TB)) }
-            if ($Bytes -ge 1GB) { return ('{0:N2} GB' -f ($Bytes / 1GB)) }
-            if ($Bytes -ge 1MB) { return ('{0:N2} MB' -f ($Bytes / 1MB)) }
-            if ($Bytes -ge 1KB) { return ('{0:N2} KB' -f ($Bytes / 1KB)) }
+            if ($Bytes -ge 1GB) { return ('{0:N2} GB' -f ($Bytes/1GB)) }
+            if ($Bytes -ge 1MB) { return ('{0:N2} MB' -f ($Bytes/1MB)) }
+            if ($Bytes -ge 1KB) { return ('{0:N2} KB' -f ($Bytes/1KB)) }
             return "$Bytes B"
           }
-
           function Get-TreeBytes([string]$Path) {
             try {
               return [long]((Get-ChildItem -LiteralPath $Path -Force -File -Recurse -ErrorAction SilentlyContinue |
-                Measure-Object -Property Length -Sum).Sum)
-            } catch {
-              return 0L
-            }
+                Measure-Object Length -Sum).Sum)
+            } catch { return 0L }
           }
 
-          function Invoke-GitCapture {
-            param(
-              [Parameter(Mandatory=$true)][string]$GitExe,
-              [Parameter(Mandatory=$true)][string]$Repo,
-              [Parameter(Mandatory=$true)][string[]]$GitArgs
-            )
-            $savedPreference = $ErrorActionPreference
-            try {
-              $ErrorActionPreference = 'Continue'
-              $safeRepo = $Repo.Replace('\','/')
-              $lines = @(& $GitExe '-c' "safe.directory=$safeRepo" '-C' $Repo @GitArgs 2>$null)
-              $exitCode = $LASTEXITCODE
-              return [pscustomobject]@{ ExitCode = $exitCode; Lines = @($lines) }
-            } finally {
-              $ErrorActionPreference = $savedPreference
-            }
-          }
-
-          function Invoke-GitNoCapture {
-            param(
-              [Parameter(Mandatory=$true)][string]$GitExe,
-              [Parameter(Mandatory=$true)][string]$Repo,
-              [Parameter(Mandatory=$true)][string[]]$GitArgs
-            )
-            $savedPreference = $ErrorActionPreference
-            try {
-              $ErrorActionPreference = 'Continue'
-              $safeRepo = $Repo.Replace('\','/')
-              & $GitExe '-c' "safe.directory=$safeRepo" '-C' $Repo @GitArgs 2>$null | Out-Null
-              return $LASTEXITCODE
-            } finally {
-              $ErrorActionPreference = $savedPreference
-            }
-          }
-
-          $tempRoot = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\')
-          $profile = [IO.Path]::GetFullPath($env:USERPROFILE).TrimEnd('\')
-          if (-not $tempRoot.StartsWith($profile, [StringComparison]::OrdinalIgnoreCase)) {
+          $tempRoot=[IO.Path]::GetFullPath($env:TEMP).TrimEnd('\')
+          $profile=[IO.Path]::GetFullPath($env:USERPROFILE).TrimEnd('\')
+          if(-not $tempRoot.StartsWith($profile,[StringComparison]::OrdinalIgnoreCase)){
             throw "Refusing cleanup because TEMP is outside USERPROFILE: $tempRoot"
           }
-
-          $git = Get-Command git.exe -ErrorAction Stop
-          $cutoff = [DateTime]::UtcNow.AddHours(-24)
-          $namePattern = '(?i)^(MhwManagerSelfTest-|MhwAgentControlSelfTest-|mhw-|mhwm-|chatgpt-|agent-control-|shipit-|heaven-toolbox-|DiagOutputDir$)'
-          $salvageBase = Join-Path $env:LOCALAPPDATA 'HeavenScratchRecovery\2026-10-03'
+          $cutoff=[DateTime]::UtcNow.AddHours(-24)
+          $namePattern='(?i)^(MhwManagerSelfTest-|MhwAgentControlSelfTest-|mhw-|mhwm-|chatgpt-|agent-control-|shipit-|heaven-toolbox-|DiagOutputDir$)'
+          $salvageBase=Join-Path $env:LOCALAPPDATA 'HeavenScratchRecovery\2026-10-03\raw-residual'
           New-Item -ItemType Directory -Force -Path $salvageBase | Out-Null
 
-          $driveId = [IO.Path]::GetPathRoot($tempRoot).TrimEnd('\')
-          $diskBefore = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$driveId'" -ErrorAction SilentlyContinue
-          $freeBefore = if ($diskBefore) { [long]$diskBefore.FreeSpace } else { 0L }
+          $driveId=[IO.Path]::GetPathRoot($tempRoot).TrimEnd('\')
+          $diskBefore=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$driveId'" -ErrorAction SilentlyContinue
+          $freeBefore=if($diskBefore){[long]$diskBefore.FreeSpace}else{0L}
 
-          $candidates = @(
-            Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction Stop |
-              Where-Object { $_.Name -match $namePattern -and $_.LastWriteTimeUtc -lt $cutoff } |
-              Sort-Object LastWriteTimeUtc
-          )
+          $candidates=@(Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction Stop |
+            Where-Object {$_.Name -match $namePattern -and $_.LastWriteTimeUtc -lt $cutoff} |
+            Sort-Object LastWriteTimeUtc)
 
-          $purged = New-Object System.Collections.Generic.List[object]
-          $preserved = New-Object System.Collections.Generic.List[object]
-          $skipped = New-Object System.Collections.Generic.List[object]
-          [long]$sourceBytes = 0
-          [long]$archiveBytes = 0
+          $deleted=New-Object System.Collections.Generic.List[object]
+          $skipped=New-Object System.Collections.Generic.List[object]
+          [long]$sourceBytes=0
+          [long]$archiveBytes=0
 
-          foreach ($dir in $candidates) {
-            $root = [IO.Path]::GetFullPath($dir.FullName).TrimEnd('\')
-            $parent = [IO.Path]::GetFullPath((Split-Path -Parent $root)).TrimEnd('\')
-            if (-not [string]::Equals($parent, $tempRoot, [StringComparison]::OrdinalIgnoreCase)) {
-              $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason='not-immediate-child-of-temp' })
-              continue
+          foreach($dir in $candidates){
+            $root=[IO.Path]::GetFullPath($dir.FullName).TrimEnd('\')
+            $parent=[IO.Path]::GetFullPath((Split-Path -Parent $root)).TrimEnd('\')
+            if(-not [string]::Equals($parent,$tempRoot,[StringComparison]::OrdinalIgnoreCase)){
+              $skipped.Add([pscustomobject]@{Name=$dir.Name;Reason='not-immediate-child-of-temp'}); continue
             }
-            if (($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-              $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason='reparse-point' })
-              continue
+            if(($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){
+              $skipped.Add([pscustomobject]@{Name=$dir.Name;Reason='root-reparse-point'}); continue
             }
-
-            $rootGit = Join-Path $root '.git'
-            $repo = $null
-            if (Test-Path -LiteralPath $rootGit) {
-              $repo = $root
-            } else {
-              $markers = @(Get-ChildItem -LiteralPath $root -Force -Filter '.git' -Recurse -Depth 2 -ErrorAction SilentlyContinue)
-              if ($markers.Count -eq 1) {
-                $repo = Split-Path -Parent $markers[0].FullName
-              } elseif ($markers.Count -eq 0) {
-                $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason='no-git-state-to-salvage' })
-                continue
-              } else {
-                $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason='multiple-git-roots-ambiguous' })
-                continue
-              }
+            $nestedReparse=@(Get-ChildItem -LiteralPath $root -Force -Recurse -ErrorAction SilentlyContinue |
+              Where-Object {($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0} |
+              Select-Object -First 1)
+            if($nestedReparse.Count -gt 0){
+              $skipped.Add([pscustomobject]@{Name=$dir.Name;Reason='nested-reparse-point'}); continue
             }
 
-            $headProbe = Invoke-GitCapture -GitExe $git.Source -Repo $repo -GitArgs @('rev-parse','HEAD')
-            if ($headProbe.ExitCode -ne 0 -or $headProbe.Lines.Count -eq 0) {
-              $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason='head-unresolved' })
-              continue
-            }
-            $head = ([string]$headProbe.Lines[0]).Trim()
-
-            $branchProbe = Invoke-GitCapture -GitExe $git.Source -Repo $repo -GitArgs @('branch','--show-current')
-            $branch = if ($branchProbe.ExitCode -eq 0) { (($branchProbe.Lines -join '')).Trim() } else { '' }
-            $statusProbe = Invoke-GitCapture -GitExe $git.Source -Repo $repo -GitArgs @('status','--porcelain=v1','--branch','--untracked-files=normal')
-            if ($statusProbe.ExitCode -ne 0) {
-              $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason='status-unresolved' })
-              continue
-            }
-
-            $tag = ($dir.Name -replace '[^A-Za-z0-9._-]','_')
-            if ($tag.Length -gt 100) { $tag = $tag.Substring(0,100) }
-            $nonce = [Guid]::NewGuid().ToString('N').Substring(0,8)
-            $stage = Join-Path $salvageBase ('.staging-' + $tag + '-' + $nonce)
-            $zip = Join-Path $salvageBase ($tag + '-' + $head.Substring(0,12) + '-' + $nonce + '.zip')
-            New-Item -ItemType Directory -Force -Path $stage | Out-Null
-
-            try {
-              $bundle = Join-Path $stage 'repository.bundle'
-              $bundleExit = Invoke-GitNoCapture -GitExe $git.Source -Repo $repo -GitArgs @('bundle','create',$bundle,'HEAD')
-              if ($bundleExit -ne 0 -or -not (Test-Path -LiteralPath $bundle -PathType Leaf)) {
-                throw "git bundle create failed with exit code $bundleExit"
-              }
-              $verifyExit = Invoke-GitNoCapture -GitExe $git.Source -Repo $repo -GitArgs @('bundle','verify',$bundle)
-              if ($verifyExit -ne 0) {
-                throw "git bundle verify failed with exit code $verifyExit"
+            $bytes=Get-TreeBytes $root
+            $zip=$null
+            try{
+              if($bytes -gt 0){
+                $tag=($dir.Name -replace '[^A-Za-z0-9._-]','_')
+                if($tag.Length -gt 120){$tag=$tag.Substring(0,120)}
+                $zip=Join-Path $salvageBase ($tag+'-'+[Guid]::NewGuid().ToString('N').Substring(0,8)+'.zip')
+                [IO.Compression.ZipFile]::CreateFromDirectory($root,$zip,[IO.Compression.CompressionLevel]::Optimal,$true)
+                $archive=Get-Item -LiteralPath $zip -ErrorAction Stop
+                if($archive.Length -le 0){throw 'raw salvage archive is empty'}
+                $opened=[IO.Compression.ZipFile]::OpenRead($zip)
+                try{
+                  if($opened.Entries.Count -eq 0){throw 'raw salvage archive contains no entries'}
+                }finally{$opened.Dispose()}
               }
 
-              $patch = Join-Path $stage 'working-tree.patch'
-              $savedPreference = $ErrorActionPreference
-              try {
-                $ErrorActionPreference = 'Continue'
-                $safeRepo = $repo.Replace('\','/')
-                @(& $git.Source '-c' "safe.directory=$safeRepo" '-C' $repo 'diff' '--binary' 'HEAD' '--' 2>$null) |
-                  Set-Content -LiteralPath $patch -Encoding UTF8
-                $patchExit = $LASTEXITCODE
-              } finally {
-                $ErrorActionPreference = $savedPreference
-              }
-              if ($patchExit -ne 0) {
-                throw "git diff failed with exit code $patchExit"
-              }
-
-              $untrackedProbe = Invoke-GitCapture -GitExe $git.Source -Repo $repo -GitArgs @('ls-files','--others','--exclude-standard')
-              if ($untrackedProbe.ExitCode -ne 0) {
-                throw "git ls-files failed with exit code $($untrackedProbe.ExitCode)"
-              }
-              $untrackedRoot = Join-Path $stage 'untracked'
-              foreach ($relRaw in $untrackedProbe.Lines) {
-                $rel = ([string]$relRaw).Trim()
-                if ([string]::IsNullOrWhiteSpace($rel)) { continue }
-                $source = [IO.Path]::GetFullPath((Join-Path $repo $rel))
-                $repoPrefix = [IO.Path]::GetFullPath($repo).TrimEnd('\') + '\'
-                if (-not $source.StartsWith($repoPrefix,[StringComparison]::OrdinalIgnoreCase)) {
-                  throw "untracked path escaped repository: $rel"
-                }
-                $item = Get-Item -LiteralPath $source -Force -ErrorAction Stop
-                if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-                  throw "untracked reparse point requires manual review: $rel"
-                }
-                $dest = Join-Path $untrackedRoot $rel
-                New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
-                if ($item.PSIsContainer) {
-                  Copy-Item -LiteralPath $source -Destination $dest -Recurse -Force
-                } else {
-                  Copy-Item -LiteralPath $source -Destination $dest -Force
-                }
-              }
-
-              $metadata = [ordered]@{
-                schema = 'heaven-scratch-salvage/v1'
-                captured_at = [DateTimeOffset]::UtcNow.ToString('o')
-                original_root = $root
-                repository_root = $repo
-                head = $head
-                branch = $branch
-                status = @($statusProbe.Lines)
-                restore = @(
-                  'git clone repository.bundle restored-repo',
-                  'cd restored-repo',
-                  'git apply --index ../working-tree.patch when appropriate',
-                  'restore files under untracked/ to their recorded relative paths'
-                )
-              }
-              $metadata | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stage 'metadata.json') -Encoding UTF8
-
-              if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
-              [IO.Compression.ZipFile]::CreateFromDirectory($stage,$zip,[IO.Compression.CompressionLevel]::Optimal,$false)
-              $archive = Get-Item -LiteralPath $zip -ErrorAction Stop
-              if ($archive.Length -le 0) { throw 'salvage archive is empty' }
-              $opened = [IO.Compression.ZipFile]::OpenRead($zip)
-              try {
-                if ($opened.Entries.Count -lt 3) { throw 'salvage archive is incomplete' }
-              } finally {
-                $opened.Dispose()
-              }
-
-              $rootBytes = Get-TreeBytes -Path $root
-              $removed = $false
-              $lastError = $null
-              for ($attempt=1; $attempt -le 5; $attempt++) {
-                try {
+              $removed=$false
+              $lastError=$null
+              for($attempt=1;$attempt -le 5;$attempt++){
+                try{
                   Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction Stop
-                  $removed = -not (Test-Path -LiteralPath $root)
-                  if ($removed) { break }
-                } catch {
-                  $lastError = $_.Exception.Message
-                }
-                Start-Sleep -Milliseconds (250 * $attempt)
+                  $removed=-not(Test-Path -LiteralPath $root)
+                  if($removed){break}
+                }catch{$lastError=$_.Exception.Message}
+                Start-Sleep -Milliseconds (250*$attempt)
               }
-              if (-not $removed) {
-                throw "preserved archive but source deletion failed: $lastError"
-              }
+              if(-not $removed){throw "source deletion failed: $lastError"}
 
-              $sourceBytes += $rootBytes
-              $archiveBytes += $archive.Length
-              $purged.Add([pscustomobject]@{ Name=$dir.Name; Bytes=$rootBytes })
-              $preserved.Add([pscustomobject]@{ Name=$dir.Name; Archive=$zip; Bytes=$archive.Length; Head=$head })
-              Write-Host ("SALVAGED_AND_DELETED name='{0}' source='{1}' archive='{2}'" -f $dir.Name,(Format-Bytes $rootBytes),(Format-Bytes $archive.Length))
-            } catch {
-              $skipped.Add([pscustomobject]@{ Name=$dir.Name; Reason=$_.Exception.Message })
-              Write-Host ("PRESERVE_SKIP name='{0}' reason='{1}'" -f $dir.Name,$_.Exception.Message)
-              if (Test-Path -LiteralPath $zip -PathType Leaf) {
-                # Keep a verified archive if source deletion alone failed.
-                try {
-                  $opened = [IO.Compression.ZipFile]::OpenRead($zip)
-                  $opened.Dispose()
-                } catch {
-                  Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
-                }
+              $sourceBytes+=$bytes
+              if($zip -and (Test-Path -LiteralPath $zip -PathType Leaf)){
+                $archiveBytes+=(Get-Item -LiteralPath $zip).Length
               }
-            } finally {
-              Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue
+              $deleted.Add([pscustomobject]@{Name=$dir.Name;Bytes=$bytes;Archive=$zip})
+              Write-Host ("RAW_PRESERVED_AND_DELETED name='{0}' source='{1}'" -f $dir.Name,(Format-Bytes $bytes))
+            }catch{
+              $skipped.Add([pscustomobject]@{Name=$dir.Name;Reason=$_.Exception.Message})
+              Write-Host ("FINAL_SKIP name='{0}' reason='{1}'" -f $dir.Name,$_.Exception.Message)
+              if($zip -and (Test-Path -LiteralPath $zip -PathType Leaf)){
+                try{$opened=[IO.Compression.ZipFile]::OpenRead($zip);$opened.Dispose()}catch{Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue}
+              }
             }
           }
 
-          $remaining = @(
-            Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction SilentlyContinue |
-              Where-Object { $_.Name -match $namePattern -and $_.LastWriteTimeUtc -lt $cutoff }
-          )
-          [long]$remainingBytes = 0
-          foreach ($row in $remaining) { $remainingBytes += Get-TreeBytes -Path $row.FullName }
+          $remaining=@(Get-ChildItem -LiteralPath $tempRoot -Force -Directory -ErrorAction SilentlyContinue |
+            Where-Object {$_.Name -match $namePattern -and $_.LastWriteTimeUtc -lt $cutoff})
+          [long]$remainingBytes=0
+          foreach($row in $remaining){$remainingBytes+=Get-TreeBytes $row.FullName}
+          $diskAfter=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$driveId'" -ErrorAction SilentlyContinue
+          $freeAfter=if($diskAfter){[long]$diskAfter.FreeSpace}else{0L}
+          $freeDelta=[Math]::Max(0L,$freeAfter-$freeBefore)
 
-          $diskAfter = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$driveId'" -ErrorAction SilentlyContinue
-          $freeAfter = if ($diskAfter) { [long]$diskAfter.FreeSpace } else { 0L }
-          $freeDelta = [Math]::Max(0L,$freeAfter-$freeBefore)
-
-          $bodyLines = New-Object System.Collections.Generic.List[string]
-          $bodyLines.Add('## Heaven2 residual scratch salvage + purge')
+          $bodyLines=New-Object System.Collections.Generic.List[string]
+          $bodyLines.Add('## Heaven2 final residual temp purge')
           $bodyLines.Add('')
-          $bodyLines.Add("- Preserved then deleted: **$($preserved.Count)** roots / **$(Format-Bytes $sourceBytes)** source")
-          $bodyLines.Add("- Compact local recovery archives: **$(Format-Bytes $archiveBytes)** under $salvageBase")
+          $bodyLines.Add("- Raw-preserved then deleted: **$($deleted.Count)** roots / **$(Format-Bytes $sourceBytes)** source")
+          $bodyLines.Add("- Added recovery archives: **$(Format-Bytes $archiveBytes)** under $salvageBase")
           $bodyLines.Add("- Net disk free-space increase: **$(Format-Bytes $freeDelta)**")
-          $bodyLines.Add("- Still skipped: **$($skipped.Count)** roots")
+          $bodyLines.Add("- Still skipped: **$($skipped.Count)**")
           $bodyLines.Add("- Remaining stale allowlisted temp: **$($remaining.Count)** / **$(Format-Bytes $remainingBytes)**")
+          if($skipped.Count -gt 0){
+            $bodyLines.Add('');$bodyLines.Add('### Still skipped')
+            foreach($row in $skipped){$bodyLines.Add("- $($row.Name): $($row.Reason)")}
+          }
           $bodyLines.Add('')
-          $bodyLines.Add('Each deleted dirty/unpushed Git root was first preserved locally as a verified ZIP containing repository.bundle, working-tree.patch, metadata.json, and untracked files when present.')
-          if ($skipped.Count -gt 0) {
-            $bodyLines.Add('')
-            $bodyLines.Add('### Still skipped')
-            foreach ($row in $skipped | Select-Object -First 100) {
-              $bodyLines.Add("- $($row.Name): $($row.Reason)")
-            }
-          }
-          $body = [string]::Join([Environment]::NewLine,$bodyLines)
-          if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $body }
+          $bodyLines.Add('Any non-empty residual root was copied byte-for-byte into a verified local ZIP before its temp directory was removed. Reparse-point trees remain fail-closed.')
+          $body=[string]::Join([Environment]::NewLine,$bodyLines)
+          if($env:GITHUB_STEP_SUMMARY){Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $body}
 
-          Write-Host "PRESERVED_DELETED_COUNT=$($preserved.Count)"
-          Write-Host "SOURCE_BYTES=$(Format-Bytes $sourceBytes)"
-          Write-Host "ARCHIVE_BYTES=$(Format-Bytes $archiveBytes)"
-          Write-Host "DISK_FREE_DELTA=$(Format-Bytes $freeDelta)"
-          Write-Host "STILL_SKIPPED_COUNT=$($skipped.Count)"
-          Write-Host "REMAINING_STALE_COUNT=$($remaining.Count)"
-          Write-Host "REMAINING_STALE_BYTES=$(Format-Bytes $remainingBytes)"
+          Write-Host "FINAL_DELETED_COUNT=$($deleted.Count)"
+          Write-Host "FINAL_SOURCE_BYTES=$(Format-Bytes $sourceBytes)"
+          Write-Host "FINAL_ARCHIVE_BYTES=$(Format-Bytes $archiveBytes)"
+          Write-Host "FINAL_FREE_DELTA=$(Format-Bytes $freeDelta)"
+          Write-Host "FINAL_REMAINING_COUNT=$($remaining.Count)"
+          Write-Host "FINAL_REMAINING_BYTES=$(Format-Bytes $remainingBytes)"
 
-          $headers = @{
-            Authorization = "Bearer $env:GH_TOKEN"
-            Accept = 'application/vnd.github+json'
-            'X-GitHub-Api-Version' = '2022-11-28'
-            'User-Agent' = 'heaven2-temp-backlog-salvage'
+          $headers=@{
+            Authorization="Bearer $env:GH_TOKEN"
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='heaven2-temp-final-purge'
           }
-          $payload = @{ body = $body } | ConvertTo-Json -Depth 4
+          $payload=@{body=$body}|ConvertTo-Json -Depth 4
           Invoke-RestMethod -Method Post -Uri 'https://api.github.com/repos/fengie/mhw-mods/issues/665/comments' -Headers $headers -ContentType 'application/json' -Body $payload | Out-Null
-          Write-Host 'SALVAGE_CALLBACK_POSTED issue=665'
