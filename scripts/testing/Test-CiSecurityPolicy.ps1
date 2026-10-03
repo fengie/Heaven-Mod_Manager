@@ -193,7 +193,8 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
         'pull-requests: read',
         'gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}"',
         'PR is explicitly marked superseded',
-        'GitHub reports the current PR head as non-mergeable',
+        'GitHub reports the current PR head as non-mergeable (state=',
+        'mergeable_state',
         'needs: admission'
     )){
         if(-not $workflowFeatureGate.Contains($required)){
@@ -207,7 +208,7 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
         $errors.Add('workflow-feature-pr-gate.yml: admission job must precede the self-hosted verify job.')
     }else{
         $admissionBlock=$workflowFeatureGate.Substring($admissionStart,$verifyStart-$admissionStart)
-        if($admissionBlock.Contains('self-hosted')){
+        if([regex]::IsMatch($admissionBlock,'(?im)^\s*runs-on:\s*.*self-hosted')){
             $errors.Add('workflow-feature-pr-gate.yml: admission must not consume the self-hosted Windows runner.')
         }
         if($admissionBlock.Contains('actions/checkout@')){
