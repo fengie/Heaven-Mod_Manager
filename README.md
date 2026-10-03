@@ -6,12 +6,13 @@ Current product version: **8.8.87**.
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.87 — HPN composition precedence
+## v8.8.87 — HPN composition + snapshot hygiene
 
 - Keep a recognized literal Main/base source enabled whenever one of its sibling components is enabled; optional layers override only overlapping files.
 - Compose same-Nexus `Ver3.1` / `Ver3.10` / `Ver4.2`-style generations per path so newer HPN files win shared paths without discarding older-only compatibility files.
 - For Nexus 1965 specifically, selecting an HPN 4.x body auto-stages the newest matching 3.x compatibility package plus Main; older 4.x revisions and equal-version body alternatives are not auto-enabled.
 - Keep same-version body variants as explicit choices and show Main / Optional / Revision roles in the advanced component drawer.
+- Reclaim unindexed save-snapshot orphan directories safely during pruning, including reparse-point unlinking without traversing external targets.
 
 ## v8.8.86 — storage + filesystem hardening
 

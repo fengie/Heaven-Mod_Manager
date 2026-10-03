@@ -6,6 +6,7 @@
 - Preserve sibling-choice safety: same-version variants and unrelated version-labelled packages are not silently ordered.
 - Improve Mod Library component roles so inferred Main, Optional, and explicit Revision packages are visible instead of collapsing to generic Component labels.
 - Add deterministic resolver regressions for Nexus-4678-style `Main → No Bats` composition and Nexus-1965-style mixed HPN generation precedence.
+- Reclaim unindexed save-snapshot orphan directories during pruning, unlink orphan reparse points without traversing targets, and keep cleanup failures best-effort/retryable.
 
 # v8.8.86 — 2026-10-03
 
