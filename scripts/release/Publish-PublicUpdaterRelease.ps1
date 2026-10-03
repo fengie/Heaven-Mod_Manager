@@ -4,7 +4,8 @@ param(
   [string]$SourceRepository=$env:GITHUB_REPOSITORY,
   [string]$PublicRepository='fengie/mhw-mod-manager-release',
   [string]$ExpectedSourceSha=$env:GITHUB_SHA,
-  [long]$ExpectedBuildNumber=0
+  [long]$ExpectedBuildNumber=0,
+  [string]$OutcomePath=$env:GITHUB_OUTPUT
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
@@ -55,6 +56,7 @@ if([string]::IsNullOrWhiteSpace($sourceToken)){
 }
 $publicToken=[string]$env:MHW_PUBLIC_RELEASE_TOKEN
 if([string]::IsNullOrWhiteSpace($publicToken)){
+  Write-UpdaterPublicationStepOutcome -Path $OutcomePath -Published $false -Reason 'public-mirror-unconfigured'
   Write-Host '::notice::Public updater mirror is not configured yet; set MHW_PUBLIC_RELEASE_TOKEN after creating fengie/mhw-mod-manager-release.'
   exit 0
 }
@@ -210,6 +212,7 @@ $mainRef=Invoke-ReleaseApi -Method GET -Uri "https://api.github.com/repos/$Sourc
 $remoteMain=([string]$mainRef.commit.sha).ToLowerInvariant()
 $initialMainDecision=Get-PublicUpdaterMainDecision -RemoteMainSha $remoteMain
 if(-not $initialMainDecision.Publish){
+  Write-UpdaterPublicationStepOutcome -Path $OutcomePath -Published $false -Reason ([string]$initialMainDecision.Reason)
   Write-Host "::notice::Skipping public updater publication: $($initialMainDecision.Reason) (remote main $remoteMain)."
   exit 0
 }
@@ -232,6 +235,7 @@ if($null -ne $existing){
     if([bool]$existing.draft -or [bool]$existing.prerelease){throw "Public updater release $tag exists but is not published stable."}
     if(-not [bool]$existing.immutable){throw "Public updater release $tag exists but is not immutable."}
     Assert-ExactAssets -Release $existing -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+    Write-UpdaterPublicationStepOutcome -Path $OutcomePath -Published $true -Reason 'already-published'
     Write-Host "PASS: public updater mirror $tag already exists with exact immutable assets." -ForegroundColor Green
     exit 0
   }
@@ -290,6 +294,7 @@ $publication=Invoke-UpdaterDraftPublication -ExpectedSourceSha $expectedSource `
   }
 
 if(-not $publication.Published){
+  Write-UpdaterPublicationStepOutcome -Path $OutcomePath -Published $false -Reason ([string]$publication.Reason)
   Write-Host "::notice::Skipping public updater publication: $($publication.Reason) (remote main $($publication.RemoteMainSha))."
   exit 0
 }
@@ -304,4 +309,5 @@ if(-not [bool]$published.immutable){
   throw "Public updater release $tag is not immutable. Enable immutable releases on $PublicRepository before using it as the client feed."
 }
 Assert-ExactAssets -Release $published -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+Write-UpdaterPublicationStepOutcome -Path $OutcomePath -Published $true -Reason 'published'
 Write-Host "PASS: published immutable updater release $tag to public feed $PublicRepository." -ForegroundColor Green
