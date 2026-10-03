@@ -1,10 +1,17 @@
-# v8.8.81 — MHW Manual Mod Manager
+# v8.8.82 — MHW Manual Mod Manager
 
-Current product version: **8.8.81**.
+Current product version: **8.8.82**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.82 — self-cleaning test scratch
+
+- Remove self-test scratch reliably by clearing Microsoft.Data.Sqlite pools before bounded recursive-delete retries instead of silently swallowing locked-directory failures.
+- Make installed-client updater E2E teardown stop owned processes and retry deletion of a marker-validated per-run temp root; cleanup failures now fail visibly.
+- Change the disposable updater harness to retain only a small external evidence JSON while tearing down its disposable profile on both success and failure.
+- Add ownership markers plus a conservative stale-scratch reaper for abandoned marked self-test/updater E2E roots; unmarked, active, reparse-point, user-data, repository, and WSL paths are never touched.
 
 ## v8.8.81 — allowlisted updater E2E evidence
 
@@ -22,12 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Bind E2E artifact names to the exact tested release SHA instead of the workflow-run/evidence commit.
 - Close the durable-evidence gap exposed after the successful v8.8.79 installed-client update/rollback run.
 
-## v8.8.79 — automation state integrity
-
-- Keep indexed save-snapshot reparse entries retryable: unlink only the immediate reparse entry and delete its database row only after unlink succeeds.
-- Preserve the no-traversal boundary so pruning never recursively follows an untrusted junction/symlink target.
-- Make last-known-good change detection symmetric so removed mods are reported alongside additions, enable-state changes, and priority changes.
-- Add Windows junction and mixed last-known-good state regressions.
 
 ## Current plans & progress
 
