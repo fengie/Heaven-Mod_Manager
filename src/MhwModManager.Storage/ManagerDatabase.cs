@@ -4,10 +4,6 @@ using MhwModManager.Core;
 
 namespace MhwModManager.Storage;
 
-/// <summary>
-/// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
-/// shared-cache changes locking semantics and works against the WAL concurrency model.
-/// </summary>
 internal enum ManagerDatabaseMigrationCheckpoint
 {
     AfterVersionRead,
@@ -16,6 +12,10 @@ internal enum ManagerDatabaseMigrationCheckpoint
     BeforeCommit
 }
 
+/// <summary>
+/// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
+/// shared-cache changes locking semantics and works against the WAL concurrency model.
+/// </summary>
 public sealed class ManagerDatabase
 {
     private const int BusyTimeoutSeconds = 10;
