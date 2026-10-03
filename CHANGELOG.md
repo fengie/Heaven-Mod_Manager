@@ -1,3 +1,10 @@
+# v8.8.81 — 2026-10-02
+
+- Make update migration resolve package identity case-insensitively and canonicalize caller-provided IDs before planning.
+- Use canonical mod identity while transferring conflict rules, metadata, family membership, resource-provider ownership, staged state, supersession, and update diff inputs.
+- Preserve rejection of old/new IDs differing only by case as the same logical package.
+- Add focused casing-variant migration regressions.
+
 # v8.8.80 — 2026-10-02
 
 - Restore complete canonical-main history before installed-client updater E2E evidence ancestry/drift checks so evidence-only main commits are recognized as descendants of the tested release source.
