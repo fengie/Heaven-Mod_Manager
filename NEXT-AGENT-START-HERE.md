@@ -1,32 +1,32 @@
-# v8.8.77 updater E2E runner + continuity-state repair — canonical handoff
+# v8.8.78 Browse Mods actionable empty states — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: updater E2E runner repair plus issue #604 continuity/evidence synchronization
+Change set: issue #559 actionable empty/no-match Browse Mods tranche
 
-## v8.8.77 behavior
+## v8.8.78 behavior
 
-- The updater publication classifier uses the self-hosted Heaven Windows runner instead of the unavailable GitHub-hosted pool while keeping its read-only and fail-closed decision contract.
-- Hosted-Windows evidence persistence synchronizes exact source/run proof into `CURRENT_REVISION.json`, `CURRENT_STATE.md`, and this handoff before one evidence commit is pushed.
-- The evidence-only commit is not the tested source; exact verification continues to belong to the source SHA recorded inside the closure.
-- Current-version closure evidence is validated against machine-readable and Markdown continuity surfaces, with negative fixtures for stale SHA/run and stale candidate instructions.
-- v8.8.76 bounded Vortex handoff behavior remains credential-free and isolated from live deployment.
-- Steam Workshop remains unsupported for MHW until a reviewed operation-specific contract exists.
+- Browse Mods distinguishes an empty catalog from a query with zero visible matches.
+- Empty catalog state offers **Refresh Providers**; zero-match state offers **Clear Search** and preserves the typed query until that action is chosen.
+- The blank result grid and impossible selection prompt are hidden while no result can be selected.
+- Selected mod details are retained only when the same provider/mod identity remains visible after a result refresh.
+- The status badge describes visible results instead of incorrectly calling filtered matches the total cached catalog.
+- Existing provider capability, exact-file selection, acquisition, and install-safety rules are unchanged.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.77 source `cd90cff3cec585b6c09e2bb68992247753f6efb9` passed run `37072838484` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.77-heaven-windows-closure.log`.
+The last closed hosted-Windows source boundary is v8.8.77 source `cd90cff3cec585b6c09e2bb68992247753f6efb9`, run `37072838484`, with exact evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.77-heaven-windows-closure.log`.
 
-The tested source remains `cd90cff3cec585b6c09e2bb68992247753f6efb9` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+v8.8.78 changes Browse Mods XAML, view-model state, tests, and release metadata. Verify the canonical v8.8.78 tree on its exact inputs and persist source/run evidence before treating it as a closed verification boundary.
 
 ## Unresolved risks and next work
 
-- Issue #350 remains externally blocked on a real production updater signing identity/public trust anchor and real signed-release E2E.
-- Issue #354 remains externally blocked on repository ruleset/branch-protection capabilities and a stable Authenticode publisher identity.
-- Issue #281 remains open only for the separate Steam Workshop applicability tranche.
-- Issues #558/#559 and representative RECOVERY-005/RECOVERY-007 runtime acceptance remain independent follow-up work.
+- Issue #559 remains active for filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX.
+- Issue #558 retains provider-aware scale/performance work.
+- #350/#354 retain external signing/repository-administration prerequisites.
+- Representative RECOVERY-005/RECOVERY-007 installed Windows acceptance remains independent.
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, release supply-chain rules, and the credential-free Vortex boundary. The successor **must propagate** this continuity obligation to the next agent after them. **Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and release-safety rules. The successor **must propagate** this continuity obligation to the next agent after them. **Do not break the chain.**
