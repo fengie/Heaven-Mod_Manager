@@ -1,10 +1,17 @@
-# v8.8.87 — MHW Manual Mod Manager
+# v8.8.88 — MHW Manual Mod Manager
 
-Current product version: **8.8.87**.
+Current product version: **8.8.88**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.88 — public release provenance
+
+- Generate deterministic public updater provenance from exact verified ZIP/manifest bytes and source SHA.
+- Reconcile the append-only public `release-index.json` only after immutable public/private release parity, with idempotent compare-and-swap retries and exact digest verification.
+- Keep semantic nonpublication and retry paths safe: missing exact releases no-op, already-published releases can repair provenance, and conflicting identities fail closed.
+- Normalize artifact/path resolution results for Windows PowerShell 5.1 strict mode, with a positive single-artifact regression.
 
 ## v8.8.87 — HPN composition + snapshot hygiene
 
@@ -20,13 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Make unmanaged adoption invocation-owned and revalidate/certify copy-time topology and bytes, including deterministic concurrent and post-discovery race regressions.
 - Reject descendant reparse topology before import publication and before recursive import cleanup/rollback, preserving unsafe residue instead of traversing it.
 
-## v8.8.85 — feature verification decoupling
-
-- Let feature PRs run the full exact-head product/security/build/test verifier without first claiming the next global patch metadata.
-- Defer only release-version/README/changelog/current-version parity in feature-candidate mode; repository identity, canonical-state shape, continuity, security, analyzers, tests, fault injection, and self-tests stay enforced.
-- Keep canonical `main` and updater publication on the default full verifier, and fail CI policy if the release gate ever opts into candidate-mode relaxation.
-
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -34,6 +34,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **TOOLBOX-CUTOVER / P0** — global training/toolbox ownership, routing, verifier relocation, compatibility-copy deletion, no-reintroduction enforcement, context takeover, and live relay cutover are complete.
 - [x] **AUDIT-HARDENING-575-577 / P0** — v8.8.72 closes save-snapshot consistency, stale release-publication, and canonical continuity-state gaps with deterministic regressions and fail-closed gates.
 - [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
+- [x] **RELEASE-PROVENANCE-686 / P1** — v8.8.88 adds deterministic updater-readable public provenance/index reconciliation bound to exact immutable release bytes and source identity.
 - [x] **UPDATER-E2E-587 / P1** — v8.8.74 prevents superseded non-publishing release gates from launching guaranteed-failure installed-client E2E runs while keeping missing-publication states fail-closed.
 - [x] **UPDATER-E2E-PERSISTENCE-622 / P0** — v8.8.80 restores complete main history before E2E persistence ancestry checks so successful exact-source updater evidence survives the release evidence-only commit.
 - [x] **UPDATER-STORAGE-647 / P0** — v8.8.82 removes retained staging ZIP/payload duplication and performs conservative state-aware cleanup of historical updater staging/terminal transactions; PR #658 passed exact-head gates and integrated.

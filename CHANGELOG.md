@@ -1,3 +1,11 @@
+# v8.8.88 — 2026-10-03
+
+- Generate deterministic public updater provenance records from exact artifact bytes, source SHA, version/build/tag/channel, and immutable release metadata.
+- Reconcile the public `release-index.json` only after public/private immutable parity, using compare-and-swap plus bounded retry and rejecting conflicting source or release identities.
+- Repair missing provenance on safe reruns without republishing immutable ZIP/manifest assets; same-version sources without an exact release remain a clean no-op.
+- Verify local provenance inputs against immutable release digests and fall back to re-downloading/verifying published assets when rerun-local bytes differ.
+- Normalize artifact and `Resolve-Path` results to arrays so Windows PowerShell 5.1 strict mode supports single-artifact provenance generation reliably, with a positive regression.
+
 # v8.8.87 — 2026-10-03
 
 - Keep literal Main/base packages staged on whenever a sibling component in the same logical mod is active, so optional overlays no longer accidentally replace their required base.
