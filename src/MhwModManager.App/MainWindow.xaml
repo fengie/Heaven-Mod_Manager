@@ -285,11 +285,14 @@
                                     <TextBlock Text="AUTO SETUP" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <Button Content="Auto Populate" Command="{Binding AutoPopulateCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="11,5" Margin="2,0" ToolTip="Automatically enable and apply the largest safe set of installed mods. Required dependencies and texture providers are included only when the complete setup stays conflict-free."/>
                                     <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
-                                    <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="{Binding EnableVisibleLabel}" Command="{Binding EnableSelectedCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Stage every mod currently shown by the search and filters to be enabled. Game files stay unchanged until Apply Mod Changes." AutomationProperties.Name="{Binding EnableVisibleLabel}"/>
-                                        <Button Content="{Binding DisableVisibleLabel}" Command="{Binding DisableSelectedCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Stage every mod currently shown by the search and filters to be disabled. Game files stay unchanged until Apply Mod Changes." AutomationProperties.Name="{Binding DisableVisibleLabel}"/>
-                                        <Button Content="Refresh Mod Info" Command="{Binding ReindexSelectedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Re-read the files and information for every mod currently shown."/>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Button Content="{Binding EnableVisibleLabel}" Command="{Binding EnableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="{Binding VisibleBulkScopeHelp}" AutomationProperties.Name="{Binding EnableVisibleLabel}" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                            <Button Content="{Binding DisableVisibleLabel}" Command="{Binding DisableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="{Binding VisibleBulkScopeHelp}" AutomationProperties.Name="{Binding DisableVisibleLabel}" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                            <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="{Binding VisibleBulkScopeHelp}" AutomationProperties.Name="{Binding RefreshVisibleLabel}" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                        </StackPanel>
+                                        <TextBlock Margin="2,4,0,0" Text="{Binding VisibleBulkScopeHelp}" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
                                     </StackPanel>
                                 </StackPanel>
                             </ScrollViewer>
