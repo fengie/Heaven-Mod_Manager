@@ -90,8 +90,31 @@ jobs:
             try {
               $env:GIT_TERMINAL_PROMPT = '0'
               $env:GCM_INTERACTIVE = 'Never'
-              $credentialRequest = "protocol=https`nhost=github.com`n`n"
-              $filled = $credentialRequest | & git credential fill 2>$null
+              $gitPath = (Get-Command git -ErrorAction Stop).Source
+              $psi = New-Object System.Diagnostics.ProcessStartInfo
+              $psi.FileName = $gitPath
+              $psi.Arguments = 'credential fill'
+              $psi.UseShellExecute = $false
+              $psi.RedirectStandardInput = $true
+              $psi.RedirectStandardOutput = $true
+              $psi.RedirectStandardError = $true
+              $psi.CreateNoWindow = $true
+              $proc = New-Object System.Diagnostics.Process
+              $proc.StartInfo = $psi
+              $null = $proc.Start()
+              $proc.StandardInput.WriteLine('protocol=https')
+              $proc.StandardInput.WriteLine('host=github.com')
+              $proc.StandardInput.WriteLine('')
+              $proc.StandardInput.Close()
+              $filledText = $proc.StandardOutput.ReadToEnd()
+              $credentialError = $proc.StandardError.ReadToEnd()
+              $proc.WaitForExit()
+              if ($proc.ExitCode -ne 0) {
+                Write-Host "GIT_CREDENTIAL_UNAVAILABLE exit=$($proc.ExitCode)"
+                $filled = @()
+              } else {
+                $filled = @($filledText -split "\r?\n")
+              }
               $passwordLine = @($filled | Where-Object { $_ -like 'password=*' } | Select-Object -First 1)
               $gitToken = if ($passwordLine.Count -eq 1) {
                 [string]$passwordLine[0].Substring('password='.Length)
