@@ -17,7 +17,7 @@ internal static class Program
             var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
             UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
             UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, requestPath);
-            var request = await UpdateRequestStore.ReadAsync(requestPath, CancellationToken.None);
+            var request = await UpdateRequestStore.ReadForHelperAsync(requestPath, CancellationToken.None);
             var logPath = Path.Combine(updaterRoot, "updater.log");
             Log(logPath, $"helper start build={request.Manifest.BuildNumber} source={request.Manifest.SourceSha}");
 
