@@ -301,8 +301,8 @@ public sealed class AutomationServiceTests : IDisposable
         var db=await CreateDbAsync("migration-id-case.db");
         await db.UpsertModAsync(new("old-pack","Old Pack","Old Pack",Path.Combine(root,"old-pack"),true,7,FamilyId:"family-a",FamilyRole:"main"),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("new-pack","New Pack","New Pack",Path.Combine(root,"new-pack"),false,2),TestContext.Current.CancellationToken);
-        await db.ReplaceModFilesAsync("old-pack",[ModFile("old-pack",@"nativePC\shared.tex","old-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
-        await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("old-pack",[ModFile("old-pack",@"nativePC\mod_shared\shared.tex","old-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync("new-pack",[ModFile("new-pack",@"nativePC\mod_shared\shared.tex","new-hash",FileClass.Texture)],TestContext.Current.CancellationToken);
         await db.ExecuteAsync("INSERT INTO resource_providers(namespace,mod_id) VALUES('nativepc\\mod_shared','old-pack')",ct:TestContext.Current.CancellationToken);
 
         var planner=new DeploymentPlanner(new ConflictEngine());
