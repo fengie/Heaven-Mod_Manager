@@ -17,9 +17,9 @@ Change set: issue #686 / PR #687
 
 ## Verification boundary
 
-Last closed canonical Windows source is v8.8.87 `8c872e7051b60a4ddc878bf4290c210225a18a59` / run `37139785007`.
+Last closed canonical Windows source is v8.8.87 `166369c60d6b5a726fbccd1eecac073ebdaa7ce3` / run `37140984099`.
 
-The pre-version provenance head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after repairing Windows PowerShell scalar path handling. The reconciled v8.8.88 final head changes release inputs and includes newer canonical-main work, so those earlier greens are supporting evidence only and must not authorize merge.
+The pre-version provenance head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after repairing Windows PowerShell scalar path handling. The reconciled v8.8.88 final head includes the verified v8.8.87 evidence-only successor `8bb6fda2690f77957d15c5c6585ed5081f333e77` and changes release inputs, so earlier greens are supporting evidence only and must not authorize merge.
 
 ## Unresolved risk
 

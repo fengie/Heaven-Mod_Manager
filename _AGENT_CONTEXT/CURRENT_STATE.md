@@ -13,9 +13,9 @@ v8.8.88 adds an updater-readable provenance/index layer for immutable public rel
 
 ## Verification boundary
 
-Last closed canonical Windows source is v8.8.87 `8c872e7051b60a4ddc878bf4290c210225a18a59`, run `37139785007`.
+Last closed canonical Windows source is v8.8.87 `166369c60d6b5a726fbccd1eecac073ebdaa7ce3`, run `37140984099`.
 
-The provenance implementation at pre-version head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after the Windows PowerShell scalar-path repair. The reconciled v8.8.88 candidate changes release metadata and includes newer canonical-main work, so it requires fresh exact-final-head verification. After merge, canonical main requires a fresh strict Windows Release Gate and downstream installed-client updater E2E before v8.8.88 closure is claimed.
+The provenance implementation at pre-version head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after the Windows PowerShell scalar-path repair. The reconciled v8.8.88 candidate includes verified evidence-only main `8bb6fda2690f77957d15c5c6585ed5081f333e77` and changes release metadata/workflow inputs, so it requires fresh exact-final-head verification. After merge, canonical main requires a fresh strict Windows Release Gate and downstream installed-client updater E2E before v8.8.88 closure is claimed.
 
 ## Remaining independent work
 
