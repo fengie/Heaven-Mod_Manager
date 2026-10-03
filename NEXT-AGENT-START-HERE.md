@@ -15,9 +15,9 @@ Change set: issue #632
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.81 source `b46f7324d860c66dd3572013dbba571dec319c87` passed run `37103097571` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.81 source `aa5e56afa5bf8db73bcb7ac0af0c9825874c736a` passed run `37105670926` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.81-heaven-windows-closure.log`.
 
-The tested source remains `b46f7324d860c66dd3572013dbba571dec319c87` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `aa5e56afa5bf8db73bcb7ac0af0c9825874c736a` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and next work
 
