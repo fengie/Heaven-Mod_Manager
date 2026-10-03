@@ -111,10 +111,10 @@ $unsafeGhCredentialFixture='gh auth token'
 if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeGhCredentialFixture -DisplayName 'synthetic-gh-credential-fixture').Count -eq 0){
     $errors.Add('CI credential regression: gh auth token fixture was not rejected.')
 }
-$unsafeGitCredentialFixture=@"
+$unsafeGitCredentialFixture=@'
 $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.Arguments = 'credential fill'
-"@
+'@
 if(@(Get-UnsafeWorkflowCredentialRecoveryViolations -Text $unsafeGitCredentialFixture -DisplayName 'synthetic-git-credential-fixture').Count -eq 0){
     $errors.Add('CI credential regression: Git credential fill fixture was not rejected.')
 }
