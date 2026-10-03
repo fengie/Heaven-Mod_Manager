@@ -201,17 +201,20 @@ public sealed class ComplianceSurfaceTests
 
     private static string FindRepositoryRoot()
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
+        foreach (var start in new[] { Environment.CurrentDirectory, AppContext.BaseDirectory }.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            if (File.Exists(Path.Combine(directory.FullName, "MhwModManager.slnx")))
+            var directory = new DirectoryInfo(start);
+            while (directory is not null)
             {
-                return directory.FullName;
-            }
+                if (File.Exists(Path.Combine(directory.FullName, "MhwModManager.slnx")))
+                {
+                    return directory.FullName;
+                }
 
-            directory = directory.Parent;
+                directory = directory.Parent;
+            }
         }
 
-        throw new DirectoryNotFoundException("Repository root not found.");
+        throw new DirectoryNotFoundException($"Repository root not found from working directory '{Environment.CurrentDirectory}' or test base '{AppContext.BaseDirectory}'.");
     }
 }
