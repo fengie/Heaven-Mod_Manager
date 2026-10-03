@@ -172,7 +172,59 @@ public static class UpdateStorageMaintenance
                         "journal.json");
                     if (!File.Exists(journalPath))
                     {
-                        deferred++;
+                        var preparedLeasePath = Path.Combine(
+                            transaction,
+                            UpdatePreparedTransactionLeaseStore.FileName);
+                        if (!File.Exists(preparedLeasePath))
+                        {
+                            deferred++;
+                            continue;
+                        }
+
+                        UpdatePathSafety.EnsureExistingComponentsNotReparse(
+                            fullRoot,
+                            preparedLeasePath);
+                        var preparedLease =
+                            await UpdatePreparedTransactionLeaseStore.ReadAsync(
+                                preparedLeasePath,
+                                ct);
+                        preparedLease.ValidateFor(
+                            transaction,
+                            transactionBuild);
+
+                        var preparedNewestWriteUtc =
+                            InspectSafeTreeNewestWriteUtc(
+                                fullRoot,
+                                transaction,
+                                ct);
+                        if (!IsOldEnough(
+                                preparedNewestWriteUtc,
+                                nowUtc,
+                                minimumAge))
+                        {
+                            deferred++;
+                            continue;
+                        }
+
+                        var ownerState =
+                            UpdatePreparedTransactionLeaseStore.GetOwnerState(
+                                preparedLease);
+                        if (ownerState
+                            is not UpdatePreparedTransactionOwnerState.Exited)
+                        {
+                            deferred++;
+                            log?.Invoke(
+                                $"update storage cleanup preserved prepared transaction={Path.GetFileName(transaction)} owner={ownerState}");
+                            continue;
+                        }
+
+                        DeleteSafeTree(
+                            fullRoot,
+                            transaction,
+                            ct);
+                        deletedTransactions++;
+                        log?.Invoke(
+                            $"update storage cleanup removed abandoned prepared transaction={Path.GetFileName(transaction)}");
                         continue;
                     }
 
