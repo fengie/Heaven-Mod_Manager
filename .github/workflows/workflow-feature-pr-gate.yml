@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'src/**'
+      - 'tests/**'
       - 'src/MhwModManager.Automation/FomodInstallerService.cs'
       - 'src/MhwModManager.Automation/RulesEditorService.cs'
       - 'src/MhwModManager.Automation/UpdateMigrationService.cs'
