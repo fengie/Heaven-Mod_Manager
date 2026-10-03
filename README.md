@@ -1,10 +1,20 @@
-# v8.8.81 — MHW Manual Mod Manager
+# v8.8.82 — MHW Manual Mod Manager
 
-Current product version: **8.8.81**.
+Current product version: **8.8.82**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.82 — updater topology + bounded storage retention
+
+- Bind each helper handoff transaction identity to the exact target manifest plus canonical install, staging, and manager-home roots.
+- Validate the request topology before the helper acquires the update mutex or reads recovery state.
+- Require backup, journal, health, pending, and staging paths to match the canonical transaction layout; reject noncanonical path spellings and cross-attempt substitutions.
+- Stop retaining two complete update copies while an update is staged: discard the downloaded ZIP after extraction and package verification succeeds.
+- Retire the whole staging attempt immediately after an update is confirmed, and reclaim sufficiently old orphan staging plus terminal confirmed/rolled-back transactions on startup.
+- Preserve the exact pending staging attempt and every nonterminal/recovery-required transaction; malformed pending state fails closed, and cleanup refuses reparse-point traversal.
+- Add adversarial coverage for topology substitution plus deterministic storage-retention coverage for pending, orphaned, terminal, recent, and reparse-point state.
 
 ## v8.8.81 — allowlisted updater E2E evidence
 
@@ -22,13 +32,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Bind E2E artifact names to the exact tested release SHA instead of the workflow-run/evidence commit.
 - Close the durable-evidence gap exposed after the successful v8.8.79 installed-client update/rollback run.
 
-## v8.8.79 — automation state integrity
-
-- Keep indexed save-snapshot reparse entries retryable: unlink only the immediate reparse entry and delete its database row only after unlink succeeds.
-- Preserve the no-traversal boundary so pruning never recursively follows an untrusted junction/symlink target.
-- Make last-known-good change detection symmetric so removed mods are reported alongside additions, enable-state changes, and priority changes.
-- Add Windows junction and mixed last-known-good state regressions.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -38,6 +41,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **RELEASE-PROVENANCE-583 / P1** — v8.8.73 adds exact-artifact SLSA provenance generation/verification with explicit private-repository Enterprise entitlement gating.
 - [x] **UPDATER-E2E-587 / P1** — v8.8.74 prevents superseded non-publishing release gates from launching guaranteed-failure installed-client E2E runs while keeping missing-publication states fail-closed.
 - [x] **UPDATER-E2E-PERSISTENCE-622 / P0** — v8.8.80 restores complete main history before E2E persistence ancestry checks so successful exact-source updater evidence survives the release evidence-only commit.
+- [ ] **UPDATER-STORAGE-647 / P0** — v8.8.82 removes retained staging ZIP/payload duplication and performs conservative state-aware cleanup of historical updater staging/terminal transactions; exact-head verification/integration remains required.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
@@ -65,11 +69,11 @@ The intended result is hands-off: high-confidence `MAIN → OPTIONAL → UPDATE/
 
 ### Nexus lineage (optional)
 
-Offline metadata (`mhw-manager.meta.json`, common `meta.ini` fields, stored source URLs/folder hints) is always used when available. For stronger live Nexus lineage, put your Nexus API key in `State\Next\nexus-api-key.txt` or set `NEXUS_API_KEY`, then use **Mods → Check Mod Info**. That action refreshes mod names, artwork, known relationships/lineage, and update availability. Live enrichment is rate-limited during normal startup and can be forced from the UI. The manager never requires Nexus connectivity to deploy local mods.
+Offline metadata (`mhw-manager.meta.json`, common `meta.ini` fields, stored source URLs/folder hints) is always used when available. For stronger live Nexus lineage, put your Nexus API key in `State\Next\nexus-api-key.txt` or set `NEXUS_API_KEY`, then click **Sync lineage**. Live enrichment is rate-limited during normal startup and can be forced from the UI. The manager never requires Nexus connectivity to deploy local mods.
 
 ### Manual-install adoption
 
-At startup the manager counts untracked files already present under the live `nativePC`. **Mods → Bring In Manual Mods** copies those files into a new immutable source package under `Mods` without changing the live game tree. The adopted path + SHA-256 is remembered; unchanged adopted files stop being offered repeatedly, while later external edits become visible again.
+At startup the manager counts untracked files already present under the live `nativePC`. **Adopt manual files** copies those files into a new immutable source package under `Mods` without changing the live game tree. The adopted path + SHA-256 is remembered; unchanged adopted files stop being offered repeatedly, while later external edits become visible again.
 
 ### Texture previews
 

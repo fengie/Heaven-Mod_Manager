@@ -30,6 +30,17 @@ public sealed class UpdatePackageStager(GitHubUpdateSource source, Action<string
             var productManifestPath = Path.Combine(payloadRoot, UpdateProtocol.ProductManifestFileName);
             await UpdatePackageVerifier.VerifyAsync(
                 payloadRoot, candidate.Manifest.ProductManifestSha256, ct);
+            try
+            {
+                File.Delete(archivePath);
+                writeLog($"update staging discarded verified archive build={candidate.Manifest.BuildNumber}");
+            }
+            catch (Exception ex) when (
+                ex is IOException or UnauthorizedAccessException)
+            {
+                writeLog(
+                    $"update staging archive cleanup deferred build={candidate.Manifest.BuildNumber} type={ex.GetType().Name}");
+            }
             var staged = new StagedUpdate(candidate.Manifest, payloadRoot, productManifestPath);
             var pending = Path.Combine(updaterRoot, UpdateProtocol.PendingFileName);
             await WriteJsonAtomicallyAsync(pending, staged, ct);
