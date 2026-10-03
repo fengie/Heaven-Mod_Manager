@@ -535,6 +535,7 @@ public sealed class UpdaterCoreTests : IDisposable
         using var client = new UpdateClientService(
             new HttpClient(new FakeHandler(_ => throw new InvalidOperationException("Network must not be used."))));
 
+        var ownerProcessId = Environment.ProcessId;
         var prepared = await client.PrepareHandoffAsync(
             staged,
             install,
@@ -544,7 +545,7 @@ public sealed class UpdaterCoreTests : IDisposable
                 UpdateHealthProtocol.FileArgument, "old-health",
                 UpdateHealthProtocol.AttemptArgument, "old-attempt"
             ],
-            4321,
+            ownerProcessId,
             TestToken,
             managerHomeRoot:managerHome);
 
@@ -561,7 +562,7 @@ public sealed class UpdaterCoreTests : IDisposable
         var request = await UpdateRequestStore.ReadForHelperAsync(
             prepared.RequestPath,
             TestToken);
-        Assert.Equal(4321, request.CurrentProcessId);
+        Assert.Equal(ownerProcessId, request.CurrentProcessId);
         Assert.Equal(["--normal", "value"], request.RestartArguments);
         Assert.Equal(stage, request.StagingRoot);
         Assert.Equal(Path.GetFullPath(managerHome), request.ManagerHomeRoot);
