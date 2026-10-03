@@ -34,7 +34,8 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
                     Path.Combine(
                         protectedPayload,
                         UpdateProtocol.ProductManifestFileName)),
-                UpdateProtocol.Json));
+                UpdateProtocol.Json,
+                TestContext.Current.CancellationToken));
 
         var terminal = CreateTransaction(
             100,
@@ -72,7 +73,8 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
         Directory.CreateDirectory(root);
         await File.WriteAllTextAsync(
             Path.Combine(root, UpdateProtocol.PendingFileName),
-            "{ definitely-not-json");
+            "{ definitely-not-json",
+            TestContext.Current.CancellationToken);
 
         var result = await UpdateStorageMaintenance.CleanupRootAsync(
             root,
@@ -116,7 +118,8 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
         Directory.CreateDirectory(external);
         await File.WriteAllTextAsync(
             Path.Combine(external, "keep.txt"),
-            "KEEP");
+            "KEEP",
+            TestContext.Current.CancellationToken);
 
         var link = Path.Combine(
             root,
