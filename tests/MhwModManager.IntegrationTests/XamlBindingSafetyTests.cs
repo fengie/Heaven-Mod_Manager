@@ -457,6 +457,55 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void SettingsStorageCardSeparatesDurableDataFromBoundedUpdaterReclaim()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var settings = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Settings.cs"));
+        var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+
+        Assert.Contains("ItemsSource=\"{Binding StorageCategories}\"", xaml);
+        Assert.Contains("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
+        Assert.Contains("Command=\"{Binding ReclaimUpdaterStorageCommand}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Reclaim disposable updater storage\"", xaml);
+        Assert.Contains("It preserves installed Mods, State, archives, catalog scratch, unknown files, live pending update data, nonterminal recovery data, and reparse paths.", xaml);
+        Assert.Contains("AutomationProperties.LiveSetting=\"Polite\"", xaml);
+
+        Assert.Contains("\"Installed Mods\"", settings);
+        Assert.Contains("\"Manager State (total)\"", settings);
+        Assert.Contains("\"Catalog Download Scratch\"", settings);
+        Assert.Contains("\"Updater Staging\"", settings);
+        Assert.Contains("\"Updater Recovery\"", settings);
+        Assert.Contains("UpdateStorageMaintenance.RunAsync(", settings);
+        Assert.Contains("SafeRecursiveTraversal.Snapshot(root, ct)", settings);
+        Assert.DoesNotContain("Directory.Delete(", settings);
+        Assert.Contains("if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);", main);
+    }
+
+    [Fact]
+    public void StorageUsageProbeMeasuresOwnedFilesAndFormatsBytes()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "mhwmm-storage-probe-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            File.WriteAllBytes(Path.Combine(root, "a.bin"), new byte[1024]);
+            var nested = Path.Combine(root, "nested");
+            Directory.CreateDirectory(nested);
+            File.WriteAllBytes(Path.Combine(nested, "b.bin"), new byte[2048]);
+
+            Assert.Equal(3072, StorageUsageProbe.MeasureTree(root));
+            Assert.Equal("3.0 KiB", MainWindowViewModel.FormatStorageBytes(3072));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void AdvancedToolsInputsExposeContextualAutomationNames()
     {
         var root = FindRepositoryRoot();
