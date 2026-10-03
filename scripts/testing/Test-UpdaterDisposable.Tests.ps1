@@ -12,7 +12,10 @@ foreach($function in $ast.FindAll({param($node) $node -is [Management.Automation
 }
 $fixture=Join-Path (Split-Path -Parent $PSScriptRoot) ('artifacts/disposable-contract-'+[Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $fixture -Force | Out-Null
+$cleanupToken=[Guid]::NewGuid().ToString('N')
+Write-ScratchMarker $fixture 'Test-UpdaterDisposable.Tests' $cleanupToken
 $passed=0
+try {
 function Reject([scriptblock]$Action,[string]$Expected) {
     $caught=$false
     try { & $Action } catch {
@@ -56,5 +59,12 @@ Assert-That ($confirmed.Id -eq $PID) 'Positive process identity fixture failed.'
 $passed++
 Assert-NoReparse $fixture
 $passed++
-Write-Host "PASS: $passed disposable harness contract checks (no updater/app process launched)."
-# Retain tiny fixtures under ignored artifacts/; no recursive cleanup or profile writes.
+Remove-OwnedScratchRoot $fixture $cleanupToken
+Assert-That (-not (Test-Path -LiteralPath $fixture)) 'Disposable contract fixture cleanup failed.'
+$passed++
+Write-Host "PASS: $passed disposable harness contract checks (no updater/app process launched; scratch removed)."
+} finally {
+    if(Test-Path -LiteralPath $fixture){
+        Remove-Item -LiteralPath $fixture -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
