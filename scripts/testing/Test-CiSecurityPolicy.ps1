@@ -365,6 +365,13 @@ if(!(Test-Path -LiteralPath $releasePath)){
         $errors.Add('windows-release-gate.yml: public updater client feed must publish before canonical/private release visibility.')
     }
     if($parityIndex -le $privatePublishIndex){$errors.Add('windows-release-gate.yml: public/private updater parity verification must run after both publication steps.')}
+    if(-not $release.Contains('id: public_updater_release')){
+        $errors.Add('windows-release-gate.yml: public updater publication must expose a step outcome for downstream gating.')
+    }
+    $publicReadyGuard="steps.public_updater_release.outputs.published == 'true'"
+    if(([regex]::Matches($release,[regex]::Escape($publicReadyGuard))).Count -lt 2){
+        $errors.Add('windows-release-gate.yml: canonical publication and public/private parity must both require a successful public updater publication outcome.')
+    }
     if(-not [regex]::IsMatch($release,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')){
         $errors.Add('windows-release-gate.yml: cross-repository updater publication must not be cancelled in progress.')
     }
@@ -389,7 +396,7 @@ if(!(Test-Path -LiteralPath $publicPublisherPath)){
     $errors.Add('Publish-PublicUpdaterRelease.ps1 is missing.')
 }else{
     $text=Get-Content -LiteralPath $publicPublisherPath -Raw
-    foreach($required in @('ExpectedSourceSha=$env:GITHUB_SHA','Recovering abandoned public updater draft','Invoke-UpdaterDraftPublication','-RefreshMain','-EvaluateRefreshedMain','stale-main-unclassified-large-diff')){
+    foreach($required in @('ExpectedSourceSha=$env:GITHUB_SHA','OutcomePath=$env:GITHUB_OUTPUT','Write-UpdaterPublicationStepOutcome','-Published $false','-Published $true','Recovering abandoned public updater draft','Invoke-UpdaterDraftPublication','-RefreshMain','-EvaluateRefreshedMain','stale-main-unclassified-large-diff')){
         if(-not $text.Contains($required)){$errors.Add("Publish-PublicUpdaterRelease.ps1: updater transaction invariant missing: $required")}
     }
     if($text.Contains('Canonical private updater release')){$errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')}

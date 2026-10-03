@@ -1,8 +1,12 @@
-# v8.8.85 feature verification decoupling — canonical state
+# v8.8.86 storage/filesystem hardening — canonical state
 
-v8.8.85 closes issue #675 by separating feature-candidate product verification from canonical release-version metadata without weakening the exact-main release/publication boundary.
+v8.8.86 adds updater staging-capacity preflight plus unmanaged-adoption and import-filesystem hardening on top of the verified v8.8.85 publication/verification baseline.
 
 ## Behavior
+
+- Updater staging fails before download when the actual staging volume cannot satisfy the bounded capacity budget.
+- Unmanaged adoption uses invocation-owned roots and copy-time containment/reparse plus SHA-256 certification.
+- Import publication and recursive cleanup/rollback fail closed on descendant reparse topology.
 
 - Workflow Feature PR Gate invokes `Verify-Release.ps1 -FeatureCandidate` on the exact PR head.
 - Feature-candidate mode defers only global release-version surface parity: VERSION/build version, current-version README/CHANGELOG/handoff parity, and current-version closure projection.
@@ -13,9 +17,9 @@ v8.8.85 closes issue #675 by separating feature-candidate product verification f
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.85 source `d50b5defe23209119b417b56e7047e14e4c37032` passed run `37127511216` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.85 source `271b9d8d7303a6136b574af52d43d95efff26f34` passed run `37130638298` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
 
-The tested source remains `d50b5defe23209119b417b56e7047e14e4c37032` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `271b9d8d7303a6136b574af52d43d95efff26f34` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
