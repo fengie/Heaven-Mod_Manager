@@ -154,6 +154,71 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveSnapshotPruneRemovesUnindexedOrphanDirectory()
+    {
+        var db=await CreateDbAsync("backup-prune-orphan.db");
+        var stateRoot=Path.Combine(root,"backup-prune-orphan-state");
+        var game=GameProfile.Generic("backup-prune-orphan","Backup Prune Orphan",Path.Combine(root,"backup-prune-orphan-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var orphan=Path.Combine(service.SnapshotRoot,"orphan");
+        Directory.CreateDirectory(orphan);
+        await File.WriteAllTextAsync(Path.Combine(orphan,"partial.bin"),"partial",TestContext.Current.CancellationToken);
+
+        await service.PruneAsync(30,TestContext.Current.CancellationToken);
+
+        Assert.False(Directory.Exists(orphan));
+    }
+
+    [Fact]
+    public async Task SaveSnapshotPruneOrphanCleanupFailureDoesNotAbortPruning()
+    {
+        if(!OperatingSystem.IsWindows()) return;
+        var db=await CreateDbAsync("backup-prune-orphan-retry.db");
+        var stateRoot=Path.Combine(root,"backup-prune-orphan-retry-state");
+        var game=GameProfile.Generic("backup-prune-orphan-retry","Backup Prune Orphan Retry",Path.Combine(root,"backup-prune-orphan-retry-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var external=Path.Combine(root,"backup-prune-orphan-retry-external");
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"preserve",TestContext.Current.CancellationToken);
+        var orphan=Path.Combine(service.SnapshotRoot,"orphan-link");
+        CreateDirectoryJunction(orphan,external);
+
+        await service.PruneAsync(
+            30,
+            TestContext.Current.CancellationToken,
+            _=>throw new IOException("simulated orphan unlink failure"));
+
+        Assert.True(Directory.Exists(orphan));
+        Assert.True(File.Exists(sentinel));
+    }
+
+    [Fact]
+    public async Task SaveSnapshotPruneUnlinksUnindexedOrphanReparsePointWithoutTraversingTarget()
+    {
+        if(!OperatingSystem.IsWindows()) return;
+        var db=await CreateDbAsync("backup-prune-orphan-reparse.db");
+        var stateRoot=Path.Combine(root,"backup-prune-orphan-reparse-state");
+        var game=GameProfile.Generic("backup-prune-orphan-reparse","Backup Prune Orphan Reparse",Path.Combine(root,"backup-prune-orphan-reparse-game"),"game.exe","");
+        var service=new SaveBackupService(db,stateRoot,game);
+        Directory.CreateDirectory(service.SnapshotRoot);
+        var external=Path.Combine(root,"backup-prune-orphan-reparse-external");
+        Directory.CreateDirectory(external);
+        var sentinel=Path.Combine(external,"sentinel.txt");
+        await File.WriteAllTextAsync(sentinel,"preserve",TestContext.Current.CancellationToken);
+        var orphan=Path.Combine(service.SnapshotRoot,"orphan-link");
+        CreateDirectoryJunction(orphan,external);
+
+        await service.PruneAsync(30,TestContext.Current.CancellationToken);
+
+        Assert.False(Directory.Exists(orphan));
+        Assert.True(Directory.Exists(external));
+        Assert.Equal("preserve",await File.ReadAllTextAsync(sentinel,TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task SaveSnapshotPruneNeverDeletesDatabasePathsOutsideSnapshotRoot()
     {
         var db=await CreateDbAsync("backup-prune-containment.db");
