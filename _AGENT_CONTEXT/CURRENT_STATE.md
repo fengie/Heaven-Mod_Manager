@@ -13,11 +13,9 @@ v8.8.85 closes issue #675 by separating feature-candidate product verification f
 
 ## Verification boundary
 
-The source-only v8.8.85 implementation head `67a55a581ae2bc78906d3252d44196857741131f` passed MHW Product Security run `37125208406` and Workflow Feature PR Gate run `37125208523`, including the exact repository verifier, builds, analyzers, focused regressions, and patch whitespace, before release metadata was synchronized.
+Current hosted-Windows closure: v8.8.85 source `d50b5defe23209119b417b56e7047e14e4c37032` passed run `37127511216` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.85-heaven-windows-closure.log`.
 
-That evidence proves the intended candidate-mode separation but is historical after the v8.8.85 metadata changes. The exact final PR #678 head must pass fresh Product Security and Workflow Feature gates before integration. After merge, canonical `main` remains subject to the Windows Release Gate's full strict metadata/handoff verifier; `-FeatureCandidate` is forbidden there.
-
-The last closed canonical Windows release verification remains v8.8.84 source `2ea6d6dd3851f24a40e562074a816d9bd1e61883`, run `37124460532`, until v8.8.85 obtains its own exact-main closure.
+The tested source remains `d50b5defe23209119b417b56e7047e14e4c37032` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 

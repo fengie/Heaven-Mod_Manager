@@ -927,13 +927,62 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource Card}">
+                        <Border Margin="0,0,0,12" Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock Text="Background refresh" Style="{StaticResource SectionTitle}"/>
                                 <CheckBox Margin="0,12,0,0" Content="Refresh mod metadata periodically in the background"
                                           IsChecked="{Binding BackgroundMetadataRefreshEnabled,Mode=TwoWay}"
                                           AutomationProperties.Name="Background metadata refresh"/>
                                 <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Text="When enabled, cached lineage, visuals, and update metadata can refresh about every four hours while the manager is idle. Opening Mods can still refresh information on demand."/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Storage" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Margin="0,4,0,12"
+                                           Foreground="{StaticResource Muted}"
+                                           TextWrapping="Wrap"
+                                           Text="See where manager-owned disk space is being used. Installed Mods, archived Mods, managed package data, and State are durable and are never removed by the reclaim action."/>
+                                <ItemsControl ItemsSource="{Binding StorageCategories}"
+                                              AutomationProperties.Name="Manager storage categories">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Size}" Foreground="{StaticResource AccentBright}"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Retention}" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                    <Button Content="Measure storage"
+                                            Command="{Binding RefreshStorageUsageCommand}"
+                                            Style="{StaticResource QuietButton}"
+                                            AutomationProperties.Name="Measure manager storage"/>
+                                    <Button Margin="8,0,0,0"
+                                            Content="Reclaim disposable updater storage"
+                                            Command="{Binding ReclaimUpdaterStorageCommand}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            AutomationProperties.Name="Reclaim disposable updater storage"/>
+                                </StackPanel>
+                                <TextBlock Margin="0,8,0,0"
+                                           Foreground="{StaticResource Muted}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Text="Reclaim removes only updater-owned old orphan staging attempts and terminal recovery transactions already proven safe to discard. It preserves installed Mods, State, archives, catalog scratch, unknown files, live pending update data, nonterminal recovery data, and reparse paths."/>
+                                <TextBlock Margin="0,8,0,0"
+                                           Foreground="{StaticResource Muted}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Text="{Binding StorageStatusText}"
+                                           AutomationProperties.LiveSetting="Polite"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
