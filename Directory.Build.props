@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.78</Version>
-    <InformationalVersion>8.8.78-browse-empty-states</InformationalVersion>
+    <Version>8.8.79</Version>
+    <InformationalVersion>8.8.79-automation-state-integrity</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
