@@ -333,6 +333,7 @@ function Invoke-CiSecurityPolicyPreflight {
     $sw=[System.Diagnostics.Stopwatch]::StartNew()
     try {
         & (Join-Path $PSScriptRoot '..\testing\Test-CiSecurityPolicy.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-DotNetSdkJobIsolation.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         $sw.Stop()
         Add-Result 'Security' 'CI supply-chain policy' $true 0 $sw.Elapsed.TotalSeconds $log 'MHW updater, release, package, and dependency-audit invariants passed.'
         Write-Host 'PASS: CI supply-chain policy' -ForegroundColor Green
