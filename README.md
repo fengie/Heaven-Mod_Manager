@@ -151,8 +151,8 @@ When installed, the script uses `dotnet-stack`, `dotnet-counters`, `dotnet-trace
 1. Close MHW and v7.
 2. Back up the manager folder if you want an additional external copy.
 3. **Do not delete `Mods` or `State`.**
-4. Compile/verify v8.5.0 with the scripts above, or use a Windows build produced by them.
-5. Put the published v8.5.0 files in the manager root next to your existing `Mods` and `State`.
+4. Compile/verify the current release with the scripts above, or use the published Windows build for the current release.
+5. Put the current release files in the manager root next to your existing `Mods` and `State`.
 6. Launch `MHW Mod Manager.exe`.
 7. Read the migration report before first Apply.
 8. Run Health.
