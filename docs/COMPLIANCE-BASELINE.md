@@ -1,7 +1,7 @@
 # Product Compliance Baseline
 
-**Baseline date:** October 3, 2026  
-**Scope:** current native Windows desktop application.  
+**Baseline date:** October 3, 2026
+**Scope:** current native Windows desktop application.
 **Purpose:** turn the common "20 things" app-compliance checklist into concrete product controls without pretending web/SaaS obligations apply when the underlying feature does not exist.
 
 This is an engineering baseline, not a substitute for jurisdiction-specific legal review.
