@@ -1,4 +1,4 @@
-# v8.8.87 HPN composition precedence — canonical handoff
+# v8.8.87 HPN composition precedence — candidate handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
@@ -12,11 +12,11 @@ Change set: PR #692
 - Same-Nexus `Ver3.10` / `Ver4.2`-style generations can remain enabled together; the newer generation wins shared paths while older-only files remain active.
 - Equal-version sibling variants remain a choice unless stronger metadata or an explicit user rule orders them.
 - Mod Library advanced rows identify Main / Optional / Revision roles.
-- Tests cover Nexus-4678-style `Main → No Bats` and Nexus-1965-style mixed HPN generations.
+- Tests cover Nexus-4678-style `Main → No Bats`, full Nexus-1965-style `Main → 3.10 → 4.2`, and equal-version variant safety.
 
 ## Verification boundary
 
-The last closed hosted-Windows source is still v8.8.85 `271b9d8d7303a6136b574af52d43d95efff26f34`, run `37130638298`. Do not reuse that evidence for v8.8.87.
+The current closed hosted-Windows source is v8.8.86 `21e7dbd1c71d66be542095be4e6d397879b7b134`, run `37132556908`; its evidence-only persistence commits are preserved in current main. Do not reuse that evidence for v8.8.87.
 
 PR #692 must pass fresh exact-final-head feature verification before merge. After merge, verify remote `main` and obtain fresh canonical Windows release closure because this change modifies product source/tests/release inputs.
 
