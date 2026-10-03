@@ -189,9 +189,9 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
 
     foreach($required in @(
         'admission:',
-        'runs-on: ubuntu-latest',
+        'runs-on: [self-hosted, Windows, X64, mhw-mods]',
         'pull-requests: read',
-        'urllib.request.urlopen',
+        'Invoke-RestMethod -Uri $uri -Headers $headers -Method Get',
         'PR is explicitly marked superseded',
         'GitHub reports the current PR head as non-mergeable',
         'mergeable_state',
@@ -208,11 +208,16 @@ if(!(Test-Path -LiteralPath $workflowFeatureGatePath -PathType Leaf)){
         $errors.Add('workflow-feature-pr-gate.yml: admission job must precede the self-hosted verify job.')
     }else{
         $admissionBlock=$workflowFeatureGate.Substring($admissionStart,$verifyStart-$admissionStart)
-        if([regex]::IsMatch($admissionBlock,'(?im)^\s*runs-on:\s*.*self-hosted')){
-            $errors.Add('workflow-feature-pr-gate.yml: admission must not consume the self-hosted Windows runner.')
-        }
         if($admissionBlock.Contains('actions/checkout@')){
-            $errors.Add('workflow-feature-pr-gate.yml: admission should inspect GitHub PR metadata without checking out candidate code.')
+            $errors.Add('workflow-feature-pr-gate.yml: admission must inspect GitHub PR metadata without checking out candidate code.')
+        }
+        foreach($forbidden in @('Verify-Release.ps1','dotnet restore','dotnet build','dotnet test')){
+            if($admissionBlock.Contains($forbidden)){
+                $errors.Add("workflow-feature-pr-gate.yml: admission must stay metadata-only and must not run expensive verification: $forbidden")
+            }
+        }
+        if(-not $admissionBlock.Contains("if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository")){
+            $errors.Add('workflow-feature-pr-gate.yml: self-hosted admission must reject fork pull requests before runner execution.')
         }
     }
 
