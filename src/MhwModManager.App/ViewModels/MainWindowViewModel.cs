@@ -153,6 +153,22 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return $"Disable {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
         }
     }
+    public string RefreshVisibleLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Refresh {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+        }
+    }
+    public string VisibleBulkScopeHelp
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Bulk actions affect all {VisibleModCount} {(VisibleModCount==1?"mod":"mods")} shown by the current search and filters, not just selected rows.";
+        }
+    }
 
     public int StagedEnableCount=>Mods.Count(x=>x.WillEnable);
     public int StagedDisableCount=>Mods.Count(x=>x.WillDisable);
@@ -517,6 +533,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(HasVisibleMods));
         OnPropertyChanged(nameof(EnableVisibleLabel));
         OnPropertyChanged(nameof(DisableVisibleLabel));
+        OnPropertyChanged(nameof(RefreshVisibleLabel));
+        OnPropertyChanged(nameof(VisibleBulkScopeHelp));
     }
 
     private void Changed()
@@ -1031,8 +1049,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText=result.Summary+" The setup is applied and ready to launch.";
     }
 
-    [RelayCommand]private void EnableSelected()=>StageVisible(true);
-    [RelayCommand]private void DisableSelected()=>StageVisible(false);
+    [RelayCommand]private void EnableVisible()=>StageVisible(true);
+    [RelayCommand]private void DisableVisible()=>StageVisible(false);
 
     private void StageVisible(bool enabled)
     {
@@ -1060,17 +1078,18 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task ReindexSelected()
+    private async Task ReindexVisible()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("catalog.reindex","Refreshing Mod Info","Re-reading the installed mod packages without changing game files…",true,async ct=>
     {
-        var target=ModsView.Cast<ModRowViewModel>()
-            .SelectMany(x=>x.StagedMemberDescriptors())
+        var visible=ModsView.Cast<ModRowViewModel>().ToArray();
+        var target=visible
+            .SelectMany(x=>x.Members)
             .DistinctBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
             .ToArray();
         await s.Catalog.EnsureCapturedAsync(target,ct);
-        StatusText=$"Re-indexed {target.Length} visible enabled mod(s).";
+        StatusText=$"Re-indexed {visible.Length} visible {(visible.Length==1?"mod":"mods")} across {target.Length} source {(target.Length==1?"package":"packages")}.";
     });
     }
 
