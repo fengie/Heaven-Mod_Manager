@@ -12,6 +12,7 @@ using Xunit;
 
 namespace MhwModManager.IntegrationTests;
 
+[Collection(UpdaterGlobalStateFixture.Name)]
 public sealed class UpdaterInstalledClientE2ETests
 {
     private const string OldTag = "updater-main-60";
