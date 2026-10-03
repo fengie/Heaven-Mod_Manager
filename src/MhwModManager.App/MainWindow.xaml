@@ -998,63 +998,111 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogProviderSummary}" TextWrapping="Wrap"/>
                                 <Border Grid.Column="1" Style="{StaticResource StatusBadge}">
-                                    <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold">
-                                        <Run Text="{Binding CatalogItemCount,Mode=OneWay}"/><Run Text=" cached"/>
-                                    </TextBlock>
+                                    <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold"
+                                               Text="{Binding CatalogResultCountLabel}"
+                                               AutomationProperties.Name="{Binding CatalogResultCountLabel}"/>
                                 </Border>
                             </Grid>
-                            <DataGrid Grid.Row="2"
-                                      ItemsSource="{Binding CatalogItems}"
-                                      SelectedItem="{Binding SelectedCatalogItem,Mode=TwoWay}"
-                                      AutoGenerateColumns="False"
-                                      IsReadOnly="True"
-                                      RowHeight="88"
-                                      EnableRowVirtualization="True"
-                                      VirtualizingPanel.IsVirtualizing="True"
-                                      VirtualizingPanel.VirtualizationMode="Recycling"
-                                      ScrollViewer.CanContentScroll="True"
-                                      AutomationProperties.Name="Provider catalog results">
-                                <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="MOD" Width="2.8*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="2,5,10,5">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="74"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Border Width="64" Height="64" CornerRadius="8" Background="#0A1018" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
-                                                        <Grid>
-                                                            <TextBlock Text="No image" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            <Image Source="{Binding ThumbnailUri}" Stretch="UniformToFill"/>
-                                                        </Grid>
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock Margin="0,3,0,0" Text="{Binding Summary}" Foreground="{StaticResource Muted}" FontSize="10" MaxHeight="30" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
-                                                        <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding Author}" Foreground="{StaticResource Muted}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="120"/>
-                                                            <TextBlock Text="  •  " Foreground="{StaticResource Muted}" FontSize="10"/>
-                                                            <TextBlock Text="{Binding Category}" Foreground="{StaticResource AccentBright}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="110"/>
-                                                            <TextBlock Text="  •  " Foreground="{StaticResource Muted}" FontSize="10"/>
-                                                            <TextBlock Text="{Binding Downloads}" Foreground="{StaticResource Muted}" FontSize="10"/>
-                                                            <TextBlock Text=" downloads" Foreground="{StaticResource Muted}" FontSize="10"/>
+                            <Grid Grid.Row="2">
+                                <DataGrid ItemsSource="{Binding CatalogItems}"
+                                          SelectedItem="{Binding SelectedCatalogItem,Mode=TwoWay}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          RowHeight="88"
+                                          EnableRowVirtualization="True"
+                                          VirtualizingPanel.IsVirtualizing="True"
+                                          VirtualizingPanel.VirtualizationMode="Recycling"
+                                          ScrollViewer.CanContentScroll="True"
+                                          Visibility="{Binding CatalogResultsVisibility}"
+                                          AutomationProperties.Name="Provider catalog results">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="MOD" Width="2.8*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="2,5,10,5">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="74"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Width="64" Height="64" CornerRadius="8" Background="#0A1018" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True">
+                                                            <Grid>
+                                                                <TextBlock Text="No image" Foreground="{StaticResource Muted}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                <Image Source="{Binding ThumbnailUri}" Stretch="UniformToFill"/>
+                                                            </Grid>
+                                                        </Border>
+                                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Margin="0,3,0,0" Text="{Binding Summary}" Foreground="{StaticResource Muted}" FontSize="10" MaxHeight="30" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Author}" Foreground="{StaticResource Muted}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="120"/>
+                                                                <TextBlock Text="  •  " Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                                <TextBlock Text="{Binding Category}" Foreground="{StaticResource AccentBright}" FontSize="10" TextTrimming="CharacterEllipsis" MaxWidth="110"/>
+                                                                <TextBlock Text="  •  " Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                                <TextBlock Text="{Binding Downloads}" Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                                <TextBlock Text=" downloads" Foreground="{StaticResource Muted}" FontSize="10"/>
+                                                            </StackPanel>
                                                         </StackPanel>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="SOURCE" Binding="{Binding Provider}" Width="105"/>
-                                    <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="100"/>
-                                    <DataGridTextColumn Header="UPDATED" Binding="{Binding Updated}" Width="135"/>
-                                    <DataGridTextColumn Header="CACHE" Binding="{Binding CacheState}" Width="145"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="SOURCE" Binding="{Binding Provider}" Width="105"/>
+                                        <DataGridTextColumn Header="VERSION" Binding="{Binding Version}" Width="100"/>
+                                        <DataGridTextColumn Header="UPDATED" Binding="{Binding Updated}" Width="135"/>
+                                        <DataGridTextColumn Header="CACHE" Binding="{Binding CacheState}" Width="145"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <Border Style="{StaticResource SubtleCard}"
+                                        Padding="26"
+                                        Visibility="{Binding CatalogEmptyVisibility}"
+                                        AutomationProperties.Name="Browse Mods result state">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420">
+                                        <TextBlock Text="{Binding CatalogEmptyTitle}"
+                                                   Style="{StaticResource SectionTitle}"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Margin="0,8,0,0"
+                                                   Text="{Binding CatalogEmptyDetail}"
+                                                   Foreground="{StaticResource Muted}"
+                                                   FontSize="11"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"/>
+                                        <StackPanel Margin="0,14,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="Refresh Providers"
+                                                    Command="{Binding RefreshCatalogCommand}"
+                                                    Visibility="{Binding CatalogRefreshEmptyVisibility}"
+                                                    Style="{StaticResource PrimaryButton}"
+                                                    AutomationProperties.Name="Refresh catalog providers"/>
+                                            <Button Content="Clear Search"
+                                                    Command="{Binding ClearCatalogSearchCommand}"
+                                                    Visibility="{Binding CatalogClearSearchVisibility}"
+                                                    Style="{StaticResource QuietButton}"
+                                                    AutomationProperties.Name="Clear catalog search"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
                         </Grid>
 
                         <Border Grid.Column="2" Style="{StaticResource Card}" Padding="14">
                             <Grid>
+                                <Grid Visibility="{Binding CatalogEmptyVisibility}"
+                                      AutomationProperties.Name="No catalog results to inspect"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Center">
+                                    <StackPanel HorizontalAlignment="Center" MaxWidth="310">
+                                        <TextBlock Text="{Binding CatalogEmptyTitle}"
+                                                   Style="{StaticResource SectionTitle}"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Margin="0,8,0,0"
+                                                   Text="{Binding CatalogEmptyDetail}"
+                                                   Foreground="{StaticResource Muted}"
+                                                   FontSize="11"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
                                 <Grid AutomationProperties.Name="Select a catalog mod to view details"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Center">
@@ -1062,9 +1110,13 @@
                                         <Style TargetType="Grid">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding SelectedCatalogItem}" Value="{x:Null}">
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding SelectedCatalogItem}" Value="{x:Null}"/>
+                                                        <Condition Binding="{Binding HasCatalogResults}" Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
                                                     <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
+                                                </MultiDataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Grid.Style>
