@@ -13,16 +13,22 @@ public sealed class HashingService
     private const int BufferSize = 256 * 1024;
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance service is intentionally injectable and shared across hashing consumers/tests.")]
-    public Task<HashResult> HashFileAsync(string path, bool authoritative = true, CancellationToken ct = default) =>
-        HashFileCoreAsync(path, authoritative, afterInitialRead: null, ct);
+    public Task<HashResult> HashFileAsync(string path, bool authoritative = true, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"path={path}; authoritative={authoritative}");
+        return HashFileCoreAsync(path, authoritative, afterInitialRead: null, ct);
+    }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Test seam remains on the injectable service surface for focused source-mutation regressions.")]
     internal Task<HashResult> HashFileForTestingAsync(
         string path,
         bool authoritative,
         Func<string, CancellationToken, Task> afterInitialRead,
-        CancellationToken ct = default) =>
-        HashFileCoreAsync(path, authoritative, afterInitialRead, ct);
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"path={path}; authoritative={authoritative}");
+        return HashFileCoreAsync(path, authoritative, afterInitialRead, ct);
+    }
 
     private static async Task<HashResult> HashFileCoreAsync(
         string path,
