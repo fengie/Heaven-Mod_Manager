@@ -1,10 +1,16 @@
-# v8.8.80 — MHW Manual Mod Manager
+# v8.8.81 — MHW Manual Mod Manager
 
-Current product version: **8.8.80**.
+Current product version: **8.8.81**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.81 — authoritative MHW discovery hardening
+
+- Canonicalize a live generic same-root profile to the MHW adapter only when authoritative discovery resolves the real `MonsterHunterWorld.exe`, preserving user-owned identity/display/save/store fields.
+- Refuse Steam app 582010 discovery when only a launcher or other non-MHW executable is available instead of creating a broken canonical profile.
+- Preserve deterministic same-root ownership, active-profile repointing, restart idempotency, and normal generic-game behavior with focused regressions for #602/#603.
 
 ## v8.8.80 — updater E2E evidence persistence
 
@@ -20,14 +26,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Preserve the no-traversal boundary so pruning never recursively follows an untrusted junction/symlink target.
 - Make last-known-good change detection symmetric so removed mods are reported alongside additions, enable-state changes, and priority changes.
 - Add Windows junction and mixed last-known-good state regressions.
-
-## v8.8.78 — actionable Browse Mods empty states
-
-- Distinguish an empty catalog from a search with zero matches instead of leaving a blank results grid.
-- Show contextual **Refresh Providers** or **Clear Search** recovery actions with keyboard/UI Automation names.
-- Hide the dead-end selection prompt when there are no selectable rows and keep selected details synchronized with the visible result set.
-- Label the browse badge as visible results rather than incorrectly describing filtered matches as total cached items.
-- Add deterministic state and XAML regressions for empty, zero-match, and populated Browse Mods states.
 
 ## Current plans & progress
 
