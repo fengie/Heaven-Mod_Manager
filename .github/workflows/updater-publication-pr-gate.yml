@@ -10,6 +10,10 @@ on:
       - 'scripts/release/UpdaterReleasePublication.ps1'
       - 'scripts/release/UpdaterReleasePolicy.ps1'
       - 'scripts/testing/Test-UpdaterReleasePolicy.ps1'
+      - 'scripts/ci/Assert-PinnedDotNetSdk.ps1'
+      - 'global.json'
+      - '.github/workflows/updater-installed-client-e2e.yml'
+      - '.github/workflows/workflow-feature-pr-gate.yml'
       - '.github/workflows/windows-release-gate.yml'
       - '.github/workflows/updater-publication-pr-gate.yml'
 
@@ -39,13 +43,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Verify pinned .NET SDK
+      - name: Provision repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Verify repository .NET SDK
         shell: powershell
-        run: |
-          $version = (& dotnet --version).Trim()
-          if ($version -ne '10.0.401') {
-            throw "Heaven updater publication runner requires .NET SDK 10.0.401; found $version."
-          }
+        run: .\scripts\ci\Assert-PinnedDotNetSdk.ps1
 
       - name: Assert exact checked-out source
         shell: powershell
