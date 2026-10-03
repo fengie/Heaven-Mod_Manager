@@ -20,7 +20,7 @@ The manager applies this order when evidence is strong enough:
 
 1. explicit human incompatibility / exact-path winner / pinned resource provider / remembered overlay;
 2. inferred literal/declared main/base → same-source optional/component layer;
-3. inferred same-Nexus package revisions (including `Ver3.10` / `Ver4.2` naming) on overlapping paths only;
+3. inferred same-Nexus package revisions (including `Ver3.1` / `Ver3.10` / `Ver4.2` naming) on overlapping paths only;
 4. inferred patch/fix/hotfix/update layered over its parent;
 5. for texture paths only, dedicated texture/skin packs over incidental copies embedded in armor packages;
 6. for confidently related texture lineages, newer revision metadata over older: Nexus-style upload timestamp, date/version label, explicit Updated/Fix naming, then file revision time;
@@ -46,7 +46,7 @@ High-confidence signals include names such as `Base Name - No Cape`, `Base Name 
 
 HPN packages are a concrete case where whole-archive supersession is unsafe. Community packages built against the HPN ecosystem document that older armor can still require the 3.x body/resources while newer armor targets 4.x, and some add-ons recommend retaining multiple v4 body/resource variants for compatibility.
 
-When two enabled packages belong to the same Nexus mod, carry explicit generation labels such as `Ver3.10` and `Ver4.2`, have strongly related package names, and actually overlap, the newer generation becomes the provider **only for those shared paths**. Files found only in the older generation remain in the deployment. This is source coexistence plus path precedence, not package disablement or binary merging.
+When two enabled packages belong to the same Nexus mod, carry explicit generation labels such as `Ver3.1`, `Ver3.10`, and `Ver4.2`, have strongly related package names, and actually overlap, the newer generation becomes the provider **only for those shared paths**. Files found only in the older generation remain in the deployment. This is source coexistence plus path precedence, not package disablement or binary merging.
 
 Equal-version siblings such as Beautiful / Normal / Huge / Small are not ordered just because they share a source page. If they replace the same structural asset and there is no stronger author/user rule, they remain a human choice.
 
