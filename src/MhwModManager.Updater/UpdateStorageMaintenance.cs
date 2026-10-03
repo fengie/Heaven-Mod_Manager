@@ -104,6 +104,13 @@ public static class UpdateStorageMaintenance
                     ct.ThrowIfCancellationRequested();
                     if (SamePath(attempt, protectedStagingAttempt))
                         continue;
+                    if (!TryParseStagingAttemptName(
+                            Path.GetFileName(attempt),
+                            out _))
+                    {
+                        deferred++;
+                        continue;
+                    }
 
                     try
                     {
@@ -344,6 +351,24 @@ public static class UpdateStorageMaintenance
             updaterRoot,
             "staging",
             segments[1]);
+    }
+
+    private static bool TryParseStagingAttemptName(
+        string attemptName,
+        out long buildNumber)
+    {
+        buildNumber = 0;
+        var parts = attemptName.Split(
+            '-',
+            StringSplitOptions.None);
+        return parts.Length == 2
+               && long.TryParse(
+                   parts[0],
+                   out buildNumber)
+               && Guid.TryParseExact(
+                   parts[1],
+                   "N",
+                   out _);
     }
 
     private static bool TryParseTransactionBuild(
