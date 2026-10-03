@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -56,25 +57,67 @@ public sealed class NexusV3Credential
 
 public sealed record NexusV3ConditionalRequest(string? ETag = null, DateTimeOffset? LastModified = null);
 
+public sealed record NexusV3RateLimitSnapshot(
+    int? HourlyLimit,
+    int? HourlyRemaining,
+    int? DailyLimit,
+    int? DailyRemaining,
+    DateTimeOffset? HourlyReset,
+    DateTimeOffset? DailyReset)
+{
+    public DateTimeOffset? GetBlockedUntil(DateTimeOffset now)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        DateTimeOffset? blockedUntil = null;
+
+        if (HourlyRemaining is <= 0 && HourlyReset is > now)
+            blockedUntil = HourlyReset;
+
+        if (DailyRemaining is <= 0
+            && DailyReset is > now
+            && (blockedUntil is null || DailyReset > blockedUntil))
+        {
+            blockedUntil = DailyReset;
+        }
+
+        return blockedUntil;
+    }
+
+    public CatalogRateLimit ToCatalogRateLimit(DateTimeOffset observedAt)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new CatalogRateLimit(
+            HourlyLimit,
+            HourlyRemaining,
+            DailyLimit,
+            DailyRemaining,
+            GetBlockedUntil(observedAt),
+            observedAt);
+    }
+}
+
 public sealed class NexusV3TransportResponse : IDisposable
 {
     public NexusV3TransportResponse(
         HttpStatusCode statusCode,
         JsonDocument? document,
         string? etag,
-        DateTimeOffset? lastModified)
+        DateTimeOffset? lastModified,
+        NexusV3RateLimitSnapshot? rateLimit)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         StatusCode = statusCode;
         Document = document;
         ETag = etag;
         LastModified = lastModified;
+        RateLimit = rateLimit;
     }
 
     public HttpStatusCode StatusCode { get; }
     public JsonDocument? Document { get; }
     public string? ETag { get; }
     public DateTimeOffset? LastModified { get; }
+    public NexusV3RateLimitSnapshot? RateLimit { get; }
 
     public bool IsNotModified
     {
@@ -97,14 +140,17 @@ public sealed class NexusV3TransportException : HttpRequestException
     public NexusV3TransportException(
         HttpStatusCode statusCode,
         TimeSpan? retryAfter,
+        NexusV3RateLimitSnapshot? rateLimit,
         string message)
         : base(message, null, statusCode)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         RetryAfter = retryAfter;
+        RateLimit = rateLimit;
     }
 
     public TimeSpan? RetryAfter { get; }
+    public NexusV3RateLimitSnapshot? RateLimit { get; }
 }
 
 public sealed class NexusV3Transport
@@ -115,12 +161,14 @@ public sealed class NexusV3Transport
     private readonly Uri baseUri;
     private readonly int maxResponseBytes;
     private readonly string applicationName;
+    private readonly string applicationVersion;
 
     public NexusV3Transport(
         HttpClient client,
         Uri? baseUri = null,
         int maxResponseBytes = 4 * 1024 * 1024,
-        string applicationName = "MHW-Manual-Mod-Manager")
+        string applicationName = "MHW-Manual-Mod-Manager",
+        string? applicationVersion = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(client);
@@ -131,6 +179,10 @@ public sealed class NexusV3Transport
         this.baseUri = NormalizeBaseUri(baseUri ?? ProductionBaseUri);
         this.maxResponseBytes = maxResponseBytes;
         this.applicationName = NormalizeApplicationName(applicationName);
+        this.applicationVersion = NormalizeApplicationVersion(
+            applicationVersion
+            ?? typeof(NexusV3Transport).Assembly.GetName().Version?.ToString()
+            ?? "unknown");
     }
 
     public Task<NexusV3TransportResponse> GetTrendingModsAsync(
@@ -190,6 +242,7 @@ public sealed class NexusV3Transport
         using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(baseUri, relativePath));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Headers.TryAddWithoutValidation("Application-Name", applicationName);
+        request.Headers.TryAddWithoutValidation("Application-Version", applicationVersion);
         request.Headers.TryAddWithoutValidation("User-Agent", applicationName);
 
         credential?.Apply(request);
@@ -202,9 +255,10 @@ public sealed class NexusV3Transport
 
         var etag = response.Headers.ETag?.ToString();
         var lastModified = response.Content?.Headers.LastModified;
+        var rateLimit = ParseRateLimit(response.Headers);
 
         if (response.StatusCode == HttpStatusCode.NotModified)
-            return new NexusV3TransportResponse(response.StatusCode, null, etag, lastModified);
+            return new NexusV3TransportResponse(response.StatusCode, null, etag, lastModified, rateLimit);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -212,6 +266,7 @@ public sealed class NexusV3Transport
             throw new NexusV3TransportException(
                 response.StatusCode,
                 retryAfter,
+                rateLimit,
                 $"Nexus Mods API v3 request failed with HTTP {(int)response.StatusCode} ({response.ReasonPhrase ?? "unknown"}).");
         }
 
@@ -237,7 +292,7 @@ public sealed class NexusV3Transport
                 throw new InvalidDataException("Nexus Mods API v3 response is missing the required data envelope.");
             }
 
-            return new NexusV3TransportResponse(response.StatusCode, document, etag, lastModified);
+            return new NexusV3TransportResponse(response.StatusCode, document, etag, lastModified, rateLimit);
         }
         catch
         {
@@ -286,6 +341,79 @@ public sealed class NexusV3Transport
             request.Headers.IfModifiedSince = conditional.LastModified;
     }
 
+    private static NexusV3RateLimitSnapshot? ParseRateLimit(HttpResponseHeaders headers)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var hourlyLimit = ParseIntegerHeader(headers, "X-RL-Hourly-Limit");
+        var hourlyRemaining = ParseIntegerHeader(headers, "X-RL-Hourly-Remaining");
+        var dailyLimit = ParseIntegerHeader(headers, "X-RL-Daily-Limit");
+        var dailyRemaining = ParseIntegerHeader(headers, "X-RL-Daily-Remaining");
+        var hourlyReset = ParseResetHeader(headers, "X-RL-Hourly-Reset");
+        var dailyReset = ParseResetHeader(headers, "X-RL-Daily-Reset");
+
+        return hourlyLimit is null
+            && hourlyRemaining is null
+            && dailyLimit is null
+            && dailyRemaining is null
+            && hourlyReset is null
+            && dailyReset is null
+                ? null
+                : new NexusV3RateLimitSnapshot(
+                    hourlyLimit,
+                    hourlyRemaining,
+                    dailyLimit,
+                    dailyRemaining,
+                    hourlyReset,
+                    dailyReset);
+    }
+
+    private static int? ParseIntegerHeader(HttpResponseHeaders headers, string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!headers.TryGetValues(name, out var values))
+            return null;
+
+        var raw = values.FirstOrDefault()?.Trim();
+        return int.TryParse(raw, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed)
+            && parsed >= 0
+                ? parsed
+                : null;
+    }
+
+    private static DateTimeOffset? ParseResetHeader(HttpResponseHeaders headers, string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!headers.TryGetValues(name, out var values))
+            return null;
+
+        var raw = values.FirstOrDefault()?.Trim();
+        if (string.IsNullOrEmpty(raw))
+            return null;
+
+        if (DateTimeOffset.TryParse(
+                raw,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal,
+                out var parsed))
+        {
+            return parsed.ToUniversalTime();
+        }
+
+        if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var unixSeconds))
+        {
+            try
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
     private static TimeSpan? ParseRetryAfter(RetryConditionHeaderValue? header)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -319,6 +447,16 @@ public sealed class NexusV3Transport
             throw new ArgumentException("Application name must be 1..128 characters.", nameof(value));
         if (value.Contains('\r') || value.Contains('\n'))
             throw new ArgumentException("Application name contains invalid characters.", nameof(value));
+        return value.Trim();
+    }
+
+    private static string NormalizeApplicationVersion(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 128)
+            throw new ArgumentException("Application version must be 1..128 characters.", nameof(value));
+        if (value.Contains('\r') || value.Contains('\n'))
+            throw new ArgumentException("Application version contains invalid characters.", nameof(value));
         return value.Trim();
     }
 
