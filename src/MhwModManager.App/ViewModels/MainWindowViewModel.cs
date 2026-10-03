@@ -257,6 +257,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);
         if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
+        if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);
         if(value==8)_=EnsureCatalogLoadedAsync(backgroundCts.Token);
     }
 
