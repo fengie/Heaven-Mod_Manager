@@ -128,6 +128,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 20
     env:
+      DOTNET_INSTALL_DIR: ${{ runner.temp }}\dotnet
       MHW_RUN_UPDATER_INSTALLED_E2E: '1'
       MHW_E2E_SOURCE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
       MHW_E2E_EVIDENCE_PATH: ${{ github.workspace }}\BuildLogs\updater-installed-e2e\evidence.json
