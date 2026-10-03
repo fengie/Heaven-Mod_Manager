@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.83</Version>
-    <InformationalVersion>8.8.83-test-scratch-cleanup</InformationalVersion>
+    <Version>8.8.84</Version>
+    <InformationalVersion>8.8.84-snapshot-orphan-pruning</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
