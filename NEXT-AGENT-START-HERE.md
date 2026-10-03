@@ -12,11 +12,11 @@ Change set: PR #692
 - Same-Nexus `Ver3.10` / `Ver4.2`-style generations can remain enabled together; the newer generation wins shared paths while older-only files remain active.
 - Equal-version sibling variants remain a choice unless stronger metadata or an explicit user rule orders them.
 - Mod Library advanced rows identify Main / Optional / Revision roles.
-- Tests cover Nexus-4678-style `Main → No Bats`, full Nexus-1965-style `Main → 3.10 → 4.2`, and equal-version variant safety.
+- Tests cover Nexus-4678-style `Main → No Bats`, Nexus-1965-style `3.1 → 4.2` and `3.10 → 4.2`, full `Main → 3.10 → 4.2`, and equal-version variant safety.
 
 ## Verification boundary
 
-The current closed hosted-Windows source is v8.8.86 `21e7dbd1c71d66be542095be4e6d397879b7b134`, run `37132556908`; its evidence-only persistence commits are preserved in current main. Do not reuse that evidence for v8.8.87.
+The current closed hosted-Windows source is v8.8.86 `7a8b602cf87be65c0dfefbaac84288b6b010df23`, run `37135652874`; it is the last closed canonical Windows source. Current main has later integrated source changes, so do not reuse that historical evidence for v8.8.87.
 
 PR #692 must pass fresh exact-final-head feature verification before merge. After merge, verify remote `main` and obtain fresh canonical Windows release closure because this change modifies product source/tests/release inputs.
 
@@ -30,7 +30,7 @@ Observe the exact-final-head PR #692 gate. Merge only that green head. Then veri
 
 ## Unresolved risk
 
-The HPN composition behavior is source- and regression-tested on this candidate, but it still requires exact-final-head feature verification before merge and fresh canonical Windows closure after integration. Independent open risks such as #669 storage lifecycle work and external trust prerequisites remain separate and must not be conflated with this change.
+The HPN composition behavior is source- and regression-tested on this candidate, but it still requires exact-final-head feature verification before merge and fresh canonical Windows closure after integration. Independent open risks such as external trust prerequisites and remaining recovery/catalog work stay separate and must not be conflated with this change.
 
 ## Successor obligation
 
