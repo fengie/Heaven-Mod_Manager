@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.91",
+  "currentVersion": "8.8.92",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.91 advances the verified v8.8.90 baseline with the already-integrated #730 visible-scope/residual regression tranche plus #669 catalog-download and prepared-updater lease lifecycle hardening. The last closed canonical Windows source remains v8.8.89 b13f2210211973d23ff0e6ca2f449dade87919f5 / run 37150713097; v8.8.91 requires fresh exact integrated-source Windows verification.",
+  "immediateParentRevision": "v8.8.92 advances the verified v8.8.91 baseline with the integrated #731 unified disposable-storage reclaim across updater staging/recovery and manager-owned catalog-download scratch, plus the canonical metadata parity repair required for release closure. The last closed canonical Windows source remains v8.8.91 936a265994610791f647f5607f162f5539e8a320 / run 37157439747; v8.8.92 requires fresh exact integrated-source Windows verification.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, v8.8.91 catalog/updater ownership and cleanup invariants, compliance assumptions/change triggers, updater public/private parity and provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification for exact v8.8.91 before release closure, then propagate this obligation recursively.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, v8.8.92 unified disposable-storage ownership and cleanup invariants, compliance assumptions/change triggers, updater public/private parity and provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification for exact v8.8.92 before release closure, then propagate this obligation recursively.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
