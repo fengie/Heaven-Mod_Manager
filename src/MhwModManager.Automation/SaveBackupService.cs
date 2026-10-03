@@ -259,7 +259,12 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
             {
                 if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
                 {
+                    // Remove only the immediate link. Never recurse through an untrusted
+                    // reparse target, and retain the DB row if unlinking fails so pruning
+                    // can retry instead of manufacturing an unmanaged orphan.
+                    Directory.Delete(fullPath, false);
                     await DeleteSnapshotRecordAsync(snapshot.Id, ct);
+                    directories.Remove(fullPath);
                     continue;
                 }
             }
