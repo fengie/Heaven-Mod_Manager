@@ -91,7 +91,7 @@ $durableRawFixture=[ordered]@{
   unexpectedField='CANARY_UNKNOWN_FIELD'
 }
 $durableRawJson=$durableRawFixture | ConvertTo-Json -Depth 8
-$durableEvidenceJson=ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $durableRawJson
+$durableEvidenceJson=ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $durableRawJson -ExpectedTargetSourceSha $current
 $durableEvidence=ConvertFrom-Json -InputObject $durableEvidenceJson
 Assert-Equal 'mhw-mod-manager/updater-installed-client-e2e-durable/v1' $durableEvidence.schema 'durable updater E2E schema'
 Assert-Equal 425 $durableEvidence.target.build 'durable updater E2E target build'
@@ -125,7 +125,7 @@ $unsafeDurableFixture=ConvertFrom-Json -InputObject $durableRawJson
 $unsafeDurableFixture.scenarioA.selectorDisplayText='CANARY_SELECTOR_SECRET'
 $unsafeDurableRejected=$false
 try{
-  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json ($unsafeDurableFixture | ConvertTo-Json -Depth 8))
+  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json ($unsafeDurableFixture | ConvertTo-Json -Depth 8) -ExpectedTargetSourceSha $current)
 }catch{$unsafeDurableRejected=$true}
 Assert-Equal $true $unsafeDurableRejected 'durable updater E2E rejects unexpected allowlisted-field value'
 
@@ -133,9 +133,15 @@ $unsafeTagFixture=ConvertFrom-Json -InputObject $durableRawJson
 $unsafeTagFixture.oldTag='CANARY_OLD_TAG'
 $unsafeTagRejected=$false
 try{
-  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json ($unsafeTagFixture | ConvertTo-Json -Depth 8))
+  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json ($unsafeTagFixture | ConvertTo-Json -Depth 8) -ExpectedTargetSourceSha $current)
 }catch{$unsafeTagRejected=$true}
 Assert-Equal $true $unsafeTagRejected 'durable updater E2E rejects arbitrary old release tag'
+
+$wrongExpectedSourceRejected=$false
+try{
+  [void](ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $durableRawJson -ExpectedTargetSourceSha $previous)
+}catch{$wrongExpectedSourceRejected=$true}
+Assert-Equal $true $wrongExpectedSourceRejected 'durable updater E2E binds target source to exact tested source'
 
 
 $staleUnknown=Get-UpdaterPublicationDecision -CurrentBuild 20 -CurrentSourceSha $current -RemoteMainSha $previous
@@ -433,6 +439,10 @@ Assert-Equal $true ($installedE2EWorkflow.Contains('ConvertTo-UpdaterInstalledCl
 Assert-Equal $true ($installedE2EWorkflow.Contains('=== DURABLE_EVIDENCE.JSON ===')) 'installed-client E2E closure labels durable evidence'
 Assert-Equal $false ($installedE2EWorkflow.Contains("'=== EVIDENCE.JSON ==='")) 'installed-client E2E closure never embeds raw evidence JSON'
 Assert-Equal $true ($installedE2EWorkflow.Contains('evidence_sha256=')) 'installed-client E2E closure preserves compatible raw artifact hash header without raw artifact contents'
+Assert-Equal $false ($installedE2EWorkflow.Contains('runner_os=')) 'installed-client E2E closure excludes runner OS environment metadata'
+Assert-Equal $false ($installedE2EWorkflow.Contains('runner_arch=')) 'installed-client E2E closure excludes runner architecture environment metadata'
+Assert-Equal $false ($installedE2EWorkflow.Contains('dotnet_sdk=')) 'installed-client E2E closure excludes runner SDK environment metadata'
+Assert-Equal $true ($installedE2EWorkflow.Contains('-ExpectedTargetSourceSha $env:MHW_E2E_SOURCE_SHA')) 'installed-client E2E durable projection binds to exact tested source SHA'
 
 Assert-Equal $false ($installedE2EWorkflow.Contains('name: updater-installed-client-e2e-${{ github.sha }}')) 'installed-client E2E artifact name must not bind to the later workflow/evidence commit'
 Assert-Equal $true ($installedE2EWorkflow.Contains('git rev-parse --is-shallow-repository')) 'installed-client E2E persistence detects shallow checkout history'
