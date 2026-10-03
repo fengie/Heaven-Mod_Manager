@@ -1,3 +1,9 @@
+# v8.8.90 — 2026-10-03
+
+- Re-certify authoritative SHA-256 file hashing with a second source read before accepting a result, rejecting equal-length mutations even when timestamps are restored.
+- Re-certify source bytes before immutable CAS publication and database registration, preserving cleanup/no-publication semantics on mismatch.
+- Preserve the single-pass non-authoritative XXH3 fast path and add deterministic regressions for mutation, stable hashing, cancellation, and failed capture cleanup.
+
 # v8.8.89 — 2026-10-03
 
 - Add bundled privacy, terms-of-use, refund, cookie, local data-deletion, support/project-detail, and third-party notice documents and expose them from Settings.
