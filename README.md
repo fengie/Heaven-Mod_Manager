@@ -1,10 +1,18 @@
-# v8.8.88 — MHW Manual Mod Manager
+# v8.8.89 — MHW Manual Mod Manager
 
-Current product version: **8.8.88**.
+Current product version: **8.8.89**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.89 — privacy, legal & accessibility baseline
+
+- Bundle Privacy, Terms, Refund, Cookie, data-deletion, project/support, and third-party notices and expose them directly from Settings.
+- Keep the native desktop compliance surface truthful: no first-party accounts, ads, browser cookies, in-app payments, consumer-review system, or marketing email are claimed where those features do not exist.
+- Add local-data reset guidance and one-click access to the manager state folder while preserving Mods and archives as durable user data.
+- Complete UI Automation names for current preview/artwork images, keep explicit keyboard navigation and visible focus behavior, and regression-check the core palette against WCAG AA text-contrast thresholds.
+- Regression-check third-party notice versions against the centrally managed package inventory and document feature changes that require renewed privacy/consent review.
 
 ## v8.8.88 — public release provenance
 
@@ -20,12 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - For Nexus 1965 specifically, selecting an HPN 4.x body auto-stages the newest matching 3.x compatibility package plus Main; older 4.x revisions and equal-version body alternatives are not auto-enabled.
 - Keep same-version body variants as explicit choices and show Main / Optional / Revision roles in the advanced component drawer.
 - Reclaim unindexed save-snapshot orphan directories safely during pruning, including reparse-point unlinking without traversing external targets.
-
-## v8.8.86 — storage + filesystem hardening
-
-- Fail updater staging before download when the update volume lacks a bounded artifact/extraction/headroom budget, with an actionable Storage recovery message.
-- Make unmanaged adoption invocation-owned and revalidate/certify copy-time topology and bytes, including deterministic concurrent and post-discovery race regressions.
-- Reject descendant reparse topology before import publication and before recursive import cleanup/rollback, preserving unsafe residue instead of traversing it.
 
 ## Current plans & progress
 
@@ -44,6 +46,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **FILESYSTEM-HARDENING-673/676 / P0** — v8.8.86 makes unmanaged adoption invocation-owned/hash-certified and rejects descendant reparse topology at import publication and destructive cleanup boundaries.
 - [ ] **UPDATER-STORAGE-669 / P0** — v8.8.86 adds fail-early staging-capacity preflight; broader lifecycle quotas/content reuse remain tracked by issue #669.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
+- [x] **COMPLIANCE-710 / P1** — v8.8.89 adds the native-app privacy/legal/data-control baseline, completes current image automation names, and regression-checks package notices, keyboard focus/navigation, and WCAG AA core palette contrast.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.

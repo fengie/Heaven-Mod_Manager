@@ -49,7 +49,26 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | CI-675 | P1 | DONE | issue #675; PR #678; v8.8.85 | Separate feature-candidate product verification from canonical release metadata while preserving full exact-main release/publication verification. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
+| COMPLIANCE-710 | P1 | DONE | issue #710; v8.8.89 | Add truthful native-app privacy/legal/data-control surfaces, complete current image accessibility metadata, and mechanically guard dependency notices, keyboard focus/navigation, and core-palette contrast. |
 | CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
+
+## COMPLIANCE-710 — Native-app privacy, legal, data-control, and accessibility baseline
+
+**Owner:** issue #710 / v8.8.89
+**Acceptance:** all 20 checklist items are either backed by a real product/document/test control or explicitly classified as not applicable to the current native feature set with a change-trigger rule; the application does not invent a business entity/address or show misleading web consent UI; policy/notices ship with the app; accessibility and package-notice invariants are deterministic.
+
+- [x] Bundle Privacy, Terms, Refund, Cookie, Data Deletion, Third-Party Notices, and Project/Support documents and expose them from Settings.
+- [x] Document current no-account/no-ads/no-browser-cookie/no-payment/no-review/no-marketing-email behavior and future feature triggers.
+- [x] Document local-data minimization, diagnostics/support bundle caveats, external provider processing, and self-service deletion/reset without treating Mods/archive as disposable state.
+- [x] Inventory centrally versioned third-party packages and regression-check notice drift.
+- [x] Give every current MainWindow preview/artwork Image an AutomationProperties.Name.
+- [x] Keep explicit keyboard tab navigation and visible focus behavior under regression coverage.
+- [x] Regression-check core text/background combinations against WCAG AA 4.5:1 normal-text contrast.
+- [x] Synchronize v8.8.89 release and continuity surfaces.
+
+**Verification:** exact v8.8.89 candidate must pass the feature gate before integration; after integration, obtain fresh strict canonical Windows verification because the patch changes app/XAML/test/content inputs. Last closed Windows source before this patch remains v8.8.88 `029b105426ef875bcd302dac3fff9305c395637f` / run `37144494783`.
+
+**Next action:** after canonical integration, obtain and persist fresh exact-source Windows verification for v8.8.89; then resume the next non-overlapping project-plan lane.
 
 ## UPDATER-STORAGE-647 — Bounded updater staging and terminal-state retention
 

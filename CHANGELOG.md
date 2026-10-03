@@ -1,3 +1,12 @@
+# v8.8.89 — 2026-10-03
+
+- Add bundled privacy, terms-of-use, refund, cookie, local data-deletion, support/project-detail, and third-party notice documents and expose them from Settings.
+- Keep the native-app compliance surface truthful: the current build has no first-party accounts, advertising, browser cookies, in-app payments, consumer-review system, or marketing email, while future introduction of those features is an explicit compliance-review trigger.
+- Add self-service access to the manager data folder and deletion/reset guidance without treating durable Mods or archives as disposable state.
+- Inventory centrally versioned third-party packages in the bundled notices and regression-check package/version drift.
+- Complete UI Automation names for current preview/artwork images, keep explicit keyboard tab navigation/focus visibility, and regression-check the core palette against WCAG AA text-contrast thresholds.
+- Document the complete 20-item engineering baseline in `docs/COMPLIANCE-BASELINE.md`; this is a product-control baseline rather than a claim of lawsuit immunity or jurisdiction-specific legal advice.
+
 # v8.8.88 — 2026-10-03
 
 - Generate deterministic public updater provenance records from exact artifact bytes, source SHA, version/build/tag/channel, and immutable release metadata.

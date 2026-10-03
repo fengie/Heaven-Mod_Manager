@@ -22,5 +22,12 @@
   <ItemGroup>
     <Resource Include="Assets\MHWModManager.ico" />
     <Content Include="../../data/Armor Database.csv"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><Link>data/Armor Database.csv</Link></Content>
+    <Content Include="../../PRIVACY.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>PRIVACY.md</Link></Content>
+    <Content Include="../../TERMS.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>TERMS.md</Link></Content>
+    <Content Include="../../REFUND_POLICY.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>REFUND_POLICY.md</Link></Content>
+    <Content Include="../../COOKIE_POLICY.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>COOKIE_POLICY.md</Link></Content>
+    <Content Include="../../DATA-DELETION.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>DATA-DELETION.md</Link></Content>
+    <Content Include="../../THIRD_PARTY_NOTICES.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>THIRD_PARTY_NOTICES.md</Link></Content>
+    <Content Include="../../SUPPORT.md"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory><Link>SUPPORT.md</Link></Content>
   </ItemGroup>
 </Project>
