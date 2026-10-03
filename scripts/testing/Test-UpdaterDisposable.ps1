@@ -5,6 +5,7 @@ param(
     [string]$OldManifestPath,
     [string]$NewArtifactPath,
     [string]$NewManifestPath,
+    [string]$EvidencePath,
     [switch]$DisposableProfile,
     [ValidateRange(120,600)][int]$TimeoutSeconds=180
 )
@@ -78,6 +79,51 @@ function Assert-Owned([string]$Root,$Product) {
     }
 }
 
+$script:ScratchMarkerName='.mhw-test-scratch.json'
+function Write-ScratchMarker([string]$Root,[string]$Owner,[string]$Token) {
+    $process=Get-Process -Id $PID
+    Write-Json (Join-Path $Root $script:ScratchMarkerName) @{
+        schema='mhw-test-scratch/v1'
+        owner=$Owner
+        token=$Token
+        processId=$PID
+        processStartUtc=$process.StartTime.ToUniversalTime().ToString('o')
+        createdUtc=[DateTime]::UtcNow.ToString('o')
+    }
+}
+function Remove-OwnedScratchRoot([string]$Root,[string]$Token) {
+    if(-not (Test-Path -LiteralPath $Root)){ return }
+    Assert-NoReparse $Root
+    $markerPath=Join-Path $Root $script:ScratchMarkerName
+    Assert-That (Test-Path -LiteralPath $markerPath -PathType Leaf) 'Refusing to delete unmarked disposable scratch root.'
+    $marker=Read-Json $markerPath
+    Assert-That ($marker.schema -ceq 'mhw-test-scratch/v1') 'Disposable scratch marker schema mismatch.'
+    Assert-That ($marker.token -ceq $Token) 'Disposable scratch marker token mismatch.'
+    $last=$null
+    for($attempt=1;$attempt -le 8;$attempt++){
+        if(-not (Test-Path -LiteralPath $Root)){ return }
+        try {
+            Remove-Item -LiteralPath $Root -Recurse -Force -ErrorAction Stop
+            return
+        } catch {
+            $last=$_.Exception
+            if($attempt -lt 8){ Start-Sleep -Milliseconds (100*$attempt) }
+        }
+    }
+    throw [IO.IOException]::new(('Failed to remove disposable scratch root after retries: '+$Root),$last)
+}
+function Stop-OwnedProcessBestEffort($Process) {
+    if($null -eq $Process){ return }
+    try {
+        $Process.Refresh()
+        if(-not $Process.HasExited){
+            $Process.Kill()
+            [void]$Process.WaitForExit(15000)
+        }
+    } catch {}
+    try { $Process.Dispose() } catch {}
+}
+
 Assert-That $DisposableProfile.IsPresent 'Requires -DisposableProfile in a fresh disposable Windows account/VM.'
 Assert-That ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) 'Windows required.'
 foreach($inputPath in @($OldArtifactPath,$OldManifestPath,$NewArtifactPath,$NewManifestPath)){
@@ -87,6 +133,14 @@ foreach($inputPath in @($OldArtifactPath,$OldManifestPath,$NewArtifactPath,$NewM
 $profileRoot=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'MhwModManager'
 Assert-NoReparse $profileRoot
 Assert-That (-not (Test-Path -LiteralPath $profileRoot)) 'Existing manager profile refused; use a fresh disposable account.'
+$repoRoot=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+if([string]::IsNullOrWhiteSpace($EvidencePath)){
+    $EvidencePath=Join-Path $repoRoot ('artifacts\updater-disposable-'+[DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss')+'-'+[Guid]::NewGuid().ToString('N')+'.json')
+} else {
+    $EvidencePath=[IO.Path]::GetFullPath($EvidencePath)
+}
+$evidenceParent=Split-Path -Parent $EvidencePath
+if(-not [string]::IsNullOrWhiteSpace($evidenceParent)){ New-Item -ItemType Directory -Force -Path $evidenceParent | Out-Null }
 # Verify exact packages before any app launch. Existing verifier owns its temporary extraction.
 & "$PSScriptRoot/Test-UpdaterPackage.ps1" -ArtifactPath $OldArtifactPath -ManifestPath $OldManifestPath
 & "$PSScriptRoot/Test-UpdaterPackage.ps1" -ArtifactPath $NewArtifactPath -ManifestPath $NewManifestPath
@@ -95,9 +149,12 @@ $new=Read-Json $NewManifestPath
 Assert-That ($new.buildNumber -gt $old.buildNumber) 'Target build must be strictly newer.'
 Assert-That ($new.sourceSha -ne $old.sourceSha) 'Old/new source identities must differ.'
 $script:runStarted=[DateTime]::UtcNow
+$cleanupToken=[Guid]::NewGuid().ToString('N')
 $run=Join-Path $profileRoot ('Updater/disposable-'+[Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $run | Out-Null
+Write-ScratchMarker $profileRoot 'Test-UpdaterDisposable' $cleanupToken
 $results=@()
+$ownedProcesses=[Collections.Generic.List[Diagnostics.Process]]::new()
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 try {
     foreach($scenario in @('upgrade','startup-failure-rollback')){
@@ -126,6 +183,7 @@ try {
         $initialHealth=Join-Path $case 'initial-health.json'
         $initialToken=[Guid]::NewGuid().ToString('N')
         $initial=Start-Fixture $oldExe (Health-Arguments $initialHealth $initialToken 'initial') $install $game
+        [void]$ownedProcesses.Add($initial)
         $healthy=Wait-Health $initialHealth $initialToken 'initial' $old $oldExe
         Assert-That ($healthy.Id -eq $initial.Id) 'Initial old app PID mismatch.'
         Stop-Fixture $initial $oldExe
@@ -161,6 +219,7 @@ try {
         Write-Json $requestPath $request
         $helperExe=Join-Path $helperRoot 'MHW Mod Manager Updater.exe'
         $helper=Start-Fixture $helperExe @('--request',$requestPath) $install $game
+        [void]$ownedProcesses.Add($helper)
         Assert-That ($helper.WaitForExit($TimeoutSeconds*1000)) 'Helper timed out; preserve VM and recovery evidence.'
         $state=Read-Json $journal
         if($scenario -eq 'upgrade'){
@@ -183,15 +242,18 @@ try {
                 }
             }
         }
+        [void]$ownedProcesses.Add($restarted)
         Stop-Fixture $restarted $restarted.Path
         foreach($relative in $seeds.Keys){ Assert-That ((Hash (Join-Path $install $relative)) -eq $seeds[$relative]) ('Seed changed: '+$relative) }
         $results+=@{scenario=$scenario;result='PASS';helperExitCode=$helper.ExitCode;journalPhase=$state.phase;restartedBuild=(Read-Json (Join-Path $install 'build-identity.json'));seedHashes=$seeds;injectedRuntimeConfigSha256=$faultHash}
-        Write-Json (Join-Path $run 'summary.json') @{oldArtifactSha256=(Hash $OldArtifactPath);newArtifactSha256=(Hash $NewArtifactPath);cases=$results;status='in-progress'}
+        Write-Json $EvidencePath @{oldArtifactSha256=(Hash $OldArtifactPath);newArtifactSha256=(Hash $NewArtifactPath);cases=$results;status='in-progress'}
     }
-    Write-Json (Join-Path $run 'summary.json') @{oldArtifactSha256=(Hash $OldArtifactPath);newArtifactSha256=(Hash $NewArtifactPath);cases=$results;status='PASS'}
-    Write-Host 'PASS: disposable helper upgrade and injected startup-failure rollback; summary.json retained in disposable profile.'
+    Write-Json $EvidencePath @{oldArtifactSha256=(Hash $OldArtifactPath);newArtifactSha256=(Hash $NewArtifactPath);cases=$results;status='PASS'}
+    Write-Host ('PASS: disposable helper upgrade and injected startup-failure rollback; durable evidence: '+$EvidencePath)
 } catch {
-    Write-Json (Join-Path $run 'summary.json') @{status='FAIL';completedCases=$results;errorType=$_.Exception.GetType().Name;note='Raw logs and processes retained in disposable VM for diagnosis; do not export unsanitized logs.'}
+    Write-Json $EvidencePath @{status='FAIL';completedCases=$results;errorType=$_.Exception.GetType().Name;errorMessage=$_.Exception.Message;note='Raw disposable workspace is removed in finally; durable summary retained here.'}
     throw
+} finally {
+    foreach($process in @($ownedProcesses)){ Stop-OwnedProcessBestEffort $process }
+    Remove-OwnedScratchRoot $profileRoot $cleanupToken
 }
-# Deliberately no recursive cleanup: retain evidence; discard the disposable VM/account externally.
