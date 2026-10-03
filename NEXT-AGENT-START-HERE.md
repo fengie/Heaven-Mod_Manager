@@ -1,31 +1,28 @@
-# v8.8.91 catalog + updater storage lifecycle — handoff
+# v8.8.92 unified disposable storage reclaim — handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #669 plus the already-integrated #730 tranche
+Change set: issue #669
 
-## v8.8.91 behavior
+## v8.8.92 behavior
 
-- Preserve #730's visible bulk-scope UX and consolidated residual catalog/migration/rules fixes already on main.
-- Use manager-owned catalog-download leases and reclaim only proven exited-owner residue within age/byte-quota bounds.
-- Keep active, ambiguous, unknown-shape, unleased, and reparse-point state fail-closed.
-- Require PID + process-start identity on new prepared updater leases; legacy missing-start leases are reclaimable only after the PID is proven gone.
-- Preserve the v8.8.89 privacy/legal/accessibility controls and all existing updater provenance, exact SDK, filesystem containment, and durable-evidence boundaries.
+- Settings exposes one **Reclaim disposable storage** action rather than an updater-only action.
+- The action composes the existing fail-closed `UpdateStorageMaintenance` and `CatalogDownloadMaintenance` boundaries.
+- Updater cleanup remains limited to proven-safe orphan staging and terminal/abandoned recovery state.
+- Catalog scratch cleanup remains limited to manager-owned lease state with liveness, age, 512 MiB quota, unknown-file, and reparse-point protections.
+- Installed Mods, archives, State, managed content-addressed blobs, active work, ambiguous ownership, and unknown paths remain preserved.
+- The UI reports aggregate/per-domain reclaimed bytes plus removed/deferred counts.
 
-## Verification boundary
+## Previous verified boundary
 
-Current hosted-Windows closure: v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed run `37157439747` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log`.
+v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed hosted Windows closure run `37157439747` and installed-client updater E2E run `37157854577`. Durable evidence is stored in `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.91.log`.
 
-The tested source remains `936a265994610791f647f5607f162f5539e8a320` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
-
-## Unresolved risk
-
-v8.8.91 does not yet have closed canonical Windows verification for its exact integrated source. Do not claim the release closed until that post-integration verification passes and its durable evidence is persisted.
+Those receipts apply to v8.8.91 only. This v8.8.92 source change requires fresh exact-head feature/repository verification and the repository-required post-integration verification before release closure.
 
 ## Next action
 
-Integrate the exact green v8.8.91 candidate, read back remote `main`, then run fresh canonical Windows verification for the exact integrated source and persist closure evidence. After that, resume the highest-priority actionable unowned project-plan item.
+Run the narrow storage/UI regressions first, then the required exact-head MHW gates. Integrate only the exact green head after refreshing `main`, read back remote `main`, reconcile issue #669, and retire the temporary branch after unique work is proven integrated.
 
 ## Execution/offload note
 
@@ -33,6 +30,6 @@ When a callable Heaven/Agent Control execution surface is unavailable in the cur
 
 ## Successor obligation
 
-Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. As the successor, you must preserve exact-input verification, catalog/updater ownership and cleanup invariants, updater publication/parity/provenance, exact SDK policy, filesystem containment, and durable-evidence privacy, and must propagate the same obligation to the next successor.
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW `main`; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, catalog/updater ownership and cleanup invariants, updater publication/parity/provenance, exact SDK policy, filesystem containment, and durable-evidence privacy, and propagate the same obligation to the next successor.
 
 **Do not break the chain.**
