@@ -54,6 +54,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   # Cancel only superseded validation for the same PR/ref. Different PRs share the
@@ -63,8 +64,71 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  admission:
+    name: Admit viable PR candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Reject stale or explicitly superseded pull requests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          pr_json=''
+          mergeable='unknown'
+          for attempt in 1 2 3 4; do
+            pr_json="$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}")"
+            mergeable="$(jq -r 'if .mergeable == null then "unknown" else (.mergeable|tostring) end' <<<"$pr_json")"
+            if [[ "$mergeable" != 'unknown' ]]; then break; fi
+            sleep 2
+          done
+
+          state="$(jq -r '.state' <<<"$pr_json")"
+          head_sha="$(jq -r '.head.sha' <<<"$pr_json")"
+          superseded="$(jq -r '
+            (([.labels[].name? | ascii_downcase] | index("superseded")) != null)
+            or ((.body // "") | test("(?im)^\\s*(status:\\s*)?superseded\\b|\\bsuperseded by\\b"))
+          ' <<<"$pr_json")"
+
+          reason=''
+          if [[ "$state" != 'open' ]]; then
+            reason="PR state is $state"
+          elif [[ "$head_sha" != "$EVENT_HEAD_SHA" ]]; then
+            reason="PR head moved from event SHA $EVENT_HEAD_SHA to $head_sha"
+          elif [[ "$superseded" == 'true' ]]; then
+            reason='PR is explicitly marked superseded'
+          elif [[ "$mergeable" == 'false' ]]; then
+            reason='GitHub reports the current PR head as non-mergeable'
+          fi
+
+          if [[ -n "$reason" ]]; then
+            echo "### Workflow Feature admission rejected" >> "$GITHUB_STEP_SUMMARY"
+            echo "$reason" >> "$GITHUB_STEP_SUMMARY"
+            echo "The expensive self-hosted Windows verification job was not scheduled." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::$reason"
+            exit 1
+          fi
+
+          if [[ "$mergeable" == 'unknown' ]]; then
+            echo "Mergeability remained unknown after bounded polling; allowing exact-head verification to avoid a false rejection." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "PR admission passed for exact head $head_sha." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Admit manual dispatch
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "Manual dispatch admitted." >> "$GITHUB_STEP_SUMMARY"
+
   verify:
     name: Build and test workflow feature set on Heaven
+    needs: admission
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 30
@@ -83,10 +147,13 @@ jobs:
           if ($version -ne '10.0.401') { throw "Workflow gate requires .NET SDK 10.0.401; found $version." }
 
       - name: Run exact repository verification gate
+        id: repository_verify
         shell: cmd
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\release\\Verify-Release.ps1"
 
       - name: Restore workflow projects
+        id: restore
+        if: ${{ !cancelled() }}
         shell: powershell
         run: |
           dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj
@@ -97,6 +164,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build workflow product and tests
+        id: build
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
         shell: powershell
         run: |
           dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
@@ -107,35 +176,41 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run focused UX and XAML regressions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~UxHardeningTests|FullyQualifiedName~XamlBindingSafetyTests|FullyQualifiedName~SupportBundlePrivacyTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run legacy migration regression
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~LegacyMigrationTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run deployment concurrency regressions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~DeploymentTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run catalog sync regressions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~CatalogSyncServiceTests|FullyQualifiedName~CatalogDiscoveryServiceTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run focused workflow regressions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
           dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~WorkflowTests|FullyQualifiedName~AutomationServiceTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Check patch whitespace
+        if: ${{ !cancelled() }}
         shell: powershell
         run: git diff --check origin/main...HEAD
