@@ -127,4 +127,47 @@ public sealed class ModRowCompositionTests
         Assert.False(staged["v310"].enabled);
         Assert.True(staged["v42"].enabled);
     }
+    [Fact]
+    public void Selecting_no_bats_keeps_demon_lord_main_staged()
+    {
+        var members = new[]
+        {
+            new ModDescriptor(
+                "main",
+                "Main",
+                "Main",
+                "main",
+                false,
+                10,
+                FamilyId: "nexus:4678",
+                NexusModId: "4678"),
+            new ModDescriptor(
+                "no-bats",
+                "No Bats",
+                "No Bats",
+                "no-bats",
+                false,
+                20,
+                FamilyId: "nexus:4678",
+                NexusModId: "4678")
+        };
+        var family = new LogicalModFamily(
+            "logical:nexus:4678",
+            "HPN Demon Lord",
+            "HPN Demon Lord",
+            members,
+            "Armor");
+        var row = new ModRowViewModel(family, static () => { });
+
+        row.SetMemberEnabled("no-bats", true);
+
+        Assert.True(row.ExpandStage()["main"].enabled);
+        Assert.True(row.ExpandStage()["no-bats"].enabled);
+
+        row.SetMemberEnabled("main", false);
+
+        Assert.True(row.ExpandStage()["main"].enabled);
+        Assert.True(row.ExpandStage()["no-bats"].enabled);
+    }
+
 }
