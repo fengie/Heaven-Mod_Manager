@@ -420,7 +420,7 @@ foreach($workflowName in @('windows-release-gate.yml','updater-publication-pr-ga
         continue
     }
     $workflowText=Get-Content -LiteralPath $workflowPath -Raw
-    foreach($required in @($setupDotnetPin,'global-json-file: global.json','.\scripts\ci\Assert-PinnedDotNetSdk.ps1')){
+    foreach($required in @($setupDotnetPin,'global-json-file: global.json','Assert-PinnedDotNetSdk.ps1','DOTNET_INSTALL_DIR=')){
         if(-not $workflowText.Contains($required)){$errors.Add("${workflowName}: repository SDK bootstrap invariant missing: $required")}
     }
     if($workflowText.Contains("-ne '10.0.401'")){
