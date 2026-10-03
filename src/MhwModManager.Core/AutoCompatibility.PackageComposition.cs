@@ -132,6 +132,7 @@ public static partial class AutoCompatibility
 
     private static bool ContainsFamilyRoleValue(string? value, params string[] roles)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(value)) return false;
         var tokens = PackageTokens(value);
         return roles.Any(role => tokens.Contains(role, StringComparer.OrdinalIgnoreCase));
@@ -160,8 +161,11 @@ public static partial class AutoCompatibility
             .ToArray();
     }
 
-    private static string[] PackageTokens(string value) =>
-        PackageTokenRegex().Matches(value.ToLowerInvariant()).Cast<Match>().Select(m => m.Value).Where(x => x.Length > 1).ToArray();
+    private static string[] PackageTokens(string value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return PackageTokenRegex().Matches(value.ToLowerInvariant()).Cast<Match>().Select(m => m.Value).Where(x => x.Length > 1).ToArray();
+    }
 
     private static int ComparePackageVersion(int[] left, int[] right)
     {

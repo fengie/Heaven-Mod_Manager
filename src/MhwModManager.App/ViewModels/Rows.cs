@@ -160,6 +160,7 @@ public partial class ModRowViewModel:ObservableObject
 
     partial void OnStagedEnabledChanged(bool? value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
         if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
         EnsureRequiredBaseMembers();
