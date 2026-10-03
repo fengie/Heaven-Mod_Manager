@@ -43,7 +43,7 @@ jobs:
 
           function Add-Mask([string]$Value) {
             if (-not [string]::IsNullOrWhiteSpace($Value)) {
-              Write-Output "::add-mask::$Value"
+              Write-Host "::add-mask::$Value"
             }
           }
 
@@ -63,10 +63,10 @@ jobs:
             $headers.Authorization = "Bearer $Token"
             try {
               $null = Invoke-RestMethod -Method Get -Uri "$api/actions/runners?per_page=1" -Headers $headers
-              Write-Output "TARGET_AUTH_ACCEPTED source=$Source"
+              Write-Host "TARGET_AUTH_ACCEPTED source=$Source"
               return [pscustomobject]@{ Token = $Token; Source = $Source; Headers = $headers }
             } catch {
-              Write-Output "TARGET_AUTH_REJECTED source=$Source status=$(Get-StatusCode $_)"
+              Write-Host "TARGET_AUTH_REJECTED source=$Source status=$(Get-StatusCode $_)"
               return $null
             }
           }
