@@ -82,10 +82,13 @@ jobs:
 
           pr_json=''
           mergeable='unknown'
+          mergeable_state='unknown'
           for attempt in 1 2 3 4; do
             pr_json="$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}")"
             mergeable="$(jq -r 'if .mergeable == null then "unknown" else (.mergeable|tostring) end' <<<"$pr_json")"
-            if [[ "$mergeable" != 'unknown' ]]; then break; fi
+            mergeable_state="$(jq -r '.mergeable_state // "unknown"' <<<"$pr_json")"
+            if [[ "$mergeable" == 'true' ]]; then break; fi
+            if [[ "$mergeable" == 'false' && "$mergeable_state" != 'unknown' && "$mergeable_state" != 'unstable' ]]; then break; fi
             sleep 2
           done
 
@@ -103,8 +106,8 @@ jobs:
             reason="PR head moved from event SHA $EVENT_HEAD_SHA to $head_sha"
           elif [[ "$superseded" == 'true' ]]; then
             reason='PR is explicitly marked superseded'
-          elif [[ "$mergeable" == 'false' ]]; then
-            reason='GitHub reports the current PR head as non-mergeable'
+          elif [[ "$mergeable" == 'false' && "$mergeable_state" != 'unknown' && "$mergeable_state" != 'unstable' ]]; then
+            reason="GitHub reports the current PR head as non-mergeable (state=$mergeable_state)"
           fi
 
           if [[ -n "$reason" ]]; then
@@ -115,8 +118,8 @@ jobs:
             exit 1
           fi
 
-          if [[ "$mergeable" == 'unknown' ]]; then
-            echo "Mergeability remained unknown after bounded polling; allowing exact-head verification to avoid a false rejection." >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$mergeable" != 'true' ]]; then
+            echo "Mergeability remained transient ($mergeable/$mergeable_state) after bounded polling; allowing exact-head verification to avoid a false rejection." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "PR admission passed for exact head $head_sha." >> "$GITHUB_STEP_SUMMARY"
           fi
