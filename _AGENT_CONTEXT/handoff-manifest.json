@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.85",
+  "currentVersion": "8.8.86",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.84 source 2ea6d6dd3851f24a40e562074a816d9bd1e61883 passed hosted Windows verification run 37124460532; exact evidence is _AGENT_CONTEXT/EVIDENCE/v8.8.84-heaven-windows-closure.log. v8.8.85 separates feature-candidate product verification from canonical release-version metadata while keeping the exact-main Windows release/publication path on the full strict verifier.",
   "canonicalRepository": "fengie/mhw-mods",

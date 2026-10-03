@@ -1,11 +1,18 @@
-# v8.8.85 feature verification decoupling — canonical handoff
+# v8.8.86 storage/filesystem hardening — canonical handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Change set: issue #675 / PR #678
+Change set: issues #669, #673, #676
 
-## v8.8.85 behavior
+## v8.8.86 behavior
+
+- Updater staging performs a bounded capacity preflight before creating a staging attempt or downloading an artifact.
+- Unmanaged adoption uses invocation-unique roots and revalidates/certifies topology and copied bytes before database publication.
+- Import publication and recursive cleanup/rollback reject descendant reparse topology.
+- The verified v8.8.85 parent already contains #682 public-publication outcome gating.
+
+## Preserved v8.8.85 verification behavior
 
 - Feature PRs use `Verify-Release.ps1 -FeatureCandidate` so exact-head product verification does not require the branch to own the next global patch metadata first.
 - Candidate mode defers only release-version/current-version surface parity; it does not skip repository identity, canonical-state shape, security policy, function verification, strict builds/analyzers, tests, integration/fault injection, self-test, or continuity/toolbox ownership.
