@@ -16,9 +16,9 @@ Change set: PR #692
 
 ## Verification boundary
 
-The current closed hosted-Windows source is v8.8.86 `21e7dbd1c71d66be542095be4e6d397879b7b134`, run `37132556908`; its evidence-only persistence commits are preserved in current main. Do not reuse that evidence for v8.8.87.
+Current hosted-Windows closure: v8.8.87 source `92bb0162e3a64f2bf6b02f7feaeda8ff6b37eb70` passed run `37136719343` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log`.
 
-PR #692 must pass fresh exact-final-head feature verification before merge. After merge, verify remote `main` and obtain fresh canonical Windows release closure because this change modifies product source/tests/release inputs.
+The tested source remains `92bb0162e3a64f2bf6b02f7feaeda8ff6b37eb70` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Execution/offload note
 
