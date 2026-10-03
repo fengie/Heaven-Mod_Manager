@@ -1,3 +1,9 @@
+# v8.8.81 — 2026-10-02
+
+- Canonicalize live generic same-root Monster Hunter: World profiles only from authoritative `MonsterHunterWorld.exe` evidence while preserving user-owned profile identity fields.
+- Refuse Steam app 582010 discovery when resolution finds only a launcher or unrelated executable, leaving registry state untouched instead of creating an unusable MHW profile.
+- Add deterministic restart/idempotency and malformed executable-evidence regressions for issues #602 and #603.
+
 # v8.8.80 — 2026-10-02
 
 - Restore complete canonical-main history before installed-client updater E2E evidence ancestry/drift checks so evidence-only main commits are recognized as descendants of the tested release source.
