@@ -75,6 +75,7 @@ public partial class ModRowViewModel:ObservableObject
     public int StagedEnabledMembers=>_stagedMembers.Values.Count(x=>x.enabled);
     public bool WillEnable=>HasStagedChanges&&StagedEnabledMembers>AppliedEnabledMembers;
     public bool WillDisable=>HasStagedChanges&&StagedEnabledMembers<AppliedEnabledMembers;
+    public string PendingStateLabel=>!HasStagedChanges?string.Empty:WillEnable?"Pending enable":WillDisable?"Pending disable":"Pending changes";
     public string PartsLabel
     {
         get
@@ -271,7 +272,7 @@ public partial class ModRowViewModel:ObservableObject
         _updatingSummary=true;try{var enabled=StagedEnabledMembers;StagedEnabled=enabled==0?false:enabled==MemberCount?true:null;}finally{_updatingSummary=false;}SyncParts();RaiseStateChanged();}
     private void RaiseStateChanged(){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        OnPropertyChanged(nameof(Priority));OnPropertyChanged(nameof(AppliedEnabled));OnPropertyChanged(nameof(AppliedEnabledMembers));OnPropertyChanged(nameof(HasStagedChanges));OnPropertyChanged(nameof(StagedEnabledMembers));OnPropertyChanged(nameof(WillEnable));OnPropertyChanged(nameof(WillDisable));OnPropertyChanged(nameof(StateLabel));OnPropertyChanged(nameof(PartsLabel));}
+        OnPropertyChanged(nameof(Priority));OnPropertyChanged(nameof(AppliedEnabled));OnPropertyChanged(nameof(AppliedEnabledMembers));OnPropertyChanged(nameof(HasStagedChanges));OnPropertyChanged(nameof(StagedEnabledMembers));OnPropertyChanged(nameof(WillEnable));OnPropertyChanged(nameof(WillDisable));OnPropertyChanged(nameof(PendingStateLabel));OnPropertyChanged(nameof(StateLabel));OnPropertyChanged(nameof(PartsLabel));}
     private string BuildPartsLabel(){var labels=Members.Select(m=>PartName(m.DisplayName)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();return labels.Length<=4?string.Join(" + ",labels):string.Join(" + ",labels.Take(4))+$" +{labels.Length-4}";}
     private string PartName(string value){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
