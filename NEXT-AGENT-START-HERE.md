@@ -1,8 +1,8 @@
 # v8.8.91 catalog + updater storage lifecycle — handoff
 
-Canonical repository: `fengie/mhw-mods`  
-Global bootstrap/training: `fengie/heaven-toolbox@main`  
-Canonical target branch: `main`  
+Canonical repository: `fengie/mhw-mods`
+Global bootstrap/training: `fengie/heaven-toolbox@main`
+Canonical target branch: `main`
 Change set: issue #669 plus the already-integrated #730 tranche
 
 ## v8.8.91 behavior
@@ -18,6 +18,10 @@ Change set: issue #669 plus the already-integrated #730 tranche
 Last closed canonical Windows verification remains v8.8.89 source `b13f2210211973d23ff0e6ca2f449dade87919f5`, run `37150713097`.
 
 v8.8.91 requires fresh exact integrated-source Windows verification after integration. Do not call v8.8.91 released/closed until that run passes and truthful evidence is persisted.
+
+## Unresolved risk
+
+v8.8.91 does not yet have closed canonical Windows verification for its exact integrated source. Do not claim the release closed until that post-integration verification passes and its durable evidence is persisted.
 
 ## Next action
 
