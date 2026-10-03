@@ -29,15 +29,21 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
     /// If the CAS already contains the resulting hash, validate its bytes before discarding the temp.
     /// Corrupt existing objects are rejected, never silently trusted or overwritten.
     /// </summary>
-    public Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default) =>
-        CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, ct);
+    public Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
+        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, ct);
+    }
 
     internal Task<HashResult> CaptureWithHashForTestingAsync(
         string source,
         Func<string, CancellationToken, Task> afterInitialCopy,
         bool registerInDatabase = true,
-        CancellationToken ct = default) =>
-        CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, ct);
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
+        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, ct);
+    }
 
     private async Task<HashResult> CaptureWithHashCoreAsync(
         string source,
@@ -140,6 +146,7 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
 
     private static async Task VerifySourceStillMatchesAsync(string source, ReadOnlyMemory<byte> capturedSha256, CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}");
         await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
             1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
         var currentSha256 = await SHA256.HashDataAsync(input, ct);
