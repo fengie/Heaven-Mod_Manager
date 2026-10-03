@@ -50,7 +50,41 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
 | COMPLIANCE-710 | P1 | DONE | issue #710; v8.8.89 | Add truthful native-app privacy/legal/data-control surfaces, complete current image accessibility metadata, and mechanically guard dependency notices, keyboard focus/navigation, and core-palette contrast. |
+| HASH-STABILITY-699 | P0 | ACTIVE | issue #699; v8.8.90 candidate | Certify authoritative hashes and CAS capture against same-metadata source mutation with byte-level second-read verification. |
+| CI-716-718 | P0 | ACTIVE | issues #716/#718; PR #719 source absorbed into v8.8.90 #715 | Isolate pinned SDK provisioning per job and make function-verification persistence idempotent. |
 | CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
+
+## CI-716-718 — SDK isolation and verification-baseline idempotence
+
+**Owner:** issues #716 / #718; complete PR #719 source absorbed into the sole v8.8.90 PR #715 candidate
+**Status:** ACTIVE
+**Acceptance:** persistent Heaven workflows provision the pinned SDK into run/attempt/job-owned roots; policy rejects the former shared `RUNNER_TEMP\dotnet` source literally; unchanged function verification confirmation is byte-stable while changed fingerprints/source versions refresh evidence.
+
+- [x] Give Windows Release, Workflow Feature, Updater Publication, and Installed Client E2E unique SDK install roots derived from run ID, attempt, and job.
+- [x] Clear only the job-owned SDK root before provisioning and preserve `global.json` + `Assert-PinnedDotNetSdk.ps1` as the SDK authority.
+- [x] Add CI policy regression that reinstates the former shared root and proves literal rejection without environment interpolation.
+- [x] Preserve function confirmation timestamp/basis and document timestamp for semantically unchanged exact state.
+- [x] Refresh verification evidence when a fingerprint, verification state/basis, or source version changes.
+- [x] Add repeated-confirm byte-stability, one-function mutation isolation, and version-transition regressions.
+- [x] Exact #719 source head `19f8aee3ef8037ddb8572b5a3f92aa34c480f8e3` passed Product Security, Updater Publication, and Workflow Feature before absorption.
+- [ ] Pass fresh exact-final-head gates on the combined v8.8.90 #715 candidate and integrate that one versioned state.
+
+**Next action:** verify the combined #715 head; #719 must not merge independently.
+
+## HASH-STABILITY-699 — Authoritative source byte certification
+
+**Owner:** issue #699 / v8.8.90 candidate
+**Status:** ACTIVE
+**Acceptance:** authoritative file hashing and CAS capture reject equal-length source mutation even when LastWriteTimeUtc is restored; stable inputs retain exact SHA-256 behavior; non-authoritative XXH3 stays single-pass; cancellation and failed capture leave no accepted/published result or private staging.
+
+- [x] Add second-read SHA-256 certification to authoritative HashingService results.
+- [x] Add second-read SHA-256 certification before BlobStore CAS publication/database registration.
+- [x] Add deterministic equal-length/restored-timestamp mutation regressions plus stable/non-authoritative/cancellation coverage.
+- [x] Synchronize v8.8.90 product/release metadata on the candidate.
+- [ ] Pass required exact-head gates on the final candidate.
+- [ ] Integrate the exact green candidate to canonical main, verify source semantics remotely, close #699, and persist fresh canonical Windows verification evidence required after the source change.
+
+**Next action:** run all required exact-head gates on the final v8.8.90 candidate; integrate only the exact green head after refreshing canonical main.
 
 ## COMPLIANCE-710 — Native-app privacy, legal, data-control, and accessibility baseline
 

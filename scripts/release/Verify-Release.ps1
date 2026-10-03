@@ -307,7 +307,9 @@ function Invoke-AgentHandoffPreflight {
         $handoffArgs=@{Root=$Root}
         if($FeatureCandidate){$handoffArgs.FeatureCandidate=$true}
         & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff.ps1') @handoffArgs *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
-        & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff-NegativeFixtures.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
+        $negativeFixtureArgs=@{Root=$Root}
+        if($FeatureCandidate){$negativeFixtureArgs.FeatureCandidate=$true}
+        & (Join-Path $PSScriptRoot '..\testing\Test-AgentHandoff-NegativeFixtures.ps1') @negativeFixtureArgs *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-VerificationContinuitySync.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         & (Join-Path $PSScriptRoot '..\testing\Test-VerificationCache.ps1') *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         $sw.Stop()
@@ -333,6 +335,7 @@ function Invoke-CiSecurityPolicyPreflight {
     $sw=[System.Diagnostics.Stopwatch]::StartNew()
     try {
         & (Join-Path $PSScriptRoot '..\testing\Test-CiSecurityPolicy.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log | Out-Host
+        & (Join-Path $PSScriptRoot '..\testing\Test-DotNetSdkJobIsolation.ps1') -Root $Root *>&1 | ForEach-Object { $_.ToString() } | Tee-Object -FilePath $log -Append | Out-Host
         $sw.Stop()
         Add-Result 'Security' 'CI supply-chain policy' $true 0 $sw.Elapsed.TotalSeconds $log 'MHW updater, release, package, and dependency-audit invariants passed.'
         Write-Host 'PASS: CI supply-chain policy' -ForegroundColor Green

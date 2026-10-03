@@ -1,10 +1,18 @@
-# v8.8.89 — MHW Manual Mod Manager
+# v8.8.90 — MHW Manual Mod Manager
 
-Current product version: **8.8.89**.
+Current product version: **8.8.90**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.90 — byte stability + CI reliability
+
+- Re-certify authoritative file hashes with a second SHA-256 read before accepting the result, closing equal-length/restored-timestamp mutation races.
+- Re-certify blob-capture source bytes before CAS publication or database registration so a torn source cannot be certified by metadata alone.
+- Keep non-authoritative XXH3 hashing single-pass and add deterministic mutation, stable-hash, cancellation, and no-publication regressions.
+- Isolate pinned .NET SDK provisioning per workflow run/attempt/job so stale self-hosted runner state cannot masquerade as a valid install, and mechanically reject the former shared `RUNNER_TEMP\dotnet` root.
+- Make function-verification persistence idempotent: unchanged function/source state keeps existing confirmation timestamps and bytes, while real fingerprint or version changes refresh evidence.
 
 ## v8.8.89 — privacy, legal & accessibility baseline
 
@@ -20,14 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Reconcile the append-only public `release-index.json` only after immutable public/private release parity, with idempotent compare-and-swap retries and exact digest verification.
 - Keep semantic nonpublication and retry paths safe: missing exact releases no-op, already-published releases can repair provenance, and conflicting identities fail closed.
 - Normalize artifact/path resolution results for Windows PowerShell 5.1 strict mode, with a positive single-artifact regression.
-
-## v8.8.87 — HPN composition + snapshot hygiene
-
-- Keep a recognized literal Main/base source enabled whenever one of its sibling components is enabled; optional layers override only overlapping files.
-- Compose same-Nexus `Ver3.1` / `Ver3.10` / `Ver4.2`-style generations per path so newer HPN files win shared paths without discarding older-only compatibility files.
-- For Nexus 1965 specifically, selecting an HPN 4.x body auto-stages the newest matching 3.x compatibility package plus Main; older 4.x revisions and equal-version body alternatives are not auto-enabled.
-- Keep same-version body variants as explicit choices and show Main / Optional / Revision roles in the advanced component drawer.
-- Reclaim unindexed save-snapshot orphan directories safely during pruning, including reparse-point unlinking without traversing external targets.
 
 ## Current plans & progress
 

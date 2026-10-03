@@ -93,6 +93,32 @@ public sealed class BlobIntegrityTests : IDisposable
     }
 
     [Fact]
+    public async Task Capture_rejects_equal_length_same_timestamp_source_mutation_before_publication()
+    {
+        Directory.CreateDirectory(root);
+        var db = new ManagerDatabase(Path.Combine(root, "state", "m.db"));
+        await db.InitializeAsync(TestToken);
+        var blobs = new BlobStore(Path.Combine(root, "state", "blobs"), db);
+        var source = Path.Combine(root, "source");
+        await File.WriteAllTextAsync(source, "ORIGINAL", TestToken);
+        var originalTimestamp = File.GetLastWriteTimeUtc(source);
+
+        await Assert.ThrowsAsync<IOException>(() => blobs.CaptureWithHashForTestingAsync(
+            source,
+            async (path, ct) =>
+            {
+                await File.WriteAllTextAsync(path, "MUTATED!", ct);
+                File.SetLastWriteTimeUtc(path, originalTimestamp);
+            },
+            ct: TestToken));
+
+        Assert.Equal("MUTATED!", await File.ReadAllTextAsync(source, TestToken));
+        Assert.Equal(originalTimestamp, File.GetLastWriteTimeUtc(source));
+        Assert.Equal("0", await ScalarAsync(db, "SELECT COUNT(*) FROM blobs"));
+        Assert.Empty(Directory.EnumerateFiles(blobs.Root));
+    }
+
+    [Fact]
     public async Task Canceled_capture_does_not_publish_or_leave_private_staging()
     {
         var (_, blobs, source, hash) = await CreateAsync();

@@ -265,13 +265,34 @@ if(!(Test-Path -LiteralPath $verifyReleasePath -PathType Leaf)){
         '[switch]$FeatureCandidate',
         '$handoffArgs=@{Root=$Root}',
         'if($FeatureCandidate){$handoffArgs.FeatureCandidate=$true}',
-        'Test-AgentHandoff.ps1'
+        '$negativeFixtureArgs=@{Root=$Root}',
+        'if($FeatureCandidate){$negativeFixtureArgs.FeatureCandidate=$true}',
+        'Test-AgentHandoff.ps1',
+        'Test-AgentHandoff-NegativeFixtures.ps1'
     )){
         if(-not $verifyRelease.Contains($required)){
             $errors.Add("Verify-Release.ps1: feature-candidate verification routing invariant missing: $required")
         }
     }
 }
+$negativeFixtureGatePath=Join-Path $Root 'scripts\testing\Test-AgentHandoff-NegativeFixtures.ps1'
+if(!(Test-Path -LiteralPath $negativeFixtureGatePath -PathType Leaf)){
+    $errors.Add('Test-AgentHandoff-NegativeFixtures.ps1 is missing.')
+}else{
+    $negativeFixtureGate=Get-Content -LiteralPath $negativeFixtureGatePath -Raw
+    foreach($required in @(
+        '[switch]$FeatureCandidate',
+        '$validationArgs=@{Root=$fixture}',
+        'if($FeatureCandidate){$validationArgs.FeatureCandidate=$true}',
+        'feature-candidate mode defers current-version handoff identity fixtures to canonical verification',
+        'feature-candidate mode defers synthetic current-version closure projection fixtures to canonical verification'
+    )){
+        if(-not $negativeFixtureGate.Contains($required)){
+            $errors.Add("Test-AgentHandoff-NegativeFixtures.ps1: feature-candidate propagation invariant missing: $required")
+        }
+    }
+}
+
 if(!(Test-Path -LiteralPath $handoffGatePath -PathType Leaf)){
     $errors.Add('Test-AgentHandoff.ps1 is missing.')
 }else{
