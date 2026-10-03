@@ -319,6 +319,8 @@ $installedE2EWorkflowPath=Join-Path $repoRoot '.github\workflows\updater-install
 $installedE2EWorkflow=Get-Content -LiteralPath $installedE2EWorkflowPath -Raw
 Assert-Equal $true ($installedE2EWorkflow.Contains('classify-workflow-run:')) 'installed-client E2E upstream classifier job'
 Assert-Equal $true ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?runs-on: \[self-hosted, Windows, X64, mhw-mods\]')) 'installed-client E2E classifier uses known-good self-hosted Windows runner'
+Assert-Equal $true ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?shell:\s*powershell')) 'installed-client E2E classifier uses runner-supported Windows PowerShell'
+Assert-Equal $false ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?shell:\s*pwsh')) 'installed-client E2E classifier does not require unavailable pwsh'
 Assert-Equal $true ($installedE2EWorkflow.Contains('ref: main')) 'installed-client E2E classifier loads policy from canonical main rather than the possibly older upstream source'
 Assert-Equal $true ([regex]::IsMatch($installedE2EWorkflow,'classify-workflow-run:[\s\S]*?permissions:\s*contents:\s*read')) 'installed-client E2E classifier is read-only'
 Assert-Equal $true ($installedE2EWorkflow.Contains('Get-UpdaterInstalledClientE2EDecision')) 'installed-client E2E workflow calls shared classification policy'
