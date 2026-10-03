@@ -1,28 +1,24 @@
-# v8.8.87 HPN composition precedence — canonical state
+# v8.8.88 public release provenance — canonical state
 
-v8.8.87 repairs package-level composition for real HPN/Nexus layouts without weakening fail-closed structural-conflict rules.
+v8.8.88 adds an updater-readable provenance/index layer for immutable public releases without weakening existing publication, parity, exact-source, or SDK gates.
 
 ## Behavior
 
-- A recognized literal/manual `Main` or base package is dependency-like inside its logical family: when any sibling layer is active, the Mod Library stages that required base on as well.
-- Same-Nexus base + sibling packages may compose as a base/overlay relationship on actual overlapping paths.
-- Explicit same-Nexus package generations such as `Ver3.10` and `Ver4.2` may coexist. The newer generation wins only shared paths; files unique to the older generation remain provided by the older source.
-- Version labels alone are insufficient. Unrelated same-page packages and equal-version sibling variants still require stronger evidence or a user choice.
-- Advanced component rows identify inferred Main, Optional, and Revision roles instead of reducing these packages to generic Component labels.
-- Regression coverage models the observed Nexus 4678 `Main + No Bats` layout, the full Nexus 1965 `Main → 3.10 → 4.2` stack, and equal-version v4.2 sibling safety.
-
-## Research/evidence boundary
-
-Publicly indexed HPN ecosystem material confirms that mixed-generation installs are intentional in this mod family: dependent HPN content instructs users to retain both newer 4.2 and older 3.1-era packages for compatibility, and other HPN add-ons recommend retaining multiple v4 body/resource variants or their shared texture files. Direct adult Nexus post/file pages were not reliably readable through the available anonymous web surface, so no unobserved comment text is treated as resolver authority.
+- Deterministic provenance records bind version, updater build/tag/channel, exact 40-character source SHA, publication time, and SHA-256/size computed from the actual release ZIP and manifest bytes.
+- The public `release-index.json` is append-only and idempotent: exact retries no-op, conflicting immutable identities or duplicate source bindings fail closed, and concurrent writers use compare-and-swap with bounded retry.
+- Provenance reconciliation runs only after public/private immutable parity. If rerun-local bytes differ from the immutable release, the workflow downloads the published assets and verifies GitHub digest/size metadata before generating the record.
+- A same-version source with no exact immutable updater release remains a clean no-op; an already-published exact release can repair missing provenance without republishing immutable assets.
+- Artifact and `Resolve-Path` results are materialized as arrays so single-artifact provenance generation remains valid under Windows PowerShell 5.1 strict mode.
+- Current exact .NET SDK provisioning/roll-forward policy from canonical main remains intact.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.87 source `4d94e6700d6d027449ef45eeab9c753d8ce56c26` passed run `37142564667` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.87-heaven-windows-closure.log`.
+Last closed canonical Windows source is v8.8.87 `4d94e6700d6d027449ef45eeab9c753d8ce56c26`, run `37142564667`.
 
-The tested source remains `4d94e6700d6d027449ef45eeab9c753d8ce56c26` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The provenance implementation at pre-version head `c83e29054550d696701b34ba74bf66d5902dbbfe` passed Updater Publication, Product Security, and Workflow Feature gates after the Windows PowerShell scalar-path repair. The reconciled v8.8.88 candidate includes verified evidence-only main `0f8d5973951d67d78f21815ee82ee650fe368d6a` and changes release metadata/workflow inputs, so it requires fresh exact-final-head verification. After merge, canonical main requires a fresh strict Windows Release Gate and downstream installed-client updater E2E before v8.8.88 closure is claimed.
 
 ## Remaining independent work
 
-Keep the existing project-plan queue independent, including #669 storage lifecycle work, #559/#558 catalog UX/scale, #350/#354 external security prerequisites, and remaining recovery/installed-Windows acceptance items.
+Keep #669 storage lifecycle, #559/#558 catalog UX/scale, #350/#354 external trust/admin prerequisites, and remaining recovery/installed-Windows acceptance independent.
 
-Every successor must preserve the permanent continuity constitution, active Learned Rules, exact-input verification, filesystem containment, conflict/dependency proof separation, and durable-evidence privacy boundary, and recursively propagate the same obligation.
+Every successor must preserve the permanent continuity constitution, exact-input verification, public/private updater parity, append-only provenance identity, exact SDK policy, durable-evidence privacy, and recursively propagate the same obligation.

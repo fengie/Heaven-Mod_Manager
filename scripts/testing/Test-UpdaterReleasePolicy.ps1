@@ -461,6 +461,7 @@ $releaseWorkflow=Get-Content -LiteralPath $releaseWorkflowPath -Raw
 $privatePublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
 $publicPublishIndex=$releaseWorkflow.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
 $parityIndex=$releaseWorkflow.IndexOf('Verify public and canonical updater release parity')
+$publicProvenanceIndex=$releaseWorkflow.IndexOf('Reconcile public release provenance index')
 $freshnessIndex=$releaseWorkflow.IndexOf('Confirm release source is still canonical main')
 $releaseIntentIndex=$releaseWorkflow.IndexOf('Resolve updater release intent')
 $ghBootstrapIndex=$releaseWorkflow.IndexOf('Install verified GitHub CLI for publication')
@@ -473,6 +474,7 @@ if($ghBootstrapIndex -le $releaseIntentIndex){throw 'Privileged GitHub CLI boots
 if($ghBootstrapIndex -ge $publicPublishIndex){throw 'Verified GitHub CLI must be available before canonical updater publication can require it.'}
 if($publicPublishIndex -ge $privatePublishIndex){throw 'Public updater feed must publish before canonical private release visibility.'}
 if($parityIndex -le $privatePublishIndex){throw 'Updater parity verification must run after both publication steps.'}
+if($publicProvenanceIndex -le $parityIndex){throw 'Public provenance reconciliation must run after public/private immutable parity.'}
 Assert-Equal $true ($releaseWorkflow.Contains('id: release_freshness')) 'release freshness output step id'
 Assert-Equal $true ($releaseWorkflow.Contains('id: release_intent')) 'release intent output step id'
 Assert-Equal $true ($releaseWorkflow.Contains('force_publish:')) 'manual force-publish workflow input'
@@ -484,7 +486,7 @@ Assert-Equal $true ($releaseWorkflow.Contains('Assert-PinnedDotNetSdk.ps1')) 're
 Assert-Equal $true ($releaseWorkflow.Contains('/git/ref/heads/main')) 'release freshness reads canonical main ref'
 Assert-Equal $true ($releaseWorkflow.Contains('[string]::Equals($remoteMain,$env:GITHUB_SHA')) 'release freshness compares canonical main with exact run SHA'
 $publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_freshness\.outputs\.publish == 'true'").Count
-Assert-Equal 5 $publicationFreshnessGuards 'release intent plus artifact/public/private/parity freshness guards'
+Assert-Equal 6 $publicationFreshnessGuards 'release intent plus artifact/public/private/parity/provenance freshness guards'
 Assert-Equal $true ([regex]::IsMatch($releaseWorkflow,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')) 'release transaction cannot be cancelled in progress'
 Assert-Equal $true ($releaseWorkflow.Contains('MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}')) 'public release secret wiring'
 
@@ -506,6 +508,20 @@ Assert-Equal $true ($releaseWorkflow.Contains('MHW_ENABLE_GITHUB_ATTESTATIONS'))
 Assert-Equal $true ($releaseWorkflow.Contains('skipped_private_repo_requires_enterprise_cloud')) 'private repository unsupported-tier status evidence'
 Assert-Equal $true ($releaseWorkflow.Contains('Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256')) 'release provenance recomputes exact artifact digest'
 Assert-Equal $true ($releaseWorkflow.Contains('Release provenance artifact digest mismatch')) 'release provenance digest mismatch fails closed'
+
+$publicProvenanceSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicReleaseProvenance.ps1') -Raw
+Assert-Equal $true ($releaseWorkflow.Contains('.\scripts\release\Publish-PublicReleaseProvenance.ps1')) 'release workflow reconciles public provenance index'
+Assert-Equal $true ($publicProvenanceSource.Contains('release-index.json')) 'public provenance publisher targets canonical index'
+Assert-Equal $true ($publicProvenanceSource.Contains('Add-PublicReleaseProvenanceRecordToIndexJson')) 'public provenance publisher uses append-only index helper'
+Assert-Equal $true ($publicProvenanceSource.Contains('Get-UpdaterReleasePages')) 'public provenance publisher discovers exact source across all release pages'
+Assert-Equal $true ($publicProvenanceSource.Contains("branch='main'")) 'public provenance index writes canonical public main'
+Assert-Equal $true ($publicProvenanceSource.Contains('sha=[string]$indexFile.sha')) 'public provenance index write uses compare-and-swap blob identity'
+Assert-Equal $true ($publicProvenanceSource.Contains('No exact immutable updater release exists for source')) 'same-version nonpublication provenance reconciliation no-ops safely'
+$provenanceStepStart=$releaseWorkflow.IndexOf('Reconcile public release provenance index')
+$provenanceStepEnd=$releaseWorkflow.IndexOf('Preserve verification, build, and promoted-cache evidence')
+if($provenanceStepStart -lt 0 -or $provenanceStepEnd -le $provenanceStepStart){throw 'Public provenance workflow step boundaries are missing.'}
+$provenanceStep=$releaseWorkflow.Substring($provenanceStepStart,$provenanceStepEnd-$provenanceStepStart)
+Assert-Equal $false ($provenanceStep.Contains("steps.release_intent.outputs.publish == 'true'")) 'public provenance repair remains runnable after an already-published retry'
 
 $publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicUpdaterRelease.ps1') -Raw
 Assert-Equal $true ($publicPublisherSource.Contains('fengie/mhw-mod-manager-release')) 'canonical public release repository'

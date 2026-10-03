@@ -350,6 +350,15 @@ jobs:
           }
           Write-Host "PASS: updater release $tag is identical and immutable in public and canonical feeds." -ForegroundColor Green
 
+      - name: Reconcile public release provenance index
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}
+        run: |
+          .\scripts\release\Publish-PublicReleaseProvenance.ps1 -ManifestPath ".\artifacts\update-manifest.json"
+
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()
         continue-on-error: true
