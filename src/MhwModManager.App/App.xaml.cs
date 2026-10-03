@@ -204,6 +204,17 @@ public sealed partial class App:Application, IDisposable
             {
                 logger.Warning(ex,"Program updater storage cleanup failed non-fatally.");
             }
+            try
+            {
+                await CatalogDownloadMaintenance.RunAsync(
+                    Path.Combine(paths.NextStateRoot,"CatalogDownloads"),
+                    message=>logger.Information("Catalog storage: {StorageMessage}",message),
+                    CancellationToken.None);
+            }
+            catch(Exception ex)
+            {
+                logger.Warning(ex,"Catalog download scratch cleanup failed non-fatally.");
+            }
             window.StartProgramUpdater();
         }
         catch(Exception ex)

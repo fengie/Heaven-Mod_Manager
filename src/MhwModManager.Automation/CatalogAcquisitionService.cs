@@ -103,7 +103,16 @@ public sealed class CatalogAcquisitionService
             throw new InvalidDataException("Catalog provider returned direct acquisition without a download URI.");
         ValidateHttpsUri(resolution.DownloadUri, "download");
 
+        await CatalogDownloadMaintenance.RunAsync(
+            downloadRoot,
+            message => MasterDebugLog.Write("CATALOG-ACQUISITION", message),
+            ct).ConfigureAwait(false);
+
         var tempArchive = AllocateDownloadPath(file.FileName);
+        var leasePath = await CatalogDownloadMaintenance.CreateLeaseAsync(
+            downloadRoot,
+            tempArchive,
+            ct).ConfigureAwait(false);
         try
         {
             await DownloadBoundedAsync(resolution.DownloadUri, tempArchive, ct).ConfigureAwait(false);
@@ -139,17 +148,28 @@ public sealed class CatalogAcquisitionService
         }
         finally
         {
+            var archiveRemoved = !File.Exists(tempArchive);
             try
             {
-                if (File.Exists(tempArchive))
+                if (!archiveRemoved)
+                {
                     File.Delete(tempArchive);
+                    archiveRemoved = true;
+                }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 MasterDebugLog.Write(
                     "CATALOG-ACQUISITION",
-                    $"Could not remove temporary catalog download '{tempArchive}'.",
+                    $"Could not remove temporary catalog download '{tempArchive}'. The ownership lease is retained for safe crash cleanup.",
                     ex);
+            }
+
+            if (archiveRemoved)
+            {
+                CatalogDownloadMaintenance.DeleteLeaseBestEffort(
+                    leasePath,
+                    message => MasterDebugLog.Write("CATALOG-ACQUISITION", message));
             }
         }
     }

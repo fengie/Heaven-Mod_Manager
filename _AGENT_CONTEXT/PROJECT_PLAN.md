@@ -44,20 +44,21 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | AUDIT-576 | P1 | DONE | issue #576; v8.8.72 | Reject stale queued release sources before the first updater publication mutation. |
 | AUDIT-577 | P1 | DONE | issue #577; v8.8.72 | Keep canonical CURRENT_REVISION post-integration and reject candidate/task-branch continuity state. |
 | AUDIT-635 | P0 | DONE | issue #635; PR #641; v8.8.82 | Bind updater helper request topology before mutex, journal, recovery, or restart state consumption. |
-| UPDATER-STORAGE-647 | P0 | ACTIVE | issue #647; combined v8.8.82 candidate | Reclaim updater staging/terminal disk safely without deleting pending or recovery-required state. |
+| UPDATER-STORAGE-647 | P0 | DONE | issue #647; PR #658; v8.8.82 | Reclaim updater staging/terminal disk safely without deleting pending or recovery-required state. |
+| UPDATER-STORAGE-669 | P0 | ACTIVE | issue #669; PR #702; v8.8.91 candidate | Bound catalog acquisition scratch and prepared updater transactions with fail-closed owner leases, conservative cleanup, and quotas. |
 | UPDATER-TEST-671 | P0 | DONE | issue #671; PR #672; v8.8.84 | Serialize updater integration tests that share process-global pending state while retaining parallelism elsewhere. |
 | CI-675 | P1 | DONE | issue #675; PR #678; v8.8.85 | Separate feature-candidate product verification from canonical release metadata while preserving full exact-main release/publication verification. |
 | UPDATER-E2E-587 | P1 | DONE | issue #587; PR #588; v8.8.74 | Skip false-red installed-client E2E for intentionally superseded non-publishing release gates while failing closed when an expected canonical publication is missing or source history is ambiguous. |
 | ACCESSIBILITY-589 | P1 | DONE | issue #589; v8.8.75 | Give Mod Library whole-mod and component toggles target-specific UI Automation names while preserving native checkbox semantics and guarding the bindings with deterministic regression coverage. |
 | COMPLIANCE-710 | P1 | DONE | issue #710; v8.8.89 | Add truthful native-app privacy/legal/data-control surfaces, complete current image accessibility metadata, and mechanically guard dependency notices, keyboard focus/navigation, and core-palette contrast. |
-| HASH-STABILITY-699 | P0 | ACTIVE | issue #699; v8.8.90 candidate | Certify authoritative hashes and CAS capture against same-metadata source mutation with byte-level second-read verification. |
-| CI-716-718 | P0 | ACTIVE | issues #716/#718; PR #719 source absorbed into v8.8.90 #715 | Isolate pinned SDK provisioning per job and make function-verification persistence idempotent. |
+| HASH-STABILITY-699 | P0 | DONE | issue #699; PR #715; v8.8.90 | Certify authoritative hashes and CAS capture against same-metadata source mutation with byte-level second-read verification. |
+| CI-716-718 | P0 | DONE | issues #716/#718; PR #719 + PR #715; v8.8.90 | Isolate pinned SDK provisioning per job and make function-verification persistence idempotent. |
 | CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
 
 ## CI-716-718 — SDK isolation and verification-baseline idempotence
 
 **Owner:** issues #716 / #718; complete PR #719 source absorbed into the sole v8.8.90 PR #715 candidate
-**Status:** ACTIVE
+**Status:** DONE
 **Acceptance:** persistent Heaven workflows provision the pinned SDK into run/attempt/job-owned roots; policy rejects the former shared `RUNNER_TEMP\dotnet` source literally; unchanged function verification confirmation is byte-stable while changed fingerprints/source versions refresh evidence.
 
 - [x] Give Windows Release, Workflow Feature, Updater Publication, and Installed Client E2E unique SDK install roots derived from run ID, attempt, and job.
@@ -67,24 +68,24 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Refresh verification evidence when a fingerprint, verification state/basis, or source version changes.
 - [x] Add repeated-confirm byte-stability, one-function mutation isolation, and version-transition regressions.
 - [x] Exact #719 source head `19f8aee3ef8037ddb8572b5a3f92aa34c480f8e3` passed Product Security, Updater Publication, and Workflow Feature before absorption.
-- [ ] Pass fresh exact-final-head gates on the combined v8.8.90 #715 candidate and integrate that one versioned state.
+- [x] Exact v8.8.90 candidate gates passed and the combined #715 state integrated to canonical main.
 
-**Next action:** verify the combined #715 head; #719 must not merge independently.
+**Next action:** DONE. Preserve the integrated v8.8.90 CI isolation and idempotent verification semantics.
 
 ## HASH-STABILITY-699 — Authoritative source byte certification
 
 **Owner:** issue #699 / v8.8.90 candidate
-**Status:** ACTIVE
+**Status:** DONE
 **Acceptance:** authoritative file hashing and CAS capture reject equal-length source mutation even when LastWriteTimeUtc is restored; stable inputs retain exact SHA-256 behavior; non-authoritative XXH3 stays single-pass; cancellation and failed capture leave no accepted/published result or private staging.
 
 - [x] Add second-read SHA-256 certification to authoritative HashingService results.
 - [x] Add second-read SHA-256 certification before BlobStore CAS publication/database registration.
 - [x] Add deterministic equal-length/restored-timestamp mutation regressions plus stable/non-authoritative/cancellation coverage.
 - [x] Synchronize v8.8.90 product/release metadata on the candidate.
-- [ ] Pass required exact-head gates on the final candidate.
-- [ ] Integrate the exact green candidate to canonical main, verify source semantics remotely, close #699, and persist fresh canonical Windows verification evidence required after the source change.
+- [x] Required exact-head gates passed on the final v8.8.90 candidate.
+- [x] Integrated the exact green #715 candidate to canonical main; canonical v8.8.90 now carries the byte-certification and CI reliability source.
 
-**Next action:** run all required exact-head gates on the final v8.8.90 candidate; integrate only the exact green head after refreshing canonical main.
+**Next action:** DONE. Preserve byte-certification semantics in later hashing/CAS changes.
 
 ## COMPLIANCE-710 — Native-app privacy, legal, data-control, and accessibility baseline
 
@@ -115,9 +116,25 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Preserve the exact pending staging attempt and all nonterminal/recovery-required transactions.
 - [x] Fail closed for malformed pending state, unknown updater directory shapes, and reparse-point trees.
 - [x] Add deterministic cleanup regressions for pending, orphan, recent, terminal, recovery-required, and reparse state.
-- [ ] Pass all required exact-head v8.8.82 gates, integrate the combined candidate to canonical main, verify remote main, publish immediately, and persist installed-client updater evidence.
+- [x] Required v8.8.82 gates passed and the combined storage candidate integrated to canonical main via PR #658.
 
-**Next action:** run exact-head gates on the combined #635/#647 v8.8.82 candidate; integrate only after required checks are green.
+**Next action:** DONE. Preserve conservative state-aware staging and terminal-transaction cleanup.
+
+## UPDATER-STORAGE-669 — Crash-safe catalog + prepared updater ownership
+
+**Owner:** issue #669 / PR #702 / v8.8.91 candidate
+**Status:** ACTIVE
+**Acceptance:** catalog acquisition scratch and prepared updater transaction residue are reclaimable only with trustworthy manager ownership/liveness evidence; active, ambiguous, unknown, unleased, malformed, and reparse-point state remains preserved; cleanup stays bounded by age/quota policy.
+
+- [x] Lease manager-owned catalog download archives with PID + process-start identity.
+- [x] Reclaim exited-owner catalog archives and abandoned temporary lease files without traversing reparse points.
+- [x] Preserve active/ambiguous/unleased state and enforce bounded age/byte-quota cleanup.
+- [x] Require newly prepared updater transaction leases to record certifiable process-start identity.
+- [x] Let legacy missing-start updater leases become reclaimable only after their PID no longer exists.
+- [x] Add deterministic catalog/updater liveness, quota, crash-residue, reparse, and handoff regressions.
+- [ ] Pass fresh exact-v8.8.91 candidate gates, integrate to canonical main, verify remote semantics, and obtain the required fresh canonical Windows closure.
+
+**Next action:** run required exact-head gates on PR #702 after the v8.8.91 metadata reconciliation; integrate only the exact green head after refreshing main.
 
 ## AUDIT-635 — Updater helper request topology binding
 

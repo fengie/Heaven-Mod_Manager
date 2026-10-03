@@ -1,10 +1,16 @@
-# v8.8.90 — MHW Manual Mod Manager
+# v8.8.91 — MHW Manual Mod Manager
 
-Current product version: **8.8.90**.
+Current product version: **8.8.91**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.91 — bounded catalog + updater scratch ownership
+
+- Add owner leases for catalog acquisition scratch downloads and reclaim only manager-owned residue whose owner is proven exited, with age and byte-quota bounds.
+- Require new prepared updater transaction leases to carry certified PID + process-start identity; legacy missing-start leases become reclaimable only after the PID exits, while live or ambiguous owners remain preserved.
+- Reclaim abandoned temporary lease files without traversing reparse points, keep unknown/unleased files fail-closed, and add deterministic liveness, quota, cleanup, and updater-handoff regressions.
 
 ## v8.8.90 — byte stability + CI reliability
 
@@ -21,13 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Add local-data reset guidance and one-click access to the manager state folder while preserving Mods and archives as durable user data.
 - Complete UI Automation names for current preview/artwork images, keep explicit keyboard navigation and visible focus behavior, and regression-check the core palette against WCAG AA text-contrast thresholds.
 - Regression-check third-party notice versions against the centrally managed package inventory and document feature changes that require renewed privacy/consent review.
-
-## v8.8.88 — public release provenance
-
-- Generate deterministic public updater provenance from exact verified ZIP/manifest bytes and source SHA.
-- Reconcile the append-only public `release-index.json` only after immutable public/private release parity, with idempotent compare-and-swap retries and exact digest verification.
-- Keep semantic nonpublication and retry paths safe: missing exact releases no-op, already-published releases can repair provenance, and conflicting identities fail closed.
-- Normalize artifact/path resolution results for Windows PowerShell 5.1 strict mode, with a positive single-artifact regression.
 
 ## Current plans & progress
 
