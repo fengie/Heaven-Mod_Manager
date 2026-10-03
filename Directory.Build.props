@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
     <Version>8.8.90</Version>
-    <InformationalVersion>8.8.90-byte-stability-certification</InformationalVersion>
+    <InformationalVersion>8.8.90-byte-stability-ci-reliability</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
