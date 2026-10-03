@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
     <Version>8.8.82</Version>
-    <InformationalVersion>8.8.82-updater-request-topology-binding</InformationalVersion>
+    <InformationalVersion>8.8.82-updater-topology-and-storage-retention</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
