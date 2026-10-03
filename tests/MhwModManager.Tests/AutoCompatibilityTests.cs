@@ -370,6 +370,34 @@ public sealed class AutoCompatibilityTests
     }
 
     [Fact]
+    public void Hpn_ver42_overrides_ver31_only_on_shared_paths()
+    {
+        var mods = new[]
+        {
+            new ModDescriptor("v31","Ver3.1 Highpoly Nude MOD with jiggle animation","Ver3.1 Highpoly Nude MOD with jiggle animation","v31",true,500,FamilyId:"nexus:1965",NexusModId:"1965"),
+            new ModDescriptor("v42","Ver4.2 Highpoly Nude MOD with jiggle animation","Ver4.2 Highpoly Nude MOD with jiggle animation","v42",true,10,FamilyId:"nexus:1965",NexusModId:"1965")
+        };
+        var shared = @"nativePC\pl\f_equip\pl501_0000\body\mod\f_body501_0000.mod3";
+        var legacyOnly = @"nativePC\pl\f_equip\legacy_hpn\v31-only.tex";
+        var files = new[]
+        {
+            new ModFileDescriptor("v31",shared,"v31-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("v42",shared,"v42-shared",null,100,Now,FileClass.Structural),
+            new ModFileDescriptor("v31",legacyOnly,"v31-only",null,100,Now,FileClass.Texture)
+        };
+
+        var plan = new DeploymentPlanner(new ConflictEngine()).Build(Snapshot(mods,files));
+
+        Assert.True(AutoCompatibility.TryGetPackageVersion(mods[0],out var oldVersion));
+        Assert.True(AutoCompatibility.TryGetPackageVersion(mods[1],out var newVersion));
+        Assert.Equal([3,1],oldVersion);
+        Assert.Equal([4,2],newVersion);
+        Assert.False(plan.IsBlocked);
+        Assert.Equal("v42",plan.Conflicts.Single(x=>PathRules.Comparer.Equals(x.Path,shared)).WinnerModId);
+        Assert.Equal("v31",plan.Changes.Single(x=>PathRules.Comparer.Equals(x.Path,legacyOnly)).ProviderAfter);
+    }
+
+    [Fact]
     public void Hpn_main_v310_v42_stack_chooses_v42_and_preserves_unique_lower_layer_files()
     {
         var mods = new[]
