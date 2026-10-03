@@ -18,6 +18,13 @@ internal static class Program
             UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
             UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, requestPath);
             var request = await UpdateRequestStore.ReadForHelperAsync(requestPath, CancellationToken.None);
+            var transactionRoot = Path.GetDirectoryName(Path.GetFullPath(requestPath))
+                ?? throw new InvalidDataException("Updater request has no transaction directory.");
+            await UpdatePreparedTransactionLeaseStore.WriteAsync(
+                transactionRoot,
+                request.Manifest.BuildNumber,
+                Environment.ProcessId,
+                CancellationToken.None);
             var logPath = Path.Combine(updaterRoot, "updater.log");
             Log(logPath, $"helper start build={request.Manifest.BuildNumber} source={request.Manifest.SourceSha}");
 

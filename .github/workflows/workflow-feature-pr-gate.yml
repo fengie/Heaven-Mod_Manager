@@ -154,11 +154,19 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
-      - name: Verify pinned .NET SDK
+      - name: Select writable .NET SDK install root
         shell: powershell
         run: |
-          $version = (& dotnet --version).Trim()
-          if ($version -ne '10.0.401') { throw "Workflow gate requires .NET SDK 10.0.401; found $version." }
+          $installRoot=Join-Path $env:RUNNER_TEMP 'dotnet'
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Provision repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Verify repository .NET SDK
+        shell: powershell
+        run: .\scripts\ci\Assert-PinnedDotNetSdk.ps1
 
       - name: Run exact repository verification gate
         id: repository_verify
