@@ -129,6 +129,13 @@ public sealed record CatalogBrowseRequest(
     CatalogBrowseMode Mode = CatalogBrowseMode.Trending,
     int Limit = 100);
 
+public sealed record CatalogBrowsePage(
+    IReadOnlyList<CatalogMod> Items,
+    string? NextCursor = null)
+{
+    public bool HasMore => !string.IsNullOrWhiteSpace(NextCursor);
+}
+
 public sealed record CatalogRateLimit(
     int? HourlyLimit,
     int? HourlyRemaining,
@@ -176,6 +183,14 @@ public interface IInstalledCatalogOriginSnapshotProvider
     Task<InstalledCatalogOriginSnapshot> GetInstalledOriginSnapshotAsync(
         GameProfile game,
         string providerModId,
+        CancellationToken ct = default);
+}
+
+public interface IPagedModCatalogProvider
+{
+    Task<CatalogBrowsePage> BrowsePageAsync(
+        CatalogBrowseRequest request,
+        string? cursor = null,
         CancellationToken ct = default);
 }
 
