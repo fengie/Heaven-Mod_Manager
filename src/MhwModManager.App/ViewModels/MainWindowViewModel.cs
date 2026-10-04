@@ -1026,24 +1026,27 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     finally{suppressChanged=false;Changed();}
                 });
 
-                await RefreshAnalysis(ct);
+                // BuildAsync already performed the mandatory final full-plan/dependency invariant.
+                // Do not immediately rebuild the same analysis here: Apply owns the authoritative
+                // current-state re-plan immediately before any game-file mutation.
                 StatusText=result.Summary+" Applying the safe setup now…";
                 await s.Timeline.RecordAsync(
                     "mods.auto-populate",
                     AutomationSeverity.Info,
                     result.Summary,
-                    new{result.EnabledMods,result.SkippedConflicts,result.SkippedRequirements},
+                    new
+                    {
+                        result.EnabledMods,
+                        result.SkippedConflicts,
+                        result.SkippedRequirements,
+                        result.PlannerPasses,
+                        result.PlannerFastPathCandidates,
+                        result.PlannerMilliseconds
+                    },
                     ct);
             });
 
         if(result is null)return;
-        if(BlockerCount>0)
-        {
-            StatusText="Auto Populate stopped because the final setup still needs a conflict choice. Nothing was applied.";
-            SelectedTab=3;
-            return;
-        }
-
         if(StagedCount>0)await Apply();
         if(StagedCount==0&&BlockerCount==0)
             StatusText=result.Summary+" The setup is applied and ready to launch.";
