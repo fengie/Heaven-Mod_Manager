@@ -473,6 +473,83 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.Contains(plugin.Missing, x => x.Contains("mix bootstrap binaries", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData(8)]
+    [InlineData(64)]
+    [InlineData(256)]
+    public async Task SparseLibrariesUseOneFullPlannerPassRegardlessOfLibrarySize(int modCount)
+    {
+        var db = await CreateDbAsync($"sparse-perf-{modCount}.db");
+        var gameRoot = Path.Combine(root, $"game-sparse-perf-{modCount}");
+        Directory.CreateDirectory(gameRoot);
+
+        for (var i = 0; i < modCount; i++)
+        {
+            var id = $"isolated-{i:D4}";
+            await AddModAsync(db, id, $"Isolated {i:D4}", modCount - i);
+            await db.ReplaceModFilesAsync(
+                id,
+                [ModFile(id, $@"nativePC\perf\{id}\payload.bin", $"hash-{i:D4}", FileClass.GameData)],
+                TestContext.Current.CancellationToken);
+        }
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(modCount, result.EnabledMods);
+        Assert.Equal(modCount, result.PlannerFastPathCandidates);
+        Assert.Equal(1, result.PlannerPasses);
+        Assert.True(result.PlannerMilliseconds >= 0);
+        Assert.Contains("used 1 full planner pass", result.Summary, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task DisjointExplicitIncompatibilityStillFallsBackToPlannerAndSkipsCandidate()
+    {
+        var db = await CreateDbAsync("disjoint-rule-perf.db");
+        var gameRoot = Path.Combine(root, "game-disjoint-rule-perf");
+        Directory.CreateDirectory(gameRoot);
+
+        await AddModAsync(db, "preferred", "Preferred", 100);
+        await AddModAsync(db, "incompatible", "Incompatible", 90);
+        await db.ReplaceModFilesAsync(
+            "preferred",
+            [ModFile("preferred", @"nativePC\perf\preferred.bin", "preferred", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+        await db.ReplaceModFilesAsync(
+            "incompatible",
+            [ModFile("incompatible", @"nativePC\perf\incompatible.bin", "incompatible", FileClass.GameData)],
+            TestContext.Current.CancellationToken);
+        await db.ExecuteAsync(
+            """
+            INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at)
+            VALUES('disjoint-incompatible','Incompatible','ModPair','preferred','incompatible',NULL,NULL,'Explicit incompatibility',1,$t)
+            """,
+            new Dictionary<string,object?>
+            {
+                ["$t"] = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture)
+            },
+            TestContext.Current.CancellationToken);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(["preferred"], TestContext.Current.CancellationToken);
+
+        Assert.True(result.State["preferred"].Enabled);
+        Assert.False(result.State["incompatible"].Enabled);
+        Assert.Equal(0, result.PlannerFastPathCandidates);
+        Assert.True(result.PlannerPasses >= 3);
+    }
+
     private async Task<ManagerDatabase> CreateDbAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));

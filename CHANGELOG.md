@@ -1,3 +1,11 @@
+# v8.8.94 — 2026-10-04
+
+- Bound Auto Populate full-plan work for sparse libraries by accepting only provably isolated candidate closures without a per-candidate planner rebuild; exact-path, file/directory topology, explicit pair-rule, and MHW atomic structural-bundle interactions retain the existing full-planner fallback.
+- Preserve safety with a mandatory final full deployment plan and dependency validation, while reusing that final plan rather than rebuilding it again solely for the invariant.
+- Record Auto Populate planner-pass count, isolated fast-path count, and planner milliseconds in the result/timeline for observable performance evidence.
+- Remove the duplicate full Mod Library analysis immediately before Apply; Apply remains the authoritative current-state planner/dependency preflight before mutation.
+- Add deterministic 8/64/256-mod sparse-library regression cases proving one full planner pass independent of library size, plus explicit-incompatibility fallback coverage.
+
 # v8.8.93 — 2026-10-04
 
 - Bound updater transaction retention for already-proven Confirmed/RolledBack recovery generations to the two newest entries, reclaiming excess recent terminal history instead of waiting only on the age grace period.
