@@ -419,7 +419,8 @@ jobs:
           $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
           $closurePath = "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v$version.log"
           $canonicalClosurePath = $closurePath.Replace('\','/')
-          if ($canonicalClosurePath -notmatch '^_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v\d+\.\d+\.\d+\.log            ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
+          if ($canonicalClosurePath -notmatch '^_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v\d+\.\d+\.\d+\.log
+            ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
             ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
             ('evidence_sha256=' + $evidenceHash)
@@ -448,7 +449,8 @@ jobs:
           }
 
           $stagedStatus = @(& git diff --cached --name-status)
-          if ($LASTEXITCODE -ne 0 -or $stagedStatus.Count -ne 1 -or $stagedStatus[0] -notmatch ("^[AM]`t" + [regex]::Escape($canonicalClosurePath) + '          if ($LASTEXITCODE -ne 0) {
+          if ($LASTEXITCODE -ne 0 -or $stagedStatus.Count -ne 1 -or $stagedStatus[0] -notmatch ("^[AM]`t" + [regex]::Escape($canonicalClosurePath) + '
+          if ($LASTEXITCODE -ne 0) {
             git fetch origin main
             if ($LASTEXITCODE -ne 0) {
               throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
