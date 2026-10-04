@@ -184,6 +184,40 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
     }
 
     [Fact]
+    public async Task Cleanup_bounds_recent_terminal_generations_but_preserves_newest_recovery_history()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var terminals = Enumerable.Range(0, 4)
+            .Select(index => CreateTransaction(
+                200 + index,
+                index % 2 == 0
+                    ? UpdateJournalPhase.Confirmed
+                    : UpdateJournalPhase.RolledBack,
+                now - TimeSpan.FromMinutes(20 - index),
+                legacyName: false))
+            .ToArray();
+        var recovery = CreateTransaction(
+            199,
+            UpdateJournalPhase.RollbackRequired,
+            now - TimeSpan.FromMinutes(30),
+            legacyName: false);
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            CancellationToken.None);
+
+        Assert.False(Directory.Exists(terminals[0]));
+        Assert.False(Directory.Exists(terminals[1]));
+        Assert.True(Directory.Exists(terminals[2]));
+        Assert.True(Directory.Exists(terminals[3]));
+        Assert.True(Directory.Exists(recovery));
+        Assert.Equal(2, result.DeletedTransactions);
+    }
+
+    [Fact]
     public async Task Cleanup_preserves_old_prepared_transaction_while_recorded_owner_is_alive()
     {
         var now = DateTimeOffset.UtcNow;
