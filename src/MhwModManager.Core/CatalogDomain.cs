@@ -133,7 +133,14 @@ public sealed record CatalogBrowsePage(
     IReadOnlyList<CatalogMod> Items,
     string? NextCursor = null)
 {
-    public bool HasMore => !string.IsNullOrWhiteSpace(NextCursor);
+    public bool HasMore
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return !string.IsNullOrWhiteSpace(NextCursor);
+        }
+    }
 }
 
 public sealed record CatalogRateLimit(
