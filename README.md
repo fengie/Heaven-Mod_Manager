@@ -1,10 +1,17 @@
-# v8.8.93 — MHW Manual Mod Manager
+# v8.8.94 — MHW Manual Mod Manager
 
-Current product version: **8.8.93**.
+Current product version: **8.8.94**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.94 — bounded Auto Populate planning
+
+- Make Auto Populate accept provably isolated dependency closures without rebuilding the full deployment plan for every candidate; exact-path, file/directory topology, explicit pair-rule, and MHW atomic-structural-bundle interactions still fall back to the authoritative planner.
+- Keep one mandatory final full-plan plus dependency invariant before returning a proposed setup, and instrument full planner passes, isolated fast-path candidates, and planner milliseconds in automation timeline evidence.
+- Remove the redundant Mod Library analysis rebuild immediately before Apply; Apply still performs the authoritative current-state plan/dependency preflight before any game-file mutation.
+- Add deterministic sparse-library regression cases at 8, 64, and 256 mods: the optimized path stays at one full planner pass instead of the prior candidate-by-candidate N+3 planner shape, plus a disjoint explicit-incompatibility fallback regression.
 
 ## v8.8.93 — bounded updater recovery generations
 
@@ -18,14 +25,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Reuse the existing ownership, lease/liveness, age/quota, unknown-file, and reparse-point safety boundaries instead of adding a broader deletion heuristic.
 - Report total, updater, and catalog-scratch reclaimed bytes plus deleted/deferred entry counts while continuing to preserve Mods, State, active work, ambiguous ownership, and unknown paths.
 - Add UI/binding regression coverage so the visible action remains an explicit manager-owned disposable-storage boundary.
-
-## v8.8.91 — bounded catalog + updater scratch ownership
-
-- Add owner leases for catalog acquisition scratch downloads and reclaim only manager-owned residue whose owner is proven exited, with age and byte-quota bounds.
-- Require new prepared updater transaction leases to carry certified PID + process-start identity; legacy missing-start leases become reclaimable only after the PID exits, while live or ambiguous owners remain preserved.
-- Reclaim abandoned temporary lease files without traversing reparse points, keep unknown/unleased files fail-closed, and add deterministic liveness, quota, cleanup, and updater-handoff regressions.
-- Make Mod Library bulk scope explicit and count-aware; disable visible bulk actions when no rows are visible, and make Refresh Visible target every member of every currently visible row, including disabled and partially enabled composites.
-- Carry the post-#706 residual catalog synchronization, migration/rules, and catalog regression coverage consolidated through #730 into the same v8.8.91 release boundary.
 
 ## Current plans & progress
 
