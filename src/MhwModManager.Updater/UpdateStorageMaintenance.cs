@@ -11,6 +11,7 @@ public sealed record UpdateStorageCleanupResult(
 public static class UpdateStorageMaintenance
 {
     public static readonly TimeSpan DefaultMinimumAge = TimeSpan.FromHours(1);
+    public const int DefaultMaxTerminalTransactions = 2;
 
     public static Task<UpdateStorageCleanupResult> RunAsync(
         Action<string>? log,
@@ -278,6 +279,12 @@ public static class UpdateStorageMaintenance
             }
         }
 
+        deletedTransactions += await ReclaimExcessTerminalTransactionsAsync(
+            fullRoot,
+            DefaultMaxTerminalTransactions,
+            log,
+            ct);
+
         if (deletedStaging > 0 || deletedTransactions > 0)
             log?.Invoke(
                 $"update storage cleanup completed staging={deletedStaging} transactions={deletedTransactions} deferred={deferred}");
@@ -286,6 +293,88 @@ public static class UpdateStorageMaintenance
             deletedStaging,
             deletedTransactions,
             deferred);
+    }
+
+    private static async Task<int> ReclaimExcessTerminalTransactionsAsync(
+        string updaterRoot,
+        int maxRetained,
+        Action<string>? log,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"maxRetained={maxRetained}");
+        if (maxRetained < 0)
+            throw new ArgumentOutOfRangeException(nameof(maxRetained));
+
+        var transactionsRoot = Path.Combine(updaterRoot, "transactions");
+        if (!Directory.Exists(transactionsRoot))
+            return 0;
+
+        var terminal = new List<(string Path, DateTimeOffset NewestWriteUtc)>();
+        foreach (var transaction in Directory.EnumerateDirectories(
+                     transactionsRoot,
+                     "*",
+                     SearchOption.TopDirectoryOnly))
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                if (!TryParseTransactionBuild(Path.GetFileName(transaction), out var transactionBuild))
+                    continue;
+
+                var journalPath = Path.Combine(transaction, "journal.json");
+                if (!File.Exists(journalPath))
+                    continue;
+
+                UpdatePathSafety.EnsureExistingComponentsNotReparse(updaterRoot, journalPath);
+                var journal = JsonSerializer.Deserialize<UpdateJournal>(
+                                  await File.ReadAllTextAsync(journalPath, ct),
+                                  UpdateProtocol.Json)
+                              ?? throw new InvalidDataException("Updater recovery journal is empty.");
+                if (journal.TargetBuildNumber != transactionBuild
+                    || journal.Phase is not (
+                        UpdateJournalPhase.Confirmed
+                            or UpdateJournalPhase.RolledBack))
+                    continue;
+
+                terminal.Add((
+                    transaction,
+                    InspectSafeTreeNewestWriteUtc(updaterRoot, transaction, ct)));
+            }
+            catch (Exception ex) when (
+                ex is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException
+                    or JsonException)
+            {
+                log?.Invoke(
+                    $"update storage generation cap preserved transaction={Path.GetFileName(transaction)} type={ex.GetType().Name}");
+            }
+        }
+
+        var deleted = 0;
+        foreach (var candidate in terminal
+                     .OrderByDescending(x => x.NewestWriteUtc)
+                     .Skip(maxRetained))
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                DeleteSafeTree(updaterRoot, candidate.Path, ct);
+                deleted++;
+                log?.Invoke(
+                    $"update storage generation cap removed excess terminal transaction={Path.GetFileName(candidate.Path)}");
+            }
+            catch (Exception ex) when (
+                ex is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException)
+            {
+                log?.Invoke(
+                    $"update storage generation cap preserved transaction={Path.GetFileName(candidate.Path)} type={ex.GetType().Name}");
+            }
+        }
+
+        return deleted;
     }
 
     public static bool DeleteConfirmedStagingBestEffort(

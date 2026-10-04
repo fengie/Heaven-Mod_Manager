@@ -1,10 +1,16 @@
-# v8.8.92 — MHW Manual Mod Manager
+# v8.8.93 — MHW Manual Mod Manager
 
-Current product version: **8.8.92**.
+Current product version: **8.8.93**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.93 — bounded updater recovery generations
+
+- Bound already-terminal updater recovery history to the two newest Confirmed/RolledBack transaction generations so repeated successful updates cannot grow terminal recovery storage without limit.
+- Preserve live/nonterminal recovery, prepared transactions, malformed or unknown state, reparse paths, Mods, State, and ambiguous ownership fail-closed; only proven terminal generations beyond the retention cap are reclaimed.
+- Add deterministic integration coverage with four recent terminal generations plus a RollbackRequired generation, and keep function-verifier tracing on the new cleanup boundary.
 
 ## v8.8.92 — unified disposable storage reclaim
 
@@ -21,14 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Make Mod Library bulk scope explicit and count-aware; disable visible bulk actions when no rows are visible, and make Refresh Visible target every member of every currently visible row, including disabled and partially enabled composites.
 - Carry the post-#706 residual catalog synchronization, migration/rules, and catalog regression coverage consolidated through #730 into the same v8.8.91 release boundary.
 
-## v8.8.90 — byte stability + CI reliability
-
-- Re-certify authoritative file hashes with a second SHA-256 read before accepting the result, closing equal-length/restored-timestamp mutation races.
-- Re-certify blob-capture source bytes before CAS publication or database registration so a torn source cannot be certified by metadata alone.
-- Keep non-authoritative XXH3 hashing single-pass and add deterministic mutation, stable-hash, cancellation, and no-publication regressions.
-- Isolate pinned .NET SDK provisioning per workflow run/attempt/job so stale self-hosted runner state cannot masquerade as a valid install, and mechanically reject the former shared `RUNNER_TEMP\dotnet` root.
-- Make function-verification persistence idempotent: unchanged function/source state keeps existing confirmation timestamps and bytes, while real fingerprint or version changes refresh evidence.
-
 ## Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
@@ -44,7 +42,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **CI-675 / P1** — v8.8.85 separates feature-candidate verification from canonical release metadata while preserving full exact-main release and publication checks.
 - [x] **RELEASE-RACE-682 / P0** — v8.8.85 source `271b9d8d` makes the public updater publisher's terminal outcome authoritative for canonical publication/parity gating.
 - [x] **FILESYSTEM-HARDENING-673/676 / P0** — v8.8.86 makes unmanaged adoption invocation-owned/hash-certified and rejects descendant reparse topology at import publication and destructive cleanup boundaries.
-- [ ] **UPDATER-STORAGE-669 / P0** — v8.8.91 closes catalog scratch ownership/quota and prepared-updater lease recovery; v8.8.92 unifies the user-facing reclaim action across updater and leased catalog scratch while preserving durable/unknown data. Broader generation/content-reuse policy remains tracked by issue #669.
+- [ ] **UPDATER-STORAGE-669 / P0** — v8.8.93 now bounds retained proven-terminal updater recovery generations to the two newest while preserving nonterminal/ambiguous state; broader lifecycle/generation bounds and immutable-content reuse remain tracked by issue #669.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **COMPLIANCE-710 / P1** — v8.8.89 adds the native-app privacy/legal/data-control baseline, completes current image automation names, and regression-checks package notices, keyboard focus/navigation, and WCAG AA core palette contrast.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
