@@ -9,7 +9,7 @@ public sealed record CurseForgeCatalogGameSource(
     string GameDisplayName,
     int CurseForgeGameId);
 
-public sealed class CurseForgeCatalogProvider : IModCatalogProvider
+public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCatalogProvider
 {
     private readonly CurseForgeTransport transport;
     private readonly CurseForgeCatalogGameSource[] sources;
@@ -134,6 +134,47 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
 
             MarkConnected();
             return result;
+        }
+        catch (Exception ex)
+        {
+            TrackFailure(ex, ct);
+            throw;
+        }
+    }
+
+    public async Task<CatalogBrowsePage> BrowsePageAsync(
+        CatalogBrowseRequest request,
+        string? cursor = null,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(request);
+        CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(DateTime.UtcNow));
+        var source = RequireSource(request.Game);
+        var pageSize = Math.Clamp(request.Limit, 1, 50);
+        var index = ParseCursor(cursor);
+        var sortField = request.Mode switch
+        {
+            CatalogBrowseMode.Trending => 2,
+            CatalogBrowseMode.Popular => 6,
+            CatalogBrowseMode.RecentlyUpdated => 3,
+            CatalogBrowseMode.Latest => 11,
+            _ => throw new NotSupportedException($"CurseForge browse mode '{request.Mode}' is unsupported.")
+        };
+
+        try
+        {
+            using var response = await transport.SearchModsAsync(
+                source.CurseForgeGameId,
+                request.Query,
+                sortField,
+                index,
+                pageSize,
+                ct).ConfigureAwait(false);
+            var items = NormalizeModList(response.Document, request.Game, source.CurseForgeGameId);
+            var nextCursor = ReadNextCursor(response.Document, index, items.Length);
+            MarkConnected();
+            return new CatalogBrowsePage(items, nextCursor);
         }
         catch (Exception ex)
         {
@@ -278,6 +319,32 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
             GameId = source.GameId.Trim(),
             GameDisplayName = source.GameDisplayName.Trim()
         };
+    }
+
+    private static int ParseCursor(string? cursor)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(cursor)) return 0;
+        if (!int.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var index) || index < 0)
+            throw new ArgumentException("CurseForge continuation cursor must be a non-negative integer.", nameof(cursor));
+        return index;
+    }
+
+    private static string? ReadNextCursor(JsonDocument document, int requestedIndex, int resultCount)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!document.RootElement.TryGetProperty("pagination", out var pagination)
+            || pagination.ValueKind != JsonValueKind.Object)
+            return resultCount == 0
+                ? null
+                : checked(requestedIndex + resultCount).ToString(CultureInfo.InvariantCulture);
+
+        var index = ReadOptionalInt64(pagination, "index") ?? requestedIndex;
+        var returned = ReadOptionalInt64(pagination, "resultCount") ?? resultCount;
+        var total = ReadOptionalInt64(pagination, "totalCount");
+        var next = checked(index + returned);
+        if (next < 0 || total is not null && next >= total.Value) return null;
+        return next.ToString(CultureInfo.InvariantCulture);
     }
 
     private static long ParsePositiveId(string value, string parameterName)
