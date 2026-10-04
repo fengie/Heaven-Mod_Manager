@@ -15,9 +15,9 @@ Primary open performance issue: #735
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.94 source `c8465fc28c48878ae9efc57b417493a3e9285b5a` passed run `37215524276` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.94 source `2311b658762c8fe51c21919926fdabc870147a0e` passed run `37230142789` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log`.
 
-The tested source remains `c8465fc28c48878ae9efc57b417493a3e9285b5a` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `2311b658762c8fe51c21919926fdabc870147a0e` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk
 
