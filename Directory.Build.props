@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.92</Version>
-    <InformationalVersion>8.8.92-unified-disposable-storage-reclaim</InformationalVersion>
+    <Version>8.8.94</Version>
+    <InformationalVersion>8.8.94-bounded-auto-populate-planning</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
