@@ -1,3 +1,9 @@
+# v8.8.93 — 2026-10-04
+
+- Bound updater transaction retention for already-proven Confirmed/RolledBack recovery generations to the two newest entries, reclaiming excess recent terminal history instead of waiting only on the age grace period.
+- Preserve RollbackRequired/nonterminal recovery, prepared transactions, malformed or unknown state, reparse paths, Mods, State, and other ambiguous ownership fail-closed.
+- Add deterministic integration coverage for four recent terminal generations plus active recovery and keep the new cleanup helper inside function-verifier trace coverage.
+
 # v8.8.92 — 2026-10-03
 
 - Expand the Settings storage reclaim action from updater-only cleanup to both updater-owned staging/recovery residue and manager-owned catalog-download scratch.
