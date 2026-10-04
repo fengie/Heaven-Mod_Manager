@@ -60,9 +60,10 @@ public sealed class CurseForgeCatalogProviderTests
         var indexes = new List<int>();
         var handler = new RoutingHandler((request, _) =>
         {
-            var query = System.Web.HttpUtility.ParseQueryString(request.RequestUri?.Query ?? string.Empty);
-            indexes.Add(int.Parse(query["index"] ?? "0", System.Globalization.CultureInfo.InvariantCulture));
-            var index = indexes[^1];
+            var expectedIndex = indexes.Count;
+            Assert.Contains($"index={expectedIndex}", request.RequestUri?.Query ?? string.Empty, StringComparison.Ordinal);
+            indexes.Add(expectedIndex);
+            var index = expectedIndex;
             var json = ReadFixture("search.json")
                 .Replace("\"index\": 0", $"\"index\": {index}", StringComparison.Ordinal)
                 .Replace("\"totalCount\": 1", "\"totalCount\": 2", StringComparison.Ordinal);
