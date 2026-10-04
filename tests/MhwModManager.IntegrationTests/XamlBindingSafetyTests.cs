@@ -176,6 +176,12 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("private const int CatalogVisibleResultLimit = 1000;", source);
         Assert.Contains("Limit: CatalogProviderRefreshLimit", source);
         Assert.Contains("limit: CatalogVisibleResultLimit", source);
+        Assert.Contains("Command=\"{Binding LoadMoreCatalogCommand}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding CatalogLoadMoreVisibility}\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Load more provider browse results\"", xaml);
+        Assert.Contains("private async Task LoadMoreCatalog()", source);
+        Assert.Contains("SyncNextPageAsync(", source);
+        Assert.Contains("catalogSyncGate.WaitAsync(ct)", source);
         Assert.Contains("public Uri? ThumbnailUri", source);
         Assert.Contains("Uri.UriSchemeHttps", source);
     }
