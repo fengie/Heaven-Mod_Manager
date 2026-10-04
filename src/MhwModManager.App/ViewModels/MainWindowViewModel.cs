@@ -1058,6 +1058,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         Func<CancellationToken,Task<T>> build,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(build);
         return Task.Run(()=>build(ct),ct);
     }

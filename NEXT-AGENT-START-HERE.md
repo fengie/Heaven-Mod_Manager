@@ -18,7 +18,7 @@ The last fully released source remains v8.8.94 `c8465fc28c48878ae9efc57b417493a3
 
 Any v8.8.95 source candidate requires fresh exact-head verification. Do not inherit v8.8.94 release evidence as proof for the new source.
 
-## #735 acceptance state
+## #735 acceptance state and unresolved risk
 
 - Sparse service-level Auto Populate is materially improved versus the pre-v8.8.94 baseline: the recorded 256×100 sparse median improved from about 9169 ms to about 282 ms with one full planner pass.
 - The measured remaining responsiveness bottleneck is Dispatcher occupancy during `BuildAsync`; prior STA/WPF probes recorded roughly 376–458 ms max callback stalls direct versus roughly 0.6–5.8 ms with experimental offload.
