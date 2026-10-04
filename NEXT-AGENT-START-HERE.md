@@ -1,8 +1,8 @@
 # v8.8.94 bounded Auto Populate planning — handoff
 
-Canonical repository: `fengie/mhw-mods`  
-Global bootstrap/training: `fengie/heaven-toolbox@main`  
-Canonical target branch: `main`  
+Canonical repository: `fengie/mhw-mods`
+Global bootstrap/training: `fengie/heaven-toolbox@main`
+Canonical target branch: `main`
 Primary open performance issue: #735
 
 ## v8.8.94 behavior
