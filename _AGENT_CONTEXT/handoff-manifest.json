@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.95",
+  "currentVersion": "8.8.96",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.95 advances the fully closed v8.8.94 baseline with the measured #735 Dispatcher-responsiveness slice: only pure AutoPopulateService.BuildAsync is offloaded, while preference capture, RunBusy ownership, Dispatcher staging, cancellation, final dependency validation, and Apply re-plan/mutation semantics are preserved. Fresh exact-main Windows verification is required after integration before release closure.",
+  "immediateParentRevision": "v8.8.96 advances the closed v8.8.95 baseline with the bounded #558 continuation tranche: optional paged-provider contracts, exact GameBanana page/offset resume, post-write cursor advancement, failed-page retry preservation, and serialized Browse Mods Load More. Broader multi-provider scale/performance acceptance remains open.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, Auto Populate dependency/conflict/override safety, updater publication/parity/provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification and installed-client release closure for exact v8.8.95; keep #735 open until real installed enable/disable + Auto Populate UI/persistence timing and responsiveness-budget evidence satisfy its remaining acceptance criteria; then propagate this obligation recursively.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, catalog continuation retry/no-skip semantics, Auto Populate dependency/conflict/override safety, updater publication/parity/provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification for exact v8.8.96; keep #558 open until broader multi-provider scale/performance acceptance is evidenced and keep #735 open until its installed timing/responsiveness acceptance is evidenced; then propagate this obligation recursively.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

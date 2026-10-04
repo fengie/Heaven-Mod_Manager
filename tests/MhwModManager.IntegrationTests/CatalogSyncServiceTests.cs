@@ -153,6 +153,124 @@ public sealed class CatalogSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Paged_sync_persists_cursor_and_resumes_without_restarting_provider()
+    {
+        var repository = await CreateRepositoryAsync("paged-resume");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 40, 0, TimeSpan.Zero);
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = cursor => cursor switch
+            {
+                null => new CatalogBrowsePage([CreateMod("fixture", "mod-1")], "cursor-2"),
+                "cursor-2" => new CatalogBrowsePage([CreateMod("fixture", "mod-2")]),
+                _ => throw new InvalidDataException($"Unexpected cursor '{cursor}'.")
+            }
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-paged-resume"));
+        var service = new CatalogSyncService(repository, new FixedTimeProvider(now));
+        var request = new CatalogBrowseRequest(game);
+
+        var first = await service.SyncAsync(
+            provider,
+            request,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+
+        Assert.True(first.HasMore);
+        Assert.Equal("cursor-2", first.NextCursor);
+        var state = await repository.GetSyncStateAsync("fixture", first.ScopeKey, TestToken);
+        Assert.Equal("cursor-2", state?.Cursor);
+
+        var second = await service.SyncNextPageAsync(
+            provider,
+            request,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+
+        Assert.False(second.HasMore);
+        Assert.Null(second.NextCursor);
+        Assert.Equal("cursor-2", provider.LastCursor);
+        Assert.Equal(2, provider.BrowsePageCalls);
+        Assert.NotNull(await repository.GetAsync("fixture:mod-1", TestToken));
+        Assert.NotNull(await repository.GetAsync("fixture:mod-2", TestToken));
+
+        state = await repository.GetSyncStateAsync("fixture", first.ScopeKey, TestToken);
+        Assert.NotNull(state);
+        Assert.Null(state!.Cursor);
+        Assert.Equal(CatalogSyncFailureKind.None, state.LastFailureKind);
+    }
+
+    [Fact]
+    public async Task Failed_next_page_preserves_previous_cursor_for_retry()
+    {
+        var repository = await CreateRepositoryAsync("paged-failure");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 45, 0, TimeSpan.Zero);
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = cursor =>
+                new CatalogBrowsePage([CreateMod("fixture", "mod-1")], "cursor-2")
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-paged-failure"));
+        var service = new CatalogSyncService(repository, new FixedTimeProvider(now));
+        var request = new CatalogBrowseRequest(game);
+
+        var first = await service.SyncAsync(
+            provider,
+            request,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+        Assert.Equal("cursor-2", first.NextCursor);
+
+        provider.SearchException = new HttpRequestException("continuation offline");
+        provider.Health = new CatalogProviderHealth(
+            "fixture",
+            CatalogProviderState.Offline,
+            "Fixture provider offline.",
+            CheckedAt: now.AddMinutes(1));
+
+        await Assert.ThrowsAsync<HttpRequestException>(() =>
+            service.SyncNextPageAsync(
+                provider,
+                request,
+                new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+                TestToken));
+
+        var state = await repository.GetSyncStateAsync("fixture", first.ScopeKey, TestToken);
+        Assert.NotNull(state);
+        Assert.Equal("cursor-2", state!.Cursor);
+        Assert.Equal(CatalogSyncFailureKind.Offline, state.LastFailureKind);
+    }
+
+    [Fact]
+    public async Task Next_page_without_saved_cursor_is_local_noop()
+    {
+        var repository = await CreateRepositoryAsync("paged-exhausted");
+        var now = new DateTimeOffset(2026, 9, 30, 4, 50, 0, TimeSpan.Zero);
+        var provider = new FakeProvider();
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-paged-exhausted"));
+        var service = new CatalogSyncService(repository, new FixedTimeProvider(now));
+        var request = new CatalogBrowseRequest(game);
+
+        var first = await service.SyncAsync(
+            provider,
+            request,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+        Assert.False(first.HasMore);
+        Assert.Equal(1, provider.BrowsePageCalls);
+
+        var next = await service.SyncNextPageAsync(
+            provider,
+            request,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(0, next.ItemCount);
+        Assert.False(next.HasMore);
+        Assert.Equal(1, provider.BrowsePageCalls);
+    }
+
+    [Fact]
     public async Task Provider_failure_preserves_existing_cache_and_records_failure()
     {
         var repository = await CreateRepositoryAsync("stale-preserved");
@@ -247,7 +365,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
         public void SetUtcNow(DateTimeOffset next) => value = next;
     }
 
-    private sealed class FakeProvider : IModCatalogProvider
+    private sealed class FakeProvider : IModCatalogProvider, IPagedModCatalogProvider
     {
         public string ProviderId => "fixture";
         public string DisplayName => "Fixture Catalog";
@@ -264,6 +382,12 @@ public sealed class CatalogSyncServiceTests : IDisposable
             [CreateMod("fixture", "mod-1")];
 
         public Exception? SearchException { get; set; }
+
+        public Func<string?, CatalogBrowsePage>? BrowsePageFactory { get; set; }
+
+        public int BrowsePageCalls { get; private set; }
+
+        public string? LastCursor { get; private set; }
 
         public CatalogProviderHealth Health { get; set; } = new(
             "fixture",
@@ -304,6 +428,22 @@ public sealed class CatalogSyncServiceTests : IDisposable
             if (SearchException is not null)
                 return Task.FromException<IReadOnlyList<CatalogMod>>(SearchException);
             return Task.FromResult(SearchResults);
+        }
+
+        public Task<CatalogBrowsePage> BrowsePageAsync(
+            CatalogBrowseRequest request,
+            string? cursor = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            LastRequest = request;
+            LastCursor = cursor;
+            BrowsePageCalls++;
+            if (SearchException is not null)
+                return Task.FromException<CatalogBrowsePage>(SearchException);
+            return Task.FromResult(
+                BrowsePageFactory?.Invoke(cursor)
+                ?? new CatalogBrowsePage(SearchResults));
         }
 
         public Task<CatalogMod?> GetModAsync(

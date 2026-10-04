@@ -4,10 +4,11 @@ namespace MhwModManager.Core;
 
 public sealed class GameBananaCatalogProvider :
     IModCatalogProvider,
+    IPagedModCatalogProvider,
     IInstalledCatalogOriginSnapshotProvider
 {
     private const int MaxBrowseLimit = 100;
-    private const int MaxBrowsePages = 10;
+    private const int MaxBrowsePagesPerRequest = 10;
     private const int MaxConcurrentDetailRequests = 4;
 
     private readonly GameBananaTransport transport;
@@ -84,6 +85,16 @@ public sealed class GameBananaCatalogProvider :
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var page = await BrowsePageAsync(request, cursor: null, ct).ConfigureAwait(false);
+        return page.Items;
+    }
+
+    public async Task<CatalogBrowsePage> BrowsePageAsync(
+        CatalogBrowseRequest request,
+        string? cursor = null,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(request);
         if (!string.IsNullOrWhiteSpace(request.Query))
             throw new NotSupportedException("GameBanana full-text catalog search is not implemented by this adapter.");
@@ -98,36 +109,117 @@ public sealed class GameBananaCatalogProvider :
 
         var gameId = RequireGameId(request.Game);
         var limit = Math.Clamp(request.Limit, 1, MaxBrowseLimit);
+        var (page, offset) = ParseBrowseCursor(cursor);
 
         try
         {
             var result = new List<CatalogMod>(limit);
             var seen = new HashSet<string>(StringComparer.Ordinal);
+            var fetchedPages = 0;
+            string? nextCursor = null;
+            var exhausted = false;
 
-            for (var page = 1; page <= MaxBrowsePages && result.Count < limit; page++)
+            while (fetchedPages < MaxBrowsePagesPerRequest && result.Count < limit)
             {
+                ct.ThrowIfCancellationRequested();
                 using var listResponse = await transport
                     .GetNewModsAsync(gameId, page, includeUpdated, ct)
                     .ConfigureAwait(false);
-                var ids = GameBananaCatalogNormalizer.NormalizeNewModIds(listResponse.Document);
-                if (ids.Count == 0) break;
+                fetchedPages++;
 
-                var pageIds = ids
-                    .Where(providerModId => seen.Add(providerModId))
-                    .Take(limit - result.Count)
-                    .ToArray();
-                var hydrated = await HydrateModsAsync(request.Game, pageIds, ct).ConfigureAwait(false);
-                result.AddRange(hydrated);
+                var ids = GameBananaCatalogNormalizer.NormalizeNewModIds(listResponse.Document);
+                if (ids.Count == 0)
+                {
+                    exhausted = true;
+                    break;
+                }
+
+                if (offset > ids.Count)
+                    throw new InvalidDataException(
+                        "The saved GameBanana continuation no longer matches the provider page. Refresh providers to restart browsing.");
+
+                var pageIds = new List<string>(Math.Min(ids.Count - offset, limit - result.Count));
+                var index = offset;
+                while (index < ids.Count && result.Count + pageIds.Count < limit)
+                {
+                    var providerModId = ids[index++];
+                    if (seen.Add(providerModId))
+                        pageIds.Add(providerModId);
+                }
+
+                if (pageIds.Count > 0)
+                {
+                    var hydrated = await HydrateModsAsync(
+                        request.Game,
+                        pageIds.ToArray(),
+                        ct).ConfigureAwait(false);
+                    result.AddRange(hydrated);
+                }
+
+                if (index < ids.Count)
+                {
+                    nextCursor = FormatBrowseCursor(page, index);
+                    break;
+                }
+
+                page++;
+                offset = 0;
+                if (result.Count >= limit)
+                {
+                    nextCursor = FormatBrowseCursor(page, 0);
+                    break;
+                }
             }
 
+            if (!exhausted && nextCursor is null && fetchedPages >= MaxBrowsePagesPerRequest)
+                nextCursor = FormatBrowseCursor(page, 0);
+
             MarkConnected();
-            return result;
+            return new CatalogBrowsePage(result, nextCursor);
         }
         catch (Exception ex)
         {
             TrackFailure(ex, ct);
             throw;
         }
+    }
+
+    private static (int Page, int Offset) ParseBrowseCursor(string? cursor)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(cursor))
+            return (1, 0);
+
+        var parts = cursor.Split(':', StringSplitOptions.None);
+        if (parts.Length != 3
+            || !string.Equals(parts[0], "v1", StringComparison.Ordinal)
+            || !int.TryParse(
+                parts[1],
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var page)
+            || page <= 0
+            || !int.TryParse(
+                parts[2],
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var offset)
+            || offset < 0)
+        {
+            throw new ArgumentException(
+                "GameBanana browse continuation is invalid.",
+                nameof(cursor));
+        }
+
+        return (page, offset);
+    }
+
+    private static string FormatBrowseCursor(int page, int offset)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return string.Create(
+            System.Globalization.CultureInfo.InvariantCulture,
+            $"v1:{page}:{offset}");
     }
 
     private async Task<IReadOnlyList<CatalogMod>> HydrateModsAsync(

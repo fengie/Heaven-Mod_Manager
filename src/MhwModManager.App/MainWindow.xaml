@@ -1060,6 +1060,12 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Check Installed Origins" Command="{Binding CheckCatalogUpdatesCommand}" Style="{StaticResource QuietButton}"/>
+                            <Button Content="Load More"
+                                    Command="{Binding LoadMoreCatalogCommand}"
+                                    Visibility="{Binding CatalogLoadMoreVisibility}"
+                                    AutomationProperties.Name="Load more provider browse results"
+                                    ToolTip="Resume supported provider browse pages from the last successfully persisted continuation."
+                                    Style="{StaticResource QuietButton}"/>
                             <Button Content="Refresh Providers" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}"/>
                         </StackPanel>
                     </Grid>

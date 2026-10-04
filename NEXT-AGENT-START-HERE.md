@@ -1,29 +1,34 @@
-# v8.8.95 responsive Auto Populate planning — handoff
+# v8.8.96 resumable Browse Mods pagination — handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
-Primary open performance issue: #735
+Primary active catalog issue: #558
 
 ## Candidate behavior
 
-- v8.8.94 already bounded sparse Auto Populate planner rebuilds and removed the duplicate pre-Apply analysis.
-- v8.8.95 keeps those planner/dependency/conflict semantics unchanged and moves only the pure `AutoPopulateService.BuildAsync` call off the WPF Dispatcher.
-- Preferred IDs are captured before background execution; `RunBusy` remains the foreground gate; row staging/`Changed` remains Dispatcher-owned; Apply still re-plans and validates current state before game-file mutation.
-- A focused STA/WPF behavioral regression must prove Dispatcher responsiveness during blocked background work; a second regression must prove pre-cancelled execution never enters the worker.
+- v8.8.96 keeps the existing provider-neutral catalog and capability-gated search surface, and adds an optional `IPagedModCatalogProvider` contract rather than forcing unsupported providers to invent pagination.
+- GameBanana browse requests now return opaque resumable page/offset continuations. A result limit reached in the middle of a provider page resumes at the exact remaining ID instead of skipping the rest of that provider page.
+- `CatalogSyncService` writes the next cursor only after every returned item is persisted. A failed continuation preserves the prior cursor so retry repeats safe/idempotent work instead of jumping ahead.
+- Browse Mods exposes **Load More** only when browse-mode continuation exists. It shares `catalogSyncGate` with refresh/search, hides during cached text search, isolates provider failures, and keeps retry available when a continuation fails.
+- Nexus unsupported full-catalog search/browse behavior is unchanged. #558 remains open for broader multi-provider scale/performance acceptance.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.95 source `abc7f64b68849e467b0316daef6aab0306682775` passed run `37236907923` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.95-heaven-windows-closure.log`.
+Last closed hosted-Windows source is v8.8.95 `abc7f64b68849e467b0316daef6aab0306682775`, run `37236907923`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.95-heaven-windows-closure.log`.
 
-The tested source remains `abc7f64b68849e467b0316daef6aab0306682775` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+v8.8.96 changes Core, Storage, WPF/XAML, tests, release metadata, and continuity inputs. It therefore requires fresh exact-final-head PR gates before integration and fresh canonical Windows verification after integration; v8.8.95 evidence must not be inherited as proof for v8.8.96.
 
-## #735 acceptance state and unresolved risk
+## #558 acceptance state and unresolved risk
 
-- Sparse service-level Auto Populate is materially improved versus the pre-v8.8.94 baseline: the recorded 256×100 sparse median improved from about 9169 ms to about 282 ms with one full planner pass.
-- The measured remaining responsiveness bottleneck is Dispatcher occupancy during `BuildAsync`; prior STA/WPF probes recorded roughly 376–458 ms max callback stalls direct versus roughly 0.6–5.8 ms with experimental offload.
-- This v8.8.95 slice addresses that measured bottleneck only. It does **not** by itself close #735.
-- Remaining acceptance requires real installed enable/disable + Auto Populate UI/persistence timing, transitive recomputation evidence, and a durable latency/responsiveness budget.
+- Earlier tranches already delivered capability-gated provider search, larger cache/UI capacity, bounded GameBanana hydration, metadata/file preservation, quota safeguards, single-flight behavior, and 10k-scale virtualization/index coverage.
+- This slice closes the missing durable continuation path for GameBanana and gives users a real Load More action.
+- Remaining #558 work is broader multi-provider pagination/browse expansion, clearer provider/result coverage where needed, and deterministic end-to-end scale/performance acceptance. Do not close #558 from this tranche alone.
+
+## Independent open work
+
+- #735 remains open for real installed enable/disable + Auto Populate UI/persistence timing, transitive recomputation evidence, and a durable latency/responsiveness budget.
+- Preserve all updater, filesystem, conflict/dependency/override, exact SDK, release-provenance, and durable-evidence safety invariants from current canonical main.
 
 ## Execution/offload note
 
@@ -31,10 +36,10 @@ When a callable Heaven/Agent Control execution surface is unavailable in the cur
 
 ## Next action
 
-1. Run exact-head focused/full Windows verification for the v8.8.95 candidate and fix any regression without weakening gates.
-2. Reconcile fresh canonical main, rerun invalidated checks, merge only an exact-green candidate, and verify remote-main tree/readback.
-3. Run the strongest available installed #735 enable/disable + Auto Populate timing probe. Close #735 only if every acceptance criterion is evidenced; otherwise preserve the measured remaining blocker and smallest next slice.
-4. Re-scan open PRs/issues only after #735 is terminal or its remaining live-runtime acceptance is durably handed to a healthy capable owner.
+1. Fix any deterministic exact-head regression on PR #772 without weakening gates.
+2. Reconcile fresh canonical main immediately before integration; merge only the exact final green v8.8.96 head and verify remote-main tree/readback.
+3. Obtain fresh canonical hosted-Windows verification for the integrated v8.8.96 source and persist evidence through the existing trusted path.
+4. Keep #558 open unless its remaining multi-provider scale/performance acceptance is actually evidenced; then select only a non-overlapping next slice.
 
 ## Successor obligation
 

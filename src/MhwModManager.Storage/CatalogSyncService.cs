@@ -16,7 +16,18 @@ public sealed record CatalogSyncResult(
     string ScopeKey,
     int ItemCount,
     DateTimeOffset FetchedAt,
-    CatalogProviderHealth? Health);
+    CatalogProviderHealth? Health,
+    string? NextCursor = null)
+{
+    public bool HasMore
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return !string.IsNullOrWhiteSpace(NextCursor);
+        }
+    }
+}
 
 public sealed class CatalogSyncService
 {
@@ -40,12 +51,74 @@ public sealed class CatalogSyncService
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await SyncPageAsync(
+            provider,
+            request,
+            cursor: null,
+            options,
+            ct).ConfigureAwait(false);
+    }
+
+    public async Task<CatalogSyncResult> SyncNextPageAsync(
+        IModCatalogProvider provider,
+        CatalogBrowseRequest request,
+        CatalogSyncOptions? options = null,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(request);
+        if (provider is not IPagedModCatalogProvider)
+            throw new NotSupportedException(
+                $"Catalog provider '{provider.ProviderId}' does not expose resumable browse pages.");
+
+        options ??= CatalogSyncOptions.Default;
+        ValidateOptions(options);
+        ValidateProviderIdentity(provider);
+
+        var scopeKey = BuildScopeKey(request);
+        var previous = await repository.GetSyncStateAsync(
+            provider.ProviderId,
+            scopeKey,
+            ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(previous?.Cursor))
+        {
+            var now = timeProvider.GetUtcNow();
+            var health = await TryGetHealthAsync(provider, ct).ConfigureAwait(false);
+            return new CatalogSyncResult(
+                provider.ProviderId,
+                scopeKey,
+                0,
+                now,
+                health,
+                NextCursor: null);
+        }
+
+        return await SyncPageAsync(
+            provider,
+            request,
+            previous.Cursor,
+            options,
+            ct).ConfigureAwait(false);
+    }
+
+    private async Task<CatalogSyncResult> SyncPageAsync(
+        IModCatalogProvider provider,
+        CatalogBrowseRequest request,
+        string? cursor,
+        CatalogSyncOptions? options,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(request);
 
         options ??= CatalogSyncOptions.Default;
         ValidateOptions(options);
         ValidateProviderIdentity(provider);
+        if (cursor is not null && provider is not IPagedModCatalogProvider)
+            throw new NotSupportedException(
+                $"Catalog provider '{provider.ProviderId}' does not expose resumable browse pages.");
 
         var attemptedAt = timeProvider.GetUtcNow();
         var scopeKey = BuildScopeKey(request);
@@ -56,11 +129,23 @@ public sealed class CatalogSyncService
 
         try
         {
-            var discovered = await provider.SearchModsAsync(request, ct).ConfigureAwait(false);
+            CatalogBrowsePage page;
+            if (provider is IPagedModCatalogProvider paged)
+            {
+                page = await paged
+                    .BrowsePageAsync(request, cursor, ct)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                var discovered = await provider.SearchModsAsync(request, ct).ConfigureAwait(false);
+                page = new CatalogBrowsePage(discovered);
+            }
+
             var prepared = await PrepareBatchAsync(
                 provider,
                 request,
-                discovered,
+                page.Items,
                 options,
                 attemptedAt,
                 ct).ConfigureAwait(false);
@@ -74,11 +159,14 @@ public sealed class CatalogSyncService
 
             var health = await TryGetHealthAsync(provider, ct).ConfigureAwait(false);
             await PersistRateStateAsync(provider.ProviderId, scopeKey, health, ct).ConfigureAwait(false);
+
+            // Advance continuation only after every item in this page has been persisted.
+            // A failed write therefore leaves the previous cursor available for a safe retry.
             await repository.UpsertSyncStateAsync(
                 new CatalogSyncState(
                     provider.ProviderId,
                     scopeKey,
-                    Cursor: null,
+                    page.NextCursor,
                     LastSuccessAt: attemptedAt,
                     LastAttemptAt: attemptedAt,
                     CatalogSyncFailureKind.None),
@@ -89,7 +177,8 @@ public sealed class CatalogSyncService
                 scopeKey,
                 prepared.Count,
                 attemptedAt,
-                health);
+                health,
+                page.NextCursor);
         }
         catch (Exception ex) when (!(ex is OperationCanceledException && ct.IsCancellationRequested))
         {

@@ -378,6 +378,7 @@ public sealed partial class MainWindowViewModel
     private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private CancellationTokenSource? catalogQueryCts;
     private bool catalogProviderOperationInProgress;
+    private bool catalogHasContinuation;
     private bool catalogProviderAttempted;
     private int catalogConfiguredProviderCount;
     private int catalogProviderSuccessCount;
@@ -527,6 +528,17 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public Visibility CatalogLoadMoreVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return catalogHasContinuation && !HasCatalogQuery
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+    }
+
     private CatalogFilePresentationState CurrentCatalogFilePresentation
     {
         get
@@ -649,6 +661,7 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(CatalogEmptyVisibility));
         OnPropertyChanged(nameof(CatalogClearSearchVisibility));
         OnPropertyChanged(nameof(CatalogRefreshEmptyVisibility));
+        OnPropertyChanged(nameof(CatalogLoadMoreVisibility));
         NotifyCatalogPresentationState();
     }
 
@@ -667,6 +680,14 @@ public sealed partial class MainWindowViewModel
         if (catalogProviderOperationInProgress == value) return;
         catalogProviderOperationInProgress = value;
         NotifyCatalogPresentationState();
+    }
+
+    private void SetCatalogHasContinuation(bool value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
+        if (catalogHasContinuation == value) return;
+        catalogHasContinuation = value;
+        OnPropertyChanged(nameof(CatalogLoadMoreVisibility));
     }
 
     private void SetCatalogProviderHealth(
@@ -841,6 +862,8 @@ public sealed partial class MainWindowViewModel
         var successes = 0;
         var failures = 0;
         var discovered = 0;
+        var hasContinuation = false;
+        var pagedFailures = 0;
         var details = new List<string>();
 
         foreach (var provider in providers)
@@ -858,6 +881,8 @@ public sealed partial class MainWindowViewModel
                     ct);
                 successes++;
                 discovered += result.ItemCount;
+                if (provider is IPagedModCatalogProvider)
+                    hasContinuation |= result.HasMore;
                 details.Add($"{provider.DisplayName}: {result.ItemCount}");
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -867,6 +892,8 @@ public sealed partial class MainWindowViewModel
             catch (Exception ex)
             {
                 failures++;
+                if (provider is IPagedModCatalogProvider)
+                    pagedFailures++;
                 details.Add($"{provider.DisplayName}: unavailable");
                 MasterDebugLog.Write(
                     "CATALOG-UI",
@@ -875,15 +902,124 @@ public sealed partial class MainWindowViewModel
             }
         }
 
+        if (pagedFailures > 0)
+            hasContinuation |= catalogHasContinuation;
+        SetCatalogHasContinuation(hasContinuation);
+
         await SearchCatalogCacheAsync(ct);
         SetCatalogProviderHealth(providers.Count, successes, failures, attempted: true);
         CatalogProviderSummary = providers.Count == 0
             ? "No live catalog provider is configured for this game yet; cached items remain searchable."
             : $"{successes}/{providers.Count} providers refreshed · {discovered} item(s) received" +
+              (hasContinuation ? " · more browse results available" : "") +
               (failures > 0 ? $" · {failures} isolated failure(s)" : "");
         CatalogStatusText = details.Count == 0
             ? "Catalog cache loaded."
             : string.Join("  •  ", details);
+    }
+
+    [RelayCommand]
+    private async Task LoadMoreCatalog()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (HasCatalogQuery)
+        {
+            CatalogStatusText = "Clear the cached search before loading more browse results.";
+            return;
+        }
+
+        if (!catalogHasContinuation)
+        {
+            CatalogStatusText = "No additional provider browse page is available.";
+            return;
+        }
+
+        SetCatalogProviderOperationInProgress(true);
+        try
+        {
+            await RunBusy(
+                "catalog.load-more",
+                "Loading more mods",
+                "Resuming provider browse cursors without repeating completed pages…",
+                true,
+                async ct =>
+                {
+                    await catalogSyncGate.WaitAsync(ct);
+                    try
+                    {
+                        EnsureCatalogRuntime();
+                        var sync = catalogSync
+                            ?? throw new InvalidOperationException("Catalog sync runtime is unavailable.");
+                        var providers = (catalogProviders ?? Array.Empty<IModCatalogProvider>())
+                            .Where(provider => provider is IPagedModCatalogProvider)
+                            .ToArray();
+
+                        var successes = 0;
+                        var failures = 0;
+                        var discovered = 0;
+                        var hasContinuation = false;
+                        var details = new List<string>();
+
+                        foreach (var provider in providers)
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            try
+                            {
+                                var mode = string.Equals(provider.ProviderId, "nexus", StringComparison.OrdinalIgnoreCase)
+                                    ? CatalogBrowseMode.Trending
+                                    : CatalogBrowseMode.RecentlyUpdated;
+                                var result = await sync.SyncNextPageAsync(
+                                    provider,
+                                    new CatalogBrowseRequest(
+                                        s.Paths.Game,
+                                        Query: null,
+                                        Mode: mode,
+                                        Limit: CatalogProviderRefreshLimit),
+                                    new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
+                                    ct);
+                                successes++;
+                                discovered += result.ItemCount;
+                                hasContinuation |= result.HasMore;
+                                details.Add($"{provider.DisplayName}: +{result.ItemCount}");
+                            }
+                            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                failures++;
+                                // The sync layer preserves the prior cursor on failure,
+                                // so keep the retry affordance available.
+                                hasContinuation = true;
+                                details.Add($"{provider.DisplayName}: retry available");
+                                MasterDebugLog.Write(
+                                    "CATALOG-UI",
+                                    $"Provider continuation failed without discarding its cursor. provider={provider.ProviderId}",
+                                    ex);
+                            }
+                        }
+
+                        SetCatalogHasContinuation(hasContinuation);
+                        await SearchCatalogCacheAsync(ct);
+                        CatalogProviderSummary =
+                            $"Loaded {discovered} additional item(s) from {successes}/{providers.Length} paged provider(s)" +
+                            (hasContinuation ? " · more browse results available" : " · end of available pages") +
+                            (failures > 0 ? $" · {failures} isolated failure(s)" : "");
+                        CatalogStatusText = details.Count == 0
+                            ? "No configured provider exposes resumable browse pages."
+                            : string.Join("  •  ", details);
+                    }
+                    finally
+                    {
+                        catalogSyncGate.Release();
+                    }
+                });
+        }
+        finally
+        {
+            SetCatalogProviderOperationInProgress(false);
+        }
     }
 
     [RelayCommand]
