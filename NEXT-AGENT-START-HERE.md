@@ -20,7 +20,7 @@ The v8.8.97 source-only head `b0db52d5b2032af496717d78e675d85c3abc2705` passed W
 
 Release and continuity synchronization changes the candidate SHA, so that earlier green run is historical evidence only. Require fresh exact-final-head required PR gates before integration and fresh canonical hosted-Windows verification after integration. The last closed canonical Windows source remains v8.8.96 `7c079eaec9f71d93eced66f320ca78f1747bdd11` / run `37239871430`.
 
-## Remaining #558 acceptance
+## Unresolved risk and remaining #558 acceptance
 
 - v8.8.96 delivered durable GameBanana continuation and the shared Browse Mods Load More path.
 - v8.8.97 extends that same continuation contract to CurseForge rather than creating parallel UI/state machinery.
