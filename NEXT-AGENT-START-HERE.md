@@ -15,9 +15,9 @@ Primary open performance issue: #735
 
 ## Verification boundary
 
-PR #737 exact head `a61335fe612fd46a0432effc23add513bd29f1c4` passed Workflow Feature PR Gate run `37189506341`, including 26/26 repository verification stages, product/update/release security policy, 112 automation tests, and 381 integration/fault-injection tests.
+Current hosted-Windows closure: v8.8.94 source `c8465fc28c48878ae9efc57b417493a3e9285b5a` passed run `37215524276` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log`.
 
-The squash integration source `3e3702db2b04005693845a40713f0301fb11cdd1` reached canonical main. Windows Release Gate run `37214194618` repeated the substantive checks successfully but failed the canonical handoff invariant because version/continuity metadata still reported 8.8.92. The convergence repair aligns those surfaces to 8.8.94 without widening performance implementation. Do not call v8.8.94 release-verified until a fresh exact-main Windows Release Gate passes after the repair.
+The tested source remains `c8465fc28c48878ae9efc57b417493a3e9285b5a` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk
 

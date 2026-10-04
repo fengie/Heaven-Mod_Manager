@@ -13,9 +13,9 @@ v8.8.94 carries forward the verified storage, updater, conflict/dependency, file
 
 ## Verification boundary
 
-PR #737 exact head `a61335fe612fd46a0432effc23add513bd29f1c4` passed Workflow Feature PR Gate run `37189506341`: the repository verifier completed 26/26 stages, including product/update/release security policy, 112 automation tests, and 381 integration/fault-injection tests.
+Current hosted-Windows closure: v8.8.94 source `c8465fc28c48878ae9efc57b417493a3e9285b5a` passed run `37215524276` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log`.
 
-The squash integration source `3e3702db2b04005693845a40713f0301fb11cdd1` reached canonical main. Windows Release Gate run `37214194618` re-ran the substantive build/security/test work successfully but correctly failed canonical metadata parity because `Directory.Build.props` and continuity surfaces still carried 8.8.92. That continuity/version drift is being repaired without changing the performance implementation. v8.8.94 is not release-closed until a fresh exact-main Windows Release Gate passes after that repair.
+The tested source remains `c8465fc28c48878ae9efc57b417493a3e9285b5a` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
