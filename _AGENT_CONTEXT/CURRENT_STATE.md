@@ -13,7 +13,9 @@ v8.8.95 carries forward the verified v8.8.94 planner, storage, updater, conflict
 
 ## Verification boundary
 
-The last fully closed hosted-Windows source before v8.8.95 is v8.8.94 `2311b658762c8fe51c21919926fdabc870147a0e`, which passed Windows Release Gate run `37230142789` with 0 failed checks. The subsequent evidence-only main `6cd39527e65458733a026bed7d3332443eab798d` does not change tested-source identity. Exact v8.8.95 source requires fresh post-integration Windows verification and release closure; v8.8.94 evidence must not be inherited as proof for changed v8.8.95 inputs.
+Current hosted-Windows closure: v8.8.95 source `abc7f64b68849e467b0316daef6aab0306682775` passed run `37236907923` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.95-heaven-windows-closure.log`.
+
+The tested source remains `abc7f64b68849e467b0316daef6aab0306682775` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
