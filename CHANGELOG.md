@@ -1,3 +1,10 @@
+# v8.8.96 — 2026-10-04
+
+- Add an optional provider pagination contract and make GameBanana browse results resumable with opaque page/offset continuations so limit boundaries do not skip remaining provider IDs.
+- Persist catalog continuation only after every item in the returned page is written; failed continuation preserves the prior cursor for deterministic retry instead of advancing past failed work.
+- Add a Browse Mods **Load More** action serialized through the existing catalog sync gate, hidden during cached text search, with provider-failure isolation and clear remaining-page status.
+- Add deterministic provider, sync-state, failure-retry, exhausted-no-op, and XAML binding regressions. Issue #558 remains open for broader multi-provider scale/performance acceptance.
+
 # v8.8.95 — 2026-10-04
 
 - Execute only the pure Auto Populate `BuildAsync` phase on a background thread so the measured planner workload no longer blocks WPF Dispatcher callbacks.
