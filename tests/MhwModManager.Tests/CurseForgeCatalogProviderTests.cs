@@ -55,6 +55,50 @@ public sealed class CurseForgeCatalogProviderTests
     }
 
     [Fact]
+    public async Task Browse_page_uses_persistable_index_cursor_and_stops_at_total_count()
+    {
+        var indexes = new List<int>();
+        var handler = new RoutingHandler((request, _) =>
+        {
+            var query = System.Web.HttpUtility.ParseQueryString(request.RequestUri?.Query ?? string.Empty);
+            indexes.Add(int.Parse(query["index"] ?? "0", System.Globalization.CultureInfo.InvariantCulture));
+            var index = indexes[^1];
+            var json = ReadFixture("search.json")
+                .Replace("\"index\": 0", $"\"index\": {index}", StringComparison.Ordinal)
+                .Replace("\"totalCount\": 1", "\"totalCount\": 2", StringComparison.Ordinal);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, json));
+        });
+        using var client = new HttpClient(handler);
+        var provider = CreateProvider(client, "fixture-key");
+
+        var first = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.RecentlyUpdated, Limit: 1),
+            ct: TestContext.Current.CancellationToken);
+        Assert.Equal("1", first.NextCursor);
+
+        var second = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.RecentlyUpdated, Limit: 1),
+            first.NextCursor,
+            TestContext.Current.CancellationToken);
+        Assert.Null(second.NextCursor);
+        Assert.Equal(new[] { 0, 1 }, indexes);
+    }
+
+    [Fact]
+    public async Task Browse_page_rejects_invalid_cursor_before_transport()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Invalid cursor must not reach CurseForge.")));
+        var provider = CreateProvider(client, "fixture-key");
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => provider.BrowsePageAsync(
+                new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest, Limit: 1),
+                "-1",
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Acquisition_returns_ephemeral_download_url_without_persisting_it_in_mod_metadata()
     {
         var handler = new RoutingHandler((request, _) =>
