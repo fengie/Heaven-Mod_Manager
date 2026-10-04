@@ -31,7 +31,9 @@ public sealed class AutoPopulateDispatcherRegressionTests
                         },
                         TestContext.Current.CancellationToken);
 
-                    dispatcher.BeginInvoke(()=>dispatcherPulse.Set());
+                    // Intentionally do not await this callback: the test thread must observe
+                    // that the Dispatcher can service it while background planning is blocked.
+                    _ = dispatcher.BeginInvoke(()=>dispatcherPulse.Set());
                     completion.TrySetResult(await buildTask);
                 }
                 catch(Exception ex)
