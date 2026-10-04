@@ -13,9 +13,9 @@ v8.8.96 carries forward the verified v8.8.95 planner, updater, conflict/dependen
 
 ## Verification boundary
 
-The last closed hosted-Windows source remains v8.8.95 `abc7f64b68849e467b0316daef6aab0306682775`, run `37236907923`, with exact evidence at `_AGENT_CONTEXT/EVIDENCE/v8.8.95-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.96 source `7c079eaec9f71d93eced66f320ca78f1747bdd11` passed run `37239871430` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.96-heaven-windows-closure.log`.
 
-v8.8.96 changes source, XAML, tests, release metadata, and continuity inputs. Exact-final-head feature/security/ownership gates and fresh post-integration canonical Windows verification are therefore required; prior v8.8.95 evidence is historical only for this patch.
+The tested source remains `7c079eaec9f71d93eced66f320ca78f1747bdd11` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
