@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.94</Version>
-    <InformationalVersion>8.8.94-bounded-auto-populate-planning</InformationalVersion>
+    <Version>8.8.95</Version>
+    <InformationalVersion>8.8.95-autopopulate-dispatcher-offload</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

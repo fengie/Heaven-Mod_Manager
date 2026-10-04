@@ -1013,7 +1013,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             async ct=>
             {
                 var service=new AutoPopulateService(s.PlannerSnapshots,s.Planner,s.Dependencies,s.Paths.GameRoot,s.Paths.Game);
-                result=await service.BuildAsync(preferredModIds,ct);
+                result=await RunAutoPopulateBuildAsync(
+                    innerCt=>service.BuildAsync(preferredModIds,innerCt),
+                    ct);
                 var stage=result.State.ToDictionary(
                     x=>x.Key,
                     x=>(x.Value.Enabled,x.Value.Priority),
@@ -1050,6 +1052,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(StagedCount>0)await Apply();
         if(StagedCount==0&&BlockerCount==0)
             StatusText=result.Summary+" The setup is applied and ready to launch.";
+    }
+
+    internal static Task<T> RunAutoPopulateBuildAsync<T>(
+        Func<CancellationToken,Task<T>> build,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(build);
+        return Task.Run(()=>build(ct),ct);
     }
 
     [RelayCommand]

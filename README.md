@@ -1,10 +1,17 @@
-# v8.8.94 — MHW Manual Mod Manager
+# v8.8.95 — MHW Manual Mod Manager
 
-Current product version: **8.8.94**.
+Current product version: **8.8.95**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.95 — responsive Auto Populate planning
+
+- Keep the existing v8.8.94 bounded planner semantics, but execute only the pure `AutoPopulateService.BuildAsync` phase on a background thread so CPU-heavy planning no longer monopolizes the WPF Dispatcher.
+- Preserve captured preferred mod IDs, `RunBusy` foreground ownership, Dispatcher-owned row staging/`Changed`, timeline reporting, cancellation propagation, final dependency validation, and Apply's authoritative current-state re-plan before game-file mutation.
+- Add behavioral STA/WPF regression coverage proving the Dispatcher can service queued work while the Auto Populate build is blocked off-thread, plus pre-cancellation coverage proving cancelled work never enters the background build.
+- #735 remains open until real installed enable/disable + Auto Populate UI/persistence timing and a durable acceptance budget are proven.
 
 ## v8.8.94 — bounded Auto Populate planning
 
@@ -18,13 +25,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Bound already-terminal updater recovery history to the two newest Confirmed/RolledBack transaction generations so repeated successful updates cannot grow terminal recovery storage without limit.
 - Preserve live/nonterminal recovery, prepared transactions, malformed or unknown state, reparse paths, Mods, State, and ambiguous ownership fail-closed; only proven terminal generations beyond the retention cap are reclaimed.
 - Add deterministic integration coverage with four recent terminal generations plus a RollbackRequired generation, and keep function-verifier tracing on the new cleanup boundary.
-
-## v8.8.92 — unified disposable storage reclaim
-
-- Expand the Settings reclaim action from updater-only cleanup to both fail-closed updater staging/recovery cleanup and manager-owned catalog-download scratch cleanup.
-- Reuse the existing ownership, lease/liveness, age/quota, unknown-file, and reparse-point safety boundaries instead of adding a broader deletion heuristic.
-- Report total, updater, and catalog-scratch reclaimed bytes plus deleted/deferred entry counts while continuing to preserve Mods, State, active work, ambiguous ownership, and unknown paths.
-- Add UI/binding regression coverage so the visible action remains an explicit manager-owned disposable-storage boundary.
 
 ## Current plans & progress
 
@@ -42,6 +42,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **RELEASE-RACE-682 / P0** — v8.8.85 source `271b9d8d` makes the public updater publisher's terminal outcome authoritative for canonical publication/parity gating.
 - [x] **FILESYSTEM-HARDENING-673/676 / P0** — v8.8.86 makes unmanaged adoption invocation-owned/hash-certified and rejects descendant reparse topology at import publication and destructive cleanup boundaries.
 - [ ] **UPDATER-STORAGE-669 / P0** — v8.8.93 now bounds retained proven-terminal updater recovery generations to the two newest while preserving nonterminal/ambiguous state; broader lifecycle/generation bounds and immutable-content reuse remain tracked by issue #669.
+- [ ] **PERFORMANCE-735 / P1** — v8.8.95 moves pure Auto Populate planning off the WPF Dispatcher with behavioral responsiveness/cancellation coverage; installed enable/disable + Auto Populate UI/persistence timing and the durable acceptance budget remain open.
 - [x] **ACCESSIBILITY-589 / P1** — v8.8.75 gives Mod Library whole-mod and component toggles target-specific UI Automation names with deterministic regression coverage.
 - [x] **COMPLIANCE-710 / P1** — v8.8.89 adds the native-app privacy/legal/data-control baseline, completes current image automation names, and regression-checks package notices, keyboard focus/navigation, and WCAG AA core palette contrast.
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
