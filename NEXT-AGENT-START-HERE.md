@@ -14,11 +14,11 @@ Change set: issue #669
 - Installed Mods, archives, State, managed content-addressed blobs, active work, ambiguous ownership, and unknown paths remain preserved.
 - The UI reports aggregate/per-domain reclaimed bytes plus removed/deferred counts.
 
-## Previous verified boundary
+## Verification boundary
 
-v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed hosted Windows closure run `37157439747` and installed-client updater E2E run `37157854577`. Durable evidence is stored in `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log` and `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.91.log`.
+Last closed hosted-Windows closure: v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed run `37157439747` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log`. Installed-client updater E2E passed run `37157854577`; evidence: `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.91.log`.
 
-Those receipts apply to v8.8.91 only. This v8.8.92 source change requires fresh exact-head feature/repository verification and the repository-required post-integration verification before release closure.
+The current v8.8.92 canonical source is **awaiting fresh exact-main Windows release verification**. These receipts apply only to v8.8.91; publication remains fail-closed until the current source passes all required gates. Evidence-only persistence commits must never be treated as the tested source.
 
 ## Unresolved risk
 
