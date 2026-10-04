@@ -141,6 +141,79 @@ public sealed class GameBananaCatalogProviderTests
     }
 
     [Fact]
+    public async Task Paged_browse_resumes_inside_provider_page_without_skipping_items()
+    {
+        string[] ids = ["653359", "556536", "111111"];
+        var listCalls = 0;
+        var handler = new RoutingHandler((request, _) =>
+        {
+            if (request.RequestUri?.AbsolutePath == "/Core/List/New")
+            {
+                listCalls++;
+                var query = request.RequestUri?.Query ?? string.Empty;
+                if (query.Contains("page=2", StringComparison.Ordinal))
+                    return Task.FromResult(JsonResponse(HttpStatusCode.OK, "[]"));
+
+                Assert.Contains("page=1", query, StringComparison.Ordinal);
+                var listJson = "[" + string.Join(",", ids.Select(id => $"[\"Mod\",{id}]")) + "]";
+                return Task.FromResult(JsonResponse(HttpStatusCode.OK, listJson));
+            }
+
+            if (request.RequestUri?.AbsolutePath == "/Core/Item/Data")
+            {
+                var query = request.RequestUri?.Query ?? string.Empty;
+                var id = Assert.Single(
+                    ids,
+                    candidate => query.Contains($"itemid={candidate}", StringComparison.Ordinal));
+                return Task.FromResult(JsonResponse(
+                    HttpStatusCode.OK,
+                    ReadFixture("mod.json").Replace("/653359", $"/{id}", StringComparison.Ordinal)));
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+        });
+
+        using var client = new HttpClient(handler);
+        var provider = new GameBananaCatalogProvider(new GameBananaTransport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+        var request = new CatalogBrowseRequest(game, Mode: CatalogBrowseMode.Latest, Limit: 2);
+
+        var first = await provider.BrowsePageAsync(
+            request,
+            cursor: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(ids[..2], first.Items.Select(mod => mod.ProviderModId));
+        Assert.Equal("v1:1:2", first.NextCursor);
+        Assert.True(first.HasMore);
+
+        var second = await provider.BrowsePageAsync(
+            request,
+            first.NextCursor,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(["111111"], second.Items.Select(mod => mod.ProviderModId));
+        Assert.Null(second.NextCursor);
+        Assert.False(second.HasMore);
+        Assert.Equal(3, listCalls);
+    }
+
+    [Fact]
+    public async Task Invalid_paged_browse_cursor_fails_before_transport()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Invalid continuation must not reach transport.")));
+        var provider = new GameBananaCatalogProvider(new GameBananaTransport(client));
+        var game = GameProfile.MonsterHunterWorld(Path.GetTempPath());
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            provider.BrowsePageAsync(
+                new CatalogBrowseRequest(game, Mode: CatalogBrowseMode.Latest, Limit: 5),
+                "not-a-valid-cursor",
+                TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Recently_updated_browse_sets_include_updated_without_inventing_search()
     {
         var handler = new RoutingHandler((request, _) =>
