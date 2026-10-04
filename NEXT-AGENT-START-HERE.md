@@ -38,6 +38,6 @@ When a callable Heaven/Agent Control execution surface is unavailable in the cur
 
 ## Successor obligation
 
-As the successor, bootstrap from current `fengie/heaven-toolbox@main`, then current MHW main; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification, all safety invariants, and this continuity obligation recursively. Before finishing, you must update the repository handoff and explicitly require your successor to inherit, preserve, and recursively propagate these same rules; that successor must repeat the requirement again for the agent after them.
+As the successor, you must preserve and propagate this continuity contract to the agent after you, and require that agent to pass it to the next successor. Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW main; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and all safety invariants above. Before finishing, update the repository handoff with the same explicit recursive requirement.
 
 **Do not break the chain.**
