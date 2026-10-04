@@ -302,8 +302,7 @@ public static class UpdateStorageMaintenance
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"maxRetained={maxRetained}");
-        if (maxRetained < 0)
-            throw new ArgumentOutOfRangeException(nameof(maxRetained));
+        ArgumentOutOfRangeException.ThrowIfNegative(maxRetained);
 
         var transactionsRoot = Path.Combine(updaterRoot, "transactions");
         if (!Directory.Exists(transactionsRoot))
