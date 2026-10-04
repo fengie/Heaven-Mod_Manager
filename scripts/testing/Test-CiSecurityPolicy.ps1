@@ -137,6 +137,33 @@ foreach($workflow in @(Get-ChildItem -LiteralPath $workflowRoot -File | Where-Ob
 }
 
 $persistentWriteAllowlist=@('windows-release-gate.yml','updater-installed-client-e2e.yml')
+
+$updaterInstalledE2EPath=Join-Path $workflowRoot 'updater-installed-client-e2e.yml'
+if(!(Test-Path -LiteralPath $updaterInstalledE2EPath -PathType Leaf)){
+    $errors.Add('updater-installed-client-e2e.yml is missing.')
+}else{
+    $updaterInstalledE2E=Get-Content -LiteralPath $updaterInstalledE2EPath -Raw
+    if($updaterInstalledE2E -match '(?i)\[skip ci\]'){
+        $errors.Add('updater-installed-client-e2e.yml: evidence persistence must never bypass CI with a skip-ci commit marker.')
+    }
+    foreach($required in @(
+        '$canonicalClosurePath = $closurePath.Replace',
+        'updater-installed-client-e2e-v\d+\.\d+\.\d+\.log\z',
+        'git diff --cached --name-only',
+        'git diff --cached --name-status',
+        '$expectedStatuses = @(',
+        'git diff --cached --check',
+        'Persist updater installed-client E2E evidence [evidence-only]',
+        '$commitParent = (git rev-parse HEAD^).Trim()',
+        '$commitParent -ne $persistenceBaseSha',
+        'git diff-tree --no-commit-id --name-only -r HEAD',
+        '$commitPaths.Count -ne 1'
+    )){
+        if(-not $updaterInstalledE2E.Contains($required)){
+            $errors.Add("updater-installed-client-e2e.yml: evidence-only mutation boundary missing: $required")
+        }
+    }
+}
 foreach($workflowFile in @(Get-ChildItem -LiteralPath $workflowRoot -File -Filter '*.yml')){
     $workflow=Get-Content -LiteralPath $workflowFile.FullName -Raw
     if($workflow -notmatch '(?im)^\s*runs-on:\s*\[[^\]]*self-hosted[^\]]*\]'){continue}

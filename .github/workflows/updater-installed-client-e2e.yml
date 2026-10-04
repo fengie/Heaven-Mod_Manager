@@ -418,6 +418,10 @@ jobs:
 
           $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
           $closurePath = "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v$version.log"
+          $canonicalClosurePath = $closurePath.Replace('\','/')
+          if ($canonicalClosurePath -notmatch '^_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v\d+\.\d+\.\d+\.log\z') {
+            throw "Updater E2E evidence persistence received unsafe closure path '$canonicalClosurePath'."
+          }
           @(
             ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
             ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
@@ -435,10 +439,41 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- $closurePath
-          git commit -m 'Persist updater installed-client E2E evidence [skip ci]'
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to stage updater installed-client E2E evidence.'
+          }
+
+          $stagedPaths = @(& git diff --cached --name-only)
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to inspect staged updater E2E evidence paths.'
+          }
+          if ($stagedPaths.Count -ne 1 -or $stagedPaths[0] -ne $canonicalClosurePath) {
+            throw "Updater E2E evidence persistence must stage exactly one allowed evidence path; got: $($stagedPaths -join ', ')"
+          }
+
+          $stagedStatus = @(& git diff --cached --name-status)
+          $expectedStatuses = @("A`t$canonicalClosurePath", "M`t$canonicalClosurePath")
+          if ($LASTEXITCODE -ne 0 -or $stagedStatus.Count -ne 1 -or $expectedStatuses -notcontains $stagedStatus[0]) {
+            throw "Updater E2E evidence persistence staged an unauthorized change: $($stagedStatus -join ', ')"
+          }
+
+          git diff --cached --check
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Updater E2E evidence persistence staged invalid patch content.'
+          }
+          git commit -m 'Persist updater installed-client E2E evidence [evidence-only]'
           if ($LASTEXITCODE -ne 0) {
             throw 'Failed to create updater installed-client E2E evidence commit.'
           }
+          $commitParent = (git rev-parse HEAD^).Trim()
+          if ($LASTEXITCODE -ne 0 -or $commitParent -ne $persistenceBaseSha) {
+            throw "Updater E2E evidence commit parent mismatch. Expected $persistenceBaseSha but got $commitParent."
+          }
+          $commitPaths = @(& git diff-tree --no-commit-id --name-only -r HEAD)
+          if ($LASTEXITCODE -ne 0 -or $commitPaths.Count -ne 1 -or $commitPaths[0] -ne $canonicalClosurePath) {
+            throw "Updater E2E evidence commit escaped its one-file boundary: $($commitPaths -join ', ')"
+          }
+
           git push origin HEAD:main
           if ($LASTEXITCODE -ne 0) {
             git fetch origin main
