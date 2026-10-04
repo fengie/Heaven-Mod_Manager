@@ -8,6 +8,8 @@ namespace MhwModManager.Tests;
 
 public sealed class CurseForgeCatalogProviderTests
 {
+    private static readonly int[] ExpectedPagedIndexes = [0, 1];
+
     [Fact]
     public void Compliance_is_official_api_only_and_never_html()
     {
@@ -82,7 +84,7 @@ public sealed class CurseForgeCatalogProviderTests
             first.NextCursor,
             TestContext.Current.CancellationToken);
         Assert.Null(second.NextCursor);
-        Assert.Equal(new[] { 0, 1 }, indexes);
+        Assert.Equal(ExpectedPagedIndexes, indexes);
     }
 
     [Fact]
