@@ -301,6 +301,7 @@ public static class UpdateStorageMaintenance
         Action<string>? log,
         CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"maxRetained={maxRetained}");
         if (maxRetained < 0)
             throw new ArgumentOutOfRangeException(nameof(maxRetained));
 
