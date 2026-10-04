@@ -13,9 +13,9 @@ v8.8.92 carries forward the verified v8.8.91 storage-lifecycle baseline and adds
 
 ## Verification boundary
 
-Last closed hosted-Windows closure: v8.8.91 source `936a265994610791f647f5607f162f5539e8a320` passed run `37157439747` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.92 source `ecb6a80cb84c6dc4d3c54df63f986ece566847f5` passed run `37177931633` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.92-heaven-windows-closure.log`.
 
-The current v8.8.92 canonical source is **not yet a closed verification boundary**. It requires fresh exact-main Windows release verification after this canonical metadata parity repair; publication must remain fail-closed until that succeeds. Evidence-only persistence commits must never be treated as the tested source.
+The tested source remains `ecb6a80cb84c6dc4d3c54df63f986ece566847f5` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 

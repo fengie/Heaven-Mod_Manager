@@ -8,12 +8,12 @@
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
     "status":  "v8.8.92-unified-disposable-storage-reclaim-canonical-awaiting-fresh-windows-verification",
-    "nextMilestone":  "Obtain fresh exact canonical Windows verification for current v8.8.92 source and publish only after all release/parity gates pass, then continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md.",
-    "nextRequiredAction":  "Run the exact canonical-main Windows release gate for v8.8.92 after this canonical metadata parity repair; do not claim v8.8.92 release closure or replace the last-closed v8.8.91 verification evidence until that exact source passes.",
-    "verificationAppliesToCommit":  "936a265994610791f647f5607f162f5539e8a320",
-    "lastClosedVerificationCommit":  "936a265994610791f647f5607f162f5539e8a320",
-    "lastClosedVerificationRun":  "v8.8.91 source 936a265994610791f647f5607f162f5539e8a320: hosted Windows verification run 37157439747 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.91 exact source 936a265994610791f647f5607f162f5539e8a320 passed hosted Windows verification run 37157439747. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "nextMilestone":  "Current v8.8.92 hosted Windows verification is closed; continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md while preserving unresolved external security gates.",
+    "nextRequiredAction":  "Refresh canonical main and live ownership, then continue the next non-overlapping actionable project-plan item; do not reintegrate or rerun the already-verified v8.8.92 source solely because the evidence-only persistence commit advanced main.",
+    "verificationAppliesToCommit":  "ecb6a80cb84c6dc4d3c54df63f986ece566847f5",
+    "lastClosedVerificationCommit":  "ecb6a80cb84c6dc4d3c54df63f986ece566847f5",
+    "lastClosedVerificationRun":  "v8.8.92 source ecb6a80cb84c6dc4d3c54df63f986ece566847f5: hosted Windows verification run 37177931633 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.92-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.92 exact source ecb6a80cb84c6dc4d3c54df63f986ece566847f5 passed hosted Windows verification run 37177931633. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -45,8 +45,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "936a265994610791f647f5607f162f5539e8a320",
-                                          "runId":  37157439747,
-                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.91-heaven-windows-closure.log"
+                                          "sourceSha":  "ecb6a80cb84c6dc4d3c54df63f986ece566847f5",
+                                          "runId":  37177931633,
+                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.92-heaven-windows-closure.log"
                                       }
 }
