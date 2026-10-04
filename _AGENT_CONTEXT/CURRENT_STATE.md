@@ -13,7 +13,7 @@ v8.8.95 carries forward the verified v8.8.94 planner, storage, updater, conflict
 
 ## Verification boundary
 
-The last fully closed hosted-Windows source before v8.8.95 is v8.8.94 `c8465fc28c48878ae9efc57b417493a3e9285b5a`, which passed Windows Release Gate run `37215524276` with 0 failed checks; installed-client updater E2E run `37215961767` also passed. Exact v8.8.95 source requires fresh post-integration Windows verification and release closure; v8.8.94 evidence must not be inherited as proof for changed v8.8.95 inputs.
+The last fully closed hosted-Windows source before v8.8.95 is v8.8.94 `2311b658762c8fe51c21919926fdabc870147a0e`, which passed Windows Release Gate run `37230142789` with 0 failed checks. The subsequent evidence-only main `6cd39527e65458733a026bed7d3332443eab798d` does not change tested-source identity. Exact v8.8.95 source requires fresh post-integration Windows verification and release closure; v8.8.94 evidence must not be inherited as proof for changed v8.8.95 inputs.
 
 ## Remaining independent work
 

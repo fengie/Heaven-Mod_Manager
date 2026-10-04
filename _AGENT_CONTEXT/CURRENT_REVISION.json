@@ -10,10 +10,10 @@
     "status":  "v8.8.95-autopopulate-dispatcher-offload-canonical-awaiting-fresh-windows-verification",
     "nextMilestone":  "Close fresh exact-main Windows verification and installed-client release closure for v8.8.95, then complete the remaining real installed #735 enable/disable + Auto Populate latency and responsiveness acceptance before selecting another performance slice.",
     "nextRequiredAction":  "After v8.8.95 integrates, run fresh exact-main Windows verification; keep #735 open until installed UI/persistence timing, enable/disable transitive recomputation, Auto Populate latency, and a durable responsiveness budget are evidenced.",
-    "verificationAppliesToCommit":  "c8465fc28c48878ae9efc57b417493a3e9285b5a",
-    "lastClosedVerificationCommit":  "c8465fc28c48878ae9efc57b417493a3e9285b5a",
-    "lastClosedVerificationRun":  "v8.8.94 source c8465fc28c48878ae9efc57b417493a3e9285b5a: hosted Windows verification run 37215524276 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.94 exact source c8465fc28c48878ae9efc57b417493a3e9285b5a passed hosted Windows verification run 37215524276. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "verificationAppliesToCommit":  "2311b658762c8fe51c21919926fdabc870147a0e",
+    "lastClosedVerificationCommit":  "2311b658762c8fe51c21919926fdabc870147a0e",
+    "lastClosedVerificationRun":  "v8.8.94 source 2311b658762c8fe51c21919926fdabc870147a0e: hosted Windows verification run 37230142789 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.94 exact source 2311b658762c8fe51c21919926fdabc870147a0e passed hosted Windows verification run 37230142789. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -45,8 +45,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "c8465fc28c48878ae9efc57b417493a3e9285b5a",
-                                          "runId":  37215524276,
+                                          "sourceSha":  "2311b658762c8fe51c21919926fdabc870147a0e",
+                                          "runId":  37230142789,
                                           "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.94-heaven-windows-closure.log"
                                       }
 }
