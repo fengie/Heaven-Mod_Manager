@@ -11,6 +11,7 @@ public sealed record CurseForgeCatalogGameSource(
 
 public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCatalogProvider
 {
+    private const int SearchWindowLimit = 10_000;
     private readonly CurseForgeTransport transport;
     private readonly CurseForgeCatalogGameSource[] sources;
     private CatalogProviderHealth health;
@@ -151,8 +152,8 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCa
         ArgumentNullException.ThrowIfNull(request);
         CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(DateTime.UtcNow));
         var source = RequireSource(request.Game);
-        var pageSize = Math.Clamp(request.Limit, 1, 50);
         var index = ParseCursor(cursor);
+        var pageSize = Math.Min(Math.Clamp(request.Limit, 1, 50), SearchWindowLimit - index);
         var sortField = request.Mode switch
         {
             CatalogBrowseMode.Trending => 2,
@@ -172,7 +173,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCa
                 pageSize,
                 ct).ConfigureAwait(false);
             var items = NormalizeModList(response.Document, request.Game, source.CurseForgeGameId);
-            var nextCursor = ReadNextCursor(response.Document, index, items.Length);
+            var nextCursor = ReadNextCursor(response.Document, index);
             MarkConnected();
             return new CatalogBrowsePage(items, nextCursor);
         }
@@ -325,25 +326,45 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCa
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(cursor)) return 0;
-        if (!int.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var index) || index < 0)
-            throw new ArgumentException("CurseForge continuation cursor must be a non-negative integer.", nameof(cursor));
+        if (!int.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+            || index < 0
+            || index >= SearchWindowLimit)
+        {
+            throw new ArgumentException(
+                $"CurseForge continuation cursor must be between 0 and {SearchWindowLimit - 1}.",
+                nameof(cursor));
+        }
         return index;
     }
 
-    private static string? ReadNextCursor(JsonDocument document, int requestedIndex, int resultCount)
+    private static string? ReadNextCursor(JsonDocument document, int requestedIndex)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!document.RootElement.TryGetProperty("pagination", out var pagination)
             || pagination.ValueKind != JsonValueKind.Object)
-            return resultCount == 0
-                ? null
-                : checked(requestedIndex + resultCount).ToString(CultureInfo.InvariantCulture);
+        {
+            return null;
+        }
 
-        var index = ReadOptionalInt64(pagination, "index") ?? requestedIndex;
-        var returned = ReadOptionalInt64(pagination, "resultCount") ?? resultCount;
+        var index = ReadOptionalInt64(pagination, "index");
+        var pageSize = ReadOptionalInt64(pagination, "pageSize");
         var total = ReadOptionalInt64(pagination, "totalCount");
-        var next = checked(index + returned);
-        if (next < 0 || total is not null && next >= total.Value) return null;
+        if (index is null
+            || index.Value != requestedIndex
+            || pageSize is null
+            || pageSize.Value <= 0
+            || total is null)
+        {
+            return null;
+        }
+
+        var next = checked(index.Value + pageSize.Value);
+        if (next <= index.Value
+            || next >= total.Value
+            || next >= SearchWindowLimit)
+        {
+            return null;
+        }
         return next.ToString(CultureInfo.InvariantCulture);
     }
 
