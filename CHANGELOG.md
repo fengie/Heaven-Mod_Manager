@@ -1,3 +1,10 @@
+# v8.8.95 — 2026-10-04
+
+- Execute only the pure Auto Populate `BuildAsync` phase on a background thread so the measured planner workload no longer blocks WPF Dispatcher callbacks.
+- Preserve preferred-selection capture, `RunBusy` foreground ownership, Dispatcher-owned row staging/`Changed`, timeline evidence, cancellation, final dependency validation, and Apply's authoritative current-state re-plan/mutation boundary.
+- Add a behavioral STA/WPF regression proving Dispatcher callbacks continue while the build is blocked off-thread and a pre-cancellation regression proving cancelled work never enters the background build.
+- Keep issue #735 open pending real installed enable/disable + Auto Populate UI/persistence timing and a durable latency/responsiveness budget.
+
 # v8.8.94 — 2026-10-04
 
 - Bound Auto Populate full-plan work for sparse libraries by accepting only provably isolated candidate closures without a per-candidate planner rebuild; exact-path, file/directory topology, explicit pair-rule, and MHW atomic structural-bundle interactions retain the existing full-planner fallback.
