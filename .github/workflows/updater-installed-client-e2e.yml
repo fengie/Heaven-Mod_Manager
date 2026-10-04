@@ -419,7 +419,10 @@ jobs:
           $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
           $closurePath = "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v$version.log"
           $canonicalClosurePath = $closurePath.Replace('\','/')
-          if ($canonicalClosurePath -notmatch '^_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v\d+\.\d+\.\d+\.log
+          if ($canonicalClosurePath -notmatch '^_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v\d+\.\d+\.\d+\.log\z') {
+            throw "Updater E2E evidence persistence received unsafe closure path '$canonicalClosurePath'."
+          }
+          @(
             ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
             ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
             ('run_id=' + $env:GITHUB_RUN_ID)
@@ -449,57 +452,8 @@ jobs:
           }
 
           $stagedStatus = @(& git diff --cached --name-status)
-          if ($LASTEXITCODE -ne 0 -or $stagedStatus.Count -ne 1 -or $stagedStatus[0] -notmatch ("^[AM]`t" + [regex]::Escape($canonicalClosurePath) + '
-          if ($LASTEXITCODE -ne 0) {
-            git fetch origin main
-            if ($LASTEXITCODE -ne 0) {
-              throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
-            }
-            $remoteMain = (git rev-parse origin/main).Trim()
-            if ($remoteMain -ne $persistenceBaseSha) {
-              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced from persistence base $persistenceBaseSha to $remoteMain during the push race."
-              exit 0
-            }
-            throw "Failed to persist updater E2E evidence while origin/main still points at persistence base $persistenceBaseSha."
-          }
-) {
-            throw "Updater E2E evidence persistence received unsafe closure path '$canonicalClosurePath'."
-          }
-          @(
-            ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
-            ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
-            ('run_id=' + $env:GITHUB_RUN_ID)
-            ('evidence_sha256=' + $evidenceHash)
-            ('provenance_sha256=' + $provenanceHash)
-            ('installed_client_test_log_sha256=' + $testLogHash)
-            ('rollback_regression_log_sha256=' + $rollbackLogHash)
-            'durable_evidence_schema=mhw-mod-manager/updater-installed-client-e2e-durable/v1'
-            ''
-            '=== DURABLE_EVIDENCE.JSON ==='
-            $durableEvidenceJson
-          ) | Set-Content -LiteralPath $closurePath -Encoding UTF8
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- $closurePath
-          git commit -m 'Persist updater installed-client E2E evidence [skip ci]'
-          if ($LASTEXITCODE -ne 0) {
-            throw 'Failed to create updater installed-client E2E evidence commit.'
-          }
-          git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) {
-            git fetch origin main
-            if ($LASTEXITCODE -ne 0) {
-              throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
-            }
-            $remoteMain = (git rev-parse origin/main).Trim()
-            if ($remoteMain -ne $persistenceBaseSha) {
-              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced from persistence base $persistenceBaseSha to $remoteMain during the push race."
-              exit 0
-            }
-            throw "Failed to persist updater E2E evidence while origin/main still points at persistence base $persistenceBaseSha."
-          }
-)) {
+          $expectedStatuses = @("A`t$canonicalClosurePath", "M`t$canonicalClosurePath")
+          if ($LASTEXITCODE -ne 0 -or $stagedStatus.Count -ne 1 -or $expectedStatuses -notcontains $stagedStatus[0]) {
             throw "Updater E2E evidence persistence staged an unauthorized change: $($stagedStatus -join ', ')"
           }
 
@@ -507,12 +461,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw 'Updater E2E evidence persistence staged invalid patch content.'
           }
-
           git commit -m 'Persist updater installed-client E2E evidence [evidence-only]'
           if ($LASTEXITCODE -ne 0) {
             throw 'Failed to create updater installed-client E2E evidence commit.'
           }
-
           $commitParent = (git rev-parse HEAD^).Trim()
           if ($LASTEXITCODE -ne 0 -or $commitParent -ne $persistenceBaseSha) {
             throw "Updater E2E evidence commit parent mismatch. Expected $persistenceBaseSha but got $commitParent."
@@ -522,43 +474,6 @@ jobs:
             throw "Updater E2E evidence commit escaped its one-file boundary: $($commitPaths -join ', ')"
           }
 
-          git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) {
-            git fetch origin main
-            if ($LASTEXITCODE -ne 0) {
-              throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
-            }
-            $remoteMain = (git rev-parse origin/main).Trim()
-            if ($remoteMain -ne $persistenceBaseSha) {
-              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced from persistence base $persistenceBaseSha to $remoteMain during the push race."
-              exit 0
-            }
-            throw "Failed to persist updater E2E evidence while origin/main still points at persistence base $persistenceBaseSha."
-          }
-) {
-            throw "Updater E2E evidence persistence received unsafe closure path '$canonicalClosurePath'."
-          }
-          @(
-            ("MHW Manual Mod Manager v$version installed-client updater E2E closure")
-            ('source_sha=' + $env:MHW_E2E_SOURCE_SHA)
-            ('run_id=' + $env:GITHUB_RUN_ID)
-            ('evidence_sha256=' + $evidenceHash)
-            ('provenance_sha256=' + $provenanceHash)
-            ('installed_client_test_log_sha256=' + $testLogHash)
-            ('rollback_regression_log_sha256=' + $rollbackLogHash)
-            'durable_evidence_schema=mhw-mod-manager/updater-installed-client-e2e-durable/v1'
-            ''
-            '=== DURABLE_EVIDENCE.JSON ==='
-            $durableEvidenceJson
-          ) | Set-Content -LiteralPath $closurePath -Encoding UTF8
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- $closurePath
-          git commit -m 'Persist updater installed-client E2E evidence [skip ci]'
-          if ($LASTEXITCODE -ne 0) {
-            throw 'Failed to create updater installed-client E2E evidence commit.'
-          }
           git push origin HEAD:main
           if ($LASTEXITCODE -ne 0) {
             git fetch origin main

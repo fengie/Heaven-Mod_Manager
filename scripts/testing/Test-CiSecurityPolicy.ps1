@@ -148,9 +148,10 @@ if(!(Test-Path -LiteralPath $updaterInstalledE2EPath -PathType Leaf)){
     }
     foreach($required in @(
         '$canonicalClosurePath = $closurePath.Replace',
-        'updater-installed-client-e2e-v\d+\.\d+\.\d+\.log',
+        'updater-installed-client-e2e-v\d+\.\d+\.\d+\.log\z',
         'git diff --cached --name-only',
         'git diff --cached --name-status',
+        '$expectedStatuses = @(',
         'git diff --cached --check',
         'Persist updater installed-client E2E evidence [evidence-only]',
         '$commitParent = (git rev-parse HEAD^).Trim()',
