@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using MhwModManager.Core;
 using MhwModManager.Storage;
@@ -12,7 +13,10 @@ public sealed record AutoPopulateResult(
     int EnabledMods,
     int SkippedConflicts,
     int SkippedRequirements,
-    string Summary);
+    string Summary,
+    int PlannerPasses = 0,
+    int PlannerFastPathCandidates = 0,
+    double PlannerMilliseconds = 0);
 
 internal sealed record ModDependencyRequirement(
     string Token,
@@ -386,6 +390,108 @@ internal static class ModRequirementReader
     }
 }
 
+internal sealed class AutoPopulateInteractionIndex
+{
+    private readonly HashSet<string> exactPaths = new(PathRules.Comparer);
+    private readonly HashSet<string> directoryPrefixes = new(PathRules.Comparer);
+    private readonly HashSet<string> structuralBundles = new(StringComparer.OrdinalIgnoreCase);
+    private readonly bool trackStructuralBundles;
+
+    public AutoPopulateInteractionIndex(
+        IReadOnlySet<string> selected,
+        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod,
+        bool trackStructuralBundles)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        this.trackStructuralBundles = trackStructuralBundles;
+        Add(selected, filesByMod);
+    }
+
+    public bool CanAcceptWithoutPlanner(
+        IReadOnlySet<string> modIds,
+        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var localExact = new HashSet<string>(PathRules.Comparer);
+        var localPrefixes = new HashSet<string>(PathRules.Comparer);
+        var localBundleOwners = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
+        var fileCount = 0;
+
+        foreach (var modId in modIds)
+        {
+            if (!filesByMod.TryGetValue(modId, out var files))
+                continue;
+
+            foreach (var file in files)
+            {
+                fileCount++;
+                var path = PathRules.Normalize(file.Path);
+                if (!localExact.Add(path) ||
+                    exactPaths.Contains(path) ||
+                    directoryPrefixes.Contains(path) ||
+                    localPrefixes.Contains(path))
+                    return false;
+
+                foreach (var prefix in Ancestors(path))
+                {
+                    if (exactPaths.Contains(prefix) || localExact.Contains(prefix))
+                        return false;
+                    localPrefixes.Add(prefix);
+                }
+
+                if (!trackStructuralBundles || file.FileClass != FileClass.Structural)
+                    continue;
+
+                var bundle = AssetBundles.KeyForPath(path);
+                if (structuralBundles.Contains(bundle))
+                    return false;
+                if (localBundleOwners.TryGetValue(bundle, out var owner) &&
+                    !PathRules.Comparer.Equals(owner, modId))
+                    return false;
+                localBundleOwners[bundle] = modId;
+            }
+        }
+
+        return fileCount > 0;
+    }
+
+    public void Add(
+        IEnumerable<string> modIds,
+        IReadOnlyDictionary<string,IReadOnlyList<ModFileDescriptor>> filesByMod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        foreach (var modId in modIds)
+        {
+            if (!filesByMod.TryGetValue(modId, out var files))
+                continue;
+
+            foreach (var file in files)
+            {
+                var path = PathRules.Normalize(file.Path);
+                exactPaths.Add(path);
+                foreach (var prefix in Ancestors(path))
+                    directoryPrefixes.Add(prefix);
+                if (trackStructuralBundles && file.FileClass == FileClass.Structural)
+                    structuralBundles.Add(AssetBundles.KeyForPath(path));
+            }
+        }
+    }
+
+    private static IReadOnlyList<string> Ancestors(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = path.Replace('/', '\\');
+        var output = new List<string>();
+        var index = normalized.IndexOf('\\');
+        while (index >= 0)
+        {
+            output.Add(normalized[..index]);
+            index = normalized.IndexOf('\\', index + 1);
+        }
+        return output;
+    }
+}
+
 /// <summary>
 /// Builds a deterministic maximal conflict-free installed setup around the user's current selection.
 /// Preferred/currently selected mods are protected anchors: Auto Populate may add their required
@@ -453,6 +559,9 @@ public sealed class AutoPopulateService(
         var skipped = new Dictionary<string,AutoPopulateDecision>(PathRules.Comparer);
         var conflictSkips = 0;
         var requirementSkips = 0;
+        var plannerPasses = 0;
+        var plannerFastPathCandidates = 0;
+        var plannerElapsed = TimeSpan.Zero;
 
         // First make the user's current staged selection immutable and complete its requirement closure.
         // If that baseline itself cannot be made safe, abort instead of "fixing" it by disabling a choice.
@@ -489,26 +598,37 @@ public sealed class AutoPopulateService(
             selected.UnionWith(closureResult.ModIds);
         }
 
-        var protectedPlan = BuildPlan(snapshot, selected);
-        if (protectedPlan.IsBlocked)
-        {
-            var blocker = protectedPlan.Conflicts.First(x => x.Blocking);
-            throw new InvalidOperationException(
-                $"Auto Populate cannot safely fill around the current selection because the selected baseline conflicts: {blocker.Explanation} The current selection was left unchanged.");
-        }
-
-        var protectedDependencyStatus = await dependencies.ScanStageAsync(selected, protectedPlan, ct);
-        var protectedFailure = protectedDependencyStatus.FirstOrDefault(x => !x.Ready);
-        if (protectedFailure is not null)
-            throw new InvalidOperationException(
-                $"Auto Populate cannot safely fill around the current selection because '{protectedFailure.ModId}' has unsatisfied requirements: {string.Join("; ", protectedFailure.Missing)} The current selection was left unchanged.");
-
         // Everything in this set is required to preserve the user's selected anchors. Never remove it
         // during later fixed-point cleanup even if the environment changes while Auto Populate is running.
         var protectedSelection = new HashSet<string>(selected, PathRules.Comparer);
-        var protectedEffectiveProviders = protectedPlan.Conflicts
-            .Where(d => !d.Blocking && d.WinnerModId is not null && protectedSelection.Contains(d.WinnerModId))
-            .ToDictionary(d => d.Path, d => d.WinnerModId!, PathRules.Comparer);
+        var protectedEffectiveProviders = new Dictionary<string,string>(PathRules.Comparer);
+        if (selected.Count > 0)
+        {
+            var protectedPlan = BuildPlan(snapshot, selected, ref plannerPasses, ref plannerElapsed);
+            if (protectedPlan.IsBlocked)
+            {
+                var blocker = protectedPlan.Conflicts.First(x => x.Blocking);
+                throw new InvalidOperationException(
+                    $"Auto Populate cannot safely fill around the current selection because the selected baseline conflicts: {blocker.Explanation} The current selection was left unchanged.");
+            }
+
+            var protectedDependencyStatus = await dependencies.ScanStageAsync(selected, protectedPlan, ct);
+            var protectedFailure = protectedDependencyStatus.FirstOrDefault(x => !x.Ready);
+            if (protectedFailure is not null)
+                throw new InvalidOperationException(
+                    $"Auto Populate cannot safely fill around the current selection because '{protectedFailure.ModId}' has unsatisfied requirements: {string.Join("; ", protectedFailure.Missing)} The current selection was left unchanged.");
+
+            foreach (var decision in protectedPlan.Conflicts.Where(d =>
+                         !d.Blocking &&
+                         d.WinnerModId is not null &&
+                         protectedSelection.Contains(d.WinnerModId)))
+                protectedEffectiveProviders[decision.Path] = decision.WinnerModId!;
+        }
+
+        var interactionIndex = new AutoPopulateInteractionIndex(
+            selected,
+            filesByMod,
+            game.IsMonsterHunterWorld);
 
         var ordered = mods
             .Where(m => !selected.Contains(m.Id))
@@ -543,9 +663,26 @@ public sealed class AutoPopulateService(
                 continue;
             }
 
+            var newlyAdded = closureResult.ModIds
+                .Where(id => !selected.Contains(id))
+                .ToHashSet(PathRules.Comparer);
+
+            // Sparse libraries should not pay one full-library planner rebuild per isolated mod.
+            // This fast path accepts only closures proven not to interact by path topology, MHW
+            // structural bundle, or an enabled explicit pair rule. The final full plan remains mandatory.
+            if (newlyAdded.Count > 0 &&
+                interactionIndex.CanAcceptWithoutPlanner(newlyAdded, filesByMod) &&
+                !HasEnabledPairRuleInteraction(snapshot.Rules, selected, newlyAdded))
+            {
+                selected.UnionWith(newlyAdded);
+                interactionIndex.Add(newlyAdded, filesByMod);
+                plannerFastPathCandidates++;
+                continue;
+            }
+
             var proposed = new HashSet<string>(selected, PathRules.Comparer);
             proposed.UnionWith(closureResult.ModIds);
-            var plan = BuildPlan(snapshot, proposed);
+            var plan = BuildPlan(snapshot, proposed, ref plannerPasses, ref plannerElapsed);
             if (plan.IsBlocked)
             {
                 conflictSkips++;
@@ -558,9 +695,6 @@ public sealed class AutoPopulateService(
                 continue;
             }
 
-            var newlyAdded = closureResult.ModIds
-                .Where(id => !selected.Contains(id))
-                .ToHashSet(PathRules.Comparer);
             var contributesEffectiveFile = plan.Conflicts.Any(decision =>
                 decision.WinnerModId is not null &&
                 newlyAdded.Contains(decision.WinnerModId));
@@ -594,18 +728,20 @@ public sealed class AutoPopulateService(
             }
 
             selected.UnionWith(closureResult.ModIds);
+            interactionIndex.Add(newlyAdded, filesByMod);
         }
 
         // This should normally be prevented by ResolveClosure. Keep the final invariant strict if
         // a live-file requirement changes during the calculation. Removing one failed auto-filled
         // dependency can invalidate another dependent, so converge to a fixed point. The protected
         // baseline is never silently removed.
+        DeploymentPlan finalPlan;
         while (true)
         {
-            var stagedPlan = BuildPlan(snapshot, selected);
-            if (stagedPlan.IsBlocked)
+            finalPlan = BuildPlan(snapshot, selected, ref plannerPasses, ref plannerElapsed);
+            if (finalPlan.IsBlocked)
                 throw new InvalidOperationException("Auto Populate invariant failed: dependency revalidation encountered a blocking file conflict.");
-            var finalDependencyStatus = await dependencies.ScanStageAsync(selected, stagedPlan, ct);
+            var finalDependencyStatus = await dependencies.ScanStageAsync(selected, finalPlan, ct);
             var failed = finalDependencyStatus.Where(x => !x.Ready).ToArray();
             if (failed.Length == 0)
                 break;
@@ -634,10 +770,6 @@ public sealed class AutoPopulateService(
                 throw new InvalidOperationException("Auto Populate dependency validation could not converge.");
         }
 
-        var finalPlan = BuildPlan(snapshot, selected);
-        if (finalPlan.IsBlocked)
-            throw new InvalidOperationException("Auto Populate invariant failed: the final selected set contains a blocking conflict.");
-
         var state = snapshot.Mods.ToDictionary(
             m => m.Id,
             m => new ModState(selected.Contains(m.Id) && !m.IsSuperseded, m.Priority),
@@ -662,9 +794,19 @@ public sealed class AutoPopulateService(
 
         var summary =
             $"Auto Populate preserved {preferred.Count} selected package(s) and filled the safe set to {selected.Count} of {mods.Length} installed package(s); " +
-            $"skipped {conflictSkips} for conflicts and {requirementSkips} for unsatisfied requirements.";
+            $"skipped {conflictSkips} for conflicts and {requirementSkips} for unsatisfied requirements; " +
+            $"used {plannerPasses} full planner pass(es) with {plannerFastPathCandidates} isolated candidate(s) accepted without a rebuild.";
 
-        return new(state, decisions, selected.Count, conflictSkips, requirementSkips, summary);
+        return new(
+            state,
+            decisions,
+            selected.Count,
+            conflictSkips,
+            requirementSkips,
+            summary,
+            plannerPasses,
+            plannerFastPathCandidates,
+            plannerElapsed.TotalMilliseconds);
     }
 
     private ClosureResult ResolveClosure(
@@ -763,13 +905,48 @@ public sealed class AutoPopulateService(
         return ClosureResult.Ok(closure);
     }
 
-    private DeploymentPlan BuildPlan(PlannerSnapshot snapshot, HashSet<string> selected)
+    private DeploymentPlan BuildPlan(
+        PlannerSnapshot snapshot,
+        HashSet<string> selected,
+        ref int plannerPasses,
+        ref TimeSpan plannerElapsed)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var staged = snapshot.Mods
-            .Select(m => m with { Enabled = selected.Contains(m.Id) && !m.IsSuperseded })
-            .ToArray();
-        return planner.Build(snapshot with { Mods = staged });
+        var started = Stopwatch.GetTimestamp();
+        plannerPasses++;
+        try
+        {
+            var staged = snapshot.Mods
+                .Select(m => m with { Enabled = selected.Contains(m.Id) && !m.IsSuperseded })
+                .ToArray();
+            return planner.Build(snapshot with { Mods = staged });
+        }
+        finally
+        {
+            plannerElapsed += Stopwatch.GetElapsedTime(started);
+        }
+    }
+
+    private static bool HasEnabledPairRuleInteraction(
+        IReadOnlyList<ConflictRule> rules,
+        HashSet<string> selected,
+        HashSet<string> newlyAdded)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        foreach (var rule in rules)
+        {
+            if (rule.LeftModId is null || rule.RightModId is null)
+                continue;
+            if (!newlyAdded.Contains(rule.LeftModId) && !newlyAdded.Contains(rule.RightModId))
+                continue;
+
+            var leftEnabled = selected.Contains(rule.LeftModId) || newlyAdded.Contains(rule.LeftModId);
+            var rightEnabled = selected.Contains(rule.RightModId) || newlyAdded.Contains(rule.RightModId);
+            if (leftEnabled && rightEnabled)
+                return true;
+        }
+
+        return false;
     }
 
     private bool HasLiveLoader()
