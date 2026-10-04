@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.96",
+  "currentVersion": "8.8.97",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.96 advances the closed v8.8.95 baseline with the bounded #558 continuation tranche: optional paged-provider contracts, exact GameBanana page/offset resume, post-write cursor advancement, failed-page retry preservation, and serialized Browse Mods Load More. Broader multi-provider scale/performance acceptance remains open.",
+  "immediateParentRevision": "v8.8.97 advances the verified v8.8.96 continuation baseline by making CurseForge reuse the shared paged-provider contract with validated index cursors and authoritative pagination exhaustion. Remaining #558 provider breadth and end-to-end scale/performance acceptance stays open.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, catalog continuation retry/no-skip semantics, Auto Populate dependency/conflict/override safety, updater publication/parity/provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh canonical Windows verification for exact v8.8.96; keep #558 open until broader multi-provider scale/performance acceptance is evidenced and keep #735 open until its installed timing/responsiveness acceptance is evidenced; then propagate this obligation recursively.",
+  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, catalog continuation retry/no-skip semantics, Auto Populate dependency/conflict/override safety, updater publication/parity/provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh exact-final-head admission and canonical Windows closure for v8.8.97; keep #558 open until remaining provider breadth and end-to-end scale/performance acceptance is evidenced and keep #735 open until its installed timing/responsiveness acceptance is evidenced; then propagate this obligation recursively.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
