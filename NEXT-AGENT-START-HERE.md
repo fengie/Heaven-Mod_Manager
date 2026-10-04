@@ -26,6 +26,11 @@ Release and continuity synchronization changes the candidate SHA, so that earlie
 - v8.8.97 extends that same continuation contract to CurseForge rather than creating parallel UI/state machinery.
 - Keep #558 open for remaining provider/result breadth and deterministic end-to-end scale/performance acceptance.
 
+## Unresolved risk
+
+- #558 remains open after this tranche: remaining provider/result breadth and deterministic end-to-end scale/performance acceptance are not yet proven.
+- v8.8.97 is not canonically closed until the exact final PR head is admitted, integrated, and the resulting canonical source passes fresh hosted-Windows verification.
+
 ## Independent open work
 
 - #735 remains open for installed enable/disable + Auto Populate UI/persistence timing, transitive recomputation evidence, and a durable responsiveness budget.
