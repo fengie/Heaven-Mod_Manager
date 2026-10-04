@@ -477,7 +477,7 @@ internal sealed class AutoPopulateInteractionIndex
         }
     }
 
-    private static IReadOnlyList<string> Ancestors(string path)
+    private static List<string> Ancestors(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = path.Replace('/', '\\');
