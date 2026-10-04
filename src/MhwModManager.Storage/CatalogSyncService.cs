@@ -19,7 +19,14 @@ public sealed record CatalogSyncResult(
     CatalogProviderHealth? Health,
     string? NextCursor = null)
 {
-    public bool HasMore => !string.IsNullOrWhiteSpace(NextCursor);
+    public bool HasMore
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return !string.IsNullOrWhiteSpace(NextCursor);
+        }
+    }
 }
 
 public sealed class CatalogSyncService
@@ -37,14 +44,19 @@ public sealed class CatalogSyncService
         this.timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    public Task<CatalogSyncResult> SyncAsync(
+    public async Task<CatalogSyncResult> SyncAsync(
         IModCatalogProvider provider,
         CatalogBrowseRequest request,
         CatalogSyncOptions? options = null,
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return SyncPageAsync(provider, request, cursor: null, options, ct);
+        return await SyncPageAsync(
+            provider,
+            request,
+            cursor: null,
+            options,
+            ct).ConfigureAwait(false);
     }
 
     public async Task<CatalogSyncResult> SyncNextPageAsync(
