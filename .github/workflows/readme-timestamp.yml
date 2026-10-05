@@ -2,74 +2,68 @@ name: README timestamp
 
 on:
   pull_request:
-    paths: [README.md]
+    paths:
+      - README.md
+      - '.github/workflows/readme-timestamp.yml'
   push:
-    branches: [main]
-    paths: [README.md]
+    branches:
+      - main
+    paths:
+      - README.md
+      - '.github/workflows/readme-timestamp.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: readme-timestamp-${{ github.repository }}
+  group: readme-timestamp-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   readme-timestamp:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Checkout
+      - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 2
+          persist-credentials: false
 
-      - name: Validate README timestamp on pull requests
-        if: github.event_name == 'pull_request'
+      - name: Validate README timestamp
         shell: bash
         run: |
           set -euo pipefail
-          pattern='^> ⏱️ Last README update: `[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z` _\(auto-maintained\)_$'
+          pattern='^> ⏱️ Last README update: \*\*[A-Z][a-z]+ [0-9]{1,2}, [0-9]{4} · [0-9]{1,2}:[0-9]{2}:[0-9]{2} (AM|PM) E(D|S)T\*\* _\(repo-enforced\)_$'
+
+          if [[ ! -f README.md ]]; then
+            if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+              exit 0
+            fi
+            echo "::error::README.md is missing."
+            exit 1
+          fi
+
           current="$(grep -m1 -E "$pattern" README.md || true)"
-          [[ -n "$current" ]] || { echo "::error::README.md must contain the auto-maintained timestamp."; exit 1; }
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          base="$(git show "origin/${{ github.base_ref }}:README.md" 2>/dev/null | grep -m1 -E "$pattern" || true)"
-          [[ "$current" != "$base" ]] || { echo "::error::README.md changed without refreshing its timestamp."; exit 1; }
+          [[ -n "$current" ]] || { echo "::error::README.md must contain the readable repo-enforced America/New_York timestamp line."; exit 1; }
 
-      - name: Stamp README on main
-        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from datetime import datetime, timezone
-          from pathlib import Path
-          import re
-          p=Path("README.md")
-          if not p.exists(): raise SystemExit(0)
-          text=p.read_text(encoding="utf-8")
-          stamp=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          repl=f"> ⏱️ Last README update: `{stamp}` _(auto-maintained)_"
-          pat=re.compile(r"^> ⏱️ Last README update: `[^\n]+` _\(auto-maintained\)_$",re.MULTILINE)
-          if pat.search(text):
-              text=pat.sub(repl,text,count=1)
-          else:
-              lines=text.splitlines()
-              i=1 if lines and lines[0].startswith("#") else 0
-              lines[i:i]=["",repl]
-              text="\n".join(lines)
-              if not text.endswith("\n"): text+="\n"
-          p.write_text(text,encoding="utf-8")
-          PY
+          readme_changed=false
+          previous=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            if ! git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- README.md; then
+              readme_changed=true
+            fi
+            previous="$(git show "origin/${{ github.base_ref }}:README.md" 2>/dev/null | grep -m1 -E "$pattern" || true)"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            if git rev-parse HEAD^ >/dev/null 2>&1 && ! git diff --quiet HEAD^ HEAD -- README.md; then
+              readme_changed=true
+            fi
+            previous="$(git show HEAD^:README.md 2>/dev/null | grep -m1 -E "$pattern" || true)"
+          fi
 
-      - name: Commit refreshed timestamp
-        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --quiet -- README.md && exit 0
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git commit -m "docs: refresh README timestamp"
-          git push
+          if [[ "$readme_changed" == "true" && -n "$previous" && "$current" == "$previous" ]]; then
+            echo "::error::README.md changed without refreshing its Last README update timestamp."
+            exit 1
+          fi
