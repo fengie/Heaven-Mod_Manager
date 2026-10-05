@@ -1,12 +1,18 @@
-# v8.8.97 CurseForge Browse Mods pagination — handoff
+# v8.8.98 exhaustive Browse Mods first-run indexing — handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
 Primary active catalog issue: #558
-Integration PR: #773
+Integration PR: #776
 
 ## Candidate behavior
+
+- v8.8.98 fixes the first-run exhaustive-indexing gap: a pageable provider with no saved cursor now seeds page 1 and follows durable continuations to exhaustion.
+- Existing saved cursors resume without restarting; already-exhausted scopes are local no-ops.
+- Repeated cursors and empty continuation pages fail closed instead of looping.
+- Nexus remains explicitly limited to supported REST v3 coverage; #558 stays open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.
+
 
 - v8.8.97 keeps v8.8.96's provider-neutral continuation and serialized **Load More** path and adds CurseForge as another real paged provider.
 - CurseForge continuation is the official search index, persisted as an opaque non-negative cursor and rejected before transport when malformed or negative.
