@@ -102,6 +102,35 @@ public sealed class CatalogRepository(ManagerDatabase db)
         await tx.CommitAsync(ct);
     }
 
+    public async Task UpsertBatchAsync(
+        IReadOnlyList<(CachedCatalogMod Cached, bool ReplaceFiles)> batch,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"count={batch?.Count ?? 0}");
+        ArgumentNullException.ThrowIfNull(batch);
+        if (batch.Count == 0) return;
+
+        foreach (var entry in batch)
+        {
+            ArgumentNullException.ThrowIfNull(entry.Cached);
+            ValidateCachedMod(entry.Cached);
+        }
+
+        await using var c = await db.OpenAsync(ct);
+        await using var tx = (SqliteTransaction)await c.BeginTransactionAsync(ct);
+        foreach (var entry in batch)
+        {
+            ct.ThrowIfCancellationRequested();
+            await EnsureSourceExistsAsync(c, tx, entry.Cached.Mod.ProviderId, ct);
+            await UpsertItemAsync(c, tx, entry.Cached, ct);
+            if (entry.ReplaceFiles)
+                await ReplaceFilesAsync(c, tx, entry.Cached.Mod, ct);
+            await UpsertProvenanceAsync(c, tx, entry.Cached, ct);
+            await ReindexAsync(c, tx, entry.Cached.Mod, ct);
+        }
+        await tx.CommitAsync(ct);
+    }
+
     public async Task<CachedCatalogMod?> GetAsync(string canonicalId, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
