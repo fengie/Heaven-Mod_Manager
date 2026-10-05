@@ -3,7 +3,7 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.97",
+  "currentVersion": "8.8.98",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.97 advances the verified v8.8.96 continuation baseline by making CurseForge reuse the shared paged-provider contract with validated index cursors and authoritative pagination exhaustion. Remaining #558 provider breadth and end-to-end scale/performance acceptance stays open.",
   "canonicalRepository": "fengie/mhw-mods",
