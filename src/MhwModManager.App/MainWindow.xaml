@@ -1066,6 +1066,12 @@
                                     AutomationProperties.Name="Load more provider browse results"
                                     ToolTip="Resume supported provider browse pages from the last successfully persisted continuation."
                                     Style="{StaticResource QuietButton}"/>
+                            <Button Content="Index All Available"
+                                    Command="{Binding IndexAllAvailableModsCommand}"
+                                    Visibility="{Binding CatalogLoadMoreVisibility}"
+                                    AutomationProperties.Name="Index all available mods"
+                                    ToolTip="Follow every supported provider continuation until all currently enumerable mods are stored in the local catalogue."
+                                    Style="{StaticResource QuietButton}"/>
                             <Button Content="Refresh Providers" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}"/>
                         </StackPanel>
                     </Grid>
