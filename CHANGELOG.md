@@ -1,3 +1,9 @@
+# v8.8.99 — 2026-10-05
+
+- Make the concurrent SDK-isolation regression hermetic by testing sibling SDK-root/marker integrity directly instead of coupling the security invariant to repeated external `dotnet --version` startup latency.
+- Preserve distinct run/attempt/job roots, path containment, destructive sibling cleanup, concurrent peer-content checks, bounded completion, and fail-closed cleanup.
+- Keep exact SDK pinning and CI supply-chain enforcement unchanged while eliminating runner-load false timeouts that blocked PR verification.
+
 # v8.8.98 — 2026-10-05
 
 - Repair #558 exhaustive Browse Mods indexing so a first run with no saved provider cursor starts at page 1 instead of incorrectly reporting exhaustion.
