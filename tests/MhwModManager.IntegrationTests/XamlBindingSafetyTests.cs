@@ -744,4 +744,17 @@ public sealed partial class XamlBindingSafetyTests
 
     [GeneratedRegex("<Run\\b[^>]*\\bText=\\\"\\{Binding[^}]+\\}\\\"[^>]*/>", RegexOptions.CultureInvariant)]
     private static partial Regex RunBindingRegex();
+
+    [Fact]
+    public void Browse_mods_surfaces_provider_coverage_limits()
+    {
+        var root = FindRepoRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Text=\"{Binding CatalogCoverageSummary}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("public string CatalogCoverageSummary", viewModel, StringComparison.Ordinal);
+        Assert.Contains("trending feed only; no full-catalog browse/search", viewModel, StringComparison.Ordinal);
+        Assert.Contains("resumable browse pages", viewModel, StringComparison.Ordinal);
+    }
 }
