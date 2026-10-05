@@ -756,5 +756,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("public string CatalogCoverageSummary", viewModel, StringComparison.Ordinal);
         Assert.Contains("REST v3 trending feed only; full-catalog discovery requires a separately supported provider index", viewModel, StringComparison.Ordinal);
         Assert.Contains("resumable browse pages indexed locally", viewModel, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding IndexAllAvailableModsCommand}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("while (true)", viewModel, StringComparison.Ordinal);
+        Assert.Contains("All currently enumerable provider pages are indexed locally.", viewModel, StringComparison.Ordinal);
     }
 }
