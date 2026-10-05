@@ -1,0 +1,139 @@
+name: One-time stale branch drain
+
+on:
+  push:
+    branches:
+      - ops/branch-drain-20261004-once
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_REPO: fengie/mhw-mods
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Delete only exact classified stale refs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          api="https://api.github.com/repos/$GH_REPO"
+          auth=(-H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
+          open_heads="$RUNNER_TEMP/open-pr-heads.txt"
+          curl -fsS "${auth[@]}" "$api/pulls?state=open&per_page=100" | jq -r '.[].head.ref' > "$open_heads"
+
+          deleted=0
+          absent=0
+          preserved=0
+          failed=0
+
+          while IFS=$'\t' read -r expected branch_name; do
+            [[ -z "$branch_name" ]] && continue
+
+            if grep -Fxq "$branch_name" "$open_heads"; then
+              echo "PRESERVE open-pr branch=$branch_name"
+              preserved=$((preserved + 1))
+              continue
+            fi
+
+            ref_json="$RUNNER_TEMP/ref.json"
+            code="$(curl -sS -o "$ref_json" -w '%{http_code}' "${auth[@]}" "$api/git/ref/heads/$branch_name")"
+            if [[ "$code" == "404" ]]; then
+              echo "ABSENT branch=$branch_name"
+              absent=$((absent + 1))
+              continue
+            fi
+            if [[ "$code" != "200" ]]; then
+              echo "FAIL read branch=$branch_name http=$code"
+              failed=$((failed + 1))
+              continue
+            fi
+
+            actual="$(jq -r '.object.sha' "$ref_json")"
+            if [[ "$actual" != "$expected" ]]; then
+              echo "PRESERVE moved branch=$branch_name expected=$expected actual=$actual"
+              preserved=$((preserved + 1))
+              continue
+            fi
+
+            delete_code="$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE "${auth[@]}" "$api/git/refs/heads/$branch_name")"
+            if [[ "$delete_code" == "204" ]]; then
+              echo "DELETED branch=$branch_name sha=$expected"
+              deleted=$((deleted + 1))
+            else
+              echo "FAIL delete branch=$branch_name http=$delete_code"
+              failed=$((failed + 1))
+            fi
+          done <<'BRANCHES'
+da90342071c7a16c207d0c8d0a70e45b67c742b1	agent/issue-558-provider-search-v8.8.69-20261002-chatgpt
+bea7b5b2a6a3d7bbfcd7d4172702e68767644c9a	feat/compliance-baseline-20
+45f453d1b268e7da17320be30df88d3ef199a203	fix/advanced-tools-accessibility
+8d66eb459011a7c4a2cbf7e771937f91833cd4c8	fix/audit-575-577-browse-selection-v8.8.71-20261002
+f885efe21f26f1ae29f7c4171383fbc36c624fd9	fix/audit-findings-575-577-20261002
+4e7dea8ef5e3d3d5592925e6c3cb21ee17587bfb	fix/auditor-discovery-v8.8.77
+070901f49c85c5b221afd29163a7c3b6433a2789	fix/blob-capture-source-certification
+2eac4df451cb31310a71a894a085c5b3fd08ea6d	fix/ci-updater-pr-gate-614-615
+073f4952c1606186394c4dbe3c3d05c9380c442d	fix/hpn-v31-handoff-accuracy
+3c323aed97e408aa4d48f4be8478f899fd6bc83f	fix/issue281-catalog-v8.8.55
+fcb2f05084f08bc02992f9dc1e36e46f10fce5ce	fix/issue558-search-cache-integrity-v8.8.70-20261002
+6b727448d210a3257878d3f15bb21aa0c60b229c	fix/runtime-updater-hardening-v8.8.57-20261001
+d469d879277ebc9bec6fef93ece3c6faf290b496	fix/snapshot-orphan-pruning
+1020b93b5641b4911b661837ed9e2e55603aa578	fix/update-migration-id-case-v8.8.82
+a7d4beec60e51faad0f1c8a28098b45764bbb238	fix/578-profile-lifecycle-current-main
+661e10e7b02b96c504e3de01b73083906da268ae	fix/602-603-discovery-v8.8.81-fresh-main
+36ed99c8f7c4e9456ac2e1312a6d9848955b5e57	fix/605-contextual-accessibility-upgrade-docs
+11b6ce4e08adc5e5bc40618167ada83f0f4a9617	fix/624-pathprefix-validation
+566a383f9b4c361b8af665130aee77c6bb4f8a05	fix/635-updater-request-topology-fresh-main
+5324d0ea9a43eda777a1fbaff7ca722ac411303a	fix/650-temp-cleanup-20261003-r2
+d238c447020f1a0f568b32751a42c452b4870a58	fix/650-temp-cleanup-20261003
+af2f88f7e28c70763bb330bc7e08a3eb42bb6be6	fix/673-adoption-hardening
+ec6268e3c6d53ae35748ca1a422a8a759a7dff4e	fix/676-import-reparse-hardening
+9e5b289d1f21ea4539f2b95585156c1de5cc75ec	fix/682-stale-publication-gate
+ba1fae6b74ecf196939b0feff748864101a1d5bb	fix/699-authoritative-hash-certification
+a4f7835c11564f40f584876c45562f004261347a	fix/713-residual-regressions
+30523b7ed6d387ee40497b2ff7346d30650466cd	fix/714-visible-scope-current-main
+ce62f55ab6e9ab3519ae60d308b4bdc58ed05722	issue-669-storage-policy-preflight
+3ff57bb38b73459c78b0a3a917cc06376d1fb5d4	reconcile/snapshot-orphan-pruning-v8.8.84
+7ec71c8fcc5a4456d6ea15ac1df6139f284fa40b	reconcile/unowned-backlog-current-main
+11cb112a229fd3850ae16b5f7de1786039d3d04b	reconcile/676-import-reparse-current-main-r2
+a1888f759217faa3f1dd6ad695d485e461e333ba	reconcile/689-blob-cert-current-main
+e18c66bdc089b9fe9f086391bb130ab2666603fd	reconcile/689-blob-source-certification
+8e6ce2726cfa0dab81379672e52a045ab2536b18	reconcile/701-authoritative-hash-certification
+3b16843101c824bcdedc7a34f8eb78dbeef7b049	reconcile/702-current-main
+0631b17495b02815a309a0a0d66112beaeadd558	support/pr629-exact-exception-20261003
+e9beb96a505e479523f5e84f92e14aba65caada6	support/pr677-retained-snapshots-20261003
+BRANCHES
+
+          echo "RESULT deleted=$deleted absent=$absent preserved=$preserved failed=$failed"
+
+          self_branch="$GITHUB_REF_NAME"
+          self_json="$RUNNER_TEMP/self-ref.json"
+          self_code="$(curl -sS -o "$self_json" -w '%{http_code}' "${auth[@]}" "$api/git/ref/heads/$self_branch")"
+          if [[ "$self_code" != "200" ]]; then
+            echo "FAIL self-read branch=$self_branch http=$self_code"
+            exit 1
+          fi
+          self_actual="$(jq -r '.object.sha' "$self_json")"
+          if [[ "$self_actual" != "$GITHUB_SHA" ]]; then
+            echo "FAIL self-moved branch=$self_branch expected=$GITHUB_SHA actual=$self_actual"
+            exit 1
+          fi
+          self_delete="$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE "${auth[@]}" "$api/git/refs/heads/$self_branch")"
+          if [[ "$self_delete" != "204" ]]; then
+            echo "FAIL self-delete branch=$self_branch http=$self_delete"
+            exit 1
+          fi
+          echo "DELETED self branch=$self_branch sha=$GITHUB_SHA"
+
+          remaining="$(curl -fsS "${auth[@]}" "$api/branches?per_page=100" | jq -r '.[].name')"
+          echo "REMAINING_BRANCHES"
+          echo "$remaining"
+
+          if (( preserved > 0 || failed > 0 )); then
+            exit 1
+          fi
