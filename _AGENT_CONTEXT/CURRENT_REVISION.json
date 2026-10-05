@@ -3,7 +3,7 @@
     "project": "MHW Manual Mod Manager",
     "canonicalRepository": "fengie/mhw-mods",
     "canonicalBranch": "main",
-    "workingBranch": "main",
+    "workingBranch": "fix/558-exhaustive-first-run",
     "currentVersion": "8.8.98",
     "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus": "external-canonical",
@@ -21,7 +21,7 @@
         "installedClientE2ERun": 36979261045,
         "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.68.log"
     },
-    "candidateSourceCommit": "fb89c327b2a504bf4d0961100de6227d882c0cc8",
+    "candidateSourceCommit": null,
     "unresolvedRisks": [
         "v8.8.97 extends the shared provider continuation path to CurseForge with validated non-negative index cursors and authoritative pagination exhaustion while preserving v8.8.96 GameBanana + Load More semantics. Issue #558 remains open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.",
         "The v8.8.89 legal/privacy material is an engineering baseline, not jurisdiction-specific legal advice; paid/commercial service, hosted personal data, child-directed collection, analytics/ads, embedded web tracking/cookies, marketing email, reviews/testimonials, or new telemetry require renewed review before release.",
@@ -40,13 +40,13 @@
     "globalBootstrapRepository": "fengie/heaven-toolbox",
     "globalBootstrapBranch": "main",
     "toolboxTransferredWork": "Reusable Agent Control, Heaven Bridge, plugin/toolbox, and global coordination remain owned by fengie/heaven-toolbox.",
-    "integrationState": "canonical-main",
-    "stateSemantics": "post-integration-canonical",
-    "activePullRequest": null,
-    "activeIssue": null,
+    "integrationState": "candidate-pr",
+    "stateSemantics": "pre-integration-candidate",
+    "activePullRequest": 776,
+    "activeIssue": 558,
     "lastClosedWindowsVerification": {
         "sourceSha": "54d3a740e47559d1a280a563f4cd4f929c2a0859",
         "runId": 37255940374,
-        "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.98-heaven-windows-closure.log"
+        "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log"
     }
 }
