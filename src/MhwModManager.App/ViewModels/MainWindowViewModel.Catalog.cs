@@ -1016,6 +1016,8 @@ public sealed partial class MainWindowViewModel
                         }
 
                         SetCatalogHasContinuation(failures > 0);
+                        if (total > 0 && catalogRepository is not null)
+                            await catalogRepository.OptimizeSearchIndexAsync(ct);
                         await SearchCatalogCacheAsync(ct);
                         CatalogProviderSummary =
                             $"Indexed {total} additional item(s) · {completed}/{providers.Length} pageable provider(s) exhausted" +
