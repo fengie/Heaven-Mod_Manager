@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.99",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.99 makes the concurrent SDK-root isolation regression hermetic under persistent-runner load while preserving exact SDK and sibling cleanup security invariants.",
+  "immediateParentRevision": "v8.8.98 repairs #558 exhaustive Browse Mods first-run indexing with durable continuation-to-exhaustion semantics while preserving remaining provider-breadth and end-to-end scale/performance work under #558.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
