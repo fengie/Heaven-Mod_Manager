@@ -131,6 +131,15 @@ public sealed class CatalogRepository(ManagerDatabase db)
         await tx.CommitAsync(ct);
     }
 
+    public async Task OptimizeSearchIndexAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var c = await db.OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = "INSERT INTO catalog_items_fts(catalog_items_fts) VALUES('optimize')";
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
     public async Task<CachedCatalogMod?> GetAsync(string canonicalId, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
