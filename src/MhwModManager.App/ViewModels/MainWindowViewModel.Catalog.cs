@@ -436,6 +436,29 @@ public sealed partial class MainWindowViewModel
             return CatalogBrowseResultState.From(CatalogQuery, CatalogItemCount).Detail;
         }
     }
+    public string CatalogCoverageSummary
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            var providers = catalogProviders ?? Array.Empty<IModCatalogProvider>();
+            if (providers.Count == 0)
+                return "Coverage: cached results only until a live provider is configured.";
+
+            return "Coverage: " + string.Join(" · ", providers.Select(provider =>
+            {
+                var name = provider.DisplayName;
+                if (string.Equals(provider.ProviderId, "nexus", StringComparison.OrdinalIgnoreCase))
+                    return $"{name}: trending feed only; no full-catalog browse/search";
+                if (provider is IPagedModCatalogProvider)
+                    return $"{name}: resumable browse pages";
+                if (provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search))
+                    return $"{name}: provider search";
+                return $"{name}: limited provider feed";
+            }));
+        }
+    }
+
     public string CatalogResultCountLabel
     {
         get
@@ -783,6 +806,7 @@ public sealed partial class MainWindowViewModel
             }
         }
         catalogProviders = providers;
+        OnPropertyChanged(nameof(CatalogCoverageSummary));
     }
 
     private async Task EnsureCatalogLoadedAsync(CancellationToken ct)
