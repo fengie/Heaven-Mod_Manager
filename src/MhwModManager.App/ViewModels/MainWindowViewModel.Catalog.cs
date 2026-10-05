@@ -943,6 +943,101 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
+    [RelayCommand]
+    private async Task IndexAllAvailableMods()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (HasCatalogQuery)
+        {
+            CatalogStatusText = "Clear the cached search before indexing all available provider pages.";
+            return;
+        }
+
+        SetCatalogProviderOperationInProgress(true);
+        try
+        {
+            await RunBusy(
+                "catalog.index-all",
+                "Indexing all available mods",
+                "Following every supported provider continuation into the durable local catalogue…",
+                true,
+                async ct =>
+                {
+                    await catalogSyncGate.WaitAsync(ct);
+                    try
+                    {
+                        EnsureCatalogRuntime();
+                        var sync = catalogSync
+                            ?? throw new InvalidOperationException("Catalog sync runtime is unavailable.");
+                        var providers = (catalogProviders ?? Array.Empty<IModCatalogProvider>())
+                            .Where(provider => provider is IPagedModCatalogProvider)
+                            .ToArray();
+
+                        var total = 0;
+                        var completed = 0;
+                        var failures = 0;
+                        foreach (var provider in providers)
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            try
+                            {
+                                var mode = CatalogBrowseMode.RecentlyUpdated;
+                                while (true)
+                                {
+                                    var result = await sync.SyncNextPageAsync(
+                                        provider,
+                                        new CatalogBrowseRequest(
+                                            s.Paths.Game,
+                                            Query: null,
+                                            Mode: mode,
+                                            Limit: CatalogProviderRefreshLimit),
+                                        new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
+                                        ct);
+                                    total += result.ItemCount;
+                                    if (!result.HasMore) break;
+                                    if (result.ItemCount == 0)
+                                        throw new InvalidDataException(
+                                            $"{provider.DisplayName} returned an empty page with a continuation cursor.");
+                                }
+                                completed++;
+                            }
+                            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                failures++;
+                                MasterDebugLog.Write(
+                                    "CATALOG-UI",
+                                    $"Full provider indexing stopped safely. provider={provider.ProviderId}",
+                                    ex);
+                            }
+                        }
+
+                        SetCatalogHasContinuation(failures > 0);
+                        await SearchCatalogCacheAsync(ct);
+                        CatalogProviderSummary =
+                            $"Indexed {total} additional item(s) · {completed}/{providers.Length} pageable provider(s) exhausted" +
+                            (failures > 0 ? $" · {failures} provider(s) stopped safely and can resume" : "");
+                        CatalogStatusText = providers.Length == 0
+                            ? "No configured provider currently exposes exhaustive resumable browse pages."
+                            : failures == 0
+                                ? "All currently enumerable provider pages are indexed locally."
+                                : "Indexing preserved completed pages and stopped failed providers without losing their continuation.";
+                    }
+                    finally
+                    {
+                        catalogSyncGate.Release();
+                    }
+                });
+        }
+        finally
+        {
+            SetCatalogProviderOperationInProgress(false);
+        }
+    }
+
     private async Task LoadMoreCatalog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
