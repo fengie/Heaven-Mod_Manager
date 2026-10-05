@@ -1103,7 +1103,15 @@
                             </Border>
                             <Grid Grid.Row="1" Margin="2,8,2,8">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogProviderSummary}" TextWrapping="Wrap"/>
+                                <StackPanel>
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogProviderSummary}" TextWrapping="Wrap"/>
+                                    <TextBlock Margin="0,3,0,0"
+                                               Foreground="{StaticResource Muted}"
+                                               FontSize="10"
+                                               Text="{Binding CatalogCoverageSummary}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.Name="{Binding CatalogCoverageSummary}"/>
+                                </StackPanel>
                                 <Border Grid.Column="1" Style="{StaticResource StatusBadge}">
                                     <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold"
                                                Text="{Binding CatalogResultCountLabel}"
