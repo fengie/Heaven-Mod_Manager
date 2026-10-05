@@ -23,7 +23,7 @@
     },
     "candidateSourceCommit": null,
     "unresolvedRisks": [
-        "v8.8.97 extends the shared provider continuation path to CurseForge with validated non-negative index cursors and authoritative pagination exhaustion while preserving v8.8.96 GameBanana + Load More semantics. Issue #558 remains open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.",
+        "v8.8.98 repairs #558 exhaustive Browse Mods first-run indexing by seeding page 1 with no saved cursor, following durable continuations to exhaustion, and rejecting repeated/empty continuation states. Issue #558 remains open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.",
         "The v8.8.89 legal/privacy material is an engineering baseline, not jurisdiction-specific legal advice; paid/commercial service, hosted personal data, child-directed collection, analytics/ads, embedded web tracking/cookies, marketing email, reviews/testimonials, or new telemetry require renewed review before release.",
         "Issue #350 cannot be fully closed until a real production public updater trust anchor is embedded, its private key is provisioned outside the repository/ordinary release credentials, and one real signed release is verified end to end.",
         "Issue #354 repository rulesets remain externally blocked on the current private-repository/account tier and this GitHub App cannot administer branch protection; stable Authenticode publisher identity also requires external certificate provisioning.",
