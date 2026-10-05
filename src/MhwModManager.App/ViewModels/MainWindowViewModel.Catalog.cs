@@ -445,16 +445,16 @@ public sealed partial class MainWindowViewModel
             if (providers.Count == 0)
                 return "Coverage: cached results only until a live provider is configured.";
 
-            return "Coverage: " + string.Join(" · ", providers.Select(provider =>
+            return "One-stop index coverage: " + string.Join(" · ", providers.Select(provider =>
             {
                 var name = provider.DisplayName;
                 if (string.Equals(provider.ProviderId, "nexus", StringComparison.OrdinalIgnoreCase))
-                    return $"{name}: trending feed only; no full-catalog browse/search";
+                    return $"{name}: REST v3 trending feed only; full-catalog discovery requires a separately supported provider index";
                 if (provider is IPagedModCatalogProvider)
-                    return $"{name}: resumable browse pages";
+                    return $"{name}: resumable browse pages indexed locally";
                 if (provider.Capabilities.HasFlag(CatalogProviderCapabilities.Search))
-                    return $"{name}: provider search";
-                return $"{name}: limited provider feed";
+                    return $"{name}: provider search indexed locally";
+                return $"{name}: limited provider feed indexed locally";
             }));
         }
     }
