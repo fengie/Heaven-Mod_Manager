@@ -981,23 +981,15 @@ public sealed partial class MainWindowViewModel
                             try
                             {
                                 var mode = CatalogBrowseMode.RecentlyUpdated;
-                                while (true)
-                                {
-                                    var result = await sync.SyncNextPageAsync(
-                                        provider,
-                                        new CatalogBrowseRequest(
-                                            s.Paths.Game,
-                                            Query: null,
-                                            Mode: mode,
-                                            Limit: CatalogProviderRefreshLimit),
-                                        new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
-                                        ct);
-                                    total += result.ItemCount;
-                                    if (!result.HasMore) break;
-                                    if (result.ItemCount == 0)
-                                        throw new InvalidDataException(
-                                            $"{provider.DisplayName} returned an empty page with a continuation cursor.");
-                                }
+                                total += await sync.SyncAllAvailablePagesAsync(
+                                    provider,
+                                    new CatalogBrowseRequest(
+                                        s.Paths.Game,
+                                        Query: null,
+                                        Mode: mode,
+                                        Limit: CatalogProviderRefreshLimit),
+                                    new CatalogSyncOptions(TimeSpan.FromMinutes(30), HydrateFiles: false),
+                                    ct);
                                 completed++;
                             }
                             catch (OperationCanceledException) when (ct.IsCancellationRequested)

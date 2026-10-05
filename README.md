@@ -1,10 +1,17 @@
-# v8.8.97 — MHW Manual Mod Manager
+# v8.8.98 — MHW Manual Mod Manager
 
-Current product version: **8.8.97**.
+Current product version: **8.8.98**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.98 — exhaustive Browse Mods first-run indexing
+
+- Make **Index All Available** seed page 1 when an enumerable provider has no saved cursor, then follow durable continuations to exhaustion.
+- Resume existing cursors without restarting already persisted pages; already-exhausted scopes remain local no-ops.
+- Reject repeated cursors and empty continuation pages so malformed providers cannot create infinite indexing loops.
+- Keep Nexus coverage honest: this slice does not claim unsupported full-catalog Nexus discovery, and #558 remains open for provider breadth plus end-to-end scale/performance acceptance.
 
 ## v8.8.97 — CurseForge Browse Mods pagination
 
@@ -21,13 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Persist continuation only after the returned page is fully written; failed continuation preserves the prior cursor so retry cannot jump over failed work.
 - Add a serialized **Load More** Browse Mods action plus deterministic continuation, failure-retry, exhausted-no-op, and binding coverage.
 - #558 remains open for broader multi-provider scale/performance acceptance beyond this GameBanana continuation tranche.
-
-## v8.8.95 — responsive Auto Populate planning
-
-- Keep the existing v8.8.94 bounded planner semantics, but execute only the pure `AutoPopulateService.BuildAsync` phase on a background thread so CPU-heavy planning no longer monopolizes the WPF Dispatcher.
-- Preserve captured preferred mod IDs, `RunBusy` foreground ownership, Dispatcher-owned row staging/`Changed`, timeline reporting, cancellation propagation, final dependency validation, and Apply's authoritative current-state re-plan before game-file mutation.
-- Add behavioral STA/WPF regression coverage proving the Dispatcher can service queued work while the Auto Populate build is blocked off-thread, plus pre-cancellation coverage proving cancelled work never enters the background build.
-- #735 remains open until real installed enable/disable + Auto Populate UI/persistence timing and a durable acceptance budget are proven.
 
 ## Current plans & progress
 

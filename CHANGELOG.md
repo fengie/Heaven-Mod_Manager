@@ -1,3 +1,10 @@
+# v8.8.98 — 2026-10-05
+
+- Repair #558 exhaustive Browse Mods indexing so a first run with no saved provider cursor starts at page 1 instead of incorrectly reporting exhaustion.
+- Centralize resumable provider exhaustion in CatalogSyncService, preserving saved-cursor resume and already-exhausted no-op behavior.
+- Reject repeated continuation cursors and empty continuation pages to prevent unsafe/infinite provider loops.
+- Add deterministic first-run three-page exhaustion and repeated-cursor regression coverage; keep Nexus full-catalog limitations explicit and keep #558 open for remaining breadth/scale acceptance.
+
 # v8.8.97 — 2026-10-04
 
 - Extend the shared paged-provider contract to CurseForge so Browse Mods can continue beyond its first page through the existing provider-neutral path.

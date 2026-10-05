@@ -59,6 +59,63 @@ public sealed class CatalogSyncService
             ct).ConfigureAwait(false);
     }
 
+    public async Task<int> SyncAllAvailablePagesAsync(
+        IModCatalogProvider provider,
+        CatalogBrowseRequest request,
+        CatalogSyncOptions? options = null,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(request);
+        if (provider is not IPagedModCatalogProvider)
+            throw new NotSupportedException(
+                $"Catalog provider '{provider.ProviderId}' does not expose resumable browse pages.");
+
+        options ??= CatalogSyncOptions.Default;
+        ValidateOptions(options);
+        ValidateProviderIdentity(provider);
+
+        var scopeKey = BuildScopeKey(request);
+        var previous = await repository.GetSyncStateAsync(
+            provider.ProviderId,
+            scopeKey,
+            ct).ConfigureAwait(false);
+
+        CatalogSyncResult current;
+        if (previous is null || (string.IsNullOrWhiteSpace(previous.Cursor) && previous.LastSuccessAt is null))
+        {
+            current = await SyncAsync(provider, request, options, ct).ConfigureAwait(false);
+        }
+        else if (string.IsNullOrWhiteSpace(previous.Cursor))
+        {
+            return 0;
+        }
+        else
+        {
+            current = await SyncNextPageAsync(provider, request, options, ct).ConfigureAwait(false);
+        }
+
+        var total = current.ItemCount;
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        while (current.HasMore)
+        {
+            var cursor = current.NextCursor!;
+            if (!seenCursors.Add(cursor))
+                throw new InvalidDataException(
+                    $"Catalog provider '{provider.ProviderId}' repeated continuation cursor '{cursor}'.");
+
+            if (current.ItemCount == 0)
+                throw new InvalidDataException(
+                    $"Catalog provider '{provider.ProviderId}' returned an empty page with a continuation cursor.");
+
+            current = await SyncNextPageAsync(provider, request, options, ct).ConfigureAwait(false);
+            total += current.ItemCount;
+        }
+
+        return total;
+    }
+
     public async Task<CatalogSyncResult> SyncNextPageAsync(
         IModCatalogProvider provider,
         CatalogBrowseRequest request,
