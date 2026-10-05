@@ -1,10 +1,18 @@
-# v8.8.96 — MHW Manual Mod Manager
+# v8.8.97 — MHW Manual Mod Manager
 
-Current product version: **8.8.96**.
+Current product version: **8.8.97**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.97 — CurseForge Browse Mods pagination
+
+- Reuse the shared paged-provider contract for CurseForge so **Load More** continues through the existing provider-neutral Browse Mods path.
+- Persist a validated non-negative search index as the continuation and derive exhaustion from response pagination metadata.
+- Reject invalid cursors before transport while preserving the existing CurseForge provider boundaries.
+- Add deterministic continuation and exhaustion coverage without introducing provider-specific UI state.
+- #558 remains open for remaining provider breadth and end-to-end scale/performance acceptance.
 
 ## v8.8.96 — resumable Browse Mods pagination
 
@@ -20,13 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Preserve captured preferred mod IDs, `RunBusy` foreground ownership, Dispatcher-owned row staging/`Changed`, timeline reporting, cancellation propagation, final dependency validation, and Apply's authoritative current-state re-plan before game-file mutation.
 - Add behavioral STA/WPF regression coverage proving the Dispatcher can service queued work while the Auto Populate build is blocked off-thread, plus pre-cancellation coverage proving cancelled work never enters the background build.
 - #735 remains open until real installed enable/disable + Auto Populate UI/persistence timing and a durable acceptance budget are proven.
-
-## v8.8.94 — bounded Auto Populate planning
-
-- Make Auto Populate accept provably isolated dependency closures without rebuilding the full deployment plan for every candidate; exact-path, file/directory topology, explicit pair-rule, and MHW atomic-structural-bundle interactions still fall back to the authoritative planner.
-- Keep one mandatory final full-plan plus dependency invariant before returning a proposed setup, and instrument full planner passes, isolated fast-path candidates, and planner milliseconds in automation timeline evidence.
-- Remove the redundant Mod Library analysis rebuild immediately before Apply; Apply still performs the authoritative current-state plan/dependency preflight before any game-file mutation.
-- Add deterministic sparse-library regression cases at 8, 64, and 256 mods: the optimized path stays at one full planner pass instead of the prior candidate-by-candidate N+3 planner shape, plus a disjoint explicit-incompatibility fallback regression.
 
 ## Current plans & progress
 
@@ -50,7 +51,7 @@ Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN
 - [x] **SECURITY-554 / P0** — v8.8.63 crawler path/redirect containment passed all required exact-head gates and integrated via PR #555.
 - [x] **BROWSE-556 / P1** — v8.8.68 packaged installed-client E2E run `36979261045` passed selected DisplayName, Switch/Settings, update, and rollback acceptance; issue #556 is closed.
 - [x] **BROWSE-557 / P1** — v8.8.64 rich Browse Mods rows/details passed all required exact-head gates and integrated via PR #561.
-- [ ] **CATALOG-SCALE-558 / P1** — v8.8.96 adds durable GameBanana browse continuation plus a serialized **Load More** UI path on top of the earlier capability-gated search/1000-row cache work; broader multi-provider scale/performance acceptance remains under #558.
+- [ ] **CATALOG-SCALE-558 / P1** — v8.8.97 extends the shared continuation path to CurseForge after v8.8.96 delivered GameBanana + **Load More**; remaining provider breadth and end-to-end scale/performance acceptance stay under #558.
 - [x] **CATALOG-UPDATES-569 / P1** — v8.8.71 removes duplicate GameBanana installed-origin detail fetches through an optional provider snapshot contract and deterministic request-count coverage via PR #573.
 - [ ] **BROWSE-UX-559 / P1** — v8.8.72 adds explicit no-selection/detail/install gating and v8.8.78 adds actionable empty/no-match states; filters, sorting, provider-health presentation, loading/stale/partial-failure states, and broader discovery UX remain open under #559.
 - [x] **RECOVERY-002 / P0** — v8.8.62 catalog browser/acquisition, CurseForge, and permitted-crawler recovery is integrated via PR #553 with exact-head gates green; bounded credential-free Vortex handoff interoperability is integrated in v8.8.76, while Steam Workshop remains conditional under issue #281.

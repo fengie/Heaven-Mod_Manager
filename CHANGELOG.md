@@ -1,3 +1,10 @@
+# v8.8.97 — 2026-10-04
+
+- Extend the shared paged-provider contract to CurseForge so Browse Mods can continue beyond its first page through the existing provider-neutral path.
+- Persist a validated non-negative search index as the continuation, derive the next cursor from response pagination metadata, and stop at totalCount.
+- Reject malformed or negative continuations before transport and add deterministic cursor, exhaustion, and invalid-cursor regressions.
+- Keep issue #558 open for remaining provider breadth and end-to-end scale/performance acceptance.
+
 # v8.8.96 — 2026-10-04
 
 - Add an optional provider pagination contract and make GameBanana browse results resumable with opaque page/offset continuations so limit boundaries do not skip remaining provider IDs.

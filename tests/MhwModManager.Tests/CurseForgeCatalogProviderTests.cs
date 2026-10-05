@@ -8,6 +8,8 @@ namespace MhwModManager.Tests;
 
 public sealed class CurseForgeCatalogProviderTests
 {
+    private static readonly int[] ExpectedPagedIndexes = [0, 1];
+
     [Fact]
     public void Compliance_is_official_api_only_and_never_html()
     {
@@ -52,6 +54,118 @@ public sealed class CurseForgeCatalogProviderTests
         Assert.Equal("fixture-hunter-tools.zip", file.FileName);
         Assert.DoesNotContain(apiKey, mod.SourceUrl, StringComparison.Ordinal);
         Assert.DoesNotContain("token=", mod.SourceUrl, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Browse_page_uses_persistable_index_cursor_and_stops_at_total_count()
+    {
+        var indexes = new List<int>();
+        var handler = new RoutingHandler((request, _) =>
+        {
+            var expectedIndex = indexes.Count;
+            Assert.Contains($"index={expectedIndex}", request.RequestUri?.Query ?? string.Empty, StringComparison.Ordinal);
+            indexes.Add(expectedIndex);
+            var index = expectedIndex;
+            var json = ReadFixture("search.json")
+                .Replace("\"index\": 0", $"\"index\": {index}", StringComparison.Ordinal)
+                .Replace("\"totalCount\": 1", "\"totalCount\": 2", StringComparison.Ordinal);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, json));
+        });
+        using var client = new HttpClient(handler);
+        var provider = CreateProvider(client, "fixture-key");
+
+        var first = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.RecentlyUpdated, Limit: 1),
+            ct: TestContext.Current.CancellationToken);
+        Assert.Equal("1", first.NextCursor);
+
+        var second = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.RecentlyUpdated, Limit: 1),
+            first.NextCursor,
+            TestContext.Current.CancellationToken);
+        Assert.Null(second.NextCursor);
+        Assert.Equal(ExpectedPagedIndexes, indexes);
+    }
+
+    [Fact]
+    public async Task Browse_page_advances_by_authoritative_page_size_not_result_count()
+    {
+        using var client = new HttpClient(new RoutingHandler((request, _) =>
+        {
+            Assert.Contains("index=0", request.RequestUri?.Query ?? string.Empty, StringComparison.Ordinal);
+            Assert.Contains("pageSize=20", request.RequestUri?.Query ?? string.Empty, StringComparison.Ordinal);
+            var json = ReadFixture("search.json")
+                .Replace("\"pageSize\": 1", "\"pageSize\": 20", StringComparison.Ordinal)
+                .Replace("\"totalCount\": 1", "\"totalCount\": 100", StringComparison.Ordinal);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, json));
+        }));
+        var provider = CreateProvider(client, "fixture-key");
+
+        var page = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest, Limit: 20),
+            ct: TestContext.Current.CancellationToken);
+
+        Assert.Equal("20", page.NextCursor);
+    }
+
+    [Fact]
+    public async Task Browse_page_stops_when_server_page_does_not_advance()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+        {
+            var json = ReadFixture("search.json")
+                .Replace("\"pageSize\": 1", "\"pageSize\": 0", StringComparison.Ordinal)
+                .Replace("\"totalCount\": 1", "\"totalCount\": 100", StringComparison.Ordinal);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, json));
+        }));
+        var provider = CreateProvider(client, "fixture-key");
+
+        var page = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest, Limit: 20),
+            ct: TestContext.Current.CancellationToken);
+
+        Assert.Null(page.NextCursor);
+    }
+
+    [Fact]
+    public async Task Browse_page_clamps_request_at_curseforge_search_window_boundary()
+    {
+        using var client = new HttpClient(new RoutingHandler((request, _) =>
+        {
+            Assert.Contains("index=9999", request.RequestUri?.Query ?? string.Empty, StringComparison.Ordinal);
+            Assert.Contains("pageSize=1", request.RequestUri?.Query ?? string.Empty, StringComparison.Ordinal);
+            var json = ReadFixture("search.json")
+                .Replace("\"index\": 0", "\"index\": 9999", StringComparison.Ordinal)
+                .Replace("\"totalCount\": 1", "\"totalCount\": 20000", StringComparison.Ordinal);
+            return Task.FromResult(JsonResponse(HttpStatusCode.OK, json));
+        }));
+        var provider = CreateProvider(client, "fixture-key");
+
+        var page = await provider.BrowsePageAsync(
+            new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest, Limit: 50),
+            "9999",
+            TestContext.Current.CancellationToken);
+
+        Assert.Null(page.NextCursor);
+    }
+
+    [Fact]
+    public async Task Browse_page_rejects_invalid_cursor_before_transport()
+    {
+        using var client = new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Invalid cursor must not reach CurseForge.")));
+        var provider = CreateProvider(client, "fixture-key");
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => provider.BrowsePageAsync(
+                new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest, Limit: 1),
+                "-1",
+                TestContext.Current.CancellationToken));
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => provider.BrowsePageAsync(
+                new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest, Limit: 1),
+                "10000",
+                TestContext.Current.CancellationToken));
     }
 
     [Fact]

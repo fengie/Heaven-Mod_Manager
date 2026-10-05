@@ -36,7 +36,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |
-| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #565 v8.8.69 integrated; PR #772 v8.8.96 continuation tranche | Expand catalog breadth safely with capability-gated search, durable provider continuation, coherent cache capacity, and provider-aware scaling. |
+| CATALOG-SCALE-558 | P1 | ACTIVE | issue #558; PR #565 v8.8.69 integrated; PR #772 v8.8.96 GameBanana continuation; PR #773 v8.8.97 CurseForge continuation | Expand catalog breadth safely with capability-gated search, durable provider continuation, coherent cache capacity, and provider-aware scaling. |
 | BROWSE-UX-559 | P1 | ACTIVE | issue #559; v8.8.72 selection-state; v8.8.78 empty/no-match tranche | Add filters, sorting, provider health, loading/stale/partial-failure states, and broader discovery UX. |
 | CATALOG-UPDATES-569 | P1 | DONE | issue #569; PR #573; v8.8.71 | Eliminate duplicate installed-origin provider detail hydration while preserving exact update identity and fail-closed replacement selection. |
 | RECOVERY-578 | P0 | READY | issue #578; follow-up to #571 / PR #572 | Recover canonical MHW identity from stale generic profiles and handle multiple same-root profiles safely. |
@@ -195,11 +195,12 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] v8.8.69 candidate: raise the repository search clamp from 500 to 1000 to match the virtualized UI capacity, with a deterministic >500-row regression.
 - [x] PR #565 exact head `fdecfcccf9e04850acb983e91582d3c915283efa` passed Workflow Feature `36981898989`, MHW Product Security `36981899021`, and Heaven Toolbox Ownership `36981898930`, then squash-merged as `7ee321a349098849b9e4db302b20dfa1595ca13b`.
 - [x] v8.8.96: add an optional paged-provider contract; make GameBanana continuation preserve mid-page offsets; persist cursors only after successful page writes; preserve prior cursors on failure; expose serialized Browse Mods **Load More**; add deterministic continuation/retry/exhaustion/binding coverage.
-- [ ] Continue #558 with broader multi-provider pagination/browse expansion, provider/result coverage visibility, and deterministic end-to-end scale/performance acceptance.
+- [x] v8.8.97: make CurseForge reuse shared provider continuation with validated non-negative index cursors, authoritative pagination exhaustion, and deterministic invalid-cursor coverage.
+- [ ] Continue #558 with remaining multi-provider pagination/browse breadth, provider/result coverage visibility, and deterministic end-to-end scale/performance acceptance.
 - [x] v8.8.72: add an explicit no-selection detail state, hide mod-specific controls until selection, and disable install until an exact file is selected.
 - [ ] Continue #559 with filters/sorting/provider health/loading/stale/partial-failure states.
 
-**Next action:** verify/integrate exact v8.8.96 PR #772, then continue #558 only with still-missing multi-provider scale/performance acceptance; continue #559's remaining filters/sorting/provider-health/loading/stale/partial-failure scope without duplicating #558 pagination.
+**Next action:** verify/integrate exact v8.8.97 PR #773, obtain fresh canonical Windows closure, then continue #558 only with still-missing provider breadth and end-to-end scale/performance acceptance; continue #559 without duplicating #558 pagination.
 
 ## CATALOG-UPDATES-569 — Installed-origin provider snapshot reuse
 

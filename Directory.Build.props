@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.96</Version>
-    <InformationalVersion>8.8.96-catalog-provider-pagination</InformationalVersion>
+    <Version>8.8.97</Version>
+    <InformationalVersion>8.8.97-curseforge-provider-pagination</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

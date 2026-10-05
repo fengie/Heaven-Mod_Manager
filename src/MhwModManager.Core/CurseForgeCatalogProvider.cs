@@ -9,8 +9,9 @@ public sealed record CurseForgeCatalogGameSource(
     string GameDisplayName,
     int CurseForgeGameId);
 
-public sealed class CurseForgeCatalogProvider : IModCatalogProvider
+public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCatalogProvider
 {
+    private const int SearchWindowLimit = 10_000;
     private readonly CurseForgeTransport transport;
     private readonly CurseForgeCatalogGameSource[] sources;
     private CatalogProviderHealth health;
@@ -134,6 +135,47 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
 
             MarkConnected();
             return result;
+        }
+        catch (Exception ex)
+        {
+            TrackFailure(ex, ct);
+            throw;
+        }
+    }
+
+    public async Task<CatalogBrowsePage> BrowsePageAsync(
+        CatalogBrowseRequest request,
+        string? cursor = null,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(request);
+        CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(DateTime.UtcNow));
+        var source = RequireSource(request.Game);
+        var index = ParseCursor(cursor);
+        var pageSize = Math.Min(Math.Clamp(request.Limit, 1, 50), SearchWindowLimit - index);
+        var sortField = request.Mode switch
+        {
+            CatalogBrowseMode.Trending => 2,
+            CatalogBrowseMode.Popular => 6,
+            CatalogBrowseMode.RecentlyUpdated => 3,
+            CatalogBrowseMode.Latest => 11,
+            _ => throw new NotSupportedException($"CurseForge browse mode '{request.Mode}' is unsupported.")
+        };
+
+        try
+        {
+            using var response = await transport.SearchModsAsync(
+                source.CurseForgeGameId,
+                request.Query,
+                sortField,
+                index,
+                pageSize,
+                ct).ConfigureAwait(false);
+            var items = NormalizeModList(response.Document, request.Game, source.CurseForgeGameId);
+            var nextCursor = ReadNextCursor(response.Document, index);
+            MarkConnected();
+            return new CatalogBrowsePage(items, nextCursor);
         }
         catch (Exception ex)
         {
@@ -278,6 +320,52 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider
             GameId = source.GameId.Trim(),
             GameDisplayName = source.GameDisplayName.Trim()
         };
+    }
+
+    private static int ParseCursor(string? cursor)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(cursor)) return 0;
+        if (!int.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+            || index < 0
+            || index >= SearchWindowLimit)
+        {
+            throw new ArgumentException(
+                $"CurseForge continuation cursor must be between 0 and {SearchWindowLimit - 1}.",
+                nameof(cursor));
+        }
+        return index;
+    }
+
+    private static string? ReadNextCursor(JsonDocument document, int requestedIndex)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!document.RootElement.TryGetProperty("pagination", out var pagination)
+            || pagination.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var index = ReadOptionalInt64(pagination, "index");
+        var pageSize = ReadOptionalInt64(pagination, "pageSize");
+        var total = ReadOptionalInt64(pagination, "totalCount");
+        if (index is null
+            || index.Value != requestedIndex
+            || pageSize is null
+            || pageSize.Value <= 0
+            || total is null)
+        {
+            return null;
+        }
+
+        var next = checked(index.Value + pageSize.Value);
+        if (next <= index.Value
+            || next >= total.Value
+            || next >= SearchWindowLimit)
+        {
+            return null;
+        }
+        return next.ToString(CultureInfo.InvariantCulture);
     }
 
     private static long ParsePositiveId(string value, string parameterName)

@@ -1,45 +1,47 @@
-# v8.8.96 resumable Browse Mods pagination — handoff
+# v8.8.97 CurseForge Browse Mods pagination — handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical target branch: `main`
 Primary active catalog issue: #558
+Integration PR: #773
 
 ## Candidate behavior
 
-- v8.8.96 keeps the existing provider-neutral catalog and capability-gated search surface, and adds an optional `IPagedModCatalogProvider` contract rather than forcing unsupported providers to invent pagination.
-- GameBanana browse requests now return opaque resumable page/offset continuations. A result limit reached in the middle of a provider page resumes at the exact remaining ID instead of skipping the rest of that provider page.
-- `CatalogSyncService` writes the next cursor only after every returned item is persisted. A failed continuation preserves the prior cursor so retry repeats safe/idempotent work instead of jumping ahead.
-- Browse Mods exposes **Load More** only when browse-mode continuation exists. It shares `catalogSyncGate` with refresh/search, hides during cached text search, isolates provider failures, and keeps retry available when a continuation fails.
-- Nexus unsupported full-catalog search/browse behavior is unchanged. #558 remains open for broader multi-provider scale/performance acceptance.
+- v8.8.97 keeps v8.8.96's provider-neutral continuation and serialized **Load More** path and adds CurseForge as another real paged provider.
+- CurseForge continuation is the official search index, persisted as an opaque non-negative cursor and rejected before transport when malformed or negative.
+- Next-page availability is derived from authoritative response pagination metadata and stops at the reported total count.
+- Existing CurseForge search/acquisition, capability checks, credential isolation, rate-limit health, schema-drift handling, and unsupported-provider behavior remain unchanged.
+- #558 remains open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.96 source `7c079eaec9f71d93eced66f320ca78f1747bdd11` passed run `37239871430` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.96-heaven-windows-closure.log`.
+The v8.8.97 source-only head `b0db52d5b2032af496717d78e675d85c3abc2705` passed Workflow Feature PR Gate run `37244704017` after repairing CA1861 without weakening analyzers.
 
-The tested source remains `7c079eaec9f71d93eced66f320ca78f1747bdd11` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+Release and continuity synchronization changes the candidate SHA, so that earlier green run is historical evidence only. Require fresh exact-final-head required PR gates before integration and fresh canonical hosted-Windows verification after integration. The last closed canonical Windows source remains v8.8.96 `7c079eaec9f71d93eced66f320ca78f1747bdd11` / run `37239871430`.
 
-## #558 acceptance state and unresolved risk
+## Unresolved risk and remaining #558 acceptance
 
-- Earlier tranches already delivered capability-gated provider search, larger cache/UI capacity, bounded GameBanana hydration, metadata/file preservation, quota safeguards, single-flight behavior, and 10k-scale virtualization/index coverage.
-- This slice closes the missing durable continuation path for GameBanana and gives users a real Load More action.
-- Remaining #558 work is broader multi-provider pagination/browse expansion, clearer provider/result coverage where needed, and deterministic end-to-end scale/performance acceptance. Do not close #558 from this tranche alone.
+- v8.8.96 delivered durable GameBanana continuation and the shared Browse Mods Load More path.
+- v8.8.97 extends that same continuation contract to CurseForge rather than creating parallel UI/state machinery.
+- Keep #558 open for remaining provider/result breadth and deterministic end-to-end scale/performance acceptance.
+
+## Unresolved risk
+
+- #558 remains open after this tranche: remaining provider/result breadth and deterministic end-to-end scale/performance acceptance are not yet proven.
+- v8.8.97 is not canonically closed until the exact final PR head is admitted, integrated, and the resulting canonical source passes fresh hosted-Windows verification.
 
 ## Independent open work
 
-- #735 remains open for real installed enable/disable + Auto Populate UI/persistence timing, transitive recomputation evidence, and a durable latency/responsiveness budget.
-- Preserve all updater, filesystem, conflict/dependency/override, exact SDK, release-provenance, and durable-evidence safety invariants from current canonical main.
-
-## Execution/offload note
-
-When a callable Heaven/Agent Control execution surface is unavailable in the current session, use exact-head repository/Windows CI evidence and do not fabricate local execution or installed-client timing.
+- #735 remains open for installed enable/disable + Auto Populate UI/persistence timing, transitive recomputation evidence, and a durable responsiveness budget.
+- Preserve updater, filesystem, conflict/dependency/override, exact-SDK, release-provenance, and durable-evidence safety invariants.
 
 ## Next action
 
-1. Fix any deterministic exact-head regression on PR #772 without weakening gates.
-2. Reconcile fresh canonical main immediately before integration; merge only the exact final green v8.8.96 head and verify remote-main tree/readback.
-3. Obtain fresh canonical hosted-Windows verification for the integrated v8.8.96 source and persist evidence through the existing trusted path.
-4. Keep #558 open unless its remaining multi-provider scale/performance acceptance is actually evidenced; then select only a non-overlapping next slice.
+1. Require fresh exact-final-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership admission for PR #773.
+2. Reconcile current canonical main immediately before integration; merge only the exact admitted v8.8.97 candidate and verify remote-main tree/readback.
+3. Obtain and persist fresh canonical hosted-Windows verification for integrated v8.8.97, then publish immediately if the repository's release gate makes the version release-ready.
+4. Keep #558 open until its remaining multi-provider breadth and end-to-end scale/performance acceptance is actually evidenced.
 
 ## Successor obligation
 
