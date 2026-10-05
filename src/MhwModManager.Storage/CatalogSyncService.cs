@@ -150,12 +150,14 @@ public sealed class CatalogSyncService
                 attemptedAt,
                 ct).ConfigureAwait(false);
 
-            foreach (var cached in prepared)
-            {
-                ct.ThrowIfCancellationRequested();
-                var replaceFiles = options.HydrateFiles || cached.Mod.Files.Count > 0;
-                await repository.UpsertAsync(cached, replaceFiles, ct).ConfigureAwait(false);
-            }
+            var persistenceBatch = prepared
+                .Select(cached => (
+                    Cached: cached,
+                    ReplaceFiles: options.HydrateFiles || cached.Mod.Files.Count > 0))
+                .ToArray();
+            await repository
+                .UpsertBatchAsync(persistenceBatch, ct)
+                .ConfigureAwait(false);
 
             var health = await TryGetHealthAsync(provider, ct).ConfigureAwait(false);
             await PersistRateStateAsync(provider.ProviderId, scopeKey, health, ct).ConfigureAwait(false);
