@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.97",
-  "verifiedAtUtc": "2026-10-05T00:05:56.6659397+00:00",
+  "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -634,6 +634,13 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Catalog.cs::MainWindowViewModel::accessor:property:CatalogCoverageSummary:get",
+      "fingerprint": "cdb562d8f1bee40bcbb97331aa0376a7130debb38ebc46adf3294a943eddf4c1",
+      "verified": true,
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Catalog.cs::MainWindowViewModel::accessor:property:CatalogResultCountLabel:get",
       "fingerprint": "40c4139158aef50054a4d5c1a49c756764cc485f46e4a6b841e6b07514664cd5",
       "verified": true,
@@ -838,9 +845,9 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Catalog.cs::MainWindowViewModel::method:EnsureCatalogRuntime()",
-      "fingerprint": "d34d87f7a93ec68349ad40b7600d90777f7b46e09957f6c561ff18b1d18961f3",
+      "fingerprint": "3761498944bab6e62e17d6bbf7702dc4dc182c3eca5fc8394487d7e5bb72dbb8",
       "verified": true,
-      "verifiedAtUtc": "2026-10-05T00:05:56.6659397+00:00",
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -865,10 +872,17 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Catalog.cs::MainWindowViewModel::method:LoadMoreCatalog()",
-      "fingerprint": "998012d97e1ee5c566520cd6c3fdc89aea026f99cb2feb167a67abf58d4b4e1d",
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Catalog.cs::MainWindowViewModel::method:IndexAllAvailableMods()",
+      "fingerprint": "1ce450d8ea3e4f3bd67a5364514126b02e33643377e82f291b73dce8d126621f",
       "verified": true,
-      "verifiedAtUtc": "2026-10-05T00:05:56.6659397+00:00",
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Catalog.cs::MainWindowViewModel::method:LoadMoreCatalog()",
+      "fingerprint": "6a50b2931c5df86a823a2f9db8ad48b4927af60652dfa47586aa78a423d5cfcb",
+      "verified": true,
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -10378,6 +10392,20 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
+      "id": "src/MhwModManager.Storage/CatalogRepository.cs::CatalogRepository::method:UpsertBatchAsync(IReadOnlyList\u003C(CachedCatalogModCached,boolReplaceFiles)\u003E,CancellationToken)",
+      "fingerprint": "7714483ac147d4d5c0b076ca654104cc17f46c781ec790f96fe240da36ba0ad0",
+      "verified": true,
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Storage/CatalogRepository.cs::CatalogRepository::method:OptimizeSearchIndexAsync(CancellationToken)",
+      "fingerprint": "1f5d1afdc14800d20060eaa8943fa0414baf9ee1f3213249f82d32ef1808bbd1",
+      "verified": true,
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
       "id": "src/MhwModManager.Storage/CatalogRepository.cs::CatalogRepository::method:GetAsync(string,CancellationToken)",
       "fingerprint": "0e5d03cbddb9ba9c6f47692e7c4d74fdd1418442eb873de9f13a9c8e3a239220",
       "verified": true,
@@ -10624,9 +10652,9 @@
     },
     {
       "id": "src/MhwModManager.Storage/CatalogSyncService.cs::CatalogSyncService::method:SyncPageAsync(IModCatalogProvider,CatalogBrowseRequest,string?,CatalogSyncOptions?,CancellationToken)",
-      "fingerprint": "0d0fdf9f4e4c4f443d6aaa9058064e3144a8a56a28855dcf537947cb0e294618",
+      "fingerprint": "7872b88a2898c8513bd51892c604d92eef9162f90ea1d55a9d83b161142939ba",
       "verified": true,
-      "verifiedAtUtc": "2026-10-05T00:05:56.6659397+00:00",
+      "verifiedAtUtc": "2026-10-05T02:38:32.915256+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {

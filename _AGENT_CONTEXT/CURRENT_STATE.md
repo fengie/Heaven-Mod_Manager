@@ -11,9 +11,9 @@ v8.8.97 carries forward the v8.8.96 catalog-continuation, planner, updater, conf
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.97 source `62fe3e98e4872bc40fc135dcfe3c29de831cf27d` passed run `37245903623` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.97 source `54d3a740e47559d1a280a563f4cd4f929c2a0859` passed run `37255940374` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
 
-The tested source remains `62fe3e98e4872bc40fc135dcfe3c29de831cf27d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `54d3a740e47559d1a280a563f4cd4f929c2a0859` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
