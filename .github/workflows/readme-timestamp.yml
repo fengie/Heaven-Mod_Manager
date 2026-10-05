@@ -5,12 +5,16 @@ on:
     paths:
       - README.md
       - '.github/workflows/readme-timestamp.yml'
+      - VERSION.txt
+      - VERSION_TIMESTAMPS.md
   push:
     branches:
       - main
     paths:
       - README.md
       - '.github/workflows/readme-timestamp.yml'
+      - VERSION.txt
+      - VERSION_TIMESTAMPS.md
   workflow_dispatch:
 
 permissions:
@@ -65,5 +69,31 @@ jobs:
 
           if [[ "$readme_changed" == "true" && -n "$previous" && "$current" == "$previous" ]]; then
             echo "::error::README.md changed without refreshing its Last README update timestamp."
+            exit 1
+          fi
+
+- name: Validate version timestamp ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f VERSION.txt ]] || exit 0
+          [[ -f VERSION_TIMESTAMPS.md ]] || { echo "::error::VERSION_TIMESTAMPS.md is required for versioned repositories."; exit 1; }
+
+          version="$(tr -d '\r\n ' < VERSION.txt)"
+          [[ -n "$version" ]] || { echo "::error::VERSION.txt is empty."; exit 1; }
+          grep -Fq "| $version |" VERSION_TIMESTAMPS.md || { echo "::error::VERSION_TIMESTAMPS.md is missing current version $version."; exit 1; }
+
+          version_changed=false
+          ledger_changed=false
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- VERSION.txt || version_changed=true
+            git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- VERSION_TIMESTAMPS.md || ledger_changed=true
+          elif [[ "${{ github.event_name }}" == "push" ]] && git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --quiet HEAD^ HEAD -- VERSION.txt || version_changed=true
+            git diff --quiet HEAD^ HEAD -- VERSION_TIMESTAMPS.md || ledger_changed=true
+          fi
+
+          if [[ "$version_changed" == "true" && "$ledger_changed" != "true" ]]; then
+            echo "::error::VERSION.txt changed without updating VERSION_TIMESTAMPS.md in the same change."
             exit 1
           fi
