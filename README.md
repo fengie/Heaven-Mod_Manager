@@ -1,5 +1,7 @@
 # v8.8.99 — MHW Manual Mod Manager
 
+> ⏱️ Last README update: `2026-10-05T22:11:00Z` _(auto-maintained)_
+
 Current product version: **8.8.99**.
 
 ## Recent patches
