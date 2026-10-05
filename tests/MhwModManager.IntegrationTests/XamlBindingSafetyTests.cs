@@ -748,7 +748,7 @@ public sealed partial class XamlBindingSafetyTests
     [Fact]
     public void Browse_mods_surfaces_provider_coverage_limits()
     {
-        var root = FindRepoRoot();
+        var root = FindRepositoryRoot();
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
         var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
 
