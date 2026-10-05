@@ -1066,6 +1066,12 @@
                                     AutomationProperties.Name="Load more provider browse results"
                                     ToolTip="Resume supported provider browse pages from the last successfully persisted continuation."
                                     Style="{StaticResource QuietButton}"/>
+                            <Button Content="Index All Available"
+                                    Command="{Binding IndexAllAvailableModsCommand}"
+                                    Visibility="{Binding CatalogLoadMoreVisibility}"
+                                    AutomationProperties.Name="Index all available mods"
+                                    ToolTip="Follow every supported provider continuation until all currently enumerable mods are stored in the local catalogue."
+                                    Style="{StaticResource QuietButton}"/>
                             <Button Content="Refresh Providers" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}"/>
                         </StackPanel>
                     </Grid>
@@ -1103,7 +1109,15 @@
                             </Border>
                             <Grid Grid.Row="1" Margin="2,8,2,8">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogProviderSummary}" TextWrapping="Wrap"/>
+                                <StackPanel>
+                                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding CatalogProviderSummary}" TextWrapping="Wrap"/>
+                                    <TextBlock Margin="0,3,0,0"
+                                               Foreground="{StaticResource Muted}"
+                                               FontSize="10"
+                                               Text="{Binding CatalogCoverageSummary}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.Name="{Binding CatalogCoverageSummary}"/>
+                                </StackPanel>
                                 <Border Grid.Column="1" Style="{StaticResource StatusBadge}">
                                     <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold"
                                                Text="{Binding CatalogResultCountLabel}"

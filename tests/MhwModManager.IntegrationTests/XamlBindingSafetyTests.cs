@@ -744,4 +744,20 @@ public sealed partial class XamlBindingSafetyTests
 
     [GeneratedRegex("<Run\\b[^>]*\\bText=\\\"\\{Binding[^}]+\\}\\\"[^>]*/>", RegexOptions.CultureInvariant)]
     private static partial Regex RunBindingRegex();
+
+    [Fact]
+    public void Browse_mods_surfaces_provider_coverage_limits()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Text=\"{Binding CatalogCoverageSummary}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("public string CatalogCoverageSummary", viewModel, StringComparison.Ordinal);
+        Assert.Contains("REST v3 trending feed only; full-catalog discovery requires a separately supported provider index", viewModel, StringComparison.Ordinal);
+        Assert.Contains("resumable browse pages indexed locally", viewModel, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding IndexAllAvailableModsCommand}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("while (true)", viewModel, StringComparison.Ordinal);
+        Assert.Contains("All currently enumerable provider pages are indexed locally.", viewModel, StringComparison.Ordinal);
+    }
 }

@@ -1,3 +1,8 @@
+
+## One-stop catalogue completeness target
+
+Browse Mods is intended to be the selected game's one-stop catalogue, not a sample feed. The durable local index should converge on every publicly available mod that configured sources can legally and reliably enumerate. Stable official/provider enumeration is preferred. When a stable provider API exposes only a bounded feed, a separately supported discovery/index surface may fill the gap only behind explicit capability, cache, rate-limit, provenance, schema-drift and fail-closed boundaries. Experimental/WIP discovery must never be reported as complete until exhaustive traversal is proven. Never brute-force provider IDs or bypass provider controls.
+
 # Federated Mod Catalog Project Plan
 
 Research baseline: 2026-09-29.
