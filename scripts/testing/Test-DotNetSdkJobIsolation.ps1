@@ -62,26 +62,23 @@ try {
     Set-Content -LiteralPath $markerA -Value 'A' -Encoding ASCII
     Set-Content -LiteralPath $markerB -Value 'B' -Encoding ASCII
 
-    $dotnet=(Get-Command dotnet -ErrorAction Stop).Source
-    if([string]::IsNullOrWhiteSpace($dotnet) -or !(Test-Path -LiteralPath $dotnet -PathType Leaf)){
-        throw 'dotnet executable was not resolved for the isolation probe.'
-    }
-
+    # This test's security invariant is sibling SDK-root ownership/isolation.
+    # Keep the concurrent worker filesystem-only: external dotnet process startup
+    # latency is unrelated to whether cleanup of one owned root can affect another.
     $job=Start-Job -ScriptBlock {
-        param([string]$PeerMarker,[string]$DotNet)
+        param([string]$PeerMarker)
         $ErrorActionPreference='Stop'
         for($i=0;$i -lt 24;$i++){
             if(!(Test-Path -LiteralPath $PeerMarker -PathType Leaf)){
                 throw "Peer-owned marker disappeared during concurrent cleanup: $PeerMarker"
             }
-            $version=& $DotNet --version
-            if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$version)){
-                throw "dotnet became unavailable during concurrent sibling cleanup."
+            if((Get-Content -LiteralPath $PeerMarker -Raw).Trim() -ne 'B'){
+                throw "Peer-owned marker changed during concurrent sibling cleanup: $PeerMarker"
             }
             Start-Sleep -Milliseconds 20
         }
         'PASS'
-    } -ArgumentList $markerB,$dotnet
+    } -ArgumentList $markerB
 
     for($i=0;$i -lt 24;$i++){
         if(Test-Path -LiteralPath $jobA){

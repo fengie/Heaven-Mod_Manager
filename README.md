@@ -1,10 +1,16 @@
-# v8.8.98 — MHW Manual Mod Manager
+# v8.8.99 — MHW Manual Mod Manager
 
-Current product version: **8.8.98**.
+Current product version: **8.8.99**.
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.99 — hermetic SDK-isolation verification
+
+- Keep the concurrent SDK-root isolation regression focused on sibling filesystem ownership instead of unrelated repeated `dotnet` process-start latency.
+- Repeatedly verify the peer SDK root and marker contents while another owned root is destructively recreated, retaining bounded timeout and fail-closed cleanup.
+- Preserve exact SDK pinning and supply-chain enforcement while removing self-hosted-runner load as a false timeout signal.
 
 ## v8.8.98 — exhaustive Browse Mods first-run indexing
 
@@ -20,14 +26,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Reject invalid cursors before transport while preserving the existing CurseForge provider boundaries.
 - Add deterministic continuation and exhaustion coverage without introducing provider-specific UI state.
 - #558 remains open for remaining provider breadth and end-to-end scale/performance acceptance.
-
-## v8.8.96 — resumable Browse Mods pagination
-
-- Add an optional paged-provider contract while preserving existing non-paged providers and capability-gated remote search behavior.
-- Make GameBanana browse pages resumable with opaque page/offset cursors, including mid-page continuation so a UI limit cannot skip remaining provider IDs.
-- Persist continuation only after the returned page is fully written; failed continuation preserves the prior cursor so retry cannot jump over failed work.
-- Add a serialized **Load More** Browse Mods action plus deterministic continuation, failure-retry, exhausted-no-op, and binding coverage.
-- #558 remains open for broader multi-provider scale/performance acceptance beyond this GameBanana continuation tranche.
 
 ## Current plans & progress
 
