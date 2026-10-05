@@ -360,6 +360,48 @@ public sealed class CatalogRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task Batch_upsert_persists_a_provider_page_atomically()
+    {
+        var repository = await CreateRepositoryAsync("batch-upsert");
+        var first = CreateCached(
+            "nexus:batch-a",
+            "Batch A",
+            "First batch item",
+            "Atomic page fixture.",
+            null,
+            providerModId: "batch-a");
+        var second = CreateCached(
+            "nexus:batch-b",
+            "Batch B",
+            "Second batch item",
+            "Atomic page fixture.",
+            null,
+            providerModId: "batch-b");
+
+        await repository.UpsertBatchAsync(
+            [(first, true), (second, true)],
+            TestToken);
+
+        var results = await repository.SearchAsync(
+            "Batch",
+            gameId: "monsterhunterworld",
+            limit: 1000,
+            ct: TestToken);
+        Assert.Equal(2, results.Count);
+        Assert.All(results, result => Assert.Single(result.Mod.Files));
+    }
+
+    [Fact]
+    public void Catalog_sync_batches_page_persistence_instead_of_opening_a_transaction_per_item()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var source = File.ReadAllText(
+            Path.Combine(repositoryRoot, "src", "MhwModManager.Storage", "CatalogSyncService.cs"));
+        Assert.Contains("UpsertBatchAsync(persistenceBatch, ct)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("await repository.UpsertAsync(cached, replaceFiles, ct)", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Same_named_items_from_different_sources_remain_distinct()
     {
         var repository = await CreateRepositoryAsync("source-separation");
