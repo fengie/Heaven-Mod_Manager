@@ -943,7 +943,6 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    [RelayCommand]
     private async Task IndexAllAvailableMods()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
