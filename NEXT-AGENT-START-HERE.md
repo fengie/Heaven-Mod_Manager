@@ -16,9 +16,9 @@ Integration PR: #773
 
 ## Verification boundary
 
-The v8.8.97 source-only head `b0db52d5b2032af496717d78e675d85c3abc2705` passed Workflow Feature PR Gate run `37244704017` after repairing CA1861 without weakening analyzers.
+Current hosted-Windows closure: v8.8.97 source `62fe3e98e4872bc40fc135dcfe3c29de831cf27d` passed run `37245903623` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
 
-Release and continuity synchronization changes the candidate SHA, so that earlier green run is historical evidence only. Require fresh exact-final-head required PR gates before integration and fresh canonical hosted-Windows verification after integration. The last closed canonical Windows source remains v8.8.96 `7c079eaec9f71d93eced66f320ca78f1747bdd11` / run `37239871430`.
+The tested source remains `62fe3e98e4872bc40fc135dcfe3c29de831cf27d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and remaining #558 acceptance
 

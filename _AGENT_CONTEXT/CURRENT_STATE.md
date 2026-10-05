@@ -11,9 +11,9 @@ v8.8.97 carries forward the v8.8.96 catalog-continuation, planner, updater, conf
 
 ## Verification boundary
 
-The source-only v8.8.97 head `b0db52d5b2032af496717d78e675d85c3abc2705` passed Workflow Feature PR Gate `37244704017`. Release/continuity synchronization changes the exact candidate and therefore requires fresh exact-final-head PR gates.
+Current hosted-Windows closure: v8.8.97 source `62fe3e98e4872bc40fc135dcfe3c29de831cf27d` passed run `37245903623` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
 
-The last closed canonical hosted-Windows source remains v8.8.96 `7c079eaec9f71d93eced66f320ca78f1747bdd11` / run `37239871430`; fresh post-integration Windows verification is required for v8.8.97.
+The tested source remains `62fe3e98e4872bc40fc135dcfe3c29de831cf27d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent work
 
