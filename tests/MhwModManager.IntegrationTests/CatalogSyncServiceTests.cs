@@ -201,6 +201,69 @@ public sealed class CatalogSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Exhaustive_sync_seeds_first_page_and_reaches_three_page_end()
+    {
+        var repository = await CreateRepositoryAsync("paged-exhaustive-first-run");
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = cursor => cursor switch
+            {
+                null => new CatalogBrowsePage([CreateMod("fixture", "mod-1")], "cursor-2"),
+                "cursor-2" => new CatalogBrowsePage([CreateMod("fixture", "mod-2")], "cursor-3"),
+                "cursor-3" => new CatalogBrowsePage([CreateMod("fixture", "mod-3")]),
+                _ => throw new InvalidDataException($"Unexpected cursor '{cursor}'.")
+            }
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-paged-exhaustive"));
+        var service = new CatalogSyncService(repository);
+        var request = new CatalogBrowseRequest(game);
+
+        var total = await service.SyncAllAvailablePagesAsync(
+            provider,
+            request,
+            new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(3, total);
+        Assert.Equal(3, provider.BrowsePageCalls);
+        Assert.NotNull(await repository.GetAsync("fixture:mod-1", TestToken));
+        Assert.NotNull(await repository.GetAsync("fixture:mod-2", TestToken));
+        Assert.NotNull(await repository.GetAsync("fixture:mod-3", TestToken));
+        var state = await repository.GetSyncStateAsync(
+            "fixture",
+            BuildExpectedScope(game, CatalogBrowseMode.Trending, null),
+            TestToken);
+        Assert.NotNull(state);
+        Assert.Null(state!.Cursor);
+    }
+
+    [Fact]
+    public async Task Exhaustive_sync_rejects_repeated_cursor_without_looping()
+    {
+        var repository = await CreateRepositoryAsync("paged-cursor-loop");
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = cursor => cursor switch
+            {
+                null => new CatalogBrowsePage([CreateMod("fixture", "mod-1")], "loop"),
+                "loop" => new CatalogBrowsePage([CreateMod("fixture", "mod-2")], "loop"),
+                _ => throw new InvalidDataException($"Unexpected cursor '{cursor}'.")
+            }
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-paged-loop"));
+        var service = new CatalogSyncService(repository);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            service.SyncAllAvailablePagesAsync(
+                provider,
+                new CatalogBrowseRequest(game),
+                new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false),
+                TestToken));
+
+        Assert.Equal(2, provider.BrowsePageCalls);
+    }
+
+    [Fact]
     public async Task Failed_next_page_preserves_previous_cursor_for_retry()
     {
         var repository = await CreateRepositoryAsync("paged-failure");
