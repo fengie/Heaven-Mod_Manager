@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   enforce:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","Windows","X64","heaven-toolbox"]') || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
       - name: Check out exact source
