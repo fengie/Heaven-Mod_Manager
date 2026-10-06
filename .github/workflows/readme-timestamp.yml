@@ -26,7 +26,8 @@ concurrency:
 
 jobs:
   readme-timestamp:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 5
     steps:
       - name: Checkout exact source
@@ -36,64 +37,71 @@ jobs:
           persist-credentials: false
 
       - name: Validate README timestamp
-        shell: bash
+        shell: powershell
         run: |
-          set -euo pipefail
-          pattern='^> ⏱️ Last README update: \*\*[A-Z][a-z]+ [0-9]{1,2}, [0-9]{4} · [0-9]{1,2}:[0-9]{2}:[0-9]{2} (AM|PM) E(D|S)T\*\* _\(repo-enforced\)_$'
+          $ErrorActionPreference = 'Stop'
+          $pattern = '^> .+ Last README update: \*\*[A-Z][a-z]+ [0-9]{1,2}, [0-9]{4} . [0-9]{1,2}:[0-9]{2}:[0-9]{2} (AM|PM) E(D|S)T\*\* _\(repo-enforced\)_$'
+          if (-not (Test-Path 'README.md' -PathType Leaf)) {
+            if ('${{ github.event_name }}' -eq 'workflow_dispatch') { exit 0 }
+            throw 'README.md is missing.'
+          }
+          $current = Get-Content -LiteralPath 'README.md' -Encoding UTF8 | Where-Object { $_ -match $pattern } | Select-Object -First 1
+          if (-not $current) { throw 'README.md must contain the readable repo-enforced America/New_York timestamp line.' }
 
-          if [[ ! -f README.md ]]; then
-            if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-              exit 0
-            fi
-            echo "::error::README.md is missing."
-            exit 1
-          fi
+          $readmeChanged = $false
+          $previous = $null
+          if ('${{ github.event_name }}' -eq 'pull_request') {
+            git fetch origin '${{ github.base_ref }}' --depth=1
+            if ($LASTEXITCODE -ne 0) { throw 'failed to fetch pull-request base for README timestamp validation' }
+            $baseRange = "origin/${{ github.base_ref }}...HEAD"
+            git diff --quiet $baseRange -- README.md
+            $readmeChanged = ($LASTEXITCODE -ne 0)
+            $previous = @(& git show "origin/${{ github.base_ref }}:README.md" 2>$null) | Where-Object { $_ -match $pattern } | Select-Object -First 1
+          } elseif ('${{ github.event_name }}' -eq 'push') {
+            & git rev-parse HEAD^ *> $null
+            if ($LASTEXITCODE -eq 0) {
+              git diff --quiet HEAD^ HEAD -- README.md
+              $readmeChanged = ($LASTEXITCODE -ne 0)
+              $previous = @(& git show 'HEAD^:README.md' 2>$null) | Where-Object { $_ -match $pattern } | Select-Object -First 1
+            }
+          }
+          if ($readmeChanged -and $previous -and $current -eq $previous) {
+            throw 'README.md changed without refreshing its Last README update timestamp.'
+          }
+          $global:LASTEXITCODE = 0
 
-          current="$(grep -m1 -E "$pattern" README.md || true)"
-          [[ -n "$current" ]] || { echo "::error::README.md must contain the readable repo-enforced America/New_York timestamp line."; exit 1; }
-
-          readme_changed=false
-          previous=""
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            if ! git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- README.md; then
-              readme_changed=true
-            fi
-            previous="$(git show "origin/${{ github.base_ref }}:README.md" 2>/dev/null | grep -m1 -E "$pattern" || true)"
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            if git rev-parse HEAD^ >/dev/null 2>&1 && ! git diff --quiet HEAD^ HEAD -- README.md; then
-              readme_changed=true
-            fi
-            previous="$(git show HEAD^:README.md 2>/dev/null | grep -m1 -E "$pattern" || true)"
-          fi
-
-          if [[ "$readme_changed" == "true" && -n "$previous" && "$current" == "$previous" ]]; then
-            echo "::error::README.md changed without refreshing its Last README update timestamp."
-            exit 1
-          fi
-
-- name: Validate version timestamp ledger
-        shell: bash
+      - name: Validate version timestamp ledger
+        shell: powershell
         run: |
-          set -euo pipefail
-          [[ -f VERSION.txt ]] || exit 0
-          [[ -f VERSION_TIMESTAMPS.md ]] || { echo "::error::VERSION_TIMESTAMPS.md is required for versioned repositories."; exit 1; }
+          $ErrorActionPreference = 'Stop'
+          if (-not (Test-Path 'VERSION.txt' -PathType Leaf)) { exit 0 }
+          if (-not (Test-Path 'VERSION_TIMESTAMPS.md' -PathType Leaf)) { throw 'VERSION_TIMESTAMPS.md is required for versioned repositories.' }
 
-          version="$(tr -d '\r\n ' < VERSION.txt)"
-          [[ -n "$version" ]] || { echo "::error::VERSION.txt is empty."; exit 1; }
-          grep -Fq "| $version |" VERSION_TIMESTAMPS.md || { echo "::error::VERSION_TIMESTAMPS.md is missing current version $version."; exit 1; }
+          $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw -Encoding UTF8).Trim()
+          if (-not $version) { throw 'VERSION.txt is empty.' }
+          $escaped = [regex]::Escape($version)
+          $row = Select-String -LiteralPath 'VERSION_TIMESTAMPS.md' -Pattern "^\| $escaped \|" | Select-Object -First 1
+          if (-not $row) { throw "VERSION_TIMESTAMPS.md is missing current version $version." }
 
-          version_changed=false
-          ledger_changed=false
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- VERSION.txt || version_changed=true
-            git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- VERSION_TIMESTAMPS.md || ledger_changed=true
-          elif [[ "${{ github.event_name }}" == "push" ]] && git rev-parse HEAD^ >/dev/null 2>&1; then
-            git diff --quiet HEAD^ HEAD -- VERSION.txt || version_changed=true
-            git diff --quiet HEAD^ HEAD -- VERSION_TIMESTAMPS.md || ledger_changed=true
-          fi
+          $versionChanged = $false
+          $ledgerChanged = $false
+          if ('${{ github.event_name }}' -eq 'pull_request') {
+            $baseRange = "origin/${{ github.base_ref }}...HEAD"
+            git diff --quiet $baseRange -- VERSION.txt
+            $versionChanged = ($LASTEXITCODE -ne 0)
+            git diff --quiet $baseRange -- VERSION_TIMESTAMPS.md
+            $ledgerChanged = ($LASTEXITCODE -ne 0)
+          } elseif ('${{ github.event_name }}' -eq 'push') {
+            & git rev-parse HEAD^ *> $null
+            if ($LASTEXITCODE -eq 0) {
+              git diff --quiet HEAD^ HEAD -- VERSION.txt
+              $versionChanged = ($LASTEXITCODE -ne 0)
+              git diff --quiet HEAD^ HEAD -- VERSION_TIMESTAMPS.md
+              $ledgerChanged = ($LASTEXITCODE -ne 0)
+            }
+          }
+          if ($versionChanged -and -not $ledgerChanged) {
+            throw 'VERSION.txt changed without updating VERSION_TIMESTAMPS.md in the same change.'
+          }
+          $global:LASTEXITCODE = 0
 
-          if [[ "$version_changed" == "true" && "$ledger_changed" != "true" ]]; then
-            echo "::error::VERSION.txt changed without updating VERSION_TIMESTAMPS.md in the same change."
-            exit 1
-          fi
