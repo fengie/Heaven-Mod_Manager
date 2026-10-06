@@ -1,0 +1,20 @@
+{
+  "schema": "heaven-toolbox/update-policy/v1",
+  "repository": "fengie/mhw-mods",
+  "branch": "main",
+  "kind": "product",
+  "source_update": {
+    "required": true,
+    "strategy": "ff-only",
+    "poll_interval_minutes": 1,
+    "controller": "heaven-toolbox/repo-autoupdate"
+  },
+  "runtime_update": {
+    "mode": "self-update-release",
+    "evidence_paths": [
+      ".github/workflows/windows-release-gate.yml",
+      ".github/workflows/updater-installed-client-e2e.yml",
+      "src/MhwModManager.Updater/UpdateClientService.cs"
+    ]
+  }
+}

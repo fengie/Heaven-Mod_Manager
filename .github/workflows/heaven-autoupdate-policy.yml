@@ -1,0 +1,59 @@
+name: Heaven AutoUpdate Contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heaven-autoupdate-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Enforce automatic update contract
+        shell: pwsh
+        env:
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = '.heaven/update-policy.json'
+          if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing required $path" }
+          $p = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+          if ([string]$p.schema -ne 'heaven-toolbox/update-policy/v1') { throw 'Unsupported update-policy schema.' }
+          if ([string]$p.repository -ne [string]$env:EXPECTED_REPOSITORY) { throw "Policy repository mismatch: $($p.repository) != $env:EXPECTED_REPOSITORY" }
+          if ([string]$p.branch -ne 'main') { throw 'Automatic update policy must target main.' }
+          $kind = ([string]$p.kind).Trim()
+          if ($kind -notin @('source','product','release-channel','mirror')) { throw "Unsupported repository kind: $kind" }
+          if (-not [bool]$p.source_update.required) { throw 'Automatic main source consumption must be required.' }
+          if ([string]$p.source_update.strategy -ne 'ff-only') { throw 'Source update strategy must be ff-only.' }
+          $interval = [int]$p.source_update.poll_interval_minutes
+          if ($interval -lt 1 -or $interval -gt 60) { throw 'Source update poll interval must be 1-60 minutes.' }
+          $mode = ([string]$p.runtime_update.mode).Trim()
+          if ($mode -notin @('none','apply-script','self-update-release','release-channel')) { throw "Unsupported runtime update mode: $mode" }
+          if ($kind -eq 'product' -and $mode -eq 'none') { throw 'Runnable product repositories may not disable automatic runtime updating.' }
+          if ($kind -eq 'release-channel' -and $mode -ne 'release-channel') { throw 'Release-channel repositories must declare runtime_update.mode=release-channel.' }
+          function Assert-RepoRelativeFile([string]$relative) {
+            if ([string]::IsNullOrWhiteSpace($relative)) { throw 'Update evidence path may not be empty.' }
+            if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[\\/])\.\.([\\/]|$)') { throw "Update evidence path escapes repository: $relative" }
+            if (-not (Test-Path -LiteralPath $relative -PathType Leaf)) { throw "Required update evidence is missing: $relative" }
+          }
+          if ($mode -eq 'apply-script') { Assert-RepoRelativeFile ([string]$p.runtime_update.apply_script) }
+          if ($mode -in @('self-update-release','release-channel')) {
+            $evidence = @($p.runtime_update.evidence_paths)
+            if ($evidence.Count -eq 0) { throw "Runtime mode $mode requires evidence_paths." }
+            foreach ($e in $evidence) { Assert-RepoRelativeFile ([string]$e) }
+          }
+          'HEAVEN_AUTOUPDATE_POLICY_OK'
