@@ -26,7 +26,8 @@ concurrency:
 
 jobs:
   readme-timestamp:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
     timeout-minutes: 5
     steps:
       - name: Checkout exact source
