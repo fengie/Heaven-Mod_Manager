@@ -1,56 +1,34 @@
-# v8.8.98 exhaustive Browse Mods first-run indexing — handoff
+# v8.8.99 canonical continuity and Windows closure — handoff
 
 Canonical repository: `fengie/mhw-mods`
 Global bootstrap/training: `fengie/heaven-toolbox@main`
-Canonical target branch: `main`
-Primary active catalog issue: #558
-Integration PR: #776
+Canonical branch: `main`
+Current product version: **8.8.99**
 
-## Candidate behavior
+## Current behavior
 
-- v8.8.98 fixes the first-run exhaustive-indexing gap: a pageable provider with no saved cursor now seeds page 1 and follows durable continuations to exhaustion.
-- Existing saved cursors resume without restarting; already-exhausted scopes are local no-ops.
-- Repeated cursors and empty continuation pages fail closed instead of looping.
-- Nexus remains explicitly limited to supported REST v3 coverage; #558 stays open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.
-
-
-- v8.8.97 keeps v8.8.96's provider-neutral continuation and serialized **Load More** path and adds CurseForge as another real paged provider.
-- CurseForge continuation is the official search index, persisted as an opaque non-negative cursor and rejected before transport when malformed or negative.
-- Next-page availability is derived from authoritative response pagination metadata and stops at the reported total count.
-- Existing CurseForge search/acquisition, capability checks, credential isolation, rate-limit health, schema-drift handling, and unsupported-provider behavior remain unchanged.
-- #558 remains open for remaining provider breadth and deterministic end-to-end scale/performance acceptance.
+- v8.8.99 makes concurrent SDK-root isolation verification hermetic while preserving exact SDK pinning and supply-chain enforcement.
+- v8.8.98's exhaustive Browse Mods first-run indexing remains integrated: a pageable provider with no saved cursor starts at page 1, resumes persisted continuations, and rejects repeated/empty continuation states.
+- #558 remains open for provider breadth and deterministic end-to-end catalog scale/performance acceptance. #735 remains open for installed enable/disable and Auto Populate timing/responsiveness acceptance.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.97 source `54d3a740e47559d1a280a563f4cd4f929c2a0859` passed run `37255940374` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
+The latest completed hosted-Windows closure remains v8.8.97 source `54d3a740e47559d1a280a563f4cd4f929c2a0859`, run `37255940374`, with 0 failed checks. Evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
 
-The tested source remains `54d3a740e47559d1a280a563f4cd4f929c2a0859` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
-
-## Unresolved risk and remaining #558 acceptance
-
-- v8.8.96 delivered durable GameBanana continuation and the shared Browse Mods Load More path.
-- v8.8.97 extends that same continuation contract to CurseForge rather than creating parallel UI/state machinery.
-- Keep #558 open for remaining provider/result breadth and deterministic end-to-end scale/performance acceptance.
-
-## Unresolved risk
-
-- #558 remains open after this tranche: remaining provider/result breadth and deterministic end-to-end scale/performance acceptance are not yet proven.
-- v8.8.97 is not canonically closed until the exact final PR head is admitted, integrated, and the resulting canonical source passes fresh hosted-Windows verification.
-
-## Independent open work
-
-- #735 remains open for installed enable/disable + Auto Populate UI/persistence timing, transitive recomputation evidence, and a durable responsiveness budget.
-- Preserve updater, filesystem, conflict/dependency/override, exact-SDK, release-provenance, and durable-evidence safety invariants.
+That proof is historical for v8.8.99. The earlier v8.8.99 Windows run on source `8b7add1181f3ffcec642c2d524cf1b51bc12e9b4` stopped at continuity verification; passing product checks are not full release closure. The repaired continuity must receive exact-source Windows verification on resulting canonical main. Evidence-only persistence commits must retain the tested source SHA.
 
 ## Next action
 
-1. Require fresh exact-final-head Workflow Feature, MHW Product Security, and Heaven Toolbox Ownership admission for PR #773.
-2. Reconcile current canonical main immediately before integration; merge only the exact admitted v8.8.97 candidate and verify remote-main tree/readback.
-3. Obtain and persist fresh canonical hosted-Windows verification for integrated v8.8.97, then publish immediately if the repository's release gate makes the version release-ready.
-4. Keep #558 open until its remaining multi-provider breadth and end-to-end scale/performance acceptance is actually evidenced.
+1. Refresh canonical main, `_AGENT_CONTEXT/CURRENT_REVISION.json`, live ownership and exact-source evidence.
+2. If current-source Windows closure is absent, explicitly dispatch `.github/workflows/windows-release-gate.yml` on `main` with `force_publish=false`. These context-only changes are outside its push path filters; integration alone does not trigger closure.
+3. Require the full verification/build/release policy to pass, then let `Sync-VerificationContinuity.ps1` persist the exact tested source/run. Do not promote historical verification manually.
+4. Once closure is recorded, follow the revision ledger and live project plan; do not rerun an already-verified source solely because an evidence-only commit advanced main.
+5. Keep #558, #735 and independent backlog open until their own acceptance is evidenced.
+
+## Unresolved risk
+
+Until successful exact-source evidence is recorded, fresh v8.8.99 Windows closure and publication remain unproved. Preserve filesystem, SQLite transaction, conflict/dependency/override, updater publication/parity/provenance, exact-SDK and durable-evidence privacy invariants. External signing/ruleset and installed runtime acceptance remain governed by the live project plan.
 
 ## Successor obligation
 
-As the successor, you must preserve and propagate this continuity contract to the agent after you, and require that agent to pass it to the next successor. Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW main; read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Preserve exact-input verification and all safety invariants above. Before finishing, update the repository handoff with the same explicit recursive requirement.
-
-**Do not break the chain.**
+Bootstrap from current `fengie/heaven-toolbox@main`, then current MHW main. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, the active `_AGENT_CONTEXT/LEARNED_RULES.md`, and the current project plan; retrieve only task-relevant context. Preserve exact-input verification and all product/release safety invariants. The next agent must propagate this continuity contract to the agent after it. Before finishing, leave an equally exact successor handoff with that same recursive obligation. Do not break the chain.
