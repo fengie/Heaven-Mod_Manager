@@ -27,7 +27,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Enforce automatic update contract
-        shell: ${{ github.event.repository.private && 'powershell' || 'pwsh' }}
+        shell: powershell
         env:
           EXPECTED_REPOSITORY: ${{ github.repository }}
         run: |

@@ -22,7 +22,7 @@ if(-not (Test-Path -LiteralPath $autoUpdateContractPath -PathType Leaf)){
         '    if: github.event.repository.private == false || github.event_name != ''pull_request'' || github.event.pull_request.head.repo.full_name == github.repository',
         '    runs-on: ${{ github.event.repository.private && fromJSON(',
         '"self-hosted","Windows","X64","mhw-mods"',
-        '        shell: ${{ github.event.repository.private && ''powershell'' || ''pwsh'' }}',
+        '        shell: powershell',
         '          persist-credentials: false',
         'HEAVEN_AUTOUPDATE_POLICY_OK'
     )
