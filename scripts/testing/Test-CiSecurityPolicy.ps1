@@ -20,7 +20,8 @@ if(-not (Test-Path -LiteralPath $autoUpdateContractPath -PathType Leaf)){
     $autoUpdateContract=[IO.File]::ReadAllText($autoUpdateContractPath)
     $requiredAutoUpdateLines=@(
         '    if: github.event.repository.private == false || github.event_name != ''pull_request'' || github.event.pull_request.head.repo.full_name == github.repository',
-        '    runs-on: ${{ github.event.repository.private && fromJSON(''['' + '"self-hosted","Windows","X64","mhw-mods"' + ']'') || ''ubuntu-latest'' }}',
+        '    runs-on: ${{ github.event.repository.private && fromJSON(',
+        '"self-hosted","Windows","X64","mhw-mods"',
         '        shell: ${{ github.event.repository.private && ''powershell'' || ''pwsh'' }}',
         '          persist-credentials: false',
         'HEAVEN_AUTOUPDATE_POLICY_OK'
