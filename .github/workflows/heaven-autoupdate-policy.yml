@@ -16,7 +16,10 @@ concurrency:
 
 jobs:
   enforce:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","Windows","X64","heaven-toolbox"]') || 'ubuntu-latest' }}
+    # MHW's dedicated Heaven runner is repo-scoped; Toolbox's persistent runner is not.
+    # Never execute fork-supplied private PR workflows on the persistent Windows host.
+    if: github.event.repository.private == false || github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","Windows","X64","mhw-mods"]') || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
       - name: Check out exact source
@@ -24,7 +27,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Enforce automatic update contract
-        shell: pwsh
+        shell: ${{ github.event.repository.private && 'powershell' || 'pwsh' }}
         env:
           EXPECTED_REPOSITORY: ${{ github.repository }}
         run: |
