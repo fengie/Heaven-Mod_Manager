@@ -83,7 +83,7 @@ public sealed class UpdaterCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task Public_release_feed_is_anonymous_and_uses_release_only_repository()
+    public async Task Public_release_feed_is_anonymous_and_uses_canonical_public_source_repository()
     {
         var current = Identity(10);
         var m11 = Manifest(11);
@@ -114,6 +114,7 @@ public sealed class UpdaterCoreTests : IDisposable
 
         Assert.NotNull(candidate);
         Assert.Equal(11, candidate.Manifest.BuildNumber);
+        Assert.Equal(UpdateProtocol.Repository, UpdateProtocol.PublicReleaseRepository);
         Assert.Equal(
             $"/repos/{UpdateProtocol.PublicReleaseRepository}/releases",
             releasePath);

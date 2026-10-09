@@ -388,3 +388,12 @@ For every future branch cleanup, record one of these outcomes before deleting th
 **Proof:** Windows Release Gate run `38001584048` had verified build but failed public publication with `Unexpected private source repository: fengie/Heaven-Mod_Manager`.  
 **Remediation:** active publisher/client repository names updated; old signed `ProductId`, old Windows credential storage target and immutable historical source/release evidence remain unchanged. The public archive must be UNARCHIVED and its v1 provenance writer/validator adapted to accept canonical identifiers for *future records* without changing legacy ones. This source change alone does not publish a new MHW build or verify installed updates.  
 **Next:** run exact-head tests/security, repair archived repository and producer/index, independently validate installed-client acceptance, only then publish.
+
+
+### RELEASE-ROUTE-005 — Retire redundant public mirror, source repo is client feed
+
+**Owner intent:** eliminate the extra MHW release repository because `fengie/Heaven-Mod_Manager` is public.  
+**Current state (2026-10-09):** updater migration PR #783 updated to target the canonical source's own GitHub Releases and publish only there. Old public release archive `fengie/heaven-mod-manager-release` (GitHub ID 1395549117) remains **ARCHIVED, READABLE** with historical tags. No deletion was performed and the legacy installed update URL is retained for old versions.  
+**Implementation:** release workflow calls only `Publish-UpdaterRelease.ps1`; removes public-first/parity/index mutation; updater `PublicReleaseRepository` points to `fengie/Heaven-Mod_Manager` without changing `ProductId` or Windows credential target. Exact source/tag, digest, case-sensitive asset names, draft/immutability, final main drift and rollback gating remain active.  
+**Residual critical limitation:** previously installed clients embedded the older MHW feed repository URL and therefore may not discover new releases; the archived channel can only serve existing historical versions. Before permanent deletion, demonstrate installed-client migration by an approved bridge update or an explicit supported reinstall of the new version. **Do not delete the old archive until deployed-client compatibility is established.**  
+**Acceptance:** exact-head PR CI (including changed security/tests), verified canonical main, next real GitHub release under single source repo, installed-client update and rollback proof. No scheduled agents.
