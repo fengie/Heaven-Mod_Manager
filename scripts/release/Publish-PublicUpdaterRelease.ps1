@@ -2,7 +2,7 @@ param(
   [string]$ManifestPath='',
   [string]$ArtifactPath='',
   [string]$SourceRepository=$env:GITHUB_REPOSITORY,
-  [string]$PublicRepository='fengie/mhw-mod-manager-release',
+  [string]$PublicRepository='fengie/heaven-mod-manager-release',
   [string]$ExpectedSourceSha=$env:GITHUB_SHA,
   [long]$ExpectedBuildNumber=0,
   [string]$OutcomePath=$env:GITHUB_OUTPUT
@@ -23,9 +23,9 @@ if([string]::IsNullOrWhiteSpace($ArtifactPath)){
 }
 $artifact=(Resolve-Path -LiteralPath $ArtifactPath).Path
 
-if([string]::IsNullOrWhiteSpace($SourceRepository)){$SourceRepository='fengie/mhw-mods'}
-if($SourceRepository -ne 'fengie/mhw-mods'){throw "Unexpected private source repository: $SourceRepository"}
-if($PublicRepository -ne 'fengie/mhw-mod-manager-release'){throw "Unexpected public updater repository: $PublicRepository"}
+if([string]::IsNullOrWhiteSpace($SourceRepository)){$SourceRepository='fengie/Heaven-Mod_Manager'}
+if($SourceRepository -ne 'fengie/Heaven-Mod_Manager'){throw "Unexpected private source repository: $SourceRepository"}
+if($PublicRepository -ne 'fengie/heaven-mod-manager-release'){throw "Unexpected public updater repository: $PublicRepository"}
 if([string]$manifest.channel -ne 'main'){throw "Refusing to mirror updater channel '$($manifest.channel)'."}
 if([long]$manifest.buildNumber -le 0){throw 'Updater manifest build number must be positive.'}
 if([string]$manifest.sourceSha -notmatch '^[0-9a-fA-F]{40}$'){throw 'Updater manifest source SHA must be a full 40-character Git SHA.'}
@@ -57,7 +57,7 @@ if([string]::IsNullOrWhiteSpace($sourceToken)){
 $publicToken=[string]$env:MHW_PUBLIC_RELEASE_TOKEN
 if([string]::IsNullOrWhiteSpace($publicToken)){
   Write-UpdaterPublicationStepOutcome -Path $OutcomePath -Published $false -Reason 'public-mirror-unconfigured'
-  Write-Host '::notice::Public updater mirror is not configured yet; set MHW_PUBLIC_RELEASE_TOKEN after creating fengie/mhw-mod-manager-release.'
+  Write-Host '::notice::Public updater mirror is not configured yet; set MHW_PUBLIC_RELEASE_TOKEN after creating fengie/heaven-mod-manager-release.'
   exit 0
 }
 

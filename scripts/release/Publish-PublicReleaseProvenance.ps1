@@ -2,7 +2,7 @@ param(
   [string]$ManifestPath='',
   [string]$ArtifactPath='',
   [string]$SourceRepository=$env:GITHUB_REPOSITORY,
-  [string]$PublicRepository='fengie/mhw-mod-manager-release',
+  [string]$PublicRepository='fengie/heaven-mod-manager-release',
   [string]$ExpectedSourceSha=$env:GITHUB_SHA,
   [ValidateRange(1,10)][int]$MaxIndexAttempts=3
 )
@@ -23,8 +23,8 @@ if([string]::IsNullOrWhiteSpace($ArtifactPath)){
 }
 $artifact=(Resolve-Path -LiteralPath $ArtifactPath).Path
 
-if($SourceRepository -ne 'fengie/mhw-mods'){throw "Unexpected provenance source repository: $SourceRepository"}
-if($PublicRepository -ne 'fengie/mhw-mod-manager-release'){throw "Unexpected provenance public repository: $PublicRepository"}
+if($SourceRepository -ne 'fengie/Heaven-Mod_Manager'){throw "Unexpected provenance source repository: $SourceRepository"}
+if($PublicRepository -ne 'fengie/heaven-mod-manager-release'){throw "Unexpected provenance public repository: $PublicRepository"}
 if($ExpectedSourceSha -notmatch '^[0-9a-fA-F]{40}$'){throw 'Expected provenance source SHA must be a full Git SHA.'}
 $expectedSource=$ExpectedSourceSha.ToLowerInvariant()
 if(([string]$manifest.sourceSha).ToLowerInvariant() -ne $expectedSource){throw 'Updater manifest source does not match provenance source.'}

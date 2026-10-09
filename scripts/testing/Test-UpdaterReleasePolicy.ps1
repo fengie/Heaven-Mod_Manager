@@ -449,7 +449,7 @@ $restCurrentTagChecks=[regex]::Matches($publishSource,'gh api "repos/\$Repositor
 Assert-Equal 2 $restCurrentTagChecks 'new and existing immutable release REST tag verification'
 $localCurrentTagChecks=[regex]::Matches($publishSource,'git show-ref --verify --quiet "refs/tags/\$tag"').Count
 Assert-Equal 1 $localCurrentTagChecks 'only orphan-tag refusal uses local current-build tag'
-Assert-Equal $true ($publishSource.Contains("publicRepository='fengie/mhw-mod-manager-release'")) 'canonical publisher public-feed precondition repository'
+Assert-Equal $true ($publishSource.Contains("publicRepository='fengie/heaven-mod-manager-release'")) 'canonical publisher public-feed precondition repository'
 Assert-Equal $true ($publishSource.Contains('Public updater client feed $tag must be published before canonical updater release publication.')) 'canonical publisher refuses private-first visibility'
 Assert-Equal $true ($publishSource.Contains('Assert-UpdaterReleaseAssets -Release $publicRelease')) 'canonical publisher verifies public-feed asset parity'
 
@@ -524,7 +524,7 @@ $provenanceStep=$releaseWorkflow.Substring($provenanceStepStart,$provenanceStepE
 Assert-Equal $false ($provenanceStep.Contains("steps.release_intent.outputs.publish == 'true'")) 'public provenance repair remains runnable after an already-published retry'
 
 $publicPublisherSource=Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\release\Publish-PublicUpdaterRelease.ps1') -Raw
-Assert-Equal $true ($publicPublisherSource.Contains('fengie/mhw-mod-manager-release')) 'canonical public release repository'
+Assert-Equal $true ($publicPublisherSource.Contains('fengie/heaven-mod-manager-release')) 'canonical public release repository'
 Assert-Equal $true ($publicPublisherSource.Contains('Unexpected private source repository')) 'canonical private source guard'
 Assert-Equal $true ($publicPublisherSource.Contains('ExpectedSourceSha=$env:GITHUB_SHA')) 'public release exact source pin'
 Assert-Equal $true ($publicPublisherSource.Contains('ExpectedBuildNumber=0')) 'public release exact build pin'

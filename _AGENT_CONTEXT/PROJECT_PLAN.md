@@ -379,3 +379,12 @@ For every future branch cleanup, record one of these outcomes before deleting th
 **Source:** GitHub REST canonical repo `fengie/Heaven-Mod_Manager` (old `fengie/mhw-mods` redirects), existing MHW signed updater manifests, and `fengie/heaven-toolbox-release` existing legacy MHW releases.  
 **Acceptance:** .heaven policy + repo docs use canonical identity; exact PR-head CI and post-merge check green; existing MHW clients still resolve signed update metadata, exact release ZIP and rollback without link breaks; Toolbox release channel receives NO MHW artifact overwrite.  
 **Next action:** after merge, audit hardcoded origin/pub URLs and pinned updater trust identity in signed manifests before any client-side URL/target changes; validate installed-client E2E on a real client. Do not claim signed updater acceptance from a source-only change.
+
+
+### RELEASE-ROUTE-004 — Canonical MHW updater repository names (2026-10-09)
+
+**Status:** source guard correction candidate; release publication blocked.  
+**Product:** `fengie/Heaven-Mod_Manager` (GitHub ID 1390581138). **MHW public release archive:** `fengie/heaven-mod-manager-release` (GitHub ID 1395549117, currently ARCHIVED). **Other separate future Toolbox release:** `fengie/heaven-toolbox-release` (new ID 1412539542, empty/locked).  
+**Proof:** Windows Release Gate run `38001584048` had verified build but failed public publication with `Unexpected private source repository: fengie/Heaven-Mod_Manager`.  
+**Remediation:** active publisher/client repository names updated; old signed `ProductId`, old Windows credential storage target and immutable historical source/release evidence remain unchanged. The public archive must be UNARCHIVED and its v1 provenance writer/validator adapted to accept canonical identifiers for *future records* without changing legacy ones. This source change alone does not publish a new MHW build or verify installed updates.  
+**Next:** run exact-head tests/security, repair archived repository and producer/index, independently validate installed-client acceptance, only then publish.

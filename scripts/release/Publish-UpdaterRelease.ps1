@@ -21,8 +21,8 @@ if([string]::IsNullOrWhiteSpace($ArtifactPath)){
 }
 $artifact=(Resolve-Path -LiteralPath $ArtifactPath).Path
 
-if([string]::IsNullOrWhiteSpace($Repository)){$Repository='fengie/mhw-mods'}
-if($Repository -ne 'fengie/mhw-mods'){throw "Unexpected updater repository: $Repository"}
+if([string]::IsNullOrWhiteSpace($Repository)){$Repository='fengie/Heaven-Mod_Manager'}
+if($Repository -ne 'fengie/Heaven-Mod_Manager'){throw "Unexpected updater repository: $Repository"}
 if([string]::IsNullOrWhiteSpace($ExpectedSourceSha)){$ExpectedSourceSha=[string]$manifest.sourceSha}
 if($ExpectedBuildNumber -le 0){
   $runNumber=$env:GITHUB_RUN_NUMBER
@@ -81,7 +81,7 @@ try {
   # Data-layer invariant: canonical/private visibility is forbidden until the
   # exact client-visible public feed release already exists and matches these
   # verified local artifacts. This remains safe even if workflow ordering regresses.
-  $publicRepository='fengie/mhw-mod-manager-release'
+  $publicRepository='fengie/heaven-mod-manager-release'
   $publicReleaseOutput=@(& gh api "repos/$publicRepository/releases/tags/$tag")
   if($LASTEXITCODE -ne 0){
     throw "Public updater client feed $tag must be published before canonical updater release publication."
