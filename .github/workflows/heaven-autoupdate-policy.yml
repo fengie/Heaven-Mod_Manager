@@ -28,7 +28,7 @@ jobs:
           persist-credentials: false
       - name: Enforce automatic update contract
         # The public repo uses Ubuntu with pwsh; dedicated Windows workers use powershell.exe.
-        shell: ${{ runner.os == 'Windows' && 'powershell' || 'pwsh' }}
+        shell: ${{ github.event.repository.private && 'powershell' || 'pwsh' }}
         env:
           EXPECTED_REPOSITORY: ${{ github.repository }}
         run: |
