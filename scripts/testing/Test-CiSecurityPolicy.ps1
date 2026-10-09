@@ -23,12 +23,32 @@ if(-not (Test-Path -LiteralPath $autoUpdateContractPath -PathType Leaf)){
         '    runs-on: ${{ github.event.repository.private && fromJSON(',
         '"self-hosted","Windows","X64","mhw-mods"',
         '        shell: powershell',
-        '          persist-credentials: false',
-        'HEAVEN_AUTOUPDATE_POLICY_OK'
+        '        shell: pwsh',
+        '        if: github.event.repository.private == true',
+        '        if: github.event.repository.private == false',
+        '        run: .\scripts\ci\Verify-HeavenRepoPolicy.ps1',
+        '        run: ./scripts/ci/Verify-HeavenRepoPolicy.ps1',
+        '          persist-credentials: false'
     )
     foreach($requiredLine in $requiredAutoUpdateLines){
         if(-not $autoUpdateContract.Contains($requiredLine)){
             $errors.Add("Heaven AutoUpdate Contract lost runner, fork, credential or validation invariant: $requiredLine")
+        }
+    }
+    $autoUpdateScriptPath=Join-Path $Root 'scripts\ci\Verify-HeavenRepoPolicy.ps1'
+    if(-not (Test-Path -LiteralPath $autoUpdateScriptPath -PathType Leaf)){
+        $errors.Add('Heaven AutoUpdate Contract external verifier script is missing.')
+    }else{
+        $autoUpdateScript=[IO.File]::ReadAllText($autoUpdateScriptPath)
+        foreach($requiredScriptPart in @(
+            'HEAVEN_AUTOUPDATE_POLICY_OK',
+            'EXPECTED_REPOSITORY',
+            "source_update.strategy",
+            "Assert-RepoRelativeFile"
+        )){
+            if(-not $autoUpdateScript.Contains($requiredScriptPart)){
+                $errors.Add("Heaven AutoUpdate Contract external verifier lost policy invariant: $requiredScriptPart")
+            }
         }
     }
     if($autoUpdateContract -match 'fromJSON\([^\r\n]*heaven-toolbox'){
