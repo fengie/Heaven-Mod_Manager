@@ -371,3 +371,11 @@ For every future branch cleanup, record one of these outcomes before deleting th
 - [ ] Run focused policy tests and repository-required exact-head gates, reconcile fresh main, merge promptly when green, verify remote main, and retire temporary branch state.
 
 **Next action:** after PR drain is clear, claim issue #709 and run exact 10.0.401 lock generation on heaven before editing CI around the generated graph.
+
+
+### RENAME-001 — GitHub identity and release compatibility
+
+**Status:** ACTIVE · **Owner:** unclaimed follow-up; 2026-10-09 rename metadata repair on feature PR.  
+**Source:** GitHub REST canonical repo `fengie/Heaven-Mod_Manager` (old `fengie/mhw-mods` redirects), existing MHW signed updater manifests, and `fengie/heaven-toolbox-release` existing legacy MHW releases.  
+**Acceptance:** .heaven policy + repo docs use canonical identity; exact PR-head CI and post-merge check green; existing MHW clients still resolve signed update metadata, exact release ZIP and rollback without link breaks; Toolbox release channel receives NO MHW artifact overwrite.  
+**Next action:** after merge, audit hardcoded origin/pub URLs and pinned updater trust identity in signed manifests before any client-side URL/target changes; validate installed-client E2E on a real client. Do not claim signed updater acceptance from a source-only change.

@@ -1,6 +1,6 @@
-# Agent Instructions — MHW Manual Mod Manager
+# Agent Instructions — Heaven Mod Manager (MHW product)
 
-This repository, `fengie/mhw-mods@main`, is the canonical working state for the MHW Manual Mod Manager product only. The mandatory global programming-agent bootstrap, reusable engineering doctrine, shared Git policy, personal plugins, Heaven Bridge, Agent Control, and reusable operator/developer tools are owned by `fengie/heaven-toolbox@main`.
+This repository, `fengie/Heaven-Mod_Manager@main`, is the canonical working state for the MHW Manual Mod Manager product only. The mandatory global programming-agent bootstrap, reusable engineering doctrine, shared Git policy, personal plugins, Heaven Bridge, Agent Control, and reusable operator/developer tools are owned by `fengie/heaven-toolbox@main`.
 
 ## Authority and truth
 
@@ -15,7 +15,7 @@ Before any task-specific reasoning, answering, planning, dispatch, or action, ev
 1. Refresh exact `fengie/heaven-toolbox@main`.
 2. Read Toolbox `AGENTS.md`, `_AGENT_TRAINING/README.md`, `_AGENT_TRAINING/AGENT_OPERATING_STANDARD.md`, and `GLOBAL_GIT_DIRECTIVE.md`.
 3. Load only additional Toolbox trainer/tool documents that are task-relevant.
-4. Refresh exact `fengie/mhw-mods@main`, current ownership/PR/branch state, and the assigned worktree/head.
+4. Refresh exact `fengie/Heaven-Mod_Manager@main`, current ownership/PR/branch state, and the assigned worktree/head.
 5. Read this file and `_AGENT_CONTEXT/CURRENT_REVISION.json`.
 6. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full at startup, then use the MHW context index/router to retrieve only task-relevant `LEARNED_RULES.md`, `BUG_PRECEDENTS.md`, architecture, verification, policy, and other project context.
 7. Immediately before integration or destructive mutation, refresh MHW canonical state and ownership again and preserve unique concurrent work.

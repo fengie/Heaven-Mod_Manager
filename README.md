@@ -215,3 +215,8 @@ Global programming-agent bootstrap, shared Git policy, personal plugins, Heaven 
 Do not create new reusable plugin/control-plane/tooling implementations under MHW-local `plugins/`, `heaven-bridge/`, `tools/`, or `_AGENT_TRAINING/`; those ownership roots intentionally no longer exist here. Reusable infrastructure changes belong in Heaven Toolbox. MHW keeps only mod-manager product code, tests, product-specific scripts/workflows, and continuity/evidence needed to operate the product.
 
 Every shipped application change must bump the app version in `VERSION.txt` and `Directory.Build.props`, keep duplicated release/update metadata aligned, update this README, and add the matching `CHANGELOG.md` entry before the work is considered complete. Documentation/agent-policy/evidence-only changes that do not change the shipped application do not require an app-version bump. Run the current MHW product verification gates before declaring work complete.
+
+
+## Canonical repository identity (October 9, 2026)
+
+**Canonical source:** [fengie/Heaven-Mod_Manager](https://github.com/fengie/Heaven-Mod_Manager) (renamed from `fengie/mhw-mods`). Existing older GitHub links may redirect; new source/main policy and CI must use the current name. This change does **not** migrate or invalidate installed updater endpoints or historical release signatures. See [rename safety receipt](docs/REPOSITORY_RENAME_2026_10_09.md) before any publisher URL cutover.
