@@ -11,6 +11,31 @@ if([string]::IsNullOrWhiteSpace($Root)){
 $errors=New-Object System.Collections.Generic.List[string]
 $workflowRoot=Join-Path $Root '.github\workflows'
 
+# Keep private MHW auto-update gate on its real repo-scoped worker, never an
+# unrelated persistent Toolbox runner. Reject fork PRs before job allocation.
+$autoUpdateContractPath=Join-Path $workflowRoot 'heaven-autoupdate-policy.yml'
+if(-not (Test-Path -LiteralPath $autoUpdateContractPath -PathType Leaf)){
+    $errors.Add('Heaven AutoUpdate Contract workflow is missing.')
+}else{
+    $autoUpdateContract=[IO.File]::ReadAllText($autoUpdateContractPath)
+    $requiredAutoUpdateLines=@(
+        '    if: github.event.repository.private == false || github.event_name != ''pull_request'' || github.event.pull_request.head.repo.full_name == github.repository',
+        '    runs-on: ${{ github.event.repository.private && fromJSON(',
+        '"self-hosted","Windows","X64","mhw-mods"',
+        '        shell: powershell',
+        '          persist-credentials: false',
+        'HEAVEN_AUTOUPDATE_POLICY_OK'
+    )
+    foreach($requiredLine in $requiredAutoUpdateLines){
+        if(-not $autoUpdateContract.Contains($requiredLine)){
+            $errors.Add("Heaven AutoUpdate Contract lost runner, fork, credential or validation invariant: $requiredLine")
+        }
+    }
+    if($autoUpdateContract -match 'fromJSON\([^\r\n]*heaven-toolbox'){
+        $errors.Add('MHW AutoUpdate Contract must not route private validation to Toolbox-only runner labels.')
+    }
+}
+
 function Get-UnsafeWorkflowTelemetryViolations {
     param(
         [Parameter(Mandatory=$true)][string]$Text,
