@@ -11,9 +11,9 @@ v8.8.99 is the canonical MHW Manual Mod Manager baseline. It preserves v8.8.98's
 
 ## Verification boundary
 
-The latest completed hosted-Windows closure remains v8.8.97 source `54d3a740e47559d1a280a563f4cd4f929c2a0859`, run `37255940374`, with 0 failed checks. Evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.97-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4` passed run `38006379575` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`.
 
-This is historical proof, not v8.8.99 closure. The earlier v8.8.99 source `8b7add1181f3ffcec642c2d524cf1b51bc12e9b4` stopped at continuity verification. The repaired canonical source needs exact-source Windows closure before release completion. Evidence-only persistence must preserve the tested SHA/run.
+The tested source remains `c08b31c5327522c5896704d7a24b5ddc6f70b9c4` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Next required action
 
