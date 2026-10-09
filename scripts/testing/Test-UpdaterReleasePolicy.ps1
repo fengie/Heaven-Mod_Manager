@@ -506,7 +506,7 @@ Assert-Equal $true ($clientProtocol.Contains('public const string ProductId = "f
 Assert-Equal $true ($clientProtocol.Contains('public const string CredentialTarget = "MhwModManager/GitHubUpdater/fengie/mhw-mods";')) 'old installed credential target remains'
 
 $publicationFreshnessGuards=[regex]::Matches($releaseWorkflow,"steps\.release_intent\.outputs\.publish == 'true'").Count
-Assert-Equal 2 $publicationFreshnessGuards 'only artifact provenance and main publication require positive intent'
+Assert-Equal 3 $publicationFreshnessGuards 'artifact identity, optional attestation and canonical publication require positive release intent'
 
 $installedE2EWorkflowPath=Join-Path $repoRoot '.github\workflows\updater-installed-client-e2e.yml'
 $installedE2EWorkflow=Get-Content -LiteralPath $installedE2EWorkflowPath -Raw
