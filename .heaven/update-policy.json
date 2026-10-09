@@ -1,6 +1,6 @@
 {
   "schema": "heaven-toolbox/update-policy/v1",
-  "repository": "fengie/mhw-mods",
+  "repository": "fengie/Heaven-Mod_Manager",
   "branch": "main",
   "kind": "product",
   "source_update": {
