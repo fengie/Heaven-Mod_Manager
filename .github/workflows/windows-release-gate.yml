@@ -39,8 +39,8 @@ permissions:
   attestations: write
 
 concurrency:
-  # Publication spans two repositories. Never cancel a run after it may have
-  # started publishing one side of the updater channel.
+  # Publication mutates an immutable, source-bound GitHub Release. Never cancel
+  # after a draft or asset upload may have started.
   group: windows-release-main
   cancel-in-progress: false
 
@@ -292,77 +292,13 @@ jobs:
             Add-Content -LiteralPath 'BuildLogs\ci-windows-provenance.txt' -Value ("github_artifact_attestation_id=" + $env:ATTESTATION_ID)
             Add-Content -LiteralPath 'BuildLogs\ci-windows-provenance.txt' -Value ("github_artifact_attestation_url=" + $env:ATTESTATION_URL)
           }
-      - name: Publish public updater client feed
-        id: public_updater_release
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true'
-        shell: powershell
-        env:
-          GH_TOKEN: ${{ github.token }}
-          MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}
-        run: |
-          # The installed app consumes the public feed, so make it ready before
-          # exposing the same release in the canonical/private repository.
-          .\scripts\release\Publish-PublicUpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
-
       - name: Publish immutable canonical updater release
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true' && steps.public_updater_release.outputs.published == 'true'
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           .\scripts\release\Publish-UpdaterRelease.ps1 -ManifestPath ".\artifacts\update-manifest.json"
-
-      - name: Verify public and canonical updater release parity
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true' && steps.public_updater_release.outputs.published == 'true'
-        shell: powershell
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $manifest=Get-Content -LiteralPath ".\artifacts\update-manifest.json" -Raw | ConvertFrom-Json
-          $tag="updater-main-$([long]$manifest.buildNumber)"
-          $headers=@{
-            Accept='application/vnd.github+json'
-            Authorization="Bearer $env:GH_TOKEN"
-            'X-GitHub-Api-Version'='2022-11-28'
-            'User-Agent'='mhw-mod-manager-release-parity'
-          }
-          $private=Invoke-RestMethod -UseBasicParsing -Method Get -Headers $headers -Uri "https://api.github.com/repos/fengie/mhw-mods/releases/tags/$tag" -TimeoutSec 60
-          $headers.Remove('Authorization')
-          $public=Invoke-RestMethod -UseBasicParsing -Method Get -Headers $headers -Uri "https://api.github.com/repos/fengie/mhw-mod-manager-release/releases/tags/$tag" -TimeoutSec 60
-
-          foreach($release in @($private,$public)){
-            if([bool]$release.draft -or [bool]$release.prerelease -or -not [bool]$release.immutable){
-              throw "Updater parity failed: $($release.html_url) is not published immutable stable."
-            }
-          }
-          if(([string]$private.target_commitish).ToLowerInvariant() -ne ([string]$manifest.sourceSha).ToLowerInvariant()){
-            throw "Updater parity failed: canonical release source does not match manifest source."
-          }
-
-          $expectedNames=@([string]$manifest.artifactName,'update-manifest.json')
-          foreach($name in $expectedNames){
-            $privateAsset=@($private.assets | Where-Object {[string]$_.name -eq $name})
-            $publicAsset=@($public.assets | Where-Object {[string]$_.name -eq $name})
-            if($privateAsset.Count -ne 1 -or $publicAsset.Count -ne 1){
-              throw "Updater parity failed: exact asset $name is not present once in both releases."
-            }
-            if([long]$privateAsset[0].size -ne [long]$publicAsset[0].size){
-              throw "Updater parity failed: asset $name size differs between canonical and public feeds."
-            }
-            if([string]$privateAsset[0].digest -ne [string]$publicAsset[0].digest){
-              throw "Updater parity failed: asset $name digest differs between canonical and public feeds."
-            }
-          }
-          Write-Host "PASS: updater release $tag is identical and immutable in public and canonical feeds." -ForegroundColor Green
-
-      - name: Reconcile public release provenance index
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true'
-        shell: powershell
-        env:
-          GH_TOKEN: ${{ github.token }}
-          MHW_PUBLIC_RELEASE_TOKEN: ${{ secrets.MHW_PUBLIC_RELEASE_TOKEN }}
-        run: |
-          .\scripts\release\Publish-PublicReleaseProvenance.ps1 -ManifestPath ".\artifacts\update-manifest.json"
 
       - name: Preserve verification, build, and promoted-cache evidence
         if: always()

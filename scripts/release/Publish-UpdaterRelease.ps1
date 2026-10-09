@@ -21,8 +21,8 @@ if([string]::IsNullOrWhiteSpace($ArtifactPath)){
 }
 $artifact=(Resolve-Path -LiteralPath $ArtifactPath).Path
 
-if([string]::IsNullOrWhiteSpace($Repository)){$Repository='fengie/mhw-mods'}
-if($Repository -ne 'fengie/mhw-mods'){throw "Unexpected updater repository: $Repository"}
+if([string]::IsNullOrWhiteSpace($Repository)){$Repository='fengie/Heaven-Mod_Manager'}
+if($Repository -ne 'fengie/Heaven-Mod_Manager'){throw "Unexpected updater repository: $Repository"}
 if([string]::IsNullOrWhiteSpace($ExpectedSourceSha)){$ExpectedSourceSha=[string]$manifest.sourceSha}
 if($ExpectedBuildNumber -le 0){
   $runNumber=$env:GITHUB_RUN_NUMBER
@@ -78,20 +78,8 @@ try {
   }
   $tag="updater-main-$ExpectedBuildNumber"
 
-  # Data-layer invariant: canonical/private visibility is forbidden until the
-  # exact client-visible public feed release already exists and matches these
-  # verified local artifacts. This remains safe even if workflow ordering regresses.
-  $publicRepository='fengie/mhw-mod-manager-release'
-  $publicReleaseOutput=@(& gh api "repos/$publicRepository/releases/tags/$tag")
-  if($LASTEXITCODE -ne 0){
-    throw "Public updater client feed $tag must be published before canonical updater release publication."
-  }
-  $publicReleaseJson=$publicReleaseOutput -join [Environment]::NewLine
-  $publicRelease=$publicReleaseJson | ConvertFrom-Json
-  if([bool]$publicRelease.draft -or [bool]$publicRelease.prerelease -or -not [bool]$publicRelease.immutable){
-    throw "Public updater client feed $tag must be published stable and immutable before canonical updater release publication."
-  }
-  Assert-UpdaterReleaseAssets -Release $publicRelease -Artifact $artifact -ManifestFile $manifestFile -Manifest $manifest
+  # The canonical repository is PUBLIC and is the single client-visible updater feed.
+  # Never require a separate mirror. Preserve exact-SHA, digest, draft and immutability guards.
 
   $releaseOutput=@(& gh release list --repo $Repository --limit 1000 --json tagName,isDraft,isImmutable)
   if($LASTEXITCODE -ne 0){throw 'Failed to list existing GitHub releases.'}

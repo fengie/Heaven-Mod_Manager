@@ -451,70 +451,35 @@ if(!(Test-Path -LiteralPath $releasePath)){
             $errors.Add('windows-release-gate.yml: synchronized continuity must pass the handoff validator before verification/evidence state is staged.')
         }
     }
-    $publicPublishIndex=$release.IndexOf('.\scripts\release\Publish-PublicUpdaterRelease.ps1')
-    $privatePublishIndex=$release.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
-    $parityIndex=$release.IndexOf('Verify public and canonical updater release parity')
-    if($publicPublishIndex -lt 0 -or $privatePublishIndex -lt 0 -or $publicPublishIndex -ge $privatePublishIndex){
-        $errors.Add('windows-release-gate.yml: public updater client feed must publish before canonical/private release visibility.')
+    $canonicalPublishIndex=$release.IndexOf('.\scripts\release\Publish-UpdaterRelease.ps1')
+    $sourceCheck=$release.IndexOf('Confirm release source is still canonical main')
+    $provenanceCheck=$release.IndexOf('Verify release artifact provenance')
+    if($canonicalPublishIndex -lt 0 -or $sourceCheck -lt 0 -or $provenanceCheck -lt 0 -or
+       $canonicalPublishIndex -le $provenanceCheck -or $provenanceCheck -le $sourceCheck){
+        $errors.Add('windows-release-gate.yml: exact-main and artifact attestation checks must precede canonical release.')
     }
-    if($parityIndex -le $privatePublishIndex){$errors.Add('windows-release-gate.yml: public/private updater parity verification must run after both publication steps.')}
-    $publicProvenanceIndex=$release.IndexOf('Reconcile public release provenance index')
-    if($publicProvenanceIndex -le $parityIndex){$errors.Add('windows-release-gate.yml: public provenance reconciliation must run after public/private parity.')}
-    if(-not $release.Contains('id: public_updater_release')){
-        $errors.Add('windows-release-gate.yml: public updater publication must expose a step outcome for downstream gating.')
-    }
-    $publicReadyGuard="steps.public_updater_release.outputs.published == 'true'"
-    if(([regex]::Matches($release,[regex]::Escape($publicReadyGuard))).Count -lt 2){
-        $errors.Add('windows-release-gate.yml: canonical publication and public/private parity must both require a successful public updater publication outcome.')
+    foreach($legacy in @('Publish-PublicUpdaterRelease.ps1','Publish-PublicReleaseProvenance.ps1',
+                         'MHW_PUBLIC_RELEASE_TOKEN','public_updater_release',
+                         'Verify public and canonical updater release parity')){
+        if($release.Contains($legacy)){$errors.Add("windows-release-gate.yml: stale redundant release mirror dependency $legacy")}
     }
     if(-not [regex]::IsMatch($release,'group:\s*windows-release-main\s+cancel-in-progress:\s*false')){
-        $errors.Add('windows-release-gate.yml: cross-repository updater publication must not be cancelled in progress.')
+        $errors.Add('windows-release-gate.yml: canonical updater publication must not be cancelled in progress.')
     }
 }
 
-$privatePublisherPath=Join-Path $Root 'scripts\release\Publish-UpdaterRelease.ps1'
-if(!(Test-Path -LiteralPath $privatePublisherPath)){
-    $errors.Add('Publish-UpdaterRelease.ps1 is missing.')
+$canonicalPublisherPath=Join-Path $Root 'scripts\release\Publish-UpdaterRelease.ps1'
+if(!(Test-Path -LiteralPath $canonicalPublisherPath)){
+    $errors.Add('Canonical Publish-UpdaterRelease.ps1 is missing.')
 }else{
-    $text=Get-Content -LiteralPath $privatePublisherPath -Raw
-    foreach($required in @(
-        "publicRepository='fengie/mhw-mod-manager-release'",
-        'Public updater client feed $tag must be published before canonical updater release publication.',
-        'Assert-UpdaterReleaseAssets -Release $publicRelease'
-    )){
-        if(-not $text.Contains($required)){$errors.Add("Publish-UpdaterRelease.ps1: canonical publisher precondition missing: $required")}
+    $text=Get-Content -LiteralPath $canonicalPublisherPath -Raw
+    foreach($required in @('Invoke-UpdaterDraftPublication','Assert-UpdaterReleaseAssets',
+                            'Get-UpdaterTagCommitFromRefJson','Get-UpdaterMainDriftDecision',
+                            '-RefreshMain','-EvaluateRefreshedMain')){
+        if(-not $text.Contains($required)){$errors.Add("Canonical updater publisher lost invariant: $required")}
     }
-}
-
-$publicPublisherPath=Join-Path $Root 'scripts\release\Publish-PublicUpdaterRelease.ps1'
-if(!(Test-Path -LiteralPath $publicPublisherPath)){
-    $errors.Add('Publish-PublicUpdaterRelease.ps1 is missing.')
-}else{
-    $text=Get-Content -LiteralPath $publicPublisherPath -Raw
-    foreach($required in @('ExpectedSourceSha=$env:GITHUB_SHA','OutcomePath=$env:GITHUB_OUTPUT','Write-UpdaterPublicationStepOutcome','-Published $false','-Published $true','Recovering abandoned public updater draft','Invoke-UpdaterDraftPublication','-RefreshMain','-EvaluateRefreshedMain','stale-main-unclassified-large-diff')){
-        if(-not $text.Contains($required)){$errors.Add("Publish-PublicUpdaterRelease.ps1: updater transaction invariant missing: $required")}
-    }
-    if($text.Contains('Canonical private updater release')){$errors.Add('Publish-PublicUpdaterRelease.ps1: public client feed must not depend on an already-visible canonical/private release.')}
-}
-
-$publicProvenancePublisherPath=Join-Path $Root 'scripts\release\Publish-PublicReleaseProvenance.ps1'
-if(!(Test-Path -LiteralPath $publicProvenancePublisherPath)){
-    $errors.Add('Publish-PublicReleaseProvenance.ps1 is missing.')
-}else{
-    $text=Get-Content -LiteralPath $publicProvenancePublisherPath -Raw
-    foreach($required in @(
-        'fengie/mhw-mod-manager-release',
-        'release-index.json',
-        'Get-UpdaterReleasePages',
-        'Add-PublicReleaseProvenanceRecordToIndexJson',
-        'sha=[string]$indexFile.sha',
-        "branch='main'",
-        'MHW_PUBLIC_RELEASE_TOKEN'
-    )){
-        if(-not $text.Contains($required)){$errors.Add("Publish-PublicReleaseProvenance.ps1: provenance publication invariant missing: $required")}
-    }
-    if($text.Contains('Write-Host $publicToken') -or $text.Contains('Write-Output $publicToken')){
-        $errors.Add('Publish-PublicReleaseProvenance.ps1: public release token must never be written to logs.')
+    if($text.Contains('Public updater client feed $tag must be published before canonical updater release publication.')){
+        $errors.Add('The main GitHub Releases publisher must not depend on an obsolete public mirror.')
     }
 }
 
@@ -597,8 +562,8 @@ if(Test-Path -LiteralPath $releasePath){
         }
     }
     $intentGuard="steps.release_intent.outputs.publish == 'true'"
-    if(([regex]::Matches($release,[regex]::Escape($intentGuard))).Count -lt 4){
-        $errors.Add('windows-release-gate.yml: provenance and public/private/parity publication must require positive release intent.')
+    if(([regex]::Matches($release,[regex]::Escape($intentGuard))).Count -lt 2){
+        $errors.Add('windows-release-gate.yml: provenance and canonical release publication require positive release intent.')
     }
 }
 $updaterPrGatePath=Join-Path $workflowRoot 'updater-publication-pr-gate.yml'

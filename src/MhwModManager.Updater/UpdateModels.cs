@@ -24,8 +24,8 @@ public static class UpdateProtocol
     public const string HelperRelativePath =
         HelperDirectoryRelativePath + "/MHW Mod Manager Updater.exe";
     public const string CredentialTarget = "MhwModManager/GitHubUpdater/fengie/mhw-mods";
-    public const string Repository = "fengie/mhw-mods";
-    public const string PublicReleaseRepository = "fengie/mhw-mod-manager-release";
+    public const string Repository = "fengie/Heaven-Mod_Manager";
+    public const string PublicReleaseRepository = "fengie/Heaven-Mod_Manager";
     public const long MaxArtifactBytes = 1024L * 1024L * 1024L;
     public const int MaxSignedMetadataBytes = 64 * 1024;
     public const long MaxExtractedBytes = 2L * 1024L * 1024L * 1024L;
