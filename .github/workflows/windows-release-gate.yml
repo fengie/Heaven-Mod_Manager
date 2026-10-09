@@ -293,7 +293,7 @@ jobs:
             Add-Content -LiteralPath 'BuildLogs\ci-windows-provenance.txt' -Value ("github_artifact_attestation_url=" + $env:ATTESTATION_URL)
           }
       - name: Publish immutable canonical updater release
-        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true' 
+        if: success() && github.ref == 'refs/heads/main' && steps.release_freshness.outputs.publish == 'true' && steps.release_intent.outputs.publish == 'true'
         shell: powershell
         env:
           GH_TOKEN: ${{ github.token }}
