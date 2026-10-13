@@ -55,6 +55,17 @@ Takeover generation preserves the smallest useful continuation packet: role, sco
 
 Stop and Emergency Stop release mutable ownership only after process termination is proven for a worker owned by the current controller session.
 
+### Inherited v2 safety blockers
+
+This document describes the intended v0.4 architecture, but the dependent backend at draft PR #59 head `41d377d1c6ce5b0b0f747aa37484eaadc9033ce5` is not yet merge-ready. Independent safety verification found:
+
+- a P1 lost-update race where child-exit handling can carry a full registry snapshot across an async Git lookup and overwrite a newer state mutation;
+- a P1 terminal-classification defect where prior `stopping` plus exit code 0 can become `done` and integration-eligible;
+- a P2 pre-agent setup failure path that can strand a reserved task/active lease;
+- a P2 counted-deploy partial-success/idempotency gap near capacity.
+
+Those findings belong to the sole broad Agent Control implementation lane in PR #59. This dependent command-center patch must be rebased or cherry-picked onto the exact repaired and re-verified backend head before integration.
+
 ## Workflows and command resolution
 
 The workflow library is centralized in `lib/control-core.mjs`; prompt roles/sections are centralized and versioned in `lib/prompt-templates.mjs`.
@@ -81,10 +92,10 @@ Emergency Stop first blocks new dispatch, then attempts to stop only workers who
 
 Machine placement fails closed when a requested runtime is not actually connected.
 
-- **heaven**: background worker by default; no repository clone/fetch/pull/push/remotes/credentials/worktree/repository mutation without explicit per-task authorization; foreground UI is disallowed by policy.
-- **heaven2**: primary development machine; repository development is permitted when genuinely required, but responsiveness should be preserved and routine scouting should not consume it unnecessarily.
+- **heaven**: background worker and preferred future heavy-execution target for agents, builds, tests, scans, indexing, local inference, and other long-running work. It still has no repository clone/fetch/pull/push/remotes/credentials/worktree/repository mutation authority without explicit per-task authorization, and foreground UI is disallowed by policy.
+- **heaven2**: primary development/control machine and credential authority; repository development is permitted when genuinely required, but responsiveness should be preserved. Heavy execution should not silently fall back here merely because Heaven is unavailable unless the task explicitly requires Heaven2 or recovery policy permits it.
 
-The current release has local execution plus policy-aware visibility of configured machines. A true authenticated remote worker daemon/scheduler is a future boundary, not a fabricated capability.
+The current release has local execution plus policy-aware visibility of configured machines. A true authenticated remote worker daemon/scheduler and narrow credential-broker boundary are future work, not fabricated capabilities.
 ## Review, integration, release, and search
 
 Completed work does not become canonical automatically. Integration candidates retain branch/base/current SHA, ahead/behind state, completion evidence, review verdict, task evidence, and eligibility.

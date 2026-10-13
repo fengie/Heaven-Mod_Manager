@@ -5,14 +5,16 @@
 This continuity record covers the first command-center upgrade wave for Heaven Agent Control.
 
 - canonical repository: `fengie/mhw-mods`
-- canonical `main` at branch construction: `a8b581176aac0e6bcf09c049285ed40f4b2b392c`
-- safety-hardened control-plane source branch inspected: `feature/agent-control-plane-v2-20260928`
-- source v2 head inspected before rebase: `41d377d1c6ce5b0b0f747aa37484eaadc9033ce5`
-- continuation branch: `feature/agent-command-center-20260928`
-- clean continuation worktree used on heaven2: `C:\Users\fengc\mhw-agent-command-center-20260928`
+- canonical `main` at the original implementation-wave branch construction: `a8b581176aac0e6bcf09c049285ed40f4b2b392c`
+- latest canonical `main` observed while reconciling parallel work: `151a370ef6c0b3d4e6b1d8a306576af1ae231c40`
+- safety-hardened control-plane implementation owner: draft PR #59, branch `feature/agent-control-plane-v2-20260928`
+- exact v2 target head for this dependent command-center patch: `41d377d1c6ce5b0b0f747aa37484eaadc9033ce5`
+- dependent continuation branch: `feature/agent-command-center-ui-20260928`
+- dependent worktree used on heaven2: `C:\Users\fengc\mhw-agent-command-center-dependent-20260928`
+- a current-main-rebased scratch branch was used only to prove the UI/CLI delta rebased cleanly; it is not the integration target.
 - existing PR #47 and the interrupted local v2/v3 worktrees were not overwritten.
 
-The branch was created from the remote safety-hardened v2 work, then rebased cleanly onto the canonical main SHA above before this implementation wave.
+Repository routing issue/PR comments established PR #59 as the **sole broad Agent Control implementation lane**. This work is therefore packaged as a dependent command-center/UI+CLI patch targeting PR #59 rather than as a competing mainline control-plane implementation.
 
 ## Governance / machine policy preserved
 
@@ -31,6 +33,22 @@ The older control-panel PR established a useful prototype but an independent saf
 The newer v2 branch already contained the stronger control-plane foundation: loopback-only startup, backup/degraded state recovery, restart uncertainty, serialized dispatch, lease/heartbeat lifecycle, process-termination proof, prompt provenance, workflow planning, task graph, release evidence, search, improvements, machine policy, and takeover state.
 
 A separate interrupted local v3 worktree contained valuable command-center UX and CLI ideas, but it was based on older process/state code. This wave salvaged only the useful UI/CLI concepts and wired them to the newer safety-hardened backend rather than reviving stale server logic.
+
+## Dependency blockers discovered during parallel review
+
+An independent Support 1 verification of exact PR #59 head `41d377d1c6ce5b0b0f747aa37484eaadc9033ce5` found two P1 and two P2 backend defects. This dependent command-center patch does **not** claim to close them and must not be treated as merge-ready until the owning #59 implementation lane repairs and re-verifies them.
+
+Confirmed P1 blockers:
+
+- child-exit handling can load the whole registry, await Git evidence, then save the stale snapshot and overwrite a newer task/agent/lease/settings mutation;
+- a worker already marked `stopping` can be classified `done` on exit code 0 and satisfy integration eligibility.
+
+P2 follow-ups:
+
+- failures after worktree creation but before durable agent registration can strand a reserved task/active lease with no agent owner;
+- counted direct deploy can partially create workers and then return only an opaque request failure when a later item hits capacity.
+
+The owning #59 lane should fix these with deterministic regressions before integration. This branch owns command-center/CLI product work only and should be rebased or cherry-picked onto the exact repaired #59 head after that safety review closes.
 
 ## Implemented in this wave
 

@@ -30,6 +30,17 @@ The dashboard is authoritative for workers launched through this control plane.
 
 It can also discover relevant Git branches created by other agents, but ChatGPT does **not** expose a general API that lets this app enumerate every unrelated active ChatGPT web conversation. Those appear as external/observed branches unless they are launched or registered through this control plane.
 
+### Current inherited safety blockers
+
+This command-center patch is dependent on the v2 backend implementation in draft PR #59. Independent review of exact v2 head `41d377d1c6ce5b0b0f747aa37484eaadc9033ce5` found two P1 blockers that must be fixed in that owning lane before this stack is treated as merge-ready:
+
+- child-exit handling can save a stale whole-registry snapshot after an async Git lookup and overwrite a newer task/agent/lease/settings mutation;
+- stop intent can lose to exit code 0, allowing a deliberately stopped worker to be classified `done` and become integration-eligible.
+
+Two P2 follow-ups also remain: pre-agent setup failure can strand an ownerless active lease, and counted direct deploy needs explicit atomic/partial-success semantics near capacity.
+
+The UI/CLI work here does not hide or claim to fix those backend findings.
+
 ## Start
 
 From this directory:
