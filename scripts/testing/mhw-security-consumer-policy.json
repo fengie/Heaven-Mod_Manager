@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "contentsWriteWorkflows": [
+    {"name": "windows-release-gate.yml", "reason": "Trusted main push/manual publication of verified MHW updater releases; no PR trigger."},
+    {"name": "updater-installed-client-e2e.yml", "reason": "Trusted successful main release/manual updater validation persists product E2E evidence; no PR trigger."}
+  ]
+}

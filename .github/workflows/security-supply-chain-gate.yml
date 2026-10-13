@@ -4,6 +4,16 @@ on:
   push:
     branches: [main]
     paths:
+      # Tracked-secret policy applies to every file type, including docs and assets.
+      - '**'
+      - '.github/**'
+      - 'scripts/testing/Test-ToolboxSecurityBaseline.ps1'
+      - 'scripts/testing/toolbox-security-policy.json'
+      - 'scripts/testing/mhw-security-consumer-policy.json'
+      - '**/*.ps1'
+      - '**/*.py'
+      - '**/*.cs'
+      - '.gitignore'
       - '.github/workflows/windows-release-gate.yml'
       - '.github/workflows/updater-publication-pr-gate.yml'
       - '.github/workflows/security-supply-chain-gate.yml'
@@ -20,6 +30,15 @@ on:
       - 'NuGet.config'
   pull_request:
     paths:
+      - '**'
+      - '.github/**'
+      - 'scripts/testing/Test-ToolboxSecurityBaseline.ps1'
+      - 'scripts/testing/toolbox-security-policy.json'
+      - 'scripts/testing/mhw-security-consumer-policy.json'
+      - '**/*.ps1'
+      - '**/*.py'
+      - '**/*.cs'
+      - '.gitignore'
       - '.github/workflows/windows-release-gate.yml'
       - '.github/workflows/updater-publication-pr-gate.yml'
       - '.github/workflows/security-supply-chain-gate.yml'
@@ -71,3 +90,6 @@ jobs:
       - name: Audit MHW product security policy
         shell: powershell
         run: .\scripts\testing\Test-CiSecurityPolicy.ps1 -Root $env:GITHUB_WORKSPACE
+      - name: Audit pinned Toolbox baseline without repository credentials
+        shell: powershell
+        run: .\scripts\testing\Test-ToolboxSecurityBaseline.ps1 -Root $env:GITHUB_WORKSPACE
