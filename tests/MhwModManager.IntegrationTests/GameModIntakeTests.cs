@@ -126,6 +126,30 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Source_folder_name_alone_does_not_make_every_archive_a_mod_for_that_game()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "NieR Automata Downloads-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(source);
+        try
+        {
+            CreateZip(Path.Combine(source, "Unknown.zip"), "BepInEx/plugins/unknown.dll");
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+            sorter.AddSource(source);
+
+            var result = await sorter.ScanAsync(TestToken);
+
+            Assert.Equal(0, result.Routed);
+            Assert.Equal(1, result.NeedsReview);
+            Assert.False(Directory.Exists(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
+            Assert.True(File.Exists(Path.Combine(source, "Unknown.zip")));
+        }
+        finally
+        {
+            Directory.Delete(source, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Refuses_scanning_manager_owned_or_drive_root_directories()
     {
         var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
