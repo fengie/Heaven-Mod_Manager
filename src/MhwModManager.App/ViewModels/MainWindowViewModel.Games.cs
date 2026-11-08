@@ -48,7 +48,7 @@ public sealed partial class MainWindowViewModel
             Multiselect = false
         };
         if (dialog.ShowDialog() != true) return;
-        var profile = s.GameRegistry.AddGenericFromExecutable(dialog.FileName);
+        var profile = s.GameRegistry.AddGenericFromExecutable(dialog.FileName, activate: false);
         await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(profile);
     }
 
@@ -72,8 +72,15 @@ public sealed partial class MainWindowViewModel
         };
         if (window.ShowDialog() != true || window.Result is null) return;
         if (!ConfirmSwitchWithoutPendingChanges()) return;
+        // Persist the edited profile for the candidate bootstrap, but do not strand
+        // the existing session on a changed profile if the transition fails.
+        if (!window.Result.Id.Equals(s.Paths.Game.Id, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Editing a game's profile cannot change its storage identity. Use Add Game.");
+        var previous = s.GameRegistry.Load().FirstOrDefault(x =>
+            x.Id.Equals(window.Result.Id, StringComparison.OrdinalIgnoreCase)) ?? s.Paths.Game;
         s.GameRegistry.Upsert(window.Result);
-        await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(window.Result);
+        var switched = await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(window.Result);
+        if (!switched) s.GameRegistry.Upsert(previous);
     }
 
     private bool ConfirmSwitchWithoutPendingChanges()
