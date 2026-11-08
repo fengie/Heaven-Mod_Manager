@@ -27,6 +27,7 @@ public sealed record GameModIntakeScan(IReadOnlyList<GameModIntakeItem> Items)
 /// </summary>
 public sealed class GameModIntakeService
 {
+    private static readonly JsonSerializerOptions PrettyJson = new() { WriteIndented = true };
     private const int MaxSources = 12;
     private const int MaxEntriesPerSource = 2048;
     private const int MaxFolderFiles = 512;
@@ -119,7 +120,7 @@ public sealed class GameModIntakeService
         try
         {
             Directory.CreateDirectory(stateRoot);
-            SaveAtomic(ReportPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
+            SaveAtomic(ReportPath, JsonSerializer.Serialize(report, PrettyJson));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -351,7 +352,7 @@ public sealed class GameModIntakeService
         return Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant();
     }
 
-    private static IReadOnlyList<string> SnapshotFolderFiles(string folder, CancellationToken ct)
+    private static string[] SnapshotFolderFiles(string folder, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var files = new List<string>();
@@ -539,7 +540,7 @@ public sealed class GameModIntakeService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(stateRoot);
-        SaveAtomic(settingsPath, JsonSerializer.Serialize(sources, new JsonSerializerOptions { WriteIndented = true }));
+        SaveAtomic(settingsPath, JsonSerializer.Serialize(sources, PrettyJson));
     }
 
     private static void SaveAtomic(string path, string contents)
