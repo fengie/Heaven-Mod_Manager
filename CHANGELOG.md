@@ -1,4 +1,4 @@
-# v8.9.0 — 2026-11-07
+# v8.8.100 — 2026-11-07
 
 - Stop empty-library startup from hashing unmanaged live game assets and remove automatic inference of vanilla Data folders as mod roots (#784).
 - Organize future installed packages and verified archive downloads by canonical game ID under Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}; read legacy libraries without moving user data (#785).

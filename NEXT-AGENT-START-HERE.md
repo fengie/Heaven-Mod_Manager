@@ -1,9 +1,9 @@
-# v8.9.0 source and release delivery — canonical continuity handoff
+# v8.8.100 source and release delivery — canonical continuity handoff
 
 Canonical repository: `fengie/Heaven-Mod_Manager` (historical `fengie/mhw-mods` product/updater identity must remain intact).
 Global bootstrap/training: `fengie/heaven-toolbox@main`
 Canonical branch: `main`
-Current product version: **8.9.0**
+Current product version: **8.8.100**
 
 ## Current behavior
 
@@ -14,7 +14,7 @@ Current product version: **8.9.0**
 
 ## Verification boundary
 
-**v8.9.0 canonical release and installed-runtime acceptance are not yet verified.** Last successful historical v8.8.99 Windows closure: source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`. This earlier evidence must not be attributed to v8.9.0. New source/test/workflow changes require fresh exact-input Windows checks.
+**v8.8.100 canonical release and installed-runtime acceptance are not yet verified.** Last successful historical v8.8.99 Windows closure: source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`. This earlier evidence must not be attributed to v8.8.100. New source/test/workflow changes require fresh exact-input Windows checks.
 
 ## Next action
 
@@ -27,7 +27,7 @@ Current product version: **8.9.0**
 
 ## Unresolved risk
 
-Until full exact-main Windows verification and new published updater assets exist, v8.9.0 remains unreleased. Windows checks cannot establish which build is installed on Heaven2 without a fresh installed source/health receipt. Preserve every Mods, State, legacy library, user-owned download, CAS, crash recovery, rollback, and updater security boundary.
+Until full exact-main Windows verification and new published updater assets exist, v8.8.100 remains unreleased. Windows checks cannot establish which build is installed on Heaven2 without a fresh installed source/health receipt. Preserve every Mods, State, legacy library, user-owned download, CAS, crash recovery, rollback, and updater security boundary.
 
 ## Successor obligation
 

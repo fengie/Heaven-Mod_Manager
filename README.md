@@ -1,8 +1,8 @@
-# v8.9.0 — MHW Manual Mod Manager
+# v8.8.100 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 7, 2026 · 11:19:30 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 7, 2026 · 11:30:23 PM EST** _(repo-enforced)_
 
-Current product version: **8.9.0**.
+Current product version: **8.8.100**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,7 +10,7 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.9.0 — game-scoped library and empty-startup repair
+## v8.8.100 — game-scoped library and empty-startup repair
 
 - Stop empty-library startup from hashing unmanaged live game assets and remove automatic inference of vanilla Data folders as mod roots (#784).
 - Organize future installed packages and verified archive downloads by canonical game ID under Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}; read legacy libraries without moving user data (#785).

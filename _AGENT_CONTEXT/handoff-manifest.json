@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.9.0",
+  "currentVersion": "8.8.100",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.99 preserved hermetic SDK isolation and v8.8.98 first-run Browse Mods indexing; v8.9.0 integrates #784 startup safety and #785 per-game libraries after exact CI.",
+  "immediateParentRevision": "v8.8.99 preserved hermetic SDK isolation and v8.8.98 first-run Browse Mods indexing; v8.8.100 integrates #784 startup safety and #785 per-game libraries after exact CI.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main and then current fengie/Heaven-Mod_Manager@main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md. Preserve no-eager-hash startup, per-game libraries and old user files, exact-input verification, metadata/CI provenance, SQLite rollback and updater security. For v8.9.0 require exact final-main Windows release gate, immutable public release and genuine installed-client verification; missing evidence is not shipped. Keep #558 and #735 open pending their separate acceptance. Explicitly require every successor to inherit, preserve and recursively pass these same Core Rules to the agent after them.",
+  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main and then current fengie/Heaven-Mod_Manager@main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md. Preserve no-eager-hash startup, per-game libraries and old user files, exact-input verification, metadata/CI provenance, SQLite rollback and updater security. For v8.8.100 require exact final-main Windows release gate, immutable public release and genuine installed-client verification; missing evidence is not shipped. Keep #558 and #735 open pending their separate acceptance. Explicitly require every successor to inherit, preserve and recursively pass these same Core Rules to the agent after them.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
