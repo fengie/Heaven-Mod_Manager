@@ -474,16 +474,18 @@ jobs:
             throw "Updater E2E evidence commit escaped its one-file boundary: $($commitPaths -join ', ')"
           }
 
-          git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) {
-            git fetch origin main
-            if ($LASTEXITCODE -ne 0) {
-              throw 'Updater E2E evidence was produced, but the failed push could not be diagnosed.'
-            }
-            $remoteMain = (git rev-parse origin/main).Trim()
-            if ($remoteMain -ne $persistenceBaseSha) {
-              Write-Host "::notice::Skipping the local updater E2E evidence commit because main advanced from persistence base $persistenceBaseSha to $remoteMain during the push race."
-              exit 0
-            }
-            throw "Failed to persist updater E2E evidence while origin/main still points at persistence base $persistenceBaseSha."
+          # A passing installed-client test is not authority to bypass the main
+          # ruleset. Stage exactly the tested one-file E2E closure as a PR candidate.
+          if ($env:GITHUB_RUN_ID -notmatch '^[1-9][0-9]*$' -or
+              $env:MHW_E2E_SOURCE_SHA -notmatch '^[0-9a-fA-F]{40}$' -or
+              $version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw 'Updater E2E evidence PR identity is malformed.'
           }
+          $evidenceBranch = "verification/installed-e2e-v$($version)-run-$($env:GITHUB_RUN_ID)"
+          git push origin "HEAD:refs/heads/$evidenceBranch"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not stage updater E2E evidence branch $evidenceBranch. Never push directly to protected main or discard unrelated user updater state."
+          }
+          $evidenceCommit = (git rev-parse HEAD).Trim()
+          Write-Host "::notice::EVIDENCE_PENDING_PR branch=$evidenceBranch tested_source=$env:MHW_E2E_SOURCE_SHA commit=$evidenceCommit. Evidence is not canonical until an enforced PR is merged."
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "EVIDENCE_PENDING_PR: $evidenceBranch at $evidenceCommit; tested updater source $env:MHW_E2E_SOURCE_SHA. Merge through required native PR admission; this branch is not canonical main."

@@ -348,6 +348,18 @@ jobs:
 
           $version = (Get-Content -LiteralPath 'VERSION.txt' -Raw).Trim()
           $evidencePath = "_AGENT_CONTEXT/EVIDENCE/v$version-heaven-windows-closure.log"
+          # Never commit raw runner reports (which contain local user paths) to a public ref.
+          # Preserve their SHA-256 digests and the verified, allowlisted outcome instead.
+          $verificationText = Get-Content -LiteralPath $verify.FullName -Raw
+          $overall = [regex]::Match($verificationText,'(?m)^Overall:\s+\*\*PASS\*\*[^\r\n]*\b0 failed\b')
+          if (-not $overall.Success) { throw 'Exact verification report did not contain a 0-failure PASS summary.' }
+          $manifest = Get-Content -LiteralPath '.\artifacts\update-manifest.json' -Raw | ConvertFrom-Json
+          if ([string]$manifest.sourceSha -ne $env:GITHUB_SHA -or [string]$manifest.productVersion -ne $version -or
+              [string]$manifest.sha256 -notmatch '^[0-9a-fA-F]{64}$') {
+            throw 'Release manifest does not match the verified source, version and artifact identity.'
+          }
+          $verificationHash = (Get-FileHash -LiteralPath $verify.FullName -Algorithm SHA256).Hash
+          $buildHash = (Get-FileHash -LiteralPath $build.FullName -Algorithm SHA256).Hash
           @(
             ("MHW Manual Mod Manager v$version Heaven Windows closure")
             ('source_sha=' + $env:GITHUB_SHA)
@@ -355,12 +367,17 @@ jobs:
             ('runner_os=' + $env:RUNNER_OS)
             ('runner_arch=' + $env:RUNNER_ARCH)
             ('dotnet_sdk=' + (& dotnet --version))
+            ('verification_report_sha256=' + $verificationHash)
+            ('release_build_report_sha256=' + $buildHash)
+            ('release_artifact_sha256=' + [string]$manifest.sha256)
             ''
             '=== VERIFICATION REPORT ==='
-            (Get-Content -LiteralPath $verify.FullName -Raw)
+            $overall.Value
             ''
             '=== RELEASE BUILD REPORT ==='
-            (Get-Content -LiteralPath $build.FullName -Raw)
+            ("Version: $version")
+            ('Source SHA: ' + $env:GITHUB_SHA)
+            ('SHA256: ' + [string]$manifest.sha256)
           ) | Set-Content -LiteralPath $evidencePath -Encoding UTF8
 
           # Evidence and successor state are one logical transition. The exact tested
@@ -373,24 +390,24 @@ jobs:
           git add -- '.verification/function-status.json' '.verification/stage-status.json' $evidencePath '_AGENT_CONTEXT/CURRENT_REVISION.json' '_AGENT_CONTEXT/CURRENT_STATE.md' 'NEXT-AGENT-START-HERE.md'
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
-            git commit -m 'Persist hosted Windows verification evidence [skip ci]'
+            git commit -m 'Persist hosted Windows verification evidence [evidence-only]'
             if ($LASTEXITCODE -ne 0) { throw 'Failed to create the verification evidence commit.' }
 
-            git push origin HEAD:main
-            if ($LASTEXITCODE -ne 0) {
-              # A concurrent main update between the preflight fetch and this push is benign:
-              # this run's exact evidence was already uploaded and must not be rebased forward.
-              git fetch origin main
-              if ($LASTEXITCODE -ne 0) {
-                throw 'Verification evidence was produced, but the failed push could not be diagnosed because origin/main could not be fetched.'
-              }
-              $remoteMain = (git rev-parse origin/main).Trim()
-              if ($remoteMain -ne $env:GITHUB_SHA) {
-                Write-Host "::notice::Skipping the local persistence commit because main advanced to $remoteMain during the push race. Exact evidence remains in the uploaded artifact."
-                exit 0
-              }
-              throw "Failed to persist verification state while origin/main still points at exact source $env:GITHUB_SHA."
+            # Protected main accepts PRs only. The new evidence branch's parent is
+            # the exact verified source; a PR must independently pass native gates.
+            if ($env:GITHUB_RUN_ID -notmatch '^[1-9][0-9]*$' -or
+                $env:GITHUB_SHA -notmatch '^[0-9a-fA-F]{40}$' -or
+                $version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+              throw 'Evidence PR branch identity is malformed.'
             }
+            $evidenceBranch = "verification/windows-v$($version)-run-$($env:GITHUB_RUN_ID)"
+            git push origin "HEAD:refs/heads/$evidenceBranch"
+            if ($LASTEXITCODE -ne 0) {
+              throw "Could not stage protected-main verification evidence as a separate PR branch $evidenceBranch. Never push directly to main or force-overwrite another run."
+            }
+            $candidateSha = (git rev-parse HEAD).Trim()
+            Write-Host "::notice::EVIDENCE_PENDING_PR branch=$evidenceBranch source=$env:GITHUB_SHA commit=$candidateSha. Required PR admission and merge into protected main remain pending."
+            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "EVIDENCE_PENDING_PR: $evidenceBranch at $candidateSha, based on exact tested source $env:GITHUB_SHA. Create an ordinary PR to main and require enforced checks; branch publication is not canonical evidence closure."
           } else {
             Write-Host 'Promoted verification state already matches the repository.'
           }

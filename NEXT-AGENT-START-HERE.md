@@ -1,34 +1,35 @@
-# v8.8.100 source and release delivery — canonical continuity handoff
+# v8.8.101 protected release-evidence custody — canonical continuity handoff
 
-Canonical repository: `fengie/Heaven-Mod_Manager` (historical `fengie/mhw-mods` product/updater identity must remain intact).
-Global bootstrap/training: `fengie/heaven-toolbox@main`
-Canonical branch: `main`
-Current product version: **8.8.100**
+Canonical repository: `fengie/Heaven-Mod_Manager` (legacy signed updater/product identity `fengie/mhw-mods` stays unchanged).
+Global bootstrap/training: `fengie/heaven-toolbox@main`.
+Canonical branch: `main`.
+Current product version: **8.8.101**.
 
 ## Current behavior
 
-- #784 prevents an empty NieR library from recursively hashing live game assets at startup, skips zero-mod conflict analysis and preserves explicit/manual adoption and error reporting.
-- #785 organizes new installs and downloaded archives by canonical game ID with separate Installed, Downloads, Inbox and Archive folders; legacy MHW and generic-game data remain indexed without migration.
-- The patch preserves strict provider compliance, verified archive hashes, updater user-data path exclusion, rollback E2E sentinels, and cross-process updater test state exclusivity.
-- #558 and #735 remain open for their independent catalog coverage and installed performance acceptance.
+- v8.8.100 #784/#785 empty-NieR startup and game-scoped `Mods by Game/<id>/{Installed,Downloads,Inbox,Archive}` storage are integrated and source-verified. The published updater build 493 contains that source. Legacy mods, State, and user downloads must never be moved/deleted casually.
+- v8.8.101 changes release/evidence custody only: Windows Release Gate and installed-client E2E stage their evidence as source-bound, no-force `verification/` branches for normal protected-main PR admission. They do not write directly to main, bypass status checks, or expand workflow token permissions.
+- Public Windows closure evidence is an allowlisted passing summary and SHA-256 artifact/report digests, not raw build reports with user-profile paths. Updater installed-client proof remains a one-file allowlisted durable projection.
+- Independent #558 catalog breadth and #735 installed Auto Populate performance acceptance remain open.
 
 ## Verification boundary
 
-**v8.8.100 canonical release and installed-runtime acceptance are not yet verified.** Last successful historical v8.8.99 Windows closure: source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`. This earlier evidence must not be attributed to v8.8.100. New source/test/workflow changes require fresh exact-input Windows checks.
+v8.8.101 **is not yet verified, published, or installed**. Historical last closed Windows verification: v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`.
+
+v8.8.100 immutable updater build `updater-main-493` was published for source `33c861dcd2af5554d4f225d8ea79a51ad72e1f91`. Windows run `42448738104` passed 26/26 verification stages, app packaging, signed provenance, and immutable publication, **but failed overall** when a direct evidence-only `git push origin HEAD:main` hit protected-main GH013 (PR required and required `enforce` status). The release is published, but its canonical repo evidence remains unpromoted. Never reinterpret that failed run as full green.
 
 ## Next action
 
-1. Refresh live `main`, #785 ownership/merge, exact current branch trees, and `_AGENT_CONTEXT/CURRENT_REVISION.json`.
-2. After verified integration, require the full `.github/workflows/windows-release-gate.yml` on exact canonical `main` with `force_publish=false`; do not bypass expired real provider Terms reviews.
-3. Require `Verify-Release.ps1`, `Build-Release.ps1`, updater policy, signed/provenance checks, immutable public release mirroring and installed-client E2E results to pass.
-4. Allow `Sync-VerificationContinuity.ps1` to record only actual exact-source/run closure after success; never hand-edit historical green results or reuse old version tags.
-5. Verify an actual installed NieR:Automata zero-mod launch and game-specific mod import on a permitted machine before claiming physical deployment; if no authenticated runtime route exists, keep it explicitly unverified.
-6. Installed-client E2E must use an unoccupied updater state root. It now fails closed rather than deleting user data; if this preflight fails, use a separately authorized dedicated Windows test account/runner instead of clearing live updater files.
+1. Refresh live current main, owners, opened PRs, and `_AGENT_CONTEXT/CURRENT_REVISION.json`. Complete exact-head Windows Feature, Security, Ownership, README timestamp, AutoUpdate and updater publication policy gates for the current protected-evidence repair branch before merging.
+2. Merge only with the exact tested head and expected main base. Run the canonical main Windows Release Gate for v8.8.101 and independently verify its immutable release tag, versioned Windows ZIP, source SHA, artifact SHA-256, and provenance. Do not force-republish an existing version.
+3. Review the generated `verification/windows-v8.8.101-run-<runId>` branch for safe allowed evidence paths and source identity. Create a normal PR and pass native `enforce` before merging proof into protected main. A staged branch is **EVIDENCE_PENDING_PR**, not canonical closure. Never manually promote unverified evidence.
+4. Allow the authenticated installed-client E2E workflow to run only after eligible source publication; verify update, rollback, durable allowlisted hashes, and its `verification/installed-e2e-v8.8.101-run-<runId>` evidence PR through normal CI/merge.
+5. If the dedicated Windows E2E cannot use an empty owned updater root, fail closed; do not delete another owner's LocalApplicationData or loosen machine security. Obtain actual installed Heaven2/NieR SHA, startup and health proof before declaring physical deployment.
 
 ## Unresolved risk
 
-Until full exact-main Windows verification and new published updater assets exist, v8.8.100 remains unreleased. Windows checks cannot establish which build is installed on Heaven2 without a fresh installed source/health receipt. Preserve every Mods, State, legacy library, user-owned download, CAS, crash recovery, rollback, and updater security boundary.
+Native CI and GitHub publication are not physical-device deployment. Protected main requires PRs and the updater may contain unrelated live state; missing runtime/PR receipts remain explicit. Preserve exact version/manifest/source identities, filesystem containment, immutable download archives, legacy compatibility, HMAC/Bridge authority, transactional rollback, and independent signing/provenance gates.
 
 ## Successor obligation
 
-You inherit the repository's permanent continuity constitution. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full before modifying the project, obey `_AGENT_CONTEXT/LEARNED_RULES.md` and bootstrap fresh `fengie/heaven-toolbox@main`. Preserve exact verification provenance, update durable repo handoff and justified learned rules, and explicitly require your successor to inherit, preserve and **recursively propagate** these same rules to the agent after them. Every successor must preserve, obey and recursively propagate these Core Rules to the agent after them; that successor must repeat this obligation for the next agent. Do not break the chain.
+You inherit the repository's permanent continuity constitution. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full before modifying the project, obey `_AGENT_CONTEXT/LEARNED_RULES.md`, and bootstrap fresh `fengie/heaven-toolbox@main`. Update justified durable lessons and exact verified source/run/owner handoff before stopping. Every successor **must preserve, obey and recursively propagate** these Core Rules to the agent after them; that successor must repeat the requirement for the next agent. Do not break the chain.
