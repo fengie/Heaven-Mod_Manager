@@ -1,28 +1,28 @@
-# v8.8.99 hermetic SDK-isolation verification — canonical state
+# v8.8.100 game-scoped library and startup safety — canonical state
 
-v8.8.99 is the canonical MHW Manual Mod Manager baseline. It preserves v8.8.98's exhaustive Browse Mods first-run indexing and makes the concurrent .NET SDK isolation regression hermetic without weakening exact SDK or supply-chain enforcement.
+v8.8.100 is the next release identity for the verified startup and per-game mod storage change set. The previous v8.8.99 hermetic SDK and v8.8.98 catalog continuation behavior remain in effect. This text is a source-state record, **not** an installed-release receipt.
 
 ## Behavior
 
-- Pageable providers with no saved cursor seed page 1 and follow durable continuations to exhaustion; saved cursors resume and exhausted scopes are local no-ops.
-- Repeated cursors and empty continuation pages fail closed.
-- Shared GameBanana/CurseForge continuation, serialized Load More, credential isolation, acquisition, health and schema-drift boundaries remain intact.
-- #558 remains open for provider/result breadth and deterministic end-to-end scale/performance acceptance.
+- Empty-library startup does not scan/hash live game assets or build an empty conflict graph; manual adoption stays an explicit separate action.
+- Canonical game ID determines a separate `Mods by Game/<id>/{Installed,Downloads,Inbox,Archive}` library. Legacy MHW `Mods/` and per-game `Games/<id>/Mods/` remain readable without relocation or deletion.
+- Catalog and manually imported archives are copied into game-owned Downloads only after import and full SHA-256 verification; existing user downloads are not auto-reaped.
+- Immutable release/updater manifests reject persistent game-library paths; installed-client E2E checks both legacy and new user-owned download sentinels across update and rollback.
+- Catalog fixtures no longer expire on real-provider review dates; real external-provider policy still fails closed. Windows test processes acquire a shared exclusive OS file lease around updater global state.
+- Provider pagination/continuation, dependency/conflict/override semantics and Toolbox inheritance remain unchanged. #558 and #735 retain independent acceptance obligations.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4` passed run `38006379575` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`.
-
-The tested source remains `c08b31c5327522c5896704d7a24b5ddc6f70b9c4` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+**No current v8.8.100 Windows closure or installed-release proof has been recorded.** Last historical v8.8.99 Windows verification source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`. Do not promote it to v8.8.100 or infer a deployed client from source merge.
 
 ## Next required action
 
-Refresh main, ownership and `CURRENT_REVISION.json`. While current-source Windows closure is absent, explicitly dispatch the Windows Release Gate on canonical `main` with `force_publish=false`; context-only changes do not trigger its push paths. Allow the trusted gate to synchronize evidence only after success. Once closure exists, follow the revision ledger and project plan instead of reintegrating stale PRs or repeating an already-verified source for an evidence-only commit.
+Reconcile exact merged #784/#785 source against current main and native CI, then run canonical `windows-release-gate.yml` with new v8.8.100 metadata. Require complete exact-source verification, package/provenance/publisher readback and installed-client updater E2E. The standard synchronizer owns source/run evidence persistence. Physical NieR startup and desktop installed source identity remain unverified without a real authenticated host receipt.
 
 ## Unresolved risk and independent work
 
-- #558 remains open for catalog breadth and deterministic end-to-end scale/performance acceptance.
-- #735 remains open for installed enable/disable and Auto Populate UI/persistence timings, transitive recomputation evidence and a responsiveness budget.
-- Recovery, updater trust, discovery UX, release administration and external signing/ruleset work remain governed by the live project plan.
+- #558 remains open for provider breadth and deterministic catalog scale/performance; #735 for installed Auto Populate timing.
+- No code or CI-only result proves Heaven2's installed version, NieR load time, or live auto-updater completion.
+- External signing/ruleset and authorized machine operation remain governed by the live product plan. Preserve user-owned mod downloads and all release/trust boundaries.
 
-Every successor must preserve the permanent continuity constitution, exact-input verification, conflict/dependency/override safety, updater publication/parity/provenance invariants, exact SDK policy and durable-evidence privacy. The next agent must propagate this continuity contract to the agent after it.
+Every successor must read the permanent continuity constitution and active Learned Rules, document exact verified state, and explicitly require the next agent to preserve and recursively propagate the same Core Rules to its successor.

@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.99",
+  "currentVersion": "8.8.100",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.98 repairs #558 exhaustive Browse Mods first-run indexing with durable continuation-to-exhaustion semantics while preserving remaining provider-breadth and end-to-end scale/performance work under #558.",
+  "immediateParentRevision": "v8.8.99 preserved hermetic SDK isolation and v8.8.98 first-run Browse Mods indexing; v8.8.100 integrates #784 startup safety and #785 per-game libraries after exact CI.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap from current fengie/heaven-toolbox@main, then current MHW main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md; preserve exact-input verification, catalog continuation retry/no-skip semantics, Auto Populate dependency/conflict/override safety, updater publication/parity/provenance identity, exact SDK policy, filesystem containment, and durable-evidence privacy. Obtain fresh exact-final-head admission and canonical Windows closure for v8.8.99; keep #558 open until remaining provider breadth and end-to-end scale/performance acceptance is evidenced and keep #735 open until its installed timing/responsiveness acceptance is evidenced; then propagate this obligation recursively.",
+  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main and then current fengie/Heaven-Mod_Manager@main; read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md. Preserve no-eager-hash startup, per-game libraries and old user files, exact-input verification, metadata/CI provenance, SQLite rollback and updater security. For v8.8.100 require exact final-main Windows release gate, immutable public release and genuine installed-client verification; missing evidence is not shipped. Keep #558 and #735 open pending their separate acceptance. Explicitly require every successor to inherit, preserve and recursively pass these same Core Rules to the agent after them.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
