@@ -400,6 +400,7 @@ public sealed partial class GameProfileRegistry
 
     private static (string Adapter,string ModRoot) InferLayout(string root)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         if(Directory.Exists(Path.Combine(root,"BepInEx","plugins")))return("bepinex",@"BepInEx\plugins");
         var unreal=FindExisting(root,@"Content\Paks\~mods");if(unreal is not null)return("unreal-paks",unreal);
         try
