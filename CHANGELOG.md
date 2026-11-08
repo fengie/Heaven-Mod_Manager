@@ -1,3 +1,11 @@
+# v8.8.101 — 2026-11-08
+
+- Repair confirmed GitHub GH013 protected-main evidence persistence (Windows Release Gate run 42448738104) without disabling the required pull-request or status checks.
+- Stage exact-source, digest-bound Windows release verification evidence on a per-run branch for normal PR admission; do not grant new workflow permissions or force-push main.
+- Replace public raw build/verification log embedding with a 0-failure summary and SHA-256 report/package digests, avoiding user-profile/runner path exposure.
+- Stage installed-client E2E's already allowlisted one-file proof via the same PR-only path, preserving its source, ancestry, rollback and filesystem safeguards.
+- Preserve v8.8.100 immutable updater build 493 (source 33c861dcd2af5554d4f225d8ea79a51ad72e1f91) as a prior release; v8.8.101 exact-main release and installed Heaven2 proof are still pending.
+
 # v8.8.100 — 2026-11-07
 
 - Stop empty-library startup from hashing unmanaged live game assets and remove automatic inference of vanilla Data folders as mod roots (#784).
