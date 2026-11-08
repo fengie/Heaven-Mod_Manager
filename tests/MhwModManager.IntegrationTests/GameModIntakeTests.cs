@@ -95,7 +95,7 @@ public sealed class GameModIntakeTests : IDisposable
             var again = await sorter.ScanAsync(TestToken);
             Assert.Equal(0, again.Routed);
             Assert.Equal(2, again.AlreadyPresent);
-            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
+            Assert.Empty(Directory.GetFiles(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
         }
         finally
         {

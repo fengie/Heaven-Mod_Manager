@@ -305,11 +305,12 @@
                                         ToolTip="Import sorted Inbox packages, then enable and apply the largest safe compatible set of mods."/>
                                 <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Button Content="Select All" Command="{Binding EnableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
-                                        ToolTip="Stage enable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Select all visible mods"/>
+                                        ToolTip="Stage enable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Select all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="Deselect All" Command="{Binding DisableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
-                                        ToolTip="Stage disable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Deselect all visible mods"/>
+                                        ToolTip="Stage disable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Deselect all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5"
                                         ToolTip="{Binding VisibleBulkScopeHelp}"/>
+                                <TextBlock Text="{Binding VisibleBulkScopeHelp}" VerticalAlignment="Center" Margin="10,3,0,3" MaxWidth="520" TextWrapping="Wrap" FontSize="10" Foreground="{StaticResource Muted}" AutomationProperties.LiveSetting="Polite"/>
                             </WrapPanel>
                         </Grid>
                     </Border>

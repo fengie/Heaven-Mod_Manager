@@ -554,7 +554,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("<Grid Margin=\"8,6,8,6\">", xaml);
         Assert.DoesNotContain("<Grid Margin=\"28,14,32,14\">", xaml);
         Assert.Contains("x:Name=\"ModLibraryToolbar\"", xaml);
-        Assert.Contains("HorizontalScrollBarVisibility=\"Auto\"", xaml);
+        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\"", xaml);
+        Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", xaml);
         Assert.Contains("Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\"", xaml);
         Assert.Contains("ToolTip=\"{Binding PlanPreviewText}\"", xaml);
         Assert.Contains("MinHeight=\"32\"", xaml);
@@ -599,8 +600,8 @@ public sealed partial class XamlBindingSafetyTests
         var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
         var rows = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "Rows.cs"));
 
-        Assert.Contains("EnableVisibleLabel", xaml);
-        Assert.Contains("DisableVisibleLabel", xaml);
+        Assert.Contains("Content=\"Select All\" Command=\"{Binding EnableVisibleCommand}\"", xaml);
+        Assert.Contains("Content=\"Deselect All\" Command=\"{Binding DisableVisibleCommand}\"", xaml);
         Assert.Contains("HasVisibleMods", xaml);
         Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().ToArray();", main);
         Assert.Contains("if(targets.Length>1&&MessageBox.Show(", main);
