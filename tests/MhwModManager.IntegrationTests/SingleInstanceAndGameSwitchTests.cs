@@ -37,8 +37,15 @@ public sealed class SingleInstanceAndGameSwitchTests
         Assert.Contains("SwitchGameInPlaceAsync(", games, StringComparison.Ordinal);
         Assert.Contains("LoadGameSessionAsync(", app, StringComparison.Ordinal);
         Assert.Contains("previousGame", app, StringComparison.Ordinal);
-        Assert.Contains("OnExplicitShutdown", app, StringComparison.Ordinal);
+        // The same WPF MainWindow remains open, so the existing
+        // OnMainWindowClose lifetime contract stays valid; no new process/window.
+        Assert.Contains("previousWindow.ReplaceGameSessionAsync(candidate", app, StringComparison.Ordinal);
+        Assert.Contains("ShutdownMode=ShutdownMode.OnMainWindowClose;", app, StringComparison.Ordinal);
         Assert.Contains("previousWindow", app, StringComparison.Ordinal);
+        var window = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App",
+            "MainWindow.xaml.cs"));
+        Assert.Contains("DataContext = replacement;", window, StringComparison.Ordinal);
+        Assert.Contains("DataContext = previousViewModel;", window, StringComparison.Ordinal);
     }
 
     [Fact]
