@@ -183,9 +183,17 @@ public sealed partial class App:Application, IDisposable
         var previousServices = Services;
         var previousGame = previousServices.Paths.Game;
         if (requestedGame.Equals(previousGame)) return true;
-        if (!await gameSwitchGate.WaitAsync(0)) return false;
+        if (!await gameSwitchGate.WaitAsync(0))
+        {
+            previousVm.SelectedGame = previousVm.Games.FirstOrDefault(
+                game => game.Id.Equals(previousGame.Id, StringComparison.OrdinalIgnoreCase));
+            previousVm.StatusText = "A game switch is already in progress.";
+            return false;
+        }
         if (!previousVm.TryBeginGameSwitch())
         {
+            previousVm.SelectedGame = previousVm.Games.FirstOrDefault(
+                game => game.Id.Equals(previousGame.Id, StringComparison.OrdinalIgnoreCase));
             gameSwitchGate.Release();
             return false;
         }
