@@ -56,6 +56,9 @@ public sealed class GameScopedModStorageTests : IDisposable
         Assert.Contains("GameDownloadsPathText",xaml);
         Assert.Contains("private void OpenGameModFolder()",viewModel);
         Assert.Contains("private void OpenGameDownloadsFolder()",viewModel);
+        var import=File.ReadAllText(Path.Combine(current.FullName,"src","MhwModManager.App","ViewModels","MainWindowViewModel.Import.cs"));
+        Assert.Contains("GameDownloadArchiveStore.SaveAsync(",import);
+        Assert.Contains("originalHash.Sha256",import);
     }
 
     [Fact]
