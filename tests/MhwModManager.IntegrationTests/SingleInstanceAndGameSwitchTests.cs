@@ -1,5 +1,7 @@
 using System.IO;
 using MhwModManager.App;
+using MhwModManager.Core;
+using MhwModManager.Filesystem;
 using Xunit;
 
 namespace MhwModManager.IntegrationTests;
@@ -19,6 +21,40 @@ public sealed class SingleInstanceAndGameSwitchTests
 
         Assert.True(await duplicate.RequestActivationAsync(TestContext.Current.CancellationToken));
         Assert.True(await signaled.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public void Candidate_registration_must_not_activate_a_game_before_session_commit()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "umm-switch-lease-" + Guid.NewGuid().ToString("N"));
+        var firstRoot = Path.Combine(root, "First");
+        var secondRoot = Path.Combine(root, "Second");
+        Directory.CreateDirectory(firstRoot);
+        Directory.CreateDirectory(secondRoot);
+        var secondExe = Path.Combine(secondRoot, "SecondGame.exe");
+        File.WriteAllBytes(secondExe, [0x4d, 0x5a]);
+        try
+        {
+            var registry = new GameProfileRegistry(Path.Combine(root, "State"));
+            var first = GameProfile.Generic("first-game", "First Game", firstRoot, "First.exe", "Mods");
+            registry.Upsert(first);
+            registry.SetActive(first.Id);
+
+            var candidate = registry.AddGenericFromExecutable(secondExe, activate: false);
+            Assert.NotEqual(first.Id, candidate.Id);
+            Assert.Equal(first.Id, registry.GetActive()?.Id);
+            Assert.Contains(registry.Load(), profile => profile.Id == candidate.Id);
+
+            // Preserve the original public registry behavior for existing callers.
+            var activated = registry.AddGenericFromExecutable(secondExe);
+            Assert.Equal(activated.Id, registry.GetActive()?.Id);
+        }
+        finally
+        {
+            try { Directory.Delete(root, recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
     }
 
     [Fact]
