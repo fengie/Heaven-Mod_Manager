@@ -109,8 +109,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
     }
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
-    public string ModLibraryPathText=>$"Installed mods: {s.Paths.ModsRoot}";
-    public string GameDownloadsPathText=>$"Downloaded archives: {s.Paths.DownloadsRoot}";
+    public string ModLibraryPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Installed mods: {s.Paths.ModsRoot}"; } }
+    public string GameDownloadsPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Downloaded archives: {s.Paths.DownloadsRoot}"; } }
     public int InstalledCount=>Mods.Count;
     public string InstalledCountLabel
     {
@@ -1172,13 +1172,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     });
 
     [RelayCommand]
-    private void OpenGameModFolder()=>OpenScopedFolder(s.Paths.ModsRoot);
+    private void OpenGameModFolder() { using var __mhwTrace=MasterDebugLog.BeginMethod(); OpenScopedFolder(s.Paths.ModsRoot); }
 
     [RelayCommand]
-    private void OpenGameDownloadsFolder()=>OpenScopedFolder(s.Paths.DownloadsRoot);
+    private void OpenGameDownloadsFolder() { using var __mhwTrace=MasterDebugLog.BeginMethod(); OpenScopedFolder(s.Paths.DownloadsRoot); }
 
     private void OpenScopedFolder(string path)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         try
         {
             if(Directory.Exists(path)&&(File.GetAttributes(path)&FileAttributes.ReparsePoint)!=0)
