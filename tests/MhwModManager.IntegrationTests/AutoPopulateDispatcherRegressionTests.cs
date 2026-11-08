@@ -121,7 +121,7 @@ public sealed class AutoPopulateDispatcherRegressionTests
     }
 
     [Fact]
-    public void Select_all_controls_remain_visible_outside_horizontal_filter_scroll()
+    public void Mod_filters_wrap_and_primary_actions_remain_visible_without_horizontal_scroll()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
@@ -129,15 +129,19 @@ public sealed class AutoPopulateDispatcherRegressionTests
         Assert.NotNull(root);
 
         var xaml = File.ReadAllText(Path.Combine(root!.FullName, "src", "MhwModManager.App", "MainWindow.xaml"));
-        var toolbar = xaml.IndexOf("x:Name=\"ModLibraryToolbar\"", StringComparison.Ordinal);
-        var scrollEnds = xaml.IndexOf("</ScrollViewer>", toolbar, StringComparison.Ordinal);
-        var modGrid = xaml.IndexOf("x:Name=\"ModLibraryRegion\"", scrollEnds, StringComparison.Ordinal);
-        Assert.True(toolbar >= 0 && scrollEnds > toolbar && modGrid > scrollEnds);
-        var fixedArea = xaml[scrollEnds..modGrid];
-        Assert.Contains("Content=\"Select All\"", fixedArea, StringComparison.Ordinal);
-        Assert.Contains("Command=\"{Binding EnableVisibleCommand}\"", fixedArea, StringComparison.Ordinal);
-        Assert.Contains("Content=\"Deselect All\"", fixedArea, StringComparison.Ordinal);
-        Assert.Contains("Command=\"{Binding DisableVisibleCommand}\"", fixedArea, StringComparison.Ordinal);
+        var mods = xaml.IndexOf("<TabItem Header=\"Mods\">", StringComparison.Ordinal);
+        var nextTab = xaml.IndexOf("<TabItem Header=", mods + 1, StringComparison.Ordinal);
+        Assert.True(mods >= 0 && nextTab > mods);
+        var modPage = xaml[mods..nextTab];
+
+        Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Select All\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding EnableVisibleCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Deselect All\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding DisableVisibleCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Auto Populate\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
     }
 
 }
