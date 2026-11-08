@@ -572,7 +572,7 @@ public sealed record AppPaths(
                 "Game installation moved",MessageBoxButton.YesNo,MessageBoxImage.Warning);
             if(choice!=MessageBoxResult.Yes||repair.ShowDialog()!=true)
                 throw new DirectoryNotFoundException($"The active game profile '{active.DisplayName}' is missing or moved. Expected executable: {active.ExecutablePath}.");
-            active=registry.RepairFromExecutable(active,repair.FileName);
+            active=registry.RepairFromExecutable(active,repair.FileName,activate:requestedGame is null);
         }
 
         string workspace,next;
