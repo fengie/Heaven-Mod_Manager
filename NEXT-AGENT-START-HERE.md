@@ -23,6 +23,7 @@ Current product version: **8.9.0**
 3. Require `Verify-Release.ps1`, `Build-Release.ps1`, updater policy, signed/provenance checks, immutable public release mirroring and installed-client E2E results to pass.
 4. Allow `Sync-VerificationContinuity.ps1` to record only actual exact-source/run closure after success; never hand-edit historical green results or reuse old version tags.
 5. Verify an actual installed NieR:Automata zero-mod launch and game-specific mod import on a permitted machine before claiming physical deployment; if no authenticated runtime route exists, keep it explicitly unverified.
+6. Installed-client E2E must use an unoccupied updater state root. It now fails closed rather than deleting user data; if this preflight fails, use a separately authorized dedicated Windows test account/runner instead of clearing live updater files.
 
 ## Unresolved risk
 
