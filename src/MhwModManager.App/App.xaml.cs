@@ -107,7 +107,7 @@ public sealed partial class App:Application, IDisposable
             splash.Close();
             // Observe startup stalls too: the UI initialization is precisely where the
             // user may see a non-cancellable Loading library overlay.
-            watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,telemetry,logger));
+            watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,Services.Telemetry,logger));
             await Dispatcher.Yield(DispatcherPriority.Render);
             await initialization;
             startup.Complete(true,"Main window rendered, initialized, and ready.");
@@ -261,7 +261,7 @@ public sealed partial class App:Application, IDisposable
         }
     }
 
-    private async Task<AppServices> LoadGameSessionAsync(
+    private static async Task<AppServices> LoadGameSessionAsync(
         AppPaths paths,
         StartupDiagnosticSession startup,
         IReadOnlyList<string> startupArguments,
