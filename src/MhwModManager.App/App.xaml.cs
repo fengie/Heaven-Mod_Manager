@@ -22,6 +22,7 @@ public sealed partial class App:Application, IDisposable
     private bool disposed;
     private SingleInstanceCoordinator? instanceCoordinator;
     private bool activationRequested;
+    private readonly SemaphoreSlim gameSwitchGate = new(1, 1);
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -170,6 +171,96 @@ public sealed partial class App:Application, IDisposable
         window.Focus();
     }
 
+    public async Task<bool> SwitchGameInPlaceAsync(GameProfile requestedGame)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"game={requestedGame?.Id}");
+        ArgumentNullException.ThrowIfNull(requestedGame);
+        if (MainWindow is not MainWindow previousWindow
+            || previousWindow.DataContext is not ViewModels.MainWindowViewModel previousVm
+            || Services is null)
+            return false;
+
+        var previousServices = Services;
+        var previousGame = previousServices.Paths.Game;
+        if (requestedGame.Equals(previousGame)) return true;
+        if (!await gameSwitchGate.WaitAsync(0)) return false;
+        if (!previousVm.TryBeginGameSwitch())
+        {
+            gameSwitchGate.Release();
+            return false;
+        }
+
+        AppServices? candidate = null;
+        var committed = false;
+        try
+        {
+            var paths = AppPaths.DiscoverForGame(requestedGame);
+            if (!paths.Game.Id.Equals(requestedGame.Id, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("The selected game's identity changed during session preparation.");
+            var diagnostics = StartupDiagnosticSession.Start(paths.ToolRoot);
+            diagnostics.Info("game.switch.begin",
+                $"Previous={previousGame.Id}; Next={paths.Game.Id}; PID={Environment.ProcessId}");
+            candidate = await LoadGameSessionAsync(paths, diagnostics,
+                previousServices.StartupArguments, previousServices,
+                message => previousVm.BusyDetail = message);
+
+            await previousWindow.ReplaceGameSessionAsync(candidate, () =>
+            {
+                // Persist selection only after the candidate successfully initializes.
+                previousServices.GameRegistry.SetActive(paths.Game.Id);
+                Services = candidate;
+                changeHints = candidate.ChangeHints;
+            });
+            committed = true;
+
+            // The shared updater/logger survive; the previous game-specific watchers and
+            // telemetry watchdog are retired only after the replacement is active.
+            try { previousServices.ChangeHints.Dispose(); }
+            catch (Exception ex)
+            {
+                MasterDebugLog.Write("GAME-SWITCH", "Previous game watcher disposal failed.", ex);
+            }
+            try
+            {
+                watchdog?.Dispose();
+                watchdog = new DispatcherWatchdog(previousWindow.Dispatcher,
+                    candidate.Telemetry, candidate.Log);
+            }
+            catch (Exception ex)
+            {
+                MasterDebugLog.Write("GAME-SWITCH", "Could not restart session dispatcher watchdog.", ex);
+            }
+            MasterDebugLog.Write("GAME-SWITCH",
+                $"Switched game in place. Previous={previousGame.Id}; Active={paths.Game.Id}; PID={Environment.ProcessId}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            if (!committed)
+            {
+                candidate?.ChangeHints.Dispose();
+                // Add Game may have registered and marked a new profile active before the
+                // switch. Restore the original selection even after candidate failure.
+                try { previousServices.GameRegistry.SetActive(previousGame.Id); }
+                catch (Exception restoreError)
+                {
+                    MasterDebugLog.Write("GAME-SWITCH", "Failed restoring persisted active game.", restoreError);
+                }
+            }
+            MasterDebugLog.Write("GAME-SWITCH",
+                $"Failed switching from {previousGame.Id} to {requestedGame.Id}.", ex);
+            previousVm.StatusText = $"Game switch did not complete. Still managing {previousGame.DisplayName}: {ex.Message}";
+            previousVm.SelectedGame = previousVm.Games.FirstOrDefault(
+                game => game.Id.Equals(previousGame.Id, StringComparison.OrdinalIgnoreCase));
+            return false;
+        }
+        finally
+        {
+            previousVm.EndGameSwitch();
+            gameSwitchGate.Release();
+        }
+    }
+
     private async Task<AppServices> LoadGameSessionAsync(
         AppPaths paths,
         StartupDiagnosticSession startup,
@@ -312,6 +403,7 @@ public sealed partial class App:Application, IDisposable
         disposed=true;
         instanceCoordinator?.Dispose();
         instanceCoordinator=null;
+        gameSwitchGate.Dispose();
         watchdog?.Dispose();
         watchdog=null;
         changeHints?.Dispose();
