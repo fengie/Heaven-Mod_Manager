@@ -11,14 +11,21 @@ public enum SmartInboxFaultPoint
     AfterPublishBeforeSourceArchive
 }
 
-public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archive, CatalogService catalog, NexusMetadataService nexus, AutoCategoryService categories, string inboxRoot, string modsRoot, StartupDiagnosticSession? startupDiagnostics = null, Action<SmartInboxFaultPoint,string>? faultInjector = null)
+public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archive, CatalogService catalog, NexusMetadataService nexus, AutoCategoryService categories, string inboxRoot, string modsRoot, StartupDiagnosticSession? startupDiagnostics = null, Action<SmartInboxFaultPoint,string>? faultInjector = null, string? legacyInboxRoot = null)
 {
     public async Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("smart-inbox");
         Directory.CreateDirectory(inboxRoot); Directory.CreateDirectory(modsRoot);
         var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
-        var entries = Directory.EnumerateFileSystemEntries(inboxRoot).Where(x => !StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x), "Processed")).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        var entries = new[]{inboxRoot,legacyInboxRoot}
+            .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
+            .Select(root=>Path.GetFullPath(root!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .SelectMany(root=>Directory.EnumerateFileSystemEntries(root))
+            .Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x),"Processed"))
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         startupDiagnostics?.Info("startup.automation.inbox.entries", $"InboxRoot={inboxRoot}; Entries={entries.Length}");
         UnifiedDebugLog.Write("INBOX", $"Scan InboxRoot={inboxRoot}; Entries={entries.Length}");
         var results = new List<InboxItemResult>();
@@ -115,7 +122,15 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     private void MoveToProcessed(string source)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var processed = Path.Combine(inboxRoot, "Processed"); Directory.CreateDirectory(processed);
+        // Archive the source in the inbox it came from; never relocate old user-owned
+        // inbox data just because new installs use the game-scoped library.
+        var sourceRoot=Path.GetDirectoryName(Path.GetFullPath(source))
+            ?? throw new InvalidDataException("Inbox entry has no owning directory.");
+        if(!StringComparer.OrdinalIgnoreCase.Equals(sourceRoot,Path.GetFullPath(inboxRoot))&&
+           (string.IsNullOrWhiteSpace(legacyInboxRoot)||
+            !StringComparer.OrdinalIgnoreCase.Equals(sourceRoot,Path.GetFullPath(legacyInboxRoot))))
+            throw new InvalidDataException("Inbox source escaped the configured game inbox roots.");
+        var processed = Path.Combine(sourceRoot, "Processed"); Directory.CreateDirectory(processed);
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
         var dest = Unique(Path.Combine(processed, stamp + "-" + Path.GetFileName(source)));
         if (Directory.Exists(source)) Directory.Move(source, dest); else File.Move(source, dest);

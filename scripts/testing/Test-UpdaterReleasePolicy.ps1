@@ -136,6 +136,7 @@ Assert-Equal $true $divergedMissingReleaseRejected 'diverged source missing exac
 
 $durableSentinels=[pscustomobject]@{
   'Mods/e2e-user.mod'=('A' * 64)
+  'Mods by Game/nier-automata/Downloads/e2e-user.zip'=('D' * 64)
   'State/e2e-state.json'=('B' * 64)
   'e2e-unknown-user-file.txt'=('C' * 64)
 }
@@ -191,6 +192,8 @@ Assert-Equal 'Confirmed' $durableEvidence.update.journalPhase 'durable updater E
 Assert-Equal 'RolledBack' $durableEvidence.rollback.journalPhase 'durable updater E2E rollback phase'
 Assert-Equal 133 $durableEvidence.rollback.targetOnlyFileCount 'durable updater E2E target-only count'
 Assert-Equal ('A' * 64) $durableEvidence.update.sentinelSha256.mod 'durable updater E2E mod sentinel'
+Assert-Equal ('D' * 64) $durableEvidence.update.sentinelSha256.downloads 'durable updater E2E game-scoped downloads sentinel'
+Assert-Equal ('D' * 64) $durableEvidence.rollback.sentinelSha256.downloads 'durable updater E2E rollback downloads sentinel'
 foreach($forbidden in @(
   'CANARY_USER',
   'CANARY_SERVER',

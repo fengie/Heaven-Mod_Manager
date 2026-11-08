@@ -6,7 +6,7 @@ public static class UpdatePathSafety
 {
     private static readonly HashSet<string> ReservedRoots = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Mods", "State", "Inbox", "Mods Archive", "Games", "Support Bundles", "BuildLogs"
+        "Mods", "Mods by Game", "State", "Inbox", "Mods Archive", "Games", "Support Bundles", "BuildLogs"
     };
     private static readonly HashSet<string> ReservedDeviceNames = BuildReservedDeviceNames();
 

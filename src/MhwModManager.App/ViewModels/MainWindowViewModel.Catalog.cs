@@ -779,7 +779,8 @@ public sealed partial class MainWindowViewModel
             catalogOrigins,
             s.Database,
             s.Hashing,
-            Path.Combine(s.Paths.NextStateRoot, "CatalogDownloads"));
+            Path.Combine(s.Paths.NextStateRoot, "CatalogDownloads"),
+            savedArchiveRoot: s.Paths.DownloadsRoot);
 
         var providers = new List<IModCatalogProvider>();
         if (s.Paths.Game.IsMonsterHunterWorld)

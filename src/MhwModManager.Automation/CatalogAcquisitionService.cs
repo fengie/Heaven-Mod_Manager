@@ -34,6 +34,7 @@ public sealed class CatalogAcquisitionService
     private readonly ManagerDatabase database;
     private readonly HashingService hashing;
     private readonly string downloadRoot;
+    private readonly string? savedArchiveRoot;
     private readonly TimeProvider timeProvider;
 
     public CatalogAcquisitionService(
@@ -43,7 +44,8 @@ public sealed class CatalogAcquisitionService
         ManagerDatabase database,
         HashingService hashing,
         string downloadRoot,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        string? savedArchiveRoot = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(http);
@@ -59,6 +61,7 @@ public sealed class CatalogAcquisitionService
         this.database = database;
         this.hashing = hashing;
         this.downloadRoot = Path.GetFullPath(downloadRoot);
+        this.savedArchiveRoot = string.IsNullOrWhiteSpace(savedArchiveRoot)?null:Path.GetFullPath(savedArchiveRoot);
         this.timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -141,9 +144,31 @@ public sealed class CatalogAcquisitionService
                     ProviderMetadata: null),
                 ct).ConfigureAwait(false);
 
+            string? retentionWarning=null;
+            if(savedArchiveRoot is not null)
+            {
+                try
+                {
+                    var saved=await GameDownloadArchiveStore.SaveAsync(savedArchiveRoot,tempArchive,mod.Name,archiveHash.Sha256,ct)
+                        .ConfigureAwait(false);
+                    MasterDebugLog.Write("CATALOG-ACQUISITION",$"Saved game-scoped archive: {saved}");
+                }
+                catch(OperationCanceledException) when(ct.IsCancellationRequested)
+                {
+                    // The installation is already committed and must not be reported as rolled back.
+                    retentionWarning=" The install succeeded, but download retention was cancelled.";
+                }
+                catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    MasterDebugLog.Write("CATALOG-ACQUISITION",
+                        "Install succeeded but the durable per-game archive could not be retained.",ex);
+                    retentionWarning=" The install succeeded, but the archive could not be saved under this game's Downloads folder.";
+                }
+            }
+
             return new CatalogImportOutcome(
                 CatalogImportOutcomeKind.Imported,
-                $"Installed '{mod.Name}' through the verified archive import pipeline.",
+                $"Installed '{mod.Name}' through the verified archive import pipeline."+retentionWarning,
                 installed.Id);
         }
         finally

@@ -337,6 +337,7 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   $scenarioBSentinels=& $requiredProperty $scenarioB 'sentinelSha256'
   $sentinelNames=[ordered]@{
     mod='Mods/e2e-user.mod'
+    downloads='Mods by Game/nier-automata/Downloads/e2e-user.zip'
     state='State/e2e-state.json'
     unknownUserFile='e2e-unknown-user-file.txt'
   }

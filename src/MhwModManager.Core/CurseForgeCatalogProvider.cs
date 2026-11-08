@@ -14,16 +14,19 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCa
     private const int SearchWindowLimit = 10_000;
     private readonly CurseForgeTransport transport;
     private readonly CurseForgeCatalogGameSource[] sources;
+    private readonly TimeProvider timeProvider;
     private CatalogProviderHealth health;
 
     public CurseForgeCatalogProvider(
         CurseForgeTransport transport,
-        IEnumerable<CurseForgeCatalogGameSource> sources)
+        IEnumerable<CurseForgeCatalogGameSource> sources,
+        TimeProvider? timeProvider = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(sources);
         this.transport = transport;
+        this.timeProvider = timeProvider ?? TimeProvider.System;
         this.sources = sources.Select(ValidateSource).ToArray();
         if (this.sources.Length == 0)
             throw new ArgumentException("At least one CurseForge game mapping is required.", nameof(sources));
@@ -103,7 +106,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCa
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(request);
-        CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(DateTime.UtcNow));
+        CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
         var source = RequireSource(request.Game);
         var wanted = Math.Clamp(request.Limit, 1, 100);
         var sortField = request.Mode switch
@@ -150,7 +153,7 @@ public sealed class CurseForgeCatalogProvider : IModCatalogProvider, IPagedModCa
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(request);
-        CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(DateTime.UtcNow));
+        CatalogProviderComplianceValidator.EnsureUsable(Compliance, DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
         var source = RequireSource(request.Game);
         var index = ParseCursor(cursor);
         var pageSize = Math.Min(Math.Clamp(request.Limit, 1, 50), SearchWindowLimit - index);
