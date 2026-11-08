@@ -1199,8 +1199,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             if(Directory.Exists(path)&&(File.GetAttributes(path)&FileAttributes.ReparsePoint)!=0)
                 throw new IOException("The selected game storage path is a reparse point.");
             Directory.CreateDirectory(path);
-            using var process=Process.Start(new ProcessStartInfo(path){UseShellExecute=true});
-            if(process is null)StatusText="Windows could not open the selected game folder.";
+            using var process=ProcessDebug.Start(new ProcessStartInfo(path){UseShellExecute=true},"open-game-scoped-folder");
         }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or InvalidOperationException)
         {
