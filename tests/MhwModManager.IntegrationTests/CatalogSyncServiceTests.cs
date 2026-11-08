@@ -439,7 +439,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
             CatalogProviderCapabilities.FileList;
 
         public CatalogProviderCompliance Compliance =>
-            NexusV3CatalogPolicy.Compliance with { ProviderId = ProviderId };
+            CatalogComplianceFixture.Active(ProviderId);
 
         public IReadOnlyList<CatalogMod> SearchResults { get; set; } =
             [CreateMod("fixture", "mod-1")];

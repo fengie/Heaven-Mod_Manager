@@ -101,7 +101,7 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         public CatalogProviderCapabilities Capabilities =>
             CatalogProviderCapabilities.Search | CatalogProviderCapabilities.Browse | CatalogProviderCapabilities.Metadata;
         public CatalogProviderCompliance Compliance =>
-            NexusV3CatalogPolicy.Compliance with { ProviderId = providerId };
+            CatalogComplianceFixture.Active(providerId);
         public Exception? SearchException { get; set; }
         public Action? OnSearch { get; set; }
         public int SearchCalls { get; private set; }

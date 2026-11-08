@@ -65,6 +65,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private OutfitRow? selectedOutfit;
     [ObservableProperty]private bool criticalOperation;
     [ObservableProperty]private int unmanagedFileCount;
+    [ObservableProperty]private bool manualFileScanCompleted;
     [ObservableProperty]private GameProfile? selectedGame;
     [ObservableProperty]private AssetOverlapRow? selectedOverlap;
     [ObservableProperty]private EffectiveDecisionExplanation? selectedExplanation;
@@ -75,7 +76,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return !SupportsLiveAdoption?"Manual mod import is unavailable when the whole game folder is managed":UnmanagedFileCount==0?"No manual mod files found":$"{UnmanagedFileCount} manual mod file(s) can be brought into the manager";
+            return !SupportsLiveAdoption?"Manual mod import is unavailable when the whole game folder is managed":!ManualFileScanCompleted?"Manual files have not been scanned. Choose Bring In Manual Mods to inspect the configured mod folder.":UnmanagedFileCount==0?"No unmanaged mod files found":$"{UnmanagedFileCount} manual mod file(s) can be brought into the manager";
         }
     }
     public bool SupportsLiveAdoption=>s.Paths.Game.IsMonsterHunterWorld||!string.IsNullOrWhiteSpace(s.Paths.Game.ModRootRelativePath);
@@ -298,12 +299,19 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public async Task InitializeAsync()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunBusy("startup.ui","Loading library","Reading indexed state and conflict graph…",false,async ct=>
+        await RunBusy("startup.ui","Loading library","Reading installed mod records…",false,async ct=>
         {
+            MasterDebugLog.Write("STARTUP-UI","stage=reload-mods");
             await ReloadMods(ct);
-            UnmanagedFileCount=SupportsLiveAdoption?await Task.Run(()=>s.Adoption.CountAsync(ct),ct):0;
-            await RefreshAnalysis(ct);
-        });
+            // No mod graph or full-game manual-file scan is required for an empty library.
+            // Manual adoption is an explicit action: it can traverse/hash an entire game root.
+            if(Mods.Count>0)
+            {
+                MasterDebugLog.Write("STARTUP-UI","stage=conflict-analysis");
+                await RefreshAnalysis(ct);
+            }
+            MasterDebugLog.Write("STARTUP-UI","stage=ready");
+        },rethrowOnFailure:true);
         _=AutoMetadataLoopAsync(backgroundCts.Token);
     }
 
@@ -452,6 +460,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     partial void OnUnmanagedFileCountChanged(int value)=>OnPropertyChanged(nameof(UnmanagedAdoptionLabel));
+    partial void OnManualFileScanCompletedChanged(bool value)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(UnmanagedAdoptionLabel));
+    }
     partial void OnSelectedModChanged(ModRowViewModel? value)
     {
         if(value is null)return;
@@ -1152,6 +1165,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         if(!SupportsLiveAdoption){StatusText="This game setup does not support importing already-installed manual mod files.";return;}
         var result=await s.Adoption.AdoptAsync(ct);
+        ManualFileScanCompleted=true;
         if(!result.Created){StatusText=result.Message;return;}
         await s.Catalog.RefreshFoldersAsync(ct);
         await metadataGate.WaitAsync(ct);
@@ -1603,18 +1617,20 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         public Dictionary<string,ConflictOptionRow> Options{get;}=new(StringComparer.OrdinalIgnoreCase);
     }
 
-    private async Task RunBusy(string operationName,string title,string detail,bool cancellable,Func<CancellationToken,Task> action)
+    private async Task RunBusy(string operationName,string title,string detail,bool cancellable,Func<CancellationToken,Task> action,bool rethrowOnFailure=false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"operation={operationName}; title={title}; cancellable={cancellable}");
         if(!programUpdateHandoffGate.TryBeginForeground())
         {
             MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; updater handoff or another foreground operation owns the gate");
+            if(rethrowOnFailure)throw new InvalidOperationException($"Startup operation {operationName} could not acquire the foreground gate.");
             return;
         }
         if(BusyVisibility==Visibility.Visible)
         {
             programUpdateHandoffGate.EndForeground();
             MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; another operation is already busy");
+            if(rethrowOnFailure)throw new InvalidOperationException($"Startup operation {operationName} was blocked by an existing foreground operation.");
             return;
         }
         busyCts=new CancellationTokenSource();
@@ -1626,13 +1642,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
             FooterText=$"{title} finished in {sw.Elapsed.TotalSeconds:F1}s";
         }
-        catch(OperationCanceledException){StatusText=$"{title} cancelled.";FooterText=StatusText;}
+        catch(OperationCanceledException){StatusText=$"{title} cancelled.";FooterText=StatusText;if(rethrowOnFailure)throw;}
         catch(Exception ex)
         {
             var assessment=ExceptionPolicy.Assess(ex);
             StatusText=$"{assessment.UserSummary} {ex.Message}";
             FooterText=$"{title} failed — {assessment.Category}";
             s.Log.Error(ex,"UI operation {Operation} failed with category {Category}",operationName,assessment.Category);
+            if(rethrowOnFailure)throw;
         }
         finally
         {

@@ -178,9 +178,11 @@ public sealed partial class App:Application, IDisposable
             startup.Run("ui.main-window.show",window.Show);
             ShutdownMode=ShutdownMode.OnMainWindowClose;
             splash.Close();
+            // Observe startup stalls too: the UI initialization is precisely where the
+            // user may see a non-cancellable Loading library overlay.
+            watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,telemetry,logger));
             await Dispatcher.Yield(DispatcherPriority.Render);
             await initialization;
-            watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,telemetry,logger));
             startup.Complete(true,"Main window rendered, initialized, and ready.");
             try
             {
