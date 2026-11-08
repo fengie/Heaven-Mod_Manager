@@ -258,7 +258,7 @@ try{
   $buildIdentityPath=Join-Path $publish 'build-identity.json'
   $buildIdentity | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $buildIdentityPath -Encoding UTF8
 
-  $protectedRoots=@('Mods','State','Inbox','Mods Archive','Games','Support Bundles','BuildLogs')
+  $protectedRoots=@('Mods','Mods by Game','State','Inbox','Mods Archive','Games','Support Bundles','BuildLogs')
   $productEntries=New-Object System.Collections.Generic.List[object]
   foreach($file in Get-ChildItem -LiteralPath $publish -Recurse -File | Sort-Object FullName){
     $relative=$file.FullName.Substring($publish.Length).TrimStart('\','/').Replace('\','/')
