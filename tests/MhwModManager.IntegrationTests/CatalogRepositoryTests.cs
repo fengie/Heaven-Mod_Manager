@@ -432,7 +432,7 @@ public sealed class CatalogRepositoryTests : IDisposable
     public async Task Same_named_items_from_different_sources_remain_distinct()
     {
         var repository = await CreateRepositoryAsync("source-separation");
-        var secondCompliance = NexusV3CatalogPolicy.Compliance with { ProviderId = "fixture-source-b" };
+        var secondCompliance = CatalogComplianceFixture.Active("fixture-source-b");
         await repository.UpsertSourceAsync("Fixture Source B", secondCompliance, TestToken);
 
         var first = CreateCached(
@@ -464,7 +464,7 @@ public sealed class CatalogRepositoryTests : IDisposable
         var db = new ManagerDatabase(Path.Combine(root, name, "manager.db"));
         await db.InitializeAsync(TestToken);
         var repository = new CatalogRepository(db);
-        await repository.UpsertSourceAsync("Nexus Mods", NexusV3CatalogPolicy.Compliance, TestToken);
+        await repository.UpsertSourceAsync("Nexus Mods", CatalogComplianceFixture.Active("nexus"), TestToken);
         return repository;
     }
 

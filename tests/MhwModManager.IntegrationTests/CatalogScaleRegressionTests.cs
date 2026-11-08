@@ -35,7 +35,7 @@ public sealed class CatalogScaleRegressionTests : IDisposable
         var repository = new CatalogRepository(db);
         await repository.UpsertSourceAsync(
             "Nexus Mods",
-            NexusV3CatalogPolicy.Compliance,
+            CatalogComplianceFixture.Active("nexus"),
             TestToken);
 
         await SeedCatalogRowsAsync(db, FixtureRowCount);
