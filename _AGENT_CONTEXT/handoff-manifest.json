@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.101",
+  "currentVersion": "8.8.102",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.100 merged #784/#785 and published immutable updater-main-493 from source 33c861dc; its full Windows verification and artifact provenance passed but evidence-only direct push failed GH013 against protected main. v8.8.101 repairs PR-only evidence custody.",
+  "immediateParentRevision": "v8.8.101 source 446e933f passed H1 Windows verification and published immutable updater-main-495; installed-client E2E remained blocked by occupied shared updater state. v8.8.102 integrates PR #789 auto-game intake/controls and PR #790 same-process game switching/single instance plus #792 four red-to-green acceptance regressions; exact-main release closure is pending.",
   "canonicalRepository": "fengie/mhw-mods",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main and then current fengie/Heaven-Mod_Manager@main; fully read _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md. Preserve exact source/release provenance, legacy and game-scoped Mods/State/downloads, HMAC/updater security, filesystem containment, rollback and native PR gates. For v8.8.101 require green exact-head native tests, serial expected-base merge, immutable canonical Windows release and PR-based evidence merge; never equate staged evidence with canonical main. Physical Heaven2/NieR installed SHA/health remains unverified without a real receipt. Keep #558 and #735 open pending their independent evidence. Each successor must inherit, preserve and recursively propagate these same rules to the agent after them.",
+  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main then fengie/Heaven-Mod_Manager@main; read the complete _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and task-relevant _AGENT_CONTEXT/LEARNED_RULES.md. Preserve exact source/release provenance, legacy and game-scoped Mods/State/downloads, HMAC/updater security, path containment, rollback and native PR gates. v8.8.102 features #789/#790 and acceptance #792 are merged; recover exact-main Windows gate by aligning the version in both handoff-manifest.json and CURRENT_REVISION.json, then verify the immutable publisher output and PR-based release evidence. Treat H1 updater E2E #793 and independent installed Heaven2/NieR source/health as unresolved until genuine successful receipts; #791 archive pack decomposition is not shipped. Every successor must inherit, preserve, and recursively propagate these same Core Rules to the agent after them.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
