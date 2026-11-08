@@ -1,8 +1,8 @@
-# v8.8.101 — MHW Manual Mod Manager
+# v8.8.102 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 8, 2026 · 12:08:12 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 8, 2026 · 3:13:42 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.101**.
+Current product version: **8.8.102**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,12 +10,20 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.102 — automatic cross-game intake and in-place sessions
+
+- Recognize confidently identified ZIP/RAR/7z mod archives and extracted mod folders in user-designated sources, then route them to each registered game's separate Inbox without selecting that game first (#789). Unidentified or conflicting packages stay untouched for review; original downloads are not deleted.
+- Auto Populate processes the active game's routed Inbox before safe-set planning, with bounded scanning, idempotent receipts, and explicit no-mod feedback (#789).
+- Replace the sideways-scrolling Mods action toolbar with wrapping filters and visible Auto Populate, Select All, Deselect All, and Refresh controls; bulk actions still require the normal Apply boundary (#789).
+- Switch games in the same application window/process and activate the existing window on second launch. Preserve active-game selection when game registration, relinking, or initialization cannot safely complete (#790).
+- Windows source/build/regression acceptance is tracked on PRs #789/#790 and #792. Mixed-game *multi-mod packs* still require the separate decomposition feature (#791); a published release does not by itself prove the installed client or updater rollback (#793).
+
 ## v8.8.101 — protected release evidence and updater custody
 
 - Stage exact-source Windows verification evidence in a PR-only branch rather than direct-pushing protected `main`; native PR checks and a separate main merge remain mandatory.
 - Keep public continuity evidence allowlisted: record passing verification and SHA-256 hashes of build/report/artifact instead of copying raw runner paths or private logs.
 - Route successful installed-client updater E2E evidence through the same protected-PR process without changing updater security, rollback requirements, or workflow token permissions.
-- Repair the confirmed post-publication `GH013` failure from [Windows release run 42448738104](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/42448738104). v8.8.100 build 493 is published; v8.8.101 release and physical installation remain unverified.
+- Repair the confirmed post-publication `GH013` failure from [Windows release run 42448738104](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/42448738104). v8.8.100 build 493 and v8.8.101 build 495 are published for their exact source commits; physical installation remains unverified.
 
 ## v8.8.100 — game-scoped library and empty-startup repair
 
@@ -24,12 +32,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Preserve uploaded and catalog-acquired archives with hash verification, keep updater manifests away from persistent user-owned downloads, and verify updater apply/rollback sentinels.
 - Make catalog tests independent of expiring production compliance dates while retaining fail-closed provider checks; serialize updater integration tests across Windows CI processes.
 - Refuse to erase pre-existing Windows updater state during installed-client release E2E; require an unoccupied dedicated test root.
-
-## v8.8.99 — hermetic SDK-isolation verification
-
-- Keep the concurrent SDK-root isolation regression focused on sibling filesystem ownership instead of unrelated repeated `dotnet` process-start latency.
-- Repeatedly verify the peer SDK root and marker contents while another owned root is destructively recreated, retaining bounded timeout and fail-closed cleanup.
-- Preserve exact SDK pinning and supply-chain enforcement while removing self-hosted-runner load as a false timeout signal.
 
 ## Current plans & progress
 

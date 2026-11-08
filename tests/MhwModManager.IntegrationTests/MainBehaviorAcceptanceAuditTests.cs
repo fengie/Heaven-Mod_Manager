@@ -6,9 +6,9 @@ using Xunit;
 namespace MhwModManager.IntegrationTests;
 
 /// <summary>
-/// Acceptance probes for the exact v8.8.101 main production tree. These deliberately
-/// assert user-requested behavior absent from this baseline; a red test is an observed
-/// gap, not permission to weaken verification or publish the candidate.
+/// Regression probes first run against the v8.8.101 baseline where all four failed.
+/// Their implementation shipped through PRs #789 and #790. Preserve the behavioral
+/// assertions on integrated main; do not remove tests to hide regressions.
 /// </summary>
 public sealed class MainBehaviorAcceptanceAuditTests
 {

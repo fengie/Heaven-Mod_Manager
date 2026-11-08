@@ -96,4 +96,52 @@ public sealed class AutoPopulateDispatcherRegressionTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>task);
         Assert.Equal(0,Volatile.Read(ref entered));
     }
+
+    [Fact]
+    public void Auto_populate_imports_newly_sorted_inbox_packages_before_building_the_safe_set()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
+            root = root.Parent;
+        Assert.NotNull(root);
+
+        var source = File.ReadAllText(Path.Combine(root!.FullName, "src", "MhwModManager.App",
+            "ViewModels", "MainWindowViewModel.cs"));
+        var start = source.IndexOf("private async Task AutoPopulate()", StringComparison.Ordinal);
+        var finish = source.IndexOf("internal static Task<T> RunAutoPopulateBuildAsync", start, StringComparison.Ordinal);
+        Assert.True(start >= 0 && finish > start);
+        var action = source[start..finish];
+        var inbox = action.IndexOf("s.Inbox.ProcessAsync(ct)", StringComparison.Ordinal);
+        var reload = action.IndexOf("await ReloadMods(ct)", StringComparison.Ordinal);
+        var build = action.IndexOf("service.BuildAsync", StringComparison.Ordinal);
+        Assert.True(inbox >= 0 && reload > inbox && build > reload,
+            "Auto Populate must first ingest and refresh the active game's newly sorted Inbox.");
+        Assert.Contains("Mods.Count == 0", action, StringComparison.Ordinal);
+        Assert.Contains("No installed mods", action, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Mod_filters_wrap_and_primary_actions_remain_visible_without_horizontal_scroll()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
+            root = root.Parent;
+        Assert.NotNull(root);
+
+        var xaml = File.ReadAllText(Path.Combine(root!.FullName, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var mods = xaml.IndexOf("<TabItem Header=\"Mods\">", StringComparison.Ordinal);
+        var nextTab = xaml.IndexOf("<TabItem Header=", mods + 1, StringComparison.Ordinal);
+        Assert.True(mods >= 0 && nextTab > mods);
+        var modPage = xaml[mods..nextTab];
+
+        Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Select All\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding EnableVisibleCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Deselect All\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding DisableVisibleCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Auto Populate\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
+    }
+
 }

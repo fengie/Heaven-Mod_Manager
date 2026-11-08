@@ -1,9 +1,8 @@
-using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using MhwModManager.Core;
-using MhwModManager.Diagnostics;
 
 namespace MhwModManager.App.ViewModels;
 
@@ -38,43 +37,90 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private void AddGame()
+    private async Task AddGame()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(StagedCount>0&&MessageBox.Show("You have pending mod changes that have not been applied. Add or switch games anyway?","Pending Mod Changes",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
-        var dialog=new OpenFileDialog{Title="Select a game executable",Filter="Windows games (*.exe)|*.exe",CheckFileExists=true,Multiselect=false};
-        if(dialog.ShowDialog()!=true)return;
-        var profile=s.GameRegistry.AddGenericFromExecutable(dialog.FileName);
-        RestartIntoGame(profile);
+        if (!ConfirmSwitchWithoutPendingChanges()) return;
+        var dialog = new OpenFileDialog
+        {
+            Title = "Select a game executable",
+            Filter = "Windows games (*.exe)|*.exe",
+            CheckFileExists = true,
+            Multiselect = false
+        };
+        if (dialog.ShowDialog() != true) return;
+        var profile = s.GameRegistry.AddGenericFromExecutable(dialog.FileName, activate: false);
+        await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(profile);
     }
 
     [RelayCommand]
-    private void SwitchGame()
+    private async Task SwitchGame()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(SelectedGame is null||SelectedGame.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase))return;
-        if(StagedCount>0&&MessageBox.Show("Switching games will discard the pending changes on this screen. Continue?","Switch Game",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;
-        s.GameRegistry.SetActive(SelectedGame.Id);
-        RestartIntoGame(SelectedGame);
+        var requested = SelectedGame;
+        if (requested is null || requested.Equals(s.Paths.Game)) return;
+        if (!ConfirmSwitchWithoutPendingChanges()) return;
+        await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(requested);
     }
 
     [RelayCommand]
-    private void ConfigureGame()
+    private async Task ConfigureGame()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var window=new MhwModManager.App.GameProfileEditorWindow(s.Paths.Game){Owner=Application.Current.MainWindow};
-        if(window.ShowDialog()!=true||window.Result is null)return;
+        var window = new MhwModManager.App.GameProfileEditorWindow(s.Paths.Game)
+        {
+            Owner = Application.Current.MainWindow
+        };
+        if (window.ShowDialog() != true || window.Result is null) return;
+        if (!ConfirmSwitchWithoutPendingChanges()) return;
+        // Persist the edited profile for the candidate bootstrap, but do not strand
+        // the existing session on a changed profile if the transition fails.
+        if (!window.Result.Id.Equals(s.Paths.Game.Id, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Editing a game's profile cannot change its storage identity. Use Add Game.");
+        var previous = s.GameRegistry.Load().FirstOrDefault(x =>
+            x.Id.Equals(window.Result.Id, StringComparison.OrdinalIgnoreCase)) ?? s.Paths.Game;
         s.GameRegistry.Upsert(window.Result);
-        s.GameRegistry.SetActive(window.Result.Id);
-        RestartIntoGame(window.Result);
+        var switched = await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(window.Result);
+        if (!switched) s.GameRegistry.Upsert(previous);
     }
 
-    private static void RestartIntoGame(GameProfile profile)
+    private bool ConfirmSwitchWithoutPendingChanges()
     {
-        using var __mhwTrace = MasterDebugLog.BeginMethod($"game={profile.Id}");
-        var exe=Environment.ProcessPath;
-        if(string.IsNullOrWhiteSpace(exe))throw new InvalidOperationException("Could not determine the manager executable for restart.");
-        ProcessDebug.Start(new ProcessStartInfo(exe){UseShellExecute=true,WorkingDirectory=AppContext.BaseDirectory},"switch-game-restart");
-        Application.Current.Shutdown();
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (StagedCount == 0) return true;
+        return MessageBox.Show(
+            "There are pending mod changes that have not been applied. Switch games without applying those changes?",
+            "Pending Mod Changes", MessageBoxButton.YesNo,
+            MessageBoxImage.Warning) == MessageBoxResult.Yes;
+    }
+
+    internal bool TryBeginGameSwitch()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (disposed || CriticalOperation || BusyVisibility == Visibility.Visible
+            || ProgramUpdateCheckInProgress || stagedProgramUpdate is not null)
+        {
+            StatusText = "A mod transaction or program update is in progress. Finish it before switching games.";
+            return false;
+        }
+        if (!programUpdateHandoffGate.TryBeginForeground())
+        {
+            StatusText = "A program update is preparing a safe handoff. Game switching is unavailable right now.";
+            return false;
+        }
+        BusyTitle = "Switching game";
+        BusyDetail = "Preparing an isolated game session without restarting the manager…";
+        CancelVisibility = Visibility.Collapsed;
+        CriticalOperation = true;
+        BusyVisibility = Visibility.Visible;
+        return true;
+    }
+
+    internal void EndGameSwitch()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        BusyVisibility = Visibility.Collapsed;
+        CriticalOperation = false;
+        programUpdateHandoffGate.EndForeground();
     }
 }

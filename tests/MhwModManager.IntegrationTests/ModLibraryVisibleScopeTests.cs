@@ -72,11 +72,11 @@ public sealed class ModLibraryVisibleScopeTests
             Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
 
         Assert.Contains(
-            "Content=\"{Binding EnableVisibleLabel}\" Command=\"{Binding EnableVisibleCommand}\"",
+            "Content=\"Select All\" Command=\"{Binding EnableVisibleCommand}\"",
             xaml,
             StringComparison.Ordinal);
         Assert.Contains(
-            "Content=\"{Binding DisableVisibleLabel}\" Command=\"{Binding DisableVisibleCommand}\"",
+            "Content=\"Deselect All\" Command=\"{Binding DisableVisibleCommand}\"",
             xaml,
             StringComparison.Ordinal);
         Assert.Contains(
