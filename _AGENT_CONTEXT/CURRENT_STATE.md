@@ -1,28 +1,30 @@
-# v8.8.100 game-scoped library and startup safety — canonical state
+# v8.8.101 protected release evidence — canonical state
 
-v8.8.100 is the next release identity for the verified startup and per-game mod storage change set. The previous v8.8.99 hermetic SDK and v8.8.98 catalog continuation behavior remain in effect. This text is a source-state record, **not** an installed-release receipt.
+v8.8.101 is the next source/release candidate for repairing the post-publication protected-main evidence failure while retaining the shipped v8.8.100 game-scoped mod library and empty-startup fixes. This is a **canonical source-state record**, not a published binary or installed runtime receipt.
 
 ## Behavior
 
-- Empty-library startup does not scan/hash live game assets or build an empty conflict graph; manual adoption stays an explicit separate action.
-- Canonical game ID determines a separate `Mods by Game/<id>/{Installed,Downloads,Inbox,Archive}` library. Legacy MHW `Mods/` and per-game `Games/<id>/Mods/` remain readable without relocation or deletion.
-- Catalog and manually imported archives are copied into game-owned Downloads only after import and full SHA-256 verification; existing user downloads are not auto-reaped.
-- Immutable release/updater manifests reject persistent game-library paths; installed-client E2E checks both legacy and new user-owned download sentinels across update and rollback.
-- Catalog fixtures no longer expire on real-provider review dates; real external-provider policy still fails closed. Windows test processes acquire a shared exclusive OS file lease around updater global state.
-- Provider pagination/continuation, dependency/conflict/override semantics and Toolbox inheritance remain unchanged. #558 and #735 retain independent acceptance obligations.
+- v8.8.100 #784/#785 fixes remain intact: zero-mod NieR startup does not hash game assets, and new packages/downloads use `Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}`, while legacy Mods/State remain indexed without destructive migration.
+- Source-verified v8.8.101 release logic stages one exact-run Windows verification evidence commit under an immutable PR branch instead of pushing directly to protected main. The current main ruleset still requires an ordinary PR and successful `enforce` status.
+- Public Windows evidence contains a 0-failure verification summary and SHA-256 report/build/artifact digests, not raw runner/user file paths. Failed, ambiguous or source-mismatched proof remains rejected.
+- Installed-client E2E retains verified update/rollback and one-file evidence projection but stages that evidence through a PR branch as well. No new workflow permissions, branch-protection bypass, force push, new worker, host restart or user-file deletion.
+- Existing catalog policy, provider-safety, transactional deployment/rollback, updater signatures and Toolbox-owned shared infrastructure remain unchanged.
 
 ## Verification boundary
 
-**No current v8.8.100 Windows closure or installed-release proof has been recorded.** Last historical v8.8.99 Windows verification source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`. Do not promote it to v8.8.100 or infer a deployed client from source merge.
+**Current v8.8.101 release and installed-client closure are pending.** Last historical canonical Windows closure is v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`.
+
+The immediately preceding v8.8.100 source `33c861dcd2af5554d4f225d8ea79a51ad72e1f91` passed 26/26 Windows verification stages, build and provenance and was published as immutable public updater `updater-main-493` (run `42448738104`). That run nevertheless **failed overall** at direct evidence `git push origin HEAD:main` with GH013; it is not a completed protected-main evidence or installed acceptance receipt. The old failed evidence remains diagnostically useful and must not be rewritten as green.
 
 ## Next required action
 
-Reconcile exact merged #784/#785 source against current main and native CI, then run canonical `windows-release-gate.yml` with new v8.8.100 metadata. Require complete exact-source verification, package/provenance/publisher readback and installed-client updater E2E. The standard synchronizer owns source/run evidence persistence. Physical NieR startup and desktop installed source identity remain unverified without a real authenticated host receipt.
+Reconcile current exact main and candidate PR head; require all native CI/security/policy/admission gates, then serial expected-head merge. Verify the v8.8.101 canonical Windows release, immutable updater bytes, signed/provenance status and checked artifact SHA. Approve only actual evidence branches after reviewing their source binding and native PR checks; merge exact evidence PRs to main. Require installed-client E2E and a separately authenticated Heaven2/NieR installed source/health check before claiming physical deployment.
 
-## Unresolved risk and independent work
+## Unresolved risks and independent work
 
-- #558 remains open for provider breadth and deterministic catalog scale/performance; #735 for installed Auto Populate timing.
-- No code or CI-only result proves Heaven2's installed version, NieR load time, or live auto-updater completion.
-- External signing/ruleset and authorized machine operation remain governed by the live product plan. Preserve user-owned mod downloads and all release/trust boundaries.
+- Windows GitHub Actions token may create release-evidence branches with existing `contents:write`, but it has **not** been proven on this protected repo. A branch push failure must fail closed, not request broader permissions or bypass protection without authorization.
+- Real installed-client E2E can be blocked by existing per-user updater state. Preserve that state and use a separately authorized isolated runner if required.
+- #558 provider breadth and #735 installed Auto Populate timing remain independently open. Release identity, source checksum, full build provenance and physical installed SHA are separate facts.
+- Only confirmed successful main publication and enforced PR evidence may update the canonical closure record. Do not promote a candidate or stale test to a green source by hand.
 
-Every successor must read the permanent continuity constitution and active Learned Rules, document exact verified state, and explicitly require the next agent to preserve and recursively propagate the same Core Rules to its successor.
+Every successor must read the permanent continuity constitution and current Learned Rules and explicitly require the next agent to inherit, preserve and recursively propagate these Core Rules to its successor.
