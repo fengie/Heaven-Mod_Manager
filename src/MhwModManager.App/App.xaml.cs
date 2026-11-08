@@ -398,13 +398,19 @@ public sealed record AppPaths(
     public static AppPaths Discover()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return DiscoverForGame(null);
+    }
+
+    public static AppPaths DiscoverForGame(GameProfile? requestedGame)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var tool=ResolveToolRoot(
             Environment.GetEnvironmentVariable("MOD_MANAGER_HOME"),
             Environment.GetEnvironmentVariable("MHW_MANAGER_HOME"),
             AppContext.BaseDirectory);
         var state=Path.Combine(tool,"State");
         var registry=new GameProfileRegistry(state);
-        var active=registry.GetActive();
+        var active=requestedGame ?? registry.GetActive();
 
         if(active is null)
         {
