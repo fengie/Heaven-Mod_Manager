@@ -81,7 +81,7 @@ public sealed partial class GameProfileRegistry
         }
     }
 
-    public GameProfile RepairFromExecutable(GameProfile existing,string executablePath)
+    public GameProfile RepairFromExecutable(GameProfile existing,string executablePath,bool activate = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={existing.Id}");
         var full=Path.GetFullPath(executablePath);
@@ -96,7 +96,9 @@ public sealed partial class GameProfileRegistry
             ProcessName=Path.GetFileNameWithoutExtension(full)
         };
         Upsert(repaired);
-        SetActive(repaired.Id);
+        // The candidate game may be relinked during an in-process switch. Keep
+        // the original active marker until the new session is initialized.
+        if(activate)SetActive(repaired.Id);
         MasterDebugLog.Write("GAME-REGISTRY",$"Repaired profile id={repaired.Id}; root={repaired.GameRoot}; exe={repaired.ExecutableRelativePath}");
         return repaired;
     }
