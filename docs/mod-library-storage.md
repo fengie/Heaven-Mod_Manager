@@ -40,7 +40,7 @@ Historical archives and other user-owned data stay where they were; there is no 
 
 ## Durable catalog downloads
 
-The existing `State/.../CatalogDownloads/` directory remains temporary, lease-owned download scratch, with its original crash cleanup. After an archive passes transport limits, archive inspection, hashing, safe import, and installed-origin persistence, the application copies it into the owning game's `Downloads/` folder.
+The existing `State/.../CatalogDownloads/` directory remains temporary, lease-owned download scratch, with its original crash cleanup. After a catalog archive passes transport limits, archive inspection, hashing, safe import, and installed-origin persistence, the application copies it into the owning game's `Downloads/` folder. Manually selected archives are also retained after successful import or FOMOD option commit, with their pre-import SHA-256 verified again before saving.
 
 Saved files use a readable sanitized mod label and the full verified SHA-256 digest. Duplicate saves verify existing bytes; corrupt existing files are **not** overwritten. A mismatched copy is rejected, and only the current invocation's temporary copy may be cleaned. No source archive is moved or deleted by the new keeper. Saving is best-effort *after* the install is committed: if it fails, the UI must report that install succeeded but retention did not.
 
