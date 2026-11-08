@@ -186,6 +186,42 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public void Malformed_or_oversized_saved_sources_fail_with_bounded_recoverable_errors()
+    {
+        var state = Path.Combine(home, "State");
+        Directory.CreateDirectory(state);
+        var configuration = Path.Combine(state, "mod-intake-folders.json");
+        var sorter = new GameModIntakeService(home, state, () => Games);
+
+        File.WriteAllText(configuration, "{broken JSON");
+        Assert.Throws<InvalidDataException>(() => sorter.LoadSources());
+
+        File.WriteAllText(configuration, new string('x', 32768));
+        Assert.Throws<InvalidDataException>(() => sorter.LoadSources());
+    }
+
+    [Fact]
+    public async Task Archive_with_nested_mod_archives_is_queued_for_bundle_review_instead_of_misrouted()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "umm-intake-bundle-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(source);
+        try
+        {
+            CreateZip(Path.Combine(source, "MHW bundle.zip"), "DifferentGame.zip");
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+            sorter.AddSource(source);
+
+            var report = await sorter.ScanAsync(TestToken);
+
+            Assert.Equal(0, report.Routed);
+            Assert.Equal(1, report.NeedsReview);
+            Assert.False(Directory.Exists(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
+            Assert.True(File.Exists(Path.Combine(source, "MHW bundle.zip")));
+        }
+        finally { Directory.Delete(source, recursive: true); }
+    }
+
+    [Fact]
     public void Refuses_scanning_manager_owned_or_drive_root_directories()
     {
         var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
