@@ -697,8 +697,10 @@ public sealed class UpdaterInstalledClientE2ETests
     private static void SeedSentinels(string installRoot)
     {
         Directory.CreateDirectory(Path.Combine(installRoot, "Mods"));
+        Directory.CreateDirectory(Path.Combine(installRoot, "Mods by Game", "nier-automata", "Downloads"));
         Directory.CreateDirectory(Path.Combine(installRoot, "State"));
         File.WriteAllText(Path.Combine(installRoot, "Mods", "e2e-user.mod"), "E2E-USER-MOD");
+        File.WriteAllText(Path.Combine(installRoot, "Mods by Game", "nier-automata", "Downloads", "e2e-user.zip"), "E2E-GAME-DOWNLOAD");
         File.WriteAllText(Path.Combine(installRoot, "State", "e2e-state.json"), "{\"e2e\":true}");
         File.WriteAllText(Path.Combine(installRoot, "e2e-unknown-user-file.txt"), "E2E-UNKNOWN");
     }
@@ -710,6 +712,7 @@ public sealed class UpdaterInstalledClientE2ETests
         var paths = new[]
         {
             "Mods/e2e-user.mod",
+            "Mods by Game/nier-automata/Downloads/e2e-user.zip",
             "State/e2e-state.json",
             "e2e-unknown-user-file.txt"
         };

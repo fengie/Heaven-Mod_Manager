@@ -292,11 +292,34 @@ public sealed class CurseForgeCatalogProviderTests
                 TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task Expired_real_terms_still_fail_closed_before_any_transport_request()
+    {
+        using var client=new HttpClient(new RoutingHandler((_, _) =>
+            throw new Xunit.Sdk.XunitException("Expired provider policy must not reach transport.")));
+        var provider=new CurseForgeCatalogProvider(
+            new CurseForgeTransport(client, "fixture-key", new Uri("https://api.curseforge.test/")),
+            [new CurseForgeCatalogGameSource("fixture-game", "Fixture Game", 777)],
+            new FixedTimeProvider(new DateTimeOffset(2026, 11, 8, 0, 0, 0, TimeSpan.Zero)));
+
+        var error=await Assert.ThrowsAsync<InvalidOperationException>(()=>
+            provider.SearchModsAsync(
+                new CatalogBrowseRequest(CreateGame(), Mode: CatalogBrowseMode.Latest),
+                TestContext.Current.CancellationToken));
+        Assert.Contains("Terms review is stale.",error.Message,StringComparison.Ordinal);
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow):TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()=>utcNow;
+    }
+
     private static CurseForgeCatalogProvider CreateProvider(HttpClient client, string apiKey)
     {
         return new CurseForgeCatalogProvider(
             new CurseForgeTransport(client, apiKey, new Uri("https://api.curseforge.test/")),
-            [new CurseForgeCatalogGameSource("fixture-game", "Fixture Game", 777)]);
+            [new CurseForgeCatalogGameSource("fixture-game", "Fixture Game", 777)],
+            new FixedTimeProvider(new DateTimeOffset(2026, 9, 30, 0, 0, 0, TimeSpan.Zero)));
     }
 
     private static GameProfile CreateGame()

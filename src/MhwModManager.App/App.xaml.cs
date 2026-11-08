@@ -87,7 +87,7 @@ public sealed partial class App:Application, IDisposable
             var blobs=startup.Run("services.blob-store",()=>new BlobStore(paths.BlobRoot,db));
             var gameRegistry=startup.Run("services.game-registry",()=>new GameProfileRegistry(paths.StateRoot));
             var scanner=startup.Run("services.mod-scanner",()=>new ModScanner(db,blobs,hash,paths.Game));
-            var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot));
+            var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot,paths.LegacyModsRoot));
             var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
             var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
             var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
@@ -116,7 +116,7 @@ public sealed partial class App:Application, IDisposable
             var presets=startup.Run("services.outfit-presets",()=>new OutfitPresetService());
             var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(plannerSnapshots));
             var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
-            var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup));
+            var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup,legacyInboxRoot:paths.LegacyInboxRoot));
             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
             var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,issues,adoption,paths.GameRoot,paths.Game,startup));
             var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
@@ -124,7 +124,7 @@ public sealed partial class App:Application, IDisposable
             var buildIdentity=startup.Run("services.updater-build-identity",()=>UpdateBuildIdentity.Load(installRoot));
             var updater=startup.Run("services.updater",()=>new UpdateClientService(
                 log:message=>logger.Information("Program updater: {UpdaterMessage}",message)));
-            changeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LiveModRoot));
+            changeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LegacyModsRoot,paths.LiveModRoot));
             changeHints.HintsAvailable+=hint=>
             {
                 if(hint.WatcherOverflowed)logger.Warning("FileSystemWatcher overflowed; authoritative reconciliation is required before the next deployment");
@@ -327,7 +327,10 @@ public sealed record AppPaths(
     string DatabasePath,
     string BlobRoot,
     string GameRoot,
-    GameProfile Game)
+    GameProfile Game,
+    string LegacyModsRoot = "",
+    string LegacyInboxRoot = "",
+    string DownloadsRoot = "")
 {
     public string ExecutablePath=>Game.ExecutablePath;
     public string LiveModRoot=>Game.LiveModRoot;
@@ -410,10 +413,11 @@ public sealed record AppPaths(
             active=registry.RepairFromExecutable(active,repair.FileName);
         }
 
-        string workspace,mods,inbox,archive,next;
+        string workspace,next;
         if(active.IsMonsterHunterWorld)
         {
-            workspace=tool;mods=Path.Combine(tool,"Mods");inbox=Path.Combine(tool,"Inbox");archive=Path.Combine(tool,"Mods Archive");next=Path.Combine(state,"Next");
+            workspace=tool;
+            next=Path.Combine(state,"Next");
         }
         else
         {
@@ -426,9 +430,13 @@ public sealed record AppPaths(
             var stateGamesPrefix=stateGamesRoot.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar)+Path.DirectorySeparatorChar;
             if(!workspace.StartsWith(gamesPrefix,StringComparison.OrdinalIgnoreCase)||!next.StartsWith(stateGamesPrefix,StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("The active game profile workspace escaped the manager-owned game roots.");
-            mods=Path.Combine(workspace,"Mods");inbox=Path.Combine(workspace,"Inbox");archive=Path.Combine(workspace,"Mods Archive");
         }
-        Directory.CreateDirectory(mods);Directory.CreateDirectory(inbox);Directory.CreateDirectory(archive);Directory.CreateDirectory(next);
-        return new(tool,workspace,mods,inbox,archive,state,next,Path.Combine(next,"manager.db"),Path.Combine(next,"Blobs"),active.GameRoot,active);
+
+        var library=GameModStorage.Resolve(tool,active);
+        GameModStorage.EnsureDirectories(library);
+        Directory.CreateDirectory(next);
+        return new(tool,workspace,library.InstalledRoot,library.InboxRoot,library.ArchiveRoot,
+            state,next,Path.Combine(next,"manager.db"),Path.Combine(next,"Blobs"),active.GameRoot,active,
+            library.LegacyInstalledRoot,library.LegacyInboxRoot,library.DownloadsRoot);
     }
 }

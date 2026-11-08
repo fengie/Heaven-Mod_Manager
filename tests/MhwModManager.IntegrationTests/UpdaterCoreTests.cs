@@ -35,6 +35,8 @@ public sealed class UpdaterCoreTests : IDisposable
 
     [Theory]
     [InlineData("Mods/user.mod")]
+    [InlineData("Mods by Game/nier-automata/Downloads/download.zip")]
+    [InlineData("Mods by Game/monster-hunter-world/Installed/my-mod/file.bin")]
     [InlineData("State/Next/manager.db")]
     [InlineData("Inbox/drop.zip")]
     [InlineData("Mods Archive/old.zip")]

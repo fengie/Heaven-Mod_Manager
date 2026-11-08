@@ -110,6 +110,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
     }
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
+    public string ModLibraryPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Installed mods: {s.Paths.ModsRoot}"; } }
+    public string GameDownloadsPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Downloaded archives: {s.Paths.DownloadsRoot}"; } }
     public int InstalledCount=>Mods.Count;
     public string InstalledCountLabel
     {
@@ -1182,6 +1184,29 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var issues=await s.Health.ScanAsync(ct);
         StatusText=issues.Count==0?"Health check passed.":$"Health check found {issues.Count} issue(s). Export a support bundle for details.";
     });
+
+    [RelayCommand]
+    private void OpenGameModFolder() { using var __mhwTrace=MasterDebugLog.BeginMethod(); OpenScopedFolder(s.Paths.ModsRoot); }
+
+    [RelayCommand]
+    private void OpenGameDownloadsFolder() { using var __mhwTrace=MasterDebugLog.BeginMethod(); OpenScopedFolder(s.Paths.DownloadsRoot); }
+
+    private void OpenScopedFolder(string path)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        try
+        {
+            if(Directory.Exists(path)&&(File.GetAttributes(path)&FileAttributes.ReparsePoint)!=0)
+                throw new IOException("The selected game storage path is a reparse point.");
+            Directory.CreateDirectory(path);
+            using var process=ProcessDebug.Start(new ProcessStartInfo(path){UseShellExecute=true},"open-game-scoped-folder");
+        }
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            MasterDebugLog.Write("GAME-LIBRARY","Could not open the game-scoped storage directory.",ex);
+            StatusText="Could not open this game's storage folder: "+ex.Message;
+        }
+    }
 
     [RelayCommand]
     private void CaptureDiagnostics()
