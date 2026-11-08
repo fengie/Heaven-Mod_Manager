@@ -110,8 +110,16 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Rows.ReplaceAll(registry.Load());", gamesPage);
         Assert.Contains("GamesPage.Refresh();", gamesFeature);
         Assert.True(Regex.IsMatch(gamesFeature, @"private async Task ScanInstalledGames\(\)\s*\{\s*using var __mhwTrace = MasterDebugLog\.BeginMethod\(\);", RegexOptions.CultureInvariant));
-        Assert.Contains("s.GameRegistry.SetActive(SelectedGame.Id);", gamesFeature);
-        Assert.Contains("RestartIntoGame(SelectedGame);", gamesFeature);
+        // The game selector must now use an in-process session transition. Persistence
+        // happens after the new session's window bindings initialize, not before.
+        var app = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "App.xaml.cs"));
+        var window = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml.cs"));
+        Assert.Contains("SwitchGameInPlaceAsync(requested)", gamesFeature);
+        Assert.DoesNotContain("RestartIntoGame(", gamesFeature);
+        Assert.Contains("previousWindow.ReplaceGameSessionAsync(candidate", app);
+        Assert.Contains("previousServices.GameRegistry.SetActive(paths.Game.Id);", app);
+        Assert.Contains("await replacement.InitializeAsync();", window);
+        Assert.Contains("DataContext = previousViewModel;", window);
         Assert.Contains("ItemsSource=\"{Binding Games}\"", xaml);
         Assert.Contains("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
         Assert.Contains("Command=\"{Binding SwitchGameCommand}\"", xaml);
@@ -518,8 +526,16 @@ public sealed partial class XamlBindingSafetyTests
         Assert.True(startupStart >= 0 && windowConstruct > startupStart);
         var blockingStartup = app[startupStart..windowConstruct];
 
+        // The bootstrap services moved into a shared session factory. Check both
+        // the first-window path and its invoked factory, not only OnStartup's text.
+        var bootstrapStart = app.IndexOf("private static async Task<AppServices> LoadGameSessionAsync(", StringComparison.Ordinal);
+        var bootstrapEnd = app.IndexOf("private static string ResolveDiagnosticRoot(", bootstrapStart, StringComparison.Ordinal);
+        Assert.True(bootstrapStart > 0 && bootstrapEnd > bootstrapStart);
+        var sessionBootstrap = app[bootstrapStart..bootstrapEnd];
+        Assert.Contains("LoadGameSessionAsync(paths,startup,e.Args.ToArray()", blockingStartup);
         Assert.DoesNotContain("nexus.RefreshAsync", blockingStartup);
-        Assert.Contains("startup.intelligence.nexus.deferred", blockingStartup);
+        Assert.DoesNotContain("nexus.RefreshAsync", sessionBootstrap);
+        Assert.Contains("startup.intelligence.nexus.deferred", sessionBootstrap);
         Assert.Contains("if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)", mainViewModel);
         Assert.Contains("EnsureInitialMetadataLoadedAsync(backgroundCts.Token)", mainViewModel);
         Assert.Contains("if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);", mainViewModel);
