@@ -22,6 +22,10 @@ on:
       - 'README.md'
       - 'CHANGELOG.md'
       - 'VERSION.txt'
+      # Canonical version/handoff parity is stricter than FeatureCandidate PR checks.
+      # Do not watch CURRENT_REVISION/CURRENT_STATE: evidence-only PRs modify them
+      # after publication, and watching them would cause a release-evidence loop.
+      - '_AGENT_CONTEXT/handoff-manifest.json'
       - 'VALIDATION.md'
       - 'Open Startup Logs.bat'
       - 'OPEN MASTER DEBUG LOG.bat'
