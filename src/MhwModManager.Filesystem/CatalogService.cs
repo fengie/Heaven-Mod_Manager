@@ -6,14 +6,25 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Filesystem;
 
-public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot)
+public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null)
 {
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
         var current=await db.GetModSourcePathsAsync(ct);
-        var directories = await Task.Run(() => Directory.EnumerateDirectories(modsRoot).Order(StringComparer.OrdinalIgnoreCase).ToArray(), ct);
+        // Existing MHW and generic source paths stay authoritative: a migration that moves them
+        // would invalidate persisted mod IDs, explicit overrides and rollback references.
+        var roots=new[]{modsRoot,legacyModsRoot}
+            .Where(path=>!string.IsNullOrWhiteSpace(path)&&Directory.Exists(path))
+            .Select(path=>Path.GetFullPath(path!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var directories = await Task.Run(() => roots
+            .SelectMany(root=>Directory.EnumerateDirectories(root))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray(), ct);
         var priority=100000;
         foreach(var dir in directories)
         {
