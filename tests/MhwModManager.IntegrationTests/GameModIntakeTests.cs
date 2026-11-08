@@ -126,6 +126,42 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Extracted_folder_mod_is_routed_without_moving_source_files()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "umm-intake-unpacked-" + Guid.NewGuid().ToString("N"));
+        var unpacked = Path.Combine(source, "An MHW armor mod");
+        var payload = Path.Combine(unpacked, "nativePC", "pl", "armor", "armor.tex");
+        Directory.CreateDirectory(Path.GetDirectoryName(payload)!);
+        await File.WriteAllTextAsync(payload, "native content", TestToken);
+        try
+        {
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+            sorter.AddSource(source);
+
+            var result = await sorter.ScanAsync(TestToken);
+
+            Assert.Equal(1, result.Routed);
+            var inbox = Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox");
+            var copied = Assert.Single(Directory.GetDirectories(inbox));
+            Assert.True(File.Exists(Path.Combine(copied, "nativePC", "pl", "armor", "armor.tex")));
+            Assert.True(File.Exists(payload));
+
+            // Processed Inbox entries disappear from the Inbox root; the source must
+            // not be reimported by the next startup or filesystem event.
+            var processed = Path.Combine(inbox, "Processed");
+            Directory.CreateDirectory(processed);
+            Directory.Move(copied, Path.Combine(processed, Path.GetFileName(copied)));
+            var again = await sorter.ScanAsync(TestToken);
+            Assert.Equal(0, again.Routed);
+            Assert.Equal(1, again.AlreadyPresent);
+        }
+        finally
+        {
+            Directory.Delete(source, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Source_folder_name_alone_does_not_make_every_archive_a_mod_for_that_game()
     {
         var source = Path.Combine(Path.GetTempPath(), "NieR Automata Downloads-" + Guid.NewGuid().ToString("N"));
