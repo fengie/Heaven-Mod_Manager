@@ -30,6 +30,40 @@ public partial class MainWindow:Window
         return ((MainWindowViewModel)DataContext).InitializeAsync();
     }
 
+    public async Task ReplaceGameSessionAsync(AppServices next, Action commit)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(commit);
+        if (DataContext is not MainWindowViewModel previousViewModel)
+            throw new InvalidOperationException("Cannot switch game without an active view model.");
+
+        // The WPF window and process identity survive. A candidate may fail to initialize;
+        // in that case restore the old bindings and do not touch the persisted active game.
+        var replacement = new MainWindowViewModel(next);
+        try
+        {
+            DataContext = replacement;
+            await replacement.InitializeAsync();
+            commit();
+        }
+        catch
+        {
+            DataContext = previousViewModel;
+            replacement.Dispose();
+            throw;
+        }
+
+        // This is after commit; failures during old-session cleanup must not roll back the
+        // new active window/database to a disposed previous session.
+        try { previousViewModel.Dispose(); }
+        catch (Exception ex)
+        {
+            MasterDebugLog.Write("GAME-SWITCH", "Previous game view-model disposal failed after commit.", ex);
+        }
+        replacement.StartProgramUpdater();
+    }
+
     public void StartProgramUpdater()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

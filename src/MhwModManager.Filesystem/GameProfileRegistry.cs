@@ -67,16 +67,21 @@ public sealed partial class GameProfileRegistry
         Upsert(profile);return profile;
     }
 
-    public GameProfile AddGenericFromExecutable(string executablePath)
+    public GameProfile AddGenericFromExecutable(string executablePath, bool activate = true)
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod();
         lock(mutationGate)
         {
-            var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
+            var profile=CreateFromExecutable(executablePath,null,null,null);
+            Upsert(profile);
+            // Existing callers still activate by default. In-place switching registers
+            // a candidate without changing the active marker before its session commits.
+            if(activate)SetActive(profile.Id);
+            return profile;
         }
     }
 
-    public GameProfile RepairFromExecutable(GameProfile existing,string executablePath)
+    public GameProfile RepairFromExecutable(GameProfile existing,string executablePath,bool activate = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={existing.Id}");
         var full=Path.GetFullPath(executablePath);
@@ -91,7 +96,9 @@ public sealed partial class GameProfileRegistry
             ProcessName=Path.GetFileNameWithoutExtension(full)
         };
         Upsert(repaired);
-        SetActive(repaired.Id);
+        // The candidate game may be relinked during an in-process switch. Keep
+        // the original active marker until the new session is initialized.
+        if(activate)SetActive(repaired.Id);
         MasterDebugLog.Write("GAME-REGISTRY",$"Repaired profile id={repaired.Id}; root={repaired.GameRoot}; exe={repaired.ExecutableRelativePath}");
         return repaired;
     }
