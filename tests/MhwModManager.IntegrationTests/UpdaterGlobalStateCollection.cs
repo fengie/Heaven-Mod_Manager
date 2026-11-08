@@ -33,7 +33,7 @@ public sealed class UpdaterGlobalStateProcessLease : IDisposable
     public static FileStream Acquire(string path, TimeSpan timeout)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        if (timeout < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(timeout));
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeout, TimeSpan.Zero);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
 
         var elapsed = Stopwatch.StartNew();
