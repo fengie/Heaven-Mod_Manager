@@ -16,6 +16,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Organize future installed packages and verified archive downloads by canonical game ID under Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}; read legacy libraries without moving user data (#785).
 - Preserve uploaded and catalog-acquired archives with hash verification, keep updater manifests away from persistent user-owned downloads, and verify updater apply/rollback sentinels.
 - Make catalog tests independent of expiring production compliance dates while retaining fail-closed provider checks; serialize updater integration tests across Windows CI processes.
+- Refuse to erase pre-existing Windows updater state during installed-client release E2E; require an unoccupied dedicated test root.
 
 ## v8.8.99 — hermetic SDK-isolation verification
 
