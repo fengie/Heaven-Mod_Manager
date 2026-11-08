@@ -205,7 +205,9 @@ public sealed class GameModIntakeService
             paths = info.Entries.Take(MaxFolderFiles).Select(entry => entry.Key).ToArray();
         }
         var declared = isDirectory ? ReadFolderGameHint(source) : ReadArchiveGameHint(source);
-        var context = Path.GetFileName(sourceRoot) + "/" + Path.GetRelativePath(sourceRoot, source);
+        // The monitored root may be called "NieR Downloads" yet contain unrelated files.
+        // Only the package name and its nested relative location provide identity evidence.
+        var context = Path.GetRelativePath(sourceRoot, source);
         var detection = GameModIntakeClassifier.Classify(games, context, paths, declared);
         if (detection.Kind != GameModIntakeKind.Identified)
         {
