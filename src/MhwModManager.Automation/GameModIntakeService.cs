@@ -14,10 +14,10 @@ public sealed record GameModIntakeItem(
 
 public sealed record GameModIntakeScan(IReadOnlyList<GameModIntakeItem> Items)
 {
-    public int Routed => Items.Count(item => item.Status == GameModIntakeStatus.Routed);
-    public int AlreadyPresent => Items.Count(item => item.Status == GameModIntakeStatus.AlreadyPresent);
-    public int NeedsReview => Items.Count(item => item.Status == GameModIntakeStatus.NeedsReview);
-    public int Skipped => Items.Count(item => item.Status == GameModIntakeStatus.Skipped);
+    public int Routed { get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return Items.Count(item => item.Status == GameModIntakeStatus.Routed); } }
+    public int AlreadyPresent { get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return Items.Count(item => item.Status == GameModIntakeStatus.AlreadyPresent); } }
+    public int NeedsReview { get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return Items.Count(item => item.Status == GameModIntakeStatus.NeedsReview); } }
+    public int Skipped { get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return Items.Count(item => item.Status == GameModIntakeStatus.Skipped); } }
 }
 
 /// <summary>
@@ -39,7 +39,14 @@ public sealed class GameModIntakeService
     private readonly Func<IReadOnlyList<GameProfile>> loadGames;
     private readonly ArchiveInspector archive;
 
-    public string ReportPath => Path.Combine(stateRoot, "last-mod-intake-report.json");
+    public string ReportPath
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Path.Combine(stateRoot, "last-mod-intake-report.json");
+        }
+    }
 
     public GameModIntakeService(
         string managerHome, string stateRoot, Func<IReadOnlyList<GameProfile>> loadGames,
@@ -185,11 +192,16 @@ public sealed class GameModIntakeService
         List<GameModIntakeItem> output, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var paths = isDirectory
-            ? SnapshotFolderFiles(source, ct).Select(path => Path.GetRelativePath(source, path)).ToArray()
-            : (await archive.InspectAsync(source, ct).ConfigureAwait(false)) is var info && !info.HasSuspiciousPaths
-                ? info.Entries.Take(MaxFolderFiles).Select(entry => entry.Key).ToArray()
-                : throw new InvalidDataException("Unsafe archive paths require manual review.");
+        string[] paths;
+        if (isDirectory)
+            paths = SnapshotFolderFiles(source, ct).Select(path => Path.GetRelativePath(source, path)).ToArray();
+        else
+        {
+            var info = await archive.InspectAsync(source, ct).ConfigureAwait(false);
+            if (info.HasSuspiciousPaths)
+                throw new InvalidDataException("Unsafe archive paths require manual review.");
+            paths = info.Entries.Take(MaxFolderFiles).Select(entry => entry.Key).ToArray();
+        }
         var declared = isDirectory ? ReadFolderGameHint(source) : ReadArchiveGameHint(source);
         var context = Path.GetFileName(sourceRoot) + "/" + Path.GetRelativePath(sourceRoot, source);
         var detection = GameModIntakeClassifier.Classify(games, context, paths, declared);
@@ -451,8 +463,8 @@ public sealed class GameModIntakeService
             throw new InvalidDataException("Auto-sort sources cannot contain or be inside the manager's own library.");
         }
         foreach (var game in loadGames())
-            if (ContainsPath(game.GameRoot, full))
-                throw new InvalidDataException("Cannot auto-sort from a live game installation directory.");
+            if (ContainsPath(game.GameRoot, full) || ContainsPath(full, game.GameRoot))
+                throw new InvalidDataException("Cannot auto-sort from or across a live game installation directory.");
         RefuseReparseComponents(full);
         return full;
     }
