@@ -2,24 +2,28 @@
 
 Canonical repository: `fengie/Heaven-Mod_Manager` (legacy signed updater/product identity `fengie/mhw-mods` is unchanged).
 Global bootstrap/training: `fengie/heaven-toolbox@main`.
-Current product version candidate: **8.8.102**.
+Current integrated source version: **8.8.102**. Immutable release and installed-client validation are separate boundaries.
 
 ## Current integrated behavior
 
 - v8.8.101 publication: immutable `updater-main-495` for exact source `446e933f778dae8f2da0238951e28b8b84f3f0b0`. This was published, but the installed-client E2E later refused occupied shared updater state. Do not claim real update/rollback or physical Heaven2 deployment.
 - PR #789: auto game-mod intake, source-folder monitoring, conservative classification, retained original downloads, per-game Inbox routing, visible Select All/Deselect All, Auto Populate discovers and imports Inbox before planning. Windows feature gate and main Windows release gate passed. Integrated on main as `9fa8c50e07c877eb3ae65ae0a34ec3433950d3fb`.
 - PR #790: single-instance activation and in-process game switch with candidate profile rollback/retention. Windows feature and AutoUpdate Contract gates passed. Integrated on main as `54ae2c3852c6bb5e4e63553a20c69fee8ac0182f`.
-- Audit-only PR #792 began with four deliberately red tests on baseline v8.8.101; those assertions now become release regression guards for merged features. This release metadata + audit candidate must still pass all exact-head Windows checks before merging.
+- PR #792 first proved four requested user-visible failures on baseline v8.8.101, then merged four green regression guards and v8.8.102 release metadata to main as `190858ad842deff645bcc836be3ab24fe09cc19a`. The first main release run failed only continuity-version parity, not those product tests. PR #794 merged the manifest/current-state version repair as `bc4e5981af65f8d69871b8ca0cce9b6e1eee6db6`.
 - Issue #791 is the separate unimplemented archive decomposition feature (one mixed-game archive containing multiple mods); do not claim #789 implements that.
 - Issue #793 is the occupied shared updater-state H1 installed-client E2E blocker. The following workflow classified/skipped the real updater job; it is not installed-client proof.
 
-## Verification and release boundaries
+## Verification boundary
 
-1. Confirm #792 exact-head Windows Workflow Feature PR Gate, AutoUpdate Contract, README timestamp, security and ownership status checks for version candidate 8.8.102. Fix substantive issues before integration; do not weaken tests.
-2. Merge only after all required checks pass and recheck exact protected `main` SHA. The version metadata and documentation from this candidate must be on `main` before publishing a new package.
-3. Require canonical main Windows Release Gate to build/publish an immutable `v8.8.102` package with exact source and SHA-256. Check release tag, manifest, artifact identity, provenance, and gate logs. Do not force-republish.
-4. Real installed-client update/rollback job and physical Heaven2/NieR startup/health remain independent. Do not delete unknown updater LocalApplicationData, change permissions, restart user hosts, or infer physical installation from a green source gate.
-5. Preserve the E2E and release verification branches, and promote verified evidence into protected main through ordinary approved PRs; never manually set cached verification statuses. Keep #792's red baseline history linked as a regression explanation.
+The v8.8.102 feature PR verification completed **26/26 stages, 0 failed**, with all four red-to-green baseline probes passing on H1. The first canonical main Windows Release Gate (run `42463658105` on source `190858ad842deff645bcc836be3ab24fe09cc19a`) failed a version mismatch: handoff-manifest currentVersion 8.8.101 versus VERSION.txt 8.8.102. All 432 integration, 342 core and 112 automation tests passed. PR #794 corrected the manifest and canonical current-state version data. A new main run is still required before declaring v8.8.102 release verification or publication.
+
+## Next required action
+
+1. Require exact-head Windows Feature, Security, Updater Publication, and AutoUpdate checks for PR #795 (workflow-trigger repair). Do not merge a red or unreviewed head.
+2. After PR #795 merges, its Windows release workflow file change must trigger the canonical main Windows Release Gate on the new exact source. Verify all 26 stages, package build, published tag, source, SHA-256, and provenance. Do not force-republish an already published version.
+3. The release gate stages allowlisted source-bound closure evidence on a protected `verification/` branch. Inspect it, require normal PR checks and merge only legitimate current-source evidence. Do not alter verification fingerprints or replay stale proof.
+4. Real installed-client updater update/rollback and physical Heaven2/NieR runtime proof remain independent. Issue #793 documents occupied updater-state refusal. Do not delete unowned LocalApplicationData, weaken production guards, expand permissions or claim installation without an actual receipt.
+5. Preserve the historic red baseline PR #792, the merged #789/#790 functionality, and the separate unimplemented mixed-game multi-mod-pack feature #791.
 
 ## Unresolved risks
 
