@@ -1017,37 +1017,79 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task AutoPopulate()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var preferredModIds=Mods
-            .SelectMany(row=>row.ExpandStage().Where(x=>x.Value.enabled).Select(x=>x.Key))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        AutoPopulateResult? result=null;
+        AutoPopulateResult? result = null;
         await RunBusy(
             "mods.auto-populate",
             "Auto Populating Mods",
-            "Keeping your currently selected mods, then filling around them with compatible mods, dependencies, and required texture providers…",
+            "Finding newly downloaded packages, indexing the active game's Inbox, then enabling the largest safe compatible set…",
             true,
-            async ct=>
+            async ct =>
             {
-                var service=new AutoPopulateService(s.PlannerSnapshots,s.Planner,s.Dependencies,s.Paths.GameRoot,s.Paths.Game);
-                result=await RunAutoPopulateBuildAsync(
-                    innerCt=>service.BuildAsync(preferredModIds,innerCt),
+                // Auto Populate is a discovery + configuration action, not just a planner.
+                // The designated-folder sorter routes by game independently of the active profile.
+                EnsureGameIntake();
+                if (gameIntake!.LoadSources().Count > 0)
+                {
+                    await intakeScanGate.WaitAsync(ct);
+                    try
+                    {
+                        await Task.Run(() => gameIntake.ScanAsync(ct), ct);
+                    }
+                    finally
+                    {
+                        intakeScanGate.Release();
+                    }
+                }
+
+                // Smart Inbox is the existing safe importer; do not duplicate its
+                // publication/rollback semantics or write directly into game files.
+                var stagedBeforeImport = CaptureStage();
+                var inboxResult = await s.Inbox.ProcessAsync(ct);
+                if (inboxResult.Imported > 0)
+                {
+                    await ReloadMods(ct);
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        suppressChanged = true;
+                        try
+                        {
+                            // Preserve the user's pending edits while newly imported mods
+                            // begin disabled and become eligible for Auto Populate.
+                            foreach (var row in Mods)
+                                row.ApplyProfileState(stagedBeforeImport);
+                        }
+                        finally { suppressChanged = false; Changed(); }
+                    });
+                }
+
+                if (Mods.Count == 0)
+                {
+                    StatusText = "No installed mods are available to populate for this game. " +
+                        "Add a designated mod download folder on Dashboard, or import an archive. " +
+                        $"Inbox skipped {inboxResult.Skipped} package(s), if any; see Inbox for details.";
+                    return;
+                }
+
+                var preferredModIds = Mods
+                    .SelectMany(row => row.ExpandStage().Where(x => x.Value.enabled).Select(x => x.Key))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var service = new AutoPopulateService(
+                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game);
+                result = await RunAutoPopulateBuildAsync(
+                    innerCt => service.BuildAsync(preferredModIds, innerCt),
                     ct);
-                var stage=result.State.ToDictionary(
-                    x=>x.Key,
-                    x=>(x.Value.Enabled,x.Value.Priority),
+                var stage = result.State.ToDictionary(
+                    x => x.Key,
+                    x => (x.Value.Enabled, x.Value.Priority),
                     StringComparer.OrdinalIgnoreCase);
 
-                await Application.Current.Dispatcher.InvokeAsync(()=>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    suppressChanged=true;
-                    try{foreach(var row in Mods)row.ApplyProfileState(stage);}
-                    finally{suppressChanged=false;Changed();}
+                    suppressChanged = true;
+                    try { foreach (var row in Mods) row.ApplyProfileState(stage); }
+                    finally { suppressChanged = false; Changed(); }
                 });
-
-                // BuildAsync already performed the mandatory final full-plan/dependency invariant.
-                // Do not immediately rebuild the same analysis here: Apply owns the authoritative
-                // current-state re-plan immediately before any game-file mutation.
-                StatusText=result.Summary+" Applying the safe setup now…";
+                StatusText = result.Summary + " Ready to apply the safe setup.";
                 await s.Timeline.RecordAsync(
                     "mods.auto-populate",
                     AutomationSeverity.Info,
@@ -1059,15 +1101,17 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                         result.SkippedRequirements,
                         result.PlannerPasses,
                         result.PlannerFastPathCandidates,
-                        result.PlannerMilliseconds
+                        result.PlannerMilliseconds,
+                        NewlyImported = inboxResult.Imported
                     },
                     ct);
             });
 
-        if(result is null)return;
-        if(StagedCount>0)await Apply();
-        if(StagedCount==0&&BlockerCount==0)
-            StatusText=result.Summary+" The setup is applied and ready to launch.";
+        if (result is null) return;
+        if (StagedCount > 0)
+            await Apply();
+        else
+            StatusText = result.Summary + " No changes were necessary; the current setup is already applied.";
     }
 
     internal static Task<T> RunAutoPopulateBuildAsync<T>(
