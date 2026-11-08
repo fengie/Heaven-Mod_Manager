@@ -67,12 +67,17 @@ public sealed partial class GameProfileRegistry
         Upsert(profile);return profile;
     }
 
-    public GameProfile AddGenericFromExecutable(string executablePath)
+    public GameProfile AddGenericFromExecutable(string executablePath, bool activate = true)
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod();
         lock(mutationGate)
         {
-            var profile=CreateFromExecutable(executablePath,null,null,null);Upsert(profile);SetActive(profile.Id);return profile;
+            var profile=CreateFromExecutable(executablePath,null,null,null);
+            Upsert(profile);
+            // Existing callers still activate by default. In-place switching registers
+            // a candidate without changing the active marker before its session commits.
+            if(activate)SetActive(profile.Id);
+            return profile;
         }
     }
 
