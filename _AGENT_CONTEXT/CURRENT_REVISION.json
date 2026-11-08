@@ -8,12 +8,12 @@
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
     "status":  "v8.8.101-release-evidence-protected-main-repair-source-awaiting-exact-windows-closure",
-    "nextMilestone":  "Merge v8.8.101 protected-main evidence-PR custody source after exact native CI, publish a new immutable signed/attested updater release from canonical main, and stage all release and installed-client evidence through ordinary PRs rather than direct protected-main pushes.",
-    "nextRequiredAction":  "Refresh exact owner/main and the evidence-custody PR; require matching native feature/security/updater/README gates, then serial expected-base merge and exact main Windows Release Gate. Inspect output branch verification/windows-v8.8.101-run-<run> and open an enforced evidence-only PR for canonical closure. Validate updater E2E and its one-file PR branch, and obtain an independent installed Heaven2/NieR source/health receipt before claiming deployment.",
-    "verificationAppliesToCommit":  "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-    "lastClosedVerificationCommit":  "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-    "lastClosedVerificationRun":  "v8.8.99 source c08b31c5327522c5896704d7a24b5ddc6f70b9c4: hosted Windows verification run 38006379575 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "Historical v8.8.99 hosted-Windows source c08b31c5327522c5896704d7a24b5ddc6f70b9c4 run 38006379575 remains last closed canonical receipt. v8.8.100 source 33c861dcd2af5554d4f225d8ea79a51ad72e1f91 passed 26/0 and published immutable updater-main-493, but final run 42448738104 failed protected main GH013 during evidence persistence; do not relabel it as full green or installed. v8.8.101 current exact-main verification/publication is pending.",
+    "nextMilestone":  "Current v8.8.101 hosted Windows verification is closed; continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md while preserving unresolved external security gates.",
+    "nextRequiredAction":  "Refresh canonical main and live ownership, then continue the next non-overlapping actionable project-plan item; do not reintegrate or rerun the already-verified v8.8.101 source solely because the evidence-only persistence commit advanced main.",
+    "verificationAppliesToCommit":  "446e933f778dae8f2da0238951e28b8b84f3f0b0",
+    "lastClosedVerificationCommit":  "446e933f778dae8f2da0238951e28b8b84f3f0b0",
+    "lastClosedVerificationRun":  "v8.8.101 source 446e933f778dae8f2da0238951e28b8b84f3f0b0: hosted Windows verification run 42450500726 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.101-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.101 exact source 446e933f778dae8f2da0238951e28b8b84f3f0b0 passed hosted Windows verification run 42450500726. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -45,8 +45,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-                                          "runId":  38006379575,
-                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log"
+                                          "sourceSha":  "446e933f778dae8f2da0238951e28b8b84f3f0b0",
+                                          "runId":  42450500726,
+                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.101-heaven-windows-closure.log"
                                       }
 }
