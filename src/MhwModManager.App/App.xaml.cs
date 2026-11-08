@@ -91,100 +91,10 @@ public sealed partial class App:Application, IDisposable
             startup.Info("bootstrap.paths.resolved", $"ToolRoot={paths.ToolRoot}; ModsRoot={paths.ModsRoot}; StateRoot={paths.StateRoot}; GameRoot={paths.GameRoot}; Database={paths.DatabasePath}; MasterLog={UnifiedDebugLog.FilePath}");
             startup.Run("bootstrap.state-directories",()=>Directory.CreateDirectory(paths.NextStateRoot));
 
-            var settings=startup.Run("services.settings",()=>ManagerSettingsStore.Load(Path.Combine(paths.NextStateRoot,"settings.json")));
-            UiMotion.AnimationsEnabled=settings.Current.UiAnimationsEnabled;
-            var db=startup.Run("services.database.construct",()=>new ManagerDatabase(paths.DatabasePath));
-            await startup.RunAsync("database.initialize",ct=>db.InitializeAsync(ct));
-            var plannerSnapshots=startup.Run("services.planner-snapshots",()=>new PlannerSnapshotRepository(db));
-            var logger=startup.Run("services.logging",()=>AppLogging.Create(paths.StateRoot));
-            var telemetry=startup.Run("services.telemetry",()=>new DiagnosticTelemetry(db,logger));
-            var hash=startup.Run("services.hashing",()=>new HashingService());
-            var blobs=startup.Run("services.blob-store",()=>new BlobStore(paths.BlobRoot,db));
-            var gameRegistry=startup.Run("services.game-registry",()=>new GameProfileRegistry(paths.StateRoot));
-            var scanner=startup.Run("services.mod-scanner",()=>new ModScanner(db,blobs,hash,paths.Game));
-            var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot,paths.LegacyModsRoot));
-            var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
-            var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
-            var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
-            var health=startup.Run("services.health",()=>new HealthService(db,plannerSnapshots,hash,blobs,executor.Destination,paths.Game));
-            var profiles=startup.Run("services.profiles",()=>new ProfileRepository(db));
-            var presentationReads=startup.Run("services.presentation-reads",()=>new PresentationReadRepository(db));
-            var migrator=startup.Run("services.legacy-migrator",()=>new LegacyV7Migrator(db,paths.ToolRoot,paths.BlobRoot));
-            var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
-            var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
-            var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,plannerSnapshots,paths.NextStateRoot,paths.Game));
-            var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,plannerSnapshots,paths.Game));
-            var adoption=startup.Run("services.unmanaged-adoption",()=>new UnmanagedAdoptionService(db,plannerSnapshots,hash,paths.ModsRoot,paths.Game));
-            var previews=startup.Run("services.texture-preview",()=>new TexturePreviewService(Path.Combine(paths.NextStateRoot,"PreviewCache")));
-            var visuals=startup.Run("services.mod-visuals",()=>new ModVisualService(db));
-            var timeline=startup.Run("services.timeline",()=>new ChangeTimelineService(db));
-            var backups=startup.Run("services.save-backups",()=>new SaveBackupService(db,paths.NextStateRoot,paths.Game));
-            var lastGood=startup.Run("services.last-known-good",()=>new LastKnownGoodService(db));
-            var categories=startup.Run("services.auto-category",()=>new AutoCategoryService(db,paths.Game,startup));
-            var dependencies=startup.Run("services.dependency-doctor",()=>new DependencyDoctorService(db,paths.GameRoot,paths.Game));
-            var duplicates=startup.Run("services.duplicate-cleanup",()=>new DuplicateCleanupService(db,paths.ModsArchiveRoot));
-            var recipe=startup.Run("services.collection-recipes",()=>new CollectionRecipeService(db,paths.Game));
-            var trust=startup.Run("services.mod-trust",()=>new ModTrustService(db));
-            var issues=startup.Run("services.mod-issue-fallback",()=>new ModIssueFallbackService(db,timeline,trust));
-            var updateDiff=startup.Run("services.update-diff",()=>new UpdateDiffService(db));
-            var inspector=startup.Run("services.effective-inspector",()=>new EffectiveInspectorService(plannerSnapshots,planner));
-            var presets=startup.Run("services.outfit-presets",()=>new OutfitPresetService());
-            var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(plannerSnapshots));
-            var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
-            var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup,legacyInboxRoot:paths.LegacyInboxRoot));
-            var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
-            var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,issues,adoption,paths.GameRoot,paths.Game,startup));
-            var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
-            var installRoot=startup.Run("services.updater-install-root",UpdateClientService.GetInstallRoot);
-            var buildIdentity=startup.Run("services.updater-build-identity",()=>UpdateBuildIdentity.Load(installRoot));
-            var updater=startup.Run("services.updater",()=>new UpdateClientService(
-                log:message=>logger.Information("Program updater: {UpdaterMessage}",message)));
-            changeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LegacyModsRoot,paths.LiveModRoot));
-            changeHints.HintsAvailable+=hint=>
-            {
-                if(hint.WatcherOverflowed)logger.Warning("FileSystemWatcher overflowed; authoritative reconciliation is required before the next deployment");
-                else logger.Debug("Filesystem invalidation hints received for {Count} path(s)",hint.Paths.Count);
-                _=telemetry.RecordSignalAsync(hint.WatcherOverflowed?"watcher.overflow":"watcher.hints",null,null,
-                    new Dictionary<string,object?>{{"count",hint.Paths.Count},{"overflow",hint.WatcherOverflowed}});
-            };
-
-            Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
-                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,settings,updater,buildIdentity,e.Args.ToArray()));
-
-            splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
-            var migration=paths.Game.IsMonsterHunterWorld
-                ? await startup.RunAsync("startup.migration",async ct=>await telemetry.TrackAsync("startup.migration",async(_,innerCt)=>
-                    await Task.Run(()=>migrator.MigrateIfNeededAsync(innerCt),innerCt),ct:ct))
-                : new MigrationResult(false,true,"Legacy MHW migration is not applicable to this game.",string.Empty);
-            startup.Info("startup.migration.result", $"Performed={migration.Performed}; Success={migration.Success}; Message={migration.Message}; Report={migration.ReportPath}");
-            if(migration.Performed&&!migration.Success)
-            {
-                startup.Complete(false,"Legacy migration reported failure and startup stopped safely.");
-                splash.Close();
-                MessageBox.Show(migration.Message+"\n\n"+migration.ReportPath+"\n\nMASTER DEBUG LOG (send this file):\n"+UnifiedDebugLog.FilePath+"\n\nStartup diagnostics:\n"+startup.TextLogPath+"\n"+startup.JsonReportPath,"Migration stopped safely",MessageBoxButton.OK,MessageBoxImage.Error);
-                Shutdown(-2);
-                return;
-            }
-
-            splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Refreshing the local catalog and armor index…":"Refreshing the local mod catalog…");
-            await startup.RunAsync("startup.catalog.refresh",async ct=>await telemetry.TrackAsync("startup.catalog.refresh",async(_,innerCt)=>await catalog.RefreshFoldersAsync(innerCt),ct:ct));
-            if(paths.Game.IsMonsterHunterWorld)
-                await startup.RunAsync("startup.armor-index.import",async ct=>await telemetry.TrackAsync("startup.armor-index.import",async(_,innerCt)=>await ArmorCatalogLoader.ImportAsync(db,Path.Combine(AppContext.BaseDirectory,"data","Armor Database.csv"),innerCt),ct:ct));
-
-            splash.SetDetail("Checking the game build…");
-            startup.Info("startup.intelligence.nexus.deferred","Nexus metadata, artwork, and update refresh is demand-loaded from the Mods page so optional network/file work cannot delay the first window.");
-            var buildResult=await startup.RunAsync("startup.intelligence.game-build",async ct=>await telemetry.TrackAsync("startup.intelligence.game-build",async(_,innerCt)=>await gameBuild.CheckAsync(innerCt),ct:ct));
-            startup.Info("startup.intelligence.game-build.result",$"Changed={buildResult.Changed}");
-            var impact=await startup.RunAsync("startup.intelligence.game-impact",ct=>gameImpact.BuildAsync(buildResult.Changed,ct));
-            if(buildResult.Changed)await startup.RunAsync("startup.intelligence.timeline",ct=>timeline.RecordAsync("game.update",AutomationSeverity.Warning,impact.Message,impact,ct));
-
-            splash.SetDetail("Checking for an interrupted transaction…");
-            await startup.RunAsync("startup.recovery",async ct=>await telemetry.TrackAsync("startup.recovery",async(_,innerCt)=>await executor.RecoverIncompleteAsync(innerCt),ct:ct));
-
-            splash.SetDetail("Running automatic inbox/category/dependency maintenance…");
-            var maintenance=await startup.RunAsync("startup.automation",async ct=>await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>await automation.RunStartupMaintenanceAsync(innerCt),ct:ct));
-            logger.Information("Startup automation: {Summary}",maintenance.Summary);
-            startup.Info("startup.automation.summary",maintenance.Summary);
+            Services=await LoadGameSessionAsync(paths,startup,e.Args.ToArray(),progress:splash.SetDetail);
+            changeHints=Services.ChangeHints;
+            var logger=Services.Log;
+            var buildIdentity=Services.BuildIdentity;
 
             splash.SetDetail("Preparing the main window and loading indexed state…");
             var window=startup.Run("ui.main-window.construct",()=>new MainWindow());
@@ -258,6 +168,119 @@ public sealed partial class App:Application, IDisposable
         if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
         window.Activate();
         window.Focus();
+    }
+
+    private async Task<AppServices> LoadGameSessionAsync(
+        AppPaths paths,
+        StartupDiagnosticSession startup,
+        IReadOnlyList<string> startupArguments,
+        AppServices? previous = null,
+        Action<string>? progress = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        FileChangeHintService? sessionChangeHints = null;
+        try
+        {
+            var settings=startup.Run("services.settings",()=>ManagerSettingsStore.Load(Path.Combine(paths.NextStateRoot,"settings.json")));
+            UiMotion.AnimationsEnabled=settings.Current.UiAnimationsEnabled;
+            var db=startup.Run("services.database.construct",()=>new ManagerDatabase(paths.DatabasePath));
+            await startup.RunAsync("database.initialize",ct=>db.InitializeAsync(ct));
+            var plannerSnapshots=startup.Run("services.planner-snapshots",()=>new PlannerSnapshotRepository(db));
+            var logger=previous?.Log ?? startup.Run("services.logging",()=>AppLogging.Create(paths.StateRoot));
+            var telemetry=startup.Run("services.telemetry",()=>new DiagnosticTelemetry(db,logger));
+            var hash=startup.Run("services.hashing",()=>new HashingService());
+            var blobs=startup.Run("services.blob-store",()=>new BlobStore(paths.BlobRoot,db));
+            var gameRegistry=startup.Run("services.game-registry",()=>new GameProfileRegistry(paths.StateRoot));
+            var scanner=startup.Run("services.mod-scanner",()=>new ModScanner(db,blobs,hash,paths.Game));
+            var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot,paths.LegacyModsRoot));
+            var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
+            var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
+            var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
+            var health=startup.Run("services.health",()=>new HealthService(db,plannerSnapshots,hash,blobs,executor.Destination,paths.Game));
+            var profiles=startup.Run("services.profiles",()=>new ProfileRepository(db));
+            var presentationReads=startup.Run("services.presentation-reads",()=>new PresentationReadRepository(db));
+            var migrator=startup.Run("services.legacy-migrator",()=>new LegacyV7Migrator(db,paths.ToolRoot,paths.BlobRoot));
+            var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
+            var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
+            var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,plannerSnapshots,paths.NextStateRoot,paths.Game));
+            var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,plannerSnapshots,paths.Game));
+            var adoption=startup.Run("services.unmanaged-adoption",()=>new UnmanagedAdoptionService(db,plannerSnapshots,hash,paths.ModsRoot,paths.Game));
+            var previews=startup.Run("services.texture-preview",()=>new TexturePreviewService(Path.Combine(paths.NextStateRoot,"PreviewCache")));
+            var visuals=startup.Run("services.mod-visuals",()=>new ModVisualService(db));
+            var timeline=startup.Run("services.timeline",()=>new ChangeTimelineService(db));
+            var backups=startup.Run("services.save-backups",()=>new SaveBackupService(db,paths.NextStateRoot,paths.Game));
+            var lastGood=startup.Run("services.last-known-good",()=>new LastKnownGoodService(db));
+            var categories=startup.Run("services.auto-category",()=>new AutoCategoryService(db,paths.Game,startup));
+            var dependencies=startup.Run("services.dependency-doctor",()=>new DependencyDoctorService(db,paths.GameRoot,paths.Game));
+            var duplicates=startup.Run("services.duplicate-cleanup",()=>new DuplicateCleanupService(db,paths.ModsArchiveRoot));
+            var recipe=startup.Run("services.collection-recipes",()=>new CollectionRecipeService(db,paths.Game));
+            var trust=startup.Run("services.mod-trust",()=>new ModTrustService(db));
+            var issues=startup.Run("services.mod-issue-fallback",()=>new ModIssueFallbackService(db,timeline,trust));
+            var updateDiff=startup.Run("services.update-diff",()=>new UpdateDiffService(db));
+            var inspector=startup.Run("services.effective-inspector",()=>new EffectiveInspectorService(plannerSnapshots,planner));
+            var presets=startup.Run("services.outfit-presets",()=>new OutfitPresetService());
+            var gameImpact=startup.Run("services.game-update-impact",()=>new GameUpdateImpactService(plannerSnapshots));
+            var importer=startup.Run("services.archive-import",()=>new ArchiveImportService(archive,catalog,paths.ModsRoot));
+            var inbox=startup.Run("services.smart-inbox",()=>new SmartInboxService(db,archive,catalog,nexus,categories,paths.InboxRoot,paths.ModsRoot,startup,legacyInboxRoot:paths.LegacyInboxRoot));
+            var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
+            var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,issues,adoption,paths.GameRoot,paths.Game,startup));
+            var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
+            var installRoot=startup.Run("services.updater-install-root",UpdateClientService.GetInstallRoot);
+            var buildIdentity=previous?.BuildIdentity ?? startup.Run("services.updater-build-identity",()=>UpdateBuildIdentity.Load(installRoot));
+            var updater=previous?.Updater ?? startup.Run("services.updater",()=>new UpdateClientService(
+                log:message=>logger.Information("Program updater: {UpdaterMessage}",message)));
+            sessionChangeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LegacyModsRoot,paths.LiveModRoot));
+            sessionChangeHints.HintsAvailable+=hint=>
+            {
+                if(hint.WatcherOverflowed)logger.Warning("FileSystemWatcher overflowed; authoritative reconciliation is required before the next deployment");
+                else logger.Debug("Filesystem invalidation hints received for {Count} path(s)",hint.Paths.Count);
+                _=telemetry.RecordSignalAsync(hint.WatcherOverflowed?"watcher.overflow":"watcher.hints",null,null,
+                    new Dictionary<string,object?>{{"count",hint.Paths.Count},{"overflow",hint.WatcherOverflowed}});
+            };
+
+            var sessionServices=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,sessionChangeHints,nexus,gameBuild,adoption,previews,visuals,
+                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,settings,updater,buildIdentity,startupArguments));
+
+            progress?.Invoke(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
+            var migration=paths.Game.IsMonsterHunterWorld
+                ? await startup.RunAsync("startup.migration",async ct=>await telemetry.TrackAsync("startup.migration",async(_,innerCt)=>
+                    await Task.Run(()=>migrator.MigrateIfNeededAsync(innerCt),innerCt),ct:ct))
+                : new MigrationResult(false,true,"Legacy MHW migration is not applicable to this game.",string.Empty);
+            startup.Info("startup.migration.result", $"Performed={migration.Performed}; Success={migration.Success}; Message={migration.Message}; Report={migration.ReportPath}");
+            if(migration.Performed&&!migration.Success)
+            {
+                startup.Complete(false,"Legacy migration reported failure and startup stopped safely.");
+                throw new InvalidDataException("Legacy MHW migration stopped safely: "+migration.Message+" Report: "+migration.ReportPath);
+            }
+
+            progress?.Invoke(paths.Game.IsMonsterHunterWorld?"Refreshing the local catalog and armor index…":"Refreshing the local mod catalog…");
+            await startup.RunAsync("startup.catalog.refresh",async ct=>await telemetry.TrackAsync("startup.catalog.refresh",async(_,innerCt)=>await catalog.RefreshFoldersAsync(innerCt),ct:ct));
+            if(paths.Game.IsMonsterHunterWorld)
+                await startup.RunAsync("startup.armor-index.import",async ct=>await telemetry.TrackAsync("startup.armor-index.import",async(_,innerCt)=>await ArmorCatalogLoader.ImportAsync(db,Path.Combine(AppContext.BaseDirectory,"data","Armor Database.csv"),innerCt),ct:ct));
+
+            progress?.Invoke("Checking the game build…");
+            startup.Info("startup.intelligence.nexus.deferred","Nexus metadata, artwork, and update refresh is demand-loaded from the Mods page so optional network/file work cannot delay the first window.");
+            var buildResult=await startup.RunAsync("startup.intelligence.game-build",async ct=>await telemetry.TrackAsync("startup.intelligence.game-build",async(_,innerCt)=>await gameBuild.CheckAsync(innerCt),ct:ct));
+            startup.Info("startup.intelligence.game-build.result",$"Changed={buildResult.Changed}");
+            var impact=await startup.RunAsync("startup.intelligence.game-impact",ct=>gameImpact.BuildAsync(buildResult.Changed,ct));
+            if(buildResult.Changed)await startup.RunAsync("startup.intelligence.timeline",ct=>timeline.RecordAsync("game.update",AutomationSeverity.Warning,impact.Message,impact,ct));
+
+            progress?.Invoke("Checking for an interrupted transaction…");
+            await startup.RunAsync("startup.recovery",async ct=>await telemetry.TrackAsync("startup.recovery",async(_,innerCt)=>await executor.RecoverIncompleteAsync(innerCt),ct:ct));
+
+            progress?.Invoke("Running automatic inbox/category/dependency maintenance…");
+            var maintenance=await startup.RunAsync("startup.automation",async ct=>await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>await automation.RunStartupMaintenanceAsync(innerCt),ct:ct));
+            logger.Information("Startup automation: {Summary}",maintenance.Summary);
+            startup.Info("startup.automation.summary",maintenance.Summary);
+
+
+            return sessionServices;
+        }
+        catch
+        {
+            sessionChangeHints?.Dispose();
+            throw;
+        }
     }
 
     private static string ResolveDiagnosticRoot()
