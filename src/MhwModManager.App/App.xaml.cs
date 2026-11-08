@@ -20,6 +20,8 @@ public sealed partial class App:Application, IDisposable
     private DispatcherWatchdog? watchdog;
     private FileChangeHintService? changeHints;
     private bool disposed;
+    private SingleInstanceCoordinator? instanceCoordinator;
+    private bool activationRequested;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -42,6 +44,19 @@ public sealed partial class App:Application, IDisposable
             UnifiedDebugLog.Write("APP-BOOTSTRAP", "base.OnStartup failed", ex);
             throw;
         }
+
+        // Establish single interactive owner before loading a game or creating a splash.
+        instanceCoordinator = new SingleInstanceCoordinator(SingleInstanceCoordinator.ProductInstanceKey);
+        if (!instanceCoordinator.IsPrimary)
+        {
+            var delivered = await instanceCoordinator.RequestActivationAsync();
+            if (!delivered)
+                UnifiedDebugLog.Write("SINGLE-INSTANCE", "An owner is running, but activation could not be acknowledged.");
+            Shutdown(0);
+            return;
+        }
+        instanceCoordinator.StartListening(() =>
+            Dispatcher.BeginInvoke(new Action(ActivateExistingWindow)));
 
         DispatcherUnhandledException += (_,args) =>
         {
@@ -176,6 +191,7 @@ public sealed partial class App:Application, IDisposable
             MainWindow=window;
             var initialization=startup.RunAsync("ui.main-window.initialize",_=>window.InitializeAsync());
             startup.Run("ui.main-window.show",window.Show);
+            if (activationRequested) ActivateExistingWindow();
             ShutdownMode=ShutdownMode.OnMainWindowClose;
             splash.Close();
             // Observe startup stalls too: the UI initialization is precisely where the
@@ -229,6 +245,21 @@ public sealed partial class App:Application, IDisposable
         }
     }
 
+    private void ActivateExistingWindow()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (MainWindow is not MainWindow window || !window.IsLoaded)
+        {
+            activationRequested = true;
+            return;
+        }
+        activationRequested = false;
+        if (!window.IsVisible) window.Show();
+        if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+        window.Activate();
+        window.Focus();
+    }
+
     private static string ResolveDiagnosticRoot()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -256,6 +287,8 @@ public sealed partial class App:Application, IDisposable
         if(disposed)return;
         UnifiedDebugLog.Write("APP", "Dispose begin");
         disposed=true;
+        instanceCoordinator?.Dispose();
+        instanceCoordinator=null;
         watchdog?.Dispose();
         watchdog=null;
         changeHints?.Dispose();
