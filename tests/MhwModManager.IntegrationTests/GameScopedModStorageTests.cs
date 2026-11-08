@@ -42,6 +42,23 @@ public sealed class GameScopedModStorageTests : IDisposable
     }
 
     [Fact]
+    public void Dashboard_exposes_the_selected_games_installed_and_download_folders()
+    {
+        var current=new DirectoryInfo(AppContext.BaseDirectory);
+        while(current is not null&&!File.Exists(Path.Combine(current.FullName,"MhwModManager.sln")))current=current.Parent;
+        Assert.NotNull(current);
+        var xaml=File.ReadAllText(Path.Combine(current!.FullName,"src","MhwModManager.App","MainWindow.xaml"));
+        var viewModel=File.ReadAllText(Path.Combine(current.FullName,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
+
+        Assert.Contains("OpenGameModFolderCommand",xaml);
+        Assert.Contains("OpenGameDownloadsFolderCommand",xaml);
+        Assert.Contains("ModLibraryPathText",xaml);
+        Assert.Contains("GameDownloadsPathText",xaml);
+        Assert.Contains("private void OpenGameModFolder()",viewModel);
+        Assert.Contains("private void OpenGameDownloadsFolder()",viewModel);
+    }
+
+    [Fact]
     public void Invalid_game_identity_cannot_escape_the_scoped_mod_library()
     {
         var invalid=GameProfile.Generic("valid-id","Name",Path.Combine(tool,"Game"),"Game.exe","")
