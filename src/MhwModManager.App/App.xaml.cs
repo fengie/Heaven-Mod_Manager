@@ -210,8 +210,8 @@ public sealed partial class App:Application, IDisposable
                 previousServices.GameRegistry.SetActive(paths.Game.Id);
                 Services = candidate;
                 changeHints = candidate.ChangeHints;
+                committed = true;
             });
-            committed = true;
 
             // The shared updater/logger survive; the previous game-specific watchers and
             // telemetry watchdog are retired only after the replacement is active.
