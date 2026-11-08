@@ -1,34 +1,29 @@
-# v8.8.101 protected release-evidence custody — canonical continuity handoff
+# v8.8.102 game-intake and in-place game-session integration — canonical continuity handoff
 
-Canonical repository: `fengie/Heaven-Mod_Manager` (legacy signed updater/product identity `fengie/mhw-mods` stays unchanged).
+Canonical repository: `fengie/Heaven-Mod_Manager` (legacy signed updater/product identity `fengie/mhw-mods` is unchanged).
 Global bootstrap/training: `fengie/heaven-toolbox@main`.
-Canonical branch: `main`.
-Current product version: **8.8.101**.
+Current product version candidate: **8.8.102**.
 
-## Current behavior
+## Current integrated behavior
 
-- v8.8.100 #784/#785 empty-NieR startup and game-scoped `Mods by Game/<id>/{Installed,Downloads,Inbox,Archive}` storage are integrated and source-verified. The published updater build 493 contains that source. Legacy mods, State, and user downloads must never be moved/deleted casually.
-- v8.8.101 changes release/evidence custody only: Windows Release Gate and installed-client E2E stage their evidence as source-bound, no-force `verification/` branches for normal protected-main PR admission. They do not write directly to main, bypass status checks, or expand workflow token permissions.
-- Public Windows closure evidence is an allowlisted passing summary and SHA-256 artifact/report digests, not raw build reports with user-profile paths. Updater installed-client proof remains a one-file allowlisted durable projection.
-- Independent #558 catalog breadth and #735 installed Auto Populate performance acceptance remain open.
+- v8.8.101 publication: immutable `updater-main-495` for exact source `446e933f778dae8f2da0238951e28b8b84f3f0b0`. This was published, but the installed-client E2E later refused occupied shared updater state. Do not claim real update/rollback or physical Heaven2 deployment.
+- PR #789: auto game-mod intake, source-folder monitoring, conservative classification, retained original downloads, per-game Inbox routing, visible Select All/Deselect All, Auto Populate discovers and imports Inbox before planning. Windows feature gate and main Windows release gate passed. Integrated on main as `9fa8c50e07c877eb3ae65ae0a34ec3433950d3fb`.
+- PR #790: single-instance activation and in-process game switch with candidate profile rollback/retention. Windows feature and AutoUpdate Contract gates passed. Integrated on main as `54ae2c3852c6bb5e4e63553a20c69fee8ac0182f`.
+- Audit-only PR #792 began with four deliberately red tests on baseline v8.8.101; those assertions now become release regression guards for merged features. This release metadata + audit candidate must still pass all exact-head Windows checks before merging.
+- Issue #791 is the separate unimplemented archive decomposition feature (one mixed-game archive containing multiple mods); do not claim #789 implements that.
+- Issue #793 is the occupied shared updater-state H1 installed-client E2E blocker. The following workflow classified/skipped the real updater job; it is not installed-client proof.
 
-## Verification boundary
+## Verification and release boundaries
 
-v8.8.101 **is not yet verified, published, or installed**. Historical last closed Windows verification: v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`.
+1. Confirm #792 exact-head Windows Workflow Feature PR Gate, AutoUpdate Contract, README timestamp, security and ownership status checks for version candidate 8.8.102. Fix substantive issues before integration; do not weaken tests.
+2. Merge only after all required checks pass and recheck exact protected `main` SHA. The version metadata and documentation from this candidate must be on `main` before publishing a new package.
+3. Require canonical main Windows Release Gate to build/publish an immutable `v8.8.102` package with exact source and SHA-256. Check release tag, manifest, artifact identity, provenance, and gate logs. Do not force-republish.
+4. Real installed-client update/rollback job and physical Heaven2/NieR startup/health remain independent. Do not delete unknown updater LocalApplicationData, change permissions, restart user hosts, or infer physical installation from a green source gate.
+5. Preserve the E2E and release verification branches, and promote verified evidence into protected main through ordinary approved PRs; never manually set cached verification statuses. Keep #792's red baseline history linked as a regression explanation.
 
-v8.8.100 immutable updater build `updater-main-493` was published for source `33c861dcd2af5554d4f225d8ea79a51ad72e1f91`. Windows run `42448738104` passed 26/26 verification stages, app packaging, signed provenance, and immutable publication, **but failed overall** when a direct evidence-only `git push origin HEAD:main` hit protected-main GH013 (PR required and required `enforce` status). The release is published, but its canonical repo evidence remains unpromoted. Never reinterpret that failed run as full green.
+## Unresolved risks
 
-## Next action
-
-1. Refresh live current main, owners, opened PRs, and `_AGENT_CONTEXT/CURRENT_REVISION.json`. Complete exact-head Windows Feature, Security, Ownership, README timestamp, AutoUpdate and updater publication policy gates for the current protected-evidence repair branch before merging.
-2. Merge only with the exact tested head and expected main base. Run the canonical main Windows Release Gate for v8.8.101 and independently verify its immutable release tag, versioned Windows ZIP, source SHA, artifact SHA-256, and provenance. Do not force-republish an existing version.
-3. Review the generated `verification/windows-v8.8.101-run-<runId>` branch for safe allowed evidence paths and source identity. Create a normal PR and pass native `enforce` before merging proof into protected main. A staged branch is **EVIDENCE_PENDING_PR**, not canonical closure. Never manually promote unverified evidence.
-4. Allow the authenticated installed-client E2E workflow to run only after eligible source publication; verify update, rollback, durable allowlisted hashes, and its `verification/installed-e2e-v8.8.101-run-<runId>` evidence PR through normal CI/merge.
-5. If the dedicated Windows E2E cannot use an empty owned updater root, fail closed; do not delete another owner's LocalApplicationData or loosen machine security. Obtain actual installed Heaven2/NieR SHA, startup and health proof before declaring physical deployment.
-
-## Unresolved risk
-
-Native CI and GitHub publication are not physical-device deployment. Protected main requires PRs and the updater may contain unrelated live state; missing runtime/PR receipts remain explicit. Preserve exact version/manifest/source identities, filesystem containment, immutable download archives, legacy compatibility, HMAC/Bridge authority, transactional rollback, and independent signing/provenance gates.
+The current version and deployed build may differ; no installed device receipt yet. Some anonymous mod archives cannot be classified reliably and stay in manual review. Starting a second app instance and switching game sessions require real packaged WPF acceptance in addition to source/integration tests.
 
 ## Successor obligation
 

@@ -1,3 +1,11 @@
+# v8.8.102 — 2026-11-08
+
+- Integrate #789: designated-folder game mod classification and conservative per-game Inbox routing, original archive preservation, repeat-safe receipts, auto-populate Inbox intake, and wrapping visible controls.
+- Integrate #790: one interactive manager per user/session, secure bounded same-user activation channel, same-window game switch, and rollback of current-game selection when candidate initialization or profile relinking fails.
+- Preserve explicit invalid/ambiguous-game review rather than automatically assigning generic mod payloads, and keep activation/deployment separate from archive categorization.
+- Keep exact-main H1 Windows build/release verification, positive installed-client E2E, updater rollback, and installed Heaven2 acceptance separate. Preserve issue #793's occupied-root fail-closed safeguard; archive pack decomposition remains tracked in #791.
+- Add exact-main red-to-green acceptance coverage in #792 for duplicate launches, game switching, no horizontal scroll, and Auto Populate Inbox ingestion.
+
 # v8.8.101 — 2026-11-08
 
 - Repair confirmed GitHub GH013 protected-main evidence persistence (Windows Release Gate run 42448738104) without disabling the required pull-request or status checks.
