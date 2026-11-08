@@ -1018,6 +1018,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         AutoPopulateResult? result = null;
+        var completed = false;
         await RunBusy(
             "mods.auto-populate",
             "Auto Populating Mods",
@@ -1105,9 +1106,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                         NewlyImported = inboxResult.Imported
                     },
                     ct);
+                completed = true;
             });
 
-        if (result is null) return;
+        if (!completed || result is null) return;
         if (StagedCount > 0)
             await Apply();
         else
