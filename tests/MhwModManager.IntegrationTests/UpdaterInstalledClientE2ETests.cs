@@ -106,8 +106,9 @@ public sealed class UpdaterInstalledClientE2ETests
             var successSentinelsBefore = await SnapshotSentinelsAsync(successInstall, TestToken);
 
             var updaterRoot = UpdatePackageStager.GetUpdaterRoot();
-            if (Directory.Exists(updaterRoot))
-                Directory.Delete(updaterRoot, true);
+            // A self-hosted Windows runner may share a user profile with a real
+            // updater. Never delete that user's existing pending/staging state.
+            RequireUnoccupiedUpdaterRoot(updaterRoot);
             UpdatePackageStager.EnsureUpdaterRoot(updaterRoot);
 
             var oldMarker = await ReleaseInstallMarker.LoadAsync(successInstall, TestToken);
@@ -643,6 +644,54 @@ public sealed class UpdaterInstalledClientE2ETests
             "Mods");
         registry.Upsert(profile);
         registry.SetActive(profile.Id);
+    }
+
+    [Fact]
+    public void Installed_e2e_rejects_foreign_updater_state_without_deleting_it()
+    {
+        var sandbox = Path.Combine(Path.GetTempPath(),
+            "mhwmm-e2e-guard-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(sandbox);
+        var pending = Path.Combine(sandbox, UpdateProtocol.PendingFileName);
+        try
+        {
+            File.WriteAllText(pending, "UNRELATED-UPDATER-STATE");
+            var error = Assert.Throws<InvalidOperationException>(
+                () => RequireUnoccupiedUpdaterRoot(sandbox));
+            Assert.Contains("refusing to delete", error.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("UNRELATED-UPDATER-STATE", File.ReadAllText(pending));
+        }
+        finally
+        {
+            Directory.Delete(sandbox, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Installed_e2e_accepts_a_clean_runner_root_without_mutation()
+    {
+        var sandbox = Path.Combine(Path.GetTempPath(),
+            "mhwmm-e2e-clean-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(sandbox);
+        try
+        {
+            RequireUnoccupiedUpdaterRoot(sandbox);
+            Assert.Empty(Directory.EnumerateFileSystemEntries(sandbox));
+        }
+        finally
+        {
+            Directory.Delete(sandbox, recursive: true);
+        }
+    }
+
+    private static void RequireUnoccupiedUpdaterRoot(string updaterRoot)
+    {
+        if (!Directory.Exists(updaterRoot)) return;
+        if ((File.GetAttributes(updaterRoot) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException("Updater E2E root is a reparse point; refusing unsafe test setup.");
+        if (Directory.EnumerateFileSystemEntries(updaterRoot).Any())
+            throw new InvalidOperationException(
+                "Updater E2E needs a dedicated empty Windows updater state root; refusing to delete existing pending, staged, transaction, or unrelated user state.");
     }
 
     private static void SeedSentinels(string installRoot)
