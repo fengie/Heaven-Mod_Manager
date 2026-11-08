@@ -16,6 +16,7 @@ public static class GameDownloadArchiveStore
     public static async Task<string> SaveAsync(
         string downloadsRoot,string sourceArchive,string modName,string expectedSha256,CancellationToken ct=default)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(downloadsRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceArchive);
         ArgumentException.ThrowIfNullOrWhiteSpace(expectedSha256);
@@ -102,6 +103,7 @@ public static class GameDownloadArchiveStore
 
     private static async Task VerifyExistingAsync(string destination,string expectedSha256,CancellationToken ct)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         if((File.GetAttributes(destination)&FileAttributes.ReparsePoint)!=0)
             throw new InvalidDataException("Saved download destination is a reparse point.");
         await using var input=new FileStream(destination,FileMode.Open,FileAccess.Read,FileShare.Read,BufferSize,FileOptions.Asynchronous|FileOptions.SequentialScan);
