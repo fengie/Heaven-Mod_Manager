@@ -558,4 +558,15 @@ if($classifierIndex -lt 0 -or $restoreIndex -lt 0 -or $classifierIndex -ge $rest
   throw 'Installed-client E2E eligibility classification must precede expensive restore/build work.'
 }
 
+
+# Protected main requires PR-only evidence promotion. A green verification,
+# signed release or E2E result is not authority to push directly to main.
+Assert-Equal $false ($releaseWorkflow.Contains('git push origin HEAD:main')) 'Windows release evidence never directly pushes protected main'
+Assert-Equal $true ($releaseWorkflow.Contains('git push origin "HEAD:refs/heads/$evidenceBranch"')) 'Windows release stages evidence under a bounded PR-only ref'
+Assert-Equal $true ($releaseWorkflow.Contains('EVIDENCE_PENDING_PR')) 'Windows release reports source evidence awaiting enforced PR admission'
+Assert-Equal $false ($releaseWorkflow.Contains('Persist hosted Windows verification evidence [skip ci]')) 'Evidence PR must not suppress its required checks'
+Assert-Equal $false ($installedE2EWorkflow.Contains('git push origin HEAD:main')) 'Updater installed E2E never directly pushes protected main'
+Assert-Equal $true ($installedE2EWorkflow.Contains('git push origin "HEAD:refs/heads/$evidenceBranch"')) 'Updater installed E2E stages durable evidence under a bounded PR ref'
+Assert-Equal $true ($installedE2EWorkflow.Contains('EVIDENCE_PENDING_PR')) 'Updater installed E2E reports source evidence awaiting enforced PR admission'
+
 Write-Host 'PASS: updater release publication policy' -ForegroundColor Green
