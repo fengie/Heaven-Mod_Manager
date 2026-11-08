@@ -15,7 +15,9 @@ Current integrated source version: **8.8.102**. Immutable release and installed-
 
 ## Verification boundary
 
-The v8.8.102 feature PR verification completed **26/26 stages, 0 failed**, with all four red-to-green baseline probes passing on H1. The first canonical main Windows Release Gate (run `42463658105` on source `190858ad842deff645bcc836be3ab24fe09cc19a`) failed a version mismatch: handoff-manifest currentVersion 8.8.101 versus VERSION.txt 8.8.102. All 432 integration, 342 core and 112 automation tests passed. PR #794 corrected the manifest and canonical current-state version data. A new main run is still required before declaring v8.8.102 release verification or publication.
+Current hosted-Windows closure: v8.8.102 source `4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4` passed run `42465970556` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.102-heaven-windows-closure.log`.
+
+The tested source remains `4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Next required action
 

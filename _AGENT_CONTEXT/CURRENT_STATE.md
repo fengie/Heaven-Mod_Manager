@@ -11,11 +11,9 @@ This is the canonical state record of the merged v8.8.102 feature source, not a 
 
 ## Verification boundary
 
-The exact v8.8.102 PR source `8986cd4af6bd5f886d093e1b404b773095387c9a` passed 26/26 Windows verification stages and all associated strict build, security, updater contract, and README gates. It merged into `main` as `190858ad842deff645bcc836be3ab24fe09cc19a`.
+Current hosted-Windows closure: v8.8.102 source `4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4` passed run `42465970556` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.102-heaven-windows-closure.log`.
 
-**The first exact-main v8.8.102 Windows Release Gate, run `42463658105`, failed governance parity:** `handoff-manifest currentVersion must match VERSION.txt`. The test suite itself was green (432 integration, 342 core and 112 automation passing), but the release verification did not pass and no v8.8.102 publication can be claimed from that run. This metadata repair must be merged and then independently verified again on the resulting main SHA.
-
-The immutable v8.8.101 release `updater-main-495` belongs only to exact source `446e933f778dae8f2da0238951e28b8b84f3f0b0`. Its previous installed-client E2E attempt failed closed because the shared updater state root was nonempty (issue #793). A green classification-only workflow with the actual updater job skipped does not prove successful installed updates or rollbacks.
+The tested source remains `4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Next required action
 

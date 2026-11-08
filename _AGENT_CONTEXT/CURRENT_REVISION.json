@@ -8,12 +8,12 @@
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
     "status":  "v8.8.102-integrated-feature-source-awaiting-exact-main-windows-release-closure",
-    "nextMilestone":  "Pass exact-main H1 Windows Release Gate for integrated v8.8.102 with canonical handoff-version parity, publish immutable updater only after verification, stage exact-source allowlisted evidence on a protected PR branch, and separately establish installed-client E2E/Heaven2 proof.",
-    "nextRequiredAction":  "Merge version-matched handoff-manifest, CURRENT_REVISION and CURRENT_STATE repair through normal enforced PRs. Run exact main Windows Release Gate after integration; verify 26/26 stages, version 8.8.102, SHA, package hash, signed/provenance status and publication. Review PR-based evidence. Keep issue #793 E2E isolation and actual installed Heaven2/NieR health open; never delete occupied user-owned updater state or infer deployment from a green source build.",
-    "verificationAppliesToCommit":  "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-    "lastClosedVerificationCommit":  "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-    "lastClosedVerificationRun":  "v8.8.99 source c08b31c5327522c5896704d7a24b5ddc6f70b9c4: hosted Windows verification run 38006379575 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "Last canonically closed verified Windows evidence remains v8.8.99 source c08b31c5327522c5896704d7a24b5ddc6f70b9c4 run 38006379575. v8.8.101 source 446e933f778dae8f2da0238951e28b8b84f3f0b0 passed 26/26 H1 Windows release, published updater-main-495, but installed-client E2E blocked on an occupied shared updater root and its evidence branch needs normal PR promotion. v8.8.102 integrated source 190858ad842deff645bcc836be3ab24fe09cc19a initially failed main Windows release run 42463658105 at handoff-manifest currentVersion drift; all 432 integration, 342 core, 112 automation tests passed on that run. Exact-main Windows closure and immutable publication remain pending this metadata repair.",
+    "nextMilestone":  "Current v8.8.102 hosted Windows verification is closed; continue the highest-priority actionable unowned item from _AGENT_CONTEXT/PROJECT_PLAN.md while preserving unresolved external security gates.",
+    "nextRequiredAction":  "Refresh canonical main and live ownership, then continue the next non-overlapping actionable project-plan item; do not reintegrate or rerun the already-verified v8.8.102 source solely because the evidence-only persistence commit advanced main.",
+    "verificationAppliesToCommit":  "4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4",
+    "lastClosedVerificationCommit":  "4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4",
+    "lastClosedVerificationRun":  "v8.8.102 source 4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4: hosted Windows verification run 42465970556 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.102-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.102 exact source 4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4 passed hosted Windows verification run 42465970556. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -45,8 +45,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-                                          "runId":  38006379575,
-                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log"
+                                          "sourceSha":  "4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4",
+                                          "runId":  42465970556,
+                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.102-heaven-windows-closure.log"
                                       }
 }
