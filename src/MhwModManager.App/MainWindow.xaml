@@ -258,7 +258,7 @@
 
                     <Border Grid.Row="1" Margin="0,6,0,6" Style="{StaticResource SubtleCard}" Padding="8">
                         <Grid>
-                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel Margin="0,0,12,0" VerticalAlignment="Center">
@@ -304,21 +304,19 @@
                                         <Button Content="{Binding RevalidateViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Revalidate" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show mods that should be checked again after a game update."/>
                                         <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Show enabled mods whose files are completely replaced by other enabled mods."/>
                                     </StackPanel>
-                                    <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
-                                    <TextBlock Text="AUTO SETUP" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <Button Content="Auto Populate" Command="{Binding AutoPopulateCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="11,5" Margin="2,0" ToolTip="Automatically enable and apply the largest safe set of installed mods. Required dependencies and texture providers are included only when the complete setup stays conflict-free."/>
-                                    <Border Width="1" Height="24" Margin="10,0" Background="{StaticResource Border}"/>
-                                    <StackPanel>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                            <Button Content="{Binding EnableVisibleLabel}" Command="{Binding EnableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="{Binding VisibleBulkScopeHelp}" AutomationProperties.Name="{Binding EnableVisibleLabel}" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
-                                            <Button Content="{Binding DisableVisibleLabel}" Command="{Binding DisableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="{Binding VisibleBulkScopeHelp}" AutomationProperties.Name="{Binding DisableVisibleLabel}" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
-                                            <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="{Binding VisibleBulkScopeHelp}" AutomationProperties.Name="{Binding RefreshVisibleLabel}" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
-                                        </StackPanel>
-                                        <TextBlock Margin="2,4,0,0" Text="{Binding VisibleBulkScopeHelp}" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
-                                    </StackPanel>
                                 </StackPanel>
                             </ScrollViewer>
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8,0,0">
+                                <Button Content="Auto Populate" Command="{Binding AutoPopulateCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="0,0,12,0"
+                                        ToolTip="Import sorted Inbox packages, then enable and apply the largest safe compatible set of mods."/>
+                                <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Button Content="Select All" Command="{Binding EnableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
+                                        ToolTip="Stage enable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Select all visible mods"/>
+                                <Button Content="Deselect All" Command="{Binding DisableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
+                                        ToolTip="Stage disable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Deselect all visible mods"/>
+                                <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5"
+                                        ToolTip="{Binding VisibleBulkScopeHelp}"/>
+                            </StackPanel>
                         </Grid>
                     </Border>
 
