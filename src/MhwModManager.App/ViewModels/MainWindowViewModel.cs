@@ -458,7 +458,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     partial void OnUnmanagedFileCountChanged(int value)=>OnPropertyChanged(nameof(UnmanagedAdoptionLabel));
-    partial void OnManualFileScanCompletedChanged(bool value)=>OnPropertyChanged(nameof(UnmanagedAdoptionLabel));
+    partial void OnManualFileScanCompletedChanged(bool value)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(UnmanagedAdoptionLabel));
+    }
     partial void OnSelectedModChanged(ModRowViewModel? value)
     {
         if(value is null)return;
