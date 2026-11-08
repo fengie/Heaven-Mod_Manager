@@ -1,3 +1,11 @@
+# v8.9.0 — 2026-11-07
+
+- Stop empty-library startup from hashing unmanaged live game assets and remove automatic inference of vanilla Data folders as mod roots (#784).
+- Organize future installed packages and verified archive downloads by canonical game ID under Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}; read legacy libraries without moving user data (#785).
+- Preserve uploaded and catalog-acquired archives with hash verification, keep updater manifests away from persistent user-owned downloads, and verify updater apply/rollback sentinels.
+- Make catalog tests independent of expiring production compliance dates while retaining fail-closed provider checks; serialize updater integration tests across Windows CI processes.
+- Treat published update availability, installed-client E2E and physical NieR startup as separate acceptance boundaries; do not infer deployment from GitHub merging.
+
 # v8.8.99 — 2026-10-05
 
 - Make the concurrent SDK-isolation regression hermetic by testing sibling SDK-root/marker integrity directly instead of coupling the security invariant to repeated external `dotnet --version` startup latency.

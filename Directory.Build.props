@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.99</Version>
-    <InformationalVersion>8.8.99-hermetic-sdk-isolation-verification</InformationalVersion>
+    <Version>8.9.0</Version>
+    <InformationalVersion>8.9.0-game-scoped-mod-library-startup</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

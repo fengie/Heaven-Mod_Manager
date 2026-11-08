@@ -1,14 +1,21 @@
-# v8.8.99 — MHW Manual Mod Manager
+# v8.9.0 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **October 9, 2026 · 6:45:59 PM EDT** _(repo-enforced)_
+> ⏱️ Last README update: **November 7, 2026 · 11:19:30 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.99**.
+Current product version: **8.9.0**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.9.0 — game-scoped library and empty-startup repair
+
+- Stop empty-library startup from hashing unmanaged live game assets and remove automatic inference of vanilla Data folders as mod roots (#784).
+- Organize future installed packages and verified archive downloads by canonical game ID under Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}; read legacy libraries without moving user data (#785).
+- Preserve uploaded and catalog-acquired archives with hash verification, keep updater manifests away from persistent user-owned downloads, and verify updater apply/rollback sentinels.
+- Make catalog tests independent of expiring production compliance dates while retaining fail-closed provider checks; serialize updater integration tests across Windows CI processes.
 
 ## v8.8.99 — hermetic SDK-isolation verification
 
@@ -22,14 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Resume existing cursors without restarting already persisted pages; already-exhausted scopes remain local no-ops.
 - Reject repeated cursors and empty continuation pages so malformed providers cannot create infinite indexing loops.
 - Keep Nexus coverage honest: this slice does not claim unsupported full-catalog Nexus discovery, and #558 remains open for provider breadth plus end-to-end scale/performance acceptance.
-
-## v8.8.97 — CurseForge Browse Mods pagination
-
-- Reuse the shared paged-provider contract for CurseForge so **Load More** continues through the existing provider-neutral Browse Mods path.
-- Persist a validated non-negative search index as the continuation and derive exhaustion from response pagination metadata.
-- Reject invalid cursors before transport while preserving the existing CurseForge provider boundaries.
-- Add deterministic continuation and exhaustion coverage without introducing provider-specific UI state.
-- #558 remains open for remaining provider breadth and end-to-end scale/performance acceptance.
 
 ## Current plans & progress
 
@@ -80,7 +79,7 @@ Offline metadata (`mhw-manager.meta.json`, common `meta.ini` fields, stored sour
 
 ### Manual-install adoption
 
-At startup the manager counts untracked files already present under the live `nativePC`. **Adopt manual files** copies those files into a new immutable source package under `Mods` without changing the live game tree. The adopted path + SHA-256 is remembered; unchanged adopted files stop being offered repeatedly, while later external edits become visible again.
+Initial UI startup does not recursively hash unmanaged game files. The explicit **Bring In Manual Mods** action scans the configured live mod folder when requested, then copies selected unmanaged files into an immutable package in the active game's `Mods by Game/<game-id>/Installed` without modifying the live game tree. Existing MHW `Mods/` and other games' historical libraries remain indexed without moving the files; adopted path and SHA-256 history is preserved.
 
 ### Texture previews
 
