@@ -108,7 +108,7 @@ public sealed partial class MainWindowViewModel
         var folders = gameIntake!.LoadSources();
         AutoSortFolders.Clear();
         foreach (var path in folders) AutoSortFolders.Add(path);
-        SelectedAutoSortFolder = folders.FirstOrDefault();
+        SelectedAutoSortFolder = folders.Count == 0 ? null : folders[0];
         if (folders.Count == 0)
             AutoSortStatusText = "No folders monitored. Add a source once to auto-sort future downloads.";
         else
