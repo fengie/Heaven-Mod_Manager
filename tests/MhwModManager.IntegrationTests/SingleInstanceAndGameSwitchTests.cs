@@ -58,6 +58,40 @@ public sealed class SingleInstanceAndGameSwitchTests
     }
 
     [Fact]
+    public void Relinking_an_inactive_candidate_must_not_activate_it_before_commit()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "umm-relink-lease-" + Guid.NewGuid().ToString("N"));
+        var firstRoot = Path.Combine(root, "First");
+        var oldRoot = Path.Combine(root, "OldSecond");
+        var newRoot = Path.Combine(root, "RelinkedSecond");
+        Directory.CreateDirectory(firstRoot);
+        Directory.CreateDirectory(newRoot);
+        var executable = Path.Combine(newRoot, "SecondGame.exe");
+        File.WriteAllBytes(executable, [0x4d, 0x5a]);
+        try
+        {
+            var registry = new GameProfileRegistry(Path.Combine(root, "State"));
+            var first = GameProfile.Generic("first-game", "First Game", firstRoot, "First.exe", "Mods");
+            var second = GameProfile.Generic("second-game", "Second Game", oldRoot, "SecondGame.exe", "Mods");
+            registry.Upsert(first);
+            registry.Upsert(second);
+            registry.SetActive(first.Id);
+
+            var repaired = registry.RepairFromExecutable(second, executable, activate: false);
+            Assert.Equal(second.Id, repaired.Id);
+            Assert.Equal(first.Id, registry.GetActive()?.Id);
+            Assert.True(File.Exists(repaired.ExecutablePath));
+            Assert.Equal(repaired, registry.Load().Single(p => p.Id == second.Id));
+        }
+        finally
+        {
+            try { Directory.Delete(root, recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
+
+    [Fact]
     public void In_process_game_switch_does_not_spawn_a_new_executable()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
