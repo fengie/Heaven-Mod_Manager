@@ -412,9 +412,10 @@ public sealed partial class GameProfileRegistry
             }
         }catch(UnauthorizedAccessException){}
         var paksRoot=FindExisting(root,@"Content\Paks");if(paksRoot is not null)return("unreal-paks",paksRoot);
-        var data=FindExisting(root,"Data","data");if(data is not null)return("data-folder",data);
         var mods=FindExisting(root,"Mods","mods");if(mods is not null)return("mods-folder",mods);
         if(Directory.Exists(Path.Combine(root,"reframework")))return("reframework","reframework");
+        // Data is normally a base-game asset directory, not proof of an installable mod root.
+        // Keep manually configured Data profiles intact, but do not infer them for new games.
         return("generic-root",string.Empty);
     }
 
