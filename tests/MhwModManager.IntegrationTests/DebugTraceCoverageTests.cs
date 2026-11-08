@@ -192,7 +192,12 @@ public sealed class DebugTraceCoverageTests
     {
         var root = FindRepositoryRoot();
         var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
-        Assert.Contains("Task.Run(()=>s.Adoption.CountAsync(ct),ct)", viewModel, StringComparison.Ordinal);
+        var initializeStart = viewModel.IndexOf("public async Task InitializeAsync()", StringComparison.Ordinal);
+        var initializeEnd = viewModel.IndexOf("partial void OnSelectedTabChanged", initializeStart, StringComparison.Ordinal);
+        Assert.True(initializeStart >= 0 && initializeEnd > initializeStart);
+        Assert.DoesNotContain("s.Adoption.CountAsync", viewModel[initializeStart..initializeEnd], StringComparison.Ordinal);
+        // The manual-adoption scan is explicitly invoked on demand, not on startup.
+        Assert.Contains("await s.Adoption.AdoptAsync(ct);", viewModel, StringComparison.Ordinal);
         Assert.Contains("var loaded=await Task.Run(async ()=>", viewModel, StringComparison.Ordinal);
         Assert.Contains("var snap=await s.PlannerSnapshots.LoadAsync(enabledIds,ct);", viewModel, StringComparison.Ordinal);
         Assert.Contains("var suspects=await Task.Run(()=>s.Issues.GetActiveAsync(ct),ct)", viewModel, StringComparison.Ordinal);
