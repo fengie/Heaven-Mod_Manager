@@ -81,6 +81,17 @@ public sealed class GameModIntakeTests : IDisposable
             Assert.True(File.Exists(Path.Combine(source, "NieR Automata Outfit.zip")));
             Assert.True(File.Exists(Path.Combine(source, "Unknown.zip")));
 
+            // Smart Inbox archives processed imports. A second intake scan must not
+            // reintroduce them just because the destination Inbox is now empty.
+            foreach (var id in new[] { "monster-hunter-world", "nier-automata" })
+            {
+                var inbox = Path.Combine(home, "Mods by Game", id, "Inbox");
+                var processed = Path.Combine(inbox, "Processed");
+                Directory.CreateDirectory(processed);
+                foreach (var file in Directory.GetFiles(inbox))
+                    File.Move(file, Path.Combine(processed, Path.GetFileName(file)));
+            }
+
             var again = await sorter.ScanAsync(TestToken);
             Assert.Equal(0, again.Routed);
             Assert.Equal(2, again.AlreadyPresent);
