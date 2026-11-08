@@ -68,8 +68,21 @@ public sealed class GameModIntakeService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!File.Exists(settingsPath)) return [];
-        var sources = JsonSerializer.Deserialize<string[]>(File.ReadAllText(settingsPath))
-            ?? throw new InvalidDataException("Auto-sort source configuration is null.");
+        RefuseReparseComponents(settingsPath);
+        using var reader = new FileStream(settingsPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        if (reader.Length > 16 * 1024)
+            throw new InvalidDataException("Auto-sort source configuration exceeds its 16 KiB limit.");
+        using var textReader = new StreamReader(reader, Encoding.UTF8, true, 1024, leaveOpen: true);
+        string[] sources;
+        try
+        {
+            sources = JsonSerializer.Deserialize<string[]>(textReader.ReadToEnd())
+                ?? throw new InvalidDataException("Auto-sort source configuration is null.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException("Auto-sort source configuration is malformed.", ex);
+        }
         if (sources.Length > MaxSources || sources.Any(path => string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path)))
             throw new InvalidDataException("Auto-sort source configuration contains an invalid path.");
         return sources.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -202,6 +215,9 @@ public sealed class GameModIntakeService
             var info = await archive.InspectAsync(source, ct).ConfigureAwait(false);
             if (info.HasSuspiciousPaths)
                 throw new InvalidDataException("Unsafe archive paths require manual review.");
+            if (info.Entries.Any(entry => !entry.IsDirectory && IsSupportedArchive(entry.Key)))
+                throw new InvalidDataException(
+                    "This pack contains nested mod archives; keep it intact for Universal Archive Importer review.");
             paths = info.Entries.Take(MaxFolderFiles).Select(entry => entry.Key).ToArray();
         }
         var declared = isDirectory ? ReadFolderGameHint(source) : ReadArchiveGameHint(source);
@@ -416,7 +432,8 @@ public sealed class GameModIntakeService
             if (File.Exists(path) && new FileInfo(path).Length <= 16384)
             {
                 RefuseReparseComponents(path);
-                var hint = TryReadJsonGame(File.ReadAllText(path));
+                using var input = File.OpenRead(path);
+                var hint = ReadBoundedManifestGame(input);
                 if (!string.IsNullOrWhiteSpace(hint)) return hint;
             }
         }
@@ -428,18 +445,33 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!Path.GetExtension(archive).Equals(".zip", StringComparison.OrdinalIgnoreCase)) return null;
         using var zip = ZipFile.OpenRead(archive);
+        string? declared = null;
         foreach (var entry in zip.Entries.Take(1024))
         {
             var filename = Path.GetFileName(entry.FullName.Replace('\\', '/'));
             if (filename is null || !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
                 .Contains(filename, StringComparer.OrdinalIgnoreCase)) continue;
             if (entry.Length > 16384 || entry.CompressedLength > 16384) continue;
-            using var reader = new StreamReader(entry.Open(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-            var text = reader.ReadToEnd();
-            var hint = TryReadJsonGame(text);
-            if (!string.IsNullOrWhiteSpace(hint)) return hint;
+            using var input = entry.Open();
+            var hint = ReadBoundedManifestGame(input);
+            if (string.IsNullOrWhiteSpace(hint)) continue;
+            if (declared is not null &&
+                !GameProfile.NormalizeId(hint).Equals(GameProfile.NormalizeId(declared),
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Archive declares conflicting target games; manual review required.");
+            declared = hint;
         }
-        return null;
+        return declared;
+    }
+
+    private static string? ReadBoundedManifestGame(Stream input)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Advertised sizes in untrusted compressed headers are not an actual-output limit.
+        using var reader = new StreamReader(input, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, 1024, leaveOpen: true);
+        var buffer = new char[16 * 1024 + 1];
+        var length = reader.ReadBlock(buffer, 0, buffer.Length);
+        return length <= 16 * 1024 ? TryReadJsonGame(new string(buffer, 0, length)) : null;
     }
 
     private static string? TryReadJsonGame(string text)
