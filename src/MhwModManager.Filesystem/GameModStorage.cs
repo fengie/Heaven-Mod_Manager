@@ -21,6 +21,7 @@ public static class GameModStorage
 {
     public static GameModStoragePaths Resolve(string managerHome,GameProfile game)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(managerHome);
         ArgumentNullException.ThrowIfNull(game);
         if(!GameProfile.IsCanonicalId(game.Id))
@@ -46,6 +47,7 @@ public static class GameModStorage
 
     public static void EnsureDirectories(GameModStoragePaths paths)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(paths);
         // Never follow a pre-existing reparse-point component into unrelated user-owned data.
         var libraryParent=Path.GetDirectoryName(paths.GameRoot)
