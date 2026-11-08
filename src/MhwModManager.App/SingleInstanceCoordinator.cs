@@ -16,6 +16,8 @@ namespace MhwModManager.App;
 /// </summary>
 public sealed class SingleInstanceCoordinator : IDisposable
 {
+    private static readonly byte[] ActivationRequest = Encoding.ASCII.GetBytes("ACTIVATE\n");
+    private static readonly byte[] ActivationAcknowledgement = Encoding.ASCII.GetBytes("OK\n");
     private readonly Mutex instanceMarker;
     private readonly string pipeName;
     private readonly CancellationTokenSource stop = new();
@@ -31,7 +33,10 @@ public sealed class SingleInstanceCoordinator : IDisposable
             using var __mhwTrace = MasterDebugLog.BeginMethod();
             var sid = WindowsIdentity.GetCurrent().User?.Value
                 ?? throw new InvalidOperationException("Windows identity unavailable for same-user instance ownership.");
-            return "Heaven-Mod-Manager|" + sid;
+            // Pipe names have no Local\\/Global\\ namespace. Include the interactive
+            // Windows session ID explicitly to prevent cross-desktop activation.
+            using var process = Process.GetCurrentProcess();
+            return "Heaven-Mod-Manager|" + sid + "|session=" + process.SessionId;
         }
     }
 
@@ -66,18 +71,16 @@ public sealed class SingleInstanceCoordinator : IDisposable
             try
             {
                 using var client = new NamedPipeClientStream(
-                    ".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+                    ".", pipeName, PipeDirection.InOut,
+                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                 using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 deadline.CancelAfter(TimeSpan.FromSeconds(2));
                 await client.ConnectAsync(deadline.Token).ConfigureAwait(false);
-                await using var writer = new StreamWriter(client, new UTF8Encoding(false), 128, leaveOpen: true)
-                {
-                    AutoFlush = true
-                };
-                using var reader = new StreamReader(client, Encoding.UTF8, true, 128, leaveOpen: true);
-                await writer.WriteLineAsync("ACTIVATE".AsMemory(), deadline.Token).ConfigureAwait(false);
-                return (await reader.ReadLineAsync(deadline.Token).ConfigureAwait(false))
-                    ?.Equals("OK", StringComparison.Ordinal) == true;
+                await client.WriteAsync(ActivationRequest, deadline.Token).ConfigureAwait(false);
+                await client.FlushAsync(deadline.Token).ConfigureAwait(false);
+                var response = new byte[ActivationAcknowledgement.Length];
+                await client.ReadExactlyAsync(response, deadline.Token).ConfigureAwait(false);
+                return response.AsSpan().SequenceEqual(ActivationAcknowledgement);
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested) { }
             catch (Exception ex) when (ex is IOException or TimeoutException or UnauthorizedAccessException)
@@ -101,16 +104,15 @@ public sealed class SingleInstanceCoordinator : IDisposable
                 await server.WaitForConnectionAsync(ct).ConfigureAwait(false);
                 using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 deadline.CancelAfter(TimeSpan.FromSeconds(3));
-                using var reader = new StreamReader(server, Encoding.UTF8, true, 128, leaveOpen: true);
-                await using var writer = new StreamWriter(server, new UTF8Encoding(false), 128, leaveOpen: true)
-                {
-                    AutoFlush = true
-                };
-                var request = await reader.ReadLineAsync(deadline.Token).ConfigureAwait(false);
-                if (request is null || request.Length > 16 || !request.Equals("ACTIVATE", StringComparison.Ordinal))
+                // Read a fixed number of bytes; ReadLineAsync would buffer unbounded
+                // untrusted text before the later length check.
+                var request = new byte[ActivationRequest.Length];
+                await server.ReadExactlyAsync(request, deadline.Token).ConfigureAwait(false);
+                if (!request.AsSpan().SequenceEqual(ActivationRequest))
                     continue;
                 onActivate();
-                await writer.WriteLineAsync("OK".AsMemory(), deadline.Token).ConfigureAwait(false);
+                await server.WriteAsync(ActivationAcknowledgement, deadline.Token).ConfigureAwait(false);
+                await server.FlushAsync(deadline.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
             catch (OperationCanceledException) { /* Bound a stalled same-user client. */ }
