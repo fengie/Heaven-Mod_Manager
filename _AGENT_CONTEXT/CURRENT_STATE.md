@@ -12,9 +12,9 @@ v8.8.101 is the next source/release candidate for repairing the post-publication
 
 ## Verification boundary
 
-**Current v8.8.101 release and installed-client closure are pending.** Last historical canonical Windows closure is v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`.
+Current hosted-Windows closure: v8.8.101 source `9fa8c50e07c877eb3ae65ae0a34ec3433950d3fb` passed run `42460412791` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.101-heaven-windows-closure.log`.
 
-The immediately preceding v8.8.100 source `33c861dcd2af5554d4f225d8ea79a51ad72e1f91` passed 26/26 Windows verification stages, build and provenance and was published as immutable public updater `updater-main-493` (run `42448738104`). That run nevertheless **failed overall** at direct evidence `git push origin HEAD:main` with GH013; it is not a completed protected-main evidence or installed acceptance receipt. The old failed evidence remains diagnostically useful and must not be rewritten as green.
+The tested source remains `9fa8c50e07c877eb3ae65ae0a34ec3433950d3fb` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Next required action
 

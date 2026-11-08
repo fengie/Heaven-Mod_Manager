@@ -14,9 +14,9 @@ Current product version: **8.8.101**.
 
 ## Verification boundary
 
-v8.8.101 **is not yet verified, published, or installed**. Historical last closed Windows verification: v8.8.99 source `c08b31c5327522c5896704d7a24b5ddc6f70b9c4`, run `38006379575`, evidence `_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.101 source `9fa8c50e07c877eb3ae65ae0a34ec3433950d3fb` passed run `42460412791` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.101-heaven-windows-closure.log`.
 
-v8.8.100 immutable updater build `updater-main-493` was published for source `33c861dcd2af5554d4f225d8ea79a51ad72e1f91`. Windows run `42448738104` passed 26/26 verification stages, app packaging, signed provenance, and immutable publication, **but failed overall** when a direct evidence-only `git push origin HEAD:main` hit protected-main GH013 (PR required and required `enforce` status). The release is published, but its canonical repo evidence remains unpromoted. Never reinterpret that failed run as full green.
+The tested source remains `9fa8c50e07c877eb3ae65ae0a34ec3433950d3fb` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Next action
 
