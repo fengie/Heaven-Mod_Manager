@@ -313,6 +313,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             MasterDebugLog.Write("STARTUP-UI","stage=ready");
         },rethrowOnFailure:true);
         _=AutoMetadataLoopAsync(backgroundCts.Token);
+        StartAutoSorting();
     }
 
     partial void OnSelectedTabChanged(int value)
@@ -1663,6 +1664,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(disposed)return;
         disposed=true;
+        DisposeAutoSorting();
         backgroundCts.Cancel();
         backgroundCts.Dispose();
         deferredPageGate.Dispose();
