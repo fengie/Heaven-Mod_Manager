@@ -1,4 +1,6 @@
-# v8.8.103 mod-boundary importer — canonical source and release candidate
+# v8.8.103 mod-boundary importer — canonical source and release preparation
+
+This is the canonical state record for the v8.8.103 integrated feature and pending immutable publication.
 
 ## Source truth
 
@@ -6,7 +8,7 @@
 - PR #796 merged into protected main as `03219436e4f110dfa9b63a66452d94a2bb42553e`. Candidate `7896195b6e02581171b7395d487b33fbdc16c289` passed 26/26 Windows feature stages, 342 core, 112 automation and 453 integration tests. No v8.8.103 release or installed proof is asserted here.
 - Product change: mixed-folder and archive boundaries, per-mod digest/replay receipts, game-independent Inbox routing, one-shot import, fail-closed handling of unknown/FOMOD options. Preserves original files, protected live game installations, legacy libraries, SQLite/deployment journals and updater trust gates.
 
-## Release
+## Verification boundary
 
 v8.8.103 metadata is pending exact PR checks and expected-head protected merge. Then prove exact-main Windows Release Gate 26/26, immutable updater tag and manifest/artifact digest; promote only allowlisted source evidence by normal PR. Never overwrite/re-sign a prior release.
 

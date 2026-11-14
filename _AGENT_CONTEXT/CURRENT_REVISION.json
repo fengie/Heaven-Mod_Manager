@@ -7,7 +7,7 @@
   "currentVersion": "8.8.103",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.103-release-metadata-candidate-awaiting-exact-main-Windows-publication",
+  "status": "v8.8.103-integrated-source-awaiting-exact-main-Windows-release",
   "nextMilestone": "After the versioned PR merges, pass exact-main Windows Release Gate 26/26 and verify a new immutable updater-main build, exact source SHA, artifact/manifest digest, then collect independent safe installed-client and Heaven2 evidence.",
   "nextRequiredAction": "Verify release metadata PR exact-head native checks; merge only with passing gates and correct ownership. Verify exact-main v8.8.103 Windows Release Gate and immutable release. Never force-publish an existing version or delete occupied updater LocalApplicationData (#793). Preserve source evidence via protected PR and obtain installed-client/H2 source/health separately. Issue #791 still has RAR/7z and review UX gaps.",
   "verificationAppliesToCommit": "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
