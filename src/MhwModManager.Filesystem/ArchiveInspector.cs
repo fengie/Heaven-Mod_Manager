@@ -36,7 +36,7 @@ public sealed class ArchiveInspector
     public ArchiveInspection Inspect(string archivePath, CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}");
-        using var archive=ArchiveFactory.OpenArchive(archivePath);
+        using var archive=OpenArchiveOrThrowInvalidData(archivePath);
         var entries=new List<ArchiveEntryInfo>();
         long total=0;
         bool bad=false;
@@ -90,7 +90,7 @@ public sealed class ArchiveInspector
         if(!Directory.Exists(trusted))throw new InvalidDataException("Trusted extraction root does not exist.");
         EnsureSafeDirectoryPath(trusted,destinationFull);
         var root=destinationFull+Path.DirectorySeparatorChar;
-        using var archive=ArchiveFactory.OpenArchive(archivePath);
+        using var archive=OpenArchiveOrThrowInvalidData(archivePath);
         long declaredTotal=0;
         long actualTotal=0;
         int count=0;
@@ -145,6 +145,20 @@ public sealed class ArchiveInspector
                 TryDeleteOwnedOutput(dest,primaryFailure);
                 throw;
             }
+        }
+    }
+
+    private static IArchive OpenArchiveOrThrowInvalidData(string archivePath)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        try
+        {
+            return ArchiveFactory.OpenArchive(archivePath);
+        }
+        catch (ArchiveOperationException ex)
+        {
+            throw new InvalidDataException(
+                "The selected mod archive is corrupt, unsupported, or cannot be inspected safely.", ex);
         }
     }
 
