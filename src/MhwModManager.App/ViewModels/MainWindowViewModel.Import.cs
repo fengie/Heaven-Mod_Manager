@@ -25,6 +25,18 @@ public sealed partial class MainWindowViewModel
             var originalHash=await s.Hashing.HashFileAsync(dlg.FileName,true,ct);
             var hasFomod=inspection.Entries.Any(entry =>
                 entry.Key.Replace('/','\\').EndsWith(@"fomod\ModuleConfig.xml",StringComparison.OrdinalIgnoreCase));
+            var boundaries = ModBoundaryDiscovery.Discover(
+                inspection.Entries.Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
+            if (!hasFomod && (boundaries.Candidates.Count > 1 ||
+                boundaries.Candidates.Any(candidate => candidate.Kind == ModBoundaryKind.Archive)))
+            {
+                EnsureGameIntake();
+                var report = await gameIntake!.ImportPathAsync(dlg.FileName, ct);
+                StatusText = $"Mod pack: {report.Routed} independent mods routed to per-game Inboxes, " +
+                    $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
+                    "Use Install Mods from Inbox for the active game. Original archive was preserved.";
+                return;
+            }
             if(hasFomod)
             {
                 var preparation=await s.Importer.PrepareFomodAsync(dlg.FileName,ct);
