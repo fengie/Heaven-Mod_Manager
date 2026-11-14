@@ -90,8 +90,10 @@ public static class ModBoundaryDiscovery
         // Loader roots are part of one mod's deployment layout, not independently installable mods.
         if (directories.Any(directory => LayoutRoots.Contains(directory)))
         {
-            if (archived.Length > 0)
-                return Review(prefix, "Nested archive beside a loader root needs package review.");
+            if (archived.Length > 0 ||
+                directories.Where(directory => !LayoutRoots.Contains(directory))
+                    .Any(directory => HasExplicitChildPackageEvidence(relative, directory)))
+                return Review(prefix, "Independent package evidence conflicts with a shared loader root.");
             return [new(Display(prefix), ModBoundaryKind.Folder, "One game installation root.")];
         }
 
@@ -105,6 +107,11 @@ public static class ModBoundaryDiscovery
         // Anonymous loose DLL/PAK/DDS files cannot be confidently separated or auto-installed.
         if (otherFiles.Length > 0)
         {
+            // A single root payload is one package even without a manifest. Its target
+            // game still requires independent classifier evidence before any routing.
+            if (otherFiles.Length == 1 && directories.Length == 0 && archived.Length == 0)
+                return [new(Display(prefix), ModBoundaryKind.Folder, "One root-level payload.")];
+
             // Standalone downloaded archives remain independently identifiable even when
             // the monitored folder also contains an unrelated loose download. The loose
             // payload remains in review, never silently omitted from the report.
@@ -191,6 +198,21 @@ public static class ModBoundaryDiscovery
             || file.StartsWith("thumb", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("cover", StringComparison.OrdinalIgnoreCase)
             || extension.Equals(".md", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasExplicitChildPackageEvidence(string[] relativePaths, string directory)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var prefix = directory + "/";
+        foreach (var path in relativePaths.Where(path =>
+            path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            var child = path[prefix.Length..];
+            if (PackageManifests.Contains(child)) return true;
+            var slash = child.IndexOf('/');
+            if (slash > 0 && LayoutRoots.Contains(child[..slash])) return true;
+        }
+        return false;
     }
 
     private static bool IsSupplementaryDirectory(string name)
