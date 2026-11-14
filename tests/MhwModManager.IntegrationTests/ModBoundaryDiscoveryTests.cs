@@ -193,6 +193,85 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         Assert.True(File.Exists(input));
     }
 
+    [Fact]
+    public async Task Loose_unknown_files_do_not_hide_independent_archive_mods()
+    {
+        var input = Path.Combine(home, "mixed");
+        Directory.CreateDirectory(input);
+        CreateZip(Path.Combine(input, "MHW Armor.zip"), "nativePC/pl/armor/armor.tex");
+        await File.WriteAllTextAsync(Path.Combine(input, "unknown.bin"), "unidentified", TestToken);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(1, result.Routed);
+        Assert.Equal(1, result.NeedsReview);
+        Assert.True(File.Exists(Path.Combine(input, "unknown.bin")));
+        Assert.True(File.Exists(Path.Combine(input, "MHW Armor.zip")));
+    }
+
+    [Fact]
+    public async Task Mixed_bundle_holds_fomod_child_without_blocking_independent_mods()
+    {
+        var input = Path.Combine(home, "mixed-installer.zip");
+        Directory.CreateDirectory(home);
+        CreateZip(input, "Fomod Child/fomod/ModuleConfig.xml",
+            "Fomod Child/options/Armor/nativePC/armor.tex",
+            "Separate Armor/nativePC/pl/armor/armor.tex");
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(1, result.Routed);
+        Assert.Equal(1, result.NeedsReview);
+        Assert.True(File.Exists(input));
+        Assert.Single(Directory.GetDirectories(Path.Combine(home, "Manager", "Mods by Game",
+            "monster-hunter-world", "Inbox")));
+    }
+
+    [Fact]
+    public async Task A_single_unpacked_mod_root_with_multiple_game_payload_files_remains_one_package()
+    {
+        var input = Path.Combine(home, "single");
+        var a = Path.Combine(input, "nativePC", "pl", "armor", "armor.tex");
+        var b = Path.Combine(input, "nativePC", "pl", "wp", "weapon.tex");
+        Directory.CreateDirectory(Path.GetDirectoryName(a)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(b)!);
+        await File.WriteAllTextAsync(a, "armor", TestToken);
+        await File.WriteAllTextAsync(b, "weapon", TestToken);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(1, result.Routed);
+        Assert.Single(Directory.GetDirectories(Path.Combine(home, "Manager", "Mods by Game",
+            "monster-hunter-world", "Inbox")));
+        Assert.True(File.Exists(a));
+        Assert.True(File.Exists(b));
+    }
+
+    [Fact]
+    public async Task Unsafe_archive_entries_never_publish_packages()
+    {
+        var input = Path.Combine(home, "unsafe.zip");
+        Directory.CreateDirectory(home);
+        CreateZip(input, "../escape.dll", "MHW Armor/nativePC/pl/armor/armor.tex");
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(0, result.Routed);
+        Assert.Equal(1, result.NeedsReview);
+        Assert.True(File.Exists(input));
+        Assert.False(Directory.Exists(Path.Combine(home, "Manager", "Mods by Game",
+            "monster-hunter-world", "Inbox")));
+        Assert.False(File.Exists(Path.Combine(home, "escape.dll")));
+    }
+
     private static void CreateZip(string path, params string[] entries)
     {
         using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
