@@ -203,6 +203,15 @@ public sealed class GameModIntakeService
     {
         public long RemainingExpandedBytes { get; private set; } = MaxArchiveBytes;
         public int RemainingEntries { get; private set; } = MaxEntriesPerSource;
+        public long RemainingActualBytes { get; private set; } = MaxArchiveBytes;
+
+        public void AccountActual(long bytes)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (bytes < 0 || bytes > RemainingActualBytes)
+                throw new InvalidDataException("Nested mod-pack output exceeded its cumulative actual-byte budget.");
+            RemainingActualBytes -= bytes;
+        }
 
         public void Account(ArchiveInspection inspection)
         {
@@ -222,7 +231,6 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
         var discovered = ModBoundaryDiscovery.Discover(paths);
-        var budget = new IntakeBudget();
         foreach (var candidate in discovered.Candidates)
         {
             ct.ThrowIfCancellationRequested();
@@ -238,7 +246,7 @@ public sealed class GameModIntakeService
                 RefuseReparseComponents(entry);
                 await ClassifyAndRouteAsync(root, entry,
                     candidate.Kind == ModBoundaryKind.Folder,
-                    games, output, receipts, ct, 0, budget).ConfigureAwait(false);
+                    games, output, receipts, ct, 0, new IntakeBudget()).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
             {
@@ -310,8 +318,20 @@ public sealed class GameModIntakeService
                 var trustedRoot = Path.GetDirectoryName(scratch)!;
                 try
                 {
+                    if (budget.RemainingActualBytes <= 0)
+                        throw new InvalidDataException("Nested mod-pack output exhausted its cumulative byte budget.");
                     await archive.ExtractSafelyAsync(source, scratch, trustedRoot,
-                        new ArchiveExtractionLimits(MaxArchiveBytes, MaxArchiveBytes), ct).ConfigureAwait(false);
+                        new ArchiveExtractionLimits(MaxArchiveBytes, budget.RemainingActualBytes), ct)
+                        .ConfigureAwait(false);
+                    long expandedBytes = 0;
+                    foreach (var file in SnapshotFolderFiles(scratch, ct))
+                    {
+                        var length = new FileInfo(file).Length;
+                        if (length > budget.RemainingActualBytes - expandedBytes)
+                            throw new InvalidDataException("Nested mod-pack actual expansion exceeded its budget.");
+                        expandedBytes += length;
+                    }
+                    budget.AccountActual(expandedBytes);
                     foreach (var candidate in discovery.Candidates)
                     {
                         ct.ThrowIfCancellationRequested();
