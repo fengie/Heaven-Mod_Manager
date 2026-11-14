@@ -1,14 +1,21 @@
-# v8.8.102 — MHW Manual Mod Manager
+# v8.8.103 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 8, 2026 · 3:13:42 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 14, 2026 · 6:34:13 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.102**.
+Current product version: **8.8.103**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.103 — separate mixed folders and mod archives
+
+- Add read-only boundary discovery for one-shot folder dumps and ZIP/RAR/7z mod packs; split clearly independent roots but retain loader trees, FOMOD installers and ambiguous loose files for review (#791, PR #796).
+- Route identified child packages to registered-game Inboxes independently of active selection; preserve original source files and repeat-safe child receipts without modifying live game installations.
+- Add **Import Folder Once** to Dashboard; support multi-mod archives through the existing Install Mod action while retaining single-mod import behavior.
+- Exact candidate source passed 26/26 Windows PR verification (342 core, 112 automation, 453 integration tests). Real RAR/7z fixtures, manual ambiguous-mod assignment, packaged WPF smoke and safe installed-client updater E2E remain unverified (#791, #793).
 
 ## v8.8.102 — automatic cross-game intake and in-place sessions
 
@@ -24,14 +31,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Keep public continuity evidence allowlisted: record passing verification and SHA-256 hashes of build/report/artifact instead of copying raw runner paths or private logs.
 - Route successful installed-client updater E2E evidence through the same protected-PR process without changing updater security, rollback requirements, or workflow token permissions.
 - Repair the confirmed post-publication `GH013` failure from [Windows release run 42448738104](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/42448738104). v8.8.100 build 493 and v8.8.101 build 495 are published for their exact source commits; physical installation remains unverified.
-
-## v8.8.100 — game-scoped library and empty-startup repair
-
-- Stop empty-library startup from hashing unmanaged live game assets and remove automatic inference of vanilla Data folders as mod roots (#784).
-- Organize future installed packages and verified archive downloads by canonical game ID under Mods by Game/<game-id>/{Installed,Downloads,Inbox,Archive}; read legacy libraries without moving user data (#785).
-- Preserve uploaded and catalog-acquired archives with hash verification, keep updater manifests away from persistent user-owned downloads, and verify updater apply/rollback sentinels.
-- Make catalog tests independent of expiring production compliance dates while retaining fail-closed provider checks; serialize updater integration tests across Windows CI processes.
-- Refuse to erase pre-existing Windows updater state during installed-client release E2E; require an unoccupied dedicated test root.
 
 ## Current plans & progress
 
