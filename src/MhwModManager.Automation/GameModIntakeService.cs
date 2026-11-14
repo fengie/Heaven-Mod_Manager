@@ -250,13 +250,14 @@ public sealed class GameModIntakeService
     private async Task ClassifyAndRouteAsync(
         string sourceRoot, string source, bool isDirectory, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
-        int nestedDepth = 0, IntakeBudget? budget = null)
+        int nestedDepth = 0, IntakeBudget? budget = null, string? provenance = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         budget ??= new IntakeBudget();
+        var reportSource = provenance ?? source;
         if (nestedDepth > MaxNestedArchiveDepth)
         {
-            output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+            output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
                 "Nested mod archives exceed the safe depth limit."));
             return;
         }
@@ -268,7 +269,7 @@ public sealed class GameModIntakeService
             if (paths.Any(path => path.Replace('\\', '/')
                 .EndsWith("fomod/ModuleConfig.xml", StringComparison.OrdinalIgnoreCase)))
             {
-                output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
                     "FOMOD installer options need manual selection; source left untouched."));
                 return;
             }
@@ -283,7 +284,7 @@ public sealed class GameModIntakeService
                 .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
             if (discovery.NeedsReview)
             {
-                output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
                     discovery.Candidates.First(candidate => candidate.Kind == ModBoundaryKind.Review).Evidence));
                 return;
             }
@@ -294,13 +295,13 @@ public sealed class GameModIntakeService
             {
                 if (discovery.Candidates.Count == 0)
                 {
-                    output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                    output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
                         "Archive has no safely identifiable mod packages."));
                     return;
                 }
                 if (nestedDepth >= MaxNestedArchiveDepth)
                 {
-                    output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                    output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
                         "Nested mod archives exceed the safe depth limit."));
                     return;
                 }
@@ -317,15 +318,16 @@ public sealed class GameModIntakeService
                         var child = candidate.RelativePath == "." ? scratch
                             : Path.Combine(scratch, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
                         RefuseReparseComponents(child);
+                        var childProvenance = reportSource + "!/" + candidate.RelativePath;
                         try
                         {
                             await ClassifyAndRouteAsync(sourceRoot, child,
                                 candidate.Kind == ModBoundaryKind.Folder,
-                                games, output, receipts, ct, nestedDepth + 1, budget).ConfigureAwait(false);
+                                games, output, receipts, ct, nestedDepth + 1, budget, childProvenance).ConfigureAwait(false);
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
                         {
-                            output.Add(new(child, null, GameModIntakeStatus.NeedsReview, ex.Message));
+                            output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, ex.Message));
                         }
                     }
                 }
@@ -352,7 +354,7 @@ public sealed class GameModIntakeService
         var detection = GameModIntakeClassifier.Classify(games, context, paths, declared);
         if (detection.Kind != GameModIntakeKind.Identified)
         {
-            output.Add(new(source, null, GameModIntakeStatus.NeedsReview, detection.Reason));
+            output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview, detection.Reason));
             return;
         }
         var owner = games.Single(game => game.Id.Equals(detection.GameId, StringComparison.OrdinalIgnoreCase));
@@ -362,7 +364,7 @@ public sealed class GameModIntakeService
         var wasCreated = isDirectory
             ? await CopyDirectoryIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, ct).ConfigureAwait(false)
             : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, ct).ConfigureAwait(false);
-        output.Add(new(source, owner.Id,
+        output.Add(new(reportSource, owner.Id,
             wasCreated ? GameModIntakeStatus.Routed : GameModIntakeStatus.AlreadyPresent,
             wasCreated ? detection.Reason : "Identical mod already exists in this game's Inbox or processed receipts."));
     }
