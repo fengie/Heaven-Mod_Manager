@@ -12,7 +12,14 @@ public sealed record ModBoundaryCandidate(string RelativePath, ModBoundaryKind K
 
 public sealed record ModBoundaryResult(IReadOnlyList<ModBoundaryCandidate> Candidates)
 {
-    public bool NeedsReview => Candidates.Any(candidate => candidate.Kind == ModBoundaryKind.Review);
+    public bool NeedsReview
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Candidates.Any(candidate => candidate.Kind == ModBoundaryKind.Review);
+        }
+    }
 }
 
 /// <summary>
@@ -73,7 +80,8 @@ public static class ModBoundaryDiscovery
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase).ToArray();
 
-        if (relative.Any(IsFomodConfiguration))
+        if (relative.Any(path => path.StartsWith("fomod/", StringComparison.OrdinalIgnoreCase)
+            && IsFomodConfiguration(path)))
             return Review(prefix, "Installer options must be selected; never split FOMOD variants.");
 
         var archived = directFiles.Where(IsArchive).Order(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -96,7 +104,19 @@ public static class ModBoundaryDiscovery
 
         // Anonymous loose DLL/PAK/DDS files cannot be confidently separated or auto-installed.
         if (otherFiles.Length > 0)
+        {
+            // Standalone downloaded archives remain independently identifiable even when
+            // the monitored folder also contains an unrelated loose download. The loose
+            // payload remains in review, never silently omitted from the report.
+            if (archived.Length > 0 && directories.Length == 0)
+            {
+                var separate = archived.Select(archive => new ModBoundaryCandidate(
+                    Join(prefix, archive), ModBoundaryKind.Archive, "Independent nested archive.")).ToList();
+                separate.AddRange(Review(prefix, "Unattributed loose files remain outside automatic import."));
+                return separate;
+            }
             return Review(prefix, "Loose files have no proven independent mod boundaries.");
+        }
 
         var meaningfulDirectories = directories.Where(directory => !IsSupplementaryDirectory(directory)
             || relative.Any(path => path.StartsWith(directory + "/", StringComparison.OrdinalIgnoreCase)
@@ -114,8 +134,8 @@ public static class ModBoundaryDiscovery
         {
             var child = Join(prefix, directory);
             var found = Analyze(paths, child, depth + 1);
-            if (found.Any(candidate => candidate.Kind == ModBoundaryKind.Review))
-                return Review(prefix, "Uncertain child folder prevents automatic boundary splitting.");
+            // Preserve independent siblings when one child needs review. The review
+            // candidate is reported separately and never auto-installed.
             candidates.AddRange(found);
         }
 
