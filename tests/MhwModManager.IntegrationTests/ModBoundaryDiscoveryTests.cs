@@ -272,6 +272,76 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         Assert.False(File.Exists(Path.Combine(home, "escape.dll")));
     }
 
+    [Fact]
+    public void Shared_loader_root_plus_separate_manifest_package_is_not_merged()
+    {
+        var result = ModBoundaryDiscovery.Discover(
+        [
+            "nativePC/pl/armor/base.tex",
+            "Another Mod/manifest.json",
+            "Another Mod/nativePC/pl/armor/other.tex"
+        ]);
+        Assert.Equal(ModBoundaryKind.Review, Assert.Single(result.Candidates).Kind);
+    }
+
+    [Fact]
+    public async Task A_single_loose_payload_file_in_a_named_archive_retains_single_mod_import()
+    {
+        var input = Path.Combine(home, "NieR Automata Plugin.zip");
+        Directory.CreateDirectory(home);
+        CreateZip(input, "OutfitPlugin.dll");
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var report = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(1, report.Routed);
+        Assert.Single(Directory.GetFiles(Path.Combine(home, "Manager", "Mods by Game",
+            "nier-automata", "Inbox")));
+    }
+
+    [Fact]
+    public async Task Excessively_nested_archives_stop_before_any_package_is_routed()
+    {
+        var bytes = CreateZipBytes("nativePC/pl/armor/test.tex");
+        for (var depth = 0; depth < 5; depth++)
+        {
+            using var output = new MemoryStream();
+            using (var zip = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                using var stream = zip.CreateEntry("next.zip").Open();
+                stream.Write(bytes);
+            }
+            bytes = output.ToArray();
+        }
+
+        var input = Path.Combine(home, "deep.zip");
+        Directory.CreateDirectory(home);
+        await File.WriteAllBytesAsync(input, bytes, TestToken);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(0, result.Routed);
+        Assert.Equal(1, result.NeedsReview);
+        Assert.True(File.Exists(input));
+    }
+
+    [Fact]
+    public void Dashboard_exposes_a_one_shot_folder_import_without_enabling_a_watcher()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        var xaml = File.ReadAllText(Path.Combine(root!.FullName, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var vm = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App",
+            "ViewModels", "MainWindowViewModel.AutoSort.cs"));
+        Assert.Contains("ImportModFolderCommand", xaml);
+        Assert.Contains("ImportPathAsync(picker.FolderName", vm);
+    }
+
     private static void CreateZip(string path, params string[] entries)
     {
         using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
