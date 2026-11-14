@@ -27,8 +27,8 @@ public sealed partial class MainWindowViewModel
                 entry.Key.Replace('/','\\').EndsWith(@"fomod\ModuleConfig.xml",StringComparison.OrdinalIgnoreCase));
             var boundaries = ModBoundaryDiscovery.Discover(
                 inspection.Entries.Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
-            if (!hasFomod && (boundaries.Candidates.Count > 1 ||
-                boundaries.Candidates.Any(candidate => candidate.Kind == ModBoundaryKind.Archive)))
+            if (boundaries.Candidates.Count > 1 ||
+                boundaries.Candidates.Any(candidate => candidate.Kind == ModBoundaryKind.Archive))
             {
                 EnsureGameIntake();
                 var report = await gameIntake!.ImportPathAsync(dlg.FileName, ct);
