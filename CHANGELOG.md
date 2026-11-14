@@ -1,3 +1,10 @@
+# v8.8.103 — 2026-11-14
+
+- Merge PR #796 into protected main at `03219436e4f110dfa9b63a66452d94a2bb42553e`: conservative mod-boundary discovery separates independent mods from mixed folders and nested ZIP/RAR/7z packs; game-scoped Inbox routing is independent of active-game selection.
+- Add Import Folder Once, repeat-safe child digests/receipts, bounded inspection/extraction and original-file preservation. Hold ambiguous loose payload, variant and FOMOD installer groups for review instead of guessing.
+- Exact Windows candidate head `7896195b6e02581171b7395d487b33fbdc16c289` passed 26/26 verification stages, 342 core, 112 automation and 453 integration tests. This is source verification, not installed-client or immutable release proof.
+- Issue #791 retains real RAR/7z fixtures, per-candidate manual assignment/preview, and installed WPF usability checks. Issue #793 retains independent safe updater E2E state isolation, update/rollback proof and physical Heaven2 evidence.
+
 # v8.8.102 — 2026-11-08
 
 - Integrate #789: designated-folder game mod classification and conservative per-game Inbox routing, original archive preservation, repeat-safe receipts, auto-populate Inbox intake, and wrapping visible controls.
