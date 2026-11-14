@@ -156,7 +156,17 @@ public sealed class GameModIntakeService
         if (!isDirectory && !File.Exists(full))
             throw new FileNotFoundException("Selected mod input does not exist.", full);
         var sourceRoot = isDirectory ? full : Path.GetDirectoryName(full)!;
-        ValidateSource(sourceRoot);
+        if (isDirectory)
+            ValidateSource(sourceRoot);
+        else
+        {
+            // Explicitly selected files are read-only inputs. Their parent may contain
+            // another manager-owned directory; never register that parent as a watcher.
+            RefuseReparseComponents(full);
+            foreach (var game in loadGames())
+                if (ContainsPath(game.GameRoot, full))
+                    throw new InvalidDataException("Cannot import directly from a live game installation.");
+        }
 
         var games = loadGames().Where(game => GameProfile.IsCanonicalId(game.Id))
             .DistinctBy(game => game.Id, StringComparer.OrdinalIgnoreCase).ToArray();
