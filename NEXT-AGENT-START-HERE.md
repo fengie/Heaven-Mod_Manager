@@ -18,4 +18,4 @@ Real RAR/7z fixture coverage (solid RAR when supported), per-candidate preview a
 
 ## Successor rules
 
-Bootstrap current Toolbox and this repo, read `AGENTS.md`, current revision/plan, the **entire** `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, and task-relevant `LEARNED_RULES.md`. Every successor must preserve, obey and recursively propagate these Core Rules to the next successor. Preserve exact verified source/run/release artifacts and private user Mods/State/downloads; never put secrets or raw user-profile data in public evidence.
+Bootstrap current Toolbox and this repo, read `AGENTS.md`, current revision/plan, the **entire** `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, and task-relevant `LEARNED_RULES.md`. Every successor must preserve, obey and recursively propagate these Core Rules to the next successor. Do not break the chain. Preserve exact verified source/run/release artifacts and private user Mods/State/downloads; never put secrets or raw user-profile data in public evidence.
