@@ -30,7 +30,9 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
             "README.md"
         ]);
 
-        Assert.Equal(new[] { "Armor A", "Weapon B" }, result.Candidates.Select(x => x.RelativePath));
+        Assert.Collection(result.Candidates,
+            candidate => Assert.Equal("Armor A", candidate.RelativePath),
+            candidate => Assert.Equal("Weapon B", candidate.RelativePath));
         Assert.All(result.Candidates, candidate => Assert.Equal(ModBoundaryKind.Folder, candidate.Kind));
     }
 
@@ -43,11 +45,9 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
             "Downloads/Collection/Weapon B/nativePC/wp/second.tex"
         ]);
 
-        Assert.Equal(new[]
-        {
-            "Downloads/Collection/Armor A",
-            "Downloads/Collection/Weapon B"
-        }, result.Candidates.Select(x => x.RelativePath));
+        Assert.Collection(result.Candidates,
+            candidate => Assert.Equal("Downloads/Collection/Armor A", candidate.RelativePath),
+            candidate => Assert.Equal("Downloads/Collection/Weapon B", candidate.RelativePath));
     }
 
     [Fact]
@@ -95,8 +95,9 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
             "Pack/Readme.txt"
         ]);
 
-        Assert.Equal(new[] { "Pack/MHW Armor.zip", "Pack/NieR Outfit.7z" },
-            result.Candidates.Select(x => x.RelativePath));
+        Assert.Collection(result.Candidates,
+            candidate => Assert.Equal("Pack/MHW Armor.zip", candidate.RelativePath),
+            candidate => Assert.Equal("Pack/NieR Outfit.7z", candidate.RelativePath));
         Assert.All(result.Candidates, candidate => Assert.Equal(ModBoundaryKind.Archive, candidate.Kind));
     }
 
