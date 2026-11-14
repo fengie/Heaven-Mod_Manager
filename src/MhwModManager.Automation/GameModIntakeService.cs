@@ -258,7 +258,8 @@ public sealed class GameModIntakeService
     private async Task ClassifyAndRouteAsync(
         string sourceRoot, string source, bool isDirectory, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
-        int nestedDepth = 0, IntakeBudget? budget = null, string? provenance = null)
+        int nestedDepth = 0, IntakeBudget? budget = null, string? provenance = null,
+        string? gameContextHint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         budget ??= new IntakeBudget();
@@ -298,7 +299,8 @@ public sealed class GameModIntakeService
             }
 
             var singlePackage = discovery.Candidates.Count == 1
-                && discovery.Candidates[0].Kind == ModBoundaryKind.Folder;
+                && discovery.Candidates[0].Kind == ModBoundaryKind.Folder
+                && discovery.Candidates[0].RelativePath == ".";
             if (!singlePackage)
             {
                 if (discovery.Candidates.Count == 0)
@@ -338,6 +340,9 @@ public sealed class GameModIntakeService
                         var child = candidate.RelativePath == "." ? scratch
                             : Path.Combine(scratch, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
                         var childProvenance = reportSource + "!/" + candidate.RelativePath;
+                        var childGameContextHint = discovery.Candidates.Count == 1
+                            && candidate.Kind == ModBoundaryKind.Folder
+                            ? gameContextHint ?? Path.GetFileName(source) : null;
                         if (candidate.Kind == ModBoundaryKind.Review)
                         {
                             output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
@@ -348,7 +353,8 @@ public sealed class GameModIntakeService
                         {
                             await ClassifyAndRouteAsync(sourceRoot, child,
                                 candidate.Kind == ModBoundaryKind.Folder,
-                                games, output, receipts, ct, nestedDepth + 1, budget, childProvenance).ConfigureAwait(false);
+                                games, output, receipts, ct, nestedDepth + 1, budget, childProvenance,
+                                childGameContextHint).ConfigureAwait(false);
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
                         {
@@ -376,6 +382,8 @@ public sealed class GameModIntakeService
         if (Path.IsPathRooted(context) || context.StartsWith(".." + Path.DirectorySeparatorChar,
                 StringComparison.Ordinal))
             context = Path.GetFileName(source);
+        if (!string.IsNullOrWhiteSpace(gameContextHint))
+            context = gameContextHint + " " + context;
         var detection = GameModIntakeClassifier.Classify(games, context, paths, declared);
         if (detection.Kind != GameModIntakeKind.Identified)
         {
