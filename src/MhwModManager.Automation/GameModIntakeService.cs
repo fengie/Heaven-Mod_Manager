@@ -282,7 +282,7 @@ public sealed class GameModIntakeService
             budget.Account(info);
             var discovery = ModBoundaryDiscovery.Discover(info.Entries
                 .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
-            if (discovery.NeedsReview)
+            if (discovery.NeedsReview && discovery.Candidates.Count == 1)
             {
                 output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
                     discovery.Candidates.First(candidate => candidate.Kind == ModBoundaryKind.Review).Evidence));
@@ -317,8 +317,13 @@ public sealed class GameModIntakeService
                         ct.ThrowIfCancellationRequested();
                         var child = candidate.RelativePath == "." ? scratch
                             : Path.Combine(scratch, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
-                        RefuseReparseComponents(child);
                         var childProvenance = reportSource + "!/" + candidate.RelativePath;
+                        if (candidate.Kind == ModBoundaryKind.Review)
+                        {
+                            output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
+                            continue;
+                        }
+                        RefuseReparseComponents(child);
                         try
                         {
                             await ClassifyAndRouteAsync(sourceRoot, child,
