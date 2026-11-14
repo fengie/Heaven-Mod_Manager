@@ -120,10 +120,10 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         await File.WriteAllTextAsync(b, "weapon", TestToken);
         await File.WriteAllTextAsync(Path.Combine(bundle, "README.md"), "mod collection", TestToken);
 
-        var service = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"), Path.Combine(home, "Manager", "State"), () => Games);
         var first = await service.ImportPathAsync(input, TestToken);
         Assert.Equal(2, first.Routed);
-        var inbox = Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox");
+        var inbox = Path.Combine(home, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
         Assert.Equal(2, Directory.GetDirectories(inbox).Length);
         Assert.True(File.Exists(a));
         Assert.True(File.Exists(b));
@@ -143,11 +143,11 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
             "Weapon B/nativePC/pl/wp/weapon.tex",
             "README.md");
 
-        var service = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"), Path.Combine(home, "Manager", "State"), () => Games);
         var result = await service.ImportPathAsync(input, TestToken);
 
         Assert.Equal(2, result.Routed);
-        Assert.Equal(2, Directory.GetDirectories(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")).Length);
+        Assert.Equal(2, Directory.GetDirectories(Path.Combine(home, "Manager", "Mods by Game", "monster-hunter-world", "Inbox")).Length);
         Assert.True(File.Exists(input));
         var again = await service.ImportPathAsync(input, TestToken);
         Assert.Equal(2, again.AlreadyPresent);
@@ -169,12 +169,12 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
                 await entry.WriteAsync(nier, TestToken);
         }
 
-        var service = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"), Path.Combine(home, "Manager", "State"), () => Games);
         var result = await service.ImportPathAsync(input, TestToken);
 
         Assert.Equal(2, result.Routed);
-        Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
-        Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
+        Assert.Single(Directory.GetFiles(Path.Combine(home, "Manager", "Mods by Game", "monster-hunter-world", "Inbox")));
+        Assert.Single(Directory.GetFiles(Path.Combine(home, "Manager", "Mods by Game", "nier-automata", "Inbox")));
         Assert.True(File.Exists(input));
     }
 
@@ -184,7 +184,7 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         var input = Path.Combine(home, "fomod.zip");
         Directory.CreateDirectory(home);
         CreateZip(input, "fomod/ModuleConfig.xml", "options/Armor/nativePC/pl/armor.tex");
-        var service = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"), Path.Combine(home, "Manager", "State"), () => Games);
 
         var result = await service.ImportPathAsync(input, TestToken);
 
