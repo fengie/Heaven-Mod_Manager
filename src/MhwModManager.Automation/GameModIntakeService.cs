@@ -29,9 +29,10 @@ public sealed class GameModIntakeService
 {
     private static readonly JsonSerializerOptions PrettyJson = new() { WriteIndented = true };
     private const int MaxSources = 12;
-    private const int MaxEntriesPerSource = 2048;
-    private const int MaxFolderFiles = 512;
-    private const int MaxContainerDepth = 4;
+    private const int MaxEntriesPerSource = 50_000;
+    private const int MaxFolderFiles = 50_000;
+    private const int MaxContainerDepth = 24;
+    private const int MaxNestedArchiveDepth = 4;
     private const long MaxArchiveBytes = 8L * 1024 * 1024 * 1024;
     private const int IoBufferSize = 128 * 1024;
     private readonly string managerHome;
@@ -142,88 +143,202 @@ public sealed class GameModIntakeService
         return report;
     }
 
+    /// <summary>
+    /// One-shot intake of a selected folder or archive. Unlike AddSource, this does not
+    /// register a filesystem watcher or continue scanning the user's directory later.
+    /// </summary>
+    public async Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
+        var full = Path.GetFullPath(inputPath);
+        var isDirectory = Directory.Exists(full);
+        if (!isDirectory && !File.Exists(full))
+            throw new FileNotFoundException("Selected mod input does not exist.", full);
+        var sourceRoot = isDirectory ? full : Path.GetDirectoryName(full)!;
+        ValidateSource(sourceRoot);
+
+        var games = loadGames().Where(game => GameProfile.IsCanonicalId(game.Id))
+            .DistinctBy(game => game.Id, StringComparer.OrdinalIgnoreCase).ToArray();
+        var receipts = LoadReceipts();
+        var items = new List<GameModIntakeItem>();
+        try
+        {
+            if (isDirectory)
+                await ScanSourceAsync(full, games, items, receipts, ct).ConfigureAwait(false);
+            else if (IsSupportedArchive(full))
+                await ClassifyAndRouteAsync(sourceRoot, full, false, games, items, receipts, ct).ConfigureAwait(false);
+            else
+                items.Add(new(full, null, GameModIntakeStatus.NeedsReview,
+                    "Select a folder or a ZIP, RAR or 7z archive."));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
+        {
+            items.Add(new(full, null, GameModIntakeStatus.NeedsReview, ex.Message));
+        }
+        var report = new GameModIntakeScan(items);
+        try
+        {
+            Directory.CreateDirectory(stateRoot);
+            SaveAtomic(ReportPath, JsonSerializer.Serialize(report, PrettyJson));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MasterDebugLog.Write("MOD-INTAKE", "Could not save one-shot mod-intake report.", ex);
+        }
+        return report;
+    }
+
+    private sealed class IntakeBudget
+    {
+        public long RemainingExpandedBytes { get; private set; } = MaxArchiveBytes;
+        public int RemainingEntries { get; private set; } = MaxEntriesPerSource;
+
+        public void Account(ArchiveInspection inspection)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (inspection.ExpandedBytes > RemainingExpandedBytes ||
+                inspection.Entries.Count > RemainingEntries)
+                throw new InvalidDataException("Nested mod-pack inspection exceeded its cumulative safety budget.");
+            RemainingExpandedBytes -= inspection.ExpandedBytes;
+            RemainingEntries -= inspection.Entries.Count;
+        }
+    }
+
     private async Task ScanSourceAsync(
         string root, IReadOnlyList<GameProfile> games, List<GameModIntakeItem> output,
         HashSet<string> receipts, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var pending = new Queue<(string Folder, int Depth)>();
-        pending.Enqueue((root, 0));
-        var examined = 0;
-        while (pending.Count > 0)
+        var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
+        var discovered = ModBoundaryDiscovery.Discover(paths);
+        var budget = new IntakeBudget();
+        foreach (var candidate in discovered.Candidates)
         {
             ct.ThrowIfCancellationRequested();
-            var (current, depth) = pending.Dequeue();
-            RefuseReparseComponents(current);
-            var children = Directory.EnumerateFileSystemEntries(current)
-                .Order(StringComparer.OrdinalIgnoreCase)
-                .Take(MaxEntriesPerSource + 1).ToArray();
-            foreach (var entry in children)
+            var entry = candidate.RelativePath == "." ? root
+                : Path.Combine(root, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (candidate.Kind == ModBoundaryKind.Review)
             {
-                ct.ThrowIfCancellationRequested();
-                if (++examined > MaxEntriesPerSource)
-                {
-                    output.Add(new(root, null, GameModIntakeStatus.NeedsReview,
-                        "Source scan exceeded its 2048-entry budget. Split this folder into smaller designated sources."));
-                    return;
-                }
-                try
-                {
-                    RefuseReparseComponents(entry);
-                    if (File.Exists(entry))
-                    {
-                        if (!IsSupportedArchive(entry)) continue;
-                        await ClassifyAndRouteAsync(root, entry, false, games, output, receipts, ct).ConfigureAwait(false);
-                    }
-                    else if (Directory.Exists(entry))
-                    {
-                        // Collection folders (including nested game-named download directories)
-                        // contain archives or child mod folders. They are not one giant mod.
-                        var directArchives = Directory.EnumerateFiles(entry).Take(MaxFolderFiles + 1)
-                            .Any(IsSupportedArchive);
-                        var folders = Directory.EnumerateDirectories(entry).Take(MaxFolderFiles + 1).ToArray();
-                        var directFiles = Directory.EnumerateFiles(entry).Take(1).Any();
-                        var nativePcChild = folders.Any(path => Path.GetFileName(path).Equals("nativePC", StringComparison.OrdinalIgnoreCase));
-                        var container = directArchives || (!directFiles && !nativePcChild && folders.Length > 0);
-                        if (container && depth < MaxContainerDepth)
-                            pending.Enqueue((entry, depth + 1));
-                        else if (container)
-                            output.Add(new(entry, null, GameModIntakeStatus.NeedsReview,
-                                "Nested collection exceeds the four-level intake limit."));
-                        else if (directFiles || nativePcChild)
-                            await ClassifyAndRouteAsync(root, entry, true, games, output, receipts, ct).ConfigureAwait(false);
-                    }
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
-                {
-                    output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, ex.Message));
-                }
+                output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
+                continue;
+            }
+            try
+            {
+                RefuseReparseComponents(entry);
+                await ClassifyAndRouteAsync(root, entry,
+                    candidate.Kind == ModBoundaryKind.Folder,
+                    games, output, receipts, ct, 0, budget).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
+            {
+                output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, ex.Message));
             }
         }
     }
 
     private async Task ClassifyAndRouteAsync(
         string sourceRoot, string source, bool isDirectory, IReadOnlyList<GameProfile> games,
-        List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct)
+        List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
+        int nestedDepth = 0, IntakeBudget? budget = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        budget ??= new IntakeBudget();
+        if (nestedDepth > MaxNestedArchiveDepth)
+        {
+            output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                "Nested mod archives exceed the safe depth limit."));
+            return;
+        }
+
         string[] paths;
         if (isDirectory)
+        {
             paths = SnapshotFolderFiles(source, ct).Select(path => Path.GetRelativePath(source, path)).ToArray();
+            if (paths.Any(path => path.Replace('\\', '/')
+                .EndsWith("fomod/ModuleConfig.xml", StringComparison.OrdinalIgnoreCase)))
+            {
+                output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                    "FOMOD installer options need manual selection; source left untouched."));
+                return;
+            }
+        }
         else
         {
             var info = await archive.InspectAsync(source, ct).ConfigureAwait(false);
             if (info.HasSuspiciousPaths)
                 throw new InvalidDataException("Unsafe archive paths require manual review.");
-            if (info.Entries.Any(entry => !entry.IsDirectory && IsSupportedArchive(entry.Key)))
-                throw new InvalidDataException(
-                    "This pack contains nested mod archives; keep it intact for Universal Archive Importer review.");
+            budget.Account(info);
+            var discovery = ModBoundaryDiscovery.Discover(info.Entries
+                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
+            if (discovery.NeedsReview)
+            {
+                output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                    discovery.Candidates.First(candidate => candidate.Kind == ModBoundaryKind.Review).Evidence));
+                return;
+            }
+
+            var singlePackage = discovery.Candidates.Count == 1
+                && discovery.Candidates[0].Kind == ModBoundaryKind.Folder;
+            if (!singlePackage)
+            {
+                if (discovery.Candidates.Count == 0)
+                {
+                    output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                        "Archive has no safely identifiable mod packages."));
+                    return;
+                }
+                if (nestedDepth >= MaxNestedArchiveDepth)
+                {
+                    output.Add(new(source, null, GameModIntakeStatus.NeedsReview,
+                        "Nested mod archives exceed the safe depth limit."));
+                    return;
+                }
+
+                var scratch = CreateScratchPath();
+                var trustedRoot = Path.GetDirectoryName(scratch)!;
+                try
+                {
+                    await archive.ExtractSafelyAsync(source, scratch, trustedRoot,
+                        new ArchiveExtractionLimits(MaxArchiveBytes, MaxArchiveBytes), ct).ConfigureAwait(false);
+                    foreach (var candidate in discovery.Candidates)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        var child = candidate.RelativePath == "." ? scratch
+                            : Path.Combine(scratch, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+                        RefuseReparseComponents(child);
+                        try
+                        {
+                            await ClassifyAndRouteAsync(sourceRoot, child,
+                                candidate.Kind == ModBoundaryKind.Folder,
+                                games, output, receipts, ct, nestedDepth + 1, budget).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
+                        {
+                            output.Add(new(child, null, GameModIntakeStatus.NeedsReview, ex.Message));
+                        }
+                    }
+                }
+                finally
+                {
+                    // Only delete our dedicated scratch; never traverse a substituted reparse point.
+                    if (Directory.Exists(scratch))
+                    {
+                        SafeRecursiveTraversal.EnsureNoReparsePoints(scratch);
+                        Directory.Delete(scratch, recursive: true);
+                    }
+                }
+                return;
+            }
+
             paths = info.Entries.Take(MaxFolderFiles).Select(entry => entry.Key).ToArray();
         }
+
         var declared = isDirectory ? ReadFolderGameHint(source) : ReadArchiveGameHint(source);
-        // The monitored root may be called "NieR Downloads" yet contain unrelated files.
-        // Only the package name and its nested relative location provide identity evidence.
         var context = Path.GetRelativePath(sourceRoot, source);
+        if (Path.IsPathRooted(context) || context.StartsWith(".." + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal))
+            context = Path.GetFileName(source);
         var detection = GameModIntakeClassifier.Classify(games, context, paths, declared);
         if (detection.Kind != GameModIntakeKind.Identified)
         {
@@ -239,7 +354,7 @@ public sealed class GameModIntakeService
             : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, ct).ConfigureAwait(false);
         output.Add(new(source, owner.Id,
             wasCreated ? GameModIntakeStatus.Routed : GameModIntakeStatus.AlreadyPresent,
-            wasCreated ? detection.Reason : "Identical package already exists in this game's Inbox."));
+            wasCreated ? detection.Reason : "Identical mod already exists in this game's Inbox or processed receipts."));
     }
 
     private async Task<bool> CopyArchiveIntoInboxAsync(string source, string inboxRoot, string gameId,
