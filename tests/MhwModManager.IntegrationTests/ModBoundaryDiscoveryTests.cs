@@ -342,6 +342,41 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         Assert.Contains("ImportPathAsync(picker.FolderName", vm);
     }
 
+    [Fact]
+    public async Task One_wrapped_mod_archive_with_readme_uses_the_payload_root()
+    {
+        var input = Path.Combine(home, "MHW Armor.zip");
+        Directory.CreateDirectory(home);
+        CreateZip(input, "Armor Mod/nativePC/pl/armor/armor.tex", "README.md");
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(1, result.Routed);
+        var inbox = Path.Combine(home, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        var package = Assert.Single(Directory.GetDirectories(inbox));
+        Assert.True(File.Exists(Path.Combine(package, "nativePC", "pl", "armor", "armor.tex")));
+        Assert.False(Directory.Exists(Path.Combine(package, "Armor Mod")));
+        Assert.True(File.Exists(input));
+    }
+
+    [Fact]
+    public async Task Single_wrapper_retains_original_archive_game_identity_when_content_is_generic()
+    {
+        var input = Path.Combine(home, "NieR Automata Outfit.zip");
+        Directory.CreateDirectory(home);
+        CreateZip(input, "Custom Outfit/mods/asset.dds", "README.md");
+        var service = new GameModIntakeService(Path.Combine(home, "Manager"),
+            Path.Combine(home, "Manager", "State"), () => Games);
+
+        var result = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(1, result.Routed);
+        Assert.Single(Directory.GetDirectories(Path.Combine(home, "Manager", "Mods by Game",
+            "nier-automata", "Inbox")));
+    }
+
     private static void CreateZip(string path, params string[] entries)
     {
         using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
