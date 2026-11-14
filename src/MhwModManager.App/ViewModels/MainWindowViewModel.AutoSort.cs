@@ -69,6 +69,39 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
+    private async Task ImportModFolder()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var picker = new OpenFolderDialog
+        {
+            Title = "Select a folder containing one or more mods"
+        };
+        if (picker.ShowDialog() != true) return;
+        try
+        {
+            EnsureGameIntake();
+            AutoSortStatusText = "Inspecting folder and separating identifiable mods; originals are unchanged.";
+            var sorter = gameIntake!;
+            var report = await Task.Run(() => sorter.ImportPathAsync(picker.FolderName, backgroundCts.Token),
+                backgroundCts.Token);
+            AutoSortStatusText = $"Folder intake: {report.Routed} mods routed, " +
+                $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
+                $"Details: {sorter.ReportPath}";
+            if (report.Routed > 0)
+                StatusText = $"Separated {report.Routed} mod(s) into their registered games' Inboxes. " +
+                    "Use Install Mods from Inbox for the active game.";
+        }
+        catch (OperationCanceledException) when (backgroundCts.IsCancellationRequested)
+        {
+            AutoSortStatusText = "Folder intake canceled; original files are unchanged.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
+        {
+            AutoSortStatusText = "Cannot import selected folder: " + ex.Message;
+        }
+    }
+
+    [RelayCommand]
     private void RemoveAutoSortFolder()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

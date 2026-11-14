@@ -75,7 +75,29 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | COMPLIANCE-710 | P1 | DONE | issue #710; v8.8.89 | Add truthful native-app privacy/legal/data-control surfaces, complete current image accessibility metadata, and mechanically guard dependency notices, keyboard focus/navigation, and core-palette contrast. |
 | HASH-STABILITY-699 | P0 | DONE | issue #699; PR #715; v8.8.90 | Certify authoritative hashes and CAS capture against same-metadata source mutation with byte-level second-read verification. |
 | CI-716-718 | P0 | DONE | issues #716/#718; PR #719 + PR #715; v8.8.90 | Isolate pinned SDK provisioning per job and make function-verification persistence idempotent. |
+| MOD-BOUNDARY-791 | P1 | ACTIVE | issue #791; owner `feat/mod-boundary-discovery-791-20261114` | Detect independently installable mods from mixed folders/ZIP/RAR/7z without collapsing different mods or splitting installer choices; route each safely by registered game. |
 | CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
+
+## MOD-BOUNDARY-791 — Mixed-folder and nested-archive import
+
+**Owner:** Issue #791, single scoped branch `feat/mod-boundary-discovery-791-20261114`.
+**Status:** ACTIVE — candidate source/test changes are not proof of Windows build, release, or installed-client behavior.
+**Source baseline:** protected `main@4a26a12ea4c816e54ea3919f3403eaf9b3dd58e4`.
+**Scope:** Mod Boundary Discovery and the existing GameModIntake/SmartInbox/ArchiveImport handoffs. No change to live deployment, updater, signed identity, or archive-parser dependencies.
+
+**User-visible outcome:** one ordinary folder (or archive containing multiple independently installable mods) produces separate registered-game Inbox entries; source files stay untouched. Uncertain packages and FOMOD options remain for review. Manual one-shot folder import is distinct from installing a persistent watcher.
+
+**Acceptance / next action:**
+- [ ] Pure discovery distinguishes independent roots, wrappers, supplemental docs, nested archives, loader roots and ambiguous options; focused deterministic tests pass.
+- [ ] End-to-end mixed folder and ZIP decomposition, independent game routing, digest-based replay dedup, partial review, FOMOD protection and traversal rejection pass exact-head Windows tests.
+- [ ] Representative real RAR and 7z, including solid formats, pass Windows fixture coverage and cumulative nested-depth/size budgets.
+- [ ] UI one-shot Folder Import and multi-mod archive behavior pass packaged WPF smoke, keyboard navigation and cancellation checks.
+- [ ] Inspect exact diff, pass feature/security/CI gates, reconcile with live main, and obtain authorized merge slot. Publication/installed-client evidence remain separately required.
+- [ ] Review classification gaps for anonymous merged files and supply an explicit per-candidate review/assignment workflow without guessing.
+
+**Risk:** anonymous loose DLL/PAK files have insufficient mod identity and are held for review instead of being silently separated. Import receipts are per child content+game, so the same mod in two bundles must remain one library entry.
+
+**Next:** run exact candidate Windows verification on the scoped branch, repair source and tests if red, then update this ledger and preserve exact evidence. Future successors inherit and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`.
 
 ## CI-716-718 — SDK isolation and verification-baseline idempotence
 
