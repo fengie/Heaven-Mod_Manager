@@ -13,11 +13,9 @@ Every successor must read, preserve, obey and recursively propagate `_AGENT_CONT
 
 ## Verification boundary
 
-Latest **nonpublishing** main-source verification: `main@5b50e6581b4b1bef56ad09fe422621388f494c85` passed [Windows Gate 43696588139](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43696588139) (26/26); evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`, integrated through #822. This does not change the immutable published v8.8.106 source `2a317cf5` or prove an installed client. The later test-only #820 main source `9aa21347` passed [Windows Gate 43698551001](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43698551001).
+Current hosted-Windows closure: v8.8.107 source `a1e9078b9b9a3a52106a76341c7ea79f7b1c4630` passed run `43702127240` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.107-heaven-windows-closure.log`.
 
-Exact #819 candidate `254f813f27be324cdf02f6a6b2dfcecb1bb53f0b` passed [Windows Feature PR Gate 43695906763](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906763) 26/26, 0 function trace gaps and 0 integration failures, plus [AutoUpdate 43695906697](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906697) PASS. The feature candidate was reconciled with #818 source before CI and merged into `5b50e6581b4b1bef56ad09fe422621388f494c85`; this does not certify future 8.8.107 release metadata or installed machine state.
-
-Last **immutable** version v8.8.106 is [updater-main-517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517), verified source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d`, [Windows release 43690972860](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43690972860) 26/26, package SHA-256 `55222c54ff61754ebed38f43d4b3ee395a1e066a606e9e851fce5fa5c401bd64`, manifest SHA-256 `cb5f4d166854b816f92b31a49da79e39d2c0042d6d0356f66f0313cddfeba539`.
+The tested source remains `a1e9078b9b9a3a52106a76341c7ea79f7b1c4630` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Serialized release / open risk / next actions
 

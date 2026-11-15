@@ -4,9 +4,9 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` source cutoff `5b50e6581b4b1be
 
 ## Verification boundary
 
-Latest **nonpublishing** main-source verification: `main@5b50e6581b4b1bef56ad09fe422621388f494c85` passed [Windows Gate 43696588139](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43696588139) (26/26); evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`, integrated through #822. This does not change the immutable published v8.8.106 source `2a317cf5` or prove an installed client. The later test-only #820 main source `9aa21347` passed [Windows Gate 43698551001](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43698551001).
+Current hosted-Windows closure: v8.8.107 source `a1e9078b9b9a3a52106a76341c7ea79f7b1c4630` passed run `43702127240` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.107-heaven-windows-closure.log`.
 
-[#819 native Windows Feature Gate 43695906763](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906763) passed on exact candidate `254f813f27be324cdf02f6a6b2dfcecb1bb53f0b`, 26/26 verification stages, zero trace gaps and zero integration failures. AutoUpdate 43695906697 passed. #819 then merged at `5b50e6581b4b1bef56ad09fe422621388f494c85`. v8.8.107 metadata is **not** the tested source or a published immutable asset until its own exact-head and exact-main gates complete.
+The tested source remains `a1e9078b9b9a3a52106a76341c7ea79f7b1c4630` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Source versus immutable release
 
