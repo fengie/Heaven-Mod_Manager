@@ -29,6 +29,13 @@ public static class GameModIntakeClassifier
         if (games.Length == 0)
             return new(GameModIntakeKind.Unknown, null, "No registered game profiles.", []);
 
+        // The intake inventory is capped at 50,000 entries. Never classify from
+        // just the first 512 files: a later conflicting game identity could turn
+        // an ambiguous bundle into a wrongly routed package.
+        if (relativePaths.Count > 50_000)
+            return new(GameModIntakeKind.Unknown, null,
+                "Package identity inventory exceeds 50,000 paths; review smaller groups.", []);
+
         // A declared game from a local/package manifest must resolve to exactly one
         // registered game; an unknown declaration must not silently fall through to a guess.
         if (!string.IsNullOrWhiteSpace(declaredGame))
@@ -62,13 +69,6 @@ public static class GameModIntakeClassifier
             return new(GameModIntakeKind.Identified, declared.Id,
                 "Package manifest identifies a registered game.", [declared.Id]);
         }
-
-        // The intake inventory is capped at 50,000 entries. Never classify from
-        // just the first 512 files: a later conflicting game identity could turn
-        // an ambiguous bundle into a wrongly routed package.
-        if (relativePaths.Count > 50_000)
-            return new(GameModIntakeKind.Unknown, null,
-                "Package identity inventory exceeds 50,000 paths; review smaller groups.", []);
 
         var normalizedName = GameProfile.NormalizeId(sourceName);
         var normalizedEntries = relativePaths.Select(GameProfile.NormalizeId).ToArray();

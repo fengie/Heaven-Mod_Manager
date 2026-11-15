@@ -93,6 +93,11 @@ public sealed class GameModIntakeTests : IDisposable
         Assert.Equal(GameModIntakeKind.Unknown, detected.Kind);
         Assert.Null(detected.GameId);
         Assert.Contains("50,000", detected.Reason);
+
+        var declared = GameModIntakeClassifier.Classify(
+            Games, "anonymous.zip", paths, "nier-automata");
+        Assert.Equal(GameModIntakeKind.Unknown, declared.Kind);
+        Assert.Null(declared.GameId);
     }
 
     [Fact]
