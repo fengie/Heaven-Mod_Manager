@@ -91,10 +91,16 @@ public sealed partial class MainWindowViewModel
                 StatusText = $"Separated {report.Routed} mod(s) into their registered games' Inboxes. " +
                     "Use Install Mods from Inbox for the active game.";
             if (report.Items.Count > 0)
-                new ModIntakeReviewWindow(report)
+            {
+                var review = new ModIntakeReviewWindow(report)
                 {
                     Owner = Application.Current.MainWindow
-                }.ShowDialog();
+                };
+                review.EnableManualAssignment(s.GameRegistry.Load(), (candidate, gameId) =>
+                    Task.Run(() => sorter.AssignReviewedPackageAsync(candidate.SourcePath, gameId,
+                        backgroundCts.Token), backgroundCts.Token));
+                review.ShowDialog();
+            }
         }
         catch (OperationCanceledException) when (backgroundCts.IsCancellationRequested)
         {

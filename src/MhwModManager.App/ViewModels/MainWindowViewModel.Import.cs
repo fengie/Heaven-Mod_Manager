@@ -86,9 +86,17 @@ public sealed partial class MainWindowViewModel
             StatusText=$"Imported '{imported.DisplayName}'. It is OFF until you stage it."+downloadWarning;
         });
         if (modPackReport is not null && modPackReport.Items.Count > 0)
-            new ModIntakeReviewWindow(modPackReport)
+        {
+            EnsureGameIntake();
+            var sorter = gameIntake!;
+            var review = new ModIntakeReviewWindow(modPackReport)
             {
                 Owner = Application.Current.MainWindow
-            }.ShowDialog();
+            };
+            review.EnableManualAssignment(s.GameRegistry.Load(), (candidate, gameId) =>
+                Task.Run(() => sorter.AssignReviewedPackageAsync(candidate.SourcePath, gameId,
+                    backgroundCts.Token), backgroundCts.Token));
+            review.ShowDialog();
+        }
     }
 }
