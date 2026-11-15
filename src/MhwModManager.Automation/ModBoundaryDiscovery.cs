@@ -63,6 +63,8 @@ public static class ModBoundaryDiscovery
         }
         var files = paths.Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (files.Length != paths.Count)
+            throw new InvalidDataException("Duplicate or case-colliding mod file paths require review.");
         return new(Analyze(files, "", 0));
     }
 
@@ -243,12 +245,9 @@ public static class ModBoundaryDiscovery
         var pakPaths = relativePaths.Where(path =>
             path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)
             && !IsSupplementary(path)).ToArray();
-        if (pakPaths.Length < 4) return null;
+        if (pakPaths.Length < 2) return null;
 
         var nonSupplementary = relativePaths.Where(path => !IsSupplementary(path)).ToArray();
-        if (nonSupplementary.Any(path =>
-                !path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)))
-            return null;
 
         var groups = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in pakPaths)
@@ -267,12 +266,18 @@ public static class ModBoundaryDiscovery
             members.Add(path);
         }
         if (groups.Count < 2) return null;
+        if (nonSupplementary.Any(path =>
+                !path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)))
+            return Review(prefix, "Multiple PAK groups are coupled to unrelated package files and need review.");
         if (groups.Keys.Any(LooksLikeDependentOrVariant))
             return Review(prefix, "Stellar Blade main, patch or quality variants require manual selection.");
         if (groups.Values.Any(files => files.Count != 3 ||
             files.Select(file => Path.GetExtension(file))
                 .Distinct(StringComparer.OrdinalIgnoreCase).Count() != 3))
-            return Review(prefix, "Incomplete or multi-part Stellar Blade PAK groups need review.");
+            return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(pair => new ModBoundaryCandidate(StellarBladePakRoot + pair.Key,
+                    ModBoundaryKind.Review, "PAK bundle lacks a proven complete independent companion set.",
+                    pair.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray())).ToArray();
 
         return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(pair => new ModBoundaryCandidate(StellarBladePakRoot + pair.Key,
