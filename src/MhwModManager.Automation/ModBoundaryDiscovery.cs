@@ -9,8 +9,10 @@ namespace MhwModManager.Automation;
 public enum ModBoundaryKind { Folder, Archive, Review, FileSet }
 
 /// <param name="Files">Exact source-relative members for a virtual package; null for physical roots.</param>
+/// <param name="SourcePrefix">Collection wrapper to remove from staged game-relative files.</param>
 public sealed record ModBoundaryCandidate(
-    string RelativePath, ModBoundaryKind Kind, string Evidence, IReadOnlyList<string>? Files = null);
+    string RelativePath, ModBoundaryKind Kind, string Evidence, IReadOnlyList<string>? Files = null,
+    string? SourcePrefix = null);
 
 public sealed record ModBoundaryResult(IReadOnlyList<ModBoundaryCandidate> Candidates)
 {
@@ -249,7 +251,6 @@ public static class ModBoundaryDiscovery
         string[] relativePaths, string prefix)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (prefix.Length != 0) return null;
         var pakPaths = relativePaths.Where(path =>
             path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)
             && !IsSupplementary(path)).ToArray();
@@ -279,18 +280,29 @@ public static class ModBoundaryDiscovery
             return Review(prefix, "Multiple PAK groups are coupled to unrelated package files and need review.");
         if (groups.Keys.Any(LooksLikeDependentOrVariant))
             return Review(prefix, "Stellar Blade main, patch or quality variants require manual selection.");
-        if (groups.Values.Any(files => files.Count != 3 ||
+        // Multiple complete chunks in one named mod can be co-required, not
+        // separate mods. Only a selected root or an explicitly named collection
+        // permits automatic decomposition; elsewhere emit reviewable child rows.
+        var isExplicitCollection = prefix.Length == 0 || IsCollectionWrapper(prefix);
+        var complete = groups.Values.All(files => files.Count == 3 &&
             files.Select(file => Path.GetExtension(file))
-                .Distinct(StringComparer.OrdinalIgnoreCase).Count() != 3))
-            return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(pair => new ModBoundaryCandidate(StellarBladePakRoot + pair.Key,
-                    ModBoundaryKind.Review, "PAK bundle lacks a proven complete independent companion set.",
-                    pair.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray())).ToArray();
-
+                .Distinct(StringComparer.OrdinalIgnoreCase).Count() == 3);
         return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(pair => new ModBoundaryCandidate(StellarBladePakRoot + pair.Key,
-                ModBoundaryKind.FileSet, "Complete Stellar Blade PAK/UTOC/UCAS companion group.",
-                pair.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray())).ToArray();
+            .Select(pair => new ModBoundaryCandidate(Join(prefix, StellarBladePakRoot + pair.Key),
+                isExplicitCollection && complete ? ModBoundaryKind.FileSet : ModBoundaryKind.Review,
+                !complete ? "PAK bundle lacks a proven complete companion set."
+                    : !isExplicitCollection ? "Multiple chunks in a named mod need dependency review before splitting."
+                    : "Complete Stellar Blade PAK/UTOC/UCAS companion group.",
+                pair.Value.Select(path => Join(prefix, path)).Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                prefix.Length == 0 ? null : prefix)).ToArray();
+    }
+
+    private static bool IsCollectionWrapper(string prefix)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var leaf = prefix.Split('/')[^1].Replace('_', ' ').Replace('-', ' ').ToLowerInvariant();
+        return leaf is "mods" or "downloads" or "mod packs" or "mod library" or "archive vault"
+            || leaf.Contains("collection", StringComparison.Ordinal);
     }
 
     private static bool LooksLikeDependentOrVariant(string stem)
