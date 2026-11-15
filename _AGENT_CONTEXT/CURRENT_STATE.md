@@ -1,22 +1,21 @@
-# v8.8.106 consolidated mod intake — canonical state, published source and open acceptance
+# v8.8.107 mod collection reanalysis — current source and release candidate
 
-Canonical `fengie/Heaven-Mod_Manager@main` source already includes deep Stellar Blade mod boundaries and sibling PAK grouping (#803/#807), full archive preflight #805, mixed archives/doc review #808, full bounded game identity #809, late/conflicting ZIP/folder manifests #810, app-owned oversized manifests #811. Source cutoff is now integrated at `main@1e21c332995f2eba89a87f016b0f43360b73e268`, including #812 bounded third-party manifest handling and #813 cumulative per-selected-collection byte budget, each with exact native Windows Feature/AutoUpdate checks. Source release metadata was merged as PR #814; source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` passed the canonical release gate and was published as immutable updater build 517.
+Canonical state: `fengie/Heaven-Mod_Manager@main` source cutoff `5b50e6581b4b1bef56ad09fe422621388f494c85` includes: deep Stellar Blade boundaries and importer hardening through #813 from the prior v8.8.106 release; #815 cumulative inventory accounting; #818 safe user-driven game assignment for one unknown standalone mod; and #819 explicit read-only preview, confirm, and duplicate-safe staging of independent child mods from previously tracked, disabled single-package folders. No original package is automatically replaced or deleted, and live game files/activation/rollback authority remain unchanged.
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.106 source `5b50e6581b4b1bef56ad09fe422621388f494c85` passed run `43696588139` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`.
+Latest **nonpublishing** main-source verification: `main@5b50e6581b4b1bef56ad09fe422621388f494c85` passed [Windows Gate 43696588139](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43696588139) (26/26); evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`, integrated through #822. This does not change the immutable published v8.8.106 source `2a317cf5` or prove an installed client. The later test-only #820 main source `9aa21347` passed [Windows Gate 43698551001](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43698551001).
 
-The tested source remains `5b50e6581b4b1bef56ad09fe422621388f494c85` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+[#819 native Windows Feature Gate 43695906763](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906763) passed on exact candidate `254f813f27be324cdf02f6a6b2dfcecb1bb53f0b`, 26/26 verification stages, zero trace gaps and zero integration failures. AutoUpdate 43695906697 passed. #819 then merged at `5b50e6581b4b1bef56ad09fe422621388f494c85`. v8.8.107 metadata is **not** the tested source or a published immutable asset until its own exact-head and exact-main gates complete.
 
-## Source versus release
+## Source versus immutable release
 
-[v8.8.106 / updater-main-517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517) is published from exact source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` following [Windows Release Gate #43690972860](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43690972860) with 26/26 verification stages. Package SHA-256: `55222c54ff61754ebed38f43d4b3ee395a1e066a606e9e851fce5fa5c401bd64`; manifest SHA-256: `cb5f4d166854b816f92b31a49da79e39d2c0042d6d0356f66f0313cddfeba539`. Prior immutable 509/504/501 releases remain unchanged.
+Last verified immutable published version: [v8.8.106 updater-main-517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517), exact source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d`, Windows Release 43690972860 26/26, ZIP SHA-256 `55222c54ff61754ebed38f43d4b3ee395a1e066a606e9e851fce5fa5c401bd64`, manifest SHA-256 `cb5f4d166854b816f92b31a49da79e39d2c0042d6d0356f0313cddfeba539`. Earlier tags 509/504/501 remain immutable. This new metadata release candidate requires new published evidence before claiming v8.8.107 publication; physically installed Heaven2 and actual rollback remain independent.
 
-[PR #815](https://github.com/fengie/Heaven-Mod_Manager/pull/815) fixes visited-empty-directory inventory accounting, but is subsequent source work **not included** in build 517. Merge it only after fresh exact-head checks, current-main reconciliation, and source ownership checks; it requires a later separately versioned updater release to ship. Issue #793 actual installed update/rollback and Heaven2 proof remain separate unverified acceptance boundaries.
+## Open acceptance and owner boundaries
 
-## Independent open acceptance
+- [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual high-volume Stellar Blade user corpus, real RAR/7z/solid format and fault tests (peer PR #820), unrecognized mod structures, installed WPF interaction/minimum-width UX.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): positive packaged updater apply/rollback requires a dedicated isolated Windows identity with verified empty updater root. Never delete or repurpose shared real user LocalApplicationData. A skipped E2E job or main source CI is not installed proof.
+- Release owner: serialize after current main Windows Release Gate; prove version metadata, protected merge, new immutable tag, ZIP/manifest SHA, public feed parity. Preserve all unrelated owner work.
 
-- [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual large user mod corpus/rar/7z solid/encrypted/fault fixtures, manual unknown-game assignment and installed WPF UI smoke remain unverified.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): positive updater apply/rollback requires an independent least-privileged Windows test account/profile with a proven empty updater namespace. Classification-only success with skipped update job is not deployed proof. Preserve real user updater state and game/mod files.
-
-Every successor must read, preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and `_AGENT_CONTEXT/LEARNED_RULES.md` to the successor after them; do not break the chain.
+Next successor must read, preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md` onward again.

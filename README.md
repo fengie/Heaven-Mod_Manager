@@ -1,8 +1,8 @@
-# v8.8.106 — MHW Manual Mod Manager
+# v8.8.107 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 15, 2026 · 2:25:35 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 15, 2026 · 3:56:30 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.106**.
+Current product version: **8.8.107**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,12 +10,19 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.107 — reanalyze existing nested mod collections
+
+- Integrated [#819](https://github.com/fengie/Heaven-Mod_Manager/pull/819) on `main@5b50e6581b4b1bef56ad09fe422621388f494c85`: Dashboard → **Separate Existing Mod Collections** now previews recursive independent-mod boundaries inside already tracked library packages, confirms the operation, and uses safe game-scoped Inbox routing. Only disabled packages without pending changes qualify; originals, IDs, deployment and rollback state remain intact, and new packages start disabled.
+- [#815](https://github.com/fengie/Heaven-Mod_Manager/pull/815) bounds traversed folder entries; [#818](https://github.com/fengie/Heaven-Mod_Manager/pull/818) adds deliberate registered-game assignment for one unknown review-only package. Neither changes existing immutable build 517.
+- Exact #819 head `254f813f` passed [native Windows Feature 43695906763](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906763) 26/26, 0 function gaps, and [AutoUpdate 43695906697](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906697). A new immutable v8.8.107 release requires exact-main validation and actual ZIP/manifest publication; source and version text alone are not installed-client proof.
+- Real hundreds-mod user files, other unknown payload formats, physically installed WPF interaction, and isolated updater apply/rollback [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) still require independent acceptance. Preserve the old source packages; don't enable a wrapper alongside newly separated children.
+
 ## v8.8.106 — consolidated deep mod intake and safe manifest routing
 
 - Preserve native source repairs already merged in [#803](https://github.com/fengie/Heaven-Mod_Manager/pull/803), [#805](https://github.com/fengie/Heaven-Mod_Manager/pull/805), [#807](https://github.com/fengie/Heaven-Mod_Manager/pull/807), [#808](https://github.com/fengie/Heaven-Mod_Manager/pull/808), [#809](https://github.com/fengie/Heaven-Mod_Manager/pull/809), [#810](https://github.com/fengie/Heaven-Mod_Manager/pull/810), and [#811](https://github.com/fengie/Heaven-Mod_Manager/pull/811): deep Stellar Blade collections, PAK companions, archive preflight, sibling isolation, complete game identity and fail-closed late, conflicting and oversized app-owned metadata.
-- Both [#812](https://github.com/fengie/Heaven-Mod_Manager/pull/812) (bounded third-party manifest handling) and [#813](https://github.com/fengie/Heaven-Mod_Manager/pull/813) (shared cumulative selected-collection byte budget) are now integrated in protected `main@1e21c332995f2eba89a87f016b0f43360b73e268` after exact native source verification. This metadata remains an unreleased version candidate.
+- Both [#812](https://github.com/fengie/Heaven-Mod_Manager/pull/812) (bounded third-party manifest handling) and [#813](https://github.com/fengie/Heaven-Mod_Manager/pull/813) (shared cumulative selected-collection byte budget) are now integrated in protected `main@1e21c332995f2eba89a87f016b0f43360b73e268` after exact native source verification. The v8.8.106 code was subsequently published as immutable build 517 from exact verified source.
 - Maintain original download files, per-game Inboxes, safe loader/FOMOD/variant review, deduplication receipts, and no direct installation into live game trees. Correct unknown/mod-dependent cases remain reviewable rather than guessed.
-- **Release candidate only:** no v8.8.106 immutable updater or physically installed client is verified by this source metadata. Prior [v8.8.105 build 509](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-509) is immutable, from older source `e65a8990`. New exact-main Windows 26/26, immutable package/manifest digest, and separate installed updater/rollback proof remain required. [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) real RAR/7z and user corpus, and [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) isolated updater E2E remain open.
+- **Published immutable** [updater build 517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517) from exact v8.8.106 source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` after Windows 26/26. Positive physically installed updater/rollback proof remains separately open under [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793).
 
 ## v8.8.105 — see individual mods in mixed folder and archive imports
 
@@ -23,13 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Explicit manual imports are the only triggers for this dialog; existing background folder scans remain non-interrupting. It does not assign ambiguous mods, alter live game files, bypass the existing importer or touch updater state. Existing user archives remain intact.
 - [Exact source Windows Feature Gate #43675134924](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134924) passed 26/26 stages, with 454 integration regressions and 0 function-trace gaps; [AutoUpdate #43675134917](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134917) passed. **Version 8.8.105 has an immutable published build 509 from earlier source; these later fixes need v8.8.106.**
 - [Issue #791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) remains open for real solid RAR/7z fixtures, explicit manual game assignment and packaged UI tests. [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) still requires a separately owned Windows updater test profile and positive installed-client update/rollback; the correct occupied-user-state guard is preserved.
-
-## v8.8.104 — opt-in Heaven.gg game guide integration
-
-- Integrate [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) on protected main as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`: Dashboard → More tools opens a public Heaven.gg guide on explicit request only.
-- Read only the allowlisted `games.json` catalog from Heaven.gg, validate all three game identities, exact public URLs, response bounds, and no-redirect behavior. The site cannot register games or alter mods, storage, or the updater.
-- Exact PR head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed [Windows feature run 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) (26/26 stages; 352 core, 112 automation, 453 integration); the independent v8.8.104 production release is now verified as build 504 below, while installed-client/Heaven2 verification remains **unestablished**.
-- Immutable [updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) was published from exact v8.8.104 source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32`, after [Windows Release Gate #43669418277](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43669418277). On-device updater E2E remains independently blocked (#793).
 
 ### Current plans & progress
 
