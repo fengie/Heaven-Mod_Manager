@@ -333,14 +333,53 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
-    public void Incomplete_pak_companion_sets_are_not_split_or_imported()
+    public void An_incomplete_pak_group_does_not_suppress_an_unrelated_complete_mod()
     {
         var paths = Triple("SB/Content/Paks/~mods/Armor_P")
             .Append("SB/Content/Paks/~mods/Weapon_P.pak");
         var result = ModBoundaryDiscovery.Discover(paths);
         Assert.True(result.NeedsReview);
+        Assert.Equal("SB/Content/Paks/~mods/Armor_P",
+            Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.FileSet).RelativePath);
+        Assert.Equal("SB/Content/Paks/~mods/Weapon_P",
+            Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Review).RelativePath);
+    }
+
+    [Fact]
+    public void One_incomplete_package_does_not_hide_eighty_valid_pak_groups()
+    {
+        var paths = Enumerable.Range(0, 80).SelectMany(i =>
+            Triple("SB/Content/Paks/~mods/Outfit-" +
+                i.ToString("D3", CultureInfo.InvariantCulture) + "_P"))
+            .Append("SB/Content/Paks/~mods/Broken_P.pak");
+        var result = ModBoundaryDiscovery.Discover(paths);
+        Assert.Equal(80, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.FileSet));
+        Assert.Equal("SB/Content/Paks/~mods/Broken_P",
+            Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Review).RelativePath);
+    }
+
+    [Fact]
+    public void Package_updates_hold_the_matching_base_but_not_unrelated_mods()
+    {
+        var paths = Triple("SB/Content/Paks/~mods/Armor_P")
+            .Concat(Triple("SB/Content/Paks/~mods/Armor_Update_P"))
+            .Concat(Triple("SB/Content/Paks/~mods/Weapon_P"));
+        var result = ModBoundaryDiscovery.Discover(paths);
         Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Review));
-        Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.FileSet);
+        Assert.Equal("SB/Content/Paks/~mods/Weapon_P",
+            Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.FileSet).RelativePath);
+    }
+
+    [Fact]
+    public void Quality_variants_do_not_suppress_unrelated_complete_mods()
+    {
+        var paths = Triple("SB/Content/Paks/~mods/Outfit_High_P")
+            .Concat(Triple("SB/Content/Paks/~mods/Outfit_Low_P"))
+            .Concat(Triple("SB/Content/Paks/~mods/Weapon_P"));
+        var result = ModBoundaryDiscovery.Discover(paths);
+        Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Review));
+        Assert.Equal("SB/Content/Paks/~mods/Weapon_P",
+            Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.FileSet).RelativePath);
     }
 
     [Fact]
@@ -482,6 +521,41 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         Assert.True(File.Exists(sourceArchive));
         Assert.False(Directory.Exists(Path.Combine(manager, "State", "ModIntakeScratch")));
         Assert.False(Directory.Exists(Path.Combine(manager, "Mods by Game", "stellar-blade", "Inbox")));
+    }
+
+    [Fact]
+    public async Task Archive_stages_complete_mod_while_reviewing_an_unrelated_incomplete_group()
+    {
+        Directory.CreateDirectory(home);
+        var archive = Path.Combine(home, "mixed-valid-incomplete.zip");
+        using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+        {
+            foreach (var name in Triple("SB/Content/Paks/~mods/Armor_P")
+                .Append("SB/Content/Paks/~mods/Weapon_P.pak"))
+            {
+                using var writer = zip.CreateEntry(name).Open();
+                await writer.WriteAsync(new byte[] { 42 }, TestToken);
+            }
+        }
+
+        var manager = Path.Combine(home, "Manager");
+        var profile = GameProfile.Generic("stellar-blade", "Stellar Blade",
+            Path.Combine(home, "Game"), "StellarBlade.exe", "SB/Content/Paks/~mods",
+            nexusGameDomain: "stellarblade");
+        var service = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => [profile]);
+
+        var first = await service.ImportPathAsync(archive, TestToken);
+        Assert.Equal(1, first.Routed);
+        Assert.Equal(1, first.NeedsReview);
+        var inbox = Path.Combine(manager, "Mods by Game", "stellar-blade", "Inbox");
+        var installed = Assert.Single(Directory.GetDirectories(inbox));
+        Assert.Equal(3, Directory.GetFiles(installed, "*", SearchOption.AllDirectories).Length);
+        Assert.True(File.Exists(archive));
+
+        var second = await service.ImportPathAsync(archive, TestToken);
+        Assert.Equal(0, second.Routed);
+        Assert.Equal(1, second.AlreadyPresent);
+        Assert.Equal(1, second.NeedsReview);
     }
 
     [Fact]

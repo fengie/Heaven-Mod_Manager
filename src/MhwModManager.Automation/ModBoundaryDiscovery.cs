@@ -321,23 +321,34 @@ public static class ModBoundaryDiscovery
         if (nonSupplementary.Any(path =>
                 !path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)))
             return Review(prefix, "Multiple PAK groups are coupled to unrelated package files and need review.");
-        if (groups.Keys.Any(LooksLikeDependentOrVariant))
-            return Review(prefix, "Stellar Blade main, patch or quality variants require manual selection.");
-        // Multiple complete chunks in one named mod can be co-required, not
-        // separate mods. Only a selected root or an explicitly named collection
-        // permits automatic decomposition; elsewhere emit reviewable child rows.
+        // A single incomplete group or a labelled patch/variant must not suppress
+        // unrelated complete mods in a collection. Hold every member of a
+        // potentially dependent family together, including its unlabelled base.
+        var reviewFamilies = groups.Keys.Where(LooksLikeDependentOrVariant)
+            .Select(PakFamily).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // Multiple complete chunks inside a named mod can be co-required. Only
+        // an explicit shared collection may decompose unrelated complete sets.
         var isExplicitCollection = prefix.Length == 0 || IsCollectionWrapper(prefix);
-        var complete = groups.Values.All(files => files.Count == 3 &&
-            files.Select(file => Path.GetExtension(file))
-                .Distinct(StringComparer.OrdinalIgnoreCase).Count() == 3);
         return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(pair => new ModBoundaryCandidate(Join(prefix, StellarBladePakRoot + pair.Key),
-                isExplicitCollection && complete ? ModBoundaryKind.FileSet : ModBoundaryKind.Review,
-                !complete ? "PAK bundle lacks a proven complete companion set."
+            .Select(pair =>
+            {
+                var complete = pair.Value.Count == 3 &&
+                    pair.Value.Select(file => Path.GetExtension(file))
+                        .Distinct(StringComparer.OrdinalIgnoreCase).Count() == 3;
+                var dependent = reviewFamilies.Contains(PakFamily(pair.Key));
+                var kind = isExplicitCollection && complete && !dependent
+                    ? ModBoundaryKind.FileSet : ModBoundaryKind.Review;
+                var evidence = !complete ? "PAK bundle lacks a proven complete companion set."
+                    : dependent ? "Related main, patch or variant PAK packages need manual selection."
                     : !isExplicitCollection ? "Multiple chunks in a named mod need dependency review before splitting."
-                    : "Complete Stellar Blade PAK/UTOC/UCAS companion group.",
-                pair.Value.Select(path => Join(prefix, path)).Order(StringComparer.OrdinalIgnoreCase).ToArray(),
-                prefix.Length == 0 ? null : prefix)).ToArray();
+                    : "Complete independent Stellar Blade PAK/UTOC/UCAS companion group.";
+                return new ModBoundaryCandidate(Join(prefix, StellarBladePakRoot + pair.Key),
+                    kind, evidence,
+                    pair.Value.Select(path => Join(prefix, path))
+                        .Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                    prefix.Length == 0 ? null : prefix);
+            }).ToArray();
     }
 
     private static bool IsCollectionWrapper(string prefix)
@@ -356,7 +367,23 @@ public static class ModBoundaryDiscovery
         var normalized = name.Replace('_', ' ').Replace('-', ' ').ToLowerInvariant();
         var tokens = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         return LooksLikeVariant(name) || tokens.Any(token => token is "main" or "base"
-            or "patch" or "update" or "addon" or "add" or "fix" or "hotfix");
+            or "core" or "root" or "patch" or "update" or "updated" or "addon"
+            or "add" or "fix" or "fixed" or "hotfix");
+    }
+
+    private static string PakFamily(string stem)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var name = stem.EndsWith("_P", StringComparison.OrdinalIgnoreCase)
+            ? stem[..^2] : stem;
+        // Use the same variant-family normalization as folder discovery; a
+        // role-labelled sibling cannot silently be treated as an independent mod.
+        var normalized = VariantFamily(name.Replace("add-on", "addon",
+            StringComparison.OrdinalIgnoreCase));
+        return string.Join(" ", normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(token => token is not ("main" or "base" or "core" or "root"
+                or "patch" or "update" or "updated" or "addon" or "add"
+                or "fix" or "fixed" or "hotfix")));
     }
 
     private static IReadOnlyList<ModBoundaryCandidate> Review(string prefix, string reason)
