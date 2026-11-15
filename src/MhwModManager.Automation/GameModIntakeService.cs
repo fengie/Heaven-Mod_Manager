@@ -48,6 +48,7 @@ public sealed class GameModIntakeService
     private readonly Func<IReadOnlyList<GameProfile>> loadGames;
     private readonly ArchiveInspector archive;
     private readonly long collectionCopyBudget;
+    private readonly int inventoryEntryBudget;
 
     public string ReportPath
     {
@@ -60,7 +61,8 @@ public sealed class GameModIntakeService
 
     public GameModIntakeService(
         string managerHome, string stateRoot, Func<IReadOnlyList<GameProfile>> loadGames,
-        ArchiveInspector? archive = null, long collectionCopyBudget = MaxArchiveBytes)
+        ArchiveInspector? archive = null, long collectionCopyBudget = MaxArchiveBytes,
+        int inventoryEntryBudget = MaxFolderFiles)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(managerHome);
@@ -69,7 +71,11 @@ public sealed class GameModIntakeService
         if (collectionCopyBudget <= 0 || collectionCopyBudget > MaxArchiveBytes)
             throw new ArgumentOutOfRangeException(nameof(collectionCopyBudget),
                 "The collection copy budget must be between 1 byte and 8 GiB.");
+        if (inventoryEntryBudget <= 0 || inventoryEntryBudget > MaxFolderFiles)
+            throw new ArgumentOutOfRangeException(nameof(inventoryEntryBudget),
+                "The filesystem inventory budget must be between 1 and 50,000 entries.");
         this.collectionCopyBudget = collectionCopyBudget;
+        this.inventoryEntryBudget = inventoryEntryBudget;
         this.managerHome = Path.GetFullPath(managerHome);
         this.stateRoot = Path.GetFullPath(stateRoot);
         this.loadGames = loadGames;
@@ -648,7 +654,7 @@ public sealed class GameModIntakeService
         }
     }
 
-    private static async Task<string> HashDirectoryAsync(string directory, CancellationToken ct)
+    private async Task<string> HashDirectoryAsync(string directory, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -666,11 +672,12 @@ public sealed class GameModIntakeService
         return Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant();
     }
 
-    private static string[] SnapshotFolderFiles(string folder, CancellationToken ct)
+    private string[] SnapshotFolderFiles(string folder, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var files = new List<string>();
         var queue = new Queue<(string Folder, int Depth)>();
+        var visitedEntries = 0;
         queue.Enqueue((folder, 0));
         while (queue.Count > 0)
         {
@@ -680,6 +687,11 @@ public sealed class GameModIntakeService
             foreach (var entry in Directory.EnumerateFileSystemEntries(current))
             {
                 ct.ThrowIfCancellationRequested();
+                // Count each enumerated file or directory once, including empty
+                // directories removed from the queue on earlier iterations.
+                // Queue size + file count alone does not bound total traversal.
+                if (++visitedEntries > inventoryEntryBudget)
+                    throw new InvalidDataException($"Mod intake exceeded its {inventoryEntryBudget:N0}-file-and-folder safety budget; import a smaller collection.");
                 RefuseReparseComponents(entry);
                 if (Directory.Exists(entry))
                 {
@@ -688,8 +700,6 @@ public sealed class GameModIntakeService
                     queue.Enqueue((entry, depth + 1));
                 }
                 else if (File.Exists(entry)) files.Add(entry);
-                if (files.Count + queue.Count > MaxFolderFiles)
-                    throw new InvalidDataException("Mod intake exceeded its 50,000-file-and-folder safety budget; import a smaller collection.");
             }
         }
         return files.Order(StringComparer.OrdinalIgnoreCase).ToArray();
