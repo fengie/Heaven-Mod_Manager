@@ -92,6 +92,34 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Multiple_manifest_plugins_inside_a_strong_loader_root_do_not_lose_their_deployment_prefix()
+    {
+        var candidates = ModBoundaryDiscovery.Discover(
+        [
+            "BepInEx/plugins/Plugin A/manifest.json",
+            "BepInEx/plugins/Plugin A/PluginA.dll",
+            "BepInEx/plugins/Plugin B/manifest.json",
+            "BepInEx/plugins/Plugin B/PluginB.dll"
+        ]);
+        var candidate = Assert.Single(candidates.Candidates);
+        Assert.Equal(ModBoundaryKind.Review, candidate.Kind);
+        Assert.Equal(".", candidate.RelativePath);
+    }
+
+    [Fact]
+    public void A_single_explicit_plugin_inside_a_strong_loader_root_preserves_the_entire_layout()
+    {
+        var candidates = ModBoundaryDiscovery.Discover(
+        [
+            "BepInEx/plugins/Plugin A/manifest.json",
+            "BepInEx/plugins/Plugin A/PluginA.dll"
+        ]);
+        var candidate = Assert.Single(candidates.Candidates);
+        Assert.Equal(ModBoundaryKind.Folder, candidate.Kind);
+        Assert.Equal(".", candidate.RelativePath);
+    }
+
+    [Fact]
     public void Direct_nativepc_payload_and_explicit_sibling_manifest_remain_one_review_boundary()
     {
         var found = ModBoundaryDiscovery.Discover(
