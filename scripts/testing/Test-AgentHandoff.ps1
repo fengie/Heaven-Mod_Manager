@@ -37,7 +37,7 @@ foreach($forbidden in @('_AGENT_TRAINING','plugins','heaven-bridge','tools','GLO
 
 $manifest=Active '_AGENT_CONTEXT/handoff-manifest.json' | ConvertFrom-Json
 if($manifest.formatVersion -ne 1 -or $manifest.continuityRequired -ne $true -or $manifest.propagateToNextAgent -ne $true){throw 'Invalid handoff manifest continuity contract.'}
-if([string]$manifest.canonicalRepository -ne 'fengie/mhw-mods' -or [string]$manifest.canonicalBranch -ne 'main'){throw 'Unexpected canonical MHW repository/branch.'}
+if([string]$manifest.canonicalRepository -cne 'fengie/Heaven-Mod_Manager' -or [string]$manifest.canonicalBranch -ne 'main'){throw 'Unexpected canonical MHW repository/branch; old GitHub redirects are aliases, not current inheritance identity.'}
 if([string]$manifest.globalBootstrapRepository -ne 'fengie/heaven-toolbox' -or [string]$manifest.globalBootstrapBranch -ne 'main'){throw 'Global bootstrap must route to fengie/heaven-toolbox@main.'}
 if([string]$manifest.companyTrainer -ne 'fengie/heaven-toolbox@main:_AGENT_TRAINING/README.md'){throw 'companyTrainer must route to the canonical Toolbox trainer.'}
 if([string]$manifest.globalGitDirective -ne 'fengie/heaven-toolbox@main:GLOBAL_GIT_DIRECTIVE.md'){throw 'globalGitDirective must route to the canonical Toolbox Git policy.'}
@@ -147,6 +147,7 @@ if(-not $FeatureCandidate -and (Test-Path -LiteralPath $currentClosurePath -Path
 
 $constitution=Active '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md'
 Need $constitution '(?i)Core Rule' 'Continuity constitution must protect Core Rules.'
+Need $constitution 'Canonical development state is GitHub `fengie/Heaven-Mod_Manager` on branch `main`' 'Continuity constitution must name the current canonical GitHub repository; legacy aliases are not canonical.'
 Need $constitution '(?i)recursive and indefinite' 'Continuity constitution must preserve recursive propagation.'
 Need $constitution '(?i)exact verification' 'Continuity constitution must preserve exact verification.'
 Need $constitution '(?i)SQLite transaction' 'Continuity constitution must preserve SQLite transaction discipline.'
