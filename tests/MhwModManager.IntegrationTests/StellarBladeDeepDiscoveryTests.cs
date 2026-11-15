@@ -45,6 +45,23 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Thousands_of_sibling_mods_are_partitioned_without_losing_deep_children()
+    {
+        var paths = Enumerable.Range(0, 2_000)
+            .SelectMany(i =>
+            {
+                var name = "Mod-" + i.ToString("D4");
+                return Triple($"Mods/Package Vault/2026/{name}/SB/Content/Paks/~mods/{name}_P");
+            })
+            .ToArray();
+        var result = ModBoundaryDiscovery.Discover(paths);
+        Assert.Equal(2_000, result.Candidates.Count);
+        Assert.All(result.Candidates, candidate => Assert.Equal(ModBoundaryKind.Folder, candidate.Kind));
+        Assert.Equal(2_000, result.Candidates.Select(candidate => candidate.RelativePath)
+            .Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    [Fact]
     public void Unattributed_root_file_does_not_mask_several_proven_independent_mod_roots()
     {
         var paths = Triple("Collection/Armor/SB/Content/Paks/~mods/Armor_P")
