@@ -31,7 +31,7 @@ public sealed class GameModIntakeService
     private const int MaxSources = 12;
     private const int MaxEntriesPerSource = 50_000;
     private const int MaxFolderFiles = 50_000;
-    private const int MaxContainerDepth = 24;
+    private const int MaxContainerDepth = 64;
     private const int MaxNestedArchiveDepth = 4;
     private const long MaxArchiveBytes = 8L * 1024 * 1024 * 1024;
     private const int IoBufferSize = 128 * 1024;
@@ -277,9 +277,9 @@ public sealed class GameModIntakeService
 
         var scratch = CreateScratchPath();
         var package = Path.Combine(scratch, SafePackageName(candidate.RelativePath));
-        Directory.CreateDirectory(package);
         try
         {
+            Directory.CreateDirectory(package);
             long copiedBytes = 0;
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var buffer = new byte[IoBufferSize];
@@ -627,7 +627,7 @@ public sealed class GameModIntakeService
                 if (Directory.Exists(entry))
                 {
                     if (depth >= MaxContainerDepth)
-                        throw new InvalidDataException("Extracted mod folder exceeds the safe intake depth.");
+                        throw new InvalidDataException("Mod intake exceeded the safe 64-directory-level traversal limit; use a shallower selected collection.");
                     queue.Enqueue((entry, depth + 1));
                 }
                 else if (File.Exists(entry)) files.Add(entry);
