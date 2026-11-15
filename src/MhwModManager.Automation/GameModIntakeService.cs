@@ -291,10 +291,18 @@ public sealed class GameModIntakeService
                         part is "" or "." or ".." || part.Contains(':')) || !seen.Add(normalized))
                     throw new InvalidDataException("An unsafe or duplicate virtual mod-package path was refused.");
 
+                var gameRelative = normalized;
+                if (!string.IsNullOrWhiteSpace(candidate.SourcePrefix))
+                {
+                    var wrapper = candidate.SourcePrefix.Replace('\\', '/').TrimEnd('/');
+                    if (!normalized.StartsWith(wrapper + "/", StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidDataException("A virtual mod-package member did not belong to its source wrapper.");
+                    gameRelative = normalized[(wrapper.Length + 1)..];
+                }
                 var input = Path.GetFullPath(Path.Combine(sourceDirectory,
                     normalized.Replace('/', Path.DirectorySeparatorChar)));
                 var destination = Path.GetFullPath(Path.Combine(package,
-                    normalized.Replace('/', Path.DirectorySeparatorChar)));
+                    gameRelative.Replace('/', Path.DirectorySeparatorChar)));
                 if (!ContainsPath(sourceDirectory, input) || !ContainsPath(package, destination))
                     throw new InvalidDataException("A virtual mod-package path escaped its staging boundary.");
                 RefuseReparseComponents(input);
