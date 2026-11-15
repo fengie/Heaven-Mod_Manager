@@ -683,18 +683,25 @@ public sealed class GameModIntakeService
     private static string? ReadFolderGameHint(string folder)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        string? declared = null;
+        // Match archive intake: all recognized game declarations must agree.
+        // Returning the first file permits a later conflicting manifest to
+        // silently route an unpacked mod to the wrong registered game.
         foreach (var name in new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" })
         {
             var path = Path.Combine(folder, name);
-            if (File.Exists(path) && new FileInfo(path).Length <= 16384)
-            {
-                RefuseReparseComponents(path);
-                using var input = File.OpenRead(path);
-                var hint = ReadBoundedManifestGame(input);
-                if (!string.IsNullOrWhiteSpace(hint)) return hint;
-            }
+            if (!File.Exists(path) || new FileInfo(path).Length > 16384) continue;
+            RefuseReparseComponents(path);
+            using var input = File.OpenRead(path);
+            var hint = ReadBoundedManifestGame(input);
+            if (string.IsNullOrWhiteSpace(hint)) continue;
+            if (declared is not null &&
+                !GameProfile.NormalizeId(hint).Equals(GameProfile.NormalizeId(declared),
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Folder declares conflicting target games; manual review required.");
+            declared = hint;
         }
-        return null;
+        return declared;
     }
 
     private static string? ReadArchiveGameHint(string archive)
