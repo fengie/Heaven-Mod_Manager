@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Data;
 using MhwModManager.Automation;
+using MhwModManager.Core;
 
 namespace MhwModManager.App;
 
@@ -21,6 +22,7 @@ public sealed class ModLayoutReviewWindow : Window
 {
     public ModLayoutReviewWindow(IReadOnlyList<ModLayoutReviewSource> sources)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(sources);
         Title = "Existing mod layouts — read-only preview";
         Width = 1100;
