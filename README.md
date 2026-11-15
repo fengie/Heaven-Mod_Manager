@@ -1,6 +1,6 @@
 # v8.8.106 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 15, 2026 · 2:13:09 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 15, 2026 · 2:25:35 AM EST** _(repo-enforced)_
 
 Current product version: **8.8.106**.
 
@@ -13,7 +13,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.106 — consolidated deep mod intake and safe manifest routing
 
 - Preserve native source repairs already merged in [#803](https://github.com/fengie/Heaven-Mod_Manager/pull/803), [#805](https://github.com/fengie/Heaven-Mod_Manager/pull/805), [#807](https://github.com/fengie/Heaven-Mod_Manager/pull/807), [#808](https://github.com/fengie/Heaven-Mod_Manager/pull/808), [#809](https://github.com/fengie/Heaven-Mod_Manager/pull/809), [#810](https://github.com/fengie/Heaven-Mod_Manager/pull/810), and [#811](https://github.com/fengie/Heaven-Mod_Manager/pull/811): deep Stellar Blade collections, PAK companions, archive preflight, sibling isolation, complete game identity and fail-closed late, conflicting and oversized app-owned metadata.
-- Release cutoff additionally requires source [#812](https://github.com/fengie/Heaven-Mod_Manager/pull/812) (bounded third-party manifest handling) and [#813](https://github.com/fengie/Heaven-Mod_Manager/pull/813) (shared cumulative selected-collection byte budget). **Merge both with exact native verification before merging this release metadata.**
+- Both [#812](https://github.com/fengie/Heaven-Mod_Manager/pull/812) (bounded third-party manifest handling) and [#813](https://github.com/fengie/Heaven-Mod_Manager/pull/813) (shared cumulative selected-collection byte budget) are now integrated in protected `main@1e21c332995f2eba89a87f016b0f43360b73e268` after exact native source verification. This metadata remains an unreleased version candidate.
 - Maintain original download files, per-game Inboxes, safe loader/FOMOD/variant review, deduplication receipts, and no direct installation into live game trees. Correct unknown/mod-dependent cases remain reviewable rather than guessed.
 - **Release candidate only:** no v8.8.106 immutable updater or physically installed client is verified by this source metadata. Prior [v8.8.105 build 509](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-509) is immutable, from older source `e65a8990`. New exact-main Windows 26/26, immutable package/manifest digest, and separate installed updater/rollback proof remain required. [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) real RAR/7z and user corpus, and [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) isolated updater E2E remain open.
 

@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.106",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.105 immutable updater-main-509 published from exact source e65a8990d6b70bab17f3d15aaaa5d5bc77ef8168. Later deep intake/source PRs #803/#805/#807/#808/#809/#810/#811 are merged; independent #812/#813 must integrate before serialized v8.8.106 publication. Actual positive installed E2E #793 and real user corpus #791 remain open.",
+  "immediateParentRevision": "v8.8.105 immutable updater-main-509 published from source e65a8990d6b70bab17f3d15aaaa5d5bc77ef8168. All deep importer repairs #803/#805/#807/#808/#809/#810/#811/#812/#813 now merged, latest main 1e21c332995f2eba89a87f016b0f43360b73e268; new v8.8.106 metadata release and positive installed E2E remain pending.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main then fengie/Heaven-Mod_Manager@main; read full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, current revision/project plan and relevant Learned Rules. Preserve all active source owners; fully integrate #812/#813 with exact Windows CI before serialized v8.8.106 metadata. Keep immutable updater-main-509 and user Mods/State safe; require new version exact-main release artifact/manifest SHA-256 and protected verification evidence PR. Never clear occupied shared Windows updater namespace or claim skipped E2E as positive rollback (#793). Keep #791 actual hundreds-mod corpus, true RAR/7z and manual review acceptance open. Every successor must inherit, preserve, obey and recursively propagate these Core Rules to the successor after them.",
+  "nextAgentObligation": "Read current fengie/heaven-toolbox@main and fengie/Heaven-Mod_Manager@main, full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, Learned Rules, current revision and project plan. Source cutoff #803/#805/#807/#808/#809/#810/#811/#812/#813 is merged at 1e21c332995f2eba89a87f016b0f43360b73e268. Review and promote v8.8.106 serialized release metadata only after exact native candidate checks, protected main expected-base merge, exact-main Windows release and verified new immutable ZIP/manifest SHA. Preserve historical updater-main-509 and do not touch occupied shared Windows updater roots; #793 positive updater apply/rollback and #791 actual hundreds-mod corpus, real RAR/7z and manual review remain unverified. Every successor must inherit, preserve, obey and recursively propagate these Core Rules to the successor after them.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
