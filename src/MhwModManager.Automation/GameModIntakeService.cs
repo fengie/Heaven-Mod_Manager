@@ -34,6 +34,11 @@ public sealed class GameModIntakeService
     private const int MaxContainerDepth = 64;
     private const int MaxNestedArchiveDepth = 4;
     private const long MaxArchiveBytes = 8L * 1024 * 1024 * 1024;
+    private const int MaxGameManifestBytes = 16 * 1024;
+    // Generic mod metadata is often larger than an app-owned game declaration.
+    // Inspect it within a separate capped budget instead of rejecting ordinary mods.
+    private const int MaxThirdPartyManifestBytes = 256 * 1024;
+    private const int MaxArchiveManifestScanBytes = 4 * 1024 * 1024;
     private const int IoBufferSize = 128 * 1024;
     private const string CollectionCopyLimitError =
         "Mod intake exceeded its cumulative selected-collection byte budget; import a smaller batch.";
@@ -726,14 +731,14 @@ public sealed class GameModIntakeService
             var path = Path.Combine(folder, name);
             if (!File.Exists(path)) continue;
             RefuseReparseComponents(path);
-            if (new FileInfo(path).Length > 16384)
-            {
-                if (name.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("App-owned game manifest exceeds the 16 KiB metadata budget; manual review required.");
-                continue;
-            }
+            var appOwned = name.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase);
+            var maxBytes = appOwned ? MaxGameManifestBytes : MaxThirdPartyManifestBytes;
+            if (new FileInfo(path).Length > maxBytes)
+                throw new InvalidDataException(appOwned
+                    ? "App-owned game manifest exceeds the 16 KiB metadata budget; manual review required."
+                    : "Third-party game metadata exceeds the bounded 256 KiB inspection limit; manual review required.");
             using var input = File.OpenRead(path);
-            var hint = ReadBoundedManifestGame(input);
+            var hint = ReadBoundedManifestGame(input, maxBytes);
             if (string.IsNullOrWhiteSpace(hint)) continue;
             if (declared is not null &&
                 !GameProfile.NormalizeId(hint).Equals(GameProfile.NormalizeId(declared),
@@ -756,19 +761,24 @@ public sealed class GameModIntakeService
         if (zip.Entries.Count > MaxEntriesPerSource)
             throw new InvalidDataException("ZIP game metadata exceeds the 50,000-entry intake limit.");
         string? declared = null;
+        long inspectedMetadataBytes = 0;
         foreach (var entry in zip.Entries)
         {
             var filename = Path.GetFileName(entry.FullName.Replace('\\', '/'));
             if (filename is null || !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
                 .Contains(filename, StringComparer.OrdinalIgnoreCase)) continue;
-            if (entry.Length > 16384 || entry.CompressedLength > 16384)
-            {
-                if (filename.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("App-owned game manifest exceeds the 16 KiB metadata budget; manual review required.");
-                continue;
-            }
+            var appOwned = filename.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase);
+            var maxBytes = appOwned ? MaxGameManifestBytes : MaxThirdPartyManifestBytes;
+            if (entry.Length < 0 || entry.CompressedLength < 0 ||
+                entry.Length > maxBytes || entry.CompressedLength > maxBytes)
+                throw new InvalidDataException(appOwned
+                    ? "App-owned game manifest exceeds the 16 KiB metadata budget; manual review required."
+                    : "Third-party game metadata exceeds the bounded 256 KiB inspection limit; manual review required.");
+            if (entry.Length > MaxArchiveManifestScanBytes - inspectedMetadataBytes)
+                throw new InvalidDataException("Archive game metadata exceeds the cumulative 4 MiB inspection limit; manual review required.");
+            inspectedMetadataBytes += entry.Length;
             using var input = entry.Open();
-            var hint = ReadBoundedManifestGame(input);
+            var hint = ReadBoundedManifestGame(input, maxBytes);
             if (string.IsNullOrWhiteSpace(hint)) continue;
             if (declared is not null &&
                 !GameProfile.NormalizeId(hint).Equals(GameProfile.NormalizeId(declared),
@@ -779,14 +789,17 @@ public sealed class GameModIntakeService
         return declared;
     }
 
-    private static string? ReadBoundedManifestGame(Stream input)
+    private static string? ReadBoundedManifestGame(Stream input, int maxBytes)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // Advertised sizes in untrusted compressed headers are not an actual-output limit.
+        // The same decoded-content ceiling applies even if an archive underreports its sizes.
         using var reader = new StreamReader(input, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, 1024, leaveOpen: true);
-        var buffer = new char[16 * 1024 + 1];
+        var buffer = new char[maxBytes + 1];
         var length = reader.ReadBlock(buffer, 0, buffer.Length);
-        return length <= 16 * 1024 ? TryReadJsonGame(new string(buffer, 0, length)) : null;
+        if (length > maxBytes)
+            throw new InvalidDataException("Game metadata exceeds its bounded decoded-content inspection limit; manual review required.");
+        return TryReadJsonGame(new string(buffer, 0, length));
     }
 
     private static string? TryReadJsonGame(string text)
