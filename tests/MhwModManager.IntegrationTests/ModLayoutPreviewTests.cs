@@ -15,7 +15,7 @@ public sealed class ModLayoutPreviewTests
         "Game.exe", "mods", nexusGameDomain: id == "stellar-blade" ? "stellarblade" : id);
 
     private static ModLayoutInspection Inspect(string game, params string[] paths) =>
-        ModLayoutPreview.Inspect(ModBoundaryDiscovery.Discover(paths), Game(game));
+        ModLayoutPreview.Inspect(ModBoundaryDiscovery.Discover(paths), Game(game), TestContext.Current.CancellationToken);
 
     private static void AssertConserved(string[] paths, ModLayoutInspection inspection)
     {
@@ -35,7 +35,7 @@ public sealed class ModLayoutPreviewTests
         var discovery = ModBoundaryDiscovery.Discover(paths);
         Assert.NotNull(discovery.FileInventory);
         Assert.Equal(paths.Order(StringComparer.OrdinalIgnoreCase), discovery.FileInventory);
-        AssertConserved(paths, ModLayoutPreview.Inspect(discovery, Game("sifu")));
+        AssertConserved(paths, ModLayoutPreview.Inspect(discovery, Game("sifu"), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public sealed class ModLayoutPreviewTests
     public void Missing_inventory_is_not_reported_as_a_successful_empty_inspection()
     {
         var legacy = new ModBoundaryResult([]);
-        Assert.Throws<InvalidOperationException>(() => ModLayoutPreview.Inspect(legacy, Game("sifu")));
+        Assert.Throws<InvalidOperationException>(() => ModLayoutPreview.Inspect(legacy, Game("sifu"), TestContext.Current.CancellationToken));
     }
 
     [Fact]
