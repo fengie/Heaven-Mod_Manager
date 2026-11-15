@@ -88,23 +88,39 @@ public sealed class ArchiveInspector
         if(!destinationFull.Equals(trusted,StringComparison.OrdinalIgnoreCase) && !destinationFull.StartsWith(trustedPrefix,StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Extraction destination is outside the trusted root.");
         if(!Directory.Exists(trusted))throw new InvalidDataException("Trusted extraction root does not exist.");
-        EnsureSafeDirectoryPath(trusted,destinationFull);
         var root=destinationFull+Path.DirectorySeparatorChar;
         using var archive=OpenArchiveOrThrowInvalidData(archivePath);
+
+        // Validate the whole file manifest before creating any destination path or
+        // writing a payload. A late traversal, duplicate, or size violation must not
+        // leave earlier extracted files behind as an apparently usable mod.
+        var files=new List<(IArchiveEntry Entry,string Destination)>();
+        var outputs=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         long declaredTotal=0;
-        long actualTotal=0;
-        int count=0;
-        foreach(var e in archive.Entries.Where(x=>!x.IsDirectory))
+        foreach(var entry in archive.Entries.Where(x=>!x.IsDirectory))
         {
             ct.ThrowIfCancellationRequested();
-            count++;
-            declaredTotal=checked(declaredTotal+e.Size);
-            if(count>MaxEntries||declaredTotal>limits.MaxDeclaredExpandedBytes)
+            if(files.Count>=MaxEntries)
                 throw new InvalidDataException("Archive expansion safety limit exceeded.");
-            var key=(e.Key??"").Replace('/',Path.DirectorySeparatorChar).Replace('\\',Path.DirectorySeparatorChar);
-            if(!PathRules.IsSafeArchiveRelativePath(key))throw new InvalidDataException($"Unsafe archive path: {e.Key}");
+            if(entry.Size<0||entry.Size>limits.MaxDeclaredExpandedBytes-declaredTotal)
+                throw new InvalidDataException("Archive expansion safety limit exceeded.");
+            declaredTotal+=entry.Size;
+            var key=(entry.Key??"").Replace('/',Path.DirectorySeparatorChar).Replace('\\',Path.DirectorySeparatorChar);
+            if(!PathRules.IsSafeArchiveRelativePath(key))
+                throw new InvalidDataException($"Unsafe archive path: {entry.Key}");
             var dest=Path.GetFullPath(Path.Combine(destinationFull,key));
-            if(!dest.StartsWith(root,StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Archive path traversal detected.");
+            if(!dest.StartsWith(root,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Archive path traversal detected.");
+            if(!outputs.Add(dest))
+                throw new InvalidDataException($"Archive contains a duplicate output path: {entry.Key}");
+            files.Add((entry,dest));
+        }
+
+        EnsureSafeDirectoryPath(trusted,destinationFull);
+        long actualTotal=0;
+        foreach(var (e,dest) in files)
+        {
+            ct.ThrowIfCancellationRequested();
             var parent=Path.GetDirectoryName(dest)!;
             EnsureSafeDirectoryPath(trusted,parent);
 
