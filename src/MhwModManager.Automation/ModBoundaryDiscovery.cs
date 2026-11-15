@@ -66,22 +66,33 @@ public static class ModBoundaryDiscovery
         return new(Analyze(files, "", 0));
     }
 
-    private static IReadOnlyList<ModBoundaryCandidate> Analyze(string[] paths, string prefix, int depth)
+    private static IReadOnlyList<ModBoundaryCandidate> Analyze(string[] relative, string prefix, int depth)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (depth > MaxLevels)
             return Review(prefix, "Package nesting exceeds the safe discovery depth.");
 
-        var scoped = paths.Where(path => prefix.Length == 0 ||
-            path.StartsWith(prefix + "/", StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (scoped.Length == 0) return [];
+        if (relative.Length == 0) return [];
 
-        var relative = scoped.Select(path => prefix.Length == 0 ? path : path[(prefix.Length + 1)..]).ToArray();
-        var directFiles = relative.Where(path => !path.Contains('/')).ToArray();
-        var directories = relative.Where(path => path.Contains('/'))
-            .Select(path => path[..path.IndexOf('/')])
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        // Partition each directory's already-scoped paths once. Repeatedly searching
+        // the entire original inventory for each sibling would become quadratic on
+        // thousands of mods and would stall the WPF import of large collections.
+        var directFiles = new List<string>();
+        var children = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in relative)
+        {
+            var slash = path.IndexOf('/');
+            if (slash < 0)
+            {
+                directFiles.Add(path);
+                continue;
+            }
+            var directory = path[..slash];
+            if (!children.TryGetValue(directory, out var files))
+                children.Add(directory, files = []);
+            files.Add(path[(slash + 1)..]);
+        }
+        var directories = children.Keys.Order(StringComparer.OrdinalIgnoreCase).ToArray();
 
         if (relative.Any(path => path.StartsWith("fomod/", StringComparison.OrdinalIgnoreCase)
             && IsFomodConfiguration(path)))
@@ -147,8 +158,7 @@ public static class ModBoundaryDiscovery
         }
 
         var meaningfulDirectories = directories.Where(directory => !IsSupplementaryDirectory(directory)
-            || relative.Any(path => path.StartsWith(directory + "/", StringComparison.OrdinalIgnoreCase)
-                && !IsSupplementary(path[(directory.Length + 1)..]))).ToArray();
+            || children[directory].Any(path => !IsSupplementary(path))).ToArray();
 
         // Multiple variants are normally mutually exclusive versions of one mod, not multiple mods.
         if (meaningfulDirectories.Length > 1 && meaningfulDirectories.Any(LooksLikeVariant))
@@ -163,7 +173,7 @@ public static class ModBoundaryDiscovery
         foreach (var directory in meaningfulDirectories)
         {
             var child = Join(prefix, directory);
-            var found = Analyze(paths, child, depth + 1);
+            var found = Analyze(children[directory].ToArray(), child, depth + 1);
             // Preserve independent siblings when one child needs review. The review
             // candidate is reported separately and never auto-installed.
             candidates.AddRange(found);
