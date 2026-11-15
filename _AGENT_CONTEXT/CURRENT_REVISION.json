@@ -7,7 +7,7 @@
   "currentVersion": "8.8.106",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.106-consolidated-mod-intake-release-candidate",
+  "status": "v8.8.106-serialized-release-metadata-pending-integration",
   "nextMilestone": "After exact native CI and protected integration of #812/#813, verify the serialized v8.8.106 metadata PR, protected-main Windows Release Gate 26/26 and new immutable source-bound ZIP/manifest. Real #791 user corpus and #793 isolated installed update/rollback remain unverified.",
   "nextRequiredAction": "Refresh canonical main and owners; integrate and verify #812 then #813 with preserved unique tests. Reconcile release/v8.8.106-consolidated-intake-20261115 to final main, require exact-head metadata CI including README/version/handoff, protected merge and exact-main Windows release with ZIP/manifest SHA. Preserve previous updater-main-509 and occupied real updater root. Do not claim installed Heaven2 health or positive E2E without direct proof.",
   "verificationAppliesToCommit": "2b8e5ae302dfcbbefe7b29193b9c96edd79b7002",
