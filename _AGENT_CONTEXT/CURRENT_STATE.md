@@ -1,4 +1,4 @@
-# v8.8.105 candidate-review importer — canonical source state
+# v8.8.105 candidate-review importer — canonical state
 
 [PR #802](https://github.com/fengie/Heaven-Mod_Manager/pull/802) integrated in protected main `20b8fbb67f3ffe803026590cc77e5086d97b2db9` and provides an explicitly opened, read-only WPF per-candidate report for one-shot mixed-folder/archive imports (source, detected registered game, routing status, evidence). It does not auto-assign unknown mods, install into a live game or alter updater state. Background folder monitoring has no review dialog.
 
