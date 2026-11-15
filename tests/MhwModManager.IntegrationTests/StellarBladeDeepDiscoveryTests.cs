@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using MhwModManager.Automation;
 using MhwModManager.Core;
@@ -27,7 +28,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         var paths = Enumerable.Range(0, 320)
             .SelectMany(i =>
             {
-                var mod = "Outfit-" + i.ToString("D3");
+                var mod = "Outfit-" + i.ToString("D3", CultureInfo.InvariantCulture);
                 return Triple($"Mods/Downloads/2026/Stellar Blade Collection/Outfits/{mod}/SB/Content/Paks/~mods/{mod}_P");
             })
             .Append("desktop.ini")
@@ -41,7 +42,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         Assert.Equal(320, folders.Select(candidate => candidate.RelativePath).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.Contains(folders, candidate => candidate.RelativePath.EndsWith("/Outfit-000", StringComparison.Ordinal));
         Assert.Contains(folders, candidate => candidate.RelativePath.EndsWith("/Outfit-319", StringComparison.Ordinal));
-        Assert.Single(result.Candidates.Where(candidate => candidate.Kind == ModBoundaryKind.Review));
+        Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Review);
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         var paths = Enumerable.Range(0, 2_000)
             .SelectMany(i =>
             {
-                var name = "Mod-" + i.ToString("D4");
+                var name = "Mod-" + i.ToString("D4", CultureInfo.InvariantCulture);
                 return Triple($"Mods/Package Vault/2026/{name}/SB/Content/Paks/~mods/{name}_P");
             })
             .ToArray();
@@ -83,8 +84,8 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
             .Concat(Triple("Mods/Collection/Low Resolution/SB/Content/Paks/~mods/Outfit_P"))
             .Concat(Triple("Mods/Collection/Unrelated Armor/SB/Content/Paks/~mods/Armor_P"));
         var result = ModBoundaryDiscovery.Discover(files);
-        Assert.Single(result.Candidates.Where(candidate => candidate.Kind == ModBoundaryKind.Folder
-            && candidate.RelativePath.EndsWith("/Unrelated Armor", StringComparison.Ordinal)));
+        Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Folder
+            && candidate.RelativePath.EndsWith("/Unrelated Armor", StringComparison.Ordinal));
         Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Review));
         Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Folder
             && candidate.RelativePath.Contains("Resolution", StringComparison.OrdinalIgnoreCase));
@@ -157,7 +158,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
 
         var result = ModBoundaryDiscovery.Discover(paths);
         Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Folder));
-        Assert.Single(result.Candidates.Where(candidate => candidate.Kind == ModBoundaryKind.Review));
+        Assert.Single(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Review);
     }
 
     [Fact]
@@ -376,7 +377,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         var sources = new List<string>();
         for (var i = 0; i < 12; i++)
         {
-            var mod = "Outfit-" + i.ToString("D3");
+            var mod = "Outfit-" + i.ToString("D3", CultureInfo.InvariantCulture);
             var folder = Path.Combine(source, "Mods", "Downloads", "Collection", mod, "SB",
                 "Content", "Paks", "~mods");
             Directory.CreateDirectory(folder);
