@@ -4,7 +4,9 @@ Canonical `fengie/Heaven-Mod_Manager@main` source already includes deep Stellar 
 
 ## Verification boundary
 
-PR #811 exact head `ffc774640d373b0a535add98cd948c89411b6872` passed native Feature Gate [43686796948](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43686796948) 26/26 (352 core, 112 automation, 504 integration/fault tests). Its source merged as `e29a01d3bc9218ff84f7c7731ff21eea74c189e1`. Source #812 head `83ad12080930e7e1bf479f1f82adc0392f057717` passed [Windows Feature Gate 43689126798](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43689126798) 26/26 (including 513 integration/fault tests), while #813 head `4adfdea3d8b7e616a70e5ff2d95f01b0223fdcf5` passed [Windows Gate 43688039038](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43688039038). Both merged in `main@1e21c332995f2eba89a87f016b0f43360b73e268`. This v8.8.106 metadata has **no observed immutable release or installed-client proof**, and older tests do not certify changed release inputs. Keep existing lastClosedVerification pointers untouched until verified exact-source/run-bound promotion.
+Current hosted-Windows closure: v8.8.106 source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` passed run `43690972860` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`.
+
+The tested source remains `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Source versus release
 
