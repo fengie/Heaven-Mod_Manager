@@ -88,6 +88,32 @@ public sealed class LargeZipManifestIntakeTests : IDisposable
     }
 
 
+
+    [Fact]
+    public async Task Oversized_app_owned_zip_manifest_requires_review_instead_of_name_fallback()
+    {
+        Directory.CreateDirectory(home);
+        var selected = Path.Combine(home, "MHW Armor.zip");
+        var largeJson = "{\"gameId\":\"nier-automata\",\"padding\":\"" +
+            new string('x', 16 * 1024) + "\"}";
+        using (var archive = ZipFile.Open(selected, ZipArchiveMode.Create))
+        {
+            using (var payload = archive.CreateEntry("OutfitPlugin.dll").Open())
+                payload.WriteByte(42);
+            using (var manifest = archive.CreateEntry("mod-intake.json").Open())
+                await manifest.WriteAsync(Encoding.UTF8.GetBytes(largeJson), TestToken);
+        }
+
+        var intake = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var report = await intake.ImportPathAsync(selected, TestToken);
+
+        Assert.Equal(0, report.Routed);
+        Assert.Equal(1, report.NeedsReview);
+        Assert.Contains("16 KiB", Assert.Single(report.Items).Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.False(Directory.Exists(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
+        Assert.True(File.Exists(selected));
+    }
+
     public void Dispose()
     {
         try { if (Directory.Exists(home)) Directory.Delete(home, recursive: true); }

@@ -71,6 +71,30 @@ public sealed class FolderGameManifestIntakeTests : IDisposable
         Assert.Equal(1, again.AlreadyPresent);
     }
 
+
+    [Fact]
+    public async Task Oversized_app_owned_folder_manifest_requires_review_instead_of_name_fallback()
+    {
+        var input = Path.Combine(home, "MHW Armor");
+        Directory.CreateDirectory(input);
+        var declared = Path.Combine(input, "mod-intake.json");
+        var largeJson = "{\"gameId\":\"nier-automata\",\"padding\":\"" +
+            new string('x', 16 * 1024) + "\"}";
+        await File.WriteAllTextAsync(declared, largeJson, TestToken);
+        await File.WriteAllTextAsync(Path.Combine(input, "armor.bin"), "payload", TestToken);
+
+        var manager = Path.Combine(home, "Manager");
+        var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => Games);
+        var report = await intake.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(0, report.Routed);
+        Assert.Equal(1, report.NeedsReview);
+        Assert.Contains("16 KiB", Assert.Single(report.Items).Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.False(Directory.Exists(Path.Combine(manager, "Mods by Game", "monster-hunter-world", "Inbox")));
+        Assert.True(File.Exists(declared));
+        Assert.True(File.Exists(Path.Combine(input, "armor.bin")));
+    }
+
     public void Dispose()
     {
         try { if (Directory.Exists(home)) Directory.Delete(home, recursive: true); }
