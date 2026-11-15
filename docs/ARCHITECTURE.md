@@ -79,3 +79,14 @@ Every substantial operation can have a correlation ID and timing/runtime counter
 Source verification is intentionally outside the runtime domain model. `tools/MhwModManager.FunctionVerifier` parses `src` with the Roslyn parser shipped by the pinned SDK and maintains `.verification/function-status.json`. Unchanged exact fingerprints with `verified=true` are reused; changed/new functions are re-opened for verification and must have a method-entry master trace. Cache promotion is a final commit step that occurs only after the full build/test/self-test pipeline passes. A failed run cannot overwrite the previous known-good function baseline.
 
 The runtime master trace also carries an async-flow scope chain. First-chance exceptions mark all active scopes as having observed an error, producing `PASS-CHECK` or `ERROR-CHECK` diagnostics at scope completion without swallowing exceptions or changing transactional behavior.
+
+## Cross-product navigation boundary
+
+`HeavenGameHubCatalog` is a bounded, optional HTTP reader for
+`fengie/Heaven.gg` public `games.json`. It returns only validated
+site navigation URLs after explicit user action; it cannot register
+game profiles, download executable content, change game selection,
+or alter any deployment/rollback state. Unavailable or unexpected
+catalog content fails closed. Synthetic offline HTTP fixtures test
+the consumer; the website's own Chrome and served-route checks remain
+the independent producer acceptance.

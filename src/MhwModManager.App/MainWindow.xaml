@@ -218,7 +218,11 @@
                                             <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Install Mods from Inbox" Command="{Binding ProcessInboxCommand}"/>
                                             <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Find Mod Causing Startup Crash" Command="{Binding AutoDiagnoseCrashCommand}"/>
                                             <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Clean Up Duplicate Mods" Command="{Binding SmartCleanupCommand}"/>
-                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export Mod List" Command="{Binding ExportRecipeCommand}"/>
+                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left"
+                                    Content="Open Heaven.gg Game Hub" Command="{Binding OpenHeavenGameGuideCommand}"
+                                    ToolTip="Opens a read-only public game guide in your browser; never changes local game files."
+                                    AutomationProperties.Name="Open public Heaven.gg game guide"/>
+                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Export Mod List" Command="{Binding ExportRecipeCommand}"/>
                                             <Button Margin="0" HorizontalContentAlignment="Left" Content="Advanced Tools &amp; Diagnostics" Command="{Binding OpenWorkflowsCommand}"/>
                                         </StackPanel>
                                     </Expander>
