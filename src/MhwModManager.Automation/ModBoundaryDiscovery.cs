@@ -46,6 +46,10 @@ public static class ModBoundaryDiscovery
         "nativePC", "GameRoot", "BepInEx", "reframework", "mods", "plugins",
         "MelonLoader", "UE4SS", "Paks", "Data"
     };
+    private static readonly HashSet<string> StrongLoaderRoots = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "nativePC", "BepInEx", "reframework", "MelonLoader", "UE4SS", "GameRoot"
+    };
     private static readonly HashSet<string> PackageManifests = new(StringComparer.OrdinalIgnoreCase)
     {
         "mod-intake.json", "mod.json", "manifest.json", "meta.json",
@@ -130,12 +134,8 @@ public static class ModBoundaryDiscovery
         // Known installation roots cannot safely be separated from another
         // explicitly packaged sibling. Keep that conflicting tree in review
         // rather than installing a partial nativePC/BepInEx/UE4SS payload.
-        var strictLoaderRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "nativePC", "BepInEx", "reframework", "MelonLoader", "UE4SS", "GameRoot"
-        };
-        if (directories.Any(strictLoaderRoots.Contains) &&
-            (archived.Length > 0 || directories.Where(d => !strictLoaderRoots.Contains(d))
+        if (directories.Any(StrongLoaderRoots.Contains) &&
+            (archived.Length > 0 || directories.Where(d => !StrongLoaderRoots.Contains(d))
                 .Any(d => HasExplicitChildPackageEvidence(relative, d))))
             return Review(prefix, "Independent packages conflict with a shared loader root.");
 
