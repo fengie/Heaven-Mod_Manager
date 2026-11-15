@@ -8,7 +8,8 @@ namespace MhwModManager.IntegrationTests;
 /// <summary>
 /// Pinned real archive fixtures from SharpCompress v0.50.4, rather than synthetic
 /// ZIP bytes renamed to RAR/7z. These exercise the pinned production decoder.
-/// Original upstream paths and Git blob identities are in Fixtures/ArchiveFormats/README.md.
+/// Upstream fixture identities are pinned and SHA-1 verified; tests use a local corpus
+/// if provided, or fetch the upstream public fixtures without credentials.
 /// </summary>
 public sealed class RealArchiveFormatAcceptanceTests : IDisposable
 {
@@ -67,16 +68,38 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
         Assert.True(File.Exists(archivePath));
     }
 
+    private static readonly HttpClient FixtureClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(30),
+        MaxResponseContentBufferSize = 128 * 1024
+    };
+
     private async Task<string> Materialize(string name, int expectedLength, string blobSha)
     {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
-            root = root.Parent;
-        Assert.NotNull(root);
-        var fixturePath = Path.Combine(root!.FullName, "tests", "MhwModManager.IntegrationTests",
-            "Fixtures", "ArchiveFormats", name + ".b64");
-        var encoded = await File.ReadAllTextAsync(fixturePath, TestToken);
-        var bytes = Convert.FromBase64String(encoded);
+        // An explicit local fixture corpus works offline. Otherwise fetch only
+        // public upstream fixture bytes pinned to the tested SharpCompress tag,
+        // and verify the exact immutable Git blob identity before any parsing.
+        var localFixtures = Environment.GetEnvironmentVariable("MHW_REAL_ARCHIVE_FIXTURES_ROOT");
+        byte[] bytes;
+        if (!string.IsNullOrWhiteSpace(localFixtures))
+        {
+            bytes = await File.ReadAllBytesAsync(Path.Combine(localFixtures, name), TestToken);
+        }
+        else
+        {
+            var url = "https://raw.githubusercontent.com/adamhathcock/sharpcompress/0.50.4/" +
+                "tests/TestArchives/Archives/" + Uri.EscapeDataString(name);
+            try
+            {
+                bytes = await FixtureClient.GetByteArrayAsync(url, TestToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new InvalidOperationException(
+                    "Real archive acceptance needs the pinned public SharpCompress fixture or " +
+                    "MHW_REAL_ARCHIVE_FIXTURES_ROOT pointing to an independently verified offline corpus.", ex);
+            }
+        }
         Assert.Equal(expectedLength, bytes.Length);
         var prefix = Encoding.ASCII.GetBytes($"blob {bytes.Length}\0");
         var gitObject = new byte[prefix.Length + bytes.Length];
