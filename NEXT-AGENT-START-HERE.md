@@ -10,6 +10,8 @@ Canonical source: `fengie/Heaven-Mod_Manager@main`. Global trainer: `fengie/heav
 
 Exact PR candidate head `a401f52c396faa9f952707d7a0e56a3848daa085` passed [26/26 native Windows Feature Gate #43675134924](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134924): 454 integration regressions, 0 functional trace gaps, 0 failures. [AutoUpdate Contract #43675134917](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134917) passed. Initial 25/26 gate `43674475607` was repaired by tracing the new constructor without lowering any verifier.
 
+**Verification state:** The earlier source PR #802 passed native Windows feature checks on its exact head, but this serialized v8.8.105 release candidate still requires its own passing verification and independent immutable publication. No installed-client E2E success is claimed.
+
 ## Immutable release boundary
 
 Previously published [v8.8.104 / updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) belongs exactly to source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32`; [release gate #43669418277](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43669418277) passed. Never overwrite it or earlier build 501.
