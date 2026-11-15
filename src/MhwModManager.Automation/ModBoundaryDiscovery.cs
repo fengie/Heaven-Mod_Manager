@@ -204,6 +204,14 @@ public static class ModBoundaryDiscovery
         var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in relativePaths)
         {
+            // Distinct archives nested below a loader-named collection are
+            // independent inspectable packages. Do not classify their enclosing
+            // Mods/Paks folder as one package before we reach these archives.
+            if (path.Contains('/') && IsArchive(path))
+            {
+                roots.Add(path);
+                if (roots.Count > 1) return true;
+            }
             var segments = path.Split('/');
             if (segments.Length > 1 && PackageManifests.Contains(segments[^1]))
             {
