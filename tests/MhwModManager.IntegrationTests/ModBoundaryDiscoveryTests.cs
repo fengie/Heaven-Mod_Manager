@@ -213,6 +213,76 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Loose_file_and_nested_docs_do_not_mask_independent_archive_inputs()
+    {
+        var discovery = ModBoundaryDiscovery.Discover(
+        [
+            "MHW Armor.zip",
+            "NieR Automata Outfit.7z",
+            "unknown.bin",
+            "Screenshots/preview.png"
+        ]);
+
+        Assert.Equal(2, discovery.Candidates.Count(x => x.Kind == ModBoundaryKind.Archive));
+        Assert.Contains(discovery.Candidates, x => x.Kind == ModBoundaryKind.Archive
+            && x.RelativePath == "MHW Armor.zip");
+        Assert.Contains(discovery.Candidates, x => x.Kind == ModBoundaryKind.Archive
+            && x.RelativePath == "NieR Automata Outfit.7z");
+        Assert.Single(discovery.Candidates, x => x.Kind == ModBoundaryKind.Review);
+    }
+
+    [Fact]
+    public void Direct_package_manifest_or_loader_root_still_blocks_unsafe_archive_splitting()
+    {
+        var manifest = ModBoundaryDiscovery.Discover(
+        [
+            "manifest.json",
+            "MHW Armor.zip",
+            "unknown.bin",
+            "Extras/notes.txt"
+        ]);
+        Assert.Equal(ModBoundaryKind.Review, Assert.Single(manifest.Candidates).Kind);
+
+        var loader = ModBoundaryDiscovery.Discover(
+        [
+            "nativePC/pl/armor/test.tex",
+            "MHW Armor.zip",
+            "unknown.bin",
+            "Extras/notes.txt"
+        ]);
+        Assert.Equal(ModBoundaryKind.Review, Assert.Single(loader.Candidates).Kind);
+    }
+
+    [Fact]
+    public async Task Mixed_folder_archives_route_even_with_unrelated_loose_files_and_nested_docs()
+    {
+        var input = Path.Combine(home, "mixed-archives-and-docs");
+        Directory.CreateDirectory(input);
+        CreateZip(Path.Combine(input, "MHW Armor.zip"), "nativePC/pl/armor/armor.tex");
+        CreateZip(Path.Combine(input, "NieR Automata Outfit.zip"), "mods/outfit.dds");
+        await File.WriteAllTextAsync(Path.Combine(input, "unknown.bin"), "unidentified", TestToken);
+        var docs = Path.Combine(input, "Screenshots");
+        Directory.CreateDirectory(docs);
+        await File.WriteAllTextAsync(Path.Combine(docs, "preview.png"), "preview", TestToken);
+
+        var manager = Path.Combine(home, "Manager");
+        var service = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => Games);
+        var first = await service.ImportPathAsync(input, TestToken);
+
+        Assert.Equal(2, first.Routed);
+        Assert.Equal(1, first.NeedsReview);
+        Assert.Single(Directory.GetFiles(Path.Combine(manager, "Mods by Game", "monster-hunter-world", "Inbox")));
+        Assert.Single(Directory.GetFiles(Path.Combine(manager, "Mods by Game", "nier-automata", "Inbox")));
+        Assert.True(File.Exists(Path.Combine(input, "unknown.bin")));
+        Assert.True(File.Exists(Path.Combine(input, "MHW Armor.zip")));
+
+        var replay = await service.ImportPathAsync(input, TestToken);
+        Assert.Equal(0, replay.Routed);
+        Assert.Equal(2, replay.AlreadyPresent);
+        Assert.Equal(1, replay.NeedsReview);
+    }
+
+    [Fact]
     public async Task Mixed_bundle_holds_fomod_child_without_blocking_independent_mods()
     {
         var input = Path.Combine(home, "mixed-installer.zip");
