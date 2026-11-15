@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.103",
-  "verifiedAtUtc": "2026-11-14T23:57:34.0679271+00:00",
+  "verifiedAtUtc": "2026-11-15T02:41:22.0082925+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -1947,6 +1947,13 @@
       "fingerprint": "29c4b9de949132e8b8fe14f2a231c4eaab1ff63bf205ccab5d5c6d83027e4ab4",
       "verified": true,
       "verifiedAtUtc": "2026-11-14T23:57:34.0679271+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Games.cs::MainWindowViewModel::method:OpenHeavenGameGuide()",
+      "fingerprint": "606cbccb60d2ce02f1d1e724c7955988762622588de93106def77444e5e75762",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T02:41:22.0082925+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -7043,6 +7050,27 @@
       "fingerprint": "4df936a2df3739f75f2bef00adbc43229914e497f4b72da5d2f7ee91668794bb",
       "verified": true,
       "verifiedAtUtc": "2026-11-14T23:57:34.0679271+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Core/HeavenGameHubCatalog.cs::HeavenGameHubCatalog::method:FindGuideAsync(string?,HttpClient,CancellationToken)",
+      "fingerprint": "dba42f0a83e3c6f1f3756ad80462ce68784683e4bfee98e36c0019b62a6d410d",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T02:41:22.0082925+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Core/HeavenGameHubCatalog.cs::HeavenGameHubCatalog::method:ReadVerifiedGuide(string,JsonElement)",
+      "fingerprint": "17392ff1e7f2d0c10e175077c048474770c8b0ee67eda59ac9f821b28570572a",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T02:41:22.0082925+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Core/HeavenGameHubCatalog.cs::HeavenGameHubCatalog::method:HasKeys(JsonElement,params string[])",
+      "fingerprint": "033c37f5c1a7978c1c88a8b31722385084ec08bd42ef9f1d6fb72e4eaf6b3ad1",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T02:41:22.0082925+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {

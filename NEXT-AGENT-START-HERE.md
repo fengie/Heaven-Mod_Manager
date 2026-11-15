@@ -8,9 +8,9 @@ PR #796 merged as `03219436e4f110dfa9b63a66452d94a2bb42553e` and adds conservati
 
 ## Verification boundary
 
-Windows Release Gate [run 43655383641](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43655383641) passed **26/26** for exact main source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`. Full verification receipt: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`. Immutable ZIP SHA-256 `d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c`, manifest SHA-256 `a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0`. Evidence-only PR commits must not be described as new verified product sources.
+Current hosted-Windows closure: v8.8.103 source `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc` passed run `43668644734` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`.
 
-[Installed Client E2E run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) **failed before update/rollback**: the runner's shared Windows updater root was nonempty; the safety guard correctly refused deletion. Do not claim on-device update, rollback or Heaven2 runtime verification from this build/publication.
+The tested source remains `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and next action
 
