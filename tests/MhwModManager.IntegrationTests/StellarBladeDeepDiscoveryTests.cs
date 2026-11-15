@@ -92,6 +92,30 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Direct_nativepc_payload_and_explicit_sibling_manifest_remain_one_review_boundary()
+    {
+        var found = ModBoundaryDiscovery.Discover(
+        [
+            "nativePC/pl/armor/base.tex",
+            "Another Mod/manifest.json",
+            "Another Mod/nativePC/pl/armor/other.tex"
+        ]);
+        var candidate = Assert.Single(found.Candidates);
+        Assert.Equal(ModBoundaryKind.Review, candidate.Kind);
+        Assert.Equal(".", candidate.RelativePath);
+    }
+
+    [Fact]
+    public void Tree_exceeding_safe_depth_reports_explicit_incomplete_discovery()
+    {
+        var deep = string.Join("/", Enumerable.Range(0, 70).Select(level =>
+            "level-" + level.ToString(CultureInfo.InvariantCulture)));
+        var found = ModBoundaryDiscovery.Discover([deep + "/mod.pak"]);
+        Assert.Single(found.Candidates, candidate => candidate.Kind == ModBoundaryKind.Review
+            && candidate.Evidence.Contains("safe discovery depth", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Independent_archives_nested_under_loader_named_collection_are_not_collapsed()
     {
         var result = ModBoundaryDiscovery.Discover(
