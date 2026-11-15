@@ -117,6 +117,12 @@ Need $start '_AGENT_CONTEXT/CONTINUITY_PROTOCOL\.md' 'Current handoff must link 
 Need $start 'LEARNED_RULES\.md' 'Current handoff must link active Learned Rules.'
 Continuity $start 'Current handoff'
 
+# Require a replaceable, bounded verification section on feature candidates as
+# well as on main. Otherwise a metadata PR can pass and the first canonical
+# release will fail the synthetic evidence-closure synchronization fixture.
+$stateVerification=VerificationSection $currentState 'CURRENT_STATE'
+$handoffVerification=VerificationSection $start 'Current handoff'
+
 $currentClosureRelative="_AGENT_CONTEXT/EVIDENCE/v$version-heaven-windows-closure.log"
 $currentClosurePath=Join-Path $Root ($currentClosureRelative.Replace([char]47,[char]92))
 if(-not $FeatureCandidate -and (Test-Path -LiteralPath $currentClosurePath -PathType Leaf)){
@@ -133,8 +139,6 @@ if(-not $FeatureCandidate -and (Test-Path -LiteralPath $currentClosurePath -Path
     if(([string]$revision.lastClosedVerificationRun -notmatch [regex]::Escape($closedSource)) -or ([string]$revision.lastClosedVerificationRun -notmatch [regex]::Escape($closedRun))){throw 'CURRENT_REVISION lastClosedVerificationRun must carry the current closure source and run.'}
     if(([string]$revision.verificationScopeNote -notmatch [regex]::Escape($closedSource)) -or ([string]$revision.verificationScopeNote -notmatch [regex]::Escape($closedRun))){throw 'CURRENT_REVISION verificationScopeNote must carry the current closure source and run.'}
 
-    $stateVerification=VerificationSection $currentState 'CURRENT_STATE'
-    $handoffVerification=VerificationSection $start 'Current handoff'
     foreach($surface in @(@('CURRENT_STATE',$stateVerification),@('Current handoff',$handoffVerification))){
         $name=[string]$surface[0]
         $section=[string]$surface[1]

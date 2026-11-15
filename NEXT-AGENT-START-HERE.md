@@ -14,6 +14,10 @@ Exact PR candidate head `a401f52c396faa9f952707d7a0e56a3848daa085` passed [26/26
 
 **Verification state:** The earlier source PR #802 passed native Windows feature checks on its exact head, but this serialized v8.8.105 release candidate still requires its own passing verification and independent immutable publication. No installed-client E2E success is claimed.
 
+## Verification boundary
+
+The earlier import-review source PR #802 passed native Windows feature checks. Canonical v8.8.105 release run [#43678305726](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43678305726) did not close the release: the synthetic closure preflight could not find this bounded section. The repository's next exact-main release gate must pass and independently publish a new immutable tag before v8.8.105 can be called released. Positive installed-client updater/rollback evidence remains blocked by #793.
+
 ## Immutable release boundary
 
 Previously published [v8.8.104 / updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) belongs exactly to source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32`; [release gate #43669418277](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43669418277) passed. Never overwrite it or earlier build 501.

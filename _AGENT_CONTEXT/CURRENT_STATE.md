@@ -4,6 +4,10 @@
 
 Exact source PR head `a401f52c396faa9f952707d7a0e56a3848daa085` passed [Windows Feature Gate #43675134924](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134924) **26/26** and [AutoUpdate #43675134917](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134917). The prior 25/26 failure was missing constructor tracing and was repaired without changing the verifier. Core, Automation and 454 Integration regressions passed. Windows relaxed solution compiled with 0 errors.
 
+## Verification boundary
+
+The source PR #802 had passed its exact-head Windows feature gate and was merged before v8.8.105 metadata. The first canonical v8.8.105 Windows Release Gate [#43678305726](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43678305726) failed **25 passed / 1 failed** in its synthetic handoff-closure fixture because both active documents lacked a bounded Verification boundary section. It did not publish a v8.8.105 immutable package. This repair must pass its own exact-source CI and a new canonical main Windows Release Gate before any release or installation claim.
+
 ## Source versus release
 
 Immutable prior [v8.8.104 build 504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) was published from exact source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32`; main Windows Release Gate #43669418277 succeeded. This serialized v8.8.105 release metadata must still pass its own exact-head native PR, protected merge, main Windows Release Gate, immutable new tag/ZIP/manifest verification. Code merge is not 8.8.105 publication or machine installation.
