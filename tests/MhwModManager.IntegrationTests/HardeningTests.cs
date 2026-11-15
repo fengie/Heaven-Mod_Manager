@@ -737,6 +737,32 @@ public sealed class HardeningTests : IDisposable
         Assert.False(File.Exists(Path.Combine(destination,"nativePC","first.bin")));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Archive_extraction_preflight_rejects_file_directory_collision_before_any_write(bool reversed)
+    {
+        var zip = Path.Combine(root, "file-directory-collision-" + reversed + ".zip");
+        var names = reversed
+            ? new[] { "nativePC/ITEMS/child.bin", "nativePC/items" }
+            : new[] { "nativePC/items", "nativePC/ITEMS/child.bin" };
+        using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            foreach (var name in names)
+            {
+                var entry = archive.CreateEntry(name);
+                await using var output = entry.Open();
+                await output.WriteAsync(new byte[] { 1, 2, 3 }, TestToken);
+            }
+        }
+
+        var destination = Path.Combine(root, "file-directory-extract-" + reversed);
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new ArchiveInspector().ExtractSafelyAsync(zip, destination, root, TestToken));
+        Assert.Contains("file and directory", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.False(Directory.Exists(destination));
+    }
+
     [Fact]
     public async Task Archive_extraction_cancellation_interrupts_single_entry_and_removes_partial_file()
     {

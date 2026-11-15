@@ -1,3 +1,10 @@
+# v8.8.105 — November 14, 2026
+
+- Merge [PR #802](https://github.com/fengie/Heaven-Mod_Manager/pull/802) at protected source `20b8fbb67f3ffe803026590cc77e5086d97b2db9`: read-only per-candidate WPF results for explicitly selected mixed folders and mod packs; show source/child path, registered game, route/duplicate/review outcome and evidence. Background auto-sort remains quiet; no live-game writes, guessing, source deletion, updater mutation or new dependency.
+- Exact PR source head `a401f52c396faa9f952707d7a0e56a3848daa085` passed [Windows Feature Gate #43675134924](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134924), 26/26 stages with zero failures, including 454 integration tests and zero verifier trace gaps; [AutoUpdate Contract #43675134917](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134917) passed.
+- The previous failed head revealed missing required constructor tracing; repaired the implementation and added a trace regression instead of weakening the function verifier. The previous v8.8.104 release [updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) is immutable and remains intact.
+- Full real RAR/7z and solid archive test fixtures, explicit ambiguous-child manual assignment, installed interactive WPF UI/keyboard and #793 positive isolated updater update/rollback remain unverified and open. This serialized metadata is a **candidate** until exact-main 8.8.105 Windows release gate, immutable artifact and digest verification; no installed-client success is claimed.
+
 # v8.8.104 — 2026-11-14
 
 - Merge [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`: opt-in read-only navigation to Heaven.gg through a bounded, strict public game-registry reader.

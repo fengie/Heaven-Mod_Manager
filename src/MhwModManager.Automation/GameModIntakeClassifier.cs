@@ -52,6 +52,13 @@ public static class GameModIntakeClassifier
                 return new(GameModIntakeKind.Ambiguous, null,
                     "Declared game conflicts with Monster Hunter: World package files.",
                     [declared.Id, games.First(game => game.IsMonsterHunterWorld).Id]);
+            if (relativePaths.Any(HasStellarBladeSignature) && !IsStellarBladeProfile(declared))
+            {
+                var stellarProfile = games.FirstOrDefault(IsStellarBladeProfile);
+                return new(GameModIntakeKind.Ambiguous, null,
+                    "Declared game conflicts with Stellar Blade package files.",
+                    stellarProfile is null ? [declared.Id] : [declared.Id, stellarProfile.Id]);
+            }
             return new(GameModIntakeKind.Identified, declared.Id,
                 "Package manifest identifies a registered game.", [declared.Id]);
         }
@@ -80,8 +87,9 @@ public static class GameModIntakeClassifier
             var matchedName = aliases.Any(alias => HasTokenSequence(normalizedName, alias));
             var matchedEntries = normalizedEntries.Any(path => aliases.Any(alias => HasTokenSequence(path, alias)));
             var nativePc = game.IsMonsterHunterWorld && relativePaths.Any(HasNativePcSegment);
+            var stellarBlade = IsStellarBladeProfile(game) && relativePaths.Any(HasStellarBladeSignature);
 
-            var score = nativePc ? 95 : 0;
+            var score = nativePc || stellarBlade ? 95 : 0;
             if (matchedName || matchedEntries) score = Math.Max(score, 85);
             if (score > 0) scores.Add(game.Id, score);
         }
@@ -97,6 +105,29 @@ public static class GameModIntakeClassifier
 
         return new(GameModIntakeKind.Identified, ordered[0].Key,
             "Package name or game-specific internal path matches a registered game.", [ordered[0].Key]);
+    }
+
+    /// <summary>Only a canonical Stellar Blade deployment tree is distinctive;
+    /// a generic .pak, .utoc or .ucas extension never identifies its game.</summary>
+    private static bool HasStellarBladeSignature(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var segments = path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i + 3 < segments.Length; i++)
+            if (segments[i].Equals("SB", StringComparison.OrdinalIgnoreCase)
+                && segments[i + 1].Equals("Content", StringComparison.OrdinalIgnoreCase)
+                && segments[i + 2].Equals("Paks", StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
+    }
+
+    private static bool IsStellarBladeProfile(GameProfile game)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return game.Id.Equals("stellar-blade", StringComparison.OrdinalIgnoreCase)
+            || GameProfile.NormalizeId(game.DisplayName).Equals("stellar-blade", StringComparison.OrdinalIgnoreCase)
+            || (!string.IsNullOrWhiteSpace(game.NexusGameDomain)
+                && GameProfile.NormalizeId(game.NexusGameDomain).Equals("stellarblade", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool HasNativePcSegment(string path)
