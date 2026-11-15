@@ -391,6 +391,8 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         var archive = File.ReadAllText(Path.Combine(app, "ViewModels", "MainWindowViewModel.Import.cs"));
 
         Assert.Contains("GameModIntakeScan", window);
+        // New WPF code must remain visible to the mandatory function tracer.
+        Assert.Contains("using var __mhwTrace = MasterDebugLog.BeginMethod()", window);
         Assert.Contains("report.Items", window);
         foreach (var evidence in new[] { "SourcePath", "GameId", "Status", "Reason" })
             Assert.Contains(evidence, window);

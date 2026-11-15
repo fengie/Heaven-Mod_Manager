@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Data;
 using MhwModManager.Automation;
+using MhwModManager.Core;
 
 namespace MhwModManager.App;
 
@@ -15,6 +16,7 @@ public sealed class ModIntakeReviewWindow : Window
 {
     public ModIntakeReviewWindow(GameModIntakeScan report)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(report);
         Title = "Mod pack — candidate review";
         Width = 980;
