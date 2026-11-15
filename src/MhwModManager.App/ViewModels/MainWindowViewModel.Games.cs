@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
@@ -34,6 +36,50 @@ public sealed partial class MainWindowViewModel
             (0,>0)=>$"Repaired {repairedCount} existing game profile(s). Select one and choose Use This Game.",
             _=>$"Added {addedCount} game(s) and repaired {repairedCount} existing game profile(s). Select one and choose Use This Game."
         };
+    }
+
+    /// <summary>
+    /// Reads only the approved Heaven.gg game-link registry on user request.
+    /// The web catalog is never used to register, relink or deploy a game.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenHeavenGameGuide()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var selected = SelectedGame?.Id ?? s.Paths.Game.Id;
+        try
+        {
+            using var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+                UseCookies = false
+            };
+            using var client = new HttpClient(handler)
+            {
+                Timeout = TimeSpan.FromSeconds(8)
+            };
+            var target = await HeavenGameHubCatalog.FindGuideAsync(selected, client);
+            if (target is null)
+            {
+                StatusText = "Heaven.gg does not currently publish an approved guide for this game. Your game and mods were not changed.";
+                return;
+            }
+
+            var launched = Process.Start(new ProcessStartInfo(target.AbsoluteUri)
+            {
+                UseShellExecute = true
+            });
+            StatusText = launched is null
+                ? "No browser could be opened for the public Heaven.gg guide."
+                : "Opened the public Heaven.gg guide in your browser. No mod files were changed.";
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException
+            or System.ComponentModel.Win32Exception or InvalidOperationException
+            or IOException)
+        {
+            MasterDebugLog.Write("HEAVEN-GG", "Public read-only game guide unavailable.", ex);
+            StatusText = "Heaven.gg could not be opened right now. Your game and mods were not changed.";
+        }
     }
 
     [RelayCommand]
