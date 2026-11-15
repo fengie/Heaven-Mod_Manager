@@ -127,6 +127,18 @@ public static class ModBoundaryDiscovery
             return [new(Display(prefix), ModBoundaryKind.Folder, "One Stellar Blade deployment layout.")];
         }
 
+        // Known installation roots cannot safely be separated from another
+        // explicitly packaged sibling. Keep that conflicting tree in review
+        // rather than installing a partial nativePC/BepInEx/UE4SS payload.
+        var strictLoaderRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "nativePC", "BepInEx", "reframework", "MelonLoader", "UE4SS", "GameRoot"
+        };
+        if (directories.Any(strictLoaderRoots.Contains) &&
+            (archived.Length > 0 || directories.Where(d => !strictLoaderRoots.Contains(d))
+                .Any(d => HasExplicitChildPackageEvidence(relative, d))))
+            return Review(prefix, "Independent packages conflict with a shared loader root.");
+
         // A directory named Mods/Paks/etc can also be a wrapper around hundreds of
         // independently packaged mods. Inspect structural package evidence beneath
         // wrappers before collapsing the whole subtree into a single installation root.
