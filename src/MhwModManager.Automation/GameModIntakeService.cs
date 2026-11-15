@@ -330,7 +330,9 @@ public sealed class GameModIntakeService
         {
             if (Directory.Exists(scratch))
             {
-                SafeRecursiveTraversal.EnsureNoReparsePoints(scratch);
+                // Cleanup must still check the full owned scratch tree even when
+                // the requested import was cancelled.
+                SafeRecursiveTraversal.EnsureNoReparsePoints(scratch, CancellationToken.None);
                 Directory.Delete(scratch, recursive: true);
             }
         }
