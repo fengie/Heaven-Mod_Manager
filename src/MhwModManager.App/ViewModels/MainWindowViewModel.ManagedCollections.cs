@@ -9,6 +9,64 @@ namespace MhwModManager.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     /// <summary>
+    /// Inspect all existing tracked source packages, including one-package,
+    /// enabled and pending-change items. This command never stages, enables,
+    /// deletes, writes receipts or processes Inbox; inspection and import are
+    /// deliberately separate user actions.
+    /// </summary>
+    [RelayCommand]
+    private async Task InspectExistingModCollections()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var sources = Mods.Select(row => row.SourcePath)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (sources.Length == 0)
+        {
+            StatusText = "There are no tracked source packages to inspect.";
+            return;
+        }
+
+        await RunBusy("mods.inspect-existing-layouts", "Inspecting Existing Mod Layouts",
+            "Counting and grouping the files in existing packages without modifying them…",
+            true, async ct =>
+            {
+                EnsureGameIntake();
+                var intake = gameIntake!;
+                var inspections = new List<ModLayoutReviewSource>(sources.Length);
+                foreach (var source in sources)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    try
+                    {
+                        var snapshot = await Task.Run(
+                            () => intake.PreviewManagedCollectionLayout(source, s.Paths.Game, ct), ct);
+                        inspections.Add(new ModLayoutReviewSource(source, snapshot, null));
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                               or InvalidDataException or ArgumentException
+                                               or InvalidOperationException)
+                    {
+                        MasterDebugLog.Write("MOD-INTAKE",
+                            "Existing managed package layout could not be inspected.", ex);
+                        inspections.Add(new ModLayoutReviewSource(source, null, ex.Message));
+                    }
+                }
+
+                var successes = inspections.Count(result => result.Inspection is not null);
+                var fileCount = inspections.Sum(result => result.Inspection?.FileCount ?? 0);
+                var groupCount = inspections.Sum(result => result.Inspection?.Groups.Count ?? 0);
+                StatusText = $"Read-only layout inspection: {successes}/{sources.Length} source packages, " +
+                    $"{fileCount:N0} files, {groupCount:N0} groups. No original files or state changed.";
+                new ModLayoutReviewWindow(inspections)
+                {
+                    Owner = Application.Current.MainWindow
+                }.ShowDialog();
+            });
+    }
+
+    /// <summary>
     /// Explicit repair for previously imported collection wrappers. Never migrate,
     /// delete or change the identity of an existing package automatically.
     /// </summary>

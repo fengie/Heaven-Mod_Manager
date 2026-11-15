@@ -386,6 +386,19 @@ public sealed class GameModIntakeService
     }
 
     /// <summary>
+    /// Read-only complete file-accounting preview of a managed package. Unlike
+    /// automatic import this reports even one, incomplete, ambiguous or unknown
+    /// companion group. It never writes to Inbox, State or a live game tree.
+    /// </summary>
+    public ModLayoutInspection PreviewManagedCollectionLayout(
+        string sourcePath, GameProfile game, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var inventory = PreviewManagedCollection(sourcePath, game, ct);
+        return ModLayoutPreview.Inspect(inventory, game, ct);
+    }
+
+    /// <summary>
     /// Copies only proven independent children of an already tracked source to their
     /// registered game Inboxes. The original package, database ID, activation and
     /// live-game files are never modified or retired by reanalysis.

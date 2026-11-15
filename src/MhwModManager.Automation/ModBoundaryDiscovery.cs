@@ -16,6 +16,10 @@ public sealed record ModBoundaryCandidate(
 
 public sealed record ModBoundaryResult(IReadOnlyList<ModBoundaryCandidate> Candidates)
 {
+    /// <summary>All observed normalized files, including unresolved and supplementary files.
+    /// Null means the caller supplied no inventory; an observed empty folder uses an empty list.</summary>
+    public IReadOnlyList<string>? FileInventory { get; init; }
+
     public bool NeedsReview
     {
         get
@@ -76,7 +80,7 @@ public static class ModBoundaryDiscovery
             .Order(StringComparer.OrdinalIgnoreCase).ToArray();
         if (files.Length != paths.Count)
             throw new InvalidDataException("Duplicate or case-colliding mod file paths require review.");
-        return new(Analyze(files, "", 0));
+        return new(Analyze(files, "", 0)) { FileInventory = Array.AsReadOnly(files) };
     }
 
     private static IReadOnlyList<ModBoundaryCandidate> Analyze(string[] relative, string prefix, int depth)
