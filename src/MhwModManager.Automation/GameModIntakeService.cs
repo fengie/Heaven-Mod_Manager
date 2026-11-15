@@ -250,11 +250,20 @@ public sealed class GameModIntakeService
 
     private async Task ScanSourceAsync(
         string root, IReadOnlyList<GameProfile> games, List<GameModIntakeItem> output,
-        HashSet<string> receipts, CancellationToken ct)
+        HashSet<string> receipts, CancellationToken ct, bool requireMultipleBoundaries = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
         var discovered = ModBoundaryDiscovery.Discover(paths);
+        // Reanalyzing an existing tracked package must never copy its whole root as
+        // a duplicate when structural evidence no longer proves several child mods.
+        if (requireMultipleBoundaries &&
+            discovered.Candidates.Count(candidate => candidate.Kind != ModBoundaryKind.Review) < 2)
+        {
+            output.Add(new(root, null, GameModIntakeStatus.Skipped,
+                "The tracked source does not contain at least two independently identifiable mods."));
+            return;
+        }
         // Share one inspection and physical-copy budget across every candidate from
         // this selected collection. Nested archive recursion carries the same instance.
         var collectionBudget = new IntakeBudget(collectionCopyBudget);
@@ -286,6 +295,89 @@ public sealed class GameModIntakeService
                 output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, ex.Message));
             }
         }
+    }
+
+    /// <summary>
+    /// Read-only structural preview for one existing tracked, direct-child library package.
+    /// Unlike normal designated-folder intake this narrowly permits manager-owned sources,
+    /// but never scans the library root or a live game installation.
+    /// </summary>
+    public ModBoundaryResult PreviewManagedCollection(
+        string sourcePath, GameProfile game, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var source = ValidateManagedCollectionSource(sourcePath, game);
+        return ModBoundaryDiscovery.Discover(SnapshotFolderFiles(source, ct)
+            .Select(file => Path.GetRelativePath(source, file)));
+    }
+
+    /// <summary>
+    /// Copies only proven independent children of an already tracked source to their
+    /// registered game Inboxes. The original package, database ID, activation and
+    /// live-game files are never modified or retired by reanalysis.
+    /// </summary>
+    public async Task<GameModIntakeScan> ImportManagedCollectionAsync(
+        string sourcePath, GameProfile game, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var source = ValidateManagedCollectionSource(sourcePath, game);
+        var boundaries = PreviewManagedCollection(source, game, ct);
+        if (boundaries.Candidates.Count(candidate => candidate.Kind != ModBoundaryKind.Review) < 2)
+            return new GameModIntakeScan([
+                new GameModIntakeItem(source, null, GameModIntakeStatus.Skipped,
+                    "The tracked source is not a proven multi-mod collection; nothing was copied.")
+            ]);
+
+        var games = loadGames().Where(candidate => GameProfile.IsCanonicalId(candidate.Id))
+            .DistinctBy(candidate => candidate.Id, StringComparer.OrdinalIgnoreCase).ToArray();
+        var items = new List<GameModIntakeItem>();
+        await ScanSourceAsync(source, games, items, LoadReceipts(), ct,
+            requireMultipleBoundaries: true).ConfigureAwait(false);
+        var report = new GameModIntakeScan(items);
+        try
+        {
+            Directory.CreateDirectory(stateRoot);
+            SaveAtomic(ReportPath, JsonSerializer.Serialize(report, PrettyJson));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MasterDebugLog.Write("MOD-INTAKE", "Could not persist the managed-collection reanalysis report.", ex);
+        }
+        return report;
+    }
+
+    private string ValidateManagedCollectionSource(string sourcePath, GameProfile game)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
+        ArgumentNullException.ThrowIfNull(game);
+        var registeredGames = loadGames().Where(candidate => GameProfile.IsCanonicalId(candidate.Id))
+            .ToArray();
+        var registered = registeredGames.SingleOrDefault(candidate =>
+            candidate.Id.Equals(game.Id, StringComparison.OrdinalIgnoreCase));
+        if (registered is null)
+            throw new InvalidDataException("Reanalysis requires the current registered game profile.");
+
+        var source = Path.GetFullPath(sourcePath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        if (!Directory.Exists(source))
+            throw new DirectoryNotFoundException("Tracked mod source directory is unavailable: " + source);
+
+        var library = GameModStorage.Resolve(managerHome, registered);
+        var parent = Path.GetDirectoryName(source);
+        var isDirectPackage = new[] { library.InstalledRoot, library.LegacyInstalledRoot }
+            .Any(root => string.Equals(parent,
+                Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                StringComparison.OrdinalIgnoreCase));
+        if (!isDirectPackage)
+            throw new InvalidDataException(
+                "Only an existing direct-child installed library package can be reanalyzed.");
+
+        if (registeredGames.Any(candidate => ContainsPath(candidate.GameRoot, source)))
+            throw new InvalidDataException("Live game files cannot be reanalyzed as managed packages.");
+
+        RefuseReparseComponents(source);
+        return source;
     }
 
     /// <summary>
