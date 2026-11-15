@@ -217,6 +217,80 @@ public sealed class GameModIntakeService
         return report;
     }
 
+    /// <summary>
+    /// Explicit user assignment of one independently packaged, review-only
+    /// filesystem source. This is not an override for multi-mod bundles,
+    /// FOMOD options, verified game evidence, or archive-child virtual paths.
+    /// No live game installation is touched; the existing safe Inbox path owns publication.
+    /// </summary>
+    public async Task<GameModIntakeScan> AssignReviewedPackageAsync(
+        string inputPath, string gameId, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
+        if (inputPath.Contains("!/", StringComparison.Ordinal))
+            throw new InvalidDataException("Nested archive children need separate package review; do not assign the outer archive.");
+
+        var source = Path.GetFullPath(inputPath);
+        var isDirectory = Directory.Exists(source);
+        if (!isDirectory && (!File.Exists(source) || !IsSupportedArchive(source)))
+            throw new InvalidDataException("Manual assignment requires one existing folder or ZIP/RAR/7z package.");
+
+        var games = loadGames().Where(game => GameProfile.IsCanonicalId(game.Id))
+            .DistinctBy(game => game.Id, StringComparer.OrdinalIgnoreCase).ToArray();
+        var game = games.SingleOrDefault(candidate =>
+            candidate.Id.Equals(gameId, StringComparison.OrdinalIgnoreCase));
+        if (game is null)
+            throw new InvalidDataException("Select a currently registered game before assigning this package.");
+
+        if (isDirectory)
+            ValidateSource(source);
+        else
+        {
+            RefuseReparseComponents(source);
+            if (ContainsPath(managerHome, source))
+                throw new InvalidDataException("Cannot assign a package from the manager's own library.");
+            foreach (var registered in loadGames())
+                if (ContainsPath(registered.GameRoot, source))
+                    throw new InvalidDataException("Cannot import directly from a live game installation.");
+        }
+
+        // Reinspect the selected physical source at confirmation time. A report
+        // row is not a trusted filesystem capability and may have become stale.
+        string[] files;
+        if (isDirectory)
+        {
+            files = SnapshotFolderFiles(source, ct)
+                .Select(path => Path.GetRelativePath(source, path)).ToArray();
+        }
+        else
+        {
+            var inspection = await archive.InspectAsync(source, ct).ConfigureAwait(false);
+            if (inspection.HasSuspiciousPaths)
+                throw new InvalidDataException("Unsafe archive paths cannot be manually assigned.");
+            new IntakeBudget(collectionCopyBudget).Account(inspection);
+            files = inspection.Entries.Where(entry => !entry.IsDirectory)
+                .Select(entry => entry.Key).ToArray();
+        }
+
+        var boundaries = ModBoundaryDiscovery.Discover(files);
+        if (boundaries.Candidates.Count != 1 ||
+            boundaries.Candidates[0].Kind != ModBoundaryKind.Folder ||
+            boundaries.Candidates[0].RelativePath != ".")
+            throw new InvalidDataException(
+                "Manual game assignment requires one independent package. Split or review nested mods and installer options separately.");
+
+        var output = new List<GameModIntakeItem>();
+        var sourceRoot = isDirectory ? source : Path.GetDirectoryName(source)!;
+        await ClassifyAndRouteAsync(sourceRoot, source, isDirectory, games, output,
+            LoadReceipts(), ct, manualGameId: game.Id).ConfigureAwait(false);
+        if (output.Count != 1 ||
+            output[0].Status is not (GameModIntakeStatus.Routed or GameModIntakeStatus.AlreadyPresent))
+            throw new InvalidDataException("The source changed or could not be safely assigned; no manual route was confirmed.");
+        return new GameModIntakeScan(output);
+    }
+
     private sealed class IntakeBudget
     {
         public IntakeBudget(long copyBudget)
@@ -462,7 +536,7 @@ public sealed class GameModIntakeService
         string sourceRoot, string source, bool isDirectory, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
         int nestedDepth = 0, IntakeBudget? budget = null, string? provenance = null,
-        string? gameContextHint = null)
+        string? gameContextHint = null, string? manualGameId = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         budget ??= new IntakeBudget(collectionCopyBudget);
@@ -602,12 +676,16 @@ public sealed class GameModIntakeService
         if (!string.IsNullOrWhiteSpace(gameContextHint))
             context = gameContextHint + " " + context;
         var detection = GameModIntakeClassifier.Classify(games, context, paths, declared);
-        if (detection.Kind != GameModIntakeKind.Identified)
+        if (manualGameId is not null && detection.Kind == GameModIntakeKind.Identified)
+            throw new InvalidDataException(
+                "This package already has a supported game identity; rescan instead of overriding strong evidence.");
+        if (manualGameId is null && detection.Kind != GameModIntakeKind.Identified)
         {
             output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview, detection.Reason));
             return;
         }
-        var owner = games.Single(game => game.Id.Equals(detection.GameId, StringComparison.OrdinalIgnoreCase));
+        var resolvedGameId = manualGameId ?? detection.GameId!;
+        var owner = games.Single(game => game.Id.Equals(resolvedGameId, StringComparison.OrdinalIgnoreCase));
         var library = GameModStorage.Resolve(managerHome, owner);
         GameModStorage.EnsureDirectories(library);
         RefuseReparseComponents(library.InboxRoot);
@@ -616,7 +694,10 @@ public sealed class GameModIntakeService
             : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false);
         output.Add(new(reportSource, owner.Id,
             wasCreated ? GameModIntakeStatus.Routed : GameModIntakeStatus.AlreadyPresent,
-            wasCreated ? detection.Reason : "Identical mod already exists in this game's Inbox or processed receipts."));
+            wasCreated
+                ? manualGameId is null ? detection.Reason
+                    : "Manually assigned to the selected registered game after explicit review; original source preserved."
+                : "Identical mod already exists in this game's Inbox or processed receipts."));
     }
 
     private async Task<bool> CopyArchiveIntoInboxAsync(string source, string inboxRoot, string gameId,
