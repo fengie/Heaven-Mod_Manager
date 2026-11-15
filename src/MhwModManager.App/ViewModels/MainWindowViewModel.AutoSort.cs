@@ -90,6 +90,11 @@ public sealed partial class MainWindowViewModel
             if (report.Routed > 0)
                 StatusText = $"Separated {report.Routed} mod(s) into their registered games' Inboxes. " +
                     "Use Install Mods from Inbox for the active game.";
+            if (report.Items.Count > 0)
+                new ModIntakeReviewWindow(report)
+                {
+                    Owner = Application.Current.MainWindow
+                }.ShowDialog();
         }
         catch (OperationCanceledException) when (backgroundCts.IsCancellationRequested)
         {
