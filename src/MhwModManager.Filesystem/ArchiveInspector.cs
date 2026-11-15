@@ -116,6 +116,21 @@ public sealed class ArchiveInspector
             files.Add((entry,dest));
         }
 
+        // A file cannot also be an ancestor directory of another output.
+        // Reject these collisions before writing the first byte, regardless of
+        // archive entry order or Windows filename casing.
+        foreach (var file in files)
+        {
+            ct.ThrowIfCancellationRequested();
+            var ancestor = Path.GetDirectoryName(file.Destination);
+            while (ancestor is not null && ancestor.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            {
+                if (outputs.Contains(ancestor))
+                    throw new InvalidDataException("Archive contains a file and directory destination collision.");
+                ancestor = Path.GetDirectoryName(ancestor);
+            }
+        }
+
         EnsureSafeDirectoryPath(trusted,destinationFull);
         long actualTotal=0;
         foreach(var (e,dest) in files)
