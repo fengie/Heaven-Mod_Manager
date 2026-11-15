@@ -52,11 +52,13 @@ public static class GameModIntakeClassifier
                 return new(GameModIntakeKind.Ambiguous, null,
                     "Declared game conflicts with Monster Hunter: World package files.",
                     [declared.Id, games.First(game => game.IsMonsterHunterWorld).Id]);
-            if (relativePaths.Any(HasStellarBladeSignature) && !IsStellarBladeProfile(declared)
-                && games.Any(IsStellarBladeProfile))
+            if (relativePaths.Any(HasStellarBladeSignature) && !IsStellarBladeProfile(declared))
+            {
+                var stellarProfile = games.FirstOrDefault(IsStellarBladeProfile);
                 return new(GameModIntakeKind.Ambiguous, null,
                     "Declared game conflicts with Stellar Blade package files.",
-                    [declared.Id, games.First(IsStellarBladeProfile).Id]);
+                    stellarProfile is null ? [declared.Id] : [declared.Id, stellarProfile.Id]);
+            }
             return new(GameModIntakeKind.Identified, declared.Id,
                 "Package manifest identifies a registered game.", [declared.Id]);
         }
