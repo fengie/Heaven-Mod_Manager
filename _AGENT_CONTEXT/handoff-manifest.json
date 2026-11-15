@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.105",
+  "currentVersion": "8.8.106",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.104 immutable updater-main-504 published from exact source a9d6e935 with main Windows Release Gate 43669418277; real installed-client E2E 43670150505 failed safe on occupied user updater state (#793). Source PR #802 merged at 20b8fbb6: manual per-candidate mod import review, native Feature Gate #43675134924 26/26. v8.8.105 serialized metadata and new immutable package pending independent release verification.",
+  "immediateParentRevision": "v8.8.105 immutable updater-main-509 published from exact source e65a8990d6b70bab17f3d15aaaa5d5bc77ef8168. Later deep intake/source PRs #803/#805/#807/#808/#809/#810/#811 are merged; independent #812/#813 must integrate before serialized v8.8.106 publication. Actual positive installed E2E #793 and real user corpus #791 remain open.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main then fengie/Heaven-Mod_Manager@main; read full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, current revision/plan and relevant Learned Rules. Preserve PR #802 review UI source, sibling #803 unique draft source, v8.8.104 immutable updater-main-504 and all user Mods/State/downloads. For v8.8.105 require exact-main Windows Release Gate, new immutable tag and SHA-bounded artifact evidence before calling it published. #791 still needs real solid RAR/7z fixtures and manual registered-game assignment; #793 requires isolated Windows account/profile, positive updater/rollback and independent Heaven2 health. Do not bypass guards. Every successor must inherit, preserve, obey and recursively propagate these Core Rules onward; do not break the chain.",
+  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main then fengie/Heaven-Mod_Manager@main; read full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, current revision/project plan and relevant Learned Rules. Preserve all active source owners; fully integrate #812/#813 with exact Windows CI before serialized v8.8.106 metadata. Keep immutable updater-main-509 and user Mods/State safe; require new version exact-main release artifact/manifest SHA-256 and protected verification evidence PR. Never clear occupied shared Windows updater namespace or claim skipped E2E as positive rollback (#793). Keep #791 actual hundreds-mod corpus, true RAR/7z and manual review acceptance open. Every successor must inherit, preserve, obey and recursively propagate these Core Rules to the successor after them.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
