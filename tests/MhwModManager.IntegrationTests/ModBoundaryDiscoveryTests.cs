@@ -378,6 +378,34 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
             "nier-automata", "Inbox")));
     }
 
+    [Fact]
+    public void Manual_mod_pack_intake_displays_candidate_routes_and_evidence_without_watcher_popups()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        var app = Path.Combine(root!.FullName, "src", "MhwModManager.App");
+        var window = File.ReadAllText(Path.Combine(app, "ModIntakeReviewWindow.cs"));
+        var folder = File.ReadAllText(Path.Combine(app, "ViewModels", "MainWindowViewModel.AutoSort.cs"));
+        var archive = File.ReadAllText(Path.Combine(app, "ViewModels", "MainWindowViewModel.Import.cs"));
+
+        Assert.Contains("GameModIntakeScan", window);
+        // New WPF code must remain visible to the mandatory function tracer.
+        Assert.Contains("using var __mhwTrace = MasterDebugLog.BeginMethod()", window);
+        Assert.Contains("report.Items", window);
+        foreach (var evidence in new[] { "SourcePath", "GameId", "Status", "Reason" })
+            Assert.Contains(evidence, window);
+        Assert.Contains("DataGridTextColumn", window);
+        Assert.Contains("ModIntakeReviewWindow(report)", folder);
+        Assert.Contains("ModIntakeReviewWindow(modPackReport)", archive);
+        // Background file watchers must never steal focus with unexpected review dialogs.
+        var automaticStart = folder.IndexOf("private async Task ScanAutoSortAsync", StringComparison.Ordinal);
+        var automaticEnd = folder.IndexOf("private void DisposeAutoSorting", StringComparison.Ordinal);
+        Assert.True(automaticStart >= 0 && automaticEnd > automaticStart);
+        Assert.DoesNotContain("ModIntakeReviewWindow", folder[automaticStart..automaticEnd]);
+    }
+
     private static void CreateZip(string path, params string[] entries)
     {
         using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
