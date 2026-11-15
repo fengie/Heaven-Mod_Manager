@@ -159,7 +159,7 @@ public static class ModLayoutPreview
         return scopes;
     }
 
-    private static string? FindReviewScope(string file, IReadOnlyDictionary<string, string> scopes)
+    private static string? FindReviewScope(string file, Dictionary<string, string> scopes)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (scopes.ContainsKey(string.Empty)) return string.Empty;
