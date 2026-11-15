@@ -4,6 +4,7 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
+| 8.8.108 | November 15, 2026 · 6:20:49 AM EST | serialized nested-layout inspection source main 5c9b6f0a; immutable publication and installed-client proof pending |
 | 8.8.107 | November 15, 2026 · 3:56:30 AM EST | serialized managed-collection rescan source from main 5b50e658; immutable publication and installed E2E not yet established |
 | 8.8.106 | November 15, 2026 · 2:25:35 AM EST | serialized consolidated deep-import source from main 1e21c332; immutable updater-main-517 published from 2a317cf5; installed E2E pending |
 | 8.8.105 | November 15, 2026 · 1:04:29 AM EST | published immutable updater-main-509 from exact source e65a8990 after Windows release verification; physically installed acceptance pending (#793) |
