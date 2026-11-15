@@ -21,7 +21,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - Integrate [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) on protected main as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`: Dashboard → More tools opens a public Heaven.gg guide on explicit request only.
 - Read only the allowlisted `games.json` catalog from Heaven.gg, validate all three game identities, exact public URLs, response bounds, and no-redirect behavior. The site cannot register games or alter mods, storage, or the updater.
-- Exact PR head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed [Windows feature run 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) (26/26 stages; 352 core, 112 automation, 453 integration); production release and installed-client/Heaven2 verification are separate and **not yet established**.
+- Exact PR head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed [Windows feature run 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) (26/26 stages; 352 core, 112 automation, 453 integration); the independent v8.8.104 production release is now verified as build 504 below, while installed-client/Heaven2 verification remains **unestablished**.
 - Immutable [updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) was published from exact v8.8.104 source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32`, after [Windows Release Gate #43669418277](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43669418277). On-device updater E2E remains independently blocked (#793).
 
 ## v8.8.103 — separate mixed folders and mod archives
