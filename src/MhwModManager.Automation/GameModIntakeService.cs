@@ -364,10 +364,18 @@ public sealed class GameModIntakeService
             budget.Account(info);
             var discovery = ModBoundaryDiscovery.Discover(info.Entries
                 .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
-            if (discovery.NeedsReview && discovery.Candidates.Count == 1)
+            // No extraction is necessary when every candidate requires review.
+            // Preserve each incomplete group as a separate evidence-bearing row.
+            if (discovery.Candidates.Count > 0 &&
+                discovery.Candidates.All(candidate => candidate.Kind == ModBoundaryKind.Review))
             {
-                output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
-                    discovery.Candidates.First(candidate => candidate.Kind == ModBoundaryKind.Review).Evidence));
+                foreach (var candidate in discovery.Candidates)
+                {
+                    var childProvenance = candidate.RelativePath == "." ? reportSource
+                        : reportSource + "!/" + candidate.RelativePath;
+                    output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview,
+                        candidate.Evidence));
+                }
                 return;
             }
 
