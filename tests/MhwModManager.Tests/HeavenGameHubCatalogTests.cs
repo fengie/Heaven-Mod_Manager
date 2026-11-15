@@ -56,7 +56,7 @@ public sealed class HeavenGameHubCatalogTests
     {
         var handler = new StubHandler(Valid);
         using var http = new HttpClient(handler);
-        var link = await HeavenGameHubCatalog.FindGuideAsync(id, http);
+        var link = await HeavenGameHubCatalog.FindGuideAsync(id, http, TestContext.Current.CancellationToken);
         Assert.NotNull(link);
         Assert.Equal("https://fengie.github.io/Heaven.gg/" + fragment, link.AbsoluteUri);
         Assert.Equal(1, handler.Requests);
@@ -74,7 +74,7 @@ public sealed class HeavenGameHubCatalogTests
     {
         var handler = new StubHandler(Valid);
         using var http = new HttpClient(handler);
-        Assert.Null(await HeavenGameHubCatalog.FindGuideAsync(id, http));
+        Assert.Null(await HeavenGameHubCatalog.FindGuideAsync(id, http, TestContext.Current.CancellationToken));
         Assert.Equal(0, handler.Requests);
     }
 
@@ -106,7 +106,7 @@ public sealed class HeavenGameHubCatalogTests
         foreach (var payload in mutated)
         {
             using var http = new HttpClient(new StubHandler(payload));
-            Assert.Null(await HeavenGameHubCatalog.FindGuideAsync("monster-hunter-world", http));
+            Assert.Null(await HeavenGameHubCatalog.FindGuideAsync("monster-hunter-world", http, TestContext.Current.CancellationToken));
         }
     }
 
@@ -114,10 +114,10 @@ public sealed class HeavenGameHubCatalogTests
     public async Task Oversized_or_redirected_public_catalog_is_rejected()
     {
         using var huge = new HttpClient(new StubHandler(Valid + new string(' ', 20000)));
-        Assert.Null(await HeavenGameHubCatalog.FindGuideAsync("monster-hunter-world", huge));
+        Assert.Null(await HeavenGameHubCatalog.FindGuideAsync("monster-hunter-world", huge, TestContext.Current.CancellationToken));
 
         using var redirected = new HttpClient(new StubHandler(Valid, HttpStatusCode.Redirect));
-        Assert.Null(await HeavenGameHubCatalog.FindGuideAsync("monster-hunter-world", redirected));
+        Assert.Null(await HeavenGameHubCatalog.FindGuideAsync("monster-hunter-world", redirected, TestContext.Current.CancellationToken));
     }
 
     [Fact]
