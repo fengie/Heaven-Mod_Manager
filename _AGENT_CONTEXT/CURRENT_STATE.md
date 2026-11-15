@@ -1,6 +1,6 @@
 # v8.8.107 mod collection reanalysis — current source and release candidate
 
-Canonical `fengie/Heaven-Mod_Manager@main` source cutoff `5b50e6581b4b1bef56ad09fe422621388f494c85` includes: deep Stellar Blade boundaries and importer hardening through #813 from the prior v8.8.106 release; #815 cumulative inventory accounting; #818 safe user-driven game assignment for one unknown standalone mod; and #819 explicit read-only preview, confirm, and duplicate-safe staging of independent child mods from previously tracked, disabled single-package folders. No original package is automatically replaced or deleted, and live game files/activation/rollback authority remain unchanged.
+Canonical state: `fengie/Heaven-Mod_Manager@main` source cutoff `5b50e6581b4b1bef56ad09fe422621388f494c85` includes: deep Stellar Blade boundaries and importer hardening through #813 from the prior v8.8.106 release; #815 cumulative inventory accounting; #818 safe user-driven game assignment for one unknown standalone mod; and #819 explicit read-only preview, confirm, and duplicate-safe staging of independent child mods from previously tracked, disabled single-package folders. No original package is automatically replaced or deleted, and live game files/activation/rollback authority remain unchanged.
 
 ## Verification boundary
 
