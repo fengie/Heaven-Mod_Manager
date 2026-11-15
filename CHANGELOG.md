@@ -1,3 +1,10 @@
+# v8.8.104 — 2026-11-14
+
+- Merge [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`: opt-in read-only navigation to Heaven.gg through a bounded, strict public game-registry reader.
+- Validate canonical `celtic-heroes`, `aion2`, and `monster-hunter-world` IDs; forbid unknown redirects, hostile domains, extra capabilities and automatic game/mod/deployment mutations. Launch the browser through the existing `ProcessDebug` audit wrapper.
+- Windows Feature PR run 43668216512 passed all 26 verification stages (352 core, 112 automation, 453 integration); the full immutable release and installed-client/Heaven2 acceptance must be verified separately. The previous immutable v8.8.103 release 501 is preserved.
+- Issue #793 remains open for a disposable owned Windows updater profile, real positive old-to-new client update and rollback, and independent installed health.
+
 # v8.8.103 — 2026-11-14
 
 - Merge PR #796 into protected main at `03219436e4f110dfa9b63a66452d94a2bb42553e`: conservative mod-boundary discovery separates independent mods from mixed folders and nested ZIP/RAR/7z packs; game-scoped Inbox routing is independent of active-game selection.

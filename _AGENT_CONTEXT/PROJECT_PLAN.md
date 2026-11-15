@@ -78,6 +78,21 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | MOD-BOUNDARY-791 | P1 | ACTIVE | issue #791; PRs #796/#797; immutable updater-main-501 source 2b8e5ae3 | Detect independently installable mods from mixed folders/ZIP/RAR/7z without collapsing different mods or splitting installer choices; route each safely by registered game. |
 | CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
 
+## GAMING-HUB-LINK-800 — Read-only Heaven.gg desktop companion
+
+**Status:** ACTIVE — source integrated and exact-head Windows feature CI passed; v8.8.104 versioned immutable release and installed acceptance are separate and pending.
+**Owner:** `fengie/Heaven-Mod_Manager`; PR #800 and subsequent serialized release owner, sibling website `fengie/Heaven.gg`.
+**Source:** [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) merged to main `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`. [Windows gate 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) passed 26/26 with 352 core, 112 automation, 453 integration tests. [Heaven.gg browser/served acceptance 43667045385](https://github.com/fengie/Heaven.gg/actions/runs/43667045385) passed independently on public site.
+**User outcome:** open a game-specific public Heaven.gg guide explicitly from Mod Manager Dashboard → More tools, without synchronizing profile state or granting the website file access.
+
+- [x] Reuse the published public `heaven-gaming/game-registry/v1`, validate three fixed IDs and canonical URL allowlist, no cookies/redirects, bounded GET, no automatic background calls.
+- [x] Reuse existing audited `ProcessDebug` browser launcher; offline tests demonstrate unknown games, hostile endpoints, malformed metadata and oversized/redirected responses refuse navigation.
+- [x] Exact PR head passed strict native Windows feature, ownership and AutoUpdate gates; merge verified.
+- [ ] Serial release metadata 8.8.104, pass exact-main Windows Release Gate and verify new immutable manifest/ZIP digests with protected evidence integration; **preserve** v8.8.103 build 501.
+- [ ] Physically installed WPF button/browser interaction and independent Heaven2 source/health. For real updater positive update/rollback require isolated test account/profile (#793). A green classifier-only workflow is not acceptance.
+
+**Next:** verify this serialized release via protected native PR, exact-main release and SHA-bound publication. Do not copy public site catalog into game profile/deployment authority, fabricate installed receipt, or delete unowned updater data. Keep sibling producer/consumer contracts separate.
+
 ## MOD-BOUNDARY-791 — Mixed-folder and archive mod boundaries
 
 **Owner:** issue #791; implementation merged in [PR #796](https://github.com/fengie/Heaven-Mod_Manager/pull/796), v8.8.103 release metadata merged in [PR #797](https://github.com/fengie/Heaven-Mod_Manager/pull/797).

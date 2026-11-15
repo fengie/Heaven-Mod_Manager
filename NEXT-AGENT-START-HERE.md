@@ -1,23 +1,19 @@
-# v8.8.103 importer — published release and production acceptance handoff
+# v8.8.104 Heaven.gg game guide — canonical release handoff
 
-Canonical repository: `fengie/Heaven-Mod_Manager@main`. Trainer: `fengie/heaven-toolbox@main`. Legacy updater identity and user data formats are preserved.
+Canonical repository: `fengie/Heaven-Mod_Manager@main`; global trainer: `fengie/heaven-toolbox@main`. The previous immutable `updater-main-501` belongs to v8.8.103 source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002` and must not be overwritten.
 
-## Integrated and published
+## Integrated source
 
-PR #796 merged as `03219436e4f110dfa9b63a66452d94a2bb42553e` and adds conservative mixed-folder/archive mod discovery, per-game Inbox routing and one-shot import. PR #797 merged v8.8.103 release metadata as exact source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`. The public [immutable updater-main-501](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-501) was published November 14, 2026 at 7:01 PM EST. It contains the feature; no duplicate v8.8.103 publication is required.
+PR #800 [read-only Heaven.gg game guide navigation](https://github.com/fengie/Heaven-Mod_Manager/pull/800) merged on main as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`. It uses a bounded public `games.json` reader and an explicitly requested browser launch via `ProcessDebug`. Unknown/public catalog data cannot mutate registered games, mod libraries or updater state. Website production Chrome acceptance passed independently on [Heaven.gg run 43667045385](https://github.com/fengie/Heaven.gg/actions/runs/43667045385).
 
 ## Verification boundary
 
-Windows Release Gate [run 43655383641](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43655383641) passed **26/26** for exact main source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`. Full verification receipt: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`. Immutable ZIP SHA-256 `d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c`, manifest SHA-256 `a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0`. Evidence-only PR commits must not be described as new verified product sources.
+PR #800 exact head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed native Windows Feature Gate `43668216512` (26/26; 352 core, 112 automation and 453 integration tests). v8.8.104 serialized release metadata must pass its own exact-head native checks, protected merge, exact-main Windows Release Gate, immutable updater publication and SHA-256 artifact/manifest verification. **No v8.8.104 published ZIP or physically installed-client result has been verified yet.** A source/release pass does not prove installed updater health. Preserve the prior v8.8.103 immutable build 501.
 
-[Installed Client E2E run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) **failed before update/rollback**: the runner's shared Windows updater root was nonempty; the safety guard correctly refused deletion. Do not claim on-device update, rollback or Heaven2 runtime verification from this build/publication.
+## Unresolved risk and next action
 
-## Unresolved risks and next action
-
-1. **#793:** run old-to-501 update and deterministic rollback under a *separately owned clean Windows test profile*, not the current shared runner profile. Prove both negative occupied-root rejection and positive installed UI/health/journal/sentinels. Preserve exact signed/immutable release source, test custody, hashes and an allowlisted protected evidence PR. No cleanup of another user's updater state, privilege escalation or bypass.
-2. **#791:** finish real RAR/7z/solid archive fixtures and error cases, explicit ambiguous-child review/registered-game assignment, packaged WPF UX and cancellation acceptance. Current source is intentionally conservative.
-3. Verify installed Heaven2 source SHA, runtime health and rollback independently. No direct host-control path was confirmed from this GitHub-only session.
+Verify this serialized version PR's exact head/base/native checks, integrate only after authorized gates, inspect the exact-main Windows release run, immutable tag/source and artifact/manifest hashes, then promote allowlisted release evidence via an ordinary protected PR. Do not force publication or adopt a green classification-only updater workflow as an actual update/rollback success. Issue #793 still requires a separately owned empty Windows test profile for real positive updater/rollback and independent Heaven2 installed/health proof. Issue #791 retains real RAR/7z/solid archive, ambiguous-child manual assignment and packaged WPF interaction cases. No private user Mods/State/downloads or historical product/update identity may be mutated as part of this metadata release.
 
 ## Successor obligation
 
-Every successor must bootstrap current Toolbox and this repository, read `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, the **entire** `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, active `LEARNED_RULES.md`, and the canonical `_AGENT_CONTEXT/PROJECT_PLAN.md`. Every successor must inherit, preserve, obey and recursively propagate these Core Rules to the next successor. Do not break the chain. Never write secrets or raw user profile paths to public evidence.
+Bootstrap current Toolbox and this repo, read `AGENTS.md`, `_AGENT_CONTEXT/CURRENT_REVISION.json`, `_AGENT_CONTEXT/PROJECT_PLAN.md`, the **entire** `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`, and task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must inherit, preserve, obey and recursively propagate these Core Rules to the next successor. Do not break the chain.

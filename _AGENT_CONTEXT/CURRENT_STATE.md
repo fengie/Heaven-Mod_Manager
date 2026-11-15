@@ -1,21 +1,17 @@
-# v8.8.103 mod-boundary importer — canonical state
+# v8.8.104 Heaven.gg read-only integration — canonical state
 
-Immutable production-download release **updater-main-501** was published November 14, 2026 at 7:01 PM EST from exact source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`. It contains the integrated PR #796 importer and PR #797 release metadata. Publication is **not** proof of installed-client update or on-device deployment.
+The implementation is integrated in protected source `main@a4ad8123c2288f7b4c820d992e2f4a3e61a769dc` via PR #800. The public desktop game guide is **opt-in**. On explicit user action it validates Heaven.gg's fixed-origin public game registry and opens the appropriate research page in an external browser using existing traced process launch. It cannot register installed games, import mods, change game files, alter updater state or move private data to the website.
 
-## Product and publication
-
-- v8.8.103 includes one-shot folder import, conservative nested ZIP/RAR/7z candidate discovery, game-scoped Inbox routing, replay-safe child receipts and source preservation. FOMOD, ambiguous variants and anonymous loose files remain for review; intake does not modify live game installations.
-- Windows Release Gate [run 43655383641](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43655383641) passed 26/26 and produced [immutable release updater-main-501](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-501). Exact ZIP SHA-256: `d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c`; manifest SHA-256: `a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0`.
-- Previous v8.8.102 release `updater-main-499` remains immutable and untouched. The source after protected verification-evidence integration may advance through evidence-only commits; the published product still belongs to its exact source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`.
+The previous immutable public version **v8.8.103** (`updater-main-501`) was published November 14, 2026, source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`. It is preserved. **v8.8.104 publication is pending** exact-main Windows acceptance; no new public package is claimed here.
 
 ## Verification boundary
 
-Current exact-main Windows verification for v8.8.103 source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`: **26 passed / 0 failed**, run `43655383641`. Durable allowlisted evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`. Verification caches and source fingerprint records are only authoritative for that exact source; an evidence-only integration commit does not change its identity.
+Source PR #800, exact head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb`, passed native [Windows Feature Gate 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512): 26/26, 352 core tests, 112 automation tests, 453 integration tests. Protected source merge: `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`. **This is not exact-main v8.8.104 Windows Release Gate proof, publication, installed-client update/rollback, or Heaven2 running identity.** The last completed versioned release receipt remains v8.8.103, [Windows Release Gate 43655383641](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43655383641) and its immutable build 501. The current v8.8.104 source requires its own complete release-gate and immutable artifact/hash checks.
 
-The subsequent [Updater Installed Client E2E run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) **failed**, with 2 tests passed and 1 failed before executing the update/rollback. The test refused to delete unrelated nonempty updater state in the runner's shared Windows profile. This is correct fail-closed behavior, **not** evidence that installed updater functionality passed or failed. No Heaven2 installed source/health receipt has been confirmed.
+## Independent open acceptance
 
-## Production acceptance still open
+- **#793:** the last real updater E2E [run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) stopped before update/rollback because the shared Windows updater root was occupied. The subsequent green [run 43660274094](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43660274094) only classified publication; its actual updater job skipped. Require a separately owned empty Windows test account/profile, verified old→new positive updater and rollback, retained unrelated sentinels, and independent actual Heaven2 source/health. Never wipe shared user LocalApplicationData or bypass the guard.
+- **#791:** real RAR/7z solid fixture acceptance, per-candidate manual registered-game assignment and packaged WPF keyboard/min-width/cancellation checks remain open.
+- The public Heaven.gg website [run 43667045385](https://github.com/fengie/Heaven.gg/actions/runs/43667045385) passed real Google Chrome production interactions, but does not prove installed native Mod Manager interaction.
 
-- **#793 (P0):** use a separately owned empty Windows user/profile for real prior-release-to-501 update and rollback; verify old/new SHA, journal, sentinel retention, UI/health and no effects on the real user updater root. A normal runner service account is not an isolated profile.
-- **#791 (P1):** real RAR/7z fixture matrix including solid RAR where supported, an explicit per-candidate preview/manual game assignment flow, and packaged WPF keyboard/min-width/cancellation acceptance.
-- Do not clear user LocalApplicationData, weaken production updater paths, force-republish the immutable artifact or infer physical Heaven2 installation from GitHub Actions. Every successor must propagate the complete continuity constitution.
+Every successor must inherit, preserve, obey and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and these Core Rules to the next successor. Do not break the chain.
