@@ -1,19 +1,21 @@
-# v8.8.103 mod-boundary importer — canonical source and release preparation
+# v8.8.103 mod-boundary importer — canonical state
 
-This is the canonical state record for the v8.8.103 integrated feature and pending immutable publication.
+Immutable production-download release **updater-main-501** was published November 14, 2026 at 7:01 PM EST from exact source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`. It contains the integrated PR #796 importer and PR #797 release metadata. Publication is **not** proof of installed-client update or on-device deployment.
 
-## Source truth
+## Product and publication
 
-- Prior public release: immutable `updater-main-499` (v8.8.102) from `4a26a12e`, which predates mod-boundary discovery.
-- PR #796 merged into protected main as `03219436e4f110dfa9b63a66452d94a2bb42553e`. Candidate `7896195b6e02581171b7395d487b33fbdc16c289` passed 26/26 Windows feature stages, 342 core, 112 automation and 453 integration tests. No v8.8.103 release or installed proof is asserted here.
-- Product change: mixed-folder and archive boundaries, per-mod digest/replay receipts, game-independent Inbox routing, one-shot import, fail-closed handling of unknown/FOMOD options. Preserves original files, protected live game installations, legacy libraries, SQLite/deployment journals and updater trust gates.
+- v8.8.103 includes one-shot folder import, conservative nested ZIP/RAR/7z candidate discovery, game-scoped Inbox routing, replay-safe child receipts and source preservation. FOMOD, ambiguous variants and anonymous loose files remain for review; intake does not modify live game installations.
+- Windows Release Gate [run 43655383641](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43655383641) passed 26/26 and produced [immutable release updater-main-501](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-501). Exact ZIP SHA-256: `d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c`; manifest SHA-256: `a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0`.
+- Previous v8.8.102 release `updater-main-499` remains immutable and untouched. The source after protected verification-evidence integration may advance through evidence-only commits; the published product still belongs to its exact source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`.
 
 ## Verification boundary
 
-v8.8.103 metadata is pending exact PR checks and expected-head protected merge. Then prove exact-main Windows Release Gate 26/26, immutable updater tag and manifest/artifact digest; promote only allowlisted source evidence by normal PR. Never overwrite/re-sign a prior release.
+Current exact-main Windows verification for v8.8.103 source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`: **26 passed / 0 failed**, run `43655383641`. Durable allowlisted evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`. Verification caches and source fingerprint records are only authoritative for that exact source; an evidence-only integration commit does not change its identity.
 
-## Independent blockers
+The subsequent [Updater Installed Client E2E run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) **failed**, with 2 tests passed and 1 failed before executing the update/rollback. The test refused to delete unrelated nonempty updater state in the runner's shared Windows profile. This is correct fail-closed behavior, **not** evidence that installed updater functionality passed or failed. No Heaven2 installed source/health receipt has been confirmed.
 
-- #791 needs representative real RAR/7z fixtures, manual review/assignment and packaged WPF/min-width/keyboard/cancel smoke.
-- #793 needs independently owned empty updater state/profile for real packaged old-to-new/rollback test; shared user LocalApplicationData must not be touched. Heaven2 installed version/health is unverified.
-- Persistent closed verification records remain unchanged until exact-source evidence is genuinely promoted. Continue and recursively propagate the complete continuity constitution to successors.
+## Production acceptance still open
+
+- **#793 (P0):** use a separately owned empty Windows user/profile for real prior-release-to-501 update and rollback; verify old/new SHA, journal, sentinel retention, UI/health and no effects on the real user updater root. A normal runner service account is not an isolated profile.
+- **#791 (P1):** real RAR/7z fixture matrix including solid RAR where supported, an explicit per-candidate preview/manual game assignment flow, and packaged WPF keyboard/min-width/cancellation acceptance.
+- Do not clear user LocalApplicationData, weaken production updater paths, force-republish the immutable artifact or infer physical Heaven2 installation from GitHub Actions. Every successor must propagate the complete continuity constitution.

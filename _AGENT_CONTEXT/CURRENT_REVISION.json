@@ -7,13 +7,13 @@
   "currentVersion": "8.8.103",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.103-integrated-source-awaiting-exact-main-Windows-release",
-  "nextMilestone": "After the versioned PR merges, pass exact-main Windows Release Gate 26/26 and verify a new immutable updater-main build, exact source SHA, artifact/manifest digest, then collect independent safe installed-client and Heaven2 evidence.",
-  "nextRequiredAction": "Verify release metadata PR exact-head native checks; merge only with passing gates and correct ownership. Verify exact-main v8.8.103 Windows Release Gate and immutable release. Never force-publish an existing version or delete occupied updater LocalApplicationData (#793). Preserve source evidence via protected PR and obtain installed-client/H2 source/health separately. Issue #791 still has RAR/7z and review UX gaps.",
-  "verificationAppliesToCommit": "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-  "lastClosedVerificationCommit": "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-  "lastClosedVerificationRun": "v8.8.99 source c08b31c5327522c5896704d7a24b5ddc6f70b9c4: hosted Windows verification run 38006379575 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-  "verificationScopeNote": "Closed persisted source evidence remains v8.8.99 until an independent protected evidence PR updates it. v8.8.102 immutable updater-main-499 was published Nov 8 from source 4a26a12e. #791 importer PR #796 passed 26/26 Windows PR verifier stages, core 342, automation 112, integration 453 on exact candidate 7896195b, merged into main as 03219436. v8.8.103 metadata is candidate-only; no installed client or Heaven2 proof is claimed.",
+  "status": "v8.8.103-immutable-updater501-published-windows-verified-installed-e2e-blocked",
+  "nextMilestone": "Production release published and independently verified. Close #793 only after safe isolated installed-client updater update+rollback and Heaven2 installed-source/health proof; close #791 only after RAR/7z real fixtures, manual candidate assignment and packaged WPF interaction acceptance.",
+  "nextRequiredAction": "Do not rerun updater E2E on the shared Windows profile. Run with a separately owned and initially empty updater-profile root, preserve negative foreign-state refusal, and capture exact release 501 artifact, installed new-build/source, real update/rollback, and health receipts; record the result through protected evidence PR. Independently verify Heaven2 installed runtime. Continue #791 format/UX acceptance. Preserve current immutable release; no forced republication or live user-state cleanup.",
+  "verificationAppliesToCommit": "2b8e5ae302dfcbbefe7b29193b9c96edd79b7002",
+  "lastClosedVerificationCommit": "2b8e5ae302dfcbbefe7b29193b9c96edd79b7002",
+  "lastClosedVerificationRun": "v8.8.103 source 2b8e5ae302dfcbbefe7b29193b9c96edd79b7002: hosted Windows verification run 43655383641 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+  "verificationScopeNote": "v8.8.103 exact main source 2b8e5ae302dfcbbefe7b29193b9c96edd79b7002 passed Windows Release Gate 43655383641 (26/26) and was published as immutable updater-main-501 on November 14 2026 7:01 PM EST. Archive SHA-256 d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c and manifest SHA-256 a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0. Installed-client E2E run 43656163326 failed before update/rollback because shared updater root was occupied; no installed-client success or Heaven2 proof. Evidence-only commits do not change tested source.",
   "lastClosedVerification": {
     "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
     "updaterBuild": 382,
@@ -33,7 +33,8 @@
     "Artifact attestations for this private repository require GitHub Enterprise Cloud; keep MHW_ENABLE_GITHUB_ATTESTATIONS unset unless that entitlement is present.",
     "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
     "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
-    "Issue #791 needs real RAR/7z format fixtures including solid RAR, per-candidate manual assignment/preview and packaged Windows UI/rollback proof; current source auto-splitting is deliberately conservative."
+    "Issue #791 needs real RAR/7z format fixtures including solid RAR, per-candidate manual assignment/preview and packaged Windows UI/rollback proof; current source auto-splitting is deliberately conservative.",
+    "Issue #793 latest 43656163326 for release build 501 failed before update/rollback due occupied shared Windows updater state. Requires independently owned isolated profile/root; never remove real updater data or claim installed success."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
@@ -46,8 +47,8 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "c08b31c5327522c5896704d7a24b5ddc6f70b9c4",
-    "runId": 38006379575,
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.99-heaven-windows-closure.log"
+    "sourceSha": "2b8e5ae302dfcbbefe7b29193b9c96edd79b7002",
+    "runId": 43655383641,
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log"
   }
 }

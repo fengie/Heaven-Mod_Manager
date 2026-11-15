@@ -75,27 +75,30 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 | COMPLIANCE-710 | P1 | DONE | issue #710; v8.8.89 | Add truthful native-app privacy/legal/data-control surfaces, complete current image accessibility metadata, and mechanically guard dependency notices, keyboard focus/navigation, and core-palette contrast. |
 | HASH-STABILITY-699 | P0 | DONE | issue #699; PR #715; v8.8.90 | Certify authoritative hashes and CAS capture against same-metadata source mutation with byte-level second-read verification. |
 | CI-716-718 | P0 | DONE | issues #716/#718; PR #719 + PR #715; v8.8.90 | Isolate pinned SDK provisioning per job and make function-verification persistence idempotent. |
-| MOD-BOUNDARY-791 | P1 | ACTIVE | issue #791; source PR #796 merged into main `03219436`; v8.8.103 release owner | Detect independently installable mods from mixed folders/ZIP/RAR/7z without collapsing different mods or splitting installer choices; route each safely by registered game. |
+| MOD-BOUNDARY-791 | P1 | ACTIVE | issue #791; PRs #796/#797; immutable updater-main-501 source 2b8e5ae3 | Detect independently installable mods from mixed folders/ZIP/RAR/7z without collapsing different mods or splitting installer choices; route each safely by registered game. |
 | CI-NUGET-709 | P1 | DEFERRED | issue #709 | Make NuGet restore reproducible with generated committed lock files and locked authoritative CI restore after the current PR-drain queue is cleared. |
 
 ## MOD-BOUNDARY-791 — Mixed-folder and archive mod boundaries
 
-**Owner:** issue #791; source implementation merged through PR #796; v8.8.103 serialized release candidate.
-**Status:** ACTIVE — exact source is on `main@03219436e4f110dfa9b63a66452d94a2bb42553e`, awaiting independently verified release and installed acceptance.
-**Evidence:** PR #796 head `7896195b6e02581171b7395d487b33fbdc16c289`, Windows Feature Gate 43652672010 (26/26, core 342, automation 112, integration 453); AutoUpdate Contract 43652671997 and Toolbox Ownership 43652672030 passed.
+**Owner:** issue #791; implementation merged in [PR #796](https://github.com/fengie/Heaven-Mod_Manager/pull/796), v8.8.103 release metadata merged in [PR #797](https://github.com/fengie/Heaven-Mod_Manager/pull/797).
+**Status:** ACTIVE — **production ZIP published**, but full format/UI and installed-client acceptance remain incomplete.
+**Versioned source:** `main@2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`, immutable `updater-main-501` (published 2026-11-14 7:01 PM EST).
+**Verified Windows source:** release gate `43655383641`, 26/26 stages, 0 failed. Original PR source `7896195b` passed core 342, automation 112, integration 453. Published package SHA-256 `d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c`; manifest SHA-256 `a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0`.
 
-**User behavior:** one-shot dump-folder import; ZIP/RAR/7z pack decomposition of clear independent roots; per-game Inbox routing, replay-safe child digests and original preservation. Unknown loose files, variants and FOMOD choices remain review-only. No live-game writes at intake.
+**Shipped subset:** one-shot folder import and mixed archive candidate discovery for confidently separable roots; per-registered-game Inbox routing, safe scratch, content-based replay receipts, source-original preservation. Anonymous loose files and FOMOD/option groups stay review-only. No direct live-game modifications during intake.
 
 **Acceptance:**
-- [x] Pure root discovery and synthetic mixed ZIP/folder, wrapper, loader, FOMOD and unsafe-path regressions passed on exact PR head.
-- [x] Independently routed child folders and embedded ZIP packages, digest replay dedup and malformed archive rejection pass Windows synthetic fixtures.
-- [x] Native feature, ownership and AutoUpdate CI passed; source PR #796 merged into protected main.
-- [ ] v8.8.103 exact-main Windows release (26/26), immutable updater tag with exact artifact/manifest hashes and allowlisted evidence PR.
-- [ ] Representative real RAR and 7z fixture matrix including solid RAR and encrypted/truncated/CRC/size-budget negative cases.
-- [ ] Per-candidate preview and explicit manual registered-game assignment for ambiguous mods; package progress/cancel and packaged WPF keyboard/minimum-width smoke.
-- [ ] Independent safe installed-client update/rollback with owned empty test profile (#793) and Heaven2 installed source/health receipt. A public ZIP does not prove installed deployment.
+- [x] Pure candidate-boundary discovery and synthetic ZIP/folder, wrapper, loader-root, FOMOD and traversal regressions passed.
+- [x] Mixed folder/nested ZIP per-game Inbox routing, replay dedup and malformed archive safety passed synthetic Windows integration tests.
+- [x] Protected feature release PRs #796/#797 integrated; v8.8.103 immutable build 501 published with exact source, SHA-256 and full 26/26 main Windows release verification.
+- [ ] Real RAR and 7z fixtures including solid RAR when supported; encrypted/truncated/CRC/size-budget negative cases and cumulative nesting limits.
+- [ ] Per-candidate preview and manual registered-game assignment for unknown or contradictory inputs; packaged WPF keyboard/minimum-width, progress and cancellation smoke.
+- [ ] Real installed-client update+rollback from old immutable build to build 501 under independently owned empty Windows profile/root; original foreign updater state must remain untouched (#793).
+- [ ] Independent installed Heaven2 source/health and rollback receipt. An immutable release is not on-device deployment proof.
 
-**Next:** verify native v8.8.103 release candidate, merge via expected-head gates, validate immutable publication, then close remaining #791/#793 acceptance with actual machine evidence. Do not clear shared updater roots, leak private paths, or weaken continuity. Every successor inherits and recursively propagates `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`.
+**Current blocker:** updater E2E [run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) failed **before** actual update/rollback because the Windows runner's updater state root was occupied. Its 2 passing safety fixtures are not proof of the positive installed scenario. Never clear shared user LocalApplicationData or turn off fail-closed checks.
+
+**Next:** #793 isolated test account/runner custody and positive update+rollback; then #791 real format/UX validation and installed Heaven2 acceptance. Keep current release immutable, owner work in one existing task ledger and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`.
 
 ## CI-716-718 — SDK isolation and verification-baseline idempotence
 
