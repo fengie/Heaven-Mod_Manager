@@ -8,7 +8,9 @@ PR #800 [read-only Heaven.gg game guide navigation](https://github.com/fengie/He
 
 ## Verification boundary
 
-PR #800 exact head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed native Windows Feature Gate `43668216512` (26/26; 352 core, 112 automation and 453 integration tests). v8.8.104 serialized release metadata must pass its own exact-head native checks, protected merge, exact-main Windows Release Gate, immutable updater publication and SHA-256 artifact/manifest verification. **No v8.8.104 published ZIP or physically installed-client result has been verified yet.** A source/release pass does not prove installed updater health. Preserve the prior v8.8.103 immutable build 501.
+Current hosted-Windows closure: v8.8.104 source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32` passed run `43669418277` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.104-heaven-windows-closure.log`.
+
+The tested source remains `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and next action
 

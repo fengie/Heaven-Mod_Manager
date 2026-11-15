@@ -6,7 +6,9 @@ The previous immutable public version **v8.8.103** (`updater-main-501`) was publ
 
 ## Verification boundary
 
-Source PR #800, exact head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb`, passed native [Windows Feature Gate 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512): 26/26, 352 core tests, 112 automation tests, 453 integration tests. Protected source merge: `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`. **This is not exact-main v8.8.104 Windows Release Gate proof, publication, installed-client update/rollback, or Heaven2 running identity.** The last completed versioned release receipt remains v8.8.103, [Windows Release Gate 43655383641](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43655383641) and its immutable build 501. The current v8.8.104 source requires its own complete release-gate and immutable artifact/hash checks.
+Current hosted-Windows closure: v8.8.104 source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32` passed run `43669418277` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.104-heaven-windows-closure.log`.
+
+The tested source remains `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Independent open acceptance
 
