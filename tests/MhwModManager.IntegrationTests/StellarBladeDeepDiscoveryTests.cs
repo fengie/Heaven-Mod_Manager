@@ -200,6 +200,16 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void A_single_mod_nested_under_mods_wrapper_preserves_only_its_deployment_root()
+    {
+        var result = ModBoundaryDiscovery.Discover(
+            Triple("Mods/My Fancy Outfit/SB/Content/Paks/~mods/Outfit_P"));
+        var candidate = Assert.Single(result.Candidates);
+        Assert.Equal(ModBoundaryKind.Folder, candidate.Kind);
+        Assert.Equal("Mods/My Fancy Outfit", candidate.RelativePath);
+    }
+
+    [Fact]
     public void A_single_stellar_blade_mod_with_pak_companions_stays_one_package()
     {
         var result = ModBoundaryDiscovery.Discover(Triple("My Mod/SB/Content/Paks/~mods/Outfit_P"));
