@@ -702,8 +702,14 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!Path.GetExtension(archive).Equals(".zip", StringComparison.OrdinalIgnoreCase)) return null;
         using var zip = ZipFile.OpenRead(archive);
+        // The archive has already passed the bounded ArchiveInspector scan.
+        // Do not silently ignore game declarations after the first 1,024
+        // entries: large mod packages can otherwise be routed by filename
+        // despite having explicit (or contradictory) game metadata later.
+        if (zip.Entries.Count > MaxEntriesPerSource)
+            throw new InvalidDataException("ZIP game metadata exceeds the 50,000-entry intake limit.");
         string? declared = null;
-        foreach (var entry in zip.Entries.Take(1024))
+        foreach (var entry in zip.Entries)
         {
             var filename = Path.GetFileName(entry.FullName.Replace('\\', '/'));
             if (filename is null || !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
