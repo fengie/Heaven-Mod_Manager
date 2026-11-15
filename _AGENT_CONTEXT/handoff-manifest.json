@@ -6,7 +6,7 @@
   "currentVersion": "8.8.103",
   "originalBaselineVersion": "8.7.0",
   "immediateParentRevision": "v8.8.102 immutable updater-main-499 published from source 4a26a12e. v8.8.103 importer feature PR #796 merged to main 03219436; exact candidate Windows verification passed 26/26. Versioned main release, installed updater E2E and Heaven2 deployment still require independent proof.",
-  "canonicalRepository": "fengie/mhw-mods",
+  "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
   "companyTrainer": "fengie/heaven-toolbox@main:_AGENT_TRAINING/README.md",

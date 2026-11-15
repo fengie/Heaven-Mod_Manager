@@ -1,6 +1,6 @@
 # Permanent Agent Continuity Constitution
 
-This document is a **Core Rule** for `fengie/mhw-mods`. It is the repository's permanent recursive continuity constitution.
+This document is a **Core Rule** for `fengie/Heaven-Mod_Manager` (formerly `fengie/mhw-mods`). It is the repository's permanent recursive continuity constitution.
 
 Every agent that works on this repository inherits two responsibilities:
 
@@ -17,7 +17,7 @@ Only explicit user authorization may remove or weaken a Core Rule.
 
 ## 1. The repository, not chat, carries the rules
 
-Canonical development state is GitHub `fengie/mhw-mods` on branch `main`.
+Canonical development state is GitHub `fengie/Heaven-Mod_Manager` on branch `main`. The historical `fengie/mhw-mods` redirect is an alias, not a separate repository owner or current policy source.
 
 A fresh agent with only the repository must be able to discover the rules and continue safely without prior chat history.
 
