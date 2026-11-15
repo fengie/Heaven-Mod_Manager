@@ -6,7 +6,9 @@ Exact source PR head `a401f52c396faa9f952707d7a0e56a3848daa085` passed [Windows 
 
 ## Verification boundary
 
-The source PR #802 had passed its exact-head Windows feature gate and was merged before v8.8.105 metadata. The first canonical v8.8.105 Windows Release Gate [#43678305726](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43678305726) failed **25 passed / 1 failed** in its synthetic handoff-closure fixture because both active documents lacked a bounded Verification boundary section. It did not publish a v8.8.105 immutable package. This repair must pass its own exact-source CI and a new canonical main Windows Release Gate before any release or installation claim.
+Current hosted-Windows closure: v8.8.105 source `1cd31647f20c9e622b7bf81740671456d7cabd96` passed run `43685947019` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.105-heaven-windows-closure.log`.
+
+The tested source remains `1cd31647f20c9e622b7bf81740671456d7cabd96` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Source versus release
 
