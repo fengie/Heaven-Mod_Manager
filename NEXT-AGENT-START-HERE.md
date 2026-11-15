@@ -19,7 +19,7 @@ Exact #819 candidate `254f813f27be324cdf02f6a6b2dfcecb1bb53f0b` passed [Windows 
 
 Last **immutable** version v8.8.106 is [updater-main-517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517), verified source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d`, [Windows release 43690972860](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43690972860) 26/26, package SHA-256 `55222c54ff61754ebed38f43d4b3ee395a1e066a606e9e851fce5fa5c401bd64`, manifest SHA-256 `cb5f4d166854b816f92b31a49da79e39d2c0042d6d0356f66f0313cddfeba539`.
 
-## Serialized release / open risks / next actions
+## Serialized release / open risk / next actions
 
 1. Confirm preceding main Windows Release Gate and current peer owners are terminal/stable. Verify exact v8.8.107 metadata candidate with native Windows Feature/README timestamp/Product Security/Ownership/AutoUpdate checks; keep scope to nine release/handoff metadata files and reconcile current `main` without force.
 2. Under the protected, serialized release slot, merge metadata at exact expected head/base. Run **fresh exact-main Windows Release Gate** 26/26. Confirm distinct new immutable updater tag with v8.8.107 Windows ZIP, update-manifest.json, artifact/manifest SHA-256 and matching public updater feed. Do not reuse/overwrite prior release build 517.
