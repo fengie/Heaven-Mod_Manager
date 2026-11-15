@@ -16,7 +16,9 @@ Exact PR candidate head `a401f52c396faa9f952707d7a0e56a3848daa085` passed [26/26
 
 ## Verification boundary
 
-The earlier import-review source PR #802 passed native Windows feature checks. Canonical v8.8.105 release run [#43678305726](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43678305726) did not close the release: the synthetic closure preflight could not find this bounded section. The repository's next exact-main release gate must pass and independently publish a new immutable tag before v8.8.105 can be called released. Positive installed-client updater/rollback evidence remains blocked by #793.
+Current hosted-Windows closure: v8.8.105 source `e65a8990d6b70bab17f3d15aaaa5d5bc77ef8168` passed run `43682866291` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.105-heaven-windows-closure.log`.
+
+The tested source remains `e65a8990d6b70bab17f3d15aaaa5d5bc77ef8168` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Immutable release boundary
 
