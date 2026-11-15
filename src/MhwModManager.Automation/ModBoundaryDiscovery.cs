@@ -113,10 +113,10 @@ public static class ModBoundaryDiscovery
         // don't descend into Content or Paks and strip the required SB deployment prefix.
         if (HasStellarBladeLayout(relative))
         {
-            if (relative.Any(IsArchive) ||
-                directories.Where(directory => !directory.Equals("SB", StringComparison.OrdinalIgnoreCase))
-                    .Any(directory => HasExplicitChildPackageEvidence(relative, directory)))
-                return Review(prefix, "Stellar Blade deployment layout conflicts with another package.");
+            if (relative.Any(IsArchive) || relative.Any(IsFomodConfiguration) ||
+                directories.Any(directory => !directory.Equals("SB", StringComparison.OrdinalIgnoreCase)
+                    && !IsSupplementaryDirectory(directory)))
+                return Review(prefix, "Stellar Blade deployment layout conflicts with another package or installer.");
             return [new(Display(prefix), ModBoundaryKind.Folder, "One Stellar Blade deployment layout.")];
         }
 
