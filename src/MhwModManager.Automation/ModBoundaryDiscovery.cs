@@ -36,6 +36,11 @@ public static class ModBoundaryDiscovery
     private const int MaxLevels = 64;
     private const int MaxPaths = 50_000;
     private const string StellarBladePakRoot = "SB/Content/Paks/~mods/";
+    private static readonly HashSet<string> VariantLabels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "optional", "option", "variant", "alternative", "low", "high", "resolution",
+        "hd", "sd", "lite", "performance", "quality", "default"
+    };
     private static readonly HashSet<string> LayoutRoots = new(StringComparer.OrdinalIgnoreCase)
     {
         "nativePC", "GameRoot", "BepInEx", "reframework", "mods", "plugins",
@@ -165,9 +170,19 @@ public static class ModBoundaryDiscovery
         var meaningfulDirectories = directories.Where(directory => !IsSupplementaryDirectory(directory)
             || children[directory].Any(path => !IsSupplementary(path))).ToArray();
 
-        // Multiple variants are normally mutually exclusive versions of one mod, not multiple mods.
-        if (meaningfulDirectories.Length > 1 && meaningfulDirectories.Any(LooksLikeVariant))
-            return Review(prefix, "Potential option/quality variants need review as one package.");
+        // Only siblings with matching package identity, after stripping known
+        // variant tokens, are potential alternatives. One ordinary "High Heels"
+        // mod must not suppress an unrelated hundred-mod collection.
+        var ambiguousVariants = meaningfulDirectories
+            .GroupBy(VariantFamily, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1 && group.Any(LooksLikeVariant))
+            .SelectMany(group => group)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (ambiguousVariants.Count == meaningfulDirectories.Length
+            && meaningfulDirectories.Length > 1
+            && meaningfulDirectories.Select(VariantFamily)
+                .Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1)
+            return Review(prefix, "Potential mutually exclusive variants need review as one package.");
 
         var candidates = new List<ModBoundaryCandidate>();
         if (reviewUnattributedFiles)
@@ -178,6 +193,11 @@ public static class ModBoundaryDiscovery
         foreach (var directory in meaningfulDirectories)
         {
             var child = Join(prefix, directory);
+            if (ambiguousVariants.Contains(directory))
+            {
+                candidates.AddRange(Review(child, "Package variants share an identity with a sibling; choose the intended option."));
+                continue;
+            }
             var found = Analyze(children[directory].ToArray(), child, depth + 1);
             // Preserve independent siblings when one child needs review. The review
             // candidate is reported separately and never auto-installed.
@@ -397,8 +417,14 @@ public static class ModBoundaryDiscovery
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = name.Replace('_', ' ').Replace('-', ' ').ToLowerInvariant();
         var tokens = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return tokens.Any(token => token is "optional" or "option" or "variant" or "alternative"
-            or "low" or "high" or "resolution" or "hd" or "sd" or "lite"
-            or "performance" or "quality" or "default");
+        return tokens.Any(VariantLabels.Contains);
+    }
+
+    private static string VariantFamily(string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = name.Replace('_', ' ').Replace('-', ' ').ToLowerInvariant();
+        return string.Join(" ", normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(token => !VariantLabels.Contains(token)));
     }
 }
