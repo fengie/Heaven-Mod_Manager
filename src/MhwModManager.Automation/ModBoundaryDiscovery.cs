@@ -6,9 +6,11 @@ namespace MhwModManager.Automation;
 /// A filesystem-free, conservative detector of independently installable package boundaries.
 /// Names and extensions alone never prove that two loose payload files are separate mods.
 /// </summary>
-public enum ModBoundaryKind { Folder, Archive, Review }
+public enum ModBoundaryKind { Folder, Archive, Review, FileSet }
 
-public sealed record ModBoundaryCandidate(string RelativePath, ModBoundaryKind Kind, string Evidence);
+/// <param name="Files">Exact source-relative members for a virtual package; null for physical roots.</param>
+public sealed record ModBoundaryCandidate(
+    string RelativePath, ModBoundaryKind Kind, string Evidence, IReadOnlyList<string>? Files = null);
 
 public sealed record ModBoundaryResult(IReadOnlyList<ModBoundaryCandidate> Candidates)
 {
@@ -31,6 +33,7 @@ public static class ModBoundaryDiscovery
 {
     private const int MaxLevels = 32;
     private const int MaxPaths = 50_000;
+    private const string StellarBladePakRoot = "SB/Content/Paks/~mods/";
     private static readonly HashSet<string> LayoutRoots = new(StringComparer.OrdinalIgnoreCase)
     {
         "nativePC", "GameRoot", "BepInEx", "reframework", "mods", "plugins",
@@ -87,8 +90,28 @@ public static class ModBoundaryDiscovery
         var archived = directFiles.Where(IsArchive).Order(StringComparer.OrdinalIgnoreCase).ToArray();
         var otherFiles = directFiles.Where(file => !IsArchive(file) && !IsSupplementary(file)).ToArray();
 
-        // Loader roots are part of one mod's deployment layout, not independently installable mods.
-        if (directories.Any(directory => LayoutRoots.Contains(directory)))
+        // A recognized shared Stellar Blade Paks folder can contain several complete
+        // pak/utoc/ucas bundles. Carry the exact members as virtual package boundaries.
+        // Never apply this split inside a named mod's own deployment layout.
+        var pakGroups = DiscoverFlatStellarBladePaks(relative, prefix);
+        if (pakGroups is not null) return pakGroups;
+
+        // A named mod containing SB/Content/Paks is one installable unit. In particular,
+        // don't descend into Content or Paks and strip the required SB deployment prefix.
+        if (HasStellarBladeLayout(relative))
+        {
+            if (relative.Any(IsArchive) ||
+                directories.Where(directory => !directory.Equals("SB", StringComparison.OrdinalIgnoreCase))
+                    .Any(directory => HasExplicitChildPackageEvidence(relative, directory)))
+                return Review(prefix, "Stellar Blade deployment layout conflicts with another package.");
+            return [new(Display(prefix), ModBoundaryKind.Folder, "One Stellar Blade deployment layout.")];
+        }
+
+        // A directory named Mods/Paks/etc can also be a wrapper around hundreds of
+        // independently packaged mods. Inspect structural package evidence beneath
+        // wrappers before collapsing the whole subtree into a single installation root.
+        var independentRoots = HasMultipleIndependentPackageRoots(relative);
+        if (directories.Any(directory => LayoutRoots.Contains(directory)) && !independentRoots)
         {
             if (archived.Length > 0 ||
                 directories.Where(directory => !LayoutRoots.Contains(directory))
@@ -105,16 +128,14 @@ public static class ModBoundaryDiscovery
         }
 
         // Anonymous loose DLL/PAK/DDS files cannot be confidently separated or auto-installed.
-        if (otherFiles.Length > 0)
+        // A stray file at a *collection* root must not conceal proven independent
+        // package descendants. Keep the loose payload in review without publishing it.
+        var reviewUnattributedFiles = otherFiles.Length > 0 && directories.Length > 0 && independentRoots;
+        if (otherFiles.Length > 0 && !reviewUnattributedFiles)
         {
-            // A single root payload is one package even without a manifest. Its target
-            // game still requires independent classifier evidence before any routing.
             if (otherFiles.Length == 1 && directories.Length == 0 && archived.Length == 0)
                 return [new(Display(prefix), ModBoundaryKind.Folder, "One root-level payload.")];
 
-            // Standalone downloaded archives remain independently identifiable even when
-            // the monitored folder also contains an unrelated loose download. The loose
-            // payload remains in review, never silently omitted from the report.
             if (archived.Length > 0 && directories.Length == 0)
             {
                 var separate = archived.Select(archive => new ModBoundaryCandidate(
@@ -134,6 +155,8 @@ public static class ModBoundaryDiscovery
             return Review(prefix, "Potential option/quality variants need review as one package.");
 
         var candidates = new List<ModBoundaryCandidate>();
+        if (reviewUnattributedFiles)
+            candidates.AddRange(Review(prefix, "Unattributed collection-level loose files need review."));
         foreach (var archive in archived)
             candidates.Add(new(Join(prefix, archive), ModBoundaryKind.Archive, "Independent nested archive."));
 
@@ -148,6 +171,113 @@ public static class ModBoundaryDiscovery
 
         // A collection is only separated when each candidate is structurally independent.
         return candidates;
+    }
+
+
+    private static bool HasStellarBladeLayout(string[] relativePaths)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return relativePaths.Any(path =>
+            path.StartsWith("SB/Content/Paks/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// A loader-labelled collection wrapper is only bypassed when different
+    /// child package roots have independent structural evidence, not merely
+    /// because there happen to be multiple loose PAKs or DLLs.
+    /// </summary>
+    private static bool HasMultipleIndependentPackageRoots(string[] relativePaths)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in relativePaths)
+        {
+            var segments = path.Split('/');
+            if (segments.Length > 1 && PackageManifests.Contains(segments[^1]))
+            {
+                roots.Add(string.Join("/", segments.Take(segments.Length - 1)));
+                if (roots.Count > 1) return true;
+            }
+            for (var i = 1; i < segments.Length - 1; i++)
+            {
+                var segment = segments[i];
+                var isStellar = segment.Equals("SB", StringComparison.OrdinalIgnoreCase)
+                    && i + 2 < segments.Length
+                    && segments[i + 1].Equals("Content", StringComparison.OrdinalIgnoreCase)
+                    && segments[i + 2].Equals("Paks", StringComparison.OrdinalIgnoreCase);
+                var isLoader = segment.Equals("nativePC", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("BepInEx", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("reframework", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("MelonLoader", StringComparison.OrdinalIgnoreCase)
+                    || segment.Equals("UE4SS", StringComparison.OrdinalIgnoreCase);
+                if (!isStellar && !isLoader) continue;
+                roots.Add(string.Join("/", segments.Take(i)));
+                if (roots.Count > 1) return true;
+                break;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Only distinct complete triplets immediately inside the canonical shared
+    /// Stellar Blade ~mods directory are individually staged. One mod wrapped in
+    /// its own named folder is not decomposed, and non-triplet/variant packages
+    /// remain under review rather than publishing incomplete pieces.
+    /// </summary>
+    private static IReadOnlyList<ModBoundaryCandidate>? DiscoverFlatStellarBladePaks(
+        string[] relativePaths, string prefix)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (prefix.Length != 0) return null;
+        var pakPaths = relativePaths.Where(path =>
+            path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (pakPaths.Length < 4) return null;
+
+        var nonSupplementary = relativePaths.Where(path => !IsSupplementary(path)).ToArray();
+        if (nonSupplementary.Any(path =>
+                !path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)))
+            return null;
+
+        var groups = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in pakPaths)
+        {
+            var leaf = path[StellarBladePakRoot.Length..];
+            if (leaf.Length == 0 || leaf.Contains('/'))
+                return Review(prefix, "Nested Stellar Blade PAK layouts require package-boundary review.");
+            var extension = Path.GetExtension(leaf);
+            if (extension is not (".pak" or ".utoc" or ".ucas") &&
+                !extension.Equals(".pak", StringComparison.OrdinalIgnoreCase) &&
+                !extension.Equals(".utoc", StringComparison.OrdinalIgnoreCase) &&
+                !extension.Equals(".ucas", StringComparison.OrdinalIgnoreCase))
+                return Review(prefix, "Non-PAK payload is mixed with the Stellar Blade bundle.");
+            var stem = Path.GetFileNameWithoutExtension(leaf);
+            if (!groups.TryGetValue(stem, out var members))
+                groups.Add(stem, members = []);
+            members.Add(path);
+        }
+        if (groups.Count < 2) return null;
+        if (groups.Keys.Any(LooksLikeDependentOrVariant))
+            return Review(prefix, "Stellar Blade main, patch or quality variants require manual selection.");
+        if (groups.Values.Any(files => files.Count != 3 ||
+            files.Select(Path.GetExtension).Distinct(StringComparer.OrdinalIgnoreCase).Count() != 3))
+            return Review(prefix, "Incomplete or multi-part Stellar Blade PAK groups need review.");
+
+        return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(pair => new ModBoundaryCandidate(StellarBladePakRoot + pair.Key,
+                ModBoundaryKind.FileSet, "Complete Stellar Blade PAK/UTOC/UCAS companion group.",
+                pair.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray())).ToArray();
+    }
+
+    private static bool LooksLikeDependentOrVariant(string stem)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var name = stem.EndsWith("_P", StringComparison.OrdinalIgnoreCase)
+            ? stem[..^2] : stem;
+        var normalized = name.Replace('_', ' ').Replace('-', ' ').ToLowerInvariant();
+        var tokens = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return LooksLikeVariant(name) || tokens.Any(token => token is "main" or "base"
+            or "patch" or "update" or "addon" or "add" or "fix" or "hotfix");
     }
 
     private static IReadOnlyList<ModBoundaryCandidate> Review(string prefix, string reason)
@@ -208,7 +338,8 @@ public static class ModBoundaryDiscovery
             path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
         {
             var child = path[prefix.Length..];
-            if (PackageManifests.Contains(child)) return true;
+            if (PackageManifests.Contains(child) ||
+                child.StartsWith("SB/Content/Paks/", StringComparison.OrdinalIgnoreCase)) return true;
             var slash = child.IndexOf('/');
             if (slash > 0 && LayoutRoots.Contains(child[..slash])) return true;
         }
