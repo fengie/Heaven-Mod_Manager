@@ -134,10 +134,19 @@ public static class ModBoundaryDiscovery
         // Known installation roots cannot safely be separated from another
         // explicitly packaged sibling. Keep that conflicting tree in review
         // rather than installing a partial nativePC/BepInEx/UE4SS payload.
-        if (directories.Any(StrongLoaderRoots.Contains) &&
-            (archived.Length > 0 || directories.Where(d => !StrongLoaderRoots.Contains(d))
-                .Any(d => HasExplicitChildPackageEvidence(relative, d))))
-            return Review(prefix, "Independent packages conflict with a shared loader root.");
+        if (directories.Any(StrongLoaderRoots.Contains))
+        {
+            if (archived.Length > 0 || directories.Where(d => !StrongLoaderRoots.Contains(d))
+                .Any(d => HasExplicitChildPackageEvidence(relative, d)))
+                return Review(prefix, "Independent packages conflict with a shared loader root.");
+
+            // Do not strip BepInEx/nativePC/UE4SS from nested child packages.
+            // Re-rooting those packages safely needs a game-specific adapter;
+            // preserve an unambiguous single root and review any multiple roots.
+            if (HasAtLeastIndependentPackageRoots(relative, 2))
+                return Review(prefix, "Multiple packages under one loader root require layout-preserving review.");
+            return [new(Display(prefix), ModBoundaryKind.Folder, "One game installation root.")];
+        }
 
         // A directory named Mods/Paks/etc can also be a wrapper around hundreds of
         // independently packaged mods. Inspect structural package evidence beneath
