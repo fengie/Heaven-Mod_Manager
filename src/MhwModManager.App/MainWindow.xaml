@@ -211,6 +211,8 @@
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Import a Mixed Mod Folder" Command="{Binding ImportModFolderCommand}"/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Separate Existing Mod Collections" Command="{Binding ReanalyzeManagedCollectionsCommand}"
                                             ToolTip="Inspect disabled library packages recursively and preview independent mods before copying them into their registered game libraries."/>
+                                    <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}"
+                                            ToolTip="Read-only evidence for all tracked source packages, including unknown or incomplete nested mod groups."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Find Installed Games" Command="{Binding ScanInstalledGamesCommand}"/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Game Settings" Command="{Binding ConfigureGameCommand}"/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Open This Game's Mod Folder" Command="{Binding OpenGameModFolderCommand}"/>
@@ -319,6 +321,9 @@
                                         ToolTip="Stage disable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Deselect all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5"
                                         ToolTip="{Binding VisibleBulkScopeHelp}"/>
+                                <Button Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="8,0,6,0"
+                                        ToolTip="Read-only inspection of every tracked mod package. Show nested companion patterns, unclassified files and reasons without enabling, deleting or importing anything."
+                                        AutomationProperties.Name="Inspect nested mod package layouts without making changes"/>
                                 <TextBlock Text="{Binding VisibleBulkScopeHelp}" VerticalAlignment="Center" Margin="10,3,0,3" MaxWidth="520" TextWrapping="Wrap" FontSize="10" Foreground="{StaticResource Muted}" AutomationProperties.LiveSetting="Polite"/>
                             </WrapPanel>
                         </Grid>
