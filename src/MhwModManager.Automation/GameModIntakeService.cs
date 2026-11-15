@@ -31,7 +31,7 @@ public sealed class GameModIntakeService
     private const int MaxSources = 12;
     private const int MaxEntriesPerSource = 50_000;
     private const int MaxFolderFiles = 50_000;
-    private const int MaxContainerDepth = 24;
+    private const int MaxContainerDepth = 64;
     private const int MaxNestedArchiveDepth = 4;
     private const long MaxArchiveBytes = 8L * 1024 * 1024 * 1024;
     private const int IoBufferSize = 128 * 1024;
@@ -243,14 +243,97 @@ public sealed class GameModIntakeService
             }
             try
             {
-                RefuseReparseComponents(entry);
-                await ClassifyAndRouteAsync(root, entry,
-                    candidate.Kind == ModBoundaryKind.Folder,
-                    games, output, receipts, ct, 0, new IntakeBudget()).ConfigureAwait(false);
+                if (candidate.Kind == ModBoundaryKind.FileSet)
+                    await RouteFileSetAsync(root, candidate, games, output, receipts,
+                        0, new IntakeBudget(), entry, ct).ConfigureAwait(false);
+                else
+                {
+                    RefuseReparseComponents(entry);
+                    await ClassifyAndRouteAsync(root, entry,
+                        candidate.Kind == ModBoundaryKind.Folder,
+                        games, output, receipts, ct, 0, new IntakeBudget()).ConfigureAwait(false);
+                }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
             {
                 output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, ex.Message));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Materialize one exact, verified companion group into dedicated catalog-invisible
+    /// scratch storage. Reuse the existing folder classifier, digest/receipts and Inbox
+    /// publication contract rather than adding a second importer.
+    /// </summary>
+    private async Task RouteFileSetAsync(
+        string sourceDirectory, ModBoundaryCandidate candidate, IReadOnlyList<GameProfile> games,
+        List<GameModIntakeItem> output, HashSet<string> receipts,
+        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (candidate.Kind != ModBoundaryKind.FileSet || candidate.Files is not { Count: > 0 })
+            throw new InvalidDataException("A virtual package must identify its exact source files.");
+
+        var scratch = CreateScratchPath();
+        var package = Path.Combine(scratch, SafePackageName(candidate.RelativePath));
+        try
+        {
+            Directory.CreateDirectory(package);
+            long copiedBytes = 0;
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var buffer = new byte[IoBufferSize];
+            foreach (var relative in candidate.Files)
+            {
+                ct.ThrowIfCancellationRequested();
+                var normalized = relative.Replace('\\', '/');
+                if (normalized.StartsWith('/') || normalized.Split('/').Any(part =>
+                        part is "" or "." or ".." || part.Contains(':')) || !seen.Add(normalized))
+                    throw new InvalidDataException("An unsafe or duplicate virtual mod-package path was refused.");
+
+                var gameRelative = normalized;
+                if (!string.IsNullOrWhiteSpace(candidate.SourcePrefix))
+                {
+                    var wrapper = candidate.SourcePrefix.Replace('\\', '/').TrimEnd('/');
+                    if (!normalized.StartsWith(wrapper + "/", StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidDataException("A virtual mod-package member did not belong to its source wrapper.");
+                    gameRelative = normalized[(wrapper.Length + 1)..];
+                }
+                var input = Path.GetFullPath(Path.Combine(sourceDirectory,
+                    normalized.Replace('/', Path.DirectorySeparatorChar)));
+                var destination = Path.GetFullPath(Path.Combine(package,
+                    gameRelative.Replace('/', Path.DirectorySeparatorChar)));
+                if (!ContainsPath(sourceDirectory, input) || !ContainsPath(package, destination))
+                    throw new InvalidDataException("A virtual mod-package path escaped its staging boundary.");
+                RefuseReparseComponents(input);
+                RefuseReparseComponents(destination);
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                RefuseReparseComponents(destination);
+
+                await using var reader = new FileStream(input, FileMode.Open, FileAccess.Read,
+                    FileShare.Read, IoBufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                await using var writer = new FileStream(destination, FileMode.CreateNew, FileAccess.Write,
+                    FileShare.None, IoBufferSize, FileOptions.Asynchronous);
+                int count;
+                while ((count = await reader.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
+                {
+                    if (count > MaxArchiveBytes - copiedBytes)
+                        throw new InvalidDataException("A virtual mod package exceeded its 8 GiB staging budget.");
+                    copiedBytes += count;
+                    await writer.WriteAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
+                }
+            }
+            await ClassifyAndRouteAsync(sourceDirectory, package, true, games, output,
+                receipts, ct, nestedDepth, budget, provenance).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (Directory.Exists(scratch))
+            {
+                // Cleanup must still check the full owned scratch tree even when
+                // the requested import was cancelled.
+                SafeRecursiveTraversal.EnsureNoReparsePoints(scratch, CancellationToken.None);
+                Directory.Delete(scratch, recursive: true);
             }
         }
     }
@@ -291,10 +374,18 @@ public sealed class GameModIntakeService
             budget.Account(info);
             var discovery = ModBoundaryDiscovery.Discover(info.Entries
                 .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
-            if (discovery.NeedsReview && discovery.Candidates.Count == 1)
+            // No extraction is necessary when every candidate requires review.
+            // Preserve each incomplete group as a separate evidence-bearing row.
+            if (discovery.Candidates.Count > 0 &&
+                discovery.Candidates.All(candidate => candidate.Kind == ModBoundaryKind.Review))
             {
-                output.Add(new(reportSource, null, GameModIntakeStatus.NeedsReview,
-                    discovery.Candidates.First(candidate => candidate.Kind == ModBoundaryKind.Review).Evidence));
+                foreach (var candidate in discovery.Candidates)
+                {
+                    var childProvenance = candidate.RelativePath == "." ? reportSource
+                        : reportSource + "!/" + candidate.RelativePath;
+                    output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview,
+                        candidate.Evidence));
+                }
                 return;
             }
 
@@ -348,13 +439,19 @@ public sealed class GameModIntakeService
                             output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
                             continue;
                         }
-                        RefuseReparseComponents(child);
                         try
                         {
-                            await ClassifyAndRouteAsync(sourceRoot, child,
-                                candidate.Kind == ModBoundaryKind.Folder,
-                                games, output, receipts, ct, nestedDepth + 1, budget, childProvenance,
-                                childGameContextHint).ConfigureAwait(false);
+                            if (candidate.Kind == ModBoundaryKind.FileSet)
+                                await RouteFileSetAsync(scratch, candidate, games, output, receipts,
+                                    nestedDepth + 1, budget, childProvenance, ct).ConfigureAwait(false);
+                            else
+                            {
+                                RefuseReparseComponents(child);
+                                await ClassifyAndRouteAsync(sourceRoot, child,
+                                    candidate.Kind == ModBoundaryKind.Folder,
+                                    games, output, receipts, ct, nestedDepth + 1, budget, childProvenance,
+                                    childGameContextHint).ConfigureAwait(false);
+                            }
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
                         {
@@ -548,12 +645,12 @@ public sealed class GameModIntakeService
                 if (Directory.Exists(entry))
                 {
                     if (depth >= MaxContainerDepth)
-                        throw new InvalidDataException("Extracted mod folder exceeds the safe intake depth.");
+                        throw new InvalidDataException("Mod intake exceeded the safe 64-directory-level traversal limit; use a shallower selected collection.");
                     queue.Enqueue((entry, depth + 1));
                 }
                 else if (File.Exists(entry)) files.Add(entry);
                 if (files.Count + queue.Count > MaxFolderFiles)
-                    throw new InvalidDataException("Extracted mod folder exceeds the 512-entry intake budget.");
+                    throw new InvalidDataException("Mod intake exceeded its 50,000-file-and-folder safety budget; import a smaller collection.");
             }
         }
         return files.Order(StringComparer.OrdinalIgnoreCase).ToArray();
