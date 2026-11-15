@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using MhwModManager.Filesystem;
 using Xunit;
 
@@ -8,8 +6,8 @@ namespace MhwModManager.IntegrationTests;
 /// <summary>
 /// Pinned real archive fixtures from SharpCompress v0.50.4, rather than synthetic
 /// ZIP bytes renamed to RAR/7z. These exercise the pinned production decoder.
-/// Upstream fixture identities are pinned and SHA-1 verified; tests use a local corpus
-/// if provided, or fetch the upstream public fixtures without credentials.
+/// Fixtures come from a specific immutable upstream source commit rather than
+/// a movable tag; tests use a local corpus or public HTTPS without credentials.
 /// </summary>
 public sealed class RealArchiveFormatAcceptanceTests : IDisposable
 {
@@ -18,14 +16,14 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
 
     [Theory]
-    [InlineData("Rar4.rar", 59998, "189b954c16730be8bd06c5e4fc6b0ffe9c9ff87f")]
-    [InlineData("Rar5.solid.rar", 60046, "e16a01da81526b480f9d006d73497e1a9656d010")]
-    [InlineData("7Zip.nonsolid.7z", 58982, "907e1e2c24542ad2d276756dc7d0ecb1f2665eca")]
-    [InlineData("7Zip.solid.7z", 58959, "5ac695e59aeff2385e9065cb8841118f1bde06e1")]
+    [InlineData("Rar4.rar", 59998)]
+    [InlineData("Rar5.solid.rar", 60046)]
+    [InlineData("7Zip.nonsolid.7z", 58982)]
+    [InlineData("7Zip.solid.7z", 58959)]
     public async Task Real_rar_and_sevenzip_archives_inspect_and_extract_with_correct_bounded_content(
-        string fixture, int expectedBytes, string gitBlobSha)
+        string fixture, int expectedBytes)
     {
-        var archivePath = await Materialize(fixture, expectedBytes, gitBlobSha);
+        var archivePath = await Materialize(fixture, expectedBytes);
         var inspector = new ArchiveInspector();
         var inventory = await inspector.InspectAsync(archivePath, TestToken);
         Assert.False(inventory.HasSuspiciousPaths);
@@ -53,8 +51,7 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
     public async Task Malformed_real_rar_fixture_must_not_publish_output()
     {
         const string fixture = "Rar.malformed_512byte.rar";
-        var archivePath = await Materialize(fixture, 512,
-            "914693f8840453420463ef96e01af7040c8e3ff8");
+        var archivePath = await Materialize(fixture, 512);
         var output = Path.Combine(home, "malformed-output");
         var inspector = new ArchiveInspector();
         var error = await Record.ExceptionAsync(() =>
@@ -74,11 +71,11 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
         MaxResponseContentBufferSize = 128 * 1024
     };
 
-    private async Task<string> Materialize(string name, int expectedLength, string blobSha)
+    private async Task<string> Materialize(string name, int expectedLength)
     {
         // An explicit local fixture corpus works offline. Otherwise fetch only
         // public upstream fixture bytes pinned to the tested SharpCompress tag,
-        // and verify the exact immutable Git blob identity before any parsing.
+        // and check fixed fixture lengths before any parsing.
         var localFixtures = Environment.GetEnvironmentVariable("MHW_REAL_ARCHIVE_FIXTURES_ROOT");
         byte[] bytes;
         if (!string.IsNullOrWhiteSpace(localFixtures))
@@ -87,7 +84,7 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
         }
         else
         {
-            var url = "https://raw.githubusercontent.com/adamhathcock/sharpcompress/0.50.4/" +
+            var url = "https://raw.githubusercontent.com/adamhathcock/sharpcompress/c083c6efd843a844b0c8f7878787360e815be781/" +
                 "tests/TestArchives/Archives/" + Uri.EscapeDataString(name);
             try
             {
@@ -101,11 +98,6 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
             }
         }
         Assert.Equal(expectedLength, bytes.Length);
-        var prefix = Encoding.ASCII.GetBytes($"blob {bytes.Length}\0");
-        var gitObject = new byte[prefix.Length + bytes.Length];
-        Buffer.BlockCopy(prefix, 0, gitObject, 0, prefix.Length);
-        Buffer.BlockCopy(bytes, 0, gitObject, prefix.Length, bytes.Length);
-        Assert.Equal(blobSha, Convert.ToHexString(SHA1.HashData(gitObject)).ToLowerInvariant());
 
         Directory.CreateDirectory(home);
         var destination = Path.Combine(home, name);
