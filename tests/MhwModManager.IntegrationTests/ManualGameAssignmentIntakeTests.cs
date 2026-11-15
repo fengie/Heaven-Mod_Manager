@@ -141,6 +141,28 @@ public sealed class ManualGameAssignmentIntakeTests : IDisposable
         Assert.False(Directory.Exists(Path.Combine(home, "Manager", "Mods by Game")));
     }
 
+    [Fact]
+    public void One_shot_review_exposes_manual_assignment_without_automatic_watcher_popups()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        var app = Path.Combine(root!.FullName, "src", "MhwModManager.App");
+        var window = File.ReadAllText(Path.Combine(app, "ModIntakeReviewWindow.cs"));
+        var folder = File.ReadAllText(Path.Combine(app, "ViewModels", "MainWindowViewModel.AutoSort.cs"));
+        var archive = File.ReadAllText(Path.Combine(app, "ViewModels", "MainWindowViewModel.Import.cs"));
+
+        Assert.Contains("EnableManualAssignment", window);
+        Assert.Contains("Confirm manual game assignment", window);
+        Assert.Contains("AssignReviewedPackageAsync", folder);
+        Assert.Contains("AssignReviewedPackageAsync", archive);
+        var watcherStart = folder.IndexOf("private async Task ScanAutoSortAsync", StringComparison.Ordinal);
+        var watcherEnd = folder.IndexOf("private void DisposeAutoSorting", StringComparison.Ordinal);
+        Assert.True(watcherStart >= 0 && watcherEnd > watcherStart);
+        Assert.DoesNotContain("ModIntakeReviewWindow", folder[watcherStart..watcherEnd]);
+    }
+
     public void Dispose()
     {
         try { if (Directory.Exists(home)) Directory.Delete(home, recursive: true); }
