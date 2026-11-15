@@ -35,11 +35,14 @@ public sealed class GameModIntakeService
     private const int MaxNestedArchiveDepth = 4;
     private const long MaxArchiveBytes = 8L * 1024 * 1024 * 1024;
     private const int IoBufferSize = 128 * 1024;
+    private const string CollectionCopyLimitError =
+        "Mod intake exceeded its cumulative selected-collection byte budget; import a smaller batch.";
     private readonly string managerHome;
     private readonly string stateRoot;
     private readonly string settingsPath;
     private readonly Func<IReadOnlyList<GameProfile>> loadGames;
     private readonly ArchiveInspector archive;
+    private readonly long collectionCopyBudget;
 
     public string ReportPath
     {
@@ -52,12 +55,16 @@ public sealed class GameModIntakeService
 
     public GameModIntakeService(
         string managerHome, string stateRoot, Func<IReadOnlyList<GameProfile>> loadGames,
-        ArchiveInspector? archive = null)
+        ArchiveInspector? archive = null, long collectionCopyBudget = MaxArchiveBytes)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(managerHome);
         ArgumentException.ThrowIfNullOrWhiteSpace(stateRoot);
         ArgumentNullException.ThrowIfNull(loadGames);
+        if (collectionCopyBudget <= 0 || collectionCopyBudget > MaxArchiveBytes)
+            throw new ArgumentOutOfRangeException(nameof(collectionCopyBudget),
+                "The collection copy budget must be between 1 byte and 8 GiB.");
+        this.collectionCopyBudget = collectionCopyBudget;
         this.managerHome = Path.GetFullPath(managerHome);
         this.stateRoot = Path.GetFullPath(stateRoot);
         this.loadGames = loadGames;
@@ -201,15 +208,21 @@ public sealed class GameModIntakeService
 
     private sealed class IntakeBudget
     {
+        public IntakeBudget(long copyBudget)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            RemainingActualBytes = copyBudget;
+        }
+
         public long RemainingExpandedBytes { get; private set; } = MaxArchiveBytes;
         public int RemainingEntries { get; private set; } = MaxEntriesPerSource;
-        public long RemainingActualBytes { get; private set; } = MaxArchiveBytes;
+        public long RemainingActualBytes { get; private set; }
 
         public void AccountActual(long bytes)
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
             if (bytes < 0 || bytes > RemainingActualBytes)
-                throw new InvalidDataException("Nested mod-pack output exceeded its cumulative actual-byte budget.");
+                throw new InvalidDataException(CollectionCopyLimitError);
             RemainingActualBytes -= bytes;
         }
 
@@ -231,6 +244,9 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
         var discovered = ModBoundaryDiscovery.Discover(paths);
+        // Share one inspection and physical-copy budget across every candidate from
+        // this selected collection. Nested archive recursion carries the same instance.
+        var collectionBudget = new IntakeBudget(collectionCopyBudget);
         foreach (var candidate in discovered.Candidates)
         {
             ct.ThrowIfCancellationRequested();
@@ -245,13 +261,13 @@ public sealed class GameModIntakeService
             {
                 if (candidate.Kind == ModBoundaryKind.FileSet)
                     await RouteFileSetAsync(root, candidate, games, output, receipts,
-                        0, new IntakeBudget(), entry, ct).ConfigureAwait(false);
+                        0, collectionBudget, entry, ct).ConfigureAwait(false);
                 else
                 {
                     RefuseReparseComponents(entry);
                     await ClassifyAndRouteAsync(root, entry,
                         candidate.Kind == ModBoundaryKind.Folder,
-                        games, output, receipts, ct, 0, new IntakeBudget()).ConfigureAwait(false);
+                        games, output, receipts, ct, 0, collectionBudget).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
@@ -320,6 +336,7 @@ public sealed class GameModIntakeService
                     if (count > MaxArchiveBytes - copiedBytes)
                         throw new InvalidDataException("A virtual mod package exceeded its 8 GiB staging budget.");
                     copiedBytes += count;
+                    budget.AccountActual(count);
                     await writer.WriteAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
                 }
             }
@@ -345,7 +362,7 @@ public sealed class GameModIntakeService
         string? gameContextHint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        budget ??= new IntakeBudget();
+        budget ??= new IntakeBudget(collectionCopyBudget);
         var reportSource = provenance ?? source;
         if (nestedDepth > MaxNestedArchiveDepth)
         {
@@ -492,19 +509,22 @@ public sealed class GameModIntakeService
         GameModStorage.EnsureDirectories(library);
         RefuseReparseComponents(library.InboxRoot);
         var wasCreated = isDirectory
-            ? await CopyDirectoryIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, ct).ConfigureAwait(false)
-            : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, ct).ConfigureAwait(false);
+            ? await CopyDirectoryIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false)
+            : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false);
         output.Add(new(reportSource, owner.Id,
             wasCreated ? GameModIntakeStatus.Routed : GameModIntakeStatus.AlreadyPresent,
             wasCreated ? detection.Reason : "Identical mod already exists in this game's Inbox or processed receipts."));
     }
 
     private async Task<bool> CopyArchiveIntoInboxAsync(string source, string inboxRoot, string gameId,
-        HashSet<string> receipts, CancellationToken ct)
+        HashSet<string> receipts, IntakeBudget budget, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (new FileInfo(source).Length > MaxArchiveBytes)
+        var inputBytes = new FileInfo(source).Length;
+        if (inputBytes > MaxArchiveBytes)
             throw new InvalidDataException("Archive exceeds the automatic intake 8 GiB copy limit.");
+        if (inputBytes > budget.RemainingActualBytes)
+            throw new InvalidDataException(CollectionCopyLimitError);
         var scratch = CreateScratchPath();
         try
         {
@@ -521,6 +541,7 @@ public sealed class GameModIntakeService
                 {
                     total += count;
                     if (total > MaxArchiveBytes) throw new InvalidDataException("Archive grew beyond the intake copy budget.");
+                    budget.AccountActual(count);
                     digest.AppendData(buffer.AsSpan(0, count));
                     await output.WriteAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
                 }
@@ -553,10 +574,22 @@ public sealed class GameModIntakeService
     }
 
     private async Task<bool> CopyDirectoryIntoInboxAsync(string source, string inboxRoot, string gameId,
-        HashSet<string> receipts, CancellationToken ct)
+        HashSet<string> receipts, IntakeBudget budget, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var files = SnapshotFolderFiles(source, ct);
+        // Reject a too-large candidate before allocating scratch or spending the
+        // shared budget, so a smaller unrelated sibling can still be imported.
+        long plannedBytes = 0;
+        foreach (var file in files)
+        {
+            ct.ThrowIfCancellationRequested();
+            RefuseReparseComponents(file);
+            var bytes = new FileInfo(file).Length;
+            if (bytes < 0 || bytes > budget.RemainingActualBytes - plannedBytes)
+                throw new InvalidDataException(CollectionCopyLimitError);
+            plannedBytes += bytes;
+        }
         var scratch = CreateScratchPath();
         Directory.CreateDirectory(scratch);
         try
@@ -581,6 +614,7 @@ public sealed class GameModIntakeService
                 {
                     total += count;
                     if (total > MaxArchiveBytes) throw new InvalidDataException("Folder exceeds the 8 GiB intake copy budget.");
+                    budget.AccountActual(count);
                     digest.AppendData(buffer.AsSpan(0, count));
                     await output.WriteAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
                 }
