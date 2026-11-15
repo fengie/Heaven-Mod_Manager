@@ -3,12 +3,12 @@
 Issue: #791. Decoder under test: the repository-pinned SharpCompress 0.50.4.
 
 The test method `RealArchiveFormatAcceptanceTests` uses actual archives from
-[SharpCompress's 0.50.4 tagged test corpus](https://github.com/adamhathcock/sharpcompress/tree/0.50.4/tests/TestArchives/Archives),
+[SharpCompress commit `c083c6efd843a844b0c8f7878787360e815be781`'s test corpus](https://github.com/adamhathcock/sharpcompress/tree/c083c6efd843a844b0c8f7878787360e815be781/tests/TestArchives/Archives),
 not synthetic ZIPs renamed to another format. It obtains the public bytes at test
-time without credentials and verifies the complete Git blob SHA-1 (including the
-Git blob object header) **before invoking the application decoder**.
+time without credentials. The test pins the full source commit and checks the
+expected original byte length before invoking the application decoder.
 
-| Name | Bytes | Upstream Git blob SHA-1 | Acceptance |
+| Name | Bytes | Upstream Git blob ID (provenance only) | Acceptance |
 | --- | ---: | --- | --- |
 | Rar4.rar | 59,998 | `189b954c16730be8bd06c5e4fc6b0ffe9c9ff87f` | RAR4 inventory + bounded extraction |
 | Rar5.solid.rar | 60,046 | `e16a01da81526b480f9d006d73497e1a9656d010` | Solid RAR5 inventory + bounded extraction |
@@ -21,11 +21,12 @@ Source license: [SharpCompress MIT License](https://github.com/adamhathcock/shar
 ## Offline test
 
 Set `MHW_REAL_ARCHIVE_FIXTURES_ROOT` to an existing local directory containing
-these exact original filenames. The test checks size and source Git blob SHA
-before writing or reading them as mod archives. No special install permission,
+these exact original filenames. The test checks size before writing or reading them as mod archives.
+The documented upstream Git blob IDs are reference metadata; this test does
+not compute SHA-1 or claim an independent cryptographic content check. No special install permission,
 test credentials, running game, or live manager folder is needed.
 
-Without the variable, tests download the pinned public raw GitHub files through
+Without the variable, tests download from the pinned upstream commit through
 an HTTPS client capped at 128 KiB per response and a 30-second timeout.
 A failed download is a test infrastructure error, not a decoder success.
 The test may run in connected CI; offline CI should provide the verified corpus.
