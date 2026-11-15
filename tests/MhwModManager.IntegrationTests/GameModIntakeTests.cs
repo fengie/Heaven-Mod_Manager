@@ -57,6 +57,50 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public void Game_identity_evidence_after_first_512_paths_still_identifies_registered_game()
+    {
+        var paths = Enumerable.Range(0, 513)
+            .Select(i => $"assets/texture-{i:D4}.dds").ToList();
+        paths.Add("mods/nier-automata/late-payload.bin");
+
+        var detected = GameModIntakeClassifier.Classify(Games, "anonymous.zip", paths);
+        Assert.Equal(GameModIntakeKind.Identified, detected.Kind);
+        Assert.Equal("nier-automata", detected.GameId);
+    }
+
+    [Fact]
+    public void Late_conflicting_game_identity_does_not_silently_route_the_first_game()
+    {
+        var paths = new List<string> { "mods/nier-automata/first.bin" };
+        paths.AddRange(Enumerable.Range(0, 512)
+            .Select(i => $"assets/generic-{i:D4}.dds"));
+        paths.Add("mods/another-unity-game/late-payload.bin");
+
+        var detected = GameModIntakeClassifier.Classify(Games, "anonymous.zip", paths);
+        Assert.Equal(GameModIntakeKind.Ambiguous, detected.Kind);
+        Assert.Null(detected.GameId);
+        Assert.Contains("nier-automata", detected.CandidateGameIds);
+        Assert.Contains("another-unity-game", detected.CandidateGameIds);
+    }
+
+    [Fact]
+    public void Oversized_identity_input_requires_review_instead_of_guessing_from_early_name()
+    {
+        var paths = Enumerable.Repeat("assets/generic.bin", 50_001).ToArray();
+        var detected = GameModIntakeClassifier.Classify(
+            Games, "NieR Automata Outfit.zip", paths);
+
+        Assert.Equal(GameModIntakeKind.Unknown, detected.Kind);
+        Assert.Null(detected.GameId);
+        Assert.Contains("50,000", detected.Reason);
+
+        var declared = GameModIntakeClassifier.Classify(
+            Games, "anonymous.zip", paths, "nier-automata");
+        Assert.Equal(GameModIntakeKind.Unknown, declared.Kind);
+        Assert.Null(declared.GameId);
+    }
+
+    [Fact]
     public async Task Routes_both_games_from_one_designated_source_and_preserves_originals()
     {
         var source = Path.Combine(Path.GetTempPath(), "umm-intake-source-" + Guid.NewGuid().ToString("N"));
