@@ -91,6 +91,8 @@ try{
     }else{
         Write-Host 'INFO: feature-candidate mode defers current-version handoff identity fixtures to canonical verification.' -ForegroundColor Yellow
     }
+    Reject 'current state must retain a bounded verification boundary before closure' '_AGENT_CONTEXT/CURRENT_STATE.md' {param($x) [regex]::Replace($x,'(?ms)^## Verification boundary\s*\r?\n.*?(?=^## |\z)','')}
+    Reject 'successor handoff must retain a bounded verification boundary before closure' 'NEXT-AGENT-START-HERE.md' {param($x) [regex]::Replace($x,'(?ms)^## Verification boundary\s*\r?\n.*?(?=^## |\z)','')}
     Reject 'constitution loses exact verification' '_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md' {param($x) $x -replace '(?i)exact verification','approximate evidence'}
     Reject 'project plan loses recovery queue' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) [regex]::Replace($x,'(?m)^\|\s*RECOVERY-.*$','')}
     Reject 'project plan loses archive non-terminal rule' '_AGENT_CONTEXT/PROJECT_PLAN.md' {param($x) $x -replace '(?i)ARCHIVED.{0,120}not.{0,120}terminal work disposition','ARCHIVED is a terminal work disposition'}
