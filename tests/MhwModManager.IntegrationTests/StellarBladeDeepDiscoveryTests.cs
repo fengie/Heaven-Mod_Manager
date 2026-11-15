@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using MhwModManager.Automation;
 using MhwModManager.Core;
 using Xunit;
@@ -71,7 +72,50 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
             .Concat(Triple("SB/Content/Paks/~mods/Weapon_P"));
         var result = ModBoundaryDiscovery.Discover(paths);
         Assert.Equal(2, result.Candidates.Count);
-        Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Review);
+        Assert.All(result.Candidates, candidate =>
+        {
+            Assert.Equal(ModBoundaryKind.FileSet, candidate.Kind);
+            Assert.NotNull(candidate.Files);
+            Assert.Equal(3, candidate.Files.Count);
+            Assert.Contains(candidate.Files, path => path.EndsWith(".pak", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(candidate.Files, path => path.EndsWith(".utoc", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(candidate.Files, path => path.EndsWith(".ucas", StringComparison.OrdinalIgnoreCase));
+        });
+        Assert.Equal(6, result.Candidates.SelectMany(candidate => candidate.Files!).Distinct().Count());
+    }
+
+    [Fact]
+    public void Readmes_and_case_differences_inside_shared_pak_directory_do_not_hide_complete_groups()
+    {
+        var paths = Triple("SB/Content/Paks/~mods/Armor_P")
+            .Concat(["SB/Content/Paks/~mods/README.md"])
+            .Concat(["SB/Content/Paks/~mods/Weapon_P.PAK",
+                "SB/Content/Paks/~mods/Weapon_P.UTOC", "SB/Content/Paks/~mods/Weapon_P.UCAS"])
+            .ToArray();
+        var result = ModBoundaryDiscovery.Discover(paths);
+        Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.FileSet));
+        Assert.False(result.NeedsReview);
+    }
+
+    [Fact]
+    public void Incomplete_pak_companion_sets_are_not_split_or_imported()
+    {
+        var paths = Triple("SB/Content/Paks/~mods/Armor_P")
+            .Append("SB/Content/Paks/~mods/Weapon_P.pak");
+        var result = ModBoundaryDiscovery.Discover(paths);
+        Assert.True(result.NeedsReview);
+        Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.FileSet);
+    }
+
+    [Fact]
+    public void Collection_wrappers_beyond_32_levels_preserve_independent_mod_packages()
+    {
+        var wrapper = Enumerable.Range(0, 40).Aggregate("Mods", (path, _) => path + "/d");
+        var files = Triple(wrapper + "/Armor/SB/Content/Paks/~mods/Armor_P")
+            .Concat(Triple(wrapper + "/Weapon/SB/Content/Paks/~mods/Weapon_P"));
+        var result = ModBoundaryDiscovery.Discover(files);
+        Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Folder));
+        Assert.False(result.NeedsReview);
     }
 
     [Fact]
@@ -135,6 +179,68 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         var second = await intake.ImportPathAsync(source, TestToken);
         Assert.Equal(0, second.Routed);
         Assert.Equal(12, second.AlreadyPresent);
+    }
+
+    [Fact]
+    public async Task Archive_with_two_stellar_blade_pak_triples_stages_separate_complete_mods()
+    {
+        Directory.CreateDirectory(home);
+        var sourceArchive = Path.Combine(home, "StellarBladeMods.zip");
+        using (var zip = ZipFile.Open(sourceArchive, ZipArchiveMode.Create))
+        {
+            foreach (var entryName in Triple("SB/Content/Paks/~mods/Armor_P")
+                .Concat(Triple("SB/Content/Paks/~mods/Weapon_P")))
+            {
+                using var writer = zip.CreateEntry(entryName).Open();
+                await writer.WriteAsync(new byte[] { 42 }, TestToken);
+            }
+        }
+        var manager = Path.Combine(home, "Manager");
+        var profile = GameProfile.Generic("stellar-blade", "Stellar Blade", Path.Combine(home, "Game"),
+            "StellarBlade.exe", "SB/Content/Paks/~mods", nexusGameDomain: "stellarblade");
+        var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => [profile]);
+
+        var first = await intake.ImportPathAsync(sourceArchive, TestToken);
+        Assert.Equal(2, first.Routed);
+        Assert.True(File.Exists(sourceArchive));
+        var packages = Directory.GetDirectories(Path.Combine(manager, "Mods by Game", "stellar-blade", "Inbox"));
+        Assert.Equal(2, packages.Length);
+        Assert.All(packages, package =>
+        {
+            var files = Directory.GetFiles(package, "*", SearchOption.AllDirectories);
+            Assert.Equal(3, files.Length);
+            Assert.Contains(files, file => file.EndsWith(".pak", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(files, file => file.EndsWith(".utoc", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(files, file => file.EndsWith(".ucas", StringComparison.OrdinalIgnoreCase));
+        });
+        var second = await intake.ImportPathAsync(sourceArchive, TestToken);
+        Assert.Equal(2, second.AlreadyPresent);
+        Assert.Equal(0, second.Routed);
+    }
+
+    [Fact]
+    public async Task Unpacked_shared_paks_are_independently_staged_without_copying_other_groups()
+    {
+        var incoming = Path.Combine(home, "Incoming");
+        foreach (var path in Triple("SB/Content/Paks/~mods/Armor_P")
+            .Concat(Triple("SB/Content/Paks/~mods/Weapon_P")))
+        {
+            var original = Path.Combine(incoming, path.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(original)!);
+            await File.WriteAllTextAsync(original, path, TestToken);
+        }
+        var manager = Path.Combine(home, "Manager");
+        var profile = GameProfile.Generic("stellar-blade", "Stellar Blade", Path.Combine(home, "Game"),
+            "StellarBlade.exe", "SB/Content/Paks/~mods", nexusGameDomain: "stellarblade");
+        var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => [profile]);
+
+        var first = await intake.ImportPathAsync(incoming, TestToken);
+        Assert.Equal(2, first.Routed);
+        var packages = Directory.GetDirectories(Path.Combine(manager, "Mods by Game", "stellar-blade", "Inbox"));
+        Assert.Equal(2, packages.Length);
+        Assert.All(packages, package => Assert.Equal(3,
+            Directory.GetFiles(package, "*", SearchOption.AllDirectories).Length));
+        Assert.Equal(6, Directory.GetFiles(incoming, "*", SearchOption.AllDirectories).Length);
     }
 
     public void Dispose()
