@@ -63,8 +63,15 @@ public static class GameModIntakeClassifier
                 "Package manifest identifies a registered game.", [declared.Id]);
         }
 
+        // The intake inventory is capped at 50,000 entries. Never classify from
+        // just the first 512 files: a later conflicting game identity could turn
+        // an ambiguous bundle into a wrongly routed package.
+        if (relativePaths.Count > 50_000)
+            return new(GameModIntakeKind.Unknown, null,
+                "Package identity inventory exceeds 50,000 paths; review smaller groups.", []);
+
         var normalizedName = GameProfile.NormalizeId(sourceName);
-        var normalizedEntries = relativePaths.Take(512).Select(GameProfile.NormalizeId).ToArray();
+        var normalizedEntries = relativePaths.Select(GameProfile.NormalizeId).ToArray();
         var scores = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var game in games)
         {
