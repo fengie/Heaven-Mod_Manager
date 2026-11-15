@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.107",
+  "currentVersion": "8.8.108",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Last immutable v8.8.106 updater-main-517, exact source 2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d, Windows Gate 43690972860. Post-517 #815/#818/#819 merged on source main 5b50e6581b4b1bef56ad09fe422621388f494c85; v8.8.107 metadata candidate requires exact-release CI, new immutable tag, SHA and installed proof separately.",
+  "immediateParentRevision": "Prior immutable v8.8.107 updater-main-522 targets source a1e9078b9b9a3a52106a76341c7ea79f7b1c4630. PR #823 merged structural read-only layout inspection at main 5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7, with exact-head native Windows Feature 43707926891 and AutoUpdate 43707926895 passed. v8.8.108 candidate metadata requires its own gates and separate immutable publication; installed user corpus and updater rollback remain unverified.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap current fengie/heaven-toolbox@main and fengie/Heaven-Mod_Manager@main; read full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, Learned Rules, CURRENT_REVISION.json and PROJECT_PLAN.md. #819 managed-library recursive reanalysis and #815/#818 are source integrated at 5b50e6581b4b1bef56ad09fe422621388f494c85; only v8.8.106 updater-main-517 is known published. On v8.8.107 metadata: wait for preceding release gate, refresh peer PR #820 owners, complete exact candidate native Feature/README/Ownership/Security/AutoUpdate, serialize protected merge and exact-main Windows Release, then verify new immutable tag ZIP/manifest SHA and public feed parity. Never clear occupied shared updater root; #793 actual rollback and Heaven2 install and #791 real corpus/WPF still open. Every successor must inherit, preserve, obey and recursively propagate these Core Rules to their successor; don't break the chain.",
+  "nextAgentObligation": "Bootstrap current Toolbox and canonical Mod Manager main/owners; read full CONTINUITY_PROTOCOL and active Learned Rules and recursively pass both to successor. Latest #823 source 5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7 provides read-only nested Sifu/Stellar layout visibility, not automatic independently-installable grouping. Wait for main Windows 43708380211, verify exact v8.8.108 metadata-native gates, protect serial merge and new exact-main immutable ZIP/manifest SHA/feed publication. Do not reuse immutable 8.8.107 updater-main-522. #791 real user corpus/independent grouping and #793 isolated installed updater rollback remain open; never clear occupied shared user state. Historic source/CI/release/install identities must remain distinct.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
