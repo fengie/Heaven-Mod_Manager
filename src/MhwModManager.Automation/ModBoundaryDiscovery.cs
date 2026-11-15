@@ -125,8 +125,9 @@ public static class ModBoundaryDiscovery
         // A directory named Mods/Paks/etc can also be a wrapper around hundreds of
         // independently packaged mods. Inspect structural package evidence beneath
         // wrappers before collapsing the whole subtree into a single installation root.
-        var independentRoots = HasMultipleIndependentPackageRoots(relative);
-        if (directories.Any(directory => LayoutRoots.Contains(directory)) && !independentRoots)
+        var independentRoots = HasAtLeastIndependentPackageRoots(relative, 2);
+        var hasPackageRootEvidence = independentRoots || HasAtLeastIndependentPackageRoots(relative, 1);
+        if (directories.Any(directory => LayoutRoots.Contains(directory)) && !hasPackageRootEvidence)
         {
             if (archived.Length > 0 ||
                 directories.Where(directory => !LayoutRoots.Contains(directory))
@@ -196,11 +197,12 @@ public static class ModBoundaryDiscovery
     }
 
     /// <summary>
-    /// A loader-labelled collection wrapper is only bypassed when different
-    /// child package roots have independent structural evidence, not merely
-    /// because there happen to be multiple loose PAKs or DLLs.
+    /// A loader-labelled collection wrapper is bypassed when one or more
+    /// nested package roots have verified structural evidence. One nested
+    /// package also must be unwrapped; otherwise its source collection
+    /// wrapper becomes part of the installed deployment layout.
     /// </summary>
-    private static bool HasMultipleIndependentPackageRoots(string[] relativePaths)
+    private static bool HasAtLeastIndependentPackageRoots(string[] relativePaths, int minimumCount)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -212,13 +214,13 @@ public static class ModBoundaryDiscovery
             if (path.Contains('/') && IsArchive(path))
             {
                 roots.Add(path);
-                if (roots.Count > 1) return true;
+                if (roots.Count >= minimumCount) return true;
             }
             var segments = path.Split('/');
             if (segments.Length > 1 && PackageManifests.Contains(segments[^1]))
             {
                 roots.Add(string.Join("/", segments.Take(segments.Length - 1)));
-                if (roots.Count > 1) return true;
+                if (roots.Count >= minimumCount) return true;
             }
             for (var i = 1; i < segments.Length - 1; i++)
             {
@@ -234,7 +236,7 @@ public static class ModBoundaryDiscovery
                     || segment.Equals("UE4SS", StringComparison.OrdinalIgnoreCase);
                 if (!isStellar && !isLoader) continue;
                 roots.Add(string.Join("/", segments.Take(i)));
-                if (roots.Count > 1) return true;
+                if (roots.Count >= minimumCount) return true;
                 break;
             }
         }
