@@ -178,11 +178,16 @@ public static class ModBoundaryDiscovery
             if (otherFiles.Length == 1 && directories.Length == 0 && archived.Length == 0)
                 return [new(Display(prefix), ModBoundaryKind.Folder, "One root-level payload.")];
 
-            if (archived.Length > 0 && directories.Length == 0)
+            // A separate documentation or unproven nested folder does not make
+            // standalone archive downloads inseparable. Hold the loose files
+            // and unproven folder content for review while retaining safe archive
+            // boundaries. Manifest and strong-loader conflicts were rejected above.
+            if (archived.Length > 0)
             {
                 var separate = archived.Select(archive => new ModBoundaryCandidate(
                     Join(prefix, archive), ModBoundaryKind.Archive, "Independent nested archive.")).ToList();
-                separate.AddRange(Review(prefix, "Unattributed loose files remain outside automatic import."));
+                separate.AddRange(Review(prefix,
+                    "Unattributed loose files and unproven nested folders remain outside automatic import."));
                 return separate;
             }
             return Review(prefix, "Loose files have no proven independent mod boundaries.");
