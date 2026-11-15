@@ -8,9 +8,9 @@ PR #796 merged as `03219436e4f110dfa9b63a66452d94a2bb42553e`. Its exact PR head 
 
 ## Verification boundary
 
-v8.8.103 metadata is a **candidate**, not published proof. After native PR tests and protected merge, the canonical Windows Release Gate must report 26/26 and a new immutable `updater-main-<build>` for the exact main source, with manifest/artifact SHA-256. Verify public GitHub Releases and use the existing protected evidence-PR path. Never force-republish prior v8.8.102.
+Current hosted-Windows closure: v8.8.103 source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002` passed run `43655383641` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`.
 
-Issue #793 blocks real installed-client E2E without independently owned empty Windows updater state/profile. Do not delete or replace shared real-user LocalApplicationData, weaken runtime safety, or equate source/ZIP publication with installed update/rollback. No confirmed Heaven2 installed-source/health receipt is available.
+The tested source remains `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and issue #791 remaining
 

@@ -10,7 +10,9 @@ This is the canonical state record for the v8.8.103 integrated feature and pendi
 
 ## Verification boundary
 
-v8.8.103 metadata is pending exact PR checks and expected-head protected merge. Then prove exact-main Windows Release Gate 26/26, immutable updater tag and manifest/artifact digest; promote only allowlisted source evidence by normal PR. Never overwrite/re-sign a prior release.
+Current hosted-Windows closure: v8.8.103 source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002` passed run `43655383641` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`.
+
+The tested source remains `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Independent blockers
 
