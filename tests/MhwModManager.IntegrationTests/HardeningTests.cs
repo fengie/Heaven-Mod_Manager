@@ -673,6 +673,71 @@ public sealed class HardeningTests : IDisposable
     }
 
     [Fact]
+    public async Task Archive_extraction_preflight_rejects_later_unsafe_entry_without_publishing_earlier_payload()
+    {
+        var zip=Path.Combine(root,"late-unsafe-entry.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var safe=archive.CreateEntry("nativePC/safe.bin");
+            await using(var output=safe.Open())
+                await output.WriteAsync(new byte[]{1,2,3},TestToken);
+            var unsafeEntry=archive.CreateEntry("../escape.txt");
+            await using(var output=unsafeEntry.Open())
+                await output.WriteAsync(new byte[]{4,5,6},TestToken);
+        }
+
+        var destination=Path.Combine(root,"late-unsafe-extract");
+        var error=await Assert.ThrowsAsync<InvalidDataException>(()=>
+            new ArchiveInspector().ExtractSafelyAsync(zip,destination,root,TestToken));
+        Assert.Contains("unsafe archive path",error.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(Path.Combine(destination,"nativePC","safe.bin")));
+        Assert.False(File.Exists(Path.Combine(root,"escape.txt")));
+    }
+
+    [Fact]
+    public async Task Archive_extraction_preflight_rejects_duplicate_output_paths_before_any_write()
+    {
+        var zip=Path.Combine(root,"case-collision.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var first=archive.CreateEntry("nativePC/duplicate.bin");
+            await using(var output=first.Open())
+                await output.WriteAsync(new byte[]{1},TestToken);
+            var second=archive.CreateEntry("nativePC/DUPLICATE.bin");
+            await using(var output=second.Open())
+                await output.WriteAsync(new byte[]{2},TestToken);
+        }
+
+        var destination=Path.Combine(root,"collision-extract");
+        var error=await Assert.ThrowsAsync<InvalidDataException>(()=>
+            new ArchiveInspector().ExtractSafelyAsync(zip,destination,root,TestToken));
+        Assert.Contains("duplicate",error.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(Path.Combine(destination,"nativePC","duplicate.bin")));
+    }
+
+    [Fact]
+    public async Task Archive_extraction_preflight_rejects_late_declared_size_limit_without_writing()
+    {
+        var zip=Path.Combine(root,"late-size-limit.zip");
+        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
+        {
+            var first=archive.CreateEntry("nativePC/first.bin");
+            await using(var output=first.Open())
+                await output.WriteAsync(new byte[]{1,2,3},TestToken);
+            var second=archive.CreateEntry("nativePC/too-large.bin");
+            await using(var output=second.Open())
+                await output.WriteAsync(new byte[4096],TestToken);
+        }
+
+        var destination=Path.Combine(root,"late-size-extract");
+        var limits=new ArchiveExtractionLimits(1024,8192);
+        var error=await Assert.ThrowsAsync<InvalidDataException>(()=>
+            new ArchiveInspector().ExtractSafelyAsync(zip,destination,root,limits,TestToken));
+        Assert.Contains("expansion safety limit",error.Message,StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(Path.Combine(destination,"nativePC","first.bin")));
+    }
+
+    [Fact]
     public async Task Archive_extraction_cancellation_interrupts_single_entry_and_removes_partial_file()
     {
         var zip=Path.Combine(root,"cancel-large.zip");
