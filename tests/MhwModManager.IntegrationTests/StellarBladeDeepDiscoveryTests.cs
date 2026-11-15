@@ -62,6 +62,35 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void High_named_independent_mod_does_not_put_a_large_collection_on_hold()
+    {
+        var files = Enumerable.Range(0, 180).SelectMany(i =>
+        {
+            var name = i == 0 ? "High Heels" : $"Outfit-{i:D3}";
+            return Triple($"Mods/Collection/{name}/SB/Content/Paks/~mods/Outfit-{i:D3}_P");
+        });
+        var result = ModBoundaryDiscovery.Discover(files);
+        Assert.Equal(180, result.Candidates.Count);
+        Assert.All(result.Candidates, candidate => Assert.Equal(ModBoundaryKind.Folder, candidate.Kind));
+        Assert.Contains(result.Candidates, candidate => candidate.RelativePath.EndsWith("/High Heels",
+            StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Matched_quality_variants_require_review_without_hiding_unrelated_mod_siblings()
+    {
+        var files = Triple("Mods/Collection/High Resolution/SB/Content/Paks/~mods/Outfit_P")
+            .Concat(Triple("Mods/Collection/Low Resolution/SB/Content/Paks/~mods/Outfit_P"))
+            .Concat(Triple("Mods/Collection/Unrelated Armor/SB/Content/Paks/~mods/Armor_P"));
+        var result = ModBoundaryDiscovery.Discover(files);
+        Assert.Single(result.Candidates.Where(candidate => candidate.Kind == ModBoundaryKind.Folder
+            && candidate.RelativePath.EndsWith("/Unrelated Armor", StringComparison.Ordinal)));
+        Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Review));
+        Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Folder
+            && candidate.RelativePath.Contains("Resolution", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Independent_archives_nested_under_loader_named_collection_are_not_collapsed()
     {
         var result = ModBoundaryDiscovery.Discover(
