@@ -327,6 +327,20 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Contradictory_stellar_blade_payload_never_uses_an_unrelated_manifest_even_without_registered_stellar_blade()
+    {
+        var registered = new[]
+        {
+            GameProfile.MonsterHunterWorld(Path.Combine(home, "MHW"))
+        };
+        var result = GameModIntakeClassifier.Classify(registered, "Unlabeled",
+            ["SB/Content/Paks/~mods/Outfit_P.pak", "SB/Content/Paks/~mods/Outfit_P.utoc"],
+            "monster-hunter-world");
+        Assert.Equal(GameModIntakeKind.Ambiguous, result.Kind);
+        Assert.Null(result.GameId);
+    }
+
+    [Fact]
     public async Task One_shot_deep_collection_routes_individual_mods_and_deduplicates_without_touching_sources()
     {
         var source = Path.Combine(home, "Incoming");
