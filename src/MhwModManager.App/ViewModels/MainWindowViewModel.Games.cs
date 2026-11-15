@@ -65,10 +65,10 @@ public sealed partial class MainWindowViewModel
                 return;
             }
 
-            var launched = Process.Start(new ProcessStartInfo(target.AbsoluteUri)
+            var launched = ProcessDebug.Start(new ProcessStartInfo(target.AbsoluteUri)
             {
                 UseShellExecute = true
-            });
+            }, "heaven-gg-public-guide");
             StatusText = launched is null
                 ? "No browser could be opened for the public Heaven.gg guide."
                 : "Opened the public Heaven.gg guide in your browser. No mod files were changed.";
