@@ -148,7 +148,7 @@ public sealed class ModLayoutReviewWindow : Window
             HorizontalAlignment = HorizontalAlignment.Right,
             MinWidth = 120,
             MinHeight = 32,
-            Padding = new Thickness(12, 5),
+            Padding = new Thickness(12, 5, 12, 5),
             Margin = new Thickness(0, 10, 0, 0)
         };
         close.Click += (_, _) => Close();
