@@ -34,6 +34,7 @@ public sealed class GameModIntakeService
     private const int MaxContainerDepth = 64;
     private const int MaxNestedArchiveDepth = 4;
     private const long MaxArchiveBytes = 8L * 1024 * 1024 * 1024;
+    private const int MaxGameManifestBytes = 16 * 1024;
     private const int IoBufferSize = 128 * 1024;
     private readonly string managerHome;
     private readonly string stateRoot;
@@ -690,8 +691,10 @@ public sealed class GameModIntakeService
         foreach (var name in new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" })
         {
             var path = Path.Combine(folder, name);
-            if (!File.Exists(path) || new FileInfo(path).Length > 16384) continue;
+            if (!File.Exists(path)) continue;
             RefuseReparseComponents(path);
+            if (new FileInfo(path).Length > MaxGameManifestBytes)
+                throw new InvalidDataException("Recognized game manifest exceeds the 16 KiB intake limit; manual review required.");
             using var input = File.OpenRead(path);
             var hint = ReadBoundedManifestGame(input);
             if (string.IsNullOrWhiteSpace(hint)) continue;
@@ -721,7 +724,8 @@ public sealed class GameModIntakeService
             var filename = Path.GetFileName(entry.FullName.Replace('\\', '/'));
             if (filename is null || !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
                 .Contains(filename, StringComparer.OrdinalIgnoreCase)) continue;
-            if (entry.Length > 16384 || entry.CompressedLength > 16384) continue;
+            if (entry.Length > MaxGameManifestBytes || entry.CompressedLength > MaxGameManifestBytes)
+                throw new InvalidDataException("Recognized game manifest exceeds the 16 KiB intake limit; manual review required.");
             using var input = entry.Open();
             var hint = ReadBoundedManifestGame(input);
             if (string.IsNullOrWhiteSpace(hint)) continue;
@@ -739,9 +743,11 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // Advertised sizes in untrusted compressed headers are not an actual-output limit.
         using var reader = new StreamReader(input, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, 1024, leaveOpen: true);
-        var buffer = new char[16 * 1024 + 1];
+        var buffer = new char[MaxGameManifestBytes + 1];
         var length = reader.ReadBlock(buffer, 0, buffer.Length);
-        return length <= 16 * 1024 ? TryReadJsonGame(new string(buffer, 0, length)) : null;
+        if (length > MaxGameManifestBytes)
+            throw new InvalidDataException("Recognized game manifest exceeds the 16 KiB intake limit; manual review required.");
+        return TryReadJsonGame(new string(buffer, 0, length));
     }
 
     private static string? TryReadJsonGame(string text)
