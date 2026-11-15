@@ -4,9 +4,9 @@ Canonical `fengie/Heaven-Mod_Manager@main` source already includes deep Stellar 
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.106 source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` passed run `43690972860` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.106 source `5b50e6581b4b1bef56ad09fe422621388f494c85` passed run `43696588139` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`.
 
-The tested source remains `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `5b50e6581b4b1bef56ad09fe422621388f494c85` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Source versus release
 

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.106",
-  "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+  "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -292,9 +292,37 @@
     },
     {
       "id": "src/MhwModManager.App/ModIntakeReviewWindow.cs::ModIntakeReviewWindow::ctor:ModIntakeReviewWindow(GameModIntakeScan)",
-      "fingerprint": "e0d816ac047a89c5502f70211eacb237c171739a713b2a71b1e2243c4cd820d5",
+      "fingerprint": "a5c8f43a6351b67ecaa5e1388a4c7045f5180f5c2ab9d916c280a5b9ecc2b3e6",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ModIntakeReviewWindow.cs::ModIntakeReviewWindow::method:EnableManualAssignment(IReadOnlyList\u003CGameProfile\u003E,Func\u003CGameModIntakeItem,string,Task\u003CGameModIntakeScan\u003E\u003E)",
+      "fingerprint": "5857da21536fd4cb65ef564a135d824546b990c97706a3682583aa73ac061ce0",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ModIntakeReviewWindow.cs::ModIntakeReviewWindow::method:Summary()",
+      "fingerprint": "a5bd93c4c20df8912f9da3c74631da22d339f37adf1dfb939a6fd3cc161f934e",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ModIntakeReviewWindow.cs::ModIntakeReviewWindow::method:UpdateAssignmentAvailability()",
+      "fingerprint": "0418983b464068e50f3cb879e5f1920d997614cfddf2602e21112138bdc5a680",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ModIntakeReviewWindow.cs::ModIntakeReviewWindow::method:AssignButton_Click(object,RoutedEventArgs)",
+      "fingerprint": "200244ff8a3cf9d3340ce3081616e700239245449a2c8999236ac1b96f9e10de",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -558,9 +586,9 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.AutoSort.cs::MainWindowViewModel::method:ImportModFolder()",
-      "fingerprint": "0f5ed9b03e6608ad3441fe9a0cf00e809b397e8baecb1ce37be7545ea722d881",
+      "fingerprint": "b49141372ed0b392360b7bfb2f463ee6293da847250b74d19b5151a8726f8854",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -2007,9 +2035,16 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs::MainWindowViewModel::method:ImportArchive()",
-      "fingerprint": "aa35f95373e0088be949da292f4bc41d97b68d2df126f23c087e5658f41f3ef8",
+      "fingerprint": "c45a843817f7ed523b825454acf5f051223e15ff7e39948704b7d30451c8457e",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.ManagedCollections.cs::MainWindowViewModel::method:ReanalyzeManagedCollections()",
+      "fingerprint": "12aa760d62b0f54766264318b0d0b125b6a70add17d94ae4ca4cb8a9901a5e1d",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -3798,10 +3833,10 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::ctor:GameModIntakeService(string,string,Func\u003CIReadOnlyList\u003CGameProfile\u003E\u003E,ArchiveInspector?,long)",
-      "fingerprint": "23a6e63cd52c63f5f415757bde3575c849f76e9faac5f0ddd74a0d9714e963a9",
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::ctor:GameModIntakeService(string,string,Func\u003CIReadOnlyList\u003CGameProfile\u003E\u003E,ArchiveInspector?,long,int)",
+      "fingerprint": "bb3d8991da82a64039b61004760ab71e5997097b057ad243c618ea3719d53963",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -3840,6 +3875,13 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:AssignReviewedPackageAsync(string,string,CancellationToken)",
+      "fingerprint": "3e49361f3575dab850f89153ba7cf1ba3b930bcc0bce997baa52b3ad2f965b82",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
       "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService.IntakeBudget::ctor:IntakeBudget(long)",
       "fingerprint": "2a93bc44ab2b48fd44d717ace2529d2dcb8628c52830994324937f3a60c449fb",
       "verified": true,
@@ -3861,10 +3903,31 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:ScanSourceAsync(string,IReadOnlyList\u003CGameProfile\u003E,List\u003CGameModIntakeItem\u003E,HashSet\u003Cstring\u003E,CancellationToken)",
-      "fingerprint": "d16c8a68cc064d55c937b81e10a1bbd587c81c711b369c0b4e4a48af29a207b1",
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:ScanSourceAsync(string,IReadOnlyList\u003CGameProfile\u003E,List\u003CGameModIntakeItem\u003E,HashSet\u003Cstring\u003E,CancellationToken,bool)",
+      "fingerprint": "13ccba63a458b9bf42b162f6bc43ab14f2537daf6f40e7a1e3a9c0f67061610f",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:PreviewManagedCollection(string,GameProfile,CancellationToken)",
+      "fingerprint": "640df2880bec543e025b8be15d8d68b544310133d3c7323fc8ad271bdc0e2f9c",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:ImportManagedCollectionAsync(string,GameProfile,CancellationToken)",
+      "fingerprint": "e13bb656b6fb89ccbd2ddfafe8446c63185a322c379078507781e54b5e30c9fb",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:ValidateManagedCollectionSource(string,GameProfile)",
+      "fingerprint": "a6b5e24e275e28865b73309f6c85e52bc4c43f4cff165a7067c4882158d2f147",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -3875,10 +3938,10 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:ClassifyAndRouteAsync(string,string,bool,IReadOnlyList\u003CGameProfile\u003E,List\u003CGameModIntakeItem\u003E,HashSet\u003Cstring\u003E,CancellationToken,int,IntakeBudget?,string?,string?)",
-      "fingerprint": "5ff516654a5433b0c68101eaceaff7c1c54447c3478ace4f283493bb39ff20be",
+      "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:ClassifyAndRouteAsync(string,string,bool,IReadOnlyList\u003CGameProfile\u003E,List\u003CGameModIntakeItem\u003E,HashSet\u003Cstring\u003E,CancellationToken,int,IntakeBudget?,string?,string?,string?)",
+      "fingerprint": "01964186abb34432073e9f5b2c63e5cf83ca34adfb447c628066613b99fad723",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -3897,16 +3960,16 @@
     },
     {
       "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:HashDirectoryAsync(string,CancellationToken)",
-      "fingerprint": "b1c3a620bdc7b14cb2ecdc8b001ce6a2188d48ea4e3412010fbbfe8b7644bd7c",
+      "fingerprint": "8d0cd83fde8e157f9005a2b03e2706234f7ff0f2545eca586d5f5adad82356c4",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
       "id": "src/MhwModManager.Automation/GameModIntakeService.cs::GameModIntakeService::method:SnapshotFolderFiles(string,CancellationToken)",
-      "fingerprint": "539a57c14e3db5b746a5e906ab7fccbc640ec3bf8930932d834b1fa031adcad0",
+      "fingerprint": "cbe0eeec3b1bda7816b7a4531e28d027bb3315ebb57965a0b48b5abd08574746",
       "verified": true,
-      "verifiedAtUtc": "2026-11-15T07:48:43.0291969+00:00",
+      "verifiedAtUtc": "2026-11-15T08:59:38.6833435+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
