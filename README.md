@@ -1,14 +1,21 @@
-# v8.8.103 — MHW Manual Mod Manager
+# v8.8.104 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 14, 2026 · 6:34:13 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 14, 2026 · 9:39:00 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.103**.
+Current product version: **8.8.104**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.104 — opt-in Heaven.gg game guide integration
+
+- Integrate [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) on protected main as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`: Dashboard → More tools opens a public Heaven.gg guide on explicit request only.
+- Read only the allowlisted `games.json` catalog from Heaven.gg, validate all three game identities, exact public URLs, response bounds, and no-redirect behavior. The site cannot register games or alter mods, storage, or the updater.
+- Exact PR head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed [Windows feature run 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) (26/26 stages; 352 core, 112 automation, 453 integration); production release and installed-client/Heaven2 verification are separate and **not yet established**.
+- The existing immutable public v8.8.103 build 501 remains unchanged while this version awaits its new exact-main Windows release. Issue #793 still requires a separately owned updater test profile for real update/rollback.
 
 ## v8.8.103 — separate mixed folders and mod archives
 
@@ -25,14 +32,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Switch games in the same application window/process and activate the existing window on second launch. Preserve active-game selection when game registration, relinking, or initialization cannot safely complete (#790).
 - Windows source/build/regression acceptance is tracked on PRs #789/#790 and #792. Mixed-game *multi-mod packs* still require the separate decomposition feature (#791); a published release does not by itself prove the installed client or updater rollback (#793).
 
-## v8.8.101 — protected release evidence and updater custody
-
-- Stage exact-source Windows verification evidence in a PR-only branch rather than direct-pushing protected `main`; native PR checks and a separate main merge remain mandatory.
-- Keep public continuity evidence allowlisted: record passing verification and SHA-256 hashes of build/report/artifact instead of copying raw runner paths or private logs.
-- Route successful installed-client updater E2E evidence through the same protected-PR process without changing updater security, rollback requirements, or workflow token permissions.
-- Repair the confirmed post-publication `GH013` failure from [Windows release run 42448738104](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/42448738104). v8.8.100 build 493 and v8.8.101 build 495 are published for their exact source commits; physical installation remains unverified.
-
-## Current plans & progress
+### Current plans & progress
 
 Canonical ledger: [`_AGENT_CONTEXT/PROJECT_PLAN.md`](_AGENT_CONTEXT/PROJECT_PLAN.md)
 
