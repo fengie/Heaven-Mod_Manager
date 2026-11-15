@@ -1,21 +1,21 @@
-# v8.8.107 mod collection reanalysis — current source and release candidate
+# v8.8.108 structural mod discovery — source integrated, publication pending
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` source cutoff `5b50e6581b4b1bef56ad09fe422621388f494c85` includes: deep Stellar Blade boundaries and importer hardening through #813 from the prior v8.8.106 release; #815 cumulative inventory accounting; #818 safe user-driven game assignment for one unknown standalone mod; and #819 explicit read-only preview, confirm, and duplicate-safe staging of independent child mods from previously tracked, disabled single-package folders. No original package is automatically replaced or deleted, and live game files/activation/rollback authority remain unchanged.
+Canonical MHW Mod Manager product source: `fengie/Heaven-Mod_Manager@main`, latest integrated source `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7` via [PR #823](https://github.com/fengie/Heaven-Mod_Manager/pull/823). The previous v8.8.107 updater release, build 522, is immutable and contains earlier source `a1e9078b9b9a3a52106a76341c7ea79f7b1c4630`, **not** #823.
 
-## Verification boundary
+## What the new source actually does
 
-Latest **nonpublishing** main-source verification: `main@5b50e6581b4b1bef56ad09fe422621388f494c85` passed [Windows Gate 43696588139](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43696588139) (26/26); evidence in `_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log`, integrated through #822. This does not change the immutable published v8.8.106 source `2a317cf5` or prove an installed client. The later test-only #820 main source `9aa21347` passed [Windows Gate 43698551001](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43698551001).
+Dashboard and Mods now expose a separate **Inspect Existing Mod Layouts** read-only command for all tracked package sources. It inventories bounded files, reports nested companion groups using contextual Sifu PAK/SIG and Stellar Blade PAK/UTOC/UCAS patterns, and exposes unknown, incomplete, FOMOD, manifest and shared-loader groups with exact relative file members and reasons. The existing **Separate Existing Mod Collections** path and its import preconditions are untouched; the new structural preview does not stage, auto-enable, copy, delete or deploy mod files.
 
-[#819 native Windows Feature Gate 43695906763](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906763) passed on exact candidate `254f813f27be324cdf02f6a6b2dfcecb1bb53f0b`, 26/26 verification stages, zero trace gaps and zero integration failures. AutoUpdate 43695906697 passed. #819 then merged at `5b50e6581b4b1bef56ad09fe422621388f494c85`. v8.8.107 metadata is **not** the tested source or a published immutable asset until its own exact-head and exact-main gates complete.
+## Verification boundaries
 
-## Source versus immutable release
+- [PR #823 Windows Feature Gate 43707926891](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926891) and [AutoUpdate 43707926895](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926895) completed success on head `20c7a71b9906c0d1c5cc0350fab124e32945fc63`. Protected main readback confirmed the new source at `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`.
+- [Main Windows Release Gate 43708380211](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43708380211) began for `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`; its terminal result must be read independently. That post-feature source at version 8.8.107 cannot overwrite [immutable updater-main-522](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-522).
+- v8.8.108 release metadata is a separate serialized candidate; no v8.8.108 immutable package, manifest, feed parity, or installed machine health is claimed yet.
 
-Last verified immutable published version: [v8.8.106 updater-main-517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517), exact source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d`, Windows Release 43690972860 26/26, ZIP SHA-256 `55222c54ff61754ebed38f43d4b3ee395a1e066a606e9e851fce5fa5c401bd64`, manifest SHA-256 `cb5f4d166854b816f92b31a49da79e39d2c0042d6d0356f0313cddfeba539`. Earlier tags 509/504/501 remain immutable. This new metadata release candidate requires new published evidence before claiming v8.8.107 publication; physically installed Heaven2 and actual rollback remain independent.
+## Open acceptance, risks and ownership
 
-## Open acceptance and owner boundaries
+- [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) still requires real hundreds-mod Sifu/Stellar Blade corpus, verified independent installable grouping, user-confirmed transactional intake, and installed WPF acceptance. Filename companion evidence is not permission to split dependent mods.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) positive old→new packaged apply/rollback remains blocked on independently isolated Windows test identity. Do not touch occupied user updater state.
+- [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) tracks systemic release status synchronization.
 
-- [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual high-volume Stellar Blade user corpus, real RAR/7z/solid format and fault tests (peer PR #820), unrecognized mod structures, installed WPF interaction/minimum-width UX.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): positive packaged updater apply/rollback requires a dedicated isolated Windows identity with verified empty updater root. Never delete or repurpose shared real user LocalApplicationData. A skipped E2E job or main source CI is not installed proof.
-- Release owner: serialize after current main Windows Release Gate; prove version metadata, protected merge, new immutable tag, ZIP/manifest SHA, public feed parity. Preserve all unrelated owner work.
-
-Next successor must read, preserve and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md` onward again.
+Next: current-main Windows gate terminal → candidate exact-head native checks → protected serialized merge → fresh main release validation → verify immutable ZIP/manifest/feed, then separately installed runtime/user-corpus evidence. Preserve and recursively pass the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active Learned Rules to every successor.
