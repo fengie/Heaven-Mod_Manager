@@ -10,10 +10,10 @@
     "status":  "v8.8.107-serialized-release-metadata-pending-integration",
     "nextMilestone":  "#819 existing nested managed-library separation merged at 5b50e6581b4b1bef56ad09fe422621388f494c85; source candidate Windows 43695906763 and AutoUpdate 43695906697 PASS. Verify 8.8.107 release-metadata exact-head native gates, serialized protected main merge, 26/26 exact-main release and new immutable ZIP/manifest digest. Actual user corpus #791 and installed updater #793 are independent.",
     "nextRequiredAction":  "After current main Windows Release Gate finishes, reconcile 8.8.107 metadata with fresh main 5b50e6581b4b1bef56ad09fe422621388f494c85 and owners, run Feature/README/Product Security/Ownership/AutoUpdate checks, protected expected-head merge and fresh exact-main Windows Release Gate. Prove immutable public release/tag/ZIP/manifest and feed parity, leaving updater-main-517 unchanged. Keep #820 peer owned, #793 updater root safe, and require actual Windows/user-corpus proof.",
-    "verificationAppliesToCommit":  "2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d",
-    "lastClosedVerificationCommit":  "2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d",
-    "lastClosedVerificationRun":  "v8.8.106 source 2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d: hosted Windows verification run 43690972860 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "#819 source 254f813f27be324cdf02f6a6b2dfcecb1bb53f0b passed native Windows Feature Gate 43695906763 26/26 and AutoUpdate Contract 43695906697, merged main 5b50e6581b4b1bef56ad09fe422621388f494c85 with #818 preserved. The v8.8.107 release metadata is not yet exact-source verified/published/installed; last immutable release v8.8.106 source 2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d passed run 43690972860. Preserve lastClosedVerification until an actual newer closure.",
+    "verificationAppliesToCommit":  "5b50e6581b4b1bef56ad09fe422621388f494c85",
+    "lastClosedVerificationCommit":  "5b50e6581b4b1bef56ad09fe422621388f494c85",
+    "lastClosedVerificationRun":  "v8.8.106 source 5b50e6581b4b1bef56ad09fe422621388f494c85: hosted Windows verification run 43696588139 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.106 exact source 5b50e6581b4b1bef56ad09fe422621388f494c85 passed hosted Windows verification run 43696588139. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -47,8 +47,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d",
-                                          "runId":  43690972860,
+                                          "sourceSha":  "5b50e6581b4b1bef56ad09fe422621388f494c85",
+                                          "runId":  43696588139,
                                           "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.106-heaven-windows-closure.log"
                                       }
 }
