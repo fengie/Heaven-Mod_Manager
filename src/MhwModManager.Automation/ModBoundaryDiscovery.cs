@@ -31,7 +31,7 @@ public sealed record ModBoundaryResult(IReadOnlyList<ModBoundaryCandidate> Candi
 /// </summary>
 public static class ModBoundaryDiscovery
 {
-    private const int MaxLevels = 32;
+    private const int MaxLevels = 64;
     private const int MaxPaths = 50_000;
     private const string StellarBladePakRoot = "SB/Content/Paks/~mods/";
     private static readonly HashSet<string> LayoutRoots = new(StringComparer.OrdinalIgnoreCase)
@@ -231,7 +231,8 @@ public static class ModBoundaryDiscovery
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (prefix.Length != 0) return null;
         var pakPaths = relativePaths.Where(path =>
-            path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)).ToArray();
+            path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)
+            && !IsSupplementary(path)).ToArray();
         if (pakPaths.Length < 4) return null;
 
         var nonSupplementary = relativePaths.Where(path => !IsSupplementary(path)).ToArray();
@@ -246,10 +247,9 @@ public static class ModBoundaryDiscovery
             if (leaf.Length == 0 || leaf.Contains('/'))
                 return Review(prefix, "Nested Stellar Blade PAK layouts require package-boundary review.");
             var extension = Path.GetExtension(leaf);
-            if (extension is not (".pak" or ".utoc" or ".ucas") &&
-                !extension.Equals(".pak", StringComparison.OrdinalIgnoreCase) &&
-                !extension.Equals(".utoc", StringComparison.OrdinalIgnoreCase) &&
-                !extension.Equals(".ucas", StringComparison.OrdinalIgnoreCase))
+            if (!extension.Equals(".pak", StringComparison.OrdinalIgnoreCase)
+                && !extension.Equals(".utoc", StringComparison.OrdinalIgnoreCase)
+                && !extension.Equals(".ucas", StringComparison.OrdinalIgnoreCase))
                 return Review(prefix, "Non-PAK payload is mixed with the Stellar Blade bundle.");
             var stem = Path.GetFileNameWithoutExtension(leaf);
             if (!groups.TryGetValue(stem, out var members))
@@ -260,7 +260,8 @@ public static class ModBoundaryDiscovery
         if (groups.Keys.Any(LooksLikeDependentOrVariant))
             return Review(prefix, "Stellar Blade main, patch or quality variants require manual selection.");
         if (groups.Values.Any(files => files.Count != 3 ||
-            files.Select(Path.GetExtension).Distinct(StringComparer.OrdinalIgnoreCase).Count() != 3))
+            files.Select(file => Path.GetExtension(file))
+                .Distinct(StringComparer.OrdinalIgnoreCase).Count() != 3))
             return Review(prefix, "Incomplete or multi-part Stellar Blade PAK groups need review.");
 
         return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
