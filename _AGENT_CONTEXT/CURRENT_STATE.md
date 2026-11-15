@@ -10,9 +10,9 @@ Immutable production-download release **updater-main-501** was published Novembe
 
 ## Verification boundary
 
-Current exact-main Windows verification for v8.8.103 source `2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`: **26 passed / 0 failed**, run `43655383641`. Durable allowlisted evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`. Verification caches and source fingerprint records are only authoritative for that exact source; an evidence-only integration commit does not change its identity.
+Current hosted-Windows closure: v8.8.103 source `6de0379689d1cf6f1b48160f74d33bf92229fdb2` passed run `43659619119` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.103-heaven-windows-closure.log`.
 
-The subsequent [Updater Installed Client E2E run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) **failed**, with 2 tests passed and 1 failed before executing the update/rollback. The test refused to delete unrelated nonempty updater state in the runner's shared Windows profile. This is correct fail-closed behavior, **not** evidence that installed updater functionality passed or failed. No Heaven2 installed source/health receipt has been confirmed.
+The tested source remains `6de0379689d1cf6f1b48160f74d33bf92229fdb2` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Production acceptance still open
 

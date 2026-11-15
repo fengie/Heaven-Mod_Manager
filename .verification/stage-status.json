@@ -1,7 +1,7 @@
 ﻿{
     "formatVersion":  1,
     "sourceVersion":  "8.8.103",
-    "updatedAtUtc":  "2026-11-14T23:57:30.6873150+00:00",
+    "updatedAtUtc":  "2026-11-15T00:47:31.6065694+00:00",
     "stages":  [
                    {
                        "id":  "strict:App",
@@ -77,9 +77,9 @@
                    },
                    {
                        "id":  "strict:IntegrationTests",
-                       "fingerprint":  "1c31fa6adc23b4211ff1dd3ec8d8d90e08c994d586555a816de9d7277a070c16",
+                       "fingerprint":  "c9569487f18daad0ffd79815d12029a2b22488bcfac75bcb7b210b54cda45a22",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-14T23:56:03.2378918+00:00",
+                       "verifiedAtUtc":  "2026-11-15T00:46:50.1637686+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "IntegrationTests",
                        "evidence":  "Verified by current run with exit code 0."
@@ -149,9 +149,9 @@
                    },
                    {
                        "id":  "test:Integration + fault injection",
-                       "fingerprint":  "1c31fa6adc23b4211ff1dd3ec8d8d90e08c994d586555a816de9d7277a070c16",
+                       "fingerprint":  "c9569487f18daad0ffd79815d12029a2b22488bcfac75bcb7b210b54cda45a22",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-14T23:57:26.0457941+00:00",
+                       "verifiedAtUtc":  "2026-11-15T00:47:31.6019760+00:00",
                        "group":  "Tests",
                        "name":  "Integration + fault injection",
                        "evidence":  "Verified by current run with exit code 0."
