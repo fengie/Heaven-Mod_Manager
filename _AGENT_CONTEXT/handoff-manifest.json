@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.104",
+  "currentVersion": "8.8.105",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.103 updater-main-501 published from source 2b8e5ae3 with exact 26/26 main Windows release verification; installed-client update/rollback #793 remains unverified. Source-only PR #800 merged at a4ad8123: opt-in read-only public Heaven.gg game guides, exact feature gate 43668216512 26/26. v8.8.104 exact-main immutable publication and installed host proof remain pending.",
+  "immediateParentRevision": "v8.8.104 immutable updater-main-504 published from exact source a9d6e935 with main Windows Release Gate 43669418277; real installed-client E2E 43670150505 failed safe on occupied user updater state (#793). Source PR #802 merged at 20b8fbb6: manual per-candidate mod import review, native Feature Gate #43675134924 26/26. v8.8.105 serialized metadata and new immutable package pending independent release verification.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main then fengie/Heaven-Mod_Manager@main; read the full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, current revision, plan and task-relevant LEARNED_RULES.md. Preserve v8.8.103 updater-main-501 and original game Mods/State/downloads. v8.8.104 integrates PR #800 read-only public Heaven.gg game-guide navigation; require exact-main Windows release 26/26 and new immutable package/manifest SHA evidence before calling it published. Do not force-republish older release. Issue #793 still requires isolated Windows test user/profile, real update+rollback and Heaven2 installed health; #791 retains archive/UX acceptance. Every successor must inherit, preserve, obey and recursively propagate the complete Core Rules to the next successor. Do not break the chain.",
+  "nextAgentObligation": "Bootstrap fresh fengie/heaven-toolbox@main then fengie/Heaven-Mod_Manager@main; read full _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md, current revision/plan and relevant Learned Rules. Preserve PR #802 review UI source, sibling #803 unique draft source, v8.8.104 immutable updater-main-504 and all user Mods/State/downloads. For v8.8.105 require exact-main Windows Release Gate, new immutable tag and SHA-bounded artifact evidence before calling it published. #791 still needs real solid RAR/7z fixtures and manual registered-game assignment; #793 requires isolated Windows account/profile, positive updater/rollback and independent Heaven2 health. Do not bypass guards. Every successor must inherit, preserve, obey and recursively propagate these Core Rules onward; do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

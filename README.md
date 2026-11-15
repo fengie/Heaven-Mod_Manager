@@ -1,8 +1,8 @@
-# v8.8.104 — MHW Manual Mod Manager
+# v8.8.105 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 14, 2026 · 9:39:00 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 14, 2026 · 11:15:04 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.104**.
+Current product version: **8.8.105**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,12 +10,19 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.105 — see individual mods in mixed folder and archive imports
+
+- Integrate [PR #802](https://github.com/fengie/Heaven-Mod_Manager/pull/802) on protected main as `20b8fbb67f3ffe803026590cc77e5086d97b2db9`: **Import Folder Once** and multi-mod **Install Mod** now show a read-only per-candidate review with original source/child path, detected game, routed/review/duplicate status and classification evidence.
+- Explicit manual imports are the only triggers for this dialog; existing background folder scans remain non-interrupting. It does not assign ambiguous mods, alter live game files, bypass the existing importer or touch updater state. Existing user archives remain intact.
+- [Exact source Windows Feature Gate #43675134924](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134924) passed 26/26 stages, with 454 integration regressions and 0 function-trace gaps; [AutoUpdate #43675134917](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43675134917) passed. **Version 8.8.105 needs a separate exact-main release gate and immutable package before it is published.**
+- [Issue #791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) remains open for real solid RAR/7z fixtures, explicit manual game assignment and packaged UI tests. [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) still requires a separately owned Windows updater test profile and positive installed-client update/rollback; the correct occupied-user-state guard is preserved.
+
 ## v8.8.104 — opt-in Heaven.gg game guide integration
 
 - Integrate [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) on protected main as `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`: Dashboard → More tools opens a public Heaven.gg guide on explicit request only.
 - Read only the allowlisted `games.json` catalog from Heaven.gg, validate all three game identities, exact public URLs, response bounds, and no-redirect behavior. The site cannot register games or alter mods, storage, or the updater.
-- Exact PR head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed [Windows feature run 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) (26/26 stages; 352 core, 112 automation, 453 integration); production release and installed-client/Heaven2 verification are separate and **not yet established**.
-- The existing immutable public v8.8.103 build 501 remains unchanged while this version awaits its new exact-main Windows release. Issue #793 still requires a separately owned updater test profile for real update/rollback.
+- Exact PR head `4b0955a7b110a523a4a612c142e0949bf8c2a1bb` passed [Windows feature run 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) (26/26 stages; 352 core, 112 automation, 453 integration); the independent v8.8.104 production release is now verified as build 504 below, while installed-client/Heaven2 verification remains **unestablished**.
+- Immutable [updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) was published from exact v8.8.104 source `a9d6e9355fbbc7e05ae887d8a535fb4a9a890e32`, after [Windows Release Gate #43669418277](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43669418277). On-device updater E2E remains independently blocked (#793).
 
 ## v8.8.103 — separate mixed folders and mod archives
 
@@ -23,14 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Route identified child packages to registered-game Inboxes independently of active selection; preserve original source files and repeat-safe child receipts without modifying live game installations.
 - Add **Import Folder Once** to Dashboard; support multi-mod archives through the existing Install Mod action while retaining single-mod import behavior.
 - Exact candidate source passed 26/26 Windows PR verification (342 core, 112 automation, 453 integration tests). Real RAR/7z fixtures, manual ambiguous-mod assignment, packaged WPF smoke and safe installed-client updater E2E remain unverified (#791, #793).
-
-## v8.8.102 — automatic cross-game intake and in-place sessions
-
-- Recognize confidently identified ZIP/RAR/7z mod archives and extracted mod folders in user-designated sources, then route them to each registered game's separate Inbox without selecting that game first (#789). Unidentified or conflicting packages stay untouched for review; original downloads are not deleted.
-- Auto Populate processes the active game's routed Inbox before safe-set planning, with bounded scanning, idempotent receipts, and explicit no-mod feedback (#789).
-- Replace the sideways-scrolling Mods action toolbar with wrapping filters and visible Auto Populate, Select All, Deselect All, and Refresh controls; bulk actions still require the normal Apply boundary (#789).
-- Switch games in the same application window/process and activate the existing window on second launch. Preserve active-game selection when game registration, relinking, or initialization cannot safely complete (#790).
-- Windows source/build/regression acceptance is tracked on PRs #789/#790 and #792. Mixed-game *multi-mod packs* still require the separate decomposition feature (#791); a published release does not by itself prove the installed client or updater rollback (#793).
 
 ### Current plans & progress
 

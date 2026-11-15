@@ -80,7 +80,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 ## GAMING-HUB-LINK-800 — Read-only Heaven.gg desktop companion
 
-**Status:** ACTIVE — source integrated and exact-head Windows feature CI passed; v8.8.104 versioned immutable release and installed acceptance are separate and pending.
+**Status:** DONE for source and immutable v8.8.104 release 504; real installed acceptance #793 remains separately BLOCKED.
 **Owner:** `fengie/Heaven-Mod_Manager`; PR #800 and subsequent serialized release owner, sibling website `fengie/Heaven.gg`.
 **Source:** [PR #800](https://github.com/fengie/Heaven-Mod_Manager/pull/800) merged to main `a4ad8123c2288f7b4c820d992e2f4a3e61a769dc`. [Windows gate 43668216512](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43668216512) passed 26/26 with 352 core, 112 automation, 453 integration tests. [Heaven.gg browser/served acceptance 43667045385](https://github.com/fengie/Heaven.gg/actions/runs/43667045385) passed independently on public site.
 **User outcome:** open a game-specific public Heaven.gg guide explicitly from Mod Manager Dashboard → More tools, without synchronizing profile state or granting the website file access.
@@ -88,10 +88,10 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 - [x] Reuse the published public `heaven-gaming/game-registry/v1`, validate three fixed IDs and canonical URL allowlist, no cookies/redirects, bounded GET, no automatic background calls.
 - [x] Reuse existing audited `ProcessDebug` browser launcher; offline tests demonstrate unknown games, hostile endpoints, malformed metadata and oversized/redirected responses refuse navigation.
 - [x] Exact PR head passed strict native Windows feature, ownership and AutoUpdate gates; merge verified.
-- [ ] Serial release metadata 8.8.104, pass exact-main Windows Release Gate and verify new immutable manifest/ZIP digests with protected evidence integration; **preserve** v8.8.103 build 501.
+- [x] Serial release 8.8.104 integrated; [main Windows Release Gate #43669418277](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43669418277) passed and immutable [updater-main-504](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-504) published from exact source a9d6e935; preserve both builds 504 and 501.
 - [ ] Physically installed WPF button/browser interaction and independent Heaven2 source/health. For real updater positive update/rollback require isolated test account/profile (#793). A green classifier-only workflow is not acceptance.
 
-**Next:** verify this serialized release via protected native PR, exact-main release and SHA-bound publication. Do not copy public site catalog into game profile/deployment authority, fabricate installed receipt, or delete unowned updater data. Keep sibling producer/consumer contracts separate.
+**Next:** keep v8.8.104 immutable; finish #793 only after independent installed-client update/rollback and Heaven2 proof. Do not copy public site catalog into deployment authority, fabricate installed receipt, or delete unowned updater data.
 
 ## MOD-BOUNDARY-791 — Mixed-folder and archive mod boundaries
 
@@ -100,20 +100,21 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 **Versioned source:** `main@2b8e5ae302dfcbbefe7b29193b9c96edd79b7002`, immutable `updater-main-501` (published 2026-11-14 7:01 PM EST).
 **Verified Windows source:** release gate `43655383641`, 26/26 stages, 0 failed. Original PR source `7896195b` passed core 342, automation 112, integration 453. Published package SHA-256 `d2beaf650b930c9ac85505301aae94558b34c8883c576ed6f20feac40cdf842c`; manifest SHA-256 `a982c23dd8958d8bc83f00e989094c1895f2d3eb0f05640c647b36d50727bad0`.
 
-**Shipped subset:** one-shot folder import and mixed archive candidate discovery for confidently separable roots; per-registered-game Inbox routing, safe scratch, content-based replay receipts, source-original preservation. Anonymous loose files and FOMOD/option groups stay review-only. No direct live-game modifications during intake.
+**Shipped subset:** one-shot folder import and mixed archive candidate discovery for confidently separable roots; per-registered-game Inbox routing, safe scratch, content-based replay receipts, source-original preservation. [PR #802](https://github.com/fengie/Heaven-Mod_Manager/pull/802) additionally integrated a read-only per-child review for manual imports at source 20b8fbb6, exact Windows feature 43675134924 (26/26). Anonymous loose files and FOMOD/option groups stay review-only. No direct live-game modifications during intake. v8.8.105 release metadata is serialized separately and publication is pending.
 
 **Acceptance:**
 - [x] Pure candidate-boundary discovery and synthetic ZIP/folder, wrapper, loader-root, FOMOD and traversal regressions passed.
 - [x] Mixed folder/nested ZIP per-game Inbox routing, replay dedup and malformed archive safety passed synthetic Windows integration tests.
 - [x] Protected feature release PRs #796/#797 integrated; v8.8.103 immutable build 501 published with exact source, SHA-256 and full 26/26 main Windows release verification.
 - [ ] Real RAR and 7z fixtures including solid RAR when supported; encrypted/truncated/CRC/size-budget negative cases and cumulative nesting limits.
-- [ ] Per-candidate preview and manual registered-game assignment for unknown or contradictory inputs; packaged WPF keyboard/minimum-width, progress and cancellation smoke.
+- [x] Read-only per-candidate preview for explicitly selected mixed folders/archives with source, detected game, status and evidence; PR #802, exact native verification 43675134924 (26/26) and no background popup.
+- [ ] Explicit manual registered-game assignment for unknown or contradictory inputs; packaged WPF keyboard/minimum-width, progress and cancellation smoke.
 - [ ] Real installed-client update+rollback from old immutable build to build 501 under independently owned empty Windows profile/root; original foreign updater state must remain untouched (#793).
 - [ ] Independent installed Heaven2 source/health and rollback receipt. An immutable release is not on-device deployment proof.
 
 **Current blocker:** updater E2E [run 43656163326](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43656163326) failed **before** actual update/rollback because the Windows runner's updater state root was occupied. Its 2 passing safety fixtures are not proof of the positive installed scenario. Never clear shared user LocalApplicationData or turn off fail-closed checks.
 
-**Next:** #793 isolated test account/runner custody and positive update+rollback; then #791 real format/UX validation and installed Heaven2 acceptance. Keep current release immutable, owner work in one existing task ledger and recursively propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md`.
+**Next:** serialize the v8.8.105 source-release metadata and verify new immutable artifact before calling review UI shipped; preserve sibling draft #803 deeper Stellar Blade grouping and refresh its old base without overwriting peer source. #793 isolated test account/runner custody and positive update+rollback; #791 real solid RAR/7z fixtures and manual assignment; installed Heaven2 acceptance remain open. Preserve current immutable 504 and the recursive continuity obligation.
 
 ## CI-716-718 — SDK isolation and verification-baseline idempotence
 
