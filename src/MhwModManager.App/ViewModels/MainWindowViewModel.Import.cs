@@ -16,6 +16,7 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var dlg=new OpenFileDialog{Filter="Mod archives|*.zip;*.7z;*.rar|All files|*.*",Multiselect=false};
         if(dlg.ShowDialog()!=true)return;
+        GameModIntakeScan? modPackReport = null;
         await RunBusy("archive.import","Checking Mod","Making sure the downloaded package is safe to import and finding its install options…",true,async ct=>
         {
             ArchiveImportResult imported;
@@ -32,6 +33,7 @@ public sealed partial class MainWindowViewModel
             {
                 EnsureGameIntake();
                 var report = await gameIntake!.ImportPathAsync(dlg.FileName, ct);
+                modPackReport = report;
                 StatusText = $"Mod pack: {report.Routed} independent mods routed to per-game Inboxes, " +
                     $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
                     "Use Install Mods from Inbox for the active game. Original archive was preserved.";
@@ -83,5 +85,10 @@ public sealed partial class MainWindowViewModel
             await ReloadMods(ct);
             StatusText=$"Imported '{imported.DisplayName}'. It is OFF until you stage it."+downloadWarning;
         });
+        if (modPackReport is not null && modPackReport.Items.Count > 0)
+            new ModIntakeReviewWindow(modPackReport)
+            {
+                Owner = Application.Current.MainWindow
+            }.ShowDialog();
     }
 }
