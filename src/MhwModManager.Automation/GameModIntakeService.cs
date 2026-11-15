@@ -690,8 +690,14 @@ public sealed class GameModIntakeService
         foreach (var name in new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" })
         {
             var path = Path.Combine(folder, name);
-            if (!File.Exists(path) || new FileInfo(path).Length > 16384) continue;
+            if (!File.Exists(path)) continue;
             RefuseReparseComponents(path);
+            if (new FileInfo(path).Length > 16384)
+            {
+                if (name.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("App-owned game manifest exceeds the 16 KiB metadata budget; manual review required.");
+                continue;
+            }
             using var input = File.OpenRead(path);
             var hint = ReadBoundedManifestGame(input);
             if (string.IsNullOrWhiteSpace(hint)) continue;
@@ -721,7 +727,12 @@ public sealed class GameModIntakeService
             var filename = Path.GetFileName(entry.FullName.Replace('\\', '/'));
             if (filename is null || !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
                 .Contains(filename, StringComparer.OrdinalIgnoreCase)) continue;
-            if (entry.Length > 16384 || entry.CompressedLength > 16384) continue;
+            if (entry.Length > 16384 || entry.CompressedLength > 16384)
+            {
+                if (filename.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("App-owned game manifest exceeds the 16 KiB metadata budget; manual review required.");
+                continue;
+            }
             using var input = entry.Open();
             var hint = ReadBoundedManifestGame(input);
             if (string.IsNullOrWhiteSpace(hint)) continue;
