@@ -1,4 +1,4 @@
-# v8.8.106 consolidated mod intake — published source and open acceptance
+# v8.8.106 consolidated mod intake — canonical state, published source and open acceptance
 
 Canonical `fengie/Heaven-Mod_Manager@main` source already includes deep Stellar Blade mod boundaries and sibling PAK grouping (#803/#807), full archive preflight #805, mixed archives/doc review #808, full bounded game identity #809, late/conflicting ZIP/folder manifests #810, app-owned oversized manifests #811. Source cutoff is now integrated at `main@1e21c332995f2eba89a87f016b0f43360b73e268`, including #812 bounded third-party manifest handling and #813 cumulative per-selected-collection byte budget, each with exact native Windows Feature/AutoUpdate checks. Source release metadata was merged as PR #814; source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` passed the canonical release gate and was published as immutable updater build 517.
 
