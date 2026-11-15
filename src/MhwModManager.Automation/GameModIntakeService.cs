@@ -244,8 +244,8 @@ public sealed class GameModIntakeService
             try
             {
                 if (candidate.Kind == ModBoundaryKind.FileSet)
-                    await RouteFileSetAsync(root, candidate, games, output, receipts, ct,
-                        0, new IntakeBudget(), entry).ConfigureAwait(false);
+                    await RouteFileSetAsync(root, candidate, games, output, receipts,
+                        0, new IntakeBudget(), entry, ct).ConfigureAwait(false);
                 else
                 {
                     RefuseReparseComponents(entry);
@@ -268,8 +268,8 @@ public sealed class GameModIntakeService
     /// </summary>
     private async Task RouteFileSetAsync(
         string sourceDirectory, ModBoundaryCandidate candidate, IReadOnlyList<GameProfile> games,
-        List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
-        int nestedDepth, IntakeBudget budget, string provenance)
+        List<GameModIntakeItem> output, HashSet<string> receipts,
+        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (candidate.Kind != ModBoundaryKind.FileSet || candidate.Files is not { Count: > 0 })
@@ -440,8 +440,8 @@ public sealed class GameModIntakeService
                         try
                         {
                             if (candidate.Kind == ModBoundaryKind.FileSet)
-                                await RouteFileSetAsync(scratch, candidate, games, output, receipts, ct,
-                                    nestedDepth + 1, budget, childProvenance).ConfigureAwait(false);
+                                await RouteFileSetAsync(scratch, candidate, games, output, receipts,
+                                    nestedDepth + 1, budget, childProvenance, ct).ConfigureAwait(false);
                             else
                             {
                                 RefuseReparseComponents(child);
