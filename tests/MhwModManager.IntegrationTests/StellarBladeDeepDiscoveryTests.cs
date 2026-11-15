@@ -121,7 +121,18 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
             .Append("SB/Content/Paks/~mods/Weapon_P.pak");
         var result = ModBoundaryDiscovery.Discover(paths);
         Assert.True(result.NeedsReview);
+        Assert.Equal(2, result.Candidates.Count(candidate => candidate.Kind == ModBoundaryKind.Review));
         Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.FileSet);
+    }
+
+    [Fact]
+    public void Duplicate_and_case_colliding_archive_entry_names_fail_closed()
+    {
+        Assert.Throws<InvalidDataException>(() => ModBoundaryDiscovery.Discover(
+        [
+            "SB/Content/Paks/~mods/Outfit_P.pak",
+            "sb/content/paks/~mods/outfit_p.PAK"
+        ]));
     }
 
     [Fact]
@@ -196,6 +207,34 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         var second = await intake.ImportPathAsync(source, TestToken);
         Assert.Equal(0, second.Routed);
         Assert.Equal(12, second.AlreadyPresent);
+    }
+
+    [Fact]
+    public async Task Archive_of_incomplete_pak_groups_reports_each_group_without_extracting()
+    {
+        Directory.CreateDirectory(home);
+        var sourceArchive = Path.Combine(home, "incomplete.zip");
+        using (var zip = ZipFile.Open(sourceArchive, ZipArchiveMode.Create))
+        {
+            foreach (var file in new[] { "SB/Content/Paks/~mods/Armor_P.pak",
+                "SB/Content/Paks/~mods/Weapon_P.pak" })
+            {
+                using var writer = zip.CreateEntry(file).Open();
+                await writer.WriteAsync(new byte[] { 42 }, TestToken);
+            }
+        }
+        var manager = Path.Combine(home, "Manager");
+        var profile = GameProfile.Generic("stellar-blade", "Stellar Blade", Path.Combine(home, "Game"),
+            "StellarBlade.exe", "SB/Content/Paks/~mods", nexusGameDomain: "stellarblade");
+        var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => [profile]);
+
+        var report = await intake.ImportPathAsync(sourceArchive, TestToken);
+        Assert.Equal(0, report.Routed);
+        Assert.Equal(2, report.NeedsReview);
+        Assert.All(report.Items, item => Assert.Contains("!/", item.SourcePath, StringComparison.Ordinal));
+        Assert.True(File.Exists(sourceArchive));
+        Assert.False(Directory.Exists(Path.Combine(manager, "State", "ModIntakeScratch")));
+        Assert.False(Directory.Exists(Path.Combine(manager, "Mods by Game", "stellar-blade", "Inbox")));
     }
 
     [Fact]
