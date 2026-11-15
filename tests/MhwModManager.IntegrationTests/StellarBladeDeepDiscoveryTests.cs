@@ -62,6 +62,64 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Independent_archives_nested_under_loader_named_collection_are_not_collapsed()
+    {
+        var result = ModBoundaryDiscovery.Discover(
+        [
+            "Mods/Downloaded Packs/Archive Vault/Stellar Blade Outfit.zip",
+            "Mods/Downloaded Packs/Archive Vault/MHW Armor.7z",
+            "Mods/Downloaded Packs/Archive Vault/README.md"
+        ]);
+
+        Assert.Collection(result.Candidates,
+            candidate =>
+            {
+                Assert.Equal("Mods/Downloaded Packs/Archive Vault/MHW Armor.7z", candidate.RelativePath);
+                Assert.Equal(ModBoundaryKind.Archive, candidate.Kind);
+            },
+            candidate =>
+            {
+                Assert.Equal("Mods/Downloaded Packs/Archive Vault/Stellar Blade Outfit.zip", candidate.RelativePath);
+                Assert.Equal(ModBoundaryKind.Archive, candidate.Kind);
+            });
+    }
+
+    [Fact]
+    public async Task Nested_zip_downloads_under_mods_wrapper_route_as_independent_archives()
+    {
+        var source = Path.Combine(home, "Incoming");
+        var downloads = Path.Combine(source, "Mods", "Downloads", "Pack Collection");
+        Directory.CreateDirectory(downloads);
+        using (var zip = ZipFile.Open(Path.Combine(downloads, "MHW Armor.zip"), ZipArchiveMode.Create))
+        {
+            using var stream = zip.CreateEntry("nativePC/pl/armor/test.tex").Open();
+            await stream.WriteAsync(new byte[] { 42 }, TestToken);
+        }
+        using (var zip = ZipFile.Open(Path.Combine(downloads, "Stellar Blade Outfit.zip"), ZipArchiveMode.Create))
+        {
+            foreach (var path in Triple("SB/Content/Paks/~mods/Outfit_P"))
+            {
+                using var stream = zip.CreateEntry(path).Open();
+                await stream.WriteAsync(new byte[] { 42 }, TestToken);
+            }
+        }
+        var manager = Path.Combine(home, "Manager");
+        var games = new[]
+        {
+            GameProfile.MonsterHunterWorld(Path.Combine(home, "MHW")),
+            GameProfile.Generic("stellar-blade", "Stellar Blade", Path.Combine(home, "StellarBlade"),
+                "StellarBlade.exe", "SB/Content/Paks/~mods", nexusGameDomain: "stellarblade")
+        };
+        var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => games);
+
+        var scan = await intake.ImportPathAsync(source, TestToken);
+        Assert.Equal(2, scan.Routed);
+        Assert.Single(Directory.GetFiles(Path.Combine(manager, "Mods by Game", "monster-hunter-world", "Inbox")));
+        Assert.Single(Directory.GetFiles(Path.Combine(manager, "Mods by Game", "stellar-blade", "Inbox")));
+        Assert.Equal(2, Directory.GetFiles(downloads, "*.zip").Length);
+    }
+
+    [Fact]
     public void Unattributed_root_file_does_not_mask_several_proven_independent_mod_roots()
     {
         var paths = Triple("Collection/Armor/SB/Content/Paks/~mods/Armor_P")
