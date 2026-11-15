@@ -147,6 +147,21 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     }
 
     [Fact]
+    public void Stellar_blade_payload_plus_separate_installer_or_deployment_root_requires_review()
+    {
+        var installer = Triple("SB/Content/Paks/~mods/Armor_P")
+            .Concat(["Other Installer/fomod/ModuleConfig.xml",
+                "Other Installer/options/default/nativePC/pl/armor.tex"]);
+        var result = ModBoundaryDiscovery.Discover(installer);
+        Assert.True(result.NeedsReview);
+        Assert.DoesNotContain(result.Candidates, candidate => candidate.Kind == ModBoundaryKind.Folder);
+
+        var second = ModBoundaryDiscovery.Discover(Triple("SB/Content/Paks/~mods/Armor_P")
+            .Concat(["Unrelated/files/data.bin"]));
+        Assert.True(second.NeedsReview);
+    }
+
+    [Fact]
     public void Alternative_flat_pak_triplets_are_not_automatically_imported()
     {
         var paths = Triple("SB/Content/Paks/~mods/Outfit_High_P")
