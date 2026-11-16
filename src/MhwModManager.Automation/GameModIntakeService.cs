@@ -169,7 +169,13 @@ public sealed class GameModIntakeService
     /// a selection rather than restarting that work for each archive.
     /// </summary>
     public Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
-        => ImportPathsAsync([inputPath], ct: ct);
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
+        var full = Path.GetFullPath(inputPath);
+        if (!Directory.Exists(full) && !File.Exists(full))
+            throw new FileNotFoundException("Selected mod input does not exist.", full);
+        return ImportPathsAsync([full], ct: ct);
+    }
 
     /// <summary>
     /// Progress events are advisory and never authorize installation or bypass safety review.
