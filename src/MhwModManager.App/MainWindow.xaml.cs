@@ -184,6 +184,7 @@ public partial class MainWindow:Window
 
     private static string[] SupportedModDropPaths(IDataObject data)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!data.GetDataPresent(DataFormats.FileDrop)
             || data.GetData(DataFormats.FileDrop) is not string[] paths)
             return [];
@@ -195,6 +196,7 @@ public partial class MainWindow:Window
 
     private void OnWindowPreviewDragOver(object sender, DragEventArgs e)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         e.Effects = SupportedModDropPaths(e.Data).Length > 0
             ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
@@ -202,6 +204,7 @@ public partial class MainWindow:Window
 
     private async void OnWindowPreviewDrop(object sender, DragEventArgs e)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         e.Handled = true;
         var paths = SupportedModDropPaths(e.Data);
         if (paths.Length == 0 || DataContext is not MainWindowViewModel vm) return;
