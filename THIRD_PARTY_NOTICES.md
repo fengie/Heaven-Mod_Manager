@@ -7,9 +7,9 @@ Universal Mod Manager uses third-party open-source packages. Their own licenses 
 | Dependency | Version | License |
 | --- | --- | --- |
 | CommunityToolkit.Mvvm | 8.4.2 | MIT |
-| Microsoft.Data.Sqlite | 10.0.12 | MIT |
+| Microsoft.Data.Sqlite | 11.0.0 | MIT |
 | System.IO.Hashing | 11.0.0 | MIT |
-| SharpCompress | 0.50.4 | MIT |
+| SharpCompress | 0.50.9 | MIT |
 | Serilog | 4.4.0 | Apache-2.0 |
 | Serilog.Sinks.File | 7.0.0 | Apache-2.0 |
 | BenchmarkDotNet | 0.15.8 | MIT |

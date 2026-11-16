@@ -52,6 +52,10 @@ on:
       - 'scripts/testing/Test-VerificationContinuitySync.ps1'
       - '.github/workflows/windows-release-gate.yml'
       - '.github/workflows/workflow-feature-pr-gate.yml'
+      # Package version and notice changes must receive the full native Windows gate;
+      # security/AutoUpdate-only checks do not exercise restore and archive regressions.
+      - 'Directory.Packages.props'
+      - 'THIRD_PARTY_NOTICES.md'
   workflow_dispatch:
 
 permissions:
