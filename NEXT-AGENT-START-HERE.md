@@ -17,6 +17,11 @@ Canonical source: `fengie/Heaven-Mod_Manager@main`, latest implementation `9e3fc
 1. Confirm preceding exact-main source-only [Windows Release Gate 43952164444](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43952164444) has completed; it must not replace the immutable v8.8.108 artifact.
 2. Verify this metadata-only candidate on its exact head: Windows Feature, README timestamp, Product Security, ownership and AutoUpdate. Refresh main/base/owner and merge with expected-head protection after all required checks succeed.
 3. Run exact new main Windows Release Gate (26/26) and verify a **distinct** immutable v8.8.109 Windows ZIP and updater manifest, both SHA-256 digests and public feed parity. Preserve build 524 and all earlier releases. Do not force republish an old semantic version.
-4. **Unresolved risks:** Separate release proof from physical installed-client update, drag-drop interactions, large real RAR/7z throughput, and isolated update/rollback. Those remain unverified under [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) and [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793). [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) still tracks release-status synchronization.
+4. The first post-merge strict [Windows Release Gate 43973605846](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43973605846) completed **25 passed / 1 failed**: its synthetic evidence-closure fixture replaced this verification section and erased the only unresolved-risk statement. Repair this handoff layout, then reverify on a fresh exact main SHA before publishing; do not bypass the preflight.
+
+## Unresolved risks and release acceptance
+
+- **Unresolved risks:** Physical installed-client update, Explorer drag/drop, real large RAR/7z corpus throughput, and isolated rollback remain unverified under [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) and [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793). [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) tracks release-status synchronization.
+- New immutable v8.8.109 ZIP/manifest publication, exact SHA-256 and public feed parity require independent post-merge evidence; neither green PR CI nor source integration proves installed-client acceptance.
 
 Preserve security, privacy, rollback, independent publisher ownership, accurate source/CI/release/runtime identity, and recursively propagate all continuity obligations to the next agent again.
