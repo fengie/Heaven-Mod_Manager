@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-**Last updated:** October 3, 2026
+**Last updated:** November 16, 2026
 
 Universal Mod Manager uses third-party open-source packages. Their own licenses and notices continue to apply.
 
@@ -8,12 +8,12 @@ Universal Mod Manager uses third-party open-source packages. Their own licenses 
 | --- | --- | --- |
 | CommunityToolkit.Mvvm | 8.4.2 | MIT |
 | Microsoft.Data.Sqlite | 10.0.12 | MIT |
-| System.IO.Hashing | 10.0.12 | MIT |
+| System.IO.Hashing | 11.0.0 | MIT |
 | SharpCompress | 0.50.4 | MIT |
 | Serilog | 4.4.0 | Apache-2.0 |
 | Serilog.Sinks.File | 7.0.0 | Apache-2.0 |
 | BenchmarkDotNet | 0.15.8 | MIT |
-| xunit.v3 | 4.0.1 | Apache-2.0 |
+| xunit.v3 | 4.0.3 | Apache-2.0 |
 
 The package versions above are intentionally regression-checked against `Directory.Packages.props` so the notice cannot silently drift as dependencies change.
 
