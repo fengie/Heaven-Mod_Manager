@@ -84,7 +84,7 @@ public sealed class FamilyInferenceOrderInvariantsTests
         };
         var mods = names.Select((name, i) => Mod($"different-{i:D2}", name)).ToArray();
         var files = mods.Select((mod, i) =>
-            File(mod.Id, $@"nativePC\common\shared\object{i:D2}.tex")).ToArray();
+            File(mod.Id, $@"nativePC\common\shared\assets\object{i:D2}.tex")).ToArray();
 
         var inferred = GenericFamilyInference.InferKeys(mods, files, out var evidence);
 
