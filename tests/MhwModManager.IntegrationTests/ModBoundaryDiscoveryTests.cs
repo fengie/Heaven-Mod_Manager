@@ -410,7 +410,8 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         var vm = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App",
             "ViewModels", "MainWindowViewModel.AutoSort.cs"));
         Assert.Contains("ImportModFolderCommand", xaml);
-        Assert.Contains("ImportPathAsync(picker.FolderName", vm);
+        Assert.Contains("await ImportModPathsAsync([picker.FolderName]);", vm);
+        Assert.Contains("sorter.ImportPathsAsync(paths, updates, ct)", vm);
     }
 
     [Fact]

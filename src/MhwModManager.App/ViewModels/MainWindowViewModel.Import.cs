@@ -14,8 +14,13 @@ public sealed partial class MainWindowViewModel
     private async Task ImportArchive()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dlg=new OpenFileDialog{Filter="Mod archives|*.zip;*.7z;*.rar|All files|*.*",Multiselect=false};
+        var dlg=new OpenFileDialog{Filter="Mod archives|*.zip;*.7z;*.rar|All files|*.*",Multiselect=true};
         if(dlg.ShowDialog()!=true)return;
+        if(dlg.FileNames.Length>1)
+        {
+            await ImportModPathsAsync(dlg.FileNames);
+            return;
+        }
         GameModIntakeScan? modPackReport = null;
         await RunBusy("archive.import","Checking Mod","Making sure the downloaded package is safe to import and finding its install options…",true,async ct=>
         {
