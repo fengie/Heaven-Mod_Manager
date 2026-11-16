@@ -1,3 +1,9 @@
+# v8.8.109 — November 16, 2026
+
+- [PR #829](https://github.com/fengie/Heaven-Mod_Manager/pull/829) source merged at `main@9e3fc0be049cc43cbcaa506ff854502abc499773`: native Windows Explorer folder/archive drag-and-drop, ZIP/RAR/7z multiselect, game-scoped bulk archive sorting with per-candidate progress, cancellation and duplicate receipts; source archives and live game files remain unchanged.
+- Reuse the original conservative archive format decoder, game-identity classifier, Inbox publisher and no-guess review path. Preserve cumulative byte safety on legacy single collection imports, while independently selected archive batches receive bounded individual copy budgets, avoiding a false all-or-nothing limit.
+- Exact feature head `b1fb06ed803a355bf0b05e5bfd2afa4026fb76bd` passed [Windows Feature 43950868996](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868996) 26/26 with 555 integration tests and zero trace gaps; [AutoUpdate 43950868605](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868605) passed. The previous immutable v8.8.108 [updater-main-524](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-524) belongs to earlier source 93eb26a7. New immutable v8.8.109 publication, large real-user archive throughput and installed-client WPF/update/rollback remain separately unverified.
+
 # v8.8.108 — November 15, 2026
 
 - [PR #823](https://github.com/fengie/Heaven-Mod_Manager/pull/823) integrated at canonical `main@5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`: complete read-only existing mod layout inventory, managed-package inspection and WPF candidate review. This addresses the invisible refusal path of v8.8.107 without changing automatic splitting or stage/deploy semantics.

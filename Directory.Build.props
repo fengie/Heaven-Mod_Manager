@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.108</Version>
-    <InformationalVersion>8.8.108-structural-mod-layout-preview</InformationalVersion>
+    <Version>8.8.109</Version>
+    <InformationalVersion>8.8.109-bulk-archive-drag-drop-import</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
