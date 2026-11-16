@@ -64,7 +64,23 @@ The first candidate reused one lowercase canonical string per enabled mod rather
 | 200 mods / 50k files | 570.9 ms | 322.0 ms | **43.6%** | 973.04 → 259.47 MB | **73.3%** |
 | 500 mods / 150k files | 4,181.4 ms | 2,971.7 ms | **28.9%** | 5,804.06 → 1,339.35 MB | **76.9%** |
 
-This confirms a large transient-allocation problem, but a 3-second plan and 1.34 GB allocated remain concerning. Confidence is limited by three measured iterations; the extreme confidence-interval margins mean this is a directional result, not a stable user-facing p95. A follow-up local-per-plan name/token memoization pass is proposed for the remaining repeated pairwise inference work and requires its own same-runner comparison and exact-head source CI.
+This confirms a large transient-allocation problem, but a 3-second plan and 1.34 GB allocated remain concerning. Confidence is limited by three measured iterations; the extreme confidence-interval margins mean this is a directional result, not a stable user-facing p95. A follow-up local-per-plan name/token memoization pass was subsequently measured on the same runner, as recorded below. Exact-head source/CI and integration remain independent obligations.
+
+
+## Measured follow-up — per-plan overlay names and tokens
+
+The additional candidate computes cleaned mod names and token arrays once per planning pass, then reuses them across repeated pairwise high-confidence overlay inference. This is a per-invocation cache only: no cross-snapshot or persistent state can become stale. A previous Windows job [43970907686](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43970907686) **failed before any timing** because strict .NET analyzer CA1859 required concrete `Dictionary` types for two private parameters; no optimizer slowdown or behavior failure was measured. The two private parameter types were corrected at commit `a62e43103fe01ba11f9b5496548066ab4f89457c`, preserving the public API and inference policy.
+
+The corrected code was measured in successful [Windows ShortRun 43973847746](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43973847746), source `a072b8baa4132d2fce30d32f94a11d39535f62c5`, job `133672632427`. Physical runner: `heaven-v2` / AMD Ryzen 9 7945HX, .NET 10; same machine and benchmark fixture as baseline and first optimization. All benchmark entries below were from **three measured iterations**, so these are directional mean comparisons, not end-user p95 or robust statistical bounds.
+
+| Scenario | Baseline mean | Pair-ID cache only | Pair-ID + name/token cache | Baseline allocation | Final allocation | Reduction vs baseline |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 200 mods / 50k files | 570.9 ms | 322.0 ms | **205.1 ms** | 973.04 MB | **186.52 MB** | **64.1% time / 80.8% allocation** |
+| 500 mods / 150k files | 4,181.4 ms | 2,971.7 ms | **1,589.6 ms** | 5,804.06 MB | **880.55 MB** | **62.0% time / 84.8% allocation** |
+
+The second pass improved the 500-mod fixture by another **46.5% time / 34.3% allocations** relative to pair-ID caching alone, but it still allocates approximately 881 MB per synthetic plan. Preserve fail-closed winner and explicit-rule logic and investigate remaining dense-pair costs separately. No live installed client benchmark, large real RAR/7z performance, or throughput forecast is implied by these measurements. The temporary branch-specific workflow was retired after dispatch; the permanent opt-in benchmark facility remains on canonical main.
+
+Official analyzer reference: [CA1859](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1859). BenchmarkDotNet measurements follow its [isolated-process and warmup model](https://benchmarkdotnet.org/articles/guides/how-it-works.html).
 
 ## Missing evidence
 
