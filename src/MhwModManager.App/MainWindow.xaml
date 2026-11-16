@@ -5,7 +5,8 @@
         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
         WindowStartupLocation="CenterScreen"
         KeyboardNavigation.TabNavigation="Continue"
-        Loaded="OnWindowLoaded">
+        Loaded="OnWindowLoaded"
+        AllowDrop="True" PreviewDragOver="OnWindowPreviewDragOver" PreviewDrop="OnWindowPreviewDrop">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding ApplyCommand}"/>
         <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}"/>
@@ -208,7 +209,8 @@
                                     <TextBlock Text="Quick actions" Style="{StaticResource SectionTitle}"/>
                                     <TextBlock Text="Common things you may want to do next." Style="{StaticResource PageSubtitle}"/>
                                     <Button Margin="0,16,0,8" Style="{StaticResource PrimaryButton}" HorizontalContentAlignment="Left" Content="Install a Mod" Command="{Binding ImportArchiveCommand}"/>
-                                    <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Import a Mixed Mod Folder" Command="{Binding ImportModFolderCommand}"/>
+                                    <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Import ZIP/RAR/7z Folder" Command="{Binding ImportModFolderCommand}" ToolTip="Import many downloaded mod archives for different registered games in one batch."/>
+                                    <TextBlock Margin="3,0,3,10" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource Muted}" Text="Or drag ZIP/RAR/7z files and mod folders directly onto this window. Originals stay intact; uncertain mods require review."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Separate Existing Mod Collections" Command="{Binding ReanalyzeManagedCollectionsCommand}"
                                             ToolTip="Inspect disabled library packages recursively and preview independent mods before copying them into their registered game libraries."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}"

@@ -290,6 +290,121 @@ public sealed class GameModIntakeTests : IDisposable
         Assert.Contains("StartAutoSorting", vm);
     }
 
+
+    [Fact]
+    public async Task Bulk_import_routes_selected_archives_once_and_reuses_receipts_on_folder_replay()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "umm-bulk-selected-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(source);
+        try
+        {
+            var mhw = Path.Combine(source, "MHW armor.zip");
+            var nier = Path.Combine(source, "NieR Automata outfit.zip");
+            CreateZip(mhw, "nativePC/pl/armor/test.tex");
+            CreateZip(nier, "mods/outfit.dds");
+
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+            var progress = new ImmediateProgress<GameModIntakeProgress>();
+
+            var result = await sorter.ImportPathsAsync([mhw, nier, mhw], progress, TestToken);
+
+            Assert.Equal(2, result.Routed);
+            Assert.Equal(0, result.NeedsReview);
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
+            Assert.True(File.Exists(mhw));
+            Assert.True(File.Exists(nier));
+            Assert.Contains(progress.Reports, update => update.Completed == 2 && update.Total == 2);
+
+            var replay = await sorter.ImportPathsAsync([source], ct: TestToken);
+            Assert.Equal(0, replay.Routed);
+            Assert.Equal(2, replay.AlreadyPresent);
+        }
+        finally { Directory.Delete(source, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Bulk_import_reports_bad_archive_without_losing_valid_siblings()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "umm-bulk-mixed-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(source);
+        try
+        {
+            var good = Path.Combine(source, "MHW gloves.zip");
+            var bad = Path.Combine(source, "broken.rar");
+            CreateZip(good, "nativePC/pl/armor/gloves.tex");
+            await File.WriteAllTextAsync(bad, "not a RAR archive", TestToken);
+
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+            var progress = new ImmediateProgress<GameModIntakeProgress>();
+            var result = await sorter.ImportPathsAsync([bad, good], progress, TestToken);
+
+            Assert.Equal(1, result.Routed);
+            Assert.Equal(1, result.NeedsReview);
+            Assert.True(File.Exists(bad));
+            Assert.True(File.Exists(good));
+            Assert.Contains(progress.Reports, update => update.Completed == 2 && update.Total == 2);
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
+        }
+        finally { Directory.Delete(source, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Archive_only_folder_processes_independent_archives_under_per_archive_budget()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "umm-many-archives-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(source);
+        try
+        {
+            var mhw = Path.Combine(source, "MHW armor.zip");
+            var nier = Path.Combine(source, "NieR Automata outfit.zip");
+            CreateZip(mhw, "nativePC/pl/armor/armor.tex");
+            CreateZip(nier, "mods/outfit.dds");
+            var capacity = Math.Max(new FileInfo(mhw).Length, new FileInfo(nier).Length) + 1;
+            Assert.True(new FileInfo(mhw).Length + new FileInfo(nier).Length > capacity);
+
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games,
+                collectionCopyBudget: capacity);
+            var report = await sorter.ImportPathsAsync([source], ct: TestToken);
+
+            Assert.Equal(2, report.Routed);
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
+        }
+        finally { Directory.Delete(source, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Single_path_import_preserves_missing_source_failure_contract()
+    {
+        var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var missing = Path.Combine(home, "not-created.zip");
+        await Assert.ThrowsAsync<FileNotFoundException>(() => sorter.ImportPathAsync(missing, TestToken));
+    }
+
+    [Fact]
+    public void Window_wires_drag_drop_and_multi_archive_file_picker_to_batch_intake()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "MhwModManager.sln")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        var xaml = File.ReadAllText(Path.Combine(root!.FullName, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var window = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App", "MainWindow.xaml.cs"));
+        var importer = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Import.cs"));
+        Assert.Contains("PreviewDrop=\"OnWindowPreviewDrop\"", xaml);
+        Assert.Contains("PreviewDragOver=\"OnWindowPreviewDragOver\"", xaml);
+        Assert.Contains("OnWindowPreviewDrop", window);
+        Assert.Contains("ImportModPathsAsync", window);
+        Assert.Contains("Multiselect=true", importer);
+    }
+
+    private sealed class ImmediateProgress<T> : IProgress<T>
+    {
+        public List<T> Reports { get; } = [];
+        public void Report(T value) => Reports.Add(value);
+    }
+
     private static void CreateZip(string path, string internalFile)
     {
         using var zip = ZipFile.Open(path, ZipArchiveMode.Create);
