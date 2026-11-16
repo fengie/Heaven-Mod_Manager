@@ -1,6 +1,6 @@
 # v8.8.109 bulk archive drag-drop import — source merged, release pending
 
-Canonical product source is `fengie/Heaven-Mod_Manager@main` at `9e3fc0be049cc43cbcaa506ff854502abc499773` through [PR #829](https://github.com/fengie/Heaven-Mod_Manager/pull/829). Previous v8.8.108 immutable [updater-main-524](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-524) belongs to older source `93eb26a7`; it does not contain this feature.
+Canonical state: Product source is `fengie/Heaven-Mod_Manager@main` at `9e3fc0be049cc43cbcaa506ff854502abc499773` through [PR #829](https://github.com/fengie/Heaven-Mod_Manager/pull/829). Previous v8.8.108 immutable [updater-main-524](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-524) belongs to older source `93eb26a7`; it does not contain this feature.
 
 ## User-facing implementation
 
