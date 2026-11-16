@@ -1,0 +1,59 @@
+name: One-shot synthetic subsystem benchmarks (2026-11-16)
+on:
+  push:
+    branches:
+      - bench/on-demand-perf-20261116
+    paths:
+      - '.github/workflows/subsystem-performance-once-20261116.yml'
+permissions:
+  contents: read
+concurrency:
+  group: on-demand-perf-20261116
+  cancel-in-progress: false
+jobs:
+  baseline:
+    name: Profile all existing synthetic subsystem benchmarks on Windows
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 90
+    steps:
+      - name: Check out immutable benchmark revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Use isolated writable SDK location
+        shell: powershell
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP ("dotnet-perf-{0}-{1}" -f $env:GITHUB_RUN_ID, $env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          "DOTNET_INSTALL_DIR=$root" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Set up pinned .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Record environment and verify pinned SDK
+        shell: powershell
+        run: |
+          Write-Host "BENCHMARK_SOURCE_SHA=$env:GITHUB_SHA"
+          Write-Host "BENCHMARK_RUN_ID=$env:GITHUB_RUN_ID"
+          $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
+          $os = Get-CimInstance Win32_OperatingSystem
+          Write-Host "CPU=$($cpu.Name); cores=$($cpu.NumberOfCores); logical=$($cpu.NumberOfLogicalProcessors)"
+          Write-Host "RAM_GiB=$([math]::Round($os.TotalVisibleMemorySize / 1048576, 2))"
+          .\scripts\ci\Assert-PinnedDotNetSdk.ps1
+      - name: Run full synthetic BenchmarkDotNet suite (Short)
+        shell: powershell
+        timeout-minutes: 75
+        run: |
+          $ErrorActionPreference = 'Stop'
+          .\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*' -Job Short
+      - name: Preserve JSON measurements when artifact storage is available
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: one-shot-subsystem-perf-${{ github.sha }}-${{ github.run_id }}
+          path: BenchmarkDotNet.Artifacts/results/*.json
+          if-no-files-found: warn
+          retention-days: 3
