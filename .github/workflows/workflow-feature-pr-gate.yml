@@ -6,6 +6,8 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'benchmarks/**'
+      - 'scripts/benchmarks/**'
       - 'src/MhwModManager.Automation/FomodInstallerService.cs'
       - 'src/MhwModManager.Automation/RulesEditorService.cs'
       - 'src/MhwModManager.Automation/UpdateMigrationService.cs'

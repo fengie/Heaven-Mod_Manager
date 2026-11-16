@@ -1,0 +1,71 @@
+name: Subsystem Performance Benchmarks
+
+# Opt-in only: no recurring workload or automatic runner consumption.
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'BenchmarkDotNet class filter (for example *BulkArchiveIntakeBenchmarks*)'
+        required: true
+        type: string
+        default: '*'
+      job:
+        description: 'Dry verifies the harness; Short/Medium capture measurements'
+        type: choice
+        required: true
+        default: Short
+        options:
+          - Dry
+          - Short
+          - Medium
+
+permissions:
+  contents: read
+
+concurrency:
+  group: subsystem-performance-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  performance:
+    name: Isolated synthetic performance characterization
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 60
+    env:
+      BENCHMARK_FILTER: ${{ inputs.filter }}
+      BENCHMARK_JOB: ${{ inputs.job }}
+    steps:
+      - name: Check out exact requested revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select isolated .NET SDK installation root
+        shell: powershell
+        run: |
+          $installRoot = Join-Path $env:RUNNER_TEMP ("dotnet-perf-{0}-{1}" -f $env:GITHUB_RUN_ID, $env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Provision repository-pinned SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Verify SDK and run bounded synthetic benchmarks
+        shell: powershell
+        run: |
+          .\scripts\ci\Assert-PinnedDotNetSdk.ps1
+          .\scripts\benchmarks\Run-Benchmarks.ps1 -Filter $env:BENCHMARK_FILTER -Job $env:BENCHMARK_JOB
+
+      - name: Retain machine-readable benchmark results when artifact quota permits
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: subsystem-performance-${{ github.sha }}-${{ github.run_id }}
+          path: BenchmarkDotNet.Artifacts/results/*.json
+          if-no-files-found: warn
+          retention-days: 3
