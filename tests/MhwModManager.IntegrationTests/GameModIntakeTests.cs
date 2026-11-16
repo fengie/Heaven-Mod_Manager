@@ -316,7 +316,7 @@ public sealed class GameModIntakeTests : IDisposable
             Assert.True(File.Exists(nier));
             Assert.Contains(progress.Reports, update => update.Completed == 2 && update.Total == 2);
 
-            var replay = await sorter.ImportPathsAsync([source], cancellationToken: TestToken);
+            var replay = await sorter.ImportPathsAsync([source], ct: TestToken);
             Assert.Equal(0, replay.Routed);
             Assert.Equal(2, replay.AlreadyPresent);
         }
