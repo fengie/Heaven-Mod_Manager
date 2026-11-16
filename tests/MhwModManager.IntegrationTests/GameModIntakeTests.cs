@@ -350,6 +350,31 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Archive_only_folder_processes_independent_archives_under_per_archive_budget()
+    {
+        var source = Path.Combine(Path.GetTempPath(), "umm-many-archives-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(source);
+        try
+        {
+            var mhw = Path.Combine(source, "MHW armor.zip");
+            var nier = Path.Combine(source, "NieR Automata outfit.zip");
+            CreateZip(mhw, "nativePC/pl/armor/armor.tex");
+            CreateZip(nier, "mods/outfit.dds");
+            var capacity = Math.Max(new FileInfo(mhw).Length, new FileInfo(nier).Length) + 1;
+            Assert.True(new FileInfo(mhw).Length + new FileInfo(nier).Length > capacity);
+
+            var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games,
+                collectionCopyBudget: capacity);
+            var report = await sorter.ImportPathsAsync([source], ct: TestToken);
+
+            Assert.Equal(2, report.Routed);
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "monster-hunter-world", "Inbox")));
+            Assert.Single(Directory.GetFiles(Path.Combine(home, "Mods by Game", "nier-automata", "Inbox")));
+        }
+        finally { Directory.Delete(source, recursive: true); }
+    }
+
+    [Fact]
     public void Window_wires_drag_drop_and_multi_archive_file_picker_to_batch_intake()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
