@@ -168,14 +168,14 @@ public sealed class GameModIntakeService
     /// The bulk overload shares game discovery, receipts, and report publication across
     /// a selection rather than restarting that work for each archive.
     /// </summary>
-    public Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
+    public async Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
         var full = Path.GetFullPath(inputPath);
         if (!Directory.Exists(full) && !File.Exists(full))
             throw new FileNotFoundException("Selected mod input does not exist.", full);
-        return ImportPathsAsync([full], ct: ct, independentArchiveFolder: false);
+        return await ImportPathsCoreAsync([full], null, false, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -186,7 +186,15 @@ public sealed class GameModIntakeService
     /// </summary>
     public async Task<GameModIntakeScan> ImportPathsAsync(
         IEnumerable<string> inputPaths, IProgress<GameModIntakeProgress>? progress = null,
-        CancellationToken ct = default, bool independentArchiveFolder = true)
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await ImportPathsCoreAsync(inputPaths, progress, true, ct).ConfigureAwait(false);
+    }
+
+    private async Task<GameModIntakeScan> ImportPathsCoreAsync(
+        IEnumerable<string> inputPaths, IProgress<GameModIntakeProgress>? progress,
+        bool independentArchiveFolder, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(inputPaths);
