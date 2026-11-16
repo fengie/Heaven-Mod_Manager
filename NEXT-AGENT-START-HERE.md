@@ -12,7 +12,9 @@ Canonical repository: `fengie/Heaven-Mod_Manager@main`; canonical source cutoff 
 
 ## Verification boundary
 
-**Canonical state:** PR #823 implementation source `main@5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7` passed [main Windows Release Gate 43708380211](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43708380211) **26/26, zero failures and zero trace gaps**. This exact run built an 8.8.107 source candidate but *intentionally skipped publishing* because immutable updater-main-522 was already published from older source. It did not publish or install v8.8.108. PR #824 metadata still needs its own exact-head gate and distinct immutable release; an evidence-only commit is not the tested source.
+Current hosted-Windows closure: v8.8.108 source `1b01f41759a84270f9622840cc055524d17c2d50` passed run `43964886985` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.108-heaven-windows-closure.log`.
+
+The tested source remains `1b01f41759a84270f9622840cc055524d17c2d50` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Release owner / next verified action
 
