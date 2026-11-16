@@ -375,6 +375,14 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Single_path_import_preserves_missing_source_failure_contract()
+    {
+        var sorter = new GameModIntakeService(home, Path.Combine(home, "State"), () => Games);
+        var missing = Path.Combine(home, "not-created.zip");
+        await Assert.ThrowsAsync<FileNotFoundException>(() => sorter.ImportPathAsync(missing, TestToken));
+    }
+
+    [Fact]
     public void Window_wires_drag_drop_and_multi_archive_file_picker_to_batch_intake()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
