@@ -42,12 +42,12 @@ jobs:
           Write-Host "CPU=$($cpu.Name); cores=$($cpu.NumberOfCores); logical=$($cpu.NumberOfLogicalProcessors)"
           Write-Host "RAM_GiB=$([math]::Round($os.TotalVisibleMemorySize / 1048576, 2))"
           .\scripts\ci\Assert-PinnedDotNetSdk.ps1
-      - name: Run full synthetic BenchmarkDotNet suite (Short)
+      - name: Compare planner after canonical pair ID caching
         shell: powershell
         timeout-minutes: 75
         run: |
           $ErrorActionPreference = 'Stop'
-          .\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*' -Job Short
+          .\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*PlannerBenchmarks*' -Job Short
       - name: Preserve JSON measurements when artifact storage is available
         if: always()
         continue-on-error: true
