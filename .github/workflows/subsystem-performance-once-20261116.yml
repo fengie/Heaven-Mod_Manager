@@ -42,7 +42,7 @@ jobs:
           Write-Host "CPU=$($cpu.Name); cores=$($cpu.NumberOfCores); logical=$($cpu.NumberOfLogicalProcessors)"
           Write-Host "RAM_GiB=$([math]::Round($os.TotalVisibleMemorySize / 1048576, 2))"
           .\scripts\ci\Assert-PinnedDotNetSdk.ps1
-      - name: Compare planner after cached overlay name and token preparation
+      - name: Compare planner after CA1859-corrected overlay cache
         shell: powershell
         timeout-minutes: 75
         run: |
