@@ -85,12 +85,25 @@ public static partial class AutoCompatibility
             .ToHashSet();
 
         var output = new List<ConflictRule>();
+        if (pairStats.Count == 0) return output;
         var acceptedRules = existingRules.ToList();
+
+        // Compute each mod's immutable identity text once per planning pass. Dense shared
+        // paths can require inference across >100,000 pairs, and the names do not change
+        // between comparisons. Keep this cache scoped to one invocation, not global state.
+        var cleanedNames = new Dictionary<string,string>(enabledMods.Count, StringComparer.OrdinalIgnoreCase);
+        var nameTokens = new Dictionary<string,string[]>(enabledMods.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var mod in enabledMods.Values)
+        {
+            var cleaned = CleanName(mod.Name);
+            cleanedNames[mod.Id] = cleaned;
+            nameTokens[mod.Id] = Tokenize(cleaned);
+        }
         foreach (var (key, stats) in pairStats.OrderBy(x => x.Key.Item1, StringComparer.Ordinal).ThenBy(x => x.Key.Item2, StringComparer.Ordinal))
         {
             if (explicitPairs.Contains(key)) continue;
             if (!enabledMods.TryGetValue(key.Item1, out var left) || !enabledMods.TryGetValue(key.Item2, out var right)) continue;
-            if (!TryInferOverlay(left, right, stats, out var parent, out var child, out var reason, out var confidence)) continue;
+            if (!TryInferOverlayCore(left, right, stats, out var parent, out var child, out var reason, out var confidence, cleanedNames, nameTokens)) continue;
             if (confidence != Confidence.High) continue;
 
             var resolverScore=94;
@@ -132,6 +145,21 @@ public static partial class AutoCompatibility
         out Confidence confidence)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return TryInferOverlayCore(a, b, stats, out parent, out child, out reason, out confidence, null, null);
+    }
+
+    private static bool TryInferOverlayCore(
+        ModDescriptor a,
+        ModDescriptor b,
+        PairStats stats,
+        out ModDescriptor parent,
+        out ModDescriptor child,
+        out string reason,
+        out Confidence confidence,
+        IReadOnlyDictionary<string,string>? cleanedNames,
+        IReadOnlyDictionary<string,string[]>? nameTokens)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         parent = a;
         child = b;
         reason = string.Empty;
@@ -152,8 +180,8 @@ public static partial class AutoCompatibility
             return true;
         }
 
-        var an = CleanName(a.Name);
-        var bn = CleanName(b.Name);
+        var an = cleanedNames is null ? CleanName(a.Name) : cleanedNames[a.Id];
+        var bn = cleanedNames is null ? CleanName(b.Name) : cleanedNames[b.Id];
 
         if (TryPrefixFamily(a, an, b, bn, stats, out parent, out child, out var suffix))
         {
@@ -177,11 +205,12 @@ public static partial class AutoCompatibility
 
         var smaller = stats.LeftFiles <= stats.RightFiles ? a : b;
         var larger = ReferenceEquals(smaller, a) ? b : a;
-        var smallerName = CleanName(smaller.Name);
-        var largerName = CleanName(larger.Name);
-        var smallerTokens = Tokenize(smallerName);
+        var smallerName = ReferenceEquals(smaller, a) ? an : bn;
+        var largerName = ReferenceEquals(smaller, a) ? bn : an;
+        var smallerTokens = nameTokens is null ? Tokenize(smallerName) : nameTokens[smaller.Id];
+        var largerTokens = nameTokens is null ? Tokenize(largerName) : nameTokens[larger.Id];
         var hasStrongPatchWord = smallerTokens.Any(StrongPatchWords.Contains);
-        var similarity = TokenSimilarity(Tokenize(largerName), smallerTokens);
+        var similarity = TokenSimilarity(largerTokens, smallerTokens);
 
         // Do not invent an order between same-labelled packages (for example several different
         // "Fatalis Patch" option archives). They need a stronger family/revision signal.
