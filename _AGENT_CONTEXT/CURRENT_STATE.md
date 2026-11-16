@@ -6,7 +6,7 @@ Canonical state: Product source is `fengie/Heaven-Mod_Manager@main` at `9e3fc0be
 
 Import ZIP/RAR/7z archives through multi-select or drag files/folders onto the WPF window; Dashboard exposes a one-shot folder batch. Shared game registry/receipts and sequential bounded archive routing reduce repeated intake overhead, display per-item progress, and preserve originals. Identified mods stage into the corresponding registered games' Inboxes regardless of active game. No unsafe automatic guessing, unauthorized live-game deployment or deletion. Legacy single-collection cumulative byte limits remain unchanged; explicit archive-only folder batches stage bounded individual sources.
 
-## Verification and release boundary
+## Verification boundary
 
 - [Windows Feature 43950868996](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868996) 26/26, 352 core, 112 automation and 555 integration tests passed with zero function trace gaps on candidate `b1fb06ed803a355bf0b05e5bfd2afa4026fb76bd`. [AutoUpdate 43950868605](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868605) passed; canonical main readback confirmed the feature merge.
 - Source-only main [Windows Release Gate 43952164444](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43952164444) must terminate before the v8.8.109 serialized metadata candidate is integrated; current earlier v8.8.108 release cannot be replaced.
