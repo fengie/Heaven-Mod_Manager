@@ -156,8 +156,8 @@ public static partial class AutoCompatibility
         out ModDescriptor child,
         out string reason,
         out Confidence confidence,
-        IReadOnlyDictionary<string,string>? cleanedNames,
-        IReadOnlyDictionary<string,string[]>? nameTokens)
+        Dictionary<string,string>? cleanedNames,
+        Dictionary<string,string[]>? nameTokens)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         parent = a;
