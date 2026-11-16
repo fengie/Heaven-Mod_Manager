@@ -55,6 +55,17 @@ The planner counts every shared provider pair per path. On the dense 500-provide
 
 Keep high-confidence explicit rules and fail-closed conflict behavior unchanged. Do not infer an automatic winner from priority alone.
 
+## Measured candidate comparison — canonical pair IDs
+
+The first candidate reused one lowercase canonical string per enabled mod rather than calling `ConflictEngine.PairKey` inside every dense shared-file pair. [A/B run 43969062226](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43969062226), job `133656081998`, finished **success** on the same `heaven-v2` Ryzen 9 7945HX runner and same BenchmarkDotNet ShortRun settings. Candidate source was `5208e1475a5236343fb70bc6577887235fdb8816` plus an isolated workflow-only commit `65692845af53d1adf48aee8df1afacd4a83347e9`.
+
+| Scenario | Baseline mean | Candidate mean | Time reduction | Allocated baseline → candidate | Allocation reduction |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 200 mods / 50k files | 570.9 ms | 322.0 ms | **43.6%** | 973.04 → 259.47 MB | **73.3%** |
+| 500 mods / 150k files | 4,181.4 ms | 2,971.7 ms | **28.9%** | 5,804.06 → 1,339.35 MB | **76.9%** |
+
+This confirms a large transient-allocation problem, but a 3-second plan and 1.34 GB allocated remain concerning. Confidence is limited by three measured iterations; the extreme confidence-interval margins mean this is a directional result, not a stable user-facing p95. A follow-up local-per-plan name/token memoization pass is proposed for the remaining repeated pairwise inference work and requires its own same-runner comparison and exact-head source CI.
+
 ## Missing evidence
 
 - Real compressed RAR/7z (including solid/encrypted/corrupt variants), real hundreds-mod Sifu/Stellar Blade corpus, slow network/external disks, and duplicate replay after physical installation
