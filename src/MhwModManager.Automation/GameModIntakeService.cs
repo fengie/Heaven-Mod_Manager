@@ -206,10 +206,44 @@ public sealed class GameModIntakeService
                 if (isDirectory)
                 {
                     ValidateSource(full);
-                    await ScanSourceAsync(full, games, items, receipts, ct,
-                        progressCandidate: (completed, total, candidate) =>
-                            progress?.Report(new(index, inputs.Length, candidate,
-                                $"Scanning folder {completed}/{total}"))).ConfigureAwait(false);
+                    // A directory containing only downloaded archives is a batch of
+                    // independent user-selected packages, not one nested mod pack.
+                    // Give each archive its own existing 8 GiB bounded intake budget:
+                    // otherwise the old collection-wide limit rejects unrelated
+                    // large archives after the first few files.
+                    var topEntries = Directory.EnumerateFileSystemEntries(full)
+                        .Take(MaxEntriesPerSource + 1).ToArray();
+                    if (topEntries.Length > MaxEntriesPerSource)
+                        throw new InvalidDataException("The selected folder exceeds the safe entry limit.");
+                    if (topEntries.Length > 0 && topEntries.All(path =>
+                            File.Exists(path) && IsSupportedArchive(path)))
+                    {
+                        for (var archiveIndex = 0; archiveIndex < topEntries.Length; archiveIndex++)
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            var archivePath = topEntries[archiveIndex];
+                            progress?.Report(new(index, inputs.Length, archivePath,
+                                $"Archive {archiveIndex + 1}/{topEntries.Length}"));
+                            try
+                            {
+                                RefuseReparseComponents(archivePath);
+                                await ClassifyAndRouteAsync(full, archivePath, false,
+                                    games, items, receipts, ct).ConfigureAwait(false);
+                            }
+                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                or InvalidDataException or JsonException)
+                            {
+                                items.Add(new(archivePath, null, GameModIntakeStatus.NeedsReview, ex.Message));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        await ScanSourceAsync(full, games, items, receipts, ct,
+                            progressCandidate: (completed, total, candidate) =>
+                                progress?.Report(new(index, inputs.Length, candidate,
+                                    $"Scanning folder {completed}/{total}"))).ConfigureAwait(false);
+                    }
                 }
                 else
                 {
