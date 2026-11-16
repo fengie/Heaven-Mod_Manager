@@ -8,9 +8,9 @@ Import ZIP/RAR/7z archives through multi-select or drag files/folders onto the W
 
 ## Verification boundary
 
-- [Windows Feature 43950868996](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868996) 26/26, 352 core, 112 automation and 555 integration tests passed with zero function trace gaps on candidate `b1fb06ed803a355bf0b05e5bfd2afa4026fb76bd`. [AutoUpdate 43950868605](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868605) passed; canonical main readback confirmed the feature merge.
-- Source-only main [Windows Release Gate 43952164444](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43952164444) must terminate before the v8.8.109 serialized metadata candidate is integrated; current earlier v8.8.108 release cannot be replaced.
-- Publication is **pending** until an exact v8.8.109 native gate, protected metadata merge, exact-main Windows Release Gate and distinct immutable ZIP/manifest/feed parity are independently verified. Source and CI are not physical installation proof.
+Current hosted-Windows closure: v8.8.109 source `550d74b62c9bbc3cef8922a4e019cf5239d90bde` passed run `43979311739` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.109-heaven-windows-closure.log`.
+
+The tested source remains `550d74b62c9bbc3cef8922a4e019cf5239d90bde` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining independent acceptance
 
