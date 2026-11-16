@@ -1,3 +1,10 @@
+# v8.8.109 release handoff closure — November 16, 2026
+
+- The first strict post-merge [Windows Release Gate 43973605846](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43973605846) at `main@2b7d29527f07340fd692220e2bd0d03fdff3da0d` completed **25 passed / 1 failed**. It did **not** publish v8.8.109. Its synthetic current-version evidence-closure fixture failed `Current handoff must carry unresolved risk` because `Sync-VerificationContinuity.ps1` replaces the bounded `## Verification boundary` section containing the only risk statement.
+- The corrective [PR #833](https://github.com/fengie/Heaven-Mod_Manager/pull/833), merged as `main@434309b18ed47f4bf67fd1191969414c38a79c1c`, keeps unresolved physical install, large RAR/7z and isolated updater-rollback risks in a separate non-replaceable section. The existing `Test-AgentHandoff-NegativeFixtures.ps1` strict synthetic closure is the regression test; feature-candidate checks alone are insufficient to prove canonical release closure.
+- **Acceptance:** Re-run the complete strict Windows Release Gate against the final new `main` SHA. Only a 26/26 PASS plus independently verified distinct immutable v8.8.109 ZIP/manifest SHA-256 values, source ID and public updater feed establishes publication. Preserve immutable v8.8.108 `updater-main-524`. Actual installed-client UX, real-user archive throughput and positive updater rollback remain independent #791/#793 obligations.
+- This evidence/documentation-only correction does not change the product, version, verification policy, or the release workflow path filters. A change to `VALIDATION.md` is already an approved Windows Release Gate push trigger; avoid adding `NEXT-AGENT-START-HERE.md` to that path list because verification-state persistence may rewrite it and create a recursive release-gate loop.
+
 # v8.8.0 function verification validation
 
 The v8.8 verifier adds two gates before cache promotion: a Roslyn function-fingerprint scan and runtime-trace coverage for every changed/new production function. The previous `verified=true` cache is immutable on any failing run. Only a complete PASS may promote current fingerprints.
