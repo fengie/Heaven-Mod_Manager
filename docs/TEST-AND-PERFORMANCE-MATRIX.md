@@ -12,7 +12,7 @@ The new `SubsystemWorkloadRegressionTests` assert real outcomes, not timing: nes
 | --- | --- | --- |
 | Conflict planning, path and compatibility rules | `PlannerTests`, `PlannerInvariantTests`, `ConflictEngineTests`, `PathRulesTests` | `PlannerBenchmarks` (200/500 mods, 50k/150k files) |
 | Family inference and package grouping | `LogicalModFamiliesTests`, `ModBoundaryDiscoveryTests`, `SubsystemWorkloadRegressionTests` | `FamilyInferenceBenchmarks`, `ModBoundaryDiscoveryBenchmarks` (100/1k/10k paths) |
-| Game identity and bulk routing | `GameModIntakeTests`, `CollectionBudgetIntakeTests`, `SubsystemWorkloadRegressionTests` | `GameClassificationBenchmarks`, `BulkArchiveIntakeBenchmarks` (8/64 ZIPs) |
+| Game identity and bulk routing | `GameModIntakeTests`, `CollectionBudgetIntakeTests`, `SubsystemWorkloadRegressionTests` | `GameClassificationBenchmarks`, `BulkArchiveIntakeBenchmarks` (8/64 ZIPs at 4 KiB or 1 MiB per payload) |
 | ZIP/RAR/7z decoding, extraction and safety | `RealArchiveFormatAcceptanceTests`, `LargeZipManifestIntakeTests`, `HardeningTests` | `ArchivePipelineBenchmarks` (32/512-entry synthetic ZIP inspect/extract) |
 | Hashing, blob capture and filesystem writes | `HashingServiceSafetyTests`, `BlobIntegrityTests`, `DeploymentTests` | `FileHashingBenchmarks` (1/8 MiB fast vs authoritative) |
 | SQLite, migrations, profiles and persistence | `ManagerDatabaseMigrationTests`, `PlannerSnapshotRepositoryTests`, `ProfileRepositoryAtomicityTests` | `ModDatabaseBenchmarks` (100/1000 warm mod-row reads) |
