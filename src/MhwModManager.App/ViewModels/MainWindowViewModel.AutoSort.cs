@@ -74,41 +74,68 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var picker = new OpenFolderDialog
         {
-            Title = "Select a folder containing one or more mods"
+            Title = "Select a folder containing ZIP/RAR/7z mod archives or unpacked mods"
         };
-        if (picker.ShowDialog() != true) return;
-        try
-        {
-            EnsureGameIntake();
-            AutoSortStatusText = "Inspecting folder and separating identifiable mods; originals are unchanged.";
-            var sorter = gameIntake!;
-            var report = await Task.Run(() => sorter.ImportPathAsync(picker.FolderName, backgroundCts.Token),
-                backgroundCts.Token);
-            AutoSortStatusText = $"Folder intake: {report.Routed} mods routed, " +
-                $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
-                $"Details: {sorter.ReportPath}";
-            if (report.Routed > 0)
-                StatusText = $"Separated {report.Routed} mod(s) into their registered games' Inboxes. " +
-                    "Use Install Mods from Inbox for the active game.";
-            if (report.Items.Count > 0)
+        if (picker.ShowDialog() == true)
+            await ImportModPathsAsync([picker.FolderName]);
+    }
+
+    /// <summary>
+    /// Shared entry for folder picker, multi-file picker, and Windows Explorer drop.
+    /// All sources remain untouched; high-confidence mods are staged per registered game.
+    /// </summary>
+    public async Task ImportModPathsAsync(IEnumerable<string> inputPaths)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(inputPaths);
+        var paths = inputPaths.Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (paths.Length == 0 || disposed) return;
+
+        GameModIntakeScan? report = null;
+        GameModIntakeService? sorter = null;
+        await RunBusy("mod-intake.batch", "Importing Mod Collection",
+            "Checking selected archives and folders; originals will not be changed…",
+            true, async ct =>
             {
-                var review = new ModIntakeReviewWindow(report)
+                BusyDetail = "Waiting for other mod scans to finish…";
+                await intakeScanGate.WaitAsync(ct);
+                try
                 {
-                    Owner = Application.Current.MainWindow
-                };
-                review.EnableManualAssignment(s.GameRegistry.Load(), (candidate, gameId) =>
-                    Task.Run(() => sorter.AssignReviewedPackageAsync(candidate.SourcePath, gameId,
-                        backgroundCts.Token), backgroundCts.Token));
-                review.ShowDialog();
-            }
-        }
-        catch (OperationCanceledException) when (backgroundCts.IsCancellationRequested)
+                    EnsureGameIntake();
+                    sorter = gameIntake!;
+                    var updates = new Progress<GameModIntakeProgress>(update =>
+                {
+                    if (BusyVisibility != Visibility.Visible) return;
+                    var shortName = Path.GetFileName(update.CurrentPath
+                        .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                    BusyDetail = $"{update.Stage} — {update.Completed}/{update.Total}: {shortName}";
+                });
+                report = await Task.Run(() => sorter.ImportPathsAsync(paths, updates, ct), ct);
+                AutoSortStatusText = $"Bulk import: {report.Routed} mods routed, " +
+                    $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
+                    $"Details: {sorter.ReportPath}";
+                StatusText = report.Routed == 0
+                    ? $"No new mods routed; {report.NeedsReview} need review. See the import report."
+                    : $"Staged {report.Routed} mod(s) in their registered games' Inboxes. " +
+                      "Use Install Mods from Inbox to add them to a game's library.";
+                }
+                finally
+                {
+                    intakeScanGate.Release();
+                }
+            });
+
+        if (report is not null && report.NeedsReview > 0 && sorter is not null && !disposed)
         {
-            AutoSortStatusText = "Folder intake canceled; original files are unchanged.";
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
-        {
-            AutoSortStatusText = "Cannot import selected folder: " + ex.Message;
+            var review = new ModIntakeReviewWindow(report)
+            {
+                Owner = Application.Current.MainWindow
+            };
+            review.EnableManualAssignment(s.GameRegistry.Load(), (candidate, gameId) =>
+                Task.Run(() => sorter.AssignReviewedPackageAsync(candidate.SourcePath, gameId,
+                    backgroundCts.Token), backgroundCts.Token));
+            review.ShowDialog();
         }
     }
 

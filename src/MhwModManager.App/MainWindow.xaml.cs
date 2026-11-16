@@ -1,5 +1,6 @@
 using MhwModManager.Core;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -179,6 +180,43 @@ public partial class MainWindow:Window
         scale.BeginAnimation(ScaleTransform.ScaleYProperty,null);
         scale.ScaleX=1;
         scale.ScaleY=1;
+    }
+
+    private static string[] SupportedModDropPaths(IDataObject data)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!data.GetDataPresent(DataFormats.FileDrop)
+            || data.GetData(DataFormats.FileDrop) is not string[] paths)
+            return [];
+        return paths.Where(path => !string.IsNullOrWhiteSpace(path)
+            && (Directory.Exists(path) || (File.Exists(path)
+                && Path.GetExtension(path).ToLowerInvariant() is ".zip" or ".rar" or ".7z")))
+            .Distinct(StringComparer.OrdinalIgnoreCase).Take(2049).ToArray();
+    }
+
+    private void OnWindowPreviewDragOver(object sender, DragEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        e.Effects = SupportedModDropPaths(e.Data).Length > 0
+            ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void OnWindowPreviewDrop(object sender, DragEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        e.Handled = true;
+        var paths = SupportedModDropPaths(e.Data);
+        if (paths.Length == 0 || DataContext is not MainWindowViewModel vm) return;
+        try
+        {
+            await vm.ImportModPathsAsync(paths);
+        }
+        catch (Exception ex)
+        {
+            MasterDebugLog.Write("MOD-INTAKE", "Drag-and-drop intake failed.", ex);
+            vm.StatusText = "Could not import dropped mods: " + ex.Message;
+        }
     }
 
     private void OnPreviewKeyDown(object sender,KeyEventArgs e)
