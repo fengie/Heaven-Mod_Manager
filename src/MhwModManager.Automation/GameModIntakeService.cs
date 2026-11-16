@@ -175,16 +175,18 @@ public sealed class GameModIntakeService
         var full = Path.GetFullPath(inputPath);
         if (!Directory.Exists(full) && !File.Exists(full))
             throw new FileNotFoundException("Selected mod input does not exist.", full);
-        return ImportPathsAsync([full], ct: ct);
+        return ImportPathsAsync([full], ct: ct, independentArchiveFolder: false);
     }
 
     /// <summary>
+    /// Explicit bulk selections can independently stage each downloaded archive; legacy
+    /// one-path collection imports retain their original shared physical-copy budget.
     /// Progress events are advisory and never authorize installation or bypass safety review.
     /// All source paths remain unchanged. The owning game's Inbox stages accepted candidates.
     /// </summary>
     public async Task<GameModIntakeScan> ImportPathsAsync(
         IEnumerable<string> inputPaths, IProgress<GameModIntakeProgress>? progress = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default, bool independentArchiveFolder = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(inputPaths);
@@ -222,7 +224,7 @@ public sealed class GameModIntakeService
                         .Take(MaxEntriesPerSource + 1).ToArray();
                     if (topEntries.Length > MaxEntriesPerSource)
                         throw new InvalidDataException("The selected folder exceeds the safe entry limit.");
-                    if (topEntries.Length > 0 && topEntries.All(path =>
+                    if (independentArchiveFolder && topEntries.Length > 0 && topEntries.All(path =>
                             File.Exists(path) && IsSupportedArchive(path)))
                     {
                         for (var archiveIndex = 0; archiveIndex < topEntries.Length; archiveIndex++)
