@@ -98,9 +98,13 @@ public sealed partial class MainWindowViewModel
             "Checking selected archives and folders; originals will not be changed…",
             true, async ct =>
             {
-                EnsureGameIntake();
-                sorter = gameIntake!;
-                var updates = new Progress<GameModIntakeProgress>(update =>
+                BusyDetail = "Waiting for other mod scans to finish…";
+                await intakeScanGate.WaitAsync(ct);
+                try
+                {
+                    EnsureGameIntake();
+                    sorter = gameIntake!;
+                    var updates = new Progress<GameModIntakeProgress>(update =>
                 {
                     if (BusyVisibility != Visibility.Visible) return;
                     var shortName = Path.GetFileName(update.CurrentPath
@@ -115,6 +119,11 @@ public sealed partial class MainWindowViewModel
                     ? $"No new mods routed; {report.NeedsReview} need review. See the import report."
                     : $"Staged {report.Routed} mod(s) in their registered games' Inboxes. " +
                       "Use Install Mods from Inbox to add them to a game's library.";
+                }
+                finally
+                {
+                    intakeScanGate.Release();
+                }
             });
 
         if (report is not null && report.NeedsReview > 0 && sorter is not null && !disposed)
