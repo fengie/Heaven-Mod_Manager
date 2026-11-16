@@ -86,4 +86,48 @@ public sealed class PlannerTests
         Assert.Empty(plan.Changes);
     }
 
+
+    [Fact]
+    public void Dense_shared_path_results_are_identical_with_mixed_case_mod_ids()
+    {
+        var now = DateTimeOffset.UnixEpoch;
+        var mods = new[]
+        {
+            new ModDescriptor("Main", "Armor Main", "Armor Main", "src-main", true, 0),
+            new ModDescriptor("OPTION", "Armor Optional", "Armor Optional", "src-option", true, 1),
+            new ModDescriptor("PaTcH", "Armor Hotfix", "Armor Hotfix", "src-patch", true, 2)
+        };
+        var files = Enumerable.Range(0, 8).SelectMany(i =>
+            mods.Select((mod, index) => new ModFileDescriptor(
+                i % 2 == 0 ? mod.Id.ToLowerInvariant() : mod.Id.ToUpperInvariant(),
+                $@"nativePC\\fixture\\shared{i:D3}.tex",
+                $"{index:X8}{i:X8}".PadRight(64, '0'), null, 1024,
+                now, FileClass.Texture))).ToArray();
+
+        static PlannerSnapshot Snapshot(
+            IReadOnlyList<ModDescriptor> candidates, IReadOnlyList<ModFileDescriptor> paths) =>
+            new(candidates, paths, [], new Dictionary<string,string>(),
+                new Dictionary<string,string>(),
+                new Dictionary<string,DeploymentManifestEntry>(),
+                new Dictionary<string,string?>());
+
+        var planner = new DeploymentPlanner(new ConflictEngine());
+        var original = planner.Build(Snapshot(mods, files));
+        var normalized = planner.Build(Snapshot(
+            mods.Select(m => m with { Id = m.Id.ToLowerInvariant() }).ToArray(),
+            files.Select(f => f with { ModId = f.ModId.ToLowerInvariant() }).ToArray()));
+
+        Assert.Equal(8, original.Conflicts.Count);
+        Assert.Equal(
+            original.Conflicts.Select(c => (
+                c.Path, c.Kind, c.Blocking, c.ReasonCode, c.WinnerModId?.ToLowerInvariant())),
+            normalized.Conflicts.Select(c => (
+                c.Path, c.Kind, c.Blocking, c.ReasonCode, c.WinnerModId?.ToLowerInvariant())));
+        Assert.Equal(
+            original.Changes.Select(c => (
+                c.Kind, c.Path, c.ProviderAfter?.ToLowerInvariant())),
+            normalized.Changes.Select(c => (
+                c.Kind, c.Path, c.ProviderAfter?.ToLowerInvariant())));
+    }
+
 }

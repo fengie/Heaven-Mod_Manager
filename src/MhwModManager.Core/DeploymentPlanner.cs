@@ -6,6 +6,9 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var enabled = snapshot.Mods.Where(m => m.Enabled && !m.IsSuperseded).ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
+        // PairKey lowercases both IDs on every call. Dense shared namespaces can produce
+        // millions of pair observations, so intern the canonical spelling once per mod.
+        var pairIds = enabled.Keys.ToDictionary(id => id, id => id.ToLowerInvariant(), StringComparer.OrdinalIgnoreCase);
         var providers = new Dictionary<string,List<ProviderCandidate>>(StringComparer.OrdinalIgnoreCase);
         var fileCounts = new Dictionary<string,int>(StringComparer.OrdinalIgnoreCase);
         var textureCounts = new Dictionary<string,int>(StringComparer.OrdinalIgnoreCase);
@@ -44,11 +47,13 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         foreach (var list in providers.Values)
         {
             if (list.Count < 2) continue;
-            var ids = list.Select(x => x.ModId).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+            // Already canonical lowercase and ordered: never allocate two lowercased
+            // strings for each pair of providers on each shared path.
+            var ids = list.Select(x => pairIds[x.ModId]).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
             for (var i = 0; i < ids.Length - 1; i++)
             for (var j = i + 1; j < ids.Length; j++)
             {
-                var key = ConflictEngine.PairKey(ids[i], ids[j]);
+                var key = (ids[i], ids[j]);
                 pairOverlap[key] = pairOverlap.GetValueOrDefault(key) + 1;
             }
         }
