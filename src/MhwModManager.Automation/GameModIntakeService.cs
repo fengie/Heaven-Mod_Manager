@@ -170,6 +170,7 @@ public sealed class GameModIntakeService
     /// </summary>
     public Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
         var full = Path.GetFullPath(inputPath);
         if (!Directory.Exists(full) && !File.Exists(full))
