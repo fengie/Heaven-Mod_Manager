@@ -45,3 +45,41 @@ Use **Actions → Subsystem Performance Benchmarks → Run workflow** for an exp
 Record exact source SHA, runner name, CPU/RAM/disk, SDK, scenario parameters, date, sample count, distribution, and output correctness. Compare baseline and candidate on **the same physical runner** with the same scenario and warm/cold conditions. Compare mean/median and tails using the JSON distribution; do not claim a throughput improvement from a single run. Separate pure CPU algorithms, filesystem throughput, and UI feedback latency.
 
 Never optimize by skipping checksum/integrity verification, path/reparse containment, safe extraction limits, durable transactions, cancellation or fallback review. Correctness regressions fail the existing xUnit/CI checks independently of performance measurements. Keep large real-world RAR/7z, mixed 100s-mod user corpus, installed drag-and-drop responsiveness, remote metadata/network latency, catalog pagination and positive isolated updater E2E as independently unverified work under #791, #735 and #793 until instrumented on an installed client.
+
+
+## November 16 fault-boundary and topology expansion
+
+The existing 26-case synthetic profile and previously landed four cross-subsystem tests do not cover all operational correctness properties. The following additions deliberately focus on gaps not already specified by the large hardening/deployment suites:
+
+| Blind spot | New deterministic oracle | Performance visibility |
+| --- | --- | --- |
+| Post-progress cancel versus pre-cancel only | Cancel synchronously after the first completed archive; assert later archives untouched and no misleading completed batch report | End-user cancel latency still requires installed UI instrumentation |
+| Input fan-out and malformed persisted state | Reject 2,049 explicit selections before staging; malformed SHA-256 receipt index fails closed | Inventory/replay benchmark contrasts 8/64/256 archive warm runs |
+| Bad ZIP/RAR/7z next to valid packages | Keep valid archive routing despite corrupt RAR and 7z, suspicious ZIP entry and unchanged original source files | No claim of actual real RAR or solid 7z throughput |
+| Archive extraction collision | Reject case-insensitive duplicate output and file/ancestor conflicts before writing | Existing 32/512-entry extract-and-cleanup benchmark still relevant |
+| Interrupted extraction | Fault-inject cooperative cancellation before payload write; no abandoned owned partial file | No synthetic test substitutes for power-loss durability proof |
+| Same archive from two names | Deduplicate identical byte content by registered game and SHA, preserve both sources | Warm replay benchmark includes repeated hashing/copy/receipt lookups |
+| Mod family input order | Seeded input permutations must preserve grouping keys and complete-link negative evidence | Topology benchmark compares independent roots with shared root/index pressure |
+| False grouping due to shared folder prefix | Unrelated filenames in a shared root do not become one mod | Shared-root candidate pressure must not be equated with justified auto-grouping |
+
+The new replay benchmark seeds isolated manager state once in `GlobalSetup`, then times actual second-import behavior against that state; **fresh import and replay must not be mixed in one average**. It checks `AlreadyPresent == ArchiveCount` on each invocation to catch accidental fast no-op paths. The new family topology benchmark runs the same mod/file count with separate versus shared four-segment roots and fails if unrelated mods are grouped. BenchmarkDotNet `Allocated` measures cumulative managed allocations, not peak RSS or total bytes written. See <https://github.com/dotnet/BenchmarkDotNet/blob/master/docs/articles/configs/diagnosers.md> and Microsoft .NET unit-test guidance at <https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices>.
+
+### Missing proof, not passed checks
+
+- Real large RAR4/solid RAR5/7z imports, encrypted/corrupt variants and mounted remote/external disks: existing real-format acceptance uses small pinned fixtures. **Representative real throughput remains unmeasured**.
+- Warm duplicate replay currently copies and hashes source archives; receipt persistence rewrites sorted JSON on every new acceptance. This is a candidate large-batch complexity problem; establish a measured scaling curve before altering durable receipt writes.
+- Installed WPF dragging and live per-phase feedback, preview/UI thread blocking, user-perceived import p50/p95, Auto Populate end-to-end state changes, Nexus metadata refresh and device-specific disk throughput are not covered by these isolated microbenchmarks.
+- Cross-process/concurrent import writers and crash consistency of receipt/index state require an independent serial-ownership and recovery fixture. Do not simulate concurrent writers against an installed user library or weaken existing single-writer policy.
+- A green CI unit/benchmark compile does not prove the opt-in BenchmarkDotNet suite executed. Run a filtered, explicitly requested manual measurement and compare the same machine/workload/candidate; do not set flaky absolute wall-time thresholds in the normal PR gate.
+- All temporary fixture roots are created under unique test-owned temporary directories and cleaned up; never point these tests at a user's mod library, game install, updater state, or real downloads.
+
+Test commands on a Windows development host:
+
+```powershell
+dotnet test .\tests\MhwModManager.Tests\MhwModManager.Tests.csproj -c Release --filter 'FullyQualifiedName~FamilyInferenceOrderInvariantsTests'
+dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter 'FullyQualifiedName~BulkImportFaultBoundaryTests'
+.\scripts\release\Verify-Release.ps1 -FeatureCandidate
+# Opt-in only; never infer these have run from a compiled PR:
+.\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*BulkArchiveReplayBenchmarks*' -Job Short
+.\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*FamilyTopologyBenchmarks*' -Job Short
+```
