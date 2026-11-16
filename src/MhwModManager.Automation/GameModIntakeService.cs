@@ -12,6 +12,8 @@ public enum GameModIntakeStatus { Routed, AlreadyPresent, NeedsReview, Skipped }
 public sealed record GameModIntakeItem(
     string SourcePath, string? GameId, GameModIntakeStatus Status, string Reason);
 
+public sealed record GameModIntakeProgress(int Completed, int Total, string CurrentPath, string Stage);
+
 public sealed record GameModIntakeScan(IReadOnlyList<GameModIntakeItem> Items)
 {
     public int Routed { get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return Items.Count(item => item.Status == GameModIntakeStatus.Routed); } }
@@ -162,48 +164,77 @@ public sealed class GameModIntakeService
     }
 
     /// <summary>
-    /// One-shot intake of a selected folder or archive. Unlike AddSource, this does not
-    /// register a filesystem watcher or continue scanning the user's directory later.
+    /// One-shot intake of a selected folder or archive, without registering a watcher.
+    /// The bulk overload shares game discovery, receipts, and report publication across
+    /// a selection rather than restarting that work for each archive.
     /// </summary>
-    public async Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
+    public Task<GameModIntakeScan> ImportPathAsync(string inputPath, CancellationToken ct = default)
+        => ImportPathsAsync([inputPath], ct: ct);
+
+    /// <summary>
+    /// Progress events are advisory and never authorize installation or bypass safety review.
+    /// All source paths remain unchanged. The owning game's Inbox stages accepted candidates.
+    /// </summary>
+    public async Task<GameModIntakeScan> ImportPathsAsync(
+        IEnumerable<string> inputPaths, IProgress<GameModIntakeProgress>? progress = null,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
-        var full = Path.GetFullPath(inputPath);
-        var isDirectory = Directory.Exists(full);
-        if (!isDirectory && !File.Exists(full))
-            throw new FileNotFoundException("Selected mod input does not exist.", full);
-        var sourceRoot = isDirectory ? full : Path.GetDirectoryName(full)!;
-        if (isDirectory)
-            ValidateSource(sourceRoot);
-        else
-        {
-            // Explicitly selected files are read-only inputs. Their parent may contain
-            // another manager-owned directory; never register that parent as a watcher.
-            RefuseReparseComponents(full);
-            foreach (var game in loadGames())
-                if (ContainsPath(game.GameRoot, full))
-                    throw new InvalidDataException("Cannot import directly from a live game installation.");
-        }
+        ArgumentNullException.ThrowIfNull(inputPaths);
+        var inputs = inputPaths.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (inputs.Length == 0)
+            return new GameModIntakeScan([]);
+        if (inputs.Length > 2048)
+            throw new InvalidDataException("Import at most 2,048 selected items at a time.");
 
         var games = loadGames().Where(game => GameProfile.IsCanonicalId(game.Id))
             .DistinctBy(game => game.Id, StringComparer.OrdinalIgnoreCase).ToArray();
         var receipts = LoadReceipts();
         var items = new List<GameModIntakeItem>();
-        try
+        for (var index = 0; index < inputs.Length; index++)
         {
-            if (isDirectory)
-                await ScanSourceAsync(full, games, items, receipts, ct).ConfigureAwait(false);
-            else if (IsSupportedArchive(full))
-                await ClassifyAndRouteAsync(sourceRoot, full, false, games, items, receipts, ct).ConfigureAwait(false);
-            else
-                items.Add(new(full, null, GameModIntakeStatus.NeedsReview,
-                    "Select a folder or a ZIP, RAR or 7z archive."));
+            ct.ThrowIfCancellationRequested();
+            var input = inputs[index];
+            progress?.Report(new(index, inputs.Length, input ?? "", "Inspecting"));
+            try
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(input);
+                var full = Path.GetFullPath(input);
+                var isDirectory = Directory.Exists(full);
+                if (!isDirectory && !File.Exists(full))
+                    throw new FileNotFoundException("Selected mod input does not exist.", full);
+                if (isDirectory)
+                {
+                    ValidateSource(full);
+                    await ScanSourceAsync(full, games, items, receipts, ct,
+                        progressCandidate: (completed, total, candidate) =>
+                            progress?.Report(new(index, inputs.Length, candidate,
+                                $"Scanning folder {completed}/{total}"))).ConfigureAwait(false);
+                }
+                else
+                {
+                    // A manual selection is a read-only source. Never interpret the
+                    // selected path as authorization to install into a live game.
+                    RefuseReparseComponents(full);
+                    foreach (var game in games)
+                        if (ContainsPath(game.GameRoot, full))
+                            throw new InvalidDataException("Cannot import directly from a live game installation.");
+                    if (IsSupportedArchive(full))
+                        await ClassifyAndRouteAsync(Path.GetDirectoryName(full)!, full, false,
+                            games, items, receipts, ct).ConfigureAwait(false);
+                    else
+                        items.Add(new(full, null, GameModIntakeStatus.NeedsReview,
+                            "Select a folder or a ZIP, RAR or 7z archive."));
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                or InvalidDataException or JsonException or ArgumentException or NotSupportedException)
+            {
+                items.Add(new(input ?? "", null, GameModIntakeStatus.NeedsReview, ex.Message));
+            }
+            progress?.Report(new(index + 1, inputs.Length, input ?? "", "Completed"));
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
-        {
-            items.Add(new(full, null, GameModIntakeStatus.NeedsReview, ex.Message));
-        }
+
         var report = new GameModIntakeScan(items);
         try
         {
@@ -212,7 +243,7 @@ public sealed class GameModIntakeService
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            MasterDebugLog.Write("MOD-INTAKE", "Could not save one-shot mod-intake report.", ex);
+            MasterDebugLog.Write("MOD-INTAKE", "Could not save bulk mod-intake report.", ex);
         }
         return report;
     }
@@ -324,7 +355,8 @@ public sealed class GameModIntakeService
 
     private async Task ScanSourceAsync(
         string root, IReadOnlyList<GameProfile> games, List<GameModIntakeItem> output,
-        HashSet<string> receipts, CancellationToken ct, bool requireMultipleBoundaries = false)
+        HashSet<string> receipts, CancellationToken ct, bool requireMultipleBoundaries = false,
+        Action<int, int, string>? progressCandidate = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
@@ -341,11 +373,13 @@ public sealed class GameModIntakeService
         // Share one inspection and physical-copy budget across every candidate from
         // this selected collection. Nested archive recursion carries the same instance.
         var collectionBudget = new IntakeBudget(collectionCopyBudget);
+        var candidateIndex = 0;
         foreach (var candidate in discovered.Candidates)
         {
             ct.ThrowIfCancellationRequested();
             var entry = candidate.RelativePath == "." ? root
                 : Path.Combine(root, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+            progressCandidate?.Invoke(++candidateIndex, discovered.Candidates.Count, entry);
             if (candidate.Kind == ModBoundaryKind.Review)
             {
                 output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
