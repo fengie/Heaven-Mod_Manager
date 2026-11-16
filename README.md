@@ -1,8 +1,8 @@
-# v8.8.108 — MHW Manual Mod Manager
+# v8.8.109 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 15, 2026 · 6:20:49 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 16, 2026 · 3:45:07 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.108**.
+Current product version: **8.8.109**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,11 +10,18 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.109 — bulk archive import and Explorer drag-and-drop
+
+- [PR #829](https://github.com/fengie/Heaven-Mod_Manager/pull/829) merged to canonical `main@9e3fc0be049cc43cbcaa506ff854502abc499773`: drag ZIP/RAR/7z archives or a folder from Explorer into the app, select multiple archives in **Install Mod**, or use Dashboard → **Import ZIP/RAR/7z Folder**.
+- A shared, cancellable batch intake recognizes independently installable candidates across registered games, preserves original downloads, provides per-archive progress, records duplicate receipts, and routes approved mods to their game-specific Inboxes. Unknown/ambiguous mods stay in review; no direct writes to live game trees.
+- Explicit archive-only folder batches process independent archives under existing per-archive safety limits; legacy one-collection `ImportPathAsync` keeps its cumulative physical-copy budget. The foreground importer shares the existing intake gate with background scans.
+- Exact [Windows Feature PR Gate 43950868996](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868996) passed **26/26 stages**, 555 integration, 352 core and 112 automation tests with zero function trace gaps, and [AutoUpdate 43950868605](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868605) passed. This source is not a newly published v8.8.109 build until its serialized metadata, exact-main release gate, immutable ZIP/manifest and feed parity are verified. Physically installed WPF drag/drop and large user archive throughput remain open under [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791).
+
 ## v8.8.108 — inspect existing nested mod layouts without changing packages
 
 - [PR #823](https://github.com/fengie/Heaven-Mod_Manager/pull/823) is integrated on `main@5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`: **Inspect Existing Mod Layouts** on Dashboard and Mods scans managed package contents read-only, even when existing automatic splitting finds no qualifying children. A review window shows exact relative file membership, unclassified groups, missing companions and safe refusal reasons.
 - The bounded, game-contextual structural profiles recognize Sifu PAK/SIG and Stellar Blade PAK/UTOC/UCAS companion filename sets, including deeply nested collections. This is evidence for human review, **not** proof of independently installable mods or authorization to stage, enable, move or delete files. The existing conservative import/deployment path remains unchanged.
-- Exact [Windows Feature PR Gate 43707926891](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926891) and [AutoUpdate 43707926895](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926895) passed at PR head `20c7a71b9906c0d1c5cc0350fab124e32945fc63`; protected squash integration is `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`. This new version is **not published or installed** until exact-main Windows Release Gate, immutable ZIP/manifest hashes, and public feed parity are proven.
+- Exact [Windows Feature PR Gate 43707926891](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926891) and [AutoUpdate 43707926895](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926895) passed at PR head `20c7a71b9906c0d1c5cc0350fab124e32945fc63`; protected squash integration is `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`. v8.8.108 was published as immutable updater-main-524 from source 93eb26a7; later #829 source is not in that artifact. Installed-client behavior remains separately unverified.
 - [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) real Sifu/Stellar Blade user corpus, confirmed independent grouping/import and packaged WPF smoke remain open. [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) actual isolated updater apply/rollback is independently blocked; source or publication never proves it.
 
 ## v8.8.107 — reanalyze existing nested mod collections
@@ -24,12 +31,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Exact #819 head `254f813f` passed [native Windows Feature 43695906763](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906763) 26/26, 0 function gaps, and [AutoUpdate 43695906697](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43695906697). v8.8.107 was published as immutable updater-main-522 from source a1e9078; newer #823 source is not in build 522. Version text and source checks are not installed-client proof.
 - Real hundreds-mod user files, other unknown payload formats, physically installed WPF interaction, and isolated updater apply/rollback [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) still require independent acceptance. Preserve the old source packages; don't enable a wrapper alongside newly separated children.
 
-## v8.8.106 — consolidated deep mod intake and safe manifest routing
-
-- Preserve native source repairs already merged in [#803](https://github.com/fengie/Heaven-Mod_Manager/pull/803), [#805](https://github.com/fengie/Heaven-Mod_Manager/pull/805), [#807](https://github.com/fengie/Heaven-Mod_Manager/pull/807), [#808](https://github.com/fengie/Heaven-Mod_Manager/pull/808), [#809](https://github.com/fengie/Heaven-Mod_Manager/pull/809), [#810](https://github.com/fengie/Heaven-Mod_Manager/pull/810), and [#811](https://github.com/fengie/Heaven-Mod_Manager/pull/811): deep Stellar Blade collections, PAK companions, archive preflight, sibling isolation, complete game identity and fail-closed late, conflicting and oversized app-owned metadata.
-- Both [#812](https://github.com/fengie/Heaven-Mod_Manager/pull/812) (bounded third-party manifest handling) and [#813](https://github.com/fengie/Heaven-Mod_Manager/pull/813) (shared cumulative selected-collection byte budget) are now integrated in protected `main@1e21c332995f2eba89a87f016b0f43360b73e268` after exact native source verification. The v8.8.106 code was subsequently published as immutable build 517 from exact verified source.
-- Maintain original download files, per-game Inboxes, safe loader/FOMOD/variant review, deduplication receipts, and no direct installation into live game trees. Correct unknown/mod-dependent cases remain reviewable rather than guessed.
-- **Published immutable** [updater build 517](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-517) from exact v8.8.106 source `2a317cf5cd79e39ac9cc9b1e9a7d9bfa5f084d3d` after Windows 26/26. Positive physically installed updater/rollback proof remains separately open under [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793).
 
 ### Current plans & progress
 
