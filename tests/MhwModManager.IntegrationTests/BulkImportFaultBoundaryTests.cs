@@ -116,17 +116,62 @@ public sealed class BulkImportFaultBoundaryTests : IDisposable
         Directory.CreateDirectory(source);
         CreateZip(Path.Combine(source, "MHW Armor A.zip"), "nativePC/pl/armor/a.tex");
         await File.WriteAllTextAsync(Path.Combine(source, "Bad.rar"), "not an archive", TestToken);
+        await File.WriteAllTextAsync(Path.Combine(source, "Bad.7z"), "not a 7z archive", TestToken);
         CreateZip(Path.Combine(source, "NieR Automata Outfit.zip"), "mods/outfit.dds");
 
         var intake = CreateIntake();
         var report = await intake.ImportPathsAsync([source], ct: TestToken);
 
         Assert.Equal(2, report.Routed);
-        Assert.Equal(1, report.NeedsReview);
-        Assert.Equal(3, Directory.GetFiles(source).Length);
+        Assert.Equal(2, report.NeedsReview);
+        Assert.Equal(4, Directory.GetFiles(source).Length);
         Assert.True(File.Exists(intake.ReportPath));
         Assert.Single(Directory.GetFiles(Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox")));
         Assert.Single(Directory.GetFiles(Path.Combine(root, "Manager", "Mods by Game", "nier-automata", "Inbox")));
+    }
+
+    [Fact]
+    public async Task Identical_archive_bytes_at_different_source_paths_are_deduplicated_per_game()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var first = Path.Combine(source, "MHW Armor A.zip");
+        var identical = Path.Combine(source, "MHW Armor B.zip");
+        CreateZip(first, "nativePC/pl/armor/armor.tex");
+        File.Copy(first, identical);
+
+        var intake = CreateIntake();
+        var report = await intake.ImportPathsAsync([first, identical], ct: TestToken);
+
+        Assert.Equal(1, report.Routed);
+        Assert.Equal(1, report.AlreadyPresent);
+        Assert.True(File.Exists(first));
+        Assert.True(File.Exists(identical));
+        Assert.Single(Directory.GetFiles(Path.Combine(root, "Manager",
+            "Mods by Game", "monster-hunter-world", "Inbox"), "*.zip"));
+    }
+
+    [Fact]
+    public async Task Unsafe_zip_entry_does_not_block_an_unrelated_valid_archive()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var malicious = Path.Combine(source, "MHW Unsafe.zip");
+        using (var zip = ZipFile.Open(malicious, ZipArchiveMode.Create))
+            WriteEntry(zip, "../escape.txt");
+        var good = Path.Combine(source, "MHW Good.zip");
+        CreateZip(good, "nativePC/pl/armor/valid.tex");
+
+        var intake = CreateIntake();
+        var report = await intake.ImportPathsAsync([malicious, good], ct: TestToken);
+
+        Assert.Equal(1, report.Routed);
+        Assert.Equal(1, report.NeedsReview);
+        Assert.False(File.Exists(Path.Combine(root, "escape.txt")));
+        Assert.True(File.Exists(malicious));
+        Assert.True(File.Exists(good));
+        Assert.Single(Directory.GetFiles(Path.Combine(root, "Manager",
+            "Mods by Game", "monster-hunter-world", "Inbox"), "*.zip"));
     }
 
     [Fact]
