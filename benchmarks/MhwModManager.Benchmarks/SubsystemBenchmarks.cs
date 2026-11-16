@@ -190,6 +190,9 @@ public class BulkArchiveIntakeBenchmarks
     [Params(8, 64)]
     public int ArchiveCount { get; set; }
 
+    [Params(4, 1024)]
+    public int PayloadKiB { get; set; }
+
     private string root = "";
     private string downloads = "";
     private GameProfile[] games = [];
@@ -206,8 +209,11 @@ public class BulkArchiveIntakeBenchmarks
             GameProfile.Generic("nier-automata", "NieR:Automata",
                 Path.Combine(root, "games", "NieR"), "NieRAutomata.exe", "mods")
         ];
+        var payload = new byte[PayloadKiB * 1024];
+        var random = new Random(7319);
         for (var i = 0; i < ArchiveCount; i++)
         {
+            random.NextBytes(payload);
             var mhw = i % 2 == 0;
             var file = Path.Combine(downloads,
                 mhw ? $"MHW Gear {i:D4}.zip" : $"NieR Automata Outfit {i:D4}.zip");
@@ -216,7 +222,7 @@ public class BulkArchiveIntakeBenchmarks
                 : $"mods/outfit{i:D4}.dds";
             using var zip = ZipFile.Open(file, ZipArchiveMode.Create);
             using var entry = zip.CreateEntry(entryName).Open();
-            entry.WriteByte((byte)i);
+            entry.Write(payload);
         }
     }
 
