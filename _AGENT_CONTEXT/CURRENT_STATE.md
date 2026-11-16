@@ -1,21 +1,21 @@
-# v8.8.108 structural mod discovery — source integrated, publication pending
+# v8.8.109 bulk archive drag-drop import — source merged, release pending
 
-Canonical state: MHW Mod Manager product source: `fengie/Heaven-Mod_Manager@main`, latest integrated source `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7` via [PR #823](https://github.com/fengie/Heaven-Mod_Manager/pull/823). The previous v8.8.107 updater release, build 522, is immutable and contains earlier source `a1e9078b9b9a3a52106a76341c7ea79f7b1c4630`, **not** #823.
+Canonical product source is `fengie/Heaven-Mod_Manager@main` at `9e3fc0be049cc43cbcaa506ff854502abc499773` through [PR #829](https://github.com/fengie/Heaven-Mod_Manager/pull/829). Previous v8.8.108 immutable [updater-main-524](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-524) belongs to older source `93eb26a7`; it does not contain this feature.
 
-## What the new source actually does
+## User-facing implementation
 
-Dashboard and Mods now expose a separate **Inspect Existing Mod Layouts** read-only command for all tracked package sources. It inventories bounded files, reports nested companion groups using contextual Sifu PAK/SIG and Stellar Blade PAK/UTOC/UCAS patterns, and exposes unknown, incomplete, FOMOD, manifest and shared-loader groups with exact relative file members and reasons. The existing **Separate Existing Mod Collections** path and its import preconditions are untouched; the new structural preview does not stage, auto-enable, copy, delete or deploy mod files.
+Import ZIP/RAR/7z archives through multi-select or drag files/folders onto the WPF window; Dashboard exposes a one-shot folder batch. Shared game registry/receipts and sequential bounded archive routing reduce repeated intake overhead, display per-item progress, and preserve originals. Identified mods stage into the corresponding registered games' Inboxes regardless of active game. No unsafe automatic guessing, unauthorized live-game deployment or deletion. Legacy single-collection cumulative byte limits remain unchanged; explicit archive-only folder batches stage bounded individual sources.
 
-## Verification boundary
+## Verification and release boundary
 
-- [PR #823 Windows Feature Gate 43707926891](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926891) and [AutoUpdate 43707926895](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43707926895) completed success on head `20c7a71b9906c0d1c5cc0350fab124e32945fc63`. Protected main readback confirmed the new source at `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`.
-- [Main Windows Release Gate 43708380211](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43708380211) **completed success, 26/26, zero failures and zero trace gaps** for `5c9b6f0a1b33e0520cb8d7f07db8a1b0684d07a7`. It correctly skipped v8.8.107 publication because [updater-main-522](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-522) is immutable. No new version was published by that run.
-- v8.8.108 release metadata is a separate serialized candidate; no v8.8.108 immutable package, manifest, feed parity, or installed machine health is claimed yet.
+- [Windows Feature 43950868996](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868996) 26/26, 352 core, 112 automation and 555 integration tests passed with zero function trace gaps on candidate `b1fb06ed803a355bf0b05e5bfd2afa4026fb76bd`. [AutoUpdate 43950868605](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43950868605) passed; canonical main readback confirmed the feature merge.
+- Source-only main [Windows Release Gate 43952164444](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43952164444) must terminate before the v8.8.109 serialized metadata candidate is integrated; current earlier v8.8.108 release cannot be replaced.
+- Publication is **pending** until an exact v8.8.109 native gate, protected metadata merge, exact-main Windows Release Gate and distinct immutable ZIP/manifest/feed parity are independently verified. Source and CI are not physical installation proof.
 
-## Open acceptance, risks and ownership
+## Remaining independent acceptance
 
-- [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) still requires real hundreds-mod Sifu/Stellar Blade corpus, verified independent installable grouping, user-confirmed transactional intake, and installed WPF acceptance. Filename companion evidence is not permission to split dependent mods.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) positive old→new packaged apply/rollback remains blocked on independently isolated Windows test identity. Do not touch occupied user updater state.
-- [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) tracks systemic release status synchronization.
+- [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): large real RAR/7z collections, installed WPF drag/drop/progress, game-specific unknown layouts and independent mod boundaries.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): installed-client update/rollback must use an isolated safe Windows user/profile; never delete or repurpose occupied updater state.
+- [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): systemic release-status continuity after publication.
 
-Next: preserve verified main Windows gate closure → candidate exact-head native checks → protected serialized merge → fresh main release validation → verify immutable ZIP/manifest/feed, then separately installed runtime/user-corpus evidence. Preserve and recursively pass the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active Learned Rules to every successor.
+Next: finish the source-only main gate, verify metadata candidate, serial protected merge, publish and verify a distinct immutable version, then gather physical installation and real-user performance evidence. Every successor inherits, preserves and recursively propagates the full continuity constitution and active Learned Rules to its successor.
