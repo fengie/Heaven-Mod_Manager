@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.110",
+  "currentVersion": "8.8.111",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.109 updater-main-530 source a2910311 excludes the later #832 planner, #835 NuGet/CI, #836 synthetic archive/family regression and #838 cross-process intake receipt safety changes, all now merged on main 285ba723 after exact native PR verification. v8.8.110 metadata and distinct immutable publication remain pending; physical WPF, real RAR/7z throughput and isolated rollback unverified.",
+  "immediateParentRevision": "Immutable v8.8.110 updater-main-535 source 968d9e7 excludes PR #839, now merged into main fefc7811 after exact native tests. Distinct v8.8.111 metadata, protected main release and immutable ZIP/manifest publication pending; real RAR/7z/WPF and isolated positive updater rollback unverified.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh canonical Toolbox and Mod Manager main/owner, fully read CONTINUITY_PROTOCOL and Learned Rules, preserve and recursively pass both to successor. Confirm #838 main Windows Release Gate 43987535401; reconcile v8.8.110 serialized metadata to main 285ba723; rerun exact native Feature/README/Security/Ownership/AutoUpdate; protect expected-head merge, then verify new immutable ZIP/manifest SHA-256/public feed. Preserve updater-main-530 and occupied updater user state; #791 real corpus/WPF and #793 isolated positive rollback remain open. A prior green head on older main is not sufficient.",
+  "nextAgentObligation": "Refresh current Toolbox, Mod Manager main/owner, PRs and release feed; fully read CONTINUITY_PROTOCOL and Learned Rules and recursively pass both to the next agent. Confirm main fefc7811 #839 passed Windows Release Gate 43993837451 and prior immutable updater-main-535 excludes #839. Verify v8.8.111 candidate Windows Feature/README/Security/Ownership/AutoUpdate and enforce, protected expected-head merge, new 26/26 main gate, separate immutable v8.8.111 ZIP/manifest SHA-256 and latest-feed readback. Never repurpose occupied updater state; #791 real corpus/WPF, #735 installed p95 and #793 isolated update/rollback remain open. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
