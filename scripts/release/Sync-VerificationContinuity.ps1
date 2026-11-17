@@ -133,7 +133,7 @@ if($evidence -notmatch '(?im)^Overall:\s+\*\*PASS\*\*.*\b0 failed\b'){
 }
 
 $publication=$null
-$receiptInputs=@($ManifestPath,$ReleaseJsonPath,$TagRefJsonPath) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }
+$receiptInputs=@(@($ManifestPath,$ReleaseJsonPath,$TagRefJsonPath) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
 if($receiptInputs.Count -ne 0 -and $receiptInputs.Count -ne 3){
     throw 'Publication receipt requires manifest, public release and tag ref together.'
 }
