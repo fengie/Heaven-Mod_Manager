@@ -1,8 +1,6 @@
-# v8.8.112 - immutable release verified
+# v8.8.112 - source verified, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `e9b1212985f80533ce04e3ab1e43910290692687`. Public immutable [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
-
-Canonical pre-release source: `fengie/Heaven-Mod_Manager@main` at `62f3dee97e1e6ed56bcc098b50db515e4b08b624`, including #844/#846/#847/#848. This v8.8.112 metadata candidate is **not yet a source-bound immutable public release**; latest published v8.8.111 updater-main-537 targets older source `1e24b351`. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `687607cfa3466bd2f55f29f0a333cceaf4c4b4ec` (Windows Gate 44058097191); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -19,11 +17,11 @@ Canonical pre-release source: `fengie/Heaven-Mod_Manager@main` at `62f3dee97e1e6
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.112 source `e9b1212985f80533ce04e3ab1e43910290692687` passed run `44044388877` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.112-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.112 source `687607cfa3466bd2f55f29f0a333cceaf4c4b4ec` passed run `44058097191` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.112-heaven-windows-closure.log`.
 
-Verified immutable GitHub release: [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548), exact source `e9b1212985f80533ce04e3ab1e43910290692687`, ZIP SHA-256 `03ceaa8f9bb82f953a2335d54d613ebce15091a9c214925f1acb0db421a0e5a8` and manifest SHA-256 `42c867d23c0c09a5d14dafbbba4b4952bb2ebbef99e51a8436b877dcfae62d73`. Public release and tag ref independently match the built artifact.
+Public release status: **NOT VERIFIED** for source `687607cfa3466bd2f55f29f0a333cceaf4c4b4ec`. Successful build or another source's same-version release is not proof of publication.
 
-The tested source remains `e9b1212985f80533ce04e3ab1e43910290692687` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `687607cfa3466bd2f55f29f0a333cceaf4c4b4ec` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
