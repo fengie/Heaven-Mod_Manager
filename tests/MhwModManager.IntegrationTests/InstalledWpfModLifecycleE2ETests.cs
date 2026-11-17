@@ -45,7 +45,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             UiTimeout, "Install Mods from Inbox button", TestToken);
         Invoke(inboxButton);
         await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
-            File.Exists(Path.Combine(run.InstalledModPath, "Mods", "e2e-payload.bin")),
+            File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
             UiTimeout, "Inbox never published the approved fixture", TestToken);
 
         await SelectModsTabAsync(window, TestToken);
@@ -134,7 +134,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             UiTimeout, "native file picker Open", TestToken));
 
         await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
-            File.Exists(Path.Combine(run.InstalledModPath, "Mods", "e2e-payload.bin")),
+            File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
             UiTimeout, "file picker import never reached installed library", TestToken);
         await SelectModsTabAsync(window, TestToken);
         var toggle = await WaitForElementAsync(() => Find(window, element =>
