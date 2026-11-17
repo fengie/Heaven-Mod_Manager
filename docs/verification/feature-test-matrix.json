@@ -32,7 +32,8 @@
       "unitTests": [],
       "integrationTests": [
         "tests/MhwModManager.IntegrationTests/GameModIntakeTests.cs",
-        "tests/MhwModManager.IntegrationTests/BulkImportFaultBoundaryTests.cs"
+        "tests/MhwModManager.IntegrationTests/BulkImportFaultBoundaryTests.cs",
+        "tests/MhwModManager.IntegrationTests/BulkImportInboxFunctionalTests.cs"
       ],
       "benchmarks": [
         "benchmarks/MhwModManager.Benchmarks/BulkArchiveReplayBenchmarks.cs"
@@ -52,7 +53,9 @@
         "tests/MhwModManager.AutomationTests/AutomationServiceTests.cs"
       ],
       "integrationTests": [],
-      "benchmarks": [],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/EndToEndInboxBenchmarks.cs"
+      ],
       "installedAcceptance": "unverified",
       "missingAcceptance": [
         "Real installed WPF Inbox progress, index and duplicate-cleanup p95"
