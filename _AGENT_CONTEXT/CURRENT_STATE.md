@@ -1,8 +1,10 @@
-# v8.8.111 - source verified, publication unverified
+# v8.8.112 - release metadata candidate, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: pre-release integrated source `fengie/Heaven-Mod_Manager@main` at `62f3dee97e1e6ed56bcc098b50db515e4b08b624`; v8.8.112 metadata has **not yet passed exact-main release or public artifact verification**. Prior immutable v8.8.111 updater-main-537 source `1e24b351` excludes later #844/#846/#847/#848. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
+
+- #844 phase-aware Inbox progress and performance reports; #846 opt-in code coverage, matrix and synthetic benchmarks; #847 hosted-Windows UIA import/preview/apply/undo/switch; #848 automatic approved active-game manual bulk-import completion and Mods refresh. All integrated at `main@62f3dee97e1e6ed56bcc098b50db515e4b08b624`, with #848 exact-head Feature 44037120853 and hosted WPF UIA 44037121012 (4/4). No assertion of v8.8.112 publication or installed-device proof.
 
 - #829 ZIP/RAR/7z bulk-import and Explorer drag/drop already stages confidently classified candidates into registered-game Inboxes while preserving originals and no direct live-game writes; uncertain candidates remain for review.
 - #832 reduces dense shared-path planner allocations through canonical pair IDs and per-plan cached overlay names/tokens. Existing inference and explicit-rule precedence remain; synthetic measurements are not installed-client timing proof.
