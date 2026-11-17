@@ -18,6 +18,11 @@ public sealed class InboxProgressSurfaceTests
         Assert.Contains("Text=\"{Binding BusyProgressSummary}\"", xaml);
         Assert.Contains("Text=\"{Binding BusyElapsedText}\"", xaml);
         Assert.Contains("Text=\"{Binding BusyOperationId}\"", xaml);
+        Assert.Contains("Value=\"{Binding BusyItemProgressPercent}\"", xaml);
+        Assert.Contains("Visibility=\"{Binding BusyItemProgressVisibility}\"", xaml);
+        Assert.Contains("Text=\"{Binding BusyItemProgressLabel}\"", xaml);
+        Assert.Contains("OpenMasterLogCommand", xaml);
+        Assert.Contains("private void OpenMasterLog()", vm);
         Assert.Contains("Operation progress", xaml);
         Assert.Contains("new System.Windows.Threading.DispatcherTimer", vm);
         Assert.Contains("s.Telemetry.TrackAsync(operationName", vm);

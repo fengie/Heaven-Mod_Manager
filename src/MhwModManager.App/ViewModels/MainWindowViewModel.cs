@@ -58,6 +58,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private bool busyProgressIndeterminate=true;
     [ObservableProperty]private double busyProgressPercent;
     [ObservableProperty]private string busyProgressSummary="";
+    [ObservableProperty]private double busyItemProgressPercent;
+    [ObservableProperty]private string busyItemProgressLabel="";
+    [ObservableProperty]private Visibility busyItemProgressVisibility=Visibility.Collapsed;
     [ObservableProperty]private string busyElapsedText="Elapsed: 0s";
     [ObservableProperty]private string busyOperationId="";
     [ObservableProperty]private Visibility busyVisibility=Visibility.Collapsed;
@@ -1052,6 +1055,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 var stagedBeforeImport = CaptureStage();
                 var inboxResult = await ProcessInboxWithProgressAsync(ct);
                 BusyDetail = "Computing safe mod enablement and dependencies…";
+                BusyItemProgressVisibility = Visibility.Collapsed;
                 BusyProgressIndeterminate = true;
                 if (inboxResult.Imported > 0)
                 {
@@ -1291,6 +1295,29 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private void OpenMasterLog()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var path = MasterDebugLog.FilePath;
+        try
+        {
+            if (!File.Exists(path))
+            {
+                StatusText = "The master diagnostic log has not been created yet.";
+                return;
+            }
+            using var process = ProcessDebug.Start(
+                new ProcessStartInfo(path) { UseShellExecute = true }, "open-master-debug-log");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+            or System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            MasterDebugLog.Write("DIAGNOSTICS", "Failed to open the existing master log.", ex);
+            StatusText = "Could not open diagnostic log: " + path + ". " + ex.Message;
+        }
+    }
+
+    [RelayCommand]
     private async Task ExportPerformanceReport()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -1480,6 +1507,20 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 BusyProgressSummary += $" • {state.ExtractedBytes / 1048576d:F1}/{state.TotalBytes / 1048576d:F1} MiB";
             if (postImportPhase)
                 BusyProgressSummary += " • finalization in progress";
+            // A second bar tracks measured bytes/files within the *current* package.
+            // Unknown-duration phases never receive fabricated percentages.
+            if ((state.Stage is "Copying folder" or "Extracting archive") &&
+                (state.TotalBytes > 0 || state.TotalFiles > 0))
+            {
+                BusyItemProgressVisibility = Visibility.Visible;
+                BusyItemProgressPercent = state.TotalBytes > 0
+                    ? Math.Clamp(100d * state.ExtractedBytes / state.TotalBytes, 0, 100)
+                    : Math.Clamp(100d * state.ExtractedFiles / state.TotalFiles, 0, 100);
+                BusyItemProgressLabel = state.TotalBytes > 0
+                    ? $"Current archive: {state.ExtractedBytes / 1048576d:F1} of {state.TotalBytes / 1048576d:F1} MiB"
+                    : $"Current folder: {state.ExtractedFiles} of {state.TotalFiles} files";
+            }
+            else BusyItemProgressVisibility = Visibility.Collapsed;
         });
         try
         {
@@ -1498,6 +1539,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             var result = await ProcessInboxWithProgressAsync(ct);
             BusyDetail = "Checking and archiving safe duplicates…";
+            BusyItemProgressVisibility = Visibility.Collapsed;
             BusyProgressIndeterminate = true;
             var archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
             BusyDetail = "Refreshing the visible mod list…";
@@ -1759,6 +1801,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         busyCts=new CancellationTokenSource();
         BusyTitle=title;BusyDetail=detail;
         BusyProgressIndeterminate=true;BusyProgressPercent=0;BusyProgressSummary=string.Empty;
+        BusyItemProgressVisibility=Visibility.Collapsed;BusyItemProgressPercent=0;BusyItemProgressLabel=string.Empty;
         BusyElapsedText="Elapsed: 0s";BusyOperationId=string.Empty;
         CancelVisibility=cancellable?Visibility.Visible:Visibility.Collapsed;CriticalOperation=!cancellable;BusyVisibility=Visibility.Visible;
         var sw=Stopwatch.StartNew();
