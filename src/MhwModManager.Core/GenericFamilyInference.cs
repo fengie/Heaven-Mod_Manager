@@ -212,6 +212,13 @@ public static partial class GenericFamilyInference
         var roleDifference=ap.HasRoleSignal||bp.HasRoleSignal;
         var choiceOnly=ap.HasChoiceSignal||bp.HasChoiceSignal;
 
+        // The only accepted strong-evidence branches below require a role signal,
+        // at least 0.60 name-token similarity, or an exact identity stem. When all
+        // three are absent no amount of shared directory/file overlap can create
+        // an accepted family pair. Avoid expensive file intersections in that case,
+        // particularly for hundreds of unrelated mods sharing a loader root.
+        if(!roleDifference && nameSimilarity < .60 && !exactStem) return null;
+
         var sharedPaths=IntersectionCount(ap.Files.Paths,bp.Files.Paths);
         var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
         var overlap=smaller==0?0:sharedPaths/(double)smaller;
