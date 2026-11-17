@@ -1,6 +1,6 @@
 # v8.8.111 - source verified, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `80c281b3fd8c5996bfe0e3387771b88b64ccb9b4` (Windows Gate 44034725755); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -16,11 +16,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.111 source `d55d09a877760220a1105a0ba1ee522846320ca6` passed run `44019899108` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.111 source `80c281b3fd8c5996bfe0e3387771b88b64ccb9b4` passed run `44034725755` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
 
-Public release status: **NOT VERIFIED** for source `d55d09a877760220a1105a0ba1ee522846320ca6`. Successful build or another source's same-version release is not proof of publication.
+Public release status: **NOT VERIFIED** for source `80c281b3fd8c5996bfe0e3387771b88b64ccb9b4`. Successful build or another source's same-version release is not proof of publication.
 
-The tested source remains `d55d09a877760220a1105a0ba1ee522846320ca6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `80c281b3fd8c5996bfe0e3387771b88b64ccb9b4` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 

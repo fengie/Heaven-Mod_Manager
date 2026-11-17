@@ -8,12 +8,12 @@
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
     "status":  "v8.8.111-source-verified-publication-unverified",
-    "nextMilestone":  "Source v8.8.111 at d55d09a877760220a1105a0ba1ee522846320ca6 passed Windows Gate 44019899108, but exact public immutable publication for this source is NOT VERIFIED.",
+    "nextMilestone":  "Source v8.8.111 at 80c281b3fd8c5996bfe0e3387771b88b64ccb9b4 passed Windows Gate 44034725755, but exact public immutable publication for this source is NOT VERIFIED.",
     "nextRequiredAction":  "Verify a source-bound immutable public GitHub release and tag before claiming shipment. Another source\u0027s same-version release is not sufficient.",
-    "verificationAppliesToCommit":  "d55d09a877760220a1105a0ba1ee522846320ca6",
-    "lastClosedVerificationCommit":  "d55d09a877760220a1105a0ba1ee522846320ca6",
-    "lastClosedVerificationRun":  "v8.8.111 source d55d09a877760220a1105a0ba1ee522846320ca6: hosted Windows verification run 44019899108 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.111 exact source d55d09a877760220a1105a0ba1ee522846320ca6 passed hosted Windows verification run 44019899108. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "verificationAppliesToCommit":  "80c281b3fd8c5996bfe0e3387771b88b64ccb9b4",
+    "lastClosedVerificationCommit":  "80c281b3fd8c5996bfe0e3387771b88b64ccb9b4",
+    "lastClosedVerificationRun":  "v8.8.111 source 80c281b3fd8c5996bfe0e3387771b88b64ccb9b4: hosted Windows verification run 44034725755 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.111 exact source 80c281b3fd8c5996bfe0e3387771b88b64ccb9b4 passed hosted Windows verification run 44034725755. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -47,8 +47,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "d55d09a877760220a1105a0ba1ee522846320ca6",
-                                          "runId":  44019899108,
+                                          "sourceSha":  "80c281b3fd8c5996bfe0e3387771b88b64ccb9b4",
+                                          "runId":  44034725755,
                                           "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log"
                                       }
 }

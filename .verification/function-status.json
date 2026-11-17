@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.111",
-  "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+  "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -1748,9 +1748,9 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:AutoPopulate()",
-      "fingerprint": "ab7a4c934e4acd9991a2fc1a63fadd624877c1c0a57ab0efe763c704ce8f8a92",
+      "fingerprint": "b4b0186505f0208d4a665ca2cd6dfac8dc262c0ae3ccbc8699668a996e3a29ae",
       "verified": true,
-      "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -1852,6 +1852,20 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:OpenMasterLog()",
+      "fingerprint": "bb1354262001e62ec539b4537f566556a052e34b8624b76eecb14c51d1eb20c7",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ExportPerformanceReport()",
+      "fingerprint": "cb2da5d63ba82430f9b88226b6cd008f5c192cd2a8f9a84c279f2b3c257722f2",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:StageProfile()",
       "fingerprint": "a4e97f2876ba85f4fcf206c29f983fd79fc076026b188db88c0c07766acc24e6",
       "verified": true,
@@ -1915,10 +1929,17 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ProcessInbox()",
-      "fingerprint": "65beda0fd99e931d4a575e6e90040110d0be071bd1fcaae3599dab1d11f480ae",
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ProcessInboxWithProgressAsync(CancellationToken)",
+      "fingerprint": "0e35573df210bf32b8ee7cadb8b73ece136351e80945c2aa8306eb66a41be02b",
       "verified": true,
-      "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:ProcessInbox()",
+      "fingerprint": "fd67cdc0da12d837ed5a90ef5a54b9e9e8a0c0d573fd58c80cb59cae75a7845d",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -1993,9 +2014,9 @@
     },
     {
       "id": "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs::MainWindowViewModel::method:RunBusy(string,string,string,bool,Func\u003CCancellationToken,Task\u003E,bool)",
-      "fingerprint": "a374cc0ecc5352d32722654199a3fce419dd401a2aa704f9513251e67cefb83a",
+      "fingerprint": "5054aed236739c74aeb98c7a19e6a011e02cf7f30518bb95f06ab2a17bd1ffb6",
       "verified": true,
-      "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -4681,9 +4702,23 @@
     },
     {
       "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::method:ProcessAsync(CancellationToken)",
-      "fingerprint": "af979f1215e0137e288a0880979900ea5e10ea81e96ee977cffa2f3627506fa4",
+      "fingerprint": "64f2632eb1f95d1e5d0b0d2c41b17bd11d459b196abefa5e465d649598569b11",
       "verified": true,
-      "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::method:ProcessAsync(IProgress\u003CInboxRunProgress\u003E?,CancellationToken)",
+      "fingerprint": "1a27bfb6f99de97cf53f90f1a65d75a180afad06bf9d2be8ae273bbbbe1bb84e",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::local:method:ProcessAsync(IProgress\u003CInboxRunProgress\u003E?,CancellationToken)\u003EReportStage(int,string,string?)",
+      "fingerprint": "71515076b370ae770c817c5ffaf122d4511a49eca86a970ea6272467a495856e",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -4694,10 +4729,17 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::method:CopyDirectoryAsync(string,string,CancellationToken)",
-      "fingerprint": "d311e7fb86ac0c0e3b66fea0df242550eb8f60e9ec72edd63b1859822f9c8f9f",
+      "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService::method:CopyDirectoryAsync(string,string,CancellationToken,IProgress\u003CArchiveExtractionProgress\u003E?)",
+      "fingerprint": "6b5cda68f33f439abc5d87be829fc1e5609c7dd99fdaef42c194d5ad4c89a183",
       "verified": true,
-      "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Automation/SmartInboxService.cs::SmartInboxService.ImmediateProgress::method:Report(T)",
+      "fingerprint": "0822161e7d8bdfe7733f6d3c7656a86c99e46d8e0d13f23059fe25d0e402a506",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -9699,6 +9741,41 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
+      "id": "src/MhwModManager.Diagnostics/OperationLatencyReportService.cs::OperationLatencyReportService::method:GenerateAsync(string,CancellationToken)",
+      "fingerprint": "aab19c22aca262d5fa9b6b2de16d360e986a814d9bee7a0d62bffd4dc98ca82c",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Diagnostics/OperationLatencyReportService.cs::OperationLatencyReportService::method:Summarize(IEnumerable\u003COperationLatencySample\u003E)",
+      "fingerprint": "e8808c1b09817337d3f653efa0be435b1608a7e90db176640e3deb83707cb705",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Diagnostics/OperationLatencyReportService.cs::OperationLatencyReportService::method:Percentile(double[],double)",
+      "fingerprint": "aed44da988d3b420207397e7e155bee773024b1126f5e10bf8d14702de7fac1d",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Diagnostics/OperationLatencyReportService.cs::OperationLatencyReportService::method:GetDouble(JsonElement,string)",
+      "fingerprint": "19940841c5d60fcae62a6071f206555e1bc1c503c6d5c9d7bd09748fab1ee651",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Diagnostics/OperationLatencyReportService.cs::OperationLatencyReportService::method:Format(double?)",
+      "fingerprint": "026050d38d131f4c864aebf896d7c637d13783dc090f74ba17c6e1c82c958302",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
       "id": "src/MhwModManager.Diagnostics/StartupDiagnosticSession.cs::StartupDiagnosticSession::ctor:StartupDiagnosticSession(string,string)",
       "fingerprint": "d568a1c2cd0c7ebba81afa41fce39fcb61c70f5e1f71a1d1d8803ddce4d10025",
       "verified": true,
@@ -9980,9 +10057,16 @@
     },
     {
       "id": "src/MhwModManager.Filesystem/ArchiveInspector.cs::ArchiveInspector::method:ExtractSafelyAsync(string,string,string,ArchiveExtractionLimits,CancellationToken)",
-      "fingerprint": "02b7dfb789f11c39a957240b475e3b2cf0da18bf1d2861c8101c3cac01984209",
+      "fingerprint": "b00e008e8ddac077ec1b286f73ecf5e108d791b67c58b1278bc5d53dc4e15b7a",
       "verified": true,
-      "verifiedAtUtc": "2026-11-17T04:57:13.0690805+00:00",
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
+      "verificationBasis": "full-release-confirmation"
+    },
+    {
+      "id": "src/MhwModManager.Filesystem/ArchiveInspector.cs::ArchiveInspector::method:ExtractSafelyAsync(string,string,string,ArchiveExtractionLimits,IProgress\u003CArchiveExtractionProgress\u003E?,CancellationToken)",
+      "fingerprint": "eb917af459fc0589ee39c4b9f2bf8c794ad063d73227a61d455c4d4a1ee79dc2",
+      "verified": true,
+      "verifiedAtUtc": "2026-11-17T06:59:27.6405854+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
