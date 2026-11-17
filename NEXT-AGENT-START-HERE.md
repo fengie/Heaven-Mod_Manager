@@ -2,7 +2,7 @@
 
 Canonical source: `fengie/Heaven-Mod_Manager@main` source `8ed0a73ca4a320c49c579b8620a3b1869595d2b3` via [#832](https://github.com/fengie/Heaven-Mod_Manager/pull/832), [#835](https://github.com/fengie/Heaven-Mod_Manager/pull/835) and [#836](https://github.com/fengie/Heaven-Mod_Manager/pull/836). Bootstrap `fengie/heaven-toolbox@main`; refresh both repositories, owner leases, source/main heads and checks before acting.
 
-**Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Neither prior chat history nor an earlier read substitutes for fresh project state.
+**Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
 
