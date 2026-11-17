@@ -34,7 +34,7 @@
                             "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
                             "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
                             "Issue #791: active-game approved manual bulk import now automatically processes the Inbox and refreshes Mods (#848), while other-game packages stay safely staged and ambiguities require review. Real hundreds-mod RAR/7z, installed Explorer drag/drop, Sifu/Stellar Blade corpus and endurance remain unverified.",
-                            "Issue #793: packaged updater 43993780193 ran real target discovery but the positive update/rollback aborted before modifying state due to occupied shared user updater root (2 safety passes / 1 failure). Isolated least-privileged Windows profile and empty test-owned root required; Heaven2 installed health unverified."
+                            "Issue #793: disposable hosted Windows updater E2E run 44045741670 passed real build 60 to 548 apply, WPF control/health checks, file-sentinel preservation and rollback; older occupied-shared-root failures remain historical. Heaven2 installed source/health and intermittent hosted timeout reliability are unverified."
                         ],
     "historicalState":  "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
     "continuation":  "_AGENT_CONTEXT/NEXT_STEPS.md",

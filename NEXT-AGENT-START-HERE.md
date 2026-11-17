@@ -2,8 +2,6 @@
 
 Canonical source: `fengie/Heaven-Mod_Manager@main` at `e9b1212985f80533ce04e3ab1e43910290692687`. Public immutable [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
-Canonical pre-release source: `fengie/Heaven-Mod_Manager@main` at `62f3dee97e1e6ed56bcc098b50db515e4b08b624`, including #844/#846/#847/#848. This v8.8.112 metadata candidate is **not yet a source-bound immutable public release**; latest published v8.8.111 updater-main-537 targets older source `1e24b351`. Bootstrap `fengie/heaven-toolbox@main` before other work.
-
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
@@ -27,8 +25,8 @@ The tested source remains `e9b1212985f80533ce04e3ab1e43910290692687` even though
 
 ## Unresolved risk and acceptance
 
-- **Unresolved risk:** [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) still requires actual large RAR/solid RAR5/7z mod packs, deeply nested mixed-game collections and installed WPF Explorer drag/drop/progress/cancel. ZIP-only synthetic tests do not close it.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) attempted real packaged updater [43993780193](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43993780193) (two safety tests passed, positive update aborted before applying due to occupied shared root), and requires dedicated, least-privileged Windows account/profile with an independently empty test-owned LocalApplicationData updater root, positive packaged update + rollback evidence. Never clear or reuse the shared occupied real updater state. E2E classification success with skipped positive job is not proof.
-- [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) tracks accurate post-release continuity and artifact proof. Distinguish source verified, artifact published and physically installed.
+- **Unresolved risk:** [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) retains genuine hundreds-mod Sifu/Stellar Blade/MHW corpus, large solid RAR/7z, nested mixed-game, installed WPF Explorer drag/drop/progress/cancel and p50/p95 acceptance. Small genuine RAR4/RAR5/7z format regressions merged via #850 and passed [main Windows Release Gate 44047541323](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44047541323); they do not prove these larger workloads.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) isolated hosted Windows [run 44045741670](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44045741670) completed a **real** packaged build 60 → 548 update and injected rollback with WPF controls and file-sentinel hashes preserved. The old shared-root refusal remains historical safety evidence; do not touch user-owned updater state. Heaven2 personally installed source/health and intermittent hosted timeout reliability remain **unverified**.
+- [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) source-level release continuity repair [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) is integrated at `main@687607cfa3466bd2f55f29f0a333cceaf4c4b4ec` after all five exact-head gates passed. Bounded source/receipt and next-step sync now reject stale candidate preambles; keep root README/CHANGELOG publication-neutrality for the next serialized version, and distinguish packaged release from physical installation.
 
 Preserve security, privacy, publisher ownership, rollback and source-bound verification. Every successor must recursively propagate the continuity protocol and active Learned Rules to the next agent again. Do not break the chain.
