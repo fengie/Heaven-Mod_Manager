@@ -7,7 +7,7 @@
   "currentVersion": "8.8.112",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.112-release-metadata-candidate-pending-verification",
+  "status": "v8.8.112-source-merged-publication-unverified",
   "nextMilestone": "PRs #844/#846/#847/#848 integrated into main 62f3dee97e1e6ed56bcc098b50db515e4b08b624 after native feature, security and hosted WPF acceptance. Immutable v8.8.111 updater-main-537 is from older source 1e24b351 and excludes these changes. v8.8.112 is a new release-metadata candidate, not a published artifact.",
   "nextRequiredAction": "Verify this v8.8.112 candidate against exact current main: Windows Feature, Product Security, README timestamp, ownership, AutoUpdate; expected-head protected integration, fresh main Windows Release Gate, and independently verified distinct immutable public updater ZIP/tag/manifest/feed source and SHA-256. Then obtain actual isolated updater positive E2E and physical-device, RAR/7z and p95 acceptance. Preserve updater-main-537.",
   "verificationAppliesToCommit": "d55d09a877760220a1105a0ba1ee522846320ca6",
