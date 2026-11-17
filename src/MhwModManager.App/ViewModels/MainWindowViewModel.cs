@@ -55,6 +55,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private string footerText="Ready";
     [ObservableProperty]private string busyTitle="Working…";
     [ObservableProperty]private string busyDetail="";
+    [ObservableProperty]private bool busyProgressIndeterminate=true;
+    [ObservableProperty]private double busyProgressPercent;
+    [ObservableProperty]private string busyProgressSummary="";
+    [ObservableProperty]private string busyElapsedText="Elapsed: 0s";
+    [ObservableProperty]private string busyOperationId="";
     [ObservableProperty]private Visibility busyVisibility=Visibility.Collapsed;
     [ObservableProperty]private Visibility cancelVisibility=Visibility.Collapsed;
     [ObservableProperty]private int selectedTab;
@@ -1045,7 +1050,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 // Smart Inbox is the existing safe importer; do not duplicate its
                 // publication/rollback semantics or write directly into game files.
                 var stagedBeforeImport = CaptureStage();
-                var inboxResult = await s.Inbox.ProcessAsync(ct);
+                var inboxResult = await ProcessInboxWithProgressAsync(ct);
+                BusyDetail = "Computing safe mod enablement and dependencies…";
+                BusyProgressIndeterminate = true;
                 if (inboxResult.Imported > 0)
                 {
                     await ReloadMods(ct);
@@ -1419,17 +1426,70 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         });
     }
 
+    private async Task<InboxRunResult> ProcessInboxWithProgressAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var accepting = true;
+        // Capture the WPF synchronization context so the worker never touches bound properties.
+        var updates = new Progress<InboxRunProgress>(state =>
+        {
+            if (!accepting || BusyVisibility != Visibility.Visible) return;
+            BusyProgressIndeterminate = false;
+            BusyDetail = string.IsNullOrWhiteSpace(state.CurrentItem)
+                ? state.Stage : $"{state.Stage}: {state.CurrentItem}";
+            var total = Math.Max(state.Total, 1);
+            var percent = 80d * state.Completed / total;
+            if (state.Stage is "Copying folder" or "Extracting archive")
+            {
+                var fraction = state.TotalBytes > 0
+                    ? Math.Clamp((double)state.ExtractedBytes / state.TotalBytes, 0, 1)
+                    : state.TotalFiles > 0
+                        ? Math.Clamp((double)state.ExtractedFiles / state.TotalFiles, 0, 1)
+                        : 0;
+                percent += 80d / total * 0.75 * fraction;
+            }
+            percent = state.Stage switch
+            {
+                "Indexing catalog" => 82,
+                "Capturing imported mods" => 88,
+                "Refreshing metadata" => 93,
+                "Assigning categories" => 97,
+                "Finished" => 100,
+                _ => percent
+            };
+            BusyProgressPercent = Math.Clamp(percent, 0, 100);
+            BusyProgressSummary = $"{state.Completed}/{state.Total} packages";
+            if (state.TotalFiles > 0)
+                BusyProgressSummary += $" • {state.ExtractedFiles}/{state.TotalFiles} files";
+            if (state.TotalBytes > 0)
+                BusyProgressSummary += $" • {state.ExtractedBytes / 1048576d:F1}/{state.TotalBytes / 1048576d:F1} MiB";
+        });
+        try
+        {
+            // Folder enumeration, classification, publication and some archive operations
+            // are synchronous; offload the entire Inbox service to preserve WPF rendering.
+            return await Task.Run(() => s.Inbox.ProcessAsync(ct, updates), ct);
+        }
+        finally { accepting = false; }
+    }
+
     [RelayCommand]
     private async Task ProcessInbox()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("automation.inbox","Installing Mods from Inbox","Checking each package, importing safe mods, and handling obvious duplicates automatically…",true,async ct=>
-    {
-        var result=await s.Inbox.ProcessAsync(ct);
-        var archived=await s.Duplicates.ArchiveSafeAsync(ct);
-        await ReloadMods(ct);await RefreshAnalysis(ct);
-        StatusText=$"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, {archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
-    });
+        {
+            var result = await ProcessInboxWithProgressAsync(ct);
+            BusyDetail = "Checking and archiving safe duplicates…";
+            BusyProgressIndeterminate = true;
+            var archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
+            BusyDetail = "Refreshing the visible mod list…";
+            await ReloadMods(ct);
+            BusyDetail = "Recalculating mod conflicts and compatibility…";
+            await RefreshAnalysis(ct);
+            StatusText = $"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, " +
+                $"{archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
+        });
     }
 
     [RelayCommand]
@@ -1680,12 +1740,27 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return;
         }
         busyCts=new CancellationTokenSource();
-        BusyTitle=title;BusyDetail=detail;CancelVisibility=cancellable?Visibility.Visible:Visibility.Collapsed;CriticalOperation=!cancellable;BusyVisibility=Visibility.Visible;
+        BusyTitle=title;BusyDetail=detail;
+        BusyProgressIndeterminate=true;BusyProgressPercent=0;BusyProgressSummary=string.Empty;
+        BusyElapsedText="Elapsed: 0s";BusyOperationId=string.Empty;
+        CancelVisibility=cancellable?Visibility.Visible:Visibility.Collapsed;CriticalOperation=!cancellable;BusyVisibility=Visibility.Visible;
         var sw=Stopwatch.StartNew();
+        var ticker=new System.Windows.Threading.DispatcherTimer { Interval=TimeSpan.FromSeconds(1) };
+        ticker.Tick+=(_,_) =>
+        {
+            BusyElapsedText=$"Elapsed: {sw.Elapsed.TotalSeconds:F0}s";
+            if ((int)sw.Elapsed.TotalSeconds % 10 == 0)
+                MasterDebugLog.Write("UI-PROGRESS",
+                    $"operation={operationName}; elapsedMs={sw.Elapsed.TotalMilliseconds:F0}; phase={BusyDetail}; percent={(BusyProgressIndeterminate ? "unknown" : BusyProgressPercent.ToString("F1",CultureInfo.InvariantCulture))}");
+        };
+        ticker.Start();
         try
         {
-            await s.Telemetry.TrackAsync(operationName,async(_,ct)=>await action(ct),
-                new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
+            await s.Telemetry.TrackAsync(operationName,async(id,ct)=>
+            {
+                BusyOperationId="Operation ID: "+id;
+                await action(ct);
+            },new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
             FooterText=$"{title} finished in {sw.Elapsed.TotalSeconds:F1}s";
         }
         catch(OperationCanceledException){StatusText=$"{title} cancelled.";FooterText=StatusText;if(rethrowOnFailure)throw;}
@@ -1699,6 +1774,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         finally
         {
+            ticker.Stop();
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
             programUpdateHandoffGate.EndForeground();
