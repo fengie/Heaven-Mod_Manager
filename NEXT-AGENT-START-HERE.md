@@ -15,10 +15,9 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` at `fefc78110f69e5d3532d6fd42
 
 ## Verification boundary
 
-1. Reconcile release ownership and the exact main `fefc78110f69e5d3532d6fd424d0e11253adf09c`; previously published updater-main-535 remains immutable and must not be overwritten or force-published.
-2. This serialized v8.8.111 metadata-only candidate must pass exact-head Windows Feature, README timestamp, Product Security, Toolbox Ownership and AutoUpdate with `enforce`; protected merge only at fresh base with expected head SHA.
-3. Fresh exact-main Windows Release Gate must pass 26/26, then independently verify the **new** immutable v8.8.111 ZIP, manifest, SHA-256, published tag/source, attestation and public updater feed. No stale-green or skipped-positive E2E claims.
-4. Source tests, release publication and physically installed acceptance remain separate boundaries. Archive/UI corpus and positive isolated rollback require additional proof.
+Current hosted-Windows closure: v8.8.111 source `1e24b3519d56471bcb3995ab6b70ae9f6c09d00a` passed run `43998829267` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
+
+The tested source remains `1e24b3519d56471bcb3995ab6b70ae9f6c09d00a` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
