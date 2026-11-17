@@ -128,3 +128,32 @@ Warm replay currently includes source hashing, staged scratch copies and
 receipt lookups. Any receipt-concurrency repair must preserve processed-entry
 deduplication and compare performance after actual verification; the measured
 baseline alone is not a performance regression budget or proof of installed UX.
+
+### First family-pruning candidate disproved by measurement
+
+First candidate `dcc3f199bd98e771d85a54298ed27568b936895c`, tested on Ryzen 9
+7945HX in [Windows ShortRun 43986694988](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43986694988),
+completed **success as a benchmark run but did not demonstrate an optimization**.
+Its 500-mod shared-root case took **448.053 ms and allocated 507.76 MB**
+versus baseline **281.974 ms / 507.76 MB**. The candidate's allocations
+were identical for all four scenarios. Timing changes from only three iterations
+are not statistically conclusive; no benefit is claimed, and that source is not
+a supported final optimization.
+
+The fixture uses names `Synthetic 00001` etc. The existing version-suffix
+normalization collapses these to a shared `Synthetic` stem, so a fast
+rejection requiring dissimilar stems did not trigger. This uncovered a
+measurement-fixture/heuristic interaction that the original candidate missed.
+
+A revised implementation computes the **existing exact strong-evidence
+predicate** after path/asset overlap, and returns early if it is false,
+before inspecting common directory roots and allocating discarded reasons.
+`InferKeys` previously discarded all `!Strong` results anyway; no accepted
+family evidence or grouping authority may change. The uniform-stem shared-root
+unit fixture and existing positive, bridge and permutation invariants protect
+the semantic boundary. A fresh **same-fixture same-runner** benchmark and
+exact-head Windows tests are required before inferring any improvement.
+
+This work is orthogonal to durable receipt publication and installed updater
+acceptance. Preserve the negative first experiment as evidence; do not erase it
+or silently report the first candidate as a pass.
