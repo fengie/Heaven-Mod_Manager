@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "scopedRepository": "fengie/Heaven-Mod_Manager",
+  "inventorySourceSha": "e236876770f6a75ccb54a5eba96612d96caf8182",
+  "scope": "Mapped tests identify intended evidence, not automatically executed or passing tests. Installed acceptance remains independently unverified.",
+  "features": [
+    {
+      "id": "archive-formats",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Filesystem/ArchiveInspector.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/RealArchiveFormatAcceptanceTests.cs",
+        "tests/MhwModManager.IntegrationTests/HardeningTests.cs"
+      ],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/SubsystemBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Real 1–20 GiB RAR/7z, corrupt/encrypted corpora and USB/HDD throughput"
+      ]
+    },
+    {
+      "id": "bulk-import-routing",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Automation/GameModIntakeService.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/GameModIntakeTests.cs",
+        "tests/MhwModManager.IntegrationTests/BulkImportFaultBoundaryTests.cs",
+        "tests/MhwModManager.IntegrationTests/BulkImportInboxFunctionalTests.cs"
+      ],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/BulkArchiveReplayBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Installed Explorer drag/drop and exact 100–500 archive throughput"
+      ]
+    },
+    {
+      "id": "inbox-import-and-index",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Automation/SmartInboxService.cs"
+      ],
+      "unitTests": [
+        "tests/MhwModManager.AutomationTests/AutomationServiceTests.cs"
+      ],
+      "integrationTests": [],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/EndToEndInboxBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Real installed WPF Inbox progress, index and duplicate-cleanup p95"
+      ]
+    },
+    {
+      "id": "nested-mod-boundaries",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Automation/GameModIntakeService.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/ModBoundaryDiscoveryTests.cs",
+        "tests/MhwModManager.IntegrationTests/StellarBladeDeepDiscoveryTests.cs"
+      ],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/FamilyTopologyBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "User Sifu/Stellar Blade corpus: independently verified expected mod count"
+      ]
+    },
+    {
+      "id": "game-classification",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Automation/GameModIntakeClassifier.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/FolderGameManifestIntakeTests.cs"
+      ],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/SubsystemBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Contradictory and unknown game attribution at representative scale"
+      ]
+    },
+    {
+      "id": "catalog-acquisition",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Automation/CatalogAcquisitionService.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/CatalogDownloadMaintenanceTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Authorized real-provider network throttling and partial failure replay"
+      ]
+    },
+    {
+      "id": "catalog-discovery",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Storage/CatalogDiscoveryService.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/CatalogDiscoveryServiceTests.cs",
+        "tests/MhwModManager.IntegrationTests/CatalogScaleRegressionTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Real full-pagination completeness and p95 UI/search latency"
+      ]
+    },
+    {
+      "id": "deployment-rollback",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Filesystem/DeploymentExecutor.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/DeploymentTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Installed game crash, power interruption and full rollback under real files"
+      ]
+    },
+    {
+      "id": "conflict-planning",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Core/ConflictEngine.cs",
+        "src/MhwModManager.Core/DeploymentPlanner.cs"
+      ],
+      "unitTests": [
+        "tests/MhwModManager.Tests/ConflictEngineTests.cs",
+        "tests/MhwModManager.Tests/PlannerInvariantTests.cs"
+      ],
+      "integrationTests": [],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/SubsystemBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "100/1k/10k mod UI p50/p95 with representative overlaps"
+      ]
+    },
+    {
+      "id": "automatic-populate",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Automation/AutoPopulateService.cs"
+      ],
+      "unitTests": [
+        "tests/MhwModManager.AutomationTests/AutoPopulateServiceTests.cs"
+      ],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/AutoPopulateDispatcherRegressionTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "End-to-end installed Inbox → enabling → apply → verification"
+      ]
+    },
+    {
+      "id": "profile-persistence",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Storage/ProfileRepository.cs"
+      ],
+      "unitTests": [
+        "tests/MhwModManager.AutomationTests/ProfileRepositoryAtomicityTests.cs"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Profile save/restore during process interruption and real UI selection"
+      ]
+    },
+    {
+      "id": "mod-database",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Storage/ManagerDatabase.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/ManagerDatabaseMigrationTests.cs"
+      ],
+      "benchmarks": [
+        "benchmarks/MhwModManager.Benchmarks/SubsystemBenchmarks.cs"
+      ],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Persistent database bloat and cross-version migration endurance"
+      ]
+    },
+    {
+      "id": "game-switch-single-instance",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.App/App.xaml.cs",
+        "src/MhwModManager.App/ViewModels/MainWindowViewModel.Games.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/SingleInstanceAndGameSwitchTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Packaged WPF single-instance activation and game-switch UIA smoke"
+      ]
+    },
+    {
+      "id": "wpf-ui-operations",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.App/MainWindow.xaml"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/UxHardeningTests.cs",
+        "tests/MhwModManager.IntegrationTests/XamlBindingSafetyTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Automated real-WPF click/keyboard/drag-drop/progress/cancel contrast and focus"
+      ]
+    },
+    {
+      "id": "startup",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.App/App.xaml.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/StartupPerformanceTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Cold/warm first-interactive-frame and dispatcher responsiveness histograms"
+      ]
+    },
+    {
+      "id": "updater-rollback",
+      "risk": "critical",
+      "productionPaths": [
+        "src/MhwModManager.Updater/UpdateInstaller.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/UpdaterCoreTests.cs",
+        "tests/MhwModManager.IntegrationTests/UpdaterInstalledClientE2ETests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Isolated packaged upgrade and rollback with signed immutable release identity"
+      ]
+    },
+    {
+      "id": "diagnostics-and-privacy",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Diagnostics/DiagnosticTelemetry.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/SupportBundlePrivacyTests.cs",
+        "tests/MhwModManager.IntegrationTests/DebugTraceCoverageTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "End-user diagnostic bundle review, precise timings and no secret leakage"
+      ]
+    },
+    {
+      "id": "storage-maintenance",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Updater/UpdateStorageMaintenance.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/UpdaterStorageMaintenanceTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "Long-running storage growth quotas, disk-full and interrupted cleanups"
+      ]
+    },
+    {
+      "id": "visual-metadata",
+      "risk": "important",
+      "productionPaths": [
+        "src/MhwModManager.Filesystem/ModVisualService.cs"
+      ],
+      "unitTests": [],
+      "integrationTests": [
+        "tests/MhwModManager.IntegrationTests/VisualMetadataTests.cs"
+      ],
+      "benchmarks": [],
+      "installedAcceptance": "unverified",
+      "missingAcceptance": [
+        "High-DPI gallery load and bounded missing/corrupt image fallbacks"
+      ]
+    }
+  ]
+}

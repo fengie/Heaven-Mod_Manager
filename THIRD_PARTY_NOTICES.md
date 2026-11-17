@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-**Last updated:** November 16, 2026
+**Last updated:** November 17, 2026
 
 Universal Mod Manager uses third-party open-source packages. Their own licenses and notices continue to apply.
 
@@ -13,6 +13,7 @@ Universal Mod Manager uses third-party open-source packages. Their own licenses 
 | Serilog | 4.4.0 | Apache-2.0 |
 | Serilog.Sinks.File | 7.0.0 | Apache-2.0 |
 | BenchmarkDotNet | 0.15.8 | MIT |
+| Microsoft.Testing.Extensions.CodeCoverage | 18.12.0 | Microsoft .NET Library license ([terms](https://www.nuget.org/packages/Microsoft.Testing.Extensions.CodeCoverage/18.12.0/License)); test-project tooling only |
 | xunit.v3 | 4.0.3 | Apache-2.0 |
 
 The package versions above are intentionally regression-checked against `Directory.Packages.props` so the notice cannot silently drift as dependencies change.
