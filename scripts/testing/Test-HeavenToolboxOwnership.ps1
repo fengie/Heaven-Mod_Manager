@@ -63,6 +63,44 @@ if(-not $layout.Contains('fengie/heaven-toolbox@main')){
     $violations.Add('docs/REPOSITORY-LAYOUT.md must identify Heaven Toolbox as reusable/global owner.')
 }
 
+# The dedicated ownership job must run for every file that its checker
+# actually validates. Missing filters allow README-only or layout-only edits
+# to evade this specific required reviewer.
+$gateWorkflowPath=Join-Path $Root '.github\workflows\heaven-toolbox-ownership-gate.yml'
+if(!(Test-Path -LiteralPath $gateWorkflowPath -PathType Leaf)){throw 'Ownership gate workflow is missing.'}
+$gateWorkflow=Get-Content -LiteralPath $gateWorkflowPath -Raw
+function Test-OwnershipTriggerInputs([string]$Yaml,[string]$Event,[string]$Relative){
+    $block=[regex]::Match($Yaml,"(?ms)^  $([regex]::Escape($Event)):\s*\r?\n(?<paths>.*?)(?=^  (?:push|pull_request|workflow_dispatch):|\z)")
+    if(-not $block.Success){return $false}
+    $needle="(?m)^      - '$([regex]::Escape($Relative))'\s*$"
+    return [regex]::IsMatch($block.Groups['paths'].Value,$needle)
+}
+foreach($event in @('push','pull_request')){
+    foreach($relative in @('README.md','docs/REPOSITORY-LAYOUT.md')){
+        if(-not (Test-OwnershipTriggerInputs $gateWorkflow $event $relative)){
+            $violations.Add("Ownership workflow $event input filter omits checked source $relative.")
+        }
+    }
+}
+# Parser negative control: an event without one of its checked inputs must
+# remain rejected even when another event includes that same input.
+$negativeFixture=@'
+  push:
+    paths:
+      - 'README.md'
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'docs/REPOSITORY-LAYOUT.md'
+  workflow_dispatch:
+'@
+if(Test-OwnershipTriggerInputs $negativeFixture 'push' 'docs/REPOSITORY-LAYOUT.md'){
+    throw 'Ownership trigger regression: a missing input was accepted.'
+}
+if(-not (Test-OwnershipTriggerInputs $negativeFixture 'pull_request' 'docs/REPOSITORY-LAYOUT.md')){
+    throw 'Ownership trigger regression: a present input was rejected.'
+}
+
 $manifestPath=Join-Path $Root '_AGENT_CONTEXT\handoff-manifest.json'
 if(!(Test-Path -LiteralPath $manifestPath)){throw 'handoff-manifest.json is missing.'}
 $manifest=Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
