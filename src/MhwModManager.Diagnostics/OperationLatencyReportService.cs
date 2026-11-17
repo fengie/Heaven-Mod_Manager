@@ -69,21 +69,21 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
         var rows = Summarize(samples);
         var output = new StringBuilder();
         output.AppendLine("UNIVERSAL MOD MANAGER — OPERATION LATENCY REPORT");
-        output.AppendLine($"Generated UTC: {now:O}");
-        output.AppendLine($"Window: last 7 days; at most {MaxSamples:N0} latest operation records");
-        output.AppendLine($"Read records: {samples.Count}; malformed/ignored: {malformed}");
+        output.AppendLine(FormattableString.Invariant($"Generated UTC: {now:O}"));
+        output.AppendLine(FormattableString.Invariant($"Window: last 7 days; at most {MaxSamples:N0} latest operation records"));
+        output.AppendLine(FormattableString.Invariant($"Read records: {samples.Count}; malformed/ignored: {malformed}"));
         output.AppendLine("Only completed operations contribute latency quantiles; failures/cancellations are separate.");
         output.AppendLine("p50/p95 use nearest-rank statistics; small samples are not reliable performance budgets.");
         output.AppendLine("Actual UI responsiveness, input latency and real RAR throughput require separate measurements.");
         output.AppendLine();
-        output.AppendLine($"{"OPERATION",-34} {"DONE",5} {"FAIL",5} {"CANCEL",6} {"P50 ms",10} {"P95 ms",10} {"MAX ms",10} {"CPU ms",10} {"ALLOC MiB",10}");
+        output.AppendLine(FormattableString.Invariant($"{"OPERATION",-34} {"DONE",5} {"FAIL",5} {"CANCEL",6} {"P50 ms",10} {"P95 ms",10} {"MAX ms",10} {"CPU ms",10} {"ALLOC MiB",10}"));
         foreach (var row in rows)
         {
             ct.ThrowIfCancellationRequested();
-            output.AppendLine(
+            output.AppendLine(FormattableString.Invariant(
                 $"{row.Operation,-34} {row.Completed,5} {row.Failed,5} {row.Cancelled,6} " +
                 $"{Format(row.P50Ms),10} {Format(row.P95Ms),10} {Format(row.MaxMs),10} " +
-                $"{Format(row.MeanCpuMs),10} {Format(row.MeanAllocatedMiB),10}");
+                $"{Format(row.MeanCpuMs),10} {Format(row.MeanAllocatedMiB),10}"));
         }
         if (rows.Count == 0)
             output.AppendLine("No completed operation telemetry in this window. Run an operation before comparing latency.");
@@ -97,6 +97,7 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
 
     public static IReadOnlyList<OperationLatencyRow> Summarize(IEnumerable<OperationLatencySample> samples)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(samples);
         return samples.Where(s => !string.IsNullOrWhiteSpace(s.Operation) &&
                 (s.Outcome is "completed" or "failed" or "cancelled"))
@@ -119,15 +120,24 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
             .ToArray();
     }
 
-    private static double? Percentile(IReadOnlyList<double> sortedValues, double percentile) =>
-        sortedValues.Count == 0 ? null :
-        sortedValues[Math.Clamp((int)Math.Ceiling(sortedValues.Count * percentile) - 1, 0, sortedValues.Count - 1)];
+    private static double? Percentile(IReadOnlyList<double> sortedValues, double percentile)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return sortedValues.Count == 0 ? null :
+            sortedValues[Math.Clamp((int)Math.Ceiling(sortedValues.Count * percentile) - 1, 0, sortedValues.Count - 1)];
+    }
 
-    private static double GetDouble(JsonElement element, string name) =>
-        element.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.Number
+    private static double GetDouble(JsonElement element, string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return element.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.Number
             && property.TryGetDouble(out var number) && double.IsFinite(number)
             ? number : 0;
+    }
 
-    private static string Format(double? number) =>
-        number.HasValue ? number.Value.ToString("F1", CultureInfo.InvariantCulture) : "n/a";
+    private static string Format(double? number)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return number.HasValue ? number.Value.ToString("F1", CultureInfo.InvariantCulture) : "n/a";
+    }
 }

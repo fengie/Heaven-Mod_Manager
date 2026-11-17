@@ -38,6 +38,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         var completed = 0;
         void ReportStage(int processed, string stage, string? item = null)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             UnifiedDebugLog.Write("INBOX-PHASE",
                 $"phase={activePhase}; elapsedMs={phaseTimer.Elapsed.TotalMilliseconds:F1}; completed={completed}/{entries.Length}");
             activePhase = stage;
@@ -83,7 +84,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                             "Extracting archive", p.CompletedFiles, p.TotalFiles, p.CompletedBytes, p.TotalBytes)));
                     await archive.ExtractSafelyAsync(entry, staging, workspaceRoot,
                         new ArchiveExtractionLimits(ArchiveInspector.MaxExpandedBytes, ArchiveInspector.MaxExpandedBytes),
-                        ct, extractProgress);
+                        extractProgress, ct);
                     ReportStage(completed, "Normalizing package", entry);
                     NormalizeWrapper(staging);
                 }
@@ -213,7 +214,11 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     }
     private sealed class ImmediateProgress<T>(Action<T> callback) : IProgress<T>
     {
-        public void Report(T value) => callback(value);
+        public void Report(T value)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            callback(value);
+        }
     }
 
     private static void NormalizeWrapper(string root) {

@@ -72,13 +72,24 @@ public sealed class ArchiveInspector
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveInspector is intentionally an injectable instance service used by the application and integration tests.")]
+    public Task ExtractSafelyAsync(
+        string archivePath,
+        string destination,
+        string trustedRoot,
+        ArchiveExtractionLimits limits,
+        CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ExtractSafelyAsync(archivePath,destination,trustedRoot,limits,null,ct);
+    }
+
     public async Task ExtractSafelyAsync(
         string archivePath,
         string destination,
         string trustedRoot,
         ArchiveExtractionLimits limits,
-        CancellationToken ct=default,
-        IProgress<ArchiveExtractionProgress>? progress=null)
+        IProgress<ArchiveExtractionProgress>? progress,
+        CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
         ArgumentNullException.ThrowIfNull(limits);
