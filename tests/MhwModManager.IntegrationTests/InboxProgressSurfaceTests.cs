@@ -36,7 +36,7 @@ public sealed class InboxProgressSurfaceTests
             "ViewModels", "MainWindowViewModel.cs"));
         var inbox = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.Automation",
             "SmartInboxService.cs"));
-        Assert.Contains("await Task.Run(() => s.Inbox.ProcessAsync(ct, updates), ct)", vm);
+        Assert.Contains("await Task.Run(() => s.Inbox.ProcessAsync(updates, ct), ct)", vm);
         Assert.Contains("await ProcessInboxWithProgressAsync(ct)", vm);
         Assert.Contains("BusyDetail = \"Refreshing the visible mod list…\"", vm);
         Assert.Contains("ReportStage(completed, \"Indexing catalog\")", inbox);
