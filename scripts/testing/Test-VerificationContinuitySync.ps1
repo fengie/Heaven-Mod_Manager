@@ -39,6 +39,11 @@ Predecessor evidence only.
     @'
 # v9.9.9 test — canonical handoff
 
+Canonical source: stale release source 8888.
+Canonical pre-release source: v9.9.9 not yet published.
+
+**Mandatory recursive continuity:** The successor must preserve and propagate the protocol to the next agent.
+
 ## Verification boundary
 
 Predecessor evidence only.
@@ -47,6 +52,17 @@ Predecessor evidence only.
 
 - test
 '@ | Set-Content -LiteralPath (Join-Path $fixture 'NEXT-AGENT-START-HERE.md') -Encoding utf8
+    @'
+# Current engineering next steps
+
+## Current release acceptance
+
+- Stale v9.9.8 published status; must be replaced.
+
+## Persistent product acceptance
+
+- Preserve unrelated testing, installed-user data, and next-agent continuity.
+'@ | Set-Content -LiteralPath (Join-Path $fixture '_AGENT_CONTEXT\NEXT_STEPS.md') -Encoding utf8
 
     $evidenceRelative='_AGENT_CONTEXT/EVIDENCE/v9.9.9-heaven-windows-closure.log'
     @"
@@ -70,6 +86,18 @@ Overall: **PASS** - 26 passed / 0 failed
         $text=Get-Content -LiteralPath (Join-Path $fixture $relative) -Raw -Encoding UTF8
         if(-not $text.Contains($source) -or -not $text.Contains($run)){throw "Sync regression: $relative does not carry exact source/run."}
         if($text -match '(?i)predecessor evidence only'){throw "Sync regression: $relative retained stale verification prose."}
+    }
+
+    $handoffPrepub=Get-Content -LiteralPath (Join-Path $fixture 'NEXT-AGENT-START-HERE.md') -Raw -Encoding UTF8
+    $stepsPrepub=Get-Content -LiteralPath (Join-Path $fixture '_AGENT_CONTEXT\NEXT_STEPS.md') -Raw -Encoding UTF8
+    if($handoffPrepub -match 'Canonical pre-release source:' -or $handoffPrepub -match 'not yet published'){
+        throw 'Sync regression: obsolete release-candidate preamble survived source verification.'
+    }
+    if($stepsPrepub -notmatch 'NOT VERIFIED' -or $stepsPrepub -match 'Stale v9\.9\.8'){
+        throw 'Sync regression: current NEXT_STEPS was not reset on source-only verification.'
+    }
+    if($stepsPrepub -notmatch '## Persistent product acceptance'){
+        throw 'Sync regression: unrelated next actions were destroyed.'
     }
 
     $evidencePath=Join-Path $fixture ($evidenceRelative.Replace([char]47,[char]92))
@@ -145,7 +173,19 @@ Overall: **PASS** - 26 passed / 0 failed
         }
     }
 
-    $paths=@('_AGENT_CONTEXT\CURRENT_REVISION.json','_AGENT_CONTEXT\CURRENT_STATE.md','NEXT-AGENT-START-HERE.md')
+    $publishedSteps=Get-Content -LiteralPath (Join-Path $fixture '_AGENT_CONTEXT\NEXT_STEPS.md') -Raw -Encoding UTF8
+    $publishedHandoff=Get-Content -LiteralPath (Join-Path $fixture 'NEXT-AGENT-START-HERE.md') -Raw -Encoding UTF8
+    if($publishedHandoff -match 'Canonical pre-release source:' -or $publishedHandoff -match 'not yet published' -or
+       ([regex]::Matches($publishedHandoff,'(?m)^Canonical (?:source|state):')).Count -ne 1 -or
+       $publishedHandoff -notmatch 'The successor must preserve and propagate'){
+        throw 'Sync regression: canonical handoff identity is duplicated/stale or successor propagation was lost.'
+    }
+    if($publishedSteps -notmatch 'updater-main-900' -or $publishedSteps -notmatch [regex]::Escape($source) -or
+       $publishedSteps -notmatch '## Persistent product acceptance' -or $publishedSteps -match 'Stale v9\.9\.8'){
+        throw 'Sync regression: bounded current-release next steps are stale or lost.'
+    }
+
+    $paths=@('_AGENT_CONTEXT\CURRENT_REVISION.json','_AGENT_CONTEXT\CURRENT_STATE.md','NEXT-AGENT-START-HERE.md','_AGENT_CONTEXT\NEXT_STEPS.md')
     $beforeIdempotent=@{}
     foreach($rel in $paths){$beforeIdempotent[$rel]=[IO.File]::ReadAllBytes((Join-Path $fixture $rel))}
     & $sync -Root $fixture -SourceSha $source -RunId $run -EvidencePath $evidenceRelative -ManifestPath $manifestPath -ReleaseJsonPath $releasePath -TagRefJsonPath $tagPath

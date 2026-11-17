@@ -32,17 +32,29 @@ function Write-Utf8NoBom([string]$Path,[string]$Text){
 function Set-CurrentReleasePreamble([string]$Relative,[string]$Title,[string]$CanonicalLine){
     $path=Join-Path $Root ($Relative.Replace([char]47,[char]92))
     $text=Read-Utf8 $path
-    $headline=[regex]::Match($text,"(?m)\A# v$([regex]::Escape($version))[^\r\n]*")
+    $firstSection=[regex]::Match($text,'(?m)^## ')
+    if(-not $firstSection.Success){throw "$Relative is missing its first bounded section."}
+    $preamble=$text.Substring(0,$firstSection.Index)
+    $headline=[regex]::Match($preamble,"(?m)\A# v$([regex]::Escape($version))[^\r\n]*")
     if(-not $headline.Success){throw "$Relative is missing its current-version release heading."}
-    $updated=$text.Substring(0,$headline.Index)+$Title+$text.Substring($headline.Index+$headline.Length)
-    $canonical=[regex]::Match($updated,'(?m)^Canonical (?:source|state):[^\r\n]*')
-    $firstSection=[regex]::Match($updated,'(?m)^## ')
-    if($canonical.Success -and $firstSection.Success -and $canonical.Index -lt $firstSection.Index){
-        $updated=$updated.Substring(0,$canonical.Index)+$CanonicalLine+$updated.Substring($canonical.Index+$canonical.Length)
-    }else{
-        $updated=$updated.Substring(0,$Title.Length)+("`r`n`r`n"+$CanonicalLine)+$updated.Substring($Title.Length)
-    }
+
+    # Collapse obsolete release identity lines in the preamble to one current
+    # authoritative statement. Preserve other context and all ## sections.
+    $tail=[regex]::Replace($preamble.Substring($headline.Length),
+        '(?m)^Canonical (?:pre-release )?(?:source|state):[^\r\n]*(?:\r?\n)?','')
+    $tail=$tail.TrimStart([char[]]@([char]13,[char]10))
+    $updated=$Title+"`n`n"+$CanonicalLine+"`n`n"+$tail+$text.Substring($firstSection.Index)
     Write-Utf8NoBom $path $updated
+}
+function Set-CurrentReleaseNextSteps([string]$Section){
+    $path=Join-Path $Root '_AGENT_CONTEXT\NEXT_STEPS.md'
+    $text=Read-Utf8 $path
+    $match=[regex]::Match($text,'(?ms)^## Current release acceptance[ \t]*\r?\n.*?(?=^## |\z)')
+    if(-not $match.Success){
+        throw 'NEXT_STEPS.md is missing the bounded Current release acceptance section.'
+    }
+    $replacement=$Section.TrimEnd()+"`n`n"
+    Write-Utf8NoBom $path ($text.Substring(0,$match.Index)+$replacement+$text.Substring($match.Index+$match.Length))
 }
 function Test-SourceBoundPublication {
     param([string]$ReleasePath,[string]$TagPath,[string]$ArtifactManifestPath,[string]$Version,[string]$Source,[string]$Closure)
@@ -146,6 +158,76 @@ if($receiptInputs.Count -eq 3){
     $publication=Test-SourceBoundPublication -ReleasePath $ReleaseJsonPath -TagPath $TagRefJsonPath -ArtifactManifestPath $givenManifest -Version $version -Source $SourceSha -Closure $evidence
 }
 
+# Preflight all generated continuity surfaces before changing any of them.
+$nextStepsText=Read-Utf8 (Join-Path $Root '_AGENT_CONTEXT\NEXT_STEPS.md')
+if(-not [regex]::IsMatch($nextStepsText,'(?m)^## Current release acceptance[ \t]*\r?
+$revision=(Read-Utf8 $revisionPath) | ConvertFrom-Json
+if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must already match VERSION.txt before evidence synchronization.'}
+$revision.verificationAppliesToCommit=$SourceSha
+$revision.lastClosedVerificationCommit=$SourceSha
+$revision.lastClosedVerificationRun="v$version source ${SourceSha}: hosted Windows verification run $RunId PASS; exact evidence $normalizedEvidence. The later evidence-only commit is not the tested source."
+$revision.verificationScopeNote="v$version exact source $SourceSha passed hosted Windows verification run $RunId. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification."
+if($null -ne $publication){
+    $revision.status="v$version-immutable-release-published"
+    $revision.nextMilestone="Current v$version immutable $($publication.tag) is source-verified at $SourceSha (Windows Gate $RunId), with exact ZIP/manifest SHA-256. Do not republish."
+    $revision.nextRequiredAction="Continue unresolved real-device, corpus and independent trust acceptance in _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve immutable release and its exact-source receipt."
+    if($null -eq $revision.PSObject.Properties['publishedRelease']){
+        Add-Member -InputObject $revision -MemberType NoteProperty -Name publishedRelease -Value $publication
+    }else{$revision.publishedRelease=$publication}
+}else{
+    $revision.status="v$version-source-verified-publication-unverified"
+    $revision.nextMilestone="Source v$version at $SourceSha passed Windows Gate $RunId, but exact public immutable publication for this source is NOT VERIFIED."
+    $revision.nextRequiredAction="Verify a source-bound immutable public GitHub release and tag before claiming shipment. Another source's same-version release is not sufficient."
+    if($null -ne $revision.PSObject.Properties['publishedRelease']){$revision.PSObject.Properties.Remove('publishedRelease')}
+}
+$windows=[pscustomobject][ordered]@{sourceSha=$SourceSha;runId=$runNumber;evidence=$normalizedEvidence}
+if($null -eq $revision.PSObject.Properties['lastClosedWindowsVerification']){
+    Add-Member -InputObject $revision -MemberType NoteProperty -Name lastClosedWindowsVerification -Value $windows
+}else{
+    $revision.lastClosedWindowsVerification=$windows
+}
+$publicationNote=if($null -ne $publication){
+    "Verified immutable GitHub release: [$($publication.tag)](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/$($publication.tag)), exact source ``$SourceSha``, ZIP SHA-256 ``$($publication.artifactSha256)`` and manifest SHA-256 ``$($publication.manifestSha256)``. Public release and tag ref independently match the built artifact."
+}else{
+    "Public release status: **NOT VERIFIED** for source ``$SourceSha``. Successful build or another source's same-version release is not proof of publication."
+}
+$headTitle=if($null -ne $publication){"# v$version - immutable release verified"}else{"# v$version - source verified, publication unverified"}
+$intro=if($null -ne $publication){
+    "Canonical source: ``fengie/Heaven-Mod_Manager@main`` at ``$SourceSha``. Public immutable [$($publication.tag)](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/$($publication.tag)) contains this exact source. Bootstrap ``fengie/heaven-toolbox@main`` before other work."
+}else{
+    "Canonical source: ``fengie/Heaven-Mod_Manager@main`` verified at ``$SourceSha`` (Windows Gate $RunId); exact immutable release not yet verified. Bootstrap ``fengie/heaven-toolbox@main`` before other work."
+}
+$stateIntro=$intro.Replace('Canonical source:','Canonical state:')
+Write-Utf8NoBom $revisionPath (($revision | ConvertTo-Json -Depth 20)+"`n")
+
+$section=@"
+## Verification boundary
+
+Current hosted-Windows closure: v$version source ``$SourceSha`` passed run ``$RunId`` with 0 failed checks. Exact evidence: ``$normalizedEvidence``.
+
+$publicationNote
+
+The tested source remains ``$SourceSha`` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+"@
+Replace-VerificationSection '_AGENT_CONTEXT/CURRENT_STATE.md' $section
+Replace-VerificationSection 'NEXT-AGENT-START-HERE.md' $section
+$nextStepsSection=@"
+## Current release acceptance
+
+Current v$version Windows verification: source ``$SourceSha``; run ``$RunId`` (0 failures).
+
+$publicationNote
+
+This receipt does not establish that the build is installed on Heaven2. Continue real archive corpus, installed UI latency, recovery and independent publisher-trust work from _AGENT_CONTEXT/PROJECT_PLAN.md.
+"@
+Set-CurrentReleaseNextSteps $nextStepsSection
+Set-CurrentReleasePreamble '_AGENT_CONTEXT/CURRENT_STATE.md' $headTitle $stateIntro
+Set-CurrentReleasePreamble 'NEXT-AGENT-START-HERE.md' $headTitle $intro
+
+Write-Host "PASS: synchronized v$version hosted-Windows source $SourceSha run $RunId into canonical continuity state." -ForegroundColor Green
+)){
+    throw 'NEXT_STEPS.md is missing the bounded Current release acceptance section.'
+}
 $revisionPath=Join-Path $Root '_AGENT_CONTEXT\CURRENT_REVISION.json'
 $revision=(Read-Utf8 $revisionPath) | ConvertFrom-Json
 if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must already match VERSION.txt before evidence synchronization.'}
@@ -197,6 +279,16 @@ The tested source remains ``$SourceSha`` even though persistence creates a later
 "@
 Replace-VerificationSection '_AGENT_CONTEXT/CURRENT_STATE.md' $section
 Replace-VerificationSection 'NEXT-AGENT-START-HERE.md' $section
+$nextStepsSection=@"
+## Current release acceptance
+
+Current v$version Windows verification: source ``$SourceSha``; run ``$RunId`` (0 failures).
+
+$publicationNote
+
+This receipt does not establish that the build is installed on Heaven2. Continue real archive corpus, installed UI latency, recovery and independent publisher-trust work from _AGENT_CONTEXT/PROJECT_PLAN.md.
+"@
+Set-CurrentReleaseNextSteps $nextStepsSection
 Set-CurrentReleasePreamble '_AGENT_CONTEXT/CURRENT_STATE.md' $headTitle $stateIntro
 Set-CurrentReleasePreamble 'NEXT-AGENT-START-HERE.md' $headTitle $intro
 
