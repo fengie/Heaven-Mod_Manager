@@ -1291,6 +1291,35 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task ExportPerformanceReport()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        string? reportPath = null;
+        await RunBusy("diagnostics.performance-report", "Creating Performance Report",
+            "Summarizing recorded operation latency, CPU and allocations from the past seven days…",
+            true, async ct =>
+            {
+                var reports = Path.Combine(s.Paths.StateRoot, "Next", "Reports");
+                reportPath = await Task.Run(() =>
+                    new OperationLatencyReportService(s.Database).GenerateAsync(reports, ct), ct);
+                StatusText = "Performance report: " + reportPath;
+            });
+        if (reportPath is null) return;
+        try
+        {
+            using var process = ProcessDebug.Start(
+                new ProcessStartInfo(reportPath) { UseShellExecute = true },
+                "open-performance-report");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+            or System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            MasterDebugLog.Write("PERFORMANCE-REPORT", "Could not open generated performance report.", ex);
+            StatusText = "Performance report saved: " + reportPath;
+        }
+    }
+
+    [RelayCommand]
     private async Task StageProfile()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
