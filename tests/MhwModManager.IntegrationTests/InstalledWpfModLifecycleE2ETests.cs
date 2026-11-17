@@ -195,8 +195,22 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 new PropertyCondition(AutomationElement.ProcessIdProperty, process.Id));
             foreach (AutomationElement window in roots)
             {
-                if (window.Current.ControlType == ControlType.Window &&
-                    window.Current.Name.Contains("Universal Mod Manager", StringComparison.Ordinal))
+                if (window.Current.ControlType != ControlType.Window) continue;
+                var title = window.Current.Name;
+                // Splash uses "Universal Mod Manager" and a startup-failure modal
+                // uses "Universal Mod Manager startup failed". Neither has the real
+                // UI controls. Never mistake either for the product's main window.
+                if (string.Equals(title, "Universal Mod Manager startup failed", StringComparison.Ordinal))
+                {
+                    var message = Find(window, element =>
+                        element.Current.ControlType == ControlType.Text &&
+                        element.Current.Name.Contains("Exception", StringComparison.OrdinalIgnoreCase));
+                    var detail = message?.Current.Name ?? "<no accessible error detail>";
+                    throw new InvalidOperationException(
+                        "Packaged mod manager failed during startup: " +
+                        detail[..Math.Min(800, detail.Length)]);
+                }
+                if (title.StartsWith("Universal Mod Manager — ", StringComparison.Ordinal))
                     return window;
             }
             return null;
