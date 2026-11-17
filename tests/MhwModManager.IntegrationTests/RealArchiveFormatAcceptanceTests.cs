@@ -65,6 +65,106 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
         Assert.True(File.Exists(archivePath));
     }
 
+
+    // Unlike renamed ZIP fixtures, these are actual RAR4, solid RAR5 and 7z bytes.
+    // Progress must reflect what was really extracted, not a synthetic percentage.
+    [Theory]
+    [InlineData("Rar4.rar", 59998)]
+    [InlineData("Rar5.solid.rar", 60046)]
+    [InlineData("7Zip.nonsolid.7z", 58982)]
+    [InlineData("7Zip.solid.7z", 58959)]
+    public async Task RealArchiveFormatsReportExactExtractionCountsAndBytes(string fixture, int expectedBytes)
+    {
+        var archivePath = await Materialize(fixture, expectedBytes);
+        var originalBytes = await File.ReadAllBytesAsync(archivePath, TestToken);
+        var inspector = new ArchiveInspector();
+        var inventory = await inspector.InspectAsync(archivePath, TestToken);
+        var expectedFiles = inventory.Entries.Count(entry => !entry.IsDirectory);
+        var expectedPayloadBytes = inventory.Entries
+            .Where(entry => !entry.IsDirectory).Sum(entry => entry.Size);
+        var events = new List<ArchiveExtractionProgress>();
+        var target = Path.Combine(home, "progress", Path.GetFileNameWithoutExtension(fixture));
+
+        await inspector.ExtractSafelyAsync(archivePath, target, home,
+            new ArchiveExtractionLimits(16 * 1024 * 1024, 16 * 1024 * 1024),
+            new ImmediateProgress<ArchiveExtractionProgress>(events.Add), TestToken);
+
+        Assert.NotEmpty(events);
+        Assert.Equal(0, events[0].CompletedFiles);
+        Assert.Equal(0, events[0].CompletedBytes);
+        Assert.All(events, progress =>
+        {
+            Assert.Equal(expectedFiles, progress.TotalFiles);
+            Assert.Equal(expectedPayloadBytes, progress.TotalBytes);
+            Assert.InRange(progress.CompletedFiles, 0, expectedFiles);
+            Assert.InRange(progress.CompletedBytes, 0L, expectedPayloadBytes);
+        });
+        for (var i = 1; i < events.Count; i++)
+        {
+            Assert.True(events[i].CompletedFiles >= events[i - 1].CompletedFiles,
+                "Reported completed-file count must never go backwards.");
+            Assert.True(events[i].CompletedBytes >= events[i - 1].CompletedBytes,
+                "Reported completed-byte count must never go backwards.");
+        }
+        Assert.Equal(expectedFiles, events[^1].CompletedFiles);
+        Assert.Equal(expectedPayloadBytes, events[^1].CompletedBytes);
+        Assert.Equal(expectedFiles, Directory.GetFiles(target, "*", SearchOption.AllDirectories).Length);
+        Assert.Equal(originalBytes, await File.ReadAllBytesAsync(archivePath, TestToken));
+    }
+
+    [Theory]
+    [InlineData("Rar4.rar", 59998)]
+    [InlineData("Rar5.solid.rar", 60046)]
+    [InlineData("7Zip.nonsolid.7z", 58982)]
+    [InlineData("7Zip.solid.7z", 58959)]
+    public async Task RealArchiveCancellationBeforeFirstPayloadPreservesSourceAndDoesNotPublish(
+        string fixture, int expectedBytes)
+    {
+        var archivePath = await Materialize(fixture, expectedBytes);
+        var originalBytes = await File.ReadAllBytesAsync(archivePath, TestToken);
+        var target = Path.Combine(home, "cancelled", Path.GetFileNameWithoutExtension(fixture));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var progress = new ImmediateProgress<ArchiveExtractionProgress>(state =>
+        {
+            if (state.CompletedFiles == 0 && state.CompletedBytes == 0) cts.Cancel();
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new ArchiveInspector().ExtractSafelyAsync(archivePath, target, home,
+                new ArchiveExtractionLimits(16 * 1024 * 1024, 16 * 1024 * 1024),
+                progress, cts.Token));
+
+        Assert.True(!Directory.Exists(target) ||
+            Directory.GetFiles(target, "*", SearchOption.AllDirectories).Length == 0,
+            "A cancelled archive must not look like an extracted installable package.");
+        Assert.Equal(originalBytes, await File.ReadAllBytesAsync(archivePath, TestToken));
+    }
+
+    [Theory]
+    [InlineData("Rar4.rar", 59998)]
+    [InlineData("Rar5.solid.rar", 60046)]
+    [InlineData("7Zip.nonsolid.7z", 58982)]
+    [InlineData("7Zip.solid.7z", 58959)]
+    public async Task RealArchiveSizeBudgetRejectsBeforeFirstFileIsWritten(string fixture, int expectedBytes)
+    {
+        var archivePath = await Materialize(fixture, expectedBytes);
+        var sourceBytes = await File.ReadAllBytesAsync(archivePath, TestToken);
+        var target = Path.Combine(home, "over-budget", Path.GetFileNameWithoutExtension(fixture));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new ArchiveInspector().ExtractSafelyAsync(archivePath, target, home,
+                new ArchiveExtractionLimits(1, 16 * 1024 * 1024), TestToken));
+
+        Assert.False(Directory.Exists(target),
+            "Declared archive budget must be enforced before any destination is created.");
+        Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(archivePath, TestToken));
+    }
+
+    private sealed class ImmediateProgress<T>(Action<T> receive) : IProgress<T>
+    {
+        public void Report(T value) => receive(value);
+    }
+
     private static readonly HttpClient FixtureClient = new()
     {
         Timeout = TimeSpan.FromSeconds(30),
