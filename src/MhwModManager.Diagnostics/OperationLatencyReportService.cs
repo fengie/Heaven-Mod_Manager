@@ -80,10 +80,10 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
         foreach (var row in rows)
         {
             ct.ThrowIfCancellationRequested();
-            output.AppendLine(FormattableString.Invariant(
-                $"{row.Operation,-34} {row.Completed,5} {row.Failed,5} {row.Cancelled,6} " +
-                $"{Format(row.P50Ms),10} {Format(row.P95Ms),10} {Format(row.MaxMs),10} " +
-                $"{Format(row.MeanCpuMs),10} {Format(row.MeanAllocatedMiB),10}"));
+            output.AppendLine(
+                FormattableString.Invariant($"{row.Operation,-34} {row.Completed,5} {row.Failed,5} {row.Cancelled,6} ") +
+                FormattableString.Invariant($"{Format(row.P50Ms),10} {Format(row.P95Ms),10} {Format(row.MaxMs),10} ") +
+                FormattableString.Invariant($"{Format(row.MeanCpuMs),10} {Format(row.MeanAllocatedMiB),10}"));
         }
         if (rows.Count == 0)
             output.AppendLine("No completed operation telemetry in this window. Run an operation before comparing latency.");
@@ -120,11 +120,11 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
             .ToArray();
     }
 
-    private static double? Percentile(IReadOnlyList<double> sortedValues, double percentile)
+    private static double? Percentile(double[] sortedValues, double percentile)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return sortedValues.Count == 0 ? null :
-            sortedValues[Math.Clamp((int)Math.Ceiling(sortedValues.Count * percentile) - 1, 0, sortedValues.Count - 1)];
+        return sortedValues.Length == 0 ? null :
+            sortedValues[Math.Clamp((int)Math.Ceiling(sortedValues.Length * percentile) - 1, 0, sortedValues.Length - 1)];
     }
 
     private static double GetDouble(JsonElement element, string name)
