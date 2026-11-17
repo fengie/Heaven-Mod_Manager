@@ -1,0 +1,458 @@
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Windows.Automation;
+using MhwModManager.App;
+using MhwModManager.Core;
+using MhwModManager.Filesystem;
+using Xunit;
+
+namespace MhwModManager.IntegrationTests;
+
+/// <summary>
+/// Runs an actual published WinExe in a disposable Windows runner and drives its
+/// native accessibility tree. The normal test suite reports SKIP; only the hosted
+/// acceptance workflow opts in. Never point this at the user's live installation.
+/// </summary>
+[Collection(UpdaterGlobalStateFixture.Name)]
+public sealed class InstalledWpfModLifecycleE2ETests
+{
+    public static bool IsOptedIn =>
+        string.Equals(Environment.GetEnvironmentVariable("MHW_RUN_INSTALLED_WPF_E2E"),
+            "1", StringComparison.Ordinal);
+
+    private static CancellationToken TestToken => TestContext.Current.CancellationToken;
+    private static readonly TimeSpan UiTimeout = TimeSpan.FromSeconds(75);
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public async Task InboxImportPreviewApplyUndoAndGameSwitchPreserveExactFiles()
+    {
+        using var run = new DisposableWpfRun(seedInbox: true);
+        var app = run.Launch();
+        var window = await WaitForMainWindowAsync(app, TestToken);
+        // The top-level native window can exist before its WPF accessibility tree
+        // is populated; wait for the real selector instead of racing startup.
+        await WaitForElementAsync(() => Find(window, element =>
+            element.Current.AutomationId == "ActiveGameSelector"),
+            UiTimeout, "initial active game selector", TestToken);
+        Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
+
+        var moreTools = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.Name == "More tools"), UiTimeout, "Dashboard More tools", TestToken);
+        if (!moreTools.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out var expand) ||
+            expand is not ExpandCollapsePattern panel)
+            throw new InvalidOperationException("More tools does not expose accessible ExpandCollapse.");
+        panel.Expand();
+
+        var inboxButton = await WaitForElementAsync(() => FindButton(window, "Install Mods from Inbox"),
+            UiTimeout, "Install Mods from Inbox button", TestToken);
+        Invoke(inboxButton);
+        await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
+            File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
+            UiTimeout, "Inbox never published the approved fixture", TestToken);
+
+        await SelectModsTabAsync(window, TestToken);
+        var toggle = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.CheckBox &&
+            element.Current.Name.Contains("E2E Inbox Fixture", StringComparison.OrdinalIgnoreCase)),
+            UiTimeout, "Indexed Inbox mod checkbox", TestToken);
+        var state = (TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.Off, state.Current.ToggleState);
+        Assert.False(File.Exists(run.LiveModPath));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+
+        state.Toggle();
+        Assert.Equal(ToggleState.On,
+            ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true),
+            UiTimeout, "Preview Mod Changes", TestToken));
+        await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.Text &&
+            element.Current.Name.Contains("Dry run passed", StringComparison.OrdinalIgnoreCase)),
+            UiTimeout, "successful dry-run result", TestToken);
+        Assert.False(File.Exists(run.LiveModPath));
+
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
+            UiTimeout, "Apply Changes", TestToken));
+        await WaitForAsync(() => File.Exists(run.LiveModPath) &&
+            File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
+            UiTimeout, "Apply did not write the exact expected fixture bytes", TestToken);
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+
+        await SelectModsTabAsync(window, TestToken);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true),
+            UiTimeout, "Undo Last Applied Change", TestToken));
+        await WaitForAsync(() => !File.Exists(run.LiveModPath),
+            UiTimeout, "Undo left the installed fixture in the fake game", TestToken);
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+
+        // The switch must reuse the exact same WPF PID and keep game A's files intact.
+        var selector = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.AutomationId == "ActiveGameSelector"),
+            UiTimeout, "active game selector", TestToken);
+        var expander = (ExpandCollapsePattern)selector.GetCurrentPattern(ExpandCollapsePattern.Pattern);
+        expander.Expand();
+        var nextGame = await WaitForElementAsync(() =>
+            Find(selector, element => element.Current.ControlType == ControlType.ListItem &&
+                element.Current.Name.Contains(run.SecondGame.DisplayName, StringComparison.Ordinal)) ??
+            Find(window, element => element.Current.ControlType == ControlType.ListItem &&
+                element.Current.Name.Contains(run.SecondGame.DisplayName, StringComparison.Ordinal)),
+            UiTimeout, "second registered game", TestToken);
+        var selection = (SelectionItemPattern)nextGame.GetCurrentPattern(SelectionItemPattern.Pattern);
+        selection.Select();
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Switch", enabled: true),
+            UiTimeout, "Switch game", TestToken));
+        await WaitForAsync(() => ReadActiveGame(window) == run.SecondGame.DisplayName,
+            UiTimeout, "game selector never switched to the second fake profile", TestToken);
+        Assert.False(app.HasExited);
+        Assert.Equal(app.Id, window.Current.ProcessId);
+        Assert.False(File.Exists(run.LiveModPath));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+    }
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public async Task NativeArchivePickerImportsOneDisabledModWithoutTouchingFakeGame()
+    {
+        using var run = new DisposableWpfRun(seedInbox: false);
+        var app = run.Launch();
+        var window = await WaitForMainWindowAsync(app, TestToken);
+        var originalHash = SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
+
+        // Explicitly present the Mods view before locating its native import
+        // control; WPF tabs can defer accessibility children until selected.
+        await SelectModsTabAsync(window, TestToken);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Install Mod"),
+            UiTimeout, "Install Mod", TestToken));
+        var dialog = await WaitForElementAsync(() => FindFileDialog(app.Id),
+            UiTimeout, "native archive file picker", TestToken);
+        var fileNameEdit = Find(dialog, element =>
+            element.Current.ControlType == ControlType.Edit &&
+            (element.Current.AutomationId == "1148" ||
+             element.Current.Name.Contains("File name", StringComparison.OrdinalIgnoreCase)))
+            ?? throw new InvalidOperationException("Windows file picker has no accessible file-name field.");
+        if (!fileNameEdit.TryGetCurrentPattern(ValuePattern.Pattern, out var pattern) ||
+            pattern is not ValuePattern field)
+            throw new InvalidOperationException("Windows file picker has no editable ValuePattern.");
+        field.SetValue(run.ArchivePath);
+        Invoke(await WaitForElementAsync(() => FindButton(dialog, "Open", enabled: true),
+            UiTimeout, "native file picker Open", TestToken));
+
+        await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
+            File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
+            UiTimeout, "file picker import never reached installed library", TestToken);
+        await SelectModsTabAsync(window, TestToken);
+        var toggle = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.CheckBox &&
+            element.Current.Name.Contains("E2E Inbox Fixture", StringComparison.OrdinalIgnoreCase)),
+            UiTimeout, "newly imported mod in visible WPF list", TestToken);
+        Assert.Equal(ToggleState.Off,
+            ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+        Assert.False(File.Exists(run.LiveModPath));
+        Assert.Equal(originalHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+    }
+
+    [Fact]
+    public void PreflightRejectsNonDisposableOrUnapprovedRunner()
+    {
+        Assert.Throws<InvalidOperationException>(() => DisposableWpfRun.GuardRunner(
+            "1", "self-hosted", "Windows", @"C:\test", @"C:\test\build"));
+        Assert.Throws<InvalidOperationException>(() => DisposableWpfRun.GuardRunner(
+            "0", "github-hosted", "Windows", @"C:\test", @"C:\test\build"));
+        Assert.Throws<InvalidOperationException>(() => DisposableWpfRun.GuardRunner(
+            "1", "github-hosted", "Linux", @"C:\test", @"C:\test\build"));
+        Assert.Throws<InvalidOperationException>(() => DisposableWpfRun.GuardRunner(
+            "1", "github-hosted", "Windows", @"C:\test", @"D:\foreign"));
+    }
+
+    private static string ReadActiveGame(AutomationElement window)
+    {
+        var selector = Find(window, element =>
+            element.Current.AutomationId == "ActiveGameSelector")
+            ?? throw new InvalidOperationException("Installed active game selector disappeared.");
+        return selector.Current.ItemStatus?.Trim() ?? string.Empty;
+    }
+
+    private static async Task SelectModsTabAsync(AutomationElement window, CancellationToken ct)
+    {
+        var tab = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.TabItem &&
+            element.Current.Name == "Mods"), UiTimeout, "Mods tab", ct);
+        var selected = (SelectionItemPattern)tab.GetCurrentPattern(SelectionItemPattern.Pattern);
+        selected.Select();
+    }
+
+    private static async Task<AutomationElement> WaitForMainWindowAsync(Process process, CancellationToken ct) =>
+        await WaitForElementAsync(() =>
+        {
+            if (process.HasExited)
+                throw new InvalidOperationException("Packaged WPF process terminated before showing the main window.");
+            var roots = AutomationElement.RootElement.FindAll(TreeScope.Children,
+                new PropertyCondition(AutomationElement.ProcessIdProperty, process.Id));
+            foreach (AutomationElement window in roots)
+            {
+                if (window.Current.ControlType != ControlType.Window) continue;
+                var title = window.Current.Name;
+                // Splash uses "Universal Mod Manager" and a startup-failure modal
+                // uses "Universal Mod Manager startup failed". Neither has the real
+                // UI controls. Never mistake either for the product's main window.
+                if (string.Equals(title, "Universal Mod Manager startup failed", StringComparison.Ordinal))
+                {
+                    var message = Find(window, element =>
+                        element.Current.ControlType == ControlType.Text &&
+                        element.Current.Name.Contains("Exception", StringComparison.OrdinalIgnoreCase));
+                    var detail = message?.Current.Name ?? "<no accessible error detail>";
+                    throw new InvalidOperationException(
+                        "Packaged mod manager failed during startup: " +
+                        detail[..Math.Min(800, detail.Length)]);
+                }
+                if (title.StartsWith("Universal Mod Manager — ", StringComparison.Ordinal))
+                    return window;
+            }
+            return null;
+        }, UiTimeout, "packaged WPF main window", ct);
+
+    private static AutomationElement? FindFileDialog(int pid)
+    {
+        var windows = AutomationElement.RootElement.FindAll(TreeScope.Children,
+            new PropertyCondition(AutomationElement.ProcessIdProperty, pid));
+        foreach (AutomationElement element in windows)
+        {
+            if (Find(element, node => node.Current.ControlType == ControlType.Edit &&
+                (node.Current.AutomationId == "1148" ||
+                 node.Current.Name.Contains("File name", StringComparison.OrdinalIgnoreCase))) is not null)
+                return element;
+        }
+        return null;
+    }
+
+    private static AutomationElement? FindButton(AutomationElement root, string name, bool enabled = false) =>
+        Find(root, element => element.Current.ControlType == ControlType.Button &&
+            element.Current.Name == name && (!enabled || element.Current.IsEnabled));
+
+    private static AutomationElement? Find(AutomationElement root, Func<AutomationElement, bool> predicate)
+    {
+        var walker = TreeWalker.RawViewWalker;
+        var pending = new Stack<AutomationElement>();
+        pending.Push(root);
+        var visited = 0;
+        while (pending.Count > 0 && visited++ < 2500)
+        {
+            var current = pending.Pop();
+            try
+            {
+                if (predicate(current)) return current;
+                var child = walker.GetFirstChild(current);
+                var sibling = ReferenceEquals(current, root) ? null : walker.GetNextSibling(current);
+                if (sibling is not null) pending.Push(sibling);
+                if (child is not null) pending.Push(child);
+            }
+            catch (ElementNotAvailableException) { }
+            catch (COMException) { }
+        }
+        return null;
+    }
+
+    private static void Invoke(AutomationElement button)
+    {
+        if (!button.TryGetCurrentPattern(InvokePattern.Pattern, out var pattern) ||
+            pattern is not InvokePattern invoke)
+            throw new InvalidOperationException("Expected an accessible InvokePattern button: " +
+                button.Current.Name);
+        invoke.Invoke();
+    }
+
+    private static async Task<AutomationElement> WaitForElementAsync(
+        Func<AutomationElement?> find, TimeSpan timeout, string operation, CancellationToken ct)
+    {
+        var sw = Stopwatch.StartNew();
+        while (sw.Elapsed < timeout)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var result = find();
+                if (result is not null) return result;
+            }
+            catch (ElementNotAvailableException) { }
+            catch (COMException) { }
+            await Task.Delay(200, ct);
+        }
+        throw new TimeoutException("Installed WPF accessibility timeout: " + operation);
+    }
+
+    private static async Task WaitForAsync(Func<bool> succeeded, TimeSpan timeout,
+        string operation, CancellationToken ct)
+    {
+        var sw = Stopwatch.StartNew();
+        while (sw.Elapsed < timeout)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                if (succeeded()) return;
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            catch (ElementNotAvailableException) { }
+            catch (COMException) { }
+            await Task.Delay(200, ct);
+        }
+        throw new TimeoutException("Installed WPF functional timeout: " + operation);
+    }
+
+    private sealed class DisposableWpfRun : IDisposable
+    {
+        private readonly string root;
+        private readonly string marker;
+        private Process? app;
+        private readonly string home;
+        private readonly string gameA;
+        private readonly string gameB;
+
+        public GameProfile FirstGame { get; }
+        public GameProfile SecondGame { get; }
+        public string ArchivePath { get; }
+        public string InstalledModPath { get; }
+        public string LiveModPath { get; }
+        public string SentinelPath { get; }
+        public byte[] ModBytes { get; } = Enumerable.Range(0, 4096).Select(i => (byte)(i % 251)).ToArray();
+        public byte[] BaselineBytes { get; } = [13, 37, 73, 101];
+
+        public DisposableWpfRun(bool seedInbox)
+        {
+            var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
+            var packageDir = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR");
+            GuardRunner(Environment.GetEnvironmentVariable("MHW_RUN_INSTALLED_WPF_E2E"),
+                Environment.GetEnvironmentVariable("RUNNER_ENVIRONMENT"),
+                Environment.GetEnvironmentVariable("RUNNER_OS"), temp, packageDir);
+            var fullTemp = Path.GetFullPath(temp!);
+            root = Path.Combine(fullTemp, "mhw-wpf-acceptance-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            marker = Guid.NewGuid().ToString("N");
+            File.WriteAllText(Path.Combine(root, ".owned-e2e-root"), marker);
+            home = Path.Combine(root, "manager-home");
+            gameA = Path.Combine(root, "game-A");
+            gameB = Path.Combine(root, "game-B");
+            Directory.CreateDirectory(gameA);
+            Directory.CreateDirectory(gameB);
+            Directory.CreateDirectory(Path.Combine(gameA, "Mods"));
+            Directory.CreateDirectory(Path.Combine(gameB, "Mods"));
+            var cmd = Environment.GetEnvironmentVariable("ComSpec") ?? Path.Combine(
+                Environment.SystemDirectory, "cmd.exe");
+            File.Copy(cmd, Path.Combine(gameA, "FakeA.exe"));
+            File.Copy(cmd, Path.Combine(gameB, "FakeB.exe"));
+
+            FirstGame = GameProfile.Generic("e2e-game-a", "E2E Fake Game A", gameA, "FakeA.exe", "Mods");
+            SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");
+            var state = Path.Combine(home, "State");
+            var registry = new GameProfileRegistry(state);
+            registry.Upsert(FirstGame);
+            registry.Upsert(SecondGame);
+            registry.SetActive(FirstGame.Id);
+
+            foreach (var game in new[] { FirstGame, SecondGame })
+            {
+                var settingPath = Path.Combine(state, "Games", game.Id, "Next", "settings.json");
+                ManagerSettingsStore.Load(settingPath).Update(settings =>
+                {
+                    settings.AutoUpdateEnabled = false;
+                    settings.BackgroundMetadataRefreshEnabled = false;
+                    settings.ConfirmBeforeApply = false;
+                    settings.UiAnimationsEnabled = false;
+                });
+            }
+
+            var input = Path.Combine(root, "input");
+            Directory.CreateDirectory(input);
+            ArchivePath = Path.Combine(input, "E2E Inbox Fixture.zip");
+            using (var zip = ZipFile.Open(ArchivePath, ZipArchiveMode.Create))
+            {
+                using var payload = zip.CreateEntry("Mods/e2e-payload.bin",
+                    CompressionLevel.NoCompression).Open();
+                payload.Write(ModBytes);
+            }
+
+            var storage = GameModStorage.Resolve(home, FirstGame);
+            InstalledModPath = Path.Combine(storage.InstalledRoot, "E2E Inbox Fixture");
+            LiveModPath = Path.Combine(gameA, "Mods", "e2e-payload.bin");
+            SentinelPath = Path.Combine(gameA, "Mods", "keep-user-owned.bin");
+            File.WriteAllBytes(SentinelPath, BaselineBytes);
+            if (seedInbox)
+            {
+                Directory.CreateDirectory(storage.InboxRoot);
+                File.Copy(ArchivePath, Path.Combine(storage.InboxRoot, Path.GetFileName(ArchivePath)));
+            }
+        }
+
+        public static void GuardRunner(string? optIn, string? runnerEnvironment,
+            string? runnerOs, string? runnerTemp, string? packageDir)
+        {
+            if (optIn != "1" || runnerEnvironment != "github-hosted" || runnerOs != "Windows")
+                throw new InvalidOperationException(
+                    "Installed WPF UI automation requires explicit opt-in and a disposable GitHub-hosted Windows VM.");
+            if (string.IsNullOrWhiteSpace(runnerTemp) || string.IsNullOrWhiteSpace(packageDir))
+                throw new InvalidOperationException("Disposable runner paths are not configured.");
+            var temp = Path.GetFullPath(runnerTemp).TrimEnd(Path.DirectorySeparatorChar);
+            var package = Path.GetFullPath(packageDir);
+            if (!package.StartsWith(temp + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Packaged candidate is not under the disposable runner root.");
+        }
+
+        public Process Launch()
+        {
+            var packageDir = Path.GetFullPath(
+                Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR")!);
+            var executable = Path.Combine(packageDir, "MHW Mod Manager.exe");
+            if (!File.Exists(executable))
+                throw new FileNotFoundException("Candidate WinExe was not published in the disposable workspace.", executable);
+            var start = new ProcessStartInfo(executable)
+            {
+                WorkingDirectory = packageDir,
+                UseShellExecute = false
+            };
+            start.Environment["MOD_MANAGER_HOME"] = home;
+            start.Environment["MOD_MANAGER_GAME_ROOT"] = gameA;
+            start.Environment["MOD_MANAGER_DEBUG_ROOT"] = Path.Combine(root, "diagnostics");
+            start.Environment["MHWMM_DIAGNOSTIC"] = "0";
+            app = Process.Start(start) ??
+                throw new InvalidOperationException("Could not launch the isolated packaged WPF application.");
+            return app;
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                if (app is { HasExited: false })
+                {
+                    if (app.CloseMainWindow() && app.WaitForExit(4000)) { }
+                    else
+                    {
+                        app.Kill(entireProcessTree: true);
+                        app.WaitForExit(5000);
+                    }
+                }
+            }
+            catch (InvalidOperationException) { }
+            catch (System.ComponentModel.Win32Exception) { }
+            finally { app?.Dispose(); }
+
+            // Never delete unmarked, foreign, or reparse-point roots.
+            var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
+            if (string.IsNullOrWhiteSpace(temp) || !Directory.Exists(root)) return;
+            var fullTemp = Path.GetFullPath(temp).TrimEnd(Path.DirectorySeparatorChar);
+            if (!root.StartsWith(fullTemp + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                !Path.GetFileName(root).StartsWith("mhw-wpf-acceptance-", StringComparison.Ordinal) ||
+                (File.GetAttributes(root) & FileAttributes.ReparsePoint) != 0 ||
+                File.ReadAllText(Path.Combine(root, ".owned-e2e-root")) != marker)
+                throw new InvalidOperationException("Refusing to clean an unowned WPF acceptance root.");
+            Directory.Delete(root, recursive: true);
+        }
+    }
+}
