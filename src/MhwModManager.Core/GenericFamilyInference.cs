@@ -212,10 +212,24 @@ public static partial class GenericFamilyInference
         var roleDifference=ap.HasRoleSignal||bp.HasRoleSignal;
         var choiceOnly=ap.HasChoiceSignal||bp.HasChoiceSignal;
 
+        // The only accepted strong-evidence branches below require a role signal,
+        // at least 0.60 name-token similarity, or an exact identity stem. When all
+        // three are absent no amount of shared directory/file overlap can create
+        // an accepted family pair. Avoid expensive file intersections in that case,
+        // particularly for hundreds of unrelated mods sharing a loader root.
+        if(!roleDifference && nameSimilarity < .60 && !exactStem) return null;
+
         var sharedPaths=IntersectionCount(ap.Files.Paths,bp.Files.Paths);
         var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
         var overlap=smaller==0?0:sharedPaths/(double)smaller;
         var sharedAssets=IntersectionCount(ap.Files.Assets,bp.Files.Assets);
+        // No returned evidence can be accepted unless it is strong.
+        // Compute that exact predicate before allocating explanations or scanning
+        // shared roots: high-fanout loader roots often connect unrelated files.
+        var strong=(roleDifference&&(overlap>=.30||sharedAssets>0)) ||
+            (nameSimilarity>=.60&&(overlap>=.55||sharedAssets>0)) ||
+            (exactStem&&overlap>=.30);
+        if(!strong)return null;
         var sharedRoots=IntersectionCount(ap.Files.Roots,bp.Files.Roots);
 
         static int IntersectionCount(HashSet<string> left,HashSet<string> right)
@@ -229,10 +243,8 @@ public static partial class GenericFamilyInference
             return count;
         }
 
-        // Identical labels alone are not evidence. Likewise, a local "Alt/Variant" name is not safely
-        // composable without source lineage; keep it separate unless concrete file topology proves kinship.
-        var concrete=overlap>=.20||sharedAssets>0||sharedRoots>0;
-        if(!concrete)return null;
+        // Identical labels alone are not evidence. Local alternatives with
+        // insufficient name lineage must remain separate even with shared files.
         if(choiceOnly&&!exactStem&&nameSimilarity<.70)return null;
 
         var score=0;var reasons=new List<string>();
@@ -248,7 +260,6 @@ public static partial class GenericFamilyInference
         if(sharedAssets>0){score+=24;reasons.Add($"shared asset identity x{sharedAssets}");}
         if(sharedRoots>0){score+=Math.Min(12,4*sharedRoots);reasons.Add($"shared content root x{sharedRoots}");}
 
-        var strong=(roleDifference&&(overlap>=.30||sharedAssets>0)) || (nameSimilarity>=.60&&(overlap>=.55||sharedAssets>0)) || (exactStem&&overlap>=.30);
         return new(a.Id,b.Id,score,strong,string.Join("; ",reasons));
     }
 

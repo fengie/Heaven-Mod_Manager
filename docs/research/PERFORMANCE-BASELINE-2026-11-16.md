@@ -91,3 +91,103 @@ Official analyzer reference: [CA1859](https://learn.microsoft.com/en-us/dotnet/f
 No synthetic result establishes that the observed user's original single-RAR import is fast. Continue #791 for real archive acceptance, #735 for installed UI latency/Auto Populate and #793 for isolated updater execution. As documented by Microsoft, `FileOptions.WriteThrough` requests prompt persistence to disk and `Microsoft.Data.Sqlite` async methods execute synchronously; neither protection is a safe speculative removal solely to improve a benchmark.
 
 Sources: [FileOptions](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileoptions), [Windows file caching](https://learn.microsoft.com/en-us/windows/win32/fileio/file-caching), [Microsoft.Data.Sqlite async limitations](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/async).
+
+
+## Measured new replay and topology baseline
+
+User-requested on-demand [Windows ShortRun 43984799429](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43984799429)
+completed **SUCCESS** on exact source `2f969897fb6508725b62ebe2447e88533f55a09c`,
+based on `main@8ed0a73ca4a320c49c579b8620a3b1869595d2b3`.
+AMD Ryzen 9 7945HX / Windows 11 / .NET 10, three measured iterations per
+case. JSON artifact `14284498907` has 3-day retention; original job log
+`133710068603` preserves complete tables.
+
+| Case | Mean | Cumulative managed allocation |
+| --- | ---: | ---: |
+| Warm 8-archive replay | 51.77 ms | 2.82 MB |
+| Warm 64-archive replay | 392.97 ms | 25.36 MB |
+| Warm 256-archive replay | 1,586.08 ms | 142.18 MB |
+| Family 100 mods, independent roots | 8.880 ms | 23.39 MB |
+| Family 100 mods, common four-segment root | 16.068 ms | 38.94 MB |
+| Family 500 mods, independent roots | 45.549 ms | 116.8 MB |
+| Family 500 mods, common four-segment root | 281.974 ms | 507.76 MB |
+
+The family 500-mod shared-root case is ~6.19 times slower and allocates ~4.35
+times more managed bytes than independent roots, even though the tests correctly
+refuse to group unrelated mods. The candidate in this branch checks a necessary
+condition from the existing `GenericFamilyInference.ScorePair` acceptance
+formula **before** expensive file-path/asset/root intersections: a pair cannot
+produce strong evidence unless it has a role signal, >=0.60 name-token
+similarity, or an exact identity stem. The final policy still requires
+`evidence.Score >= 75 && evidence.Strong`, and the candidate does not change
+that condition or override priority. Correctness tests are still required to
+prove behavior, and a **new same-runner candidate benchmark** is required
+before claiming faster runtime or lower allocations.
+
+Warm replay currently includes source hashing, staged scratch copies and
+receipt lookups. Any receipt-concurrency repair must preserve processed-entry
+deduplication and compare performance after actual verification; the measured
+baseline alone is not a performance regression budget or proof of installed UX.
+
+### First family-pruning candidate disproved by measurement
+
+First candidate `dcc3f199bd98e771d85a54298ed27568b936895c`, tested on Ryzen 9
+7945HX in [Windows ShortRun 43986694988](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43986694988),
+completed **success as a benchmark run but did not demonstrate an optimization**.
+Its 500-mod shared-root case took **448.053 ms and allocated 507.76 MB**
+versus baseline **281.974 ms / 507.76 MB**. The candidate's allocations
+were identical for all four scenarios. Timing changes from only three iterations
+are not statistically conclusive; no benefit is claimed, and that source is not
+a supported final optimization.
+
+The fixture uses names `Synthetic 00001` etc. The existing version-suffix
+normalization collapses these to a shared `Synthetic` stem, so a fast
+rejection requiring dissimilar stems did not trigger. This uncovered a
+measurement-fixture/heuristic interaction that the original candidate missed.
+
+A revised implementation computes the **existing exact strong-evidence
+predicate** after path/asset overlap, and returns early if it is false,
+before inspecting common directory roots and allocating discarded reasons.
+`InferKeys` previously discarded all `!Strong` results anyway; no accepted
+family evidence or grouping authority may change. The uniform-stem shared-root
+unit fixture and existing positive, bridge and permutation invariants protect
+the semantic boundary. A fresh **same-fixture same-runner** benchmark and
+exact-head Windows tests are required before inferring any improvement.
+
+This work is orthogonal to durable receipt publication and installed updater
+acceptance. Preserve the negative first experiment as evidence; do not erase it
+or silently report the first candidate as a pass.
+
+### Corrected family strong-evidence candidate: measured
+
+The revised candidate first computes the original `Strong` predicate from
+name/role/path/asset evidence and avoids calculating common-root intersections
+or materializing formatted reasons for pairs that would be discarded anyway.
+An additional deterministic unit case pins identical normalized stems under
+a shared root without shared payload files.
+
+The same AMD Ryzen 9 7945HX Windows runner ran [corrected ShortRun
+43988335566](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43988335566)
+to **SUCCESS**, exact isolated benchmark source
+`d64d0f72e4423dcada6bccaf7cc11549cb7faf25`.
+JSON artifact `14285664657` (3-day retention); full job log
+`133722175631`. The baseline was successful run
+[43984799429](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43984799429).
+Both used the same 100/500-mod, 20-file topology fixtures, BenchmarkDotNet
+ShortRun (3 measured iterations), Windows 11 and pinned .NET SDK.
+
+| Scenario | Baseline time | Corrected candidate time | Baseline allocated | Candidate allocated |
+| --- | ---: | ---: | ---: | ---: |
+| 100 mods, independent roots | 8.880 ms | 8.518 ms | 23.39 MB | 23.39 MB |
+| 100 mods, shared root | 16.068 ms | 13.460 ms | 38.94 MB | 35.47 MB |
+| 500 mods, independent roots | 45.549 ms | 47.437 ms | 116.8 MB | 116.8 MB |
+| 500 mods, shared root | 281.974 ms | **223.461 ms** | 507.76 MB | **420.2 MB** |
+
+For 500 mods with a common four-segment root: **20.8% lower mean time
+and 17.2% fewer cumulative managed allocations**. Independent-root
+allocation was unchanged. Means from three iterations are directional,
+not p95 or statistically robust regression budgets, and separate runner load
+can affect timing. The allocation reduction is the stronger evidence
+that the revised early rejection removed work. PR #839 still requires
+exact-head Windows Feature and AutoUpdate checks before main integration;
+source integration and installed UI/user corpus performance remain separate.
