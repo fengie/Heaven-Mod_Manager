@@ -245,7 +245,11 @@ public sealed class GameModIntakeService
                             {
                                 RefuseReparseComponents(archivePath);
                                 await ClassifyAndRouteAsync(full, archivePath, false,
-                                    games, items, receipts, ct).ConfigureAwait(false);
+                                    games, items, receipts, ct,
+                                    copyProgress: (copied, length) => progress?.Report(new(
+                                        index, inputs.Length, archivePath,
+                                        $"Copying {copied / 1048576d:F1} / {length / 1048576d:F1} MiB")))
+                                    .ConfigureAwait(false);
                             }
                             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
                                 or InvalidDataException or JsonException)
@@ -272,7 +276,11 @@ public sealed class GameModIntakeService
                             throw new InvalidDataException("Cannot import directly from a live game installation.");
                     if (IsSupportedArchive(full))
                         await ClassifyAndRouteAsync(Path.GetDirectoryName(full)!, full, false,
-                            games, items, receipts, ct).ConfigureAwait(false);
+                            games, items, receipts, ct,
+                            copyProgress: (copied, length) => progress?.Report(new(
+                                index, inputs.Length, full,
+                                $"Copying {copied / 1048576d:F1} / {length / 1048576d:F1} MiB")))
+                            .ConfigureAwait(false);
                     else
                         items.Add(new(full, null, GameModIntakeStatus.NeedsReview,
                             "Select a folder or a ZIP, RAR or 7z archive."));
@@ -634,7 +642,8 @@ public sealed class GameModIntakeService
         string sourceRoot, string source, bool isDirectory, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
         int nestedDepth = 0, IntakeBudget? budget = null, string? provenance = null,
-        string? gameContextHint = null, string? manualGameId = null)
+        string? gameContextHint = null, string? manualGameId = null,
+        Action<long, long>? copyProgress = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         budget ??= new IntakeBudget(collectionCopyBudget);
@@ -789,7 +798,7 @@ public sealed class GameModIntakeService
         RefuseReparseComponents(library.InboxRoot);
         var wasCreated = isDirectory
             ? await CopyDirectoryIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false)
-            : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false);
+            : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct, copyProgress).ConfigureAwait(false);
         output.Add(new(reportSource, owner.Id,
             wasCreated ? GameModIntakeStatus.Routed : GameModIntakeStatus.AlreadyPresent,
             wasCreated
@@ -799,7 +808,8 @@ public sealed class GameModIntakeService
     }
 
     private async Task<bool> CopyArchiveIntoInboxAsync(string source, string inboxRoot, string gameId,
-        HashSet<string> receipts, IntakeBudget budget, CancellationToken ct)
+        HashSet<string> receipts, IntakeBudget budget, CancellationToken ct,
+        Action<long, long>? copyProgress = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var inputBytes = new FileInfo(source).Length;
@@ -819,6 +829,7 @@ public sealed class GameModIntakeService
                 var buffer = new byte[IoBufferSize];
                 int count;
                 long total = 0;
+                long nextProgress = 0;
                 while ((count = await input.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
                 {
                     total += count;
@@ -826,12 +837,29 @@ public sealed class GameModIntakeService
                     budget.AccountActual(count);
                     digest.AppendData(buffer.AsSpan(0, count));
                     await output.WriteAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
+                    // Report copied bytes, not just archive count. Synchronous progress
+                    // callbacks may cancel; never publish a partially copied package.
+                    if (copyProgress is not null && (total >= nextProgress || total == inputBytes))
+                    {
+                        copyProgress(total, inputBytes);
+                        ct.ThrowIfCancellationRequested();
+                        nextProgress = total + 4L * 1024 * 1024;
+                    }
                 }
                 await output.FlushAsync(ct).ConfigureAwait(false);
             }
             var sha = Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant();
             var receiptKey = ReceiptKey(gameId, sha, isDirectory: false);
             if (receipts.Contains(receiptKey)) return false;
+            // A second manager process may have published a receipt since this import
+            // loaded its initial snapshot. Serialize only final publication, not I/O.
+            await using var receiptLease = await AcquireReceiptWriterLockAsync(ct).ConfigureAwait(false);
+            var durableReceipts = LoadReceipts();
+            if (durableReceipts.Contains(receiptKey))
+            {
+                receipts.UnionWith(durableReceipts);
+                return false;
+            }
             var filename = SafePackageName(source) + "-" + sha + Path.GetExtension(source).ToLowerInvariant();
             var destination = Path.Combine(inboxRoot, filename);
             RefuseReparseComponents(inboxRoot);
@@ -842,11 +870,11 @@ public sealed class GameModIntakeService
                 var existingSha = Convert.ToHexString(await SHA256.HashDataAsync(existing, ct).ConfigureAwait(false));
                 if (!existingSha.Equals(sha, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("An existing auto-sorted package is corrupt; it was not overwritten.");
-                RememberReceipt(receipts, receiptKey);
+                RememberReceipt(receipts, durableReceipts, receiptKey);
                 return false;
             }
             File.Move(scratch, destination);
-            RememberReceipt(receipts, receiptKey);
+            RememberReceipt(receipts, durableReceipts, receiptKey);
             return true;
         }
         finally
@@ -904,6 +932,15 @@ public sealed class GameModIntakeService
             var sha = Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant();
             var receiptKey = ReceiptKey(gameId, sha, isDirectory: true);
             if (receipts.Contains(receiptKey)) return false;
+            // A second manager process may have published a receipt since this import
+            // loaded its initial snapshot. Serialize only final publication, not I/O.
+            await using var receiptLease = await AcquireReceiptWriterLockAsync(ct).ConfigureAwait(false);
+            var durableReceipts = LoadReceipts();
+            if (durableReceipts.Contains(receiptKey))
+            {
+                receipts.UnionWith(durableReceipts);
+                return false;
+            }
             var destination = Path.Combine(inboxRoot, SafePackageName(source) + "-" + sha);
             RefuseReparseComponents(inboxRoot);
             if (Directory.Exists(destination))
@@ -912,11 +949,11 @@ public sealed class GameModIntakeService
                 var other = await HashDirectoryAsync(destination, ct).ConfigureAwait(false);
                 if (!other.Equals(sha, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("An existing auto-sorted folder is corrupt; it was not overwritten.");
-                RememberReceipt(receipts, receiptKey);
+                RememberReceipt(receipts, durableReceipts, receiptKey);
                 return false;
             }
             Directory.Move(scratch, destination);
-            RememberReceipt(receipts, receiptKey);
+            RememberReceipt(receipts, durableReceipts, receiptKey);
             return true;
         }
         finally
@@ -1154,7 +1191,11 @@ public sealed class GameModIntakeService
         var path = Path.Combine(stateRoot, "mod-intake-receipts.json");
         if (!File.Exists(path)) return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         RefuseReparseComponents(path);
-        var entries = JsonSerializer.Deserialize<string[]>(File.ReadAllText(path))
+        // Readers may overlap the atomic same-directory rename on another process.
+        // Share-delete lets them finish reading the old complete file snapshot.
+        using var reader = new FileStream(path, FileMode.Open, FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+        var entries = JsonSerializer.Deserialize<string[]>(reader)
             ?? throw new InvalidDataException("Mod intake receipt index was empty.");
         if (entries.Length > 50000 || entries.Any(entry => entry.Length != 64 || entry.Any(ch => !Uri.IsHexDigit(ch))))
             throw new InvalidDataException("Mod intake receipt index is malformed or exceeds its supported limit.");
@@ -1168,15 +1209,47 @@ public sealed class GameModIntakeService
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token))).ToLowerInvariant();
     }
 
-    private void RememberReceipt(HashSet<string> receipts, string key)
+    /// <summary>
+    /// The caller holds the permanent Windows file-share lease across receipt
+    /// reread, Inbox publication and durable index replacement. The lease file
+    /// must not be deleted: unlink/recreate would allow two independent owners.
+    /// </summary>
+    private async Task<FileStream> AcquireReceiptWriterLockAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!receipts.Add(key)) return;
         RefuseReparseComponents(stateRoot);
         Directory.CreateDirectory(stateRoot);
-        var path = Path.Combine(stateRoot, "mod-intake-receipts.json");
-        RefuseReparseComponents(path);
-        SaveAtomic(path, JsonSerializer.Serialize(receipts.Order(StringComparer.OrdinalIgnoreCase).ToArray()));
+        var lockPath = Path.Combine(stateRoot, "mod-intake-receipts.lock");
+        for (var retry = 0; ; retry++)
+        {
+            ct.ThrowIfCancellationRequested();
+            RefuseReparseComponents(lockPath);
+            try
+            {
+                return new FileStream(lockPath, FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite, FileShare.None, 1, FileOptions.None);
+            }
+            catch (IOException ex) when (
+                ((ex.HResult & 0xFFFF) == 32 || (ex.HResult & 0xFFFF) == 33) && retry < 120)
+            {
+                await Task.Delay(50, ct).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private void RememberReceipt(HashSet<string> receipts, HashSet<string> durableReceipts, string key)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (durableReceipts.Add(key))
+        {
+            if (durableReceipts.Count > 50_000)
+                throw new InvalidDataException("Mod intake receipt index exceeds its 50,000-entry safety limit.");
+            var path = Path.Combine(stateRoot, "mod-intake-receipts.json");
+            RefuseReparseComponents(path);
+            SaveAtomic(path, JsonSerializer.Serialize(
+                durableReceipts.Order(StringComparer.OrdinalIgnoreCase).ToArray()));
+        }
+        receipts.UnionWith(durableReceipts);
     }
 
     private void SaveSources(IReadOnlyList<string> sources)
