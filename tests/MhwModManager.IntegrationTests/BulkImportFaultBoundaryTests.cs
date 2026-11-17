@@ -3,6 +3,7 @@ using MhwModManager.Automation;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using Xunit;
+using System.Text.Json;
 
 namespace MhwModManager.IntegrationTests;
 
@@ -26,6 +27,200 @@ public sealed class BulkImportFaultBoundaryTests : IDisposable
     private GameModIntakeService CreateIntake() =>
         new(Path.Combine(root, "Manager"), Path.Combine(root, "Manager", "State"),
             () => Games);
+
+    [Fact]
+    public async Task Two_independent_importers_preserve_both_receipts_after_stale_read()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var first = Path.Combine(source, "MHW First.zip");
+        var second = Path.Combine(source, "NieR Automata Second.zip");
+        CreateZip(first, "nativePC/pl/armor/first.tex");
+        CreateZip(second, "mods/outfit.dds");
+
+        // The first importer reads the old receipt set, then pauses before any work.
+        // The second importer commits an unrelated receipt while the first is paused.
+        // A naive read/modify/write of the whole JSON index then loses the second key.
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var gate = new InlineProgress<GameModIntakeProgress>(update =>
+        {
+            if (update.Completed != 0 || update.Stage != "Inspecting") return;
+            entered.TrySetResult();
+            release.Task.GetAwaiter().GetResult();
+        });
+
+        var firstTask = Task.Run(
+            () => CreateIntake().ImportPathsAsync([first], gate, TestToken), TestToken);
+        try
+        {
+            await entered.Task.WaitAsync(TestToken);
+            var secondReport = await CreateIntake().ImportPathsAsync([second], ct: TestToken);
+            Assert.Equal(1, secondReport.Routed);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+
+        var firstReport = await firstTask;
+        Assert.Equal(1, firstReport.Routed);
+        var receiptPath = Path.Combine(root, "Manager", "State", "mod-intake-receipts.json");
+        var stored = JsonSerializer.Deserialize<string[]>(
+            await File.ReadAllTextAsync(receiptPath, TestToken));
+        Assert.NotNull(stored);
+        Assert.Equal(2, stored.Length);
+
+        var replay = await CreateIntake().ImportPathsAsync([first, second], ct: TestToken);
+        Assert.Equal(0, replay.Routed);
+        Assert.Equal(2, replay.AlreadyPresent);
+    }
+
+    [Fact]
+    public async Task Processed_receipt_still_deduplicates_after_inbox_package_moves_elsewhere()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var first = Path.Combine(source, "MHW Outfit.zip");
+        CreateZip(first, "nativePC/pl/armor/outfit.tex");
+
+        var intake = CreateIntake();
+        var result = await intake.ImportPathsAsync([first], ct: TestToken);
+        Assert.Equal(1, result.Routed);
+        var inbox = Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        var staged = Assert.Single(Directory.GetFiles(inbox, "*.zip"));
+        var processed = Path.Combine(root, "Processed");
+        Directory.CreateDirectory(processed);
+        File.Move(staged, Path.Combine(processed, Path.GetFileName(staged)));
+
+        var replay = await CreateIntake().ImportPathsAsync([first], ct: TestToken);
+        Assert.Equal(0, replay.Routed);
+        Assert.Equal(1, replay.AlreadyPresent);
+        Assert.Empty(Directory.GetFiles(inbox, "*.zip"));
+        Assert.True(File.Exists(first));
+    }
+
+    [Fact]
+    public async Task Competing_importers_of_identical_archive_bytes_publish_only_one_package()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var first = Path.Combine(source, "MHW Armor A.zip");
+        var second = Path.Combine(source, "MHW Armor B.zip");
+        CreateZip(first, "nativePC/pl/armor/armor.tex");
+        File.Copy(first, second);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pause = new InlineProgress<GameModIntakeProgress>(update =>
+        {
+            if (update.Completed != 0 || update.Stage != "Inspecting") return;
+            entered.TrySetResult();
+            release.Task.GetAwaiter().GetResult();
+        });
+        var firstTask = Task.Run(
+            () => CreateIntake().ImportPathsAsync([first], pause, TestToken), TestToken);
+        try
+        {
+            await entered.Task.WaitAsync(TestToken);
+            var secondResult = await CreateIntake().ImportPathsAsync([second], ct: TestToken);
+            Assert.Equal(1, secondResult.Routed);
+        }
+        finally { release.TrySetResult(); }
+
+        var firstResult = await firstTask;
+        Assert.Equal(0, firstResult.Routed);
+        Assert.Equal(1, firstResult.AlreadyPresent);
+        var inbox = Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        Assert.Single(Directory.GetFiles(inbox, "*.zip"));
+        Assert.True(File.Exists(first));
+        Assert.True(File.Exists(second));
+    }
+
+    [Fact]
+    public async Task Receipt_writer_lock_wait_can_be_cancelled_without_publishing()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var archive = Path.Combine(source, "MHW Armor.zip");
+        CreateZip(archive, "nativePC/pl/armor/armor.tex");
+        var state = Path.Combine(root, "Manager", "State");
+        Directory.CreateDirectory(state);
+        await using var heldLock = new FileStream(Path.Combine(state, "mod-intake-receipts.lock"),
+            FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        using var cancel = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        cancel.CancelAfter(TimeSpan.FromMilliseconds(250));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => CreateIntake().ImportPathsAsync([archive], ct: cancel.Token));
+
+        Assert.True(File.Exists(archive));
+        var inbox = Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        Assert.Empty(Directory.GetFiles(inbox, "*.zip"));
+        Assert.False(File.Exists(Path.Combine(state, "mod-intake-receipts.json")));
+    }
+
+    [Fact]
+    public async Task Cancel_during_archive_byte_copy_cleans_owned_scratch_and_never_commits()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var archive = Path.Combine(source, "MHW Large.zip");
+        var payload = new byte[4 * 1024 * 1024];
+        new Random(47).NextBytes(payload);
+        using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+        using (var entry = zip.CreateEntry("nativePC/pl/armor/large.tex").Open())
+            await entry.WriteAsync(payload, TestToken);
+
+        using var cancel = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var copyUpdates = new List<GameModIntakeProgress>();
+        var progress = new InlineProgress<GameModIntakeProgress>(update =>
+        {
+            if (!update.Stage.StartsWith("Copying ", StringComparison.Ordinal)) return;
+            copyUpdates.Add(update);
+            cancel.Cancel();
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => CreateIntake().ImportPathsAsync([archive], progress, cancel.Token));
+
+        Assert.NotEmpty(copyUpdates);
+        Assert.True(File.Exists(archive));
+        var inbox = Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        Assert.Empty(Directory.GetFiles(inbox, "*.zip"));
+        Assert.False(File.Exists(Path.Combine(root, "Manager", "State", "mod-intake-receipts.json")));
+    }
+
+    [Fact]
+    public async Task Retry_after_receipt_write_failure_adopts_intact_staged_archive()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var archive = Path.Combine(source, "MHW Recovery.zip");
+        CreateZip(archive, "nativePC/pl/armor/recovery.tex");
+
+        var state = Path.Combine(root, "Manager", "State");
+        Directory.CreateDirectory(state);
+        // A path collision blocks only the receipt index's final rename.
+        // The already-moved staged package is still recoverable on retry.
+        var blockedReceipt = Path.Combine(state, "mod-intake-receipts.json");
+        Directory.CreateDirectory(blockedReceipt);
+        var intake = CreateIntake();
+
+        var failed = await intake.ImportPathsAsync([archive], ct: TestToken);
+        Assert.Equal(1, failed.NeedsReview);
+        Assert.Equal(0, failed.Routed);
+        var inbox = Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        var staged = Assert.Single(Directory.GetFiles(inbox, "*.zip"));
+        Assert.True(File.Exists(staged));
+        Assert.True(File.Exists(archive));
+
+        Directory.Delete(blockedReceipt);
+        var replay = await CreateIntake().ImportPathsAsync([archive], ct: TestToken);
+        Assert.Equal(1, replay.AlreadyPresent);
+        Assert.Equal(0, replay.Routed);
+        Assert.Single(Directory.GetFiles(inbox, "*.zip"));
+        Assert.True(File.Exists(Path.Combine(state, "mod-intake-receipts.json")));
+    }
 
     [Fact]
     public async Task Empty_bulk_selection_is_a_no_op_without_creating_manager_state()

@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.110",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.109 updater-main-530 came from source a2910311. #832 planner optimization, #835 NuGet/CI reconciliation and #836 synthetic archive/family regressions were independently native checked and integrated on main 8ed0a73; v8.8.110 metadata and distinct publication remain pending. Installed WPF, real RAR/7z throughput and isolated rollback remain unverified.",
+  "immediateParentRevision": "Immutable v8.8.109 updater-main-530 source a2910311 excludes the later #832 planner, #835 NuGet/CI, #836 synthetic archive/family regression and #838 cross-process intake receipt safety changes, all now merged on main 285ba723 after exact native PR verification. v8.8.110 metadata and distinct immutable publication remain pending; physical WPF, real RAR/7z throughput and isolated rollback unverified.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh Toolbox and Mod Manager main/owners and fully read CONTINUITY_PROTOCOL and Learned Rules; every successor must propagate these recursively again. Confirm newer main release run 43983812212, reconcile serialized v8.8.110 candidate to main 8ed0a73 (including #836), run exact-head Feature/README/Security/Ownership/AutoUpdate, protected expected-head merge, then exact-main release and independent distinct ZIP/manifest SHA-256/public feed. Preserve updater-main-530 and occupied shared user updater state. #791 real corpus/WPF and #793 isolated positive update/rollback remain open.",
+  "nextAgentObligation": "Refresh canonical Toolbox and Mod Manager main/owner, fully read CONTINUITY_PROTOCOL and Learned Rules, preserve and recursively pass both to successor. Confirm #838 main Windows Release Gate 43987535401; reconcile v8.8.110 serialized metadata to main 285ba723; rerun exact native Feature/README/Security/Ownership/AutoUpdate; protect expected-head merge, then verify new immutable ZIP/manifest SHA-256/public feed. Preserve updater-main-530 and occupied updater user state; #791 real corpus/WPF and #793 isolated positive rollback remain open. A prior green head on older main is not sufficient.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

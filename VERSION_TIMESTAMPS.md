@@ -4,7 +4,7 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
-| 8.8.110 | November 16, 2026 · 6:49:33 PM EST | serialized planner, NuGet and synthetic importer regression integration source main 8ed0a73; new immutable publication and installed-client acceptance pending |
+| 8.8.110 | November 16, 2026 · 6:49:33 PM EST | serialized planner, NuGet, importer regression and cross-process intake receipt safety source main 285ba723; new immutable publication and installed-client acceptance pending |
 | 8.8.109 | November 16, 2026 · 3:45:07 PM EST | immutable updater-main-530 published from exact source a2910311; installed-client acceptance separate |
 | 8.8.108 | November 15, 2026 · 6:20:49 AM EST | immutable updater-main-524 published from source 93eb26a7; installed-client proof remains separate |
 | 8.8.107 | November 15, 2026 · 3:56:30 AM EST | serialized managed-collection rescan source from main 5b50e658; immutable publication and installed E2E not yet established |

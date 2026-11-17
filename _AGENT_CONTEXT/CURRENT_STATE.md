@@ -1,6 +1,6 @@
 # v8.8.110 planner/dependency reconciliation — source integrated, release pending
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` includes #832 and #835 source and #836 at `8ed0a73ca4a320c49c579b8620a3b1869595d2b3`. Previous immutable [v8.8.109 updater-main-530](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-530) was published from earlier source `a29103111dd9b0e56574c50bd3fbb1baaf25d33a` and does not include these newer changes.
+Canonical state: `fengie/Heaven-Mod_Manager@main` includes #832 and #835 source and #836/#838 at `285ba72396ce942862842c89818cfce90ff64c56`. Previous immutable [v8.8.109 updater-main-530](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-530) was published from earlier source `a29103111dd9b0e56574c50bd3fbb1baaf25d33a` and does not include these newer changes.
 
 ## Integrated implementation
 
@@ -10,10 +10,12 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` includes #832 and #835 source 
 
 - #836 adds 10 synthetic ZIP/invalid-archive/cancellation/dedup fault integration tests, 3 family topology unit tests and opt-in replay/family benchmark suites; exact-head native Windows Feature 43982862135 and AutoUpdate 43982863098 passed. This does not establish real RAR/7z or installed UI behavior.
 
+- #838 protects cross-process mod-intake receipt durability by serializing independent writer commits and re-reading/merging receipt hashes under the writer lease. Exact head `bbf8b17f3d6c4869016ad623df48cca3758083f5` passed Windows Feature 43985886173 and AutoUpdate 43985886847, integrated on main 285ba723; physical installed concurrency proof remains unverified.
+
 ## Verification boundary
 
 - #832 head `5cf175d871fe51ac1895378c919c8d2d1d14784c` passed exact Windows Feature [43978338548](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43978338548) and AutoUpdate 43978338567. #835 head `2974738085def5dc4183d7c7ad055b6545922c14` passed exact Feature [43979469737](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43979469737), Product Security 43979469676, Updater Publication 43979469883 and AutoUpdate 43979469626.
-- Prior main Windows Release Gate 43981825454 passed for #835. New [main Windows Release Gate 43983812212](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43983812212) for #836 must terminate before protected version integration; never overwrite immutable updater-main-530.
+- Prior main Windows Release Gates 43981825454 (#835) and 43983812212 (#836) passed. The newer [main Windows Release Gate 43987535401](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43987535401) for #838 must complete before protected version integration; never overwrite immutable updater-main-530.
 - New v8.8.110 publication is **pending** candidate exact native gates, serialized protected merge, exact-main Windows release verification and independent ZIP/manifest/sha/public-feed readback. Source CI and publication are not installed-runtime proof.
 
 ## Remaining acceptance and risks
@@ -23,4 +25,4 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` includes #832 and #835 source 
 - [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): positive packaged update-and-rollback requires isolated Windows user/profile; do not clear occupied shared updater state or treat E2E classification success as an actual update.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): release-status/verification-closure synchronization remains independently tracked.
 
-Next: finish newer main gate 43983812212, reconcile v8.8.110 metadata to 8ed0a73 and rerun candidate native checks, verify/publish a distinct immutable version, and gather separate installed/user-corpus evidence. Every successor must inherit, obey and recursively propagate the permanent continuity constitution and active Learned Rules to the next agent.
+Next: finish #838 main gate 43987535401, reconcile v8.8.110 metadata to 285ba723 and rerun candidate native checks, verify/publish a distinct immutable version, and gather separate installed/user-corpus evidence. Every successor must inherit, obey and recursively propagate the permanent continuity constitution and active Learned Rules to the next agent.
