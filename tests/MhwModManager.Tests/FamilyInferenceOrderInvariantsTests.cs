@@ -112,6 +112,22 @@ public sealed class FamilyInferenceOrderInvariantsTests
         Assert.Empty(evidence);
     }
 
+    [Fact]
+    public void Version_like_numeric_suffixes_with_one_shared_root_do_not_group_unrelated_files()
+    {
+        var mods = Enumerable.Range(0, 32)
+            .Select(index => Mod($"item-{index:D5}", $"Synthetic {index:D5}"))
+            .ToArray();
+        var files = mods.Select((mod, index) =>
+            File(mod.Id, $@"nativePC\shared\collection\common\mod{index:D5}\file.tex"))
+            .ToArray();
+
+        var inferred = GenericFamilyInference.InferKeys(mods, files, out var evidence);
+
+        Assert.Empty(inferred);
+        Assert.Empty(evidence);
+    }
+
     private static ModDescriptor Mod(string id, string name) =>
         new(id, name, name, id, false, 0);
 
