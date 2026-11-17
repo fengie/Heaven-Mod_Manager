@@ -1,6 +1,6 @@
 # v8.8.112 - release metadata candidate, publication unverified
 
-Canonical pre-release source: `fengie/Heaven-Mod_Manager@main` at `62f3dee97e1e6ed56bcc098b50db515e4b08b624`; v8.8.112 metadata has **not yet passed exact-main release or public artifact verification**. Prior immutable v8.8.111 updater-main-537 source `1e24b351` excludes later #844/#846/#847/#848. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: pre-release integrated source `fengie/Heaven-Mod_Manager@main` at `62f3dee97e1e6ed56bcc098b50db515e4b08b624`; v8.8.112 metadata has **not yet passed exact-main release or public artifact verification**. Prior immutable v8.8.111 updater-main-537 source `1e24b351` excludes later #844/#846/#847/#848. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
