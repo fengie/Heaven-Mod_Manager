@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/REPOSITORY-LAYOUT.md'
       - '_AGENT_CONTEXT/**'
       - '_AGENT_TRAINING/**'
       - 'GLOBAL_GIT_DIRECTIVE.md'
@@ -16,6 +18,8 @@ on:
   pull_request:
     paths:
       - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/REPOSITORY-LAYOUT.md'
       - '_AGENT_CONTEXT/**'
       - '_AGENT_TRAINING/**'
       - 'GLOBAL_GIT_DIRECTIVE.md'

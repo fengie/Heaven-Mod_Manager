@@ -63,6 +63,7 @@ try{
     $files=@(
         'VERSION.txt','Directory.Build.props','README.md','CHANGELOG.md','AGENTS.md','NEXT-AGENT-START-HERE.md',
         'docs/REPOSITORY-LAYOUT.md',
+        '.github/workflows/heaven-toolbox-ownership-gate.yml',
         '_AGENT_CONTEXT/CURRENT_REVISION.json','_AGENT_CONTEXT/README_FIRST.md','_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md',
         '_AGENT_CONTEXT/handoff-manifest.json','.verification/function-status.json','.verification/stage-status.json',
         'scripts/testing/Test-AgentHandoff.ps1','scripts/testing/Test-HeavenToolboxOwnership.ps1','scripts/release/Sync-VerificationContinuity.ps1'

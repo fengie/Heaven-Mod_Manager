@@ -566,6 +566,44 @@ if(Test-Path -LiteralPath $releasePath){
         $errors.Add('windows-release-gate.yml: provenance and canonical release publication require positive release intent.')
     }
 }
+# Regression for the v8.8.111 post-merge release-job parser failure:
+# accidentally substituting PowerShell's literal regex "$'" as a string
+# replacement template duplicated the workflow tail in the published source.
+# Count independent, unique structural boundaries even when PowerShell source
+# scripts parse and run correctly in PR-only validators.
+function Get-ReleaseWorkflowBoundaryViolations([string]$WorkflowText){
+    $failures=New-Object System.Collections.Generic.List[string]
+    $uniqueMarkers=@(
+        'name: Windows Release Gate',
+        '# Evidence and successor state are one logical transition.',
+        'Sync-VerificationContinuity.ps1 -Root (Get-Location).Path',
+        'git config user.name',
+        'Persist promoted verification state',
+        'Publish immutable canonical updater release',
+        'if($tag -notmatch ''^updater-main-[0-9]{1,18}$'')'
+    )
+    foreach($marker in $uniqueMarkers){
+        $count=[regex]::Matches($WorkflowText,[regex]::Escape($marker)).Count
+        if($count -ne 1){
+            $failures.Add("windows-release-gate.yml: expected one occurrence of '$marker', got $count.")
+        }
+    }
+    return @($failures)
+}
+if(Test-Path -LiteralPath $releasePath -PathType Leaf){
+    foreach($violation in @(Get-ReleaseWorkflowBoundaryViolations -WorkflowText $release)){
+        $errors.Add($violation)
+    }
+    $duplicateFixture=$release.Replace('git config user.name',"git config user.name`n          git config user.name")
+    if(@(Get-ReleaseWorkflowBoundaryViolations -WorkflowText $duplicateFixture).Count -eq 0){
+        $errors.Add('CI release regression: duplicated workflow persistence footer was accepted.')
+    }
+    $truncatedRegexFixture=$release.Replace('if($tag -notmatch ''^updater-main-[0-9]{1,18}$'')','if($tag -notmatch ''^updater-main-[0-9]{1,18}')
+    if(@(Get-ReleaseWorkflowBoundaryViolations -WorkflowText $truncatedRegexFixture).Count -eq 0){
+        $errors.Add('CI release regression: truncated updater tag-ref regex was accepted.')
+    }
+}
+
 $updaterPrGatePath=Join-Path $workflowRoot 'updater-publication-pr-gate.yml'
 if(Test-Path -LiteralPath $updaterPrGatePath){
     $gate=Get-Content -LiteralPath $updaterPrGatePath -Raw
