@@ -53,6 +53,7 @@ MHW Manual Mod Manager v9.9.9 Heaven Windows closure
 source_sha=$source
 run_id=$run
 runner_os=Windows
+release_artifact_sha256=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 === VERIFICATION REPORT ===
 Overall: **PASS** - 26 passed / 0 failed
