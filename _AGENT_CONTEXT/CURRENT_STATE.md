@@ -1,6 +1,6 @@
-# v8.8.111 family performance — implementation merged, serialized release candidate
+# v8.8.111 - source verified, publication unverified
 
-Canonical state: `main@fefc78110f69e5d3532d6fd424d0e11253adf09c` includes #839 early strong-evidence family pruning plus previously published #829/#832/#835/#836/#838. Previous immutable [v8.8.110 updater-main-535](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-535) has source `968d9e7d77a7d5872fb94a63eea0d9819586a0b8`, so the public ZIP does **not** contain #839.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -16,9 +16,11 @@ Canonical state: `main@fefc78110f69e5d3532d6fd424d0e11253adf09c` includes #839 e
 
 ## Verification boundary
 
-- #839 exact head `176116f8` passed native Windows Feature [43989850199](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43989850199), AutoUpdate 43989850215 and required `enforce`; merged `main@fefc7811` passed 26/26 [Windows Release Gate 43993837451](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43993837451) and AutoUpdate 43993837449. Unchanged 8.8.110 version intentionally skipped duplicate publication.
-- Immutable v8.8.110 updater-main-535: published earlier source `968d9e7d`, independent ZIP SHA-256 `68c49dbc534b1125ca6cec7c8048ebeded380bc4c2ae003b11cd2b59f4860ffd`, manifest SHA-256 `d9f97ea3d1da85d710d3e207f3fb8ced592eaeb7356c389121c260d0a5f3ae71`.
-- v8.8.111 metadata candidate requires exact-head Feature/README/Security/Ownership/AutoUpdate, protected expected-head merge and fresh 26/26 Windows Release Gate. Distinct v8.8.111 immutable artifact/manifest/source/feed SHA readback is mandatory; none has been claimed yet.
+Current hosted-Windows closure: v8.8.111 source `d55d09a877760220a1105a0ba1ee522846320ca6` passed run `44019899108` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
+
+Public release status: **NOT VERIFIED** for source `d55d09a877760220a1105a0ba1ee522846320ca6`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `d55d09a877760220a1105a0ba1ee522846320ca6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 

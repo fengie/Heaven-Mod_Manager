@@ -1,6 +1,6 @@
-# v8.8.111 family-performance optimization — serialized release candidate
+# v8.8.111 - source verified, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `fefc78110f69e5d3532d6fd424d0e11253adf09c` including merged #839; preceding immutable [v8.8.110 updater-main-535](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-535) is earlier source `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` and excludes #839. Bootstrap current `fengie/heaven-toolbox@main` and refresh both repository main/PR/release/owner state before mutation.
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -15,10 +15,11 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` at `fefc78110f69e5d3532d6fd42
 
 ## Verification boundary
 
-1. Reconcile release ownership and the exact main `fefc78110f69e5d3532d6fd424d0e11253adf09c`; previously published updater-main-535 remains immutable and must not be overwritten or force-published.
-2. This serialized v8.8.111 metadata-only candidate must pass exact-head Windows Feature, README timestamp, Product Security, Toolbox Ownership and AutoUpdate with `enforce`; protected merge only at fresh base with expected head SHA.
-3. Fresh exact-main Windows Release Gate must pass 26/26, then independently verify the **new** immutable v8.8.111 ZIP, manifest, SHA-256, published tag/source, attestation and public updater feed. No stale-green or skipped-positive E2E claims.
-4. Source tests, release publication and physically installed acceptance remain separate boundaries. Archive/UI corpus and positive isolated rollback require additional proof.
+Current hosted-Windows closure: v8.8.111 source `d55d09a877760220a1105a0ba1ee522846320ca6` passed run `44019899108` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
+
+Public release status: **NOT VERIFIED** for source `d55d09a877760220a1105a0ba1ee522846320ca6`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `d55d09a877760220a1105a0ba1ee522846320ca6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
