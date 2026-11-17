@@ -111,7 +111,8 @@ public sealed class AutoPopulateDispatcherRegressionTests
         var finish = source.IndexOf("internal static Task<T> RunAutoPopulateBuildAsync", start, StringComparison.Ordinal);
         Assert.True(start >= 0 && finish > start);
         var action = source[start..finish];
-        var inbox = action.IndexOf("s.Inbox.ProcessAsync(ct)", StringComparison.Ordinal);
+        var inbox = action.IndexOf("await ProcessInboxWithProgressAsync(ct)", StringComparison.Ordinal);
+        Assert.Contains("return await Task.Run(() => s.Inbox.ProcessAsync(updates, ct), ct)", source);
         var reload = action.IndexOf("await ReloadMods(ct)", StringComparison.Ordinal);
         var build = action.IndexOf("service.BuildAsync", StringComparison.Ordinal);
         Assert.True(inbox >= 0 && reload > inbox && build > reload,

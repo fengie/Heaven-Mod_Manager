@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using SharpCompress.Archives;
 using SharpCompress.Common;
@@ -9,6 +10,7 @@ namespace MhwModManager.Filesystem;
 public sealed record ArchiveEntryInfo(string Key,long Size,bool IsDirectory);
 public sealed record ArchiveInspection(IReadOnlyList<ArchiveEntryInfo> Entries,bool HasNativePc,bool HasGameRoot,bool HasSuspiciousPaths,long ExpandedBytes,string? CommonWrapper);
 public sealed record ArchiveExtractionLimits(long MaxDeclaredExpandedBytes,long MaxActualOutputBytes);
+public sealed record ArchiveExtractionProgress(int CompletedFiles,int TotalFiles,long CompletedBytes,long TotalBytes);
 
 public enum ArchiveExtractionFaultPoint
 {
@@ -70,11 +72,23 @@ public sealed class ArchiveInspector
     }
 
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "ArchiveInspector is intentionally an injectable instance service used by the application and integration tests.")]
+    public Task ExtractSafelyAsync(
+        string archivePath,
+        string destination,
+        string trustedRoot,
+        ArchiveExtractionLimits limits,
+        CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ExtractSafelyAsync(archivePath,destination,trustedRoot,limits,null,ct);
+    }
+
     public async Task ExtractSafelyAsync(
         string archivePath,
         string destination,
         string trustedRoot,
         ArchiveExtractionLimits limits,
+        IProgress<ArchiveExtractionProgress>? progress,
         CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"archive={archivePath}; destination={destination}; trustedRoot={trustedRoot}");
@@ -133,6 +147,9 @@ public sealed class ArchiveInspector
 
         EnsureSafeDirectoryPath(trusted,destinationFull);
         long actualTotal=0;
+        var completedFiles=0;
+        var lastProgress=Stopwatch.StartNew();
+        progress?.Report(new ArchiveExtractionProgress(0,files.Count,0,declaredTotal));
         foreach(var (e,dest) in files)
         {
             ct.ThrowIfCancellationRequested();
@@ -164,6 +181,11 @@ public sealed class ArchiveInspector
                         injectFault(ArchiveExtractionFaultPoint.BeforePayloadWrite,dest);
                         await output.WriteAsync(buffer.AsMemory(0,read),ct).ConfigureAwait(false);
                         actualTotal+=read;
+                        if(progress is not null && lastProgress.ElapsedMilliseconds>=250)
+                        {
+                            progress.Report(new ArchiveExtractionProgress(completedFiles,files.Count,actualTotal,declaredTotal));
+                            lastProgress.Restart();
+                        }
                     }
                 }
                 finally
@@ -175,6 +197,12 @@ public sealed class ArchiveInspector
             {
                 TryDeleteOwnedOutput(dest,primaryFailure);
                 throw;
+            }
+            completedFiles++;
+            if(progress is not null && (completedFiles==files.Count || lastProgress.ElapsedMilliseconds>=250))
+            {
+                progress.Report(new ArchiveExtractionProgress(completedFiles,files.Count,actualTotal,declaredTotal));
+                lastProgress.Restart();
             }
         }
     }

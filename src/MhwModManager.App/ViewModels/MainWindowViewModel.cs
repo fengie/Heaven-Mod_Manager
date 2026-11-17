@@ -55,6 +55,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private string footerText="Ready";
     [ObservableProperty]private string busyTitle="Working…";
     [ObservableProperty]private string busyDetail="";
+    [ObservableProperty]private bool busyProgressIndeterminate=true;
+    [ObservableProperty]private double busyProgressPercent;
+    [ObservableProperty]private string busyProgressSummary="";
+    [ObservableProperty]private double busyItemProgressPercent;
+    [ObservableProperty]private string busyItemProgressLabel="";
+    [ObservableProperty]private Visibility busyItemProgressVisibility=Visibility.Collapsed;
+    [ObservableProperty]private string busyElapsedText="Elapsed: 0s";
+    [ObservableProperty]private string busyOperationId="";
     [ObservableProperty]private Visibility busyVisibility=Visibility.Collapsed;
     [ObservableProperty]private Visibility cancelVisibility=Visibility.Collapsed;
     [ObservableProperty]private int selectedTab;
@@ -1045,7 +1053,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 // Smart Inbox is the existing safe importer; do not duplicate its
                 // publication/rollback semantics or write directly into game files.
                 var stagedBeforeImport = CaptureStage();
-                var inboxResult = await s.Inbox.ProcessAsync(ct);
+                var inboxResult = await ProcessInboxWithProgressAsync(ct);
+                BusyDetail = "Computing safe mod enablement and dependencies…";
+                BusyItemProgressVisibility = Visibility.Collapsed;
+                BusyProgressIndeterminate = true;
                 if (inboxResult.Imported > 0)
                 {
                     await ReloadMods(ct);
@@ -1284,6 +1295,58 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private void OpenMasterLog()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var path = MasterDebugLog.FilePath;
+        try
+        {
+            if (!File.Exists(path))
+            {
+                StatusText = "The master diagnostic log has not been created yet.";
+                return;
+            }
+            using var process = ProcessDebug.Start(
+                new ProcessStartInfo(path) { UseShellExecute = true }, "open-master-debug-log");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+            or System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            MasterDebugLog.Write("DIAGNOSTICS", "Failed to open the existing master log.", ex);
+            StatusText = "Could not open diagnostic log: " + path + ". " + ex.Message;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportPerformanceReport()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        string? reportPath = null;
+        await RunBusy("diagnostics.performance-report", "Creating Performance Report",
+            "Summarizing recorded operation latency, CPU and allocations from the past seven days…",
+            true, async ct =>
+            {
+                var reports = Path.Combine(s.Paths.StateRoot, "Next", "Reports");
+                reportPath = await Task.Run(() =>
+                    new OperationLatencyReportService(s.Database).GenerateAsync(reports, ct), ct);
+                StatusText = "Performance report: " + reportPath;
+            });
+        if (reportPath is null) return;
+        try
+        {
+            using var process = ProcessDebug.Start(
+                new ProcessStartInfo(reportPath) { UseShellExecute = true },
+                "open-performance-report");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+            or System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            MasterDebugLog.Write("PERFORMANCE-REPORT", "Could not open generated performance report.", ex);
+            StatusText = "Performance report saved: " + reportPath;
+        }
+    }
+
+    [RelayCommand]
     private async Task StageProfile()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -1419,17 +1482,73 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         });
     }
 
+    private async Task<InboxRunResult> ProcessInboxWithProgressAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var accepting = true;
+        // Capture the WPF synchronization context so the worker never touches bound properties.
+        var updates = new Progress<InboxRunProgress>(state =>
+        {
+            if (!accepting || BusyVisibility != Visibility.Visible) return;
+            BusyDetail = string.IsNullOrWhiteSpace(state.CurrentItem)
+                ? state.Stage : $"{state.Stage}: {state.CurrentItem}";
+            // The progress bar represents completed Inbox packages, not a fabricated
+            // percentage for filesystem indexing, network metadata, or classification.
+            var postImportPhase = state.Stage is "Indexing catalog" or
+                "Capturing imported mods" or "Refreshing metadata" or "Assigning categories";
+            BusyProgressIndeterminate = state.Total == 0 || postImportPhase;
+            BusyProgressPercent = state.Total > 0
+                ? Math.Clamp(100d * state.Completed / state.Total, 0, 100)
+                : 0;
+            BusyProgressSummary = $"{state.Completed}/{state.Total} packages processed";
+            if (state.TotalFiles > 0)
+                BusyProgressSummary += $" • current package: {state.ExtractedFiles}/{state.TotalFiles} files";
+            if (state.TotalBytes > 0)
+                BusyProgressSummary += $" • {state.ExtractedBytes / 1048576d:F1}/{state.TotalBytes / 1048576d:F1} MiB";
+            if (postImportPhase)
+                BusyProgressSummary += " • finalization in progress";
+            // A second bar tracks measured bytes/files within the *current* package.
+            // Unknown-duration phases never receive fabricated percentages.
+            if ((state.Stage is "Copying folder" or "Extracting archive") &&
+                (state.TotalBytes > 0 || state.TotalFiles > 0))
+            {
+                BusyItemProgressVisibility = Visibility.Visible;
+                BusyItemProgressPercent = state.TotalBytes > 0
+                    ? Math.Clamp(100d * state.ExtractedBytes / state.TotalBytes, 0, 100)
+                    : Math.Clamp(100d * state.ExtractedFiles / state.TotalFiles, 0, 100);
+                BusyItemProgressLabel = state.TotalBytes > 0
+                    ? $"Current archive: {state.ExtractedBytes / 1048576d:F1} of {state.TotalBytes / 1048576d:F1} MiB"
+                    : $"Current folder: {state.ExtractedFiles} of {state.TotalFiles} files";
+            }
+            else BusyItemProgressVisibility = Visibility.Collapsed;
+        });
+        try
+        {
+            // Folder enumeration, classification, publication and some archive operations
+            // are synchronous; offload the entire Inbox service to preserve WPF rendering.
+            return await Task.Run(() => s.Inbox.ProcessAsync(updates, ct), ct);
+        }
+        finally { accepting = false; }
+    }
+
     [RelayCommand]
     private async Task ProcessInbox()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("automation.inbox","Installing Mods from Inbox","Checking each package, importing safe mods, and handling obvious duplicates automatically…",true,async ct=>
-    {
-        var result=await s.Inbox.ProcessAsync(ct);
-        var archived=await s.Duplicates.ArchiveSafeAsync(ct);
-        await ReloadMods(ct);await RefreshAnalysis(ct);
-        StatusText=$"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, {archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
-    });
+        {
+            var result = await ProcessInboxWithProgressAsync(ct);
+            BusyDetail = "Checking and archiving safe duplicates…";
+            BusyItemProgressVisibility = Visibility.Collapsed;
+            BusyProgressIndeterminate = true;
+            var archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
+            BusyDetail = "Refreshing the visible mod list…";
+            await ReloadMods(ct);
+            BusyDetail = "Recalculating mod conflicts and compatibility…";
+            await RefreshAnalysis(ct);
+            StatusText = $"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, " +
+                $"{archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
+        });
     }
 
     [RelayCommand]
@@ -1680,12 +1799,30 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return;
         }
         busyCts=new CancellationTokenSource();
-        BusyTitle=title;BusyDetail=detail;CancelVisibility=cancellable?Visibility.Visible:Visibility.Collapsed;CriticalOperation=!cancellable;BusyVisibility=Visibility.Visible;
+        BusyTitle=title;BusyDetail=detail;
+        BusyProgressIndeterminate=true;BusyProgressPercent=0;BusyProgressSummary=string.Empty;
+        BusyItemProgressVisibility=Visibility.Collapsed;BusyItemProgressPercent=0;BusyItemProgressLabel=string.Empty;
+        BusyElapsedText="Elapsed: 0s";BusyOperationId=string.Empty;
+        CancelVisibility=cancellable?Visibility.Visible:Visibility.Collapsed;CriticalOperation=!cancellable;BusyVisibility=Visibility.Visible;
         var sw=Stopwatch.StartNew();
+        var ticker=new System.Windows.Threading.DispatcherTimer { Interval=TimeSpan.FromSeconds(1) };
+        ticker.Tick+=(_,_) =>
+        {
+            BusyElapsedText=$"Elapsed: {sw.Elapsed.TotalSeconds:F0}s";
+            if ((int)sw.Elapsed.TotalSeconds % 10 == 0)
+                MasterDebugLog.Write("UI-PROGRESS",
+                    $"operation={operationName}; elapsedMs={sw.Elapsed.TotalMilliseconds:F0}; phase={BusyDetail}; percent={(BusyProgressIndeterminate ? "unknown" : BusyProgressPercent.ToString("F1",CultureInfo.InvariantCulture))}");
+        };
+        ticker.Start();
         try
         {
-            await s.Telemetry.TrackAsync(operationName,async(_,ct)=>await action(ct),
-                new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
+            await s.Telemetry.TrackAsync(operationName,async(id,ct)=>
+            {
+                BusyOperationId="Operation ID: "+id;
+                MasterDebugLog.Write("UI-CORRELATION",
+                    $"operation={operationName}; telemetryId={id}; masterTraceId={MasterDebugLog.CurrentOperationId}");
+                await action(ct);
+            },new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
             FooterText=$"{title} finished in {sw.Elapsed.TotalSeconds:F1}s";
         }
         catch(OperationCanceledException){StatusText=$"{title} cancelled.";FooterText=StatusText;if(rethrowOnFailure)throw;}
@@ -1699,6 +1836,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         finally
         {
+            ticker.Stop();
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
             programUpdateHandoffGate.EndForeground();
