@@ -245,7 +245,11 @@ public sealed class GameModIntakeService
                             {
                                 RefuseReparseComponents(archivePath);
                                 await ClassifyAndRouteAsync(full, archivePath, false,
-                                    games, items, receipts, ct).ConfigureAwait(false);
+                                    games, items, receipts, ct,
+                                    copyProgress: (copied, length) => progress?.Report(new(
+                                        index, inputs.Length, archivePath,
+                                        $"Copying {copied / 1048576d:F1} / {length / 1048576d:F1} MiB")))
+                                    .ConfigureAwait(false);
                             }
                             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
                                 or InvalidDataException or JsonException)
@@ -272,7 +276,11 @@ public sealed class GameModIntakeService
                             throw new InvalidDataException("Cannot import directly from a live game installation.");
                     if (IsSupportedArchive(full))
                         await ClassifyAndRouteAsync(Path.GetDirectoryName(full)!, full, false,
-                            games, items, receipts, ct).ConfigureAwait(false);
+                            games, items, receipts, ct,
+                            copyProgress: (copied, length) => progress?.Report(new(
+                                index, inputs.Length, full,
+                                $"Copying {copied / 1048576d:F1} / {length / 1048576d:F1} MiB")))
+                            .ConfigureAwait(false);
                     else
                         items.Add(new(full, null, GameModIntakeStatus.NeedsReview,
                             "Select a folder or a ZIP, RAR or 7z archive."));
@@ -634,7 +642,8 @@ public sealed class GameModIntakeService
         string sourceRoot, string source, bool isDirectory, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts, CancellationToken ct,
         int nestedDepth = 0, IntakeBudget? budget = null, string? provenance = null,
-        string? gameContextHint = null, string? manualGameId = null)
+        string? gameContextHint = null, string? manualGameId = null,
+        Action<long, long>? copyProgress = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         budget ??= new IntakeBudget(collectionCopyBudget);
@@ -789,7 +798,7 @@ public sealed class GameModIntakeService
         RefuseReparseComponents(library.InboxRoot);
         var wasCreated = isDirectory
             ? await CopyDirectoryIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false)
-            : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct).ConfigureAwait(false);
+            : await CopyArchiveIntoInboxAsync(source, library.InboxRoot, owner.Id, receipts, budget, ct, copyProgress).ConfigureAwait(false);
         output.Add(new(reportSource, owner.Id,
             wasCreated ? GameModIntakeStatus.Routed : GameModIntakeStatus.AlreadyPresent,
             wasCreated
@@ -799,7 +808,8 @@ public sealed class GameModIntakeService
     }
 
     private async Task<bool> CopyArchiveIntoInboxAsync(string source, string inboxRoot, string gameId,
-        HashSet<string> receipts, IntakeBudget budget, CancellationToken ct)
+        HashSet<string> receipts, IntakeBudget budget, CancellationToken ct,
+        Action<long, long>? copyProgress = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var inputBytes = new FileInfo(source).Length;
@@ -819,6 +829,7 @@ public sealed class GameModIntakeService
                 var buffer = new byte[IoBufferSize];
                 int count;
                 long total = 0;
+                long nextProgress = 0;
                 while ((count = await input.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
                 {
                     total += count;
@@ -826,6 +837,14 @@ public sealed class GameModIntakeService
                     budget.AccountActual(count);
                     digest.AppendData(buffer.AsSpan(0, count));
                     await output.WriteAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
+                    // Report copied bytes, not just archive count. Synchronous progress
+                    // callbacks may cancel; never publish a partially copied package.
+                    if (copyProgress is not null && (total >= nextProgress || total == inputBytes))
+                    {
+                        copyProgress(total, inputBytes);
+                        ct.ThrowIfCancellationRequested();
+                        nextProgress = total + 4L * 1024 * 1024;
+                    }
                 }
                 await output.FlushAsync(ct).ConfigureAwait(false);
             }
