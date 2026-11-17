@@ -32,6 +32,11 @@ public sealed class InstalledWpfModLifecycleE2ETests
         using var run = new DisposableWpfRun(seedInbox: true);
         var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
+        // The top-level native window can exist before its WPF accessibility tree
+        // is populated; wait for the real selector instead of racing startup.
+        await WaitForElementAsync(() => Find(window, element =>
+            element.Current.AutomationId == "ActiveGameSelector"),
+            UiTimeout, "initial active game selector", TestToken);
         Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
 
         var moreTools = await WaitForElementAsync(() => Find(window, element =>
@@ -117,6 +122,9 @@ public sealed class InstalledWpfModLifecycleE2ETests
         var window = await WaitForMainWindowAsync(app, TestToken);
         var originalHash = SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
 
+        // Explicitly present the Mods view before locating its native import
+        // control; WPF tabs can defer accessibility children until selected.
+        await SelectModsTabAsync(window, TestToken);
         Invoke(await WaitForElementAsync(() => FindButton(window, "Install Mod"),
             UiTimeout, "Install Mod", TestToken));
         var dialog = await WaitForElementAsync(() => FindFileDialog(app.Id),
