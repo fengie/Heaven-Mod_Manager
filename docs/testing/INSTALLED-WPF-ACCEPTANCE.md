@@ -8,9 +8,10 @@ InstalledWpfModLifecycleE2ETests is an xUnit v3 suite using real Windows UI Auto
 2. Import a one-mod ZIP through the app's native archive picker. Verify its entry appears disabled in the actual Mods list, source SHA-256 is unchanged and no live game files are written.
 3. In a separate fixture, process the game Inbox using the actual Dashboard More tools UI. Verify the extracted package and visible checkbox.
 4. Toggle the imported mod, Preview Mod Changes and prove the preview is read-only, Apply Changes and prove exact fake-game target bytes, then Undo and prove baseline restoration.
-5. Switch between the two registered fake games through the real WPF selector without restarting the process or altering any sentinel bytes.
+5. Select two ZIPs with a native multi-file picker; verify that confidently routed packages for the active game automatically appear as two disabled library rows without a separate Inbox command, preserving source hashes and fake game sentinel bytes.
+6. Switch between the two registered fake games through the real WPF selector without restarting the process or altering any sentinel bytes.
 
-The normal unit/integration runs report the two opt-in UI tests as skipped, never as passing. The hosted acceptance workflow must execute all three tests (two UI tests and a guard test), with zero skips.
+The normal unit/integration runs report the two opt-in UI tests as skipped, never as passing. The hosted acceptance workflow must execute four tests (three UI tests and a guard test), with zero skips.
 
 ## Isolation and evidence
 
