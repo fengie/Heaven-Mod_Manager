@@ -1463,35 +1463,23 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var updates = new Progress<InboxRunProgress>(state =>
         {
             if (!accepting || BusyVisibility != Visibility.Visible) return;
-            BusyProgressIndeterminate = false;
             BusyDetail = string.IsNullOrWhiteSpace(state.CurrentItem)
                 ? state.Stage : $"{state.Stage}: {state.CurrentItem}";
-            var total = Math.Max(state.Total, 1);
-            var percent = 80d * state.Completed / total;
-            if (state.Stage is "Copying folder" or "Extracting archive")
-            {
-                var fraction = state.TotalBytes > 0
-                    ? Math.Clamp((double)state.ExtractedBytes / state.TotalBytes, 0, 1)
-                    : state.TotalFiles > 0
-                        ? Math.Clamp((double)state.ExtractedFiles / state.TotalFiles, 0, 1)
-                        : 0;
-                percent += 80d / total * 0.75 * fraction;
-            }
-            percent = state.Stage switch
-            {
-                "Indexing catalog" => 82,
-                "Capturing imported mods" => 88,
-                "Refreshing metadata" => 93,
-                "Assigning categories" => 97,
-                "Finished" => 100,
-                _ => percent
-            };
-            BusyProgressPercent = Math.Clamp(percent, 0, 100);
-            BusyProgressSummary = $"{state.Completed}/{state.Total} packages";
+            // The progress bar represents completed Inbox packages, not a fabricated
+            // percentage for filesystem indexing, network metadata, or classification.
+            var postImportPhase = state.Stage is "Indexing catalog" or
+                "Capturing imported mods" or "Refreshing metadata" or "Assigning categories";
+            BusyProgressIndeterminate = state.Total == 0 || postImportPhase;
+            BusyProgressPercent = state.Total > 0
+                ? Math.Clamp(100d * state.Completed / state.Total, 0, 100)
+                : 0;
+            BusyProgressSummary = $"{state.Completed}/{state.Total} packages processed";
             if (state.TotalFiles > 0)
-                BusyProgressSummary += $" • {state.ExtractedFiles}/{state.TotalFiles} files";
+                BusyProgressSummary += $" • current package: {state.ExtractedFiles}/{state.TotalFiles} files";
             if (state.TotalBytes > 0)
                 BusyProgressSummary += $" • {state.ExtractedBytes / 1048576d:F1}/{state.TotalBytes / 1048576d:F1} MiB";
+            if (postImportPhase)
+                BusyProgressSummary += " • finalization in progress";
         });
         try
         {
@@ -1788,6 +1776,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             await s.Telemetry.TrackAsync(operationName,async(id,ct)=>
             {
                 BusyOperationId="Operation ID: "+id;
+                MasterDebugLog.Write("UI-CORRELATION",
+                    $"operation={operationName}; telemetryId={id}; masterTraceId={MasterDebugLog.CurrentOperationId}");
                 await action(ct);
             },new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
             FooterText=$"{title} finished in {sw.Elapsed.TotalSeconds:F1}s";
