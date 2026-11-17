@@ -13,7 +13,7 @@ public sealed class SmartInboxProgressTests : IDisposable
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
 
     [Fact]
-    public async Task Inbox_reports_each_package_and_post_import_indexing_in_order()
+    public async Task InboxReportsEachPackageAndPostImportIndexingInOrder()
     {
         var inbox = Path.Combine(root, "Inbox");
         var mods = Path.Combine(root, "Mods");
@@ -46,7 +46,7 @@ public sealed class SmartInboxProgressTests : IDisposable
     }
 
     [Fact]
-    public async Task Cancellation_from_progress_event_preserves_later_inbox_package()
+    public async Task CancellationFromProgressEventPreservesLaterInboxPackage()
     {
         var inbox = Path.Combine(root, "Inbox");
         var mods = Path.Combine(root, "Mods");
@@ -76,7 +76,7 @@ public sealed class SmartInboxProgressTests : IDisposable
     }
 
     [Fact]
-    public async Task Archive_extraction_reports_actual_bytes_and_file_counts()
+    public async Task ArchiveExtractionReportsActualBytesAndFileCounts()
     {
         Directory.CreateDirectory(root);
         var archive = Path.Combine(root, "two.zip");
