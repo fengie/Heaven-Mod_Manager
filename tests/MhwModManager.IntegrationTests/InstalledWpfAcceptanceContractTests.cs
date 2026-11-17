@@ -14,9 +14,9 @@ public sealed class InstalledWpfAcceptanceContractTests
         var mods = document.Descendants().Single(element =>
             element.Name.LocalName == "TabItem" &&
             (string?)element.Attribute("Header") == "Mods");
-        var undo = Assert.Single(mods.Descendants().Where(element =>
+        var undo = Assert.Single(mods.Descendants(), element =>
             element.Name.LocalName == "Button" &&
-            (string?)element.Attribute("Content") == "Undo"));
+            (string?)element.Attribute("Content") == "Undo");
 
         Assert.Equal("{Binding UndoCommand}", (string?)undo.Attribute("Command"));
         Assert.Equal("Undo Last Applied Change",
