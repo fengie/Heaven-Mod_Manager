@@ -1,4 +1,5 @@
 name: One-shot family pruning candidate benchmark (2026-11-16)
+# Revised candidate: reject non-strong family evidence before common-root intersections.
 on:
   push:
     branches:
