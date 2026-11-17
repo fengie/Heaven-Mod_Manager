@@ -28,7 +28,7 @@ public sealed class FeatureVerificationMatrixTests
             var unit = RequiredPaths(root, feature, "unitTests");
             var integration = RequiredPaths(root, feature, "integrationTests");
             RequiredPaths(root, feature, "benchmarks");
-            Assert.NotEmpty(source);
+            Assert.True(source > 0, $"Feature {id} has no production source mapping.");
             if (risk == "critical")
                 Assert.True(unit + integration > 0, $"Critical feature lacks any mapped tests: {id}");
             Assert.Equal("unverified", feature.GetProperty("installedAcceptance").GetString());
