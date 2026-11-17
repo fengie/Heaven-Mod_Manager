@@ -83,3 +83,45 @@ dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTest
 .\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*BulkArchiveReplayBenchmarks*' -Job Short
 .\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*FamilyTopologyBenchmarks*' -Job Short
 ```
+
+
+## Concurrent receipt publication and cancellable byte-level progress
+
+Two independent manager instances can both read an older receipt JSON snapshot, then
+publish unrelated packages. Without a shared final-publication boundary, the later
+sorted-index rewrite can erase another process's receipt even though both packages
+reached their game-scoped Inboxes. The deterministic regression
+`Two_independent_importers_preserve_both_receipts_after_stale_read` pauses one
+importer **after** its receipt snapshot and runs a second importer to completion
+before resuming. `Competing_importers_of_identical_archive_bytes_publish_only_one_package`
+exercises the same race for identical bytes under different source filenames.
+
+The intake service now holds a Windows `FileShare.None` lease on a dedicated
+`mod-intake-receipts.lock` file only while rereading the durable receipts,
+checking destination integrity, publishing an already-copied package and writing
+the merged receipt JSON. The lease file is **retained** across process lifetimes:
+deleting and recreating it would permit multiple writers to lock different file
+objects. Receipt reads share delete access with the existing same-folder
+atomic-replace operation. Contention waits are bounded, cancelable and fail
+closed. A receipt can mean a mod was previously **processed**, so an empty Inbox
+alone never authorizes repeat publication. The original files remain immutable.
+
+Selected archive files and independent top-level downloaded archives now report
+actual copied MiB (throttled to approximately 4 MiB after the initial chunk)
+through the existing `GameModIntakeProgress` callback. Cancelling from that
+callback prevents publication and cleans the owned scratch file; a deterministic
+test pins the behavior. Nested archive extraction and unpacked-folder copies
+still require distinct phase-progress evidence, rather than claiming percent
+completion for all possible input layouts.
+
+These behavior changes remain subject to exact-head Windows integration tests
+and a same-runner before/after warm-replay benchmark; a build or synthetic test
+does **not** establish installed WPF responsiveness, hard-power-loss fsync
+durability, large real RAR/7z speed, or safe cross-host shared-network-filesystem
+locking. Do not relax the existing 8 GiB bound, verification hash, ownership,
+or atomic index-write guarantees for speed.
+
+Primary OS semantics: Microsoft's `FileShare.None` declines sharing of an
+opened file until it is closed (<https://learn.microsoft.com/dotnet/api/system.io.fileshare>);
+`Task.Delay` observes cancellation
+(<https://learn.microsoft.com/dotnet/api/system.threading.tasks.task.delay>).
