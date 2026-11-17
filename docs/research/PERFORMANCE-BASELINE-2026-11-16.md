@@ -91,3 +91,40 @@ Official analyzer reference: [CA1859](https://learn.microsoft.com/en-us/dotnet/f
 No synthetic result establishes that the observed user's original single-RAR import is fast. Continue #791 for real archive acceptance, #735 for installed UI latency/Auto Populate and #793 for isolated updater execution. As documented by Microsoft, `FileOptions.WriteThrough` requests prompt persistence to disk and `Microsoft.Data.Sqlite` async methods execute synchronously; neither protection is a safe speculative removal solely to improve a benchmark.
 
 Sources: [FileOptions](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileoptions), [Windows file caching](https://learn.microsoft.com/en-us/windows/win32/fileio/file-caching), [Microsoft.Data.Sqlite async limitations](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/async).
+
+
+## Measured new replay and topology baseline
+
+User-requested on-demand [Windows ShortRun 43984799429](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43984799429)
+completed **SUCCESS** on exact source `2f969897fb6508725b62ebe2447e88533f55a09c`,
+based on `main@8ed0a73ca4a320c49c579b8620a3b1869595d2b3`.
+AMD Ryzen 9 7945HX / Windows 11 / .NET 10, three measured iterations per
+case. JSON artifact `14284498907` has 3-day retention; original job log
+`133710068603` preserves complete tables.
+
+| Case | Mean | Cumulative managed allocation |
+| --- | ---: | ---: |
+| Warm 8-archive replay | 51.77 ms | 2.82 MB |
+| Warm 64-archive replay | 392.97 ms | 25.36 MB |
+| Warm 256-archive replay | 1,586.08 ms | 142.18 MB |
+| Family 100 mods, independent roots | 8.880 ms | 23.39 MB |
+| Family 100 mods, common four-segment root | 16.068 ms | 38.94 MB |
+| Family 500 mods, independent roots | 45.549 ms | 116.8 MB |
+| Family 500 mods, common four-segment root | 281.974 ms | 507.76 MB |
+
+The family 500-mod shared-root case is ~6.19 times slower and allocates ~4.35
+times more managed bytes than independent roots, even though the tests correctly
+refuse to group unrelated mods. The candidate in this branch checks a necessary
+condition from the existing `GenericFamilyInference.ScorePair` acceptance
+formula **before** expensive file-path/asset/root intersections: a pair cannot
+produce strong evidence unless it has a role signal, >=0.60 name-token
+similarity, or an exact identity stem. The final policy still requires
+`evidence.Score >= 75 && evidence.Strong`, and the candidate does not change
+that condition or override priority. Correctness tests are still required to
+prove behavior, and a **new same-runner candidate benchmark** is required
+before claiming faster runtime or lower allocations.
+
+Warm replay currently includes source hashing, staged scratch copies and
+receipt lookups. Any receipt-concurrency repair must preserve processed-entry
+deduplication and compare performance after actual verification; the measured
+baseline alone is not a performance regression budget or proof of installed UX.
