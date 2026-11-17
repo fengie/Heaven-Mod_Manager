@@ -12,12 +12,9 @@ Canonical source: `fengie/Heaven-Mod_Manager@main`, latest implementation `9e3fc
 
 ## Verification boundary
 
-### Serial release owner — next verification action
+Current hosted-Windows closure: v8.8.109 source `285ba72396ce942862842c89818cfce90ff64c56` passed run `43987535401` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.109-heaven-windows-closure.log`.
 
-1. Confirm preceding exact-main source-only [Windows Release Gate 43952164444](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43952164444) has completed; it must not replace the immutable v8.8.108 artifact.
-2. Verify this metadata-only candidate on its exact head: Windows Feature, README timestamp, Product Security, ownership and AutoUpdate. Refresh main/base/owner and merge with expected-head protection after all required checks succeed.
-3. Run exact new main Windows Release Gate (26/26) and verify a **distinct** immutable v8.8.109 Windows ZIP and updater manifest, both SHA-256 digests and public feed parity. Preserve build 524 and all earlier releases. Do not force republish an old semantic version.
-4. The first post-merge strict [Windows Release Gate 43973605846](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43973605846) completed **25 passed / 1 failed**: its synthetic evidence-closure fixture replaced this verification section and erased the only unresolved-risk statement. Repair this handoff layout, then reverify on a fresh exact main SHA before publishing; do not bypass the preflight.
+The tested source remains `285ba72396ce942862842c89818cfce90ff64c56` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risks and release acceptance
 
