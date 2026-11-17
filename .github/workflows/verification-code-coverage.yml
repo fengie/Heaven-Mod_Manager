@@ -1,0 +1,61 @@
+name: Verification Code Coverage (on demand)
+
+# No schedule or recurring resource usage; never touch installed game data.
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Instrument the selected test suites (All is most complete)'
+        type: choice
+        required: true
+        default: All
+        options:
+          - All
+          - Unit
+          - Automation
+          - Integration
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mod-manager-code-coverage-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  coverage:
+    name: Collect exact-revision xUnit MTP code coverage on Windows
+    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    timeout-minutes: 60
+    steps:
+      - name: Check out immutable request head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Select isolated pinned .NET SDK root
+        shell: powershell
+        run: |
+          $installRoot = Join-Path $env:RUNNER_TEMP ("dotnet-coverage-{0}-{1}" -f $env:GITHUB_RUN_ID,$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Provision repo-pinned SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Collect real per-project line and branch counters
+        shell: powershell
+        env:
+          REQUESTED_SUITE: ${{ inputs.suite }}
+        run: |
+          .\scripts\ci\Assert-PinnedDotNetSdk.ps1
+          .\scripts\testing\Measure-ProjectCoverage.ps1 -Suite $env:REQUESTED_SUITE
+      - name: Retain per-suite XML/JSON when GitHub artifact quota permits
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: code-coverage-${{ github.sha }}-${{ github.run_id }}
+          path: BuildLogs/Coverage/**/*
+          if-no-files-found: warn
+          retention-days: 3
