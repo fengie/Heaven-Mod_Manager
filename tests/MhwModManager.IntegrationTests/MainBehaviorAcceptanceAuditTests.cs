@@ -66,8 +66,10 @@ public sealed class MainBehaviorAcceptanceAuditTests
         var finish = source.IndexOf("internal static Task<T> RunAutoPopulateBuildAsync", start, StringComparison.Ordinal);
         Assert.True(start >= 0 && finish > start);
         var action = source[start..finish];
-        var inbox = action.IndexOf("s.Inbox.ProcessAsync(", StringComparison.Ordinal);
+        var inbox = action.IndexOf("await ProcessInboxWithProgressAsync(ct)", StringComparison.Ordinal);
         var build = action.IndexOf("service.BuildAsync(", StringComparison.Ordinal);
+        // Progress observation must delegate to the actual Inbox importer off the UI thread.
+        Assert.Contains("return await Task.Run(() => s.Inbox.ProcessAsync(updates, ct), ct)", source);
 
         Assert.True(inbox >= 0 && build > inbox,
             "Auto Populate only plans indexed mods. It does not ingest the game's pending Inbox first.");
