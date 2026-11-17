@@ -28,7 +28,7 @@ public sealed class SmartInboxProgressTests : IDisposable
         var db = await CreateDatabaseAsync();
         var service = CreateService(db, inbox, mods);
         var events = new List<InboxRunProgress>();
-        var result = await service.ProcessAsync(TestToken, new ImmediateProgress<InboxRunProgress>(events.Add));
+        var result = await service.ProcessAsync(new ImmediateProgress<InboxRunProgress>(events.Add), TestToken);
 
         Assert.Equal(2, result.Imported);
         Assert.Contains(events, p => p.Stage == "Copying folder" && p.Completed == 0 && p.Total == 2);
@@ -68,7 +68,7 @@ public sealed class SmartInboxProgressTests : IDisposable
             if (p.Stage == "Finished item" && p.Completed == 1) cts.Cancel();
         });
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ProcessAsync(cts.Token, progress));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ProcessAsync(progress, cts.Token));
         Assert.True(Directory.Exists(Path.Combine(mods, "A")));
         Assert.True(Directory.Exists(Path.Combine(inbox, "B")));
         Assert.False(Directory.Exists(Path.Combine(mods, "B")));
@@ -90,8 +90,7 @@ public sealed class SmartInboxProgressTests : IDisposable
         }
         var events = new List<ArchiveExtractionProgress>();
         await new ArchiveInspector().ExtractSafelyAsync(archive, Path.Combine(root, "output"), root,
-            new ArchiveExtractionLimits(4096, 4096), TestToken,
-            new ImmediateProgress<ArchiveExtractionProgress>(events.Add));
+            new ArchiveExtractionLimits(4096, 4096), new ImmediateProgress<ArchiveExtractionProgress>(events.Add), TestToken);
 
         Assert.NotEmpty(events);
         var final = events[^1];

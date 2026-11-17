@@ -17,7 +17,13 @@ public sealed record InboxRunProgress(int Completed, int Total, string CurrentIt
 
 public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archive, CatalogService catalog, NexusMetadataService nexus, AutoCategoryService categories, string inboxRoot, string modsRoot, StartupDiagnosticSession? startupDiagnostics = null, Action<SmartInboxFaultPoint,string>? faultInjector = null, string? legacyInboxRoot = null)
 {
-    public async Task<InboxRunResult> ProcessAsync(CancellationToken ct = default, IProgress<InboxRunProgress>? progress = null)
+    public Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ProcessAsync(null, ct);
+    }
+
+    public async Task<InboxRunResult> ProcessAsync(IProgress<InboxRunProgress>? progress, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("smart-inbox");
         var totalTimer = Stopwatch.StartNew();

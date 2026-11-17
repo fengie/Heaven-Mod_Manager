@@ -1526,7 +1526,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             // Folder enumeration, classification, publication and some archive operations
             // are synchronous; offload the entire Inbox service to preserve WPF rendering.
-            return await Task.Run(() => s.Inbox.ProcessAsync(ct, updates), ct);
+            return await Task.Run(() => s.Inbox.ProcessAsync(updates, ct), ct);
         }
         finally { accepting = false; }
     }
