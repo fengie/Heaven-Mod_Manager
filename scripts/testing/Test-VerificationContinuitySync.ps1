@@ -16,6 +16,7 @@ try{
 {
   "formatVersion": 1,
   "currentVersion": "9.9.9",
+  "status": "v9.9.9-source-merged-release-publication-pending",
   "verificationAppliesToCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "lastClosedVerificationCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "lastClosedVerificationRun": "predecessor",
