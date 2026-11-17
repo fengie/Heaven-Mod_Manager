@@ -111,6 +111,46 @@ jobs:
           }
           Write-Host 'PASS: published v8.8.111 update, installed UI and rollback evidence.'
 
+      - name: Record allowlisted updater timeout diagnostics
+        if: failure()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidenceRoot = Split-Path -Parent $env:MHW_E2E_EVIDENCE_PATH
+          New-Item -ItemType Directory -Force -Path $evidenceRoot | Out-Null
+          $local = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
+          $updaterRoot = Join-Path $local 'MhwModManager/Updater'
+          $transactionsRoot = Join-Path $updaterRoot 'transactions'
+          $updaterLog = Join-Path $updaterRoot 'updater.log'
+          $logLines = if (Test-Path -LiteralPath $updaterLog -PathType Leaf) {
+            @(Get-Content -LiteralPath $updaterLog -Tail 200 -ErrorAction SilentlyContinue)
+          } else { @() }
+          $combined = $logLines -join [Environment]::NewLine
+          $requests = if (Test-Path -LiteralPath $transactionsRoot -PathType Container) {
+            @(Get-ChildItem -LiteralPath $transactionsRoot -Filter apply-request.json -File -Recurse -ErrorAction SilentlyContinue)
+          } else { @() }
+          $journals = if (Test-Path -LiteralPath $transactionsRoot -PathType Container) {
+            @(Get-ChildItem -LiteralPath $transactionsRoot -Filter journal.json -File -Recurse -ErrorAction SilentlyContinue)
+          } else { @() }
+          $summary = [ordered]@{
+            schemaVersion = 1
+            publishedBuild = 537
+            publishedSource = $env:MHW_E2E_TARGET_SOURCE
+            hosted = ($env:RUNNER_ENVIRONMENT -eq 'github-hosted')
+            rootExists = (Test-Path -LiteralPath $updaterRoot -PathType Container)
+            transactionsDirectoryExists = (Test-Path -LiteralPath $transactionsRoot -PathType Container)
+            applyRequestCount = @($requests).Count
+            journalCount = @($journals).Count
+            pendingFileExists = (Test-Path -LiteralPath (Join-Path $updaterRoot 'pending.json') -PathType Leaf)
+            updaterLogPresent = (Test-Path -LiteralPath $updaterLog -PathType Leaf)
+            updaterLogContainsTimeout = ($combined -match '(?i)timed out|timeout|taskcanceled')
+            updaterLogContainsTransportError = ($combined -match '(?i)httprequestexception|connection refused|network unreachable|dns|connection reset')
+            updaterLogContainsRateLimit = ($combined -match '(?i)rate.limit|\b429\b|\b403\b')
+            updaterLogContainsError = ($combined -match '(?i)error|exception|failed')
+          }
+          $summary | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $evidenceRoot 'allowlisted-failure-classification.json') -Encoding utf8
+          Write-Host 'Recorded allowlisted updater-state classification (no raw paths or log contents).'
+
       - name: Preserve test-owned evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
