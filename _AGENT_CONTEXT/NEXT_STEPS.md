@@ -1,9 +1,20 @@
-# v8.8.89 MHW product — ordered next actions
+# Heaven Mod Manager — ordered next actions
 
-1. Obtain fresh strict canonical Windows verification for the exact integrated v8.8.89 source; persist evidence tied to that exact source and do not inherit v8.8.88 green results across changed app/XAML/test/content inputs.
-2. Preserve the v8.8.89 compliance baseline: bundled policies/notices, local-data deletion guidance, third-party package-notice drift coverage, current image automation names, explicit keyboard focus/navigation, and WCAG AA core palette checks.
-3. Treat accounts/hosted personal data, analytics or ads, embedded web tracking/cookies, payments, reviews/testimonials, marketing email, child-directed personal-data collection, new telemetry uploads, new dependencies, or new bundled fonts/artwork as renewed compliance-review triggers before release.
-4. Continue the live PR-drain queue and the highest-priority non-overlapping project-plan work, including #669, #558/#559, #709, #578, and remaining RECOVERY-005/RECOVERY-007 acceptance, while preserving unique concurrent work.
-5. Keep #350/#354 external trust/admin prerequisites explicit rather than weakening release or security controls.
+Canonical source and verification state: [CURRENT_REVISION.json](CURRENT_REVISION.json). Current work and ownership: [PROJECT_PLAN.md](PROJECT_PLAN.md). This is a compact successor queue, not a replacement for those sources.
 
-Every successor must read and propagate `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and retrieve task-relevant `_AGENT_CONTEXT/LEARNED_RULES.md` context onward to the next agent.
+## Current release acceptance
+
+Verified immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) targets source e9b1212985f80533ce04e3ab1e43910290692687; hosted Windows release verification run 44044388877 passed. Publication does not establish installation or healthy execution on Heaven2.
+
+## Persistent product acceptance
+
+1. [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): verify large real RAR/7z and mixed Sifu/Stellar Blade/MHW collections, unknown-game review, real Explorer drag/drop and bounded recovery.
+2. [#735](https://github.com/fengie/Heaven-Mod_Manager/issues/735): measure installed-WPF p50/p95 with 100–10,000 mods and correctness/memory baselines before optimizing.
+3. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669): prove safe bounded storage reclamation, crash/cancel endurance and test-owned cleanup.
+4. [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): hosted updater 60 → 548 and rollback passed [run 44045741670](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44045741670); verify Heaven2 installed source/health separately and investigate earlier hosted timeouts.
+5. [#558](https://github.com/fengie/Heaven-Mod_Manager/issues/558) and the Browse UX queue: finish provider-compliant discovery and catalog-scale acceptance; preserve offline/partial-failure behavior.
+6. [#709](https://github.com/fengie/Heaven-Mod_Manager/issues/709), RECOVERY-005 and RECOVERY-007: revisit dependency lock files and installed Windows UI/game-discovery acceptance without reopening already integrated code.
+7. [#786](https://github.com/fengie/Heaven-Mod_Manager/issues/786), [#350](https://github.com/fengie/Heaven-Mod_Manager/issues/350), [#354](https://github.com/fengie/Heaven-Mod_Manager/issues/354): renew provider compliance evidence and preserve external publisher/security prerequisites.
+8. Preserve existing privacy/legal/accessibility controls. Accounts or hosted personal data, analytics or ads, payment, tracking/cookies, marketing, minors' personal data, telemetry uploads and new bundled assets trigger a renewed review before release.
+
+Every successor must read and preserve _AGENT_CONTEXT/CONTINUITY_PROTOCOL.md and active _AGENT_CONTEXT/LEARNED_RULES.md, and require its own successor to do the same. Do not break the chain.

@@ -32,17 +32,29 @@ function Write-Utf8NoBom([string]$Path,[string]$Text){
 function Set-CurrentReleasePreamble([string]$Relative,[string]$Title,[string]$CanonicalLine){
     $path=Join-Path $Root ($Relative.Replace([char]47,[char]92))
     $text=Read-Utf8 $path
-    $headline=[regex]::Match($text,"(?m)\A# v$([regex]::Escape($version))[^\r\n]*")
+    $firstSection=[regex]::Match($text,'(?m)^## ')
+    if(-not $firstSection.Success){throw "$Relative is missing its first bounded section."}
+    $preamble=$text.Substring(0,$firstSection.Index)
+    $headline=[regex]::Match($preamble,"(?m)\A# v$([regex]::Escape($version))[^\r\n]*")
     if(-not $headline.Success){throw "$Relative is missing its current-version release heading."}
-    $updated=$text.Substring(0,$headline.Index)+$Title+$text.Substring($headline.Index+$headline.Length)
-    $canonical=[regex]::Match($updated,'(?m)^Canonical (?:source|state):[^\r\n]*')
-    $firstSection=[regex]::Match($updated,'(?m)^## ')
-    if($canonical.Success -and $firstSection.Success -and $canonical.Index -lt $firstSection.Index){
-        $updated=$updated.Substring(0,$canonical.Index)+$CanonicalLine+$updated.Substring($canonical.Index+$canonical.Length)
-    }else{
-        $updated=$updated.Substring(0,$Title.Length)+("`r`n`r`n"+$CanonicalLine)+$updated.Substring($Title.Length)
-    }
+
+    # Collapse obsolete release identity lines in the preamble to one current
+    # authoritative statement. Preserve other context and all ## sections.
+    $tail=[regex]::Replace($preamble.Substring($headline.Length),
+        '(?m)^Canonical (?:pre-release )?(?:source|state):[^\r\n]*(?:\r?\n)?','')
+    $tail=$tail.TrimStart([char[]]@([char]13,[char]10))
+    $updated=$Title+"`n`n"+$CanonicalLine+"`n`n"+$tail+$text.Substring($firstSection.Index)
     Write-Utf8NoBom $path $updated
+}
+function Set-CurrentReleaseNextSteps([string]$Section){
+    $path=Join-Path $Root '_AGENT_CONTEXT\NEXT_STEPS.md'
+    $text=Read-Utf8 $path
+    $match=[regex]::Match($text,'(?ms)^## Current release acceptance[ \t]*\r?\n.*?(?=^## |\z)')
+    if(-not $match.Success){
+        throw 'NEXT_STEPS.md is missing the bounded Current release acceptance section.'
+    }
+    $replacement=$Section.TrimEnd()+"`n`n"
+    Write-Utf8NoBom $path ($text.Substring(0,$match.Index)+$replacement+$text.Substring($match.Index+$match.Length))
 }
 function Test-SourceBoundPublication {
     param([string]$ReleasePath,[string]$TagPath,[string]$ArtifactManifestPath,[string]$Version,[string]$Source,[string]$Closure)
@@ -146,6 +158,11 @@ if($receiptInputs.Count -eq 3){
     $publication=Test-SourceBoundPublication -ReleasePath $ReleaseJsonPath -TagPath $TagRefJsonPath -ArtifactManifestPath $givenManifest -Version $version -Source $SourceSha -Closure $evidence
 }
 
+# Preflight all generated continuity surfaces before changing any of them.
+$nextStepsText=Read-Utf8 (Join-Path $Root '_AGENT_CONTEXT\NEXT_STEPS.md')
+if(-not [regex]::IsMatch($nextStepsText,'(?m)^## Current release acceptance[ \t]*\r?$')){
+    throw 'NEXT_STEPS.md is missing the bounded Current release acceptance section.'
+}
 $revisionPath=Join-Path $Root '_AGENT_CONTEXT\CURRENT_REVISION.json'
 $revision=(Read-Utf8 $revisionPath) | ConvertFrom-Json
 if([string]$revision.currentVersion -ne $version){throw 'CURRENT_REVISION currentVersion must already match VERSION.txt before evidence synchronization.'}
@@ -197,6 +214,16 @@ The tested source remains ``$SourceSha`` even though persistence creates a later
 "@
 Replace-VerificationSection '_AGENT_CONTEXT/CURRENT_STATE.md' $section
 Replace-VerificationSection 'NEXT-AGENT-START-HERE.md' $section
+$nextStepsSection=@"
+## Current release acceptance
+
+Current v$version Windows verification: source ``$SourceSha``; run ``$RunId`` (0 failures).
+
+$publicationNote
+
+This receipt does not establish that the build is installed on Heaven2. Continue real archive corpus, installed UI latency, recovery and independent publisher-trust work from _AGENT_CONTEXT/PROJECT_PLAN.md.
+"@
+Set-CurrentReleaseNextSteps $nextStepsSection
 Set-CurrentReleasePreamble '_AGENT_CONTEXT/CURRENT_STATE.md' $headTitle $stateIntro
 Set-CurrentReleasePreamble 'NEXT-AGENT-START-HERE.md' $headTitle $intro
 
