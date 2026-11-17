@@ -92,6 +92,26 @@ public sealed class FamilyInferenceOrderInvariantsTests
         Assert.Empty(evidence);
     }
 
+    [Fact]
+    public void Dissimilar_names_with_identical_file_paths_do_not_create_family_evidence()
+    {
+        var mods = new[]
+        {
+            Mod("dragon", "Dragon Armor"),
+            Mod("ocean", "Ocean Cloak")
+        };
+        var files = new[]
+        {
+            File("dragon", @"nativePC\shared\collection\common\same.tex"),
+            File("ocean", @"nativePC\shared\collection\common\same.tex")
+        };
+
+        var inferred = GenericFamilyInference.InferKeys(mods, files, out var evidence);
+
+        Assert.Empty(inferred);
+        Assert.Empty(evidence);
+    }
+
     private static ModDescriptor Mod(string id, string name) =>
         new(id, name, name, id, false, 0);
 
