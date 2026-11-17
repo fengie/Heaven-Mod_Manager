@@ -1,6 +1,6 @@
 # v8.8.111 - source verified, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `e9d8c09bfeefe452eecad989aca7c612a965b57d` (Windows Gate 44030461251); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -15,11 +15,11 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.111 source `d55d09a877760220a1105a0ba1ee522846320ca6` passed run `44019899108` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.111 source `e9d8c09bfeefe452eecad989aca7c612a965b57d` passed run `44030461251` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
 
-Public release status: **NOT VERIFIED** for source `d55d09a877760220a1105a0ba1ee522846320ca6`. Successful build or another source's same-version release is not proof of publication.
+Public release status: **NOT VERIFIED** for source `e9d8c09bfeefe452eecad989aca7c612a965b57d`. Successful build or another source's same-version release is not proof of publication.
 
-The tested source remains `d55d09a877760220a1105a0ba1ee522846320ca6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `e9d8c09bfeefe452eecad989aca7c612a965b57d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
