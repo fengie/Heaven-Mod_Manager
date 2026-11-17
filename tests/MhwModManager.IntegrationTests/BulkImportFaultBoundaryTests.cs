@@ -191,6 +191,38 @@ public sealed class BulkImportFaultBoundaryTests : IDisposable
     }
 
     [Fact]
+    public async Task Retry_after_receipt_write_failure_adopts_intact_staged_archive()
+    {
+        var source = Path.Combine(root, "Downloads");
+        Directory.CreateDirectory(source);
+        var archive = Path.Combine(source, "MHW Recovery.zip");
+        CreateZip(archive, "nativePC/pl/armor/recovery.tex");
+
+        var state = Path.Combine(root, "Manager", "State");
+        Directory.CreateDirectory(state);
+        // A path collision blocks only the receipt index's final rename.
+        // The already-moved staged package is still recoverable on retry.
+        var blockedReceipt = Path.Combine(state, "mod-intake-receipts.json");
+        Directory.CreateDirectory(blockedReceipt);
+        var intake = CreateIntake();
+
+        var failed = await intake.ImportPathsAsync([archive], ct: TestToken);
+        Assert.Equal(1, failed.NeedsReview);
+        Assert.Equal(0, failed.Routed);
+        var inbox = Path.Combine(root, "Manager", "Mods by Game", "monster-hunter-world", "Inbox");
+        var staged = Assert.Single(Directory.GetFiles(inbox, "*.zip"));
+        Assert.True(File.Exists(staged));
+        Assert.True(File.Exists(archive));
+
+        Directory.Delete(blockedReceipt);
+        var replay = await CreateIntake().ImportPathsAsync([archive], ct: TestToken);
+        Assert.Equal(1, replay.AlreadyPresent);
+        Assert.Equal(0, replay.Routed);
+        Assert.Single(Directory.GetFiles(inbox, "*.zip"));
+        Assert.True(File.Exists(Path.Combine(state, "mod-intake-receipts.json")));
+    }
+
+    [Fact]
     public async Task Empty_bulk_selection_is_a_no_op_without_creating_manager_state()
     {
         var intake = CreateIntake();
