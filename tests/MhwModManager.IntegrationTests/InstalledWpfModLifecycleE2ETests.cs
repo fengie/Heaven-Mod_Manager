@@ -25,7 +25,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
     private static readonly TimeSpan UiTimeout = TimeSpan.FromSeconds(75);
 
-    [Fact(SkipUnless = nameof(IsOptedIn))]
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
     public async Task InboxImportPreviewApplyUndoAndGameSwitchPreserveExactFiles()
     {
@@ -108,7 +108,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
     }
 
-    [Fact(SkipUnless = nameof(IsOptedIn))]
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
     public async Task NativeArchivePickerImportsOneDisabledModWithoutTouchingFakeGame()
     {
