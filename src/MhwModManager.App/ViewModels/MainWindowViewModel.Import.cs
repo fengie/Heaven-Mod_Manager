@@ -39,9 +39,10 @@ public sealed partial class MainWindowViewModel
                 EnsureGameIntake();
                 var report = await gameIntake!.ImportPathAsync(dlg.FileName, ct);
                 modPackReport = report;
-                StatusText = $"Mod pack: {report.Routed} independent mods routed to per-game Inboxes, " +
+                var completion = await FinishManualModIntakeAsync(report, ct);
+                StatusText = $"Mod pack: {completion} " +
                     $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
-                    "Use Install Mods from Inbox for the active game. Original archive was preserved.";
+                    "The original archive was preserved.";
                 return;
             }
             if(hasFomod)

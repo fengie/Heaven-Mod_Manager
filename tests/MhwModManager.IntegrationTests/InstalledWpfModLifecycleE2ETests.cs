@@ -156,6 +156,51 @@ public sealed class InstalledWpfModLifecycleE2ETests
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
     }
 
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public async Task BulkArchivePickerImmediatelyIndexesSafeModsForActiveGame()
+    {
+        using var run = new DisposableWpfRun(seedInbox: false);
+        var app = run.Launch();
+        var window = await WaitForMainWindowAsync(app, TestToken);
+        var originalA = SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive));
+        var originalB = SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive));
+
+        await SelectModsTabAsync(window, TestToken);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Install Mod"),
+            UiTimeout, "bulk Install Mod", TestToken));
+        var dialog = await WaitForElementAsync(() => FindFileDialog(app.Id),
+            UiTimeout, "native multi-archive file picker", TestToken);
+        var name = Find(dialog, element => element.Current.ControlType == ControlType.Edit &&
+            (element.Current.AutomationId == "1148" ||
+             element.Current.Name.Contains("File name", StringComparison.OrdinalIgnoreCase)))
+            ?? throw new InvalidOperationException("Native picker has no editable filename field.");
+        var fileName = (ValuePattern)name.GetCurrentPattern(ValuePattern.Pattern);
+        fileName.SetValue($"\"{run.BatchFirstArchive}\" \"{run.BatchSecondArchive}\"");
+        Invoke(await WaitForElementAsync(() => FindButton(dialog, "Open", enabled: true),
+            UiTimeout, "native multi-archive Open", TestToken));
+
+        // These checkboxes are created only when the real Inbox → catalog workflow
+        // has completed. Previously both ZIPs remained in Inbox with no library rows.
+        await SelectModsTabAsync(window, TestToken);
+        var a = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.CheckBox &&
+            element.Current.Name.Contains("e2e-game-a-BulkOne", StringComparison.OrdinalIgnoreCase)),
+            UiTimeout, "first bulk-imported mod", TestToken);
+        var b = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.CheckBox &&
+            element.Current.Name.Contains("e2e-game-a-BulkTwo", StringComparison.OrdinalIgnoreCase)),
+            UiTimeout, "second bulk-imported mod", TestToken);
+        Assert.Equal(ToggleState.Off, ((TogglePattern)a.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+        Assert.Equal(ToggleState.Off, ((TogglePattern)b.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+        Assert.Equal(originalA, SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive)));
+        Assert.Equal(originalB, SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive)));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-one.bin")));
+        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-two.bin")));
+    }
+
     [Fact]
     public void PreflightRejectsNonDisposableOrUnapprovedRunner()
     {
@@ -317,6 +362,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
         public GameProfile FirstGame { get; }
         public GameProfile SecondGame { get; }
         public string ArchivePath { get; }
+        public string BatchFirstArchive { get; }
+        public string BatchSecondArchive { get; }
         public string InstalledModPath { get; }
         public string LiveModPath { get; }
         public string SentinelPath { get; }
@@ -374,6 +421,19 @@ public sealed class InstalledWpfModLifecycleE2ETests
             {
                 using var payload = zip.CreateEntry("Mods/e2e-payload.bin",
                     CompressionLevel.NoCompression).Open();
+                payload.Write(ModBytes);
+            }
+
+            BatchFirstArchive = Path.Combine(input, "e2e-game-a-BulkOne.zip");
+            BatchSecondArchive = Path.Combine(input, "e2e-game-a-BulkTwo.zip");
+            using (var first = ZipFile.Open(BatchFirstArchive, ZipArchiveMode.Create))
+            {
+                using var payload = first.CreateEntry("Mods/bulk-one.bin", CompressionLevel.NoCompression).Open();
+                payload.Write(ModBytes);
+            }
+            using (var second = ZipFile.Open(BatchSecondArchive, ZipArchiveMode.Create))
+            {
+                using var payload = second.CreateEntry("Mods/bulk-two.bin", CompressionLevel.NoCompression).Open();
                 payload.Write(ModBytes);
             }
 

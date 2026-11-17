@@ -112,13 +112,12 @@ public sealed partial class MainWindowViewModel
                     BusyDetail = $"{update.Stage} — {update.Completed}/{update.Total}: {shortName}";
                 });
                 report = await Task.Run(() => sorter.ImportPathsAsync(paths, updates, ct), ct);
-                AutoSortStatusText = $"Bulk import: {report.Routed} mods routed, " +
+                var completion = await FinishManualModIntakeAsync(report, ct);
+                AutoSortStatusText = $"Bulk import: {completion} " +
                     $"{report.AlreadyPresent} already present, {report.NeedsReview} need review. " +
                     $"Details: {sorter.ReportPath}";
-                StatusText = report.Routed == 0
-                    ? $"No new mods routed; {report.NeedsReview} need review. See the import report."
-                    : $"Staged {report.Routed} mod(s) in their registered games' Inboxes. " +
-                      "Use Install Mods from Inbox to add them to a game's library.";
+                StatusText = $"{completion} {report.AlreadyPresent} already present; " +
+                    $"{report.NeedsReview} need game assignment or other manual review.";
                 }
                 finally
                 {
@@ -137,6 +136,53 @@ public sealed partial class MainWindowViewModel
                     backgroundCts.Token), backgroundCts.Token));
             review.ShowDialog();
         }
+    }
+
+    /// <summary>
+    /// A manual multi-archive/folder or multi-mod-pack import must finish the
+    /// currently selected game's already-safe Inbox pipeline. Other games remain
+    /// staged in their own Inboxes; never write to a foreign session's database.
+    /// This also preserves the explicit review boundary for ambiguous packages.
+    /// </summary>
+    private async Task<string> FinishManualModIntakeAsync(GameModIntakeScan report, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(report);
+        ct.ThrowIfCancellationRequested();
+        var activeId = s.Paths.Game.Id;
+        var activeRouted = report.Items.Count(item =>
+            item.Status == GameModIntakeStatus.Routed &&
+            StringComparer.OrdinalIgnoreCase.Equals(item.GameId, activeId));
+        var queuedForOtherGames = report.Routed - activeRouted;
+        if (activeRouted == 0)
+        {
+            MasterDebugLog.Write("MOD-INTAKE-UI",
+                $"No active-game package to install. activeGame={activeId}; queuedOtherGames={queuedForOtherGames}; review={report.NeedsReview}");
+            return queuedForOtherGames > 0
+                ? $"Queued {queuedForOtherGames} package(s) for other registered games; they are not yet installed."
+                : "No newly approved packages were routed.";
+        }
+
+        BusyDetail = $"Installing {activeRouted} approved package(s) into {s.Paths.Game.DisplayName}…";
+        var inbox = await ProcessInboxWithProgressAsync(ct);
+        var archived = 0;
+        if (inbox.Imported > 0)
+        {
+            BusyDetail = "Checking safe duplicates in this game's library…";
+            BusyItemProgressVisibility = Visibility.Collapsed;
+            BusyProgressIndeterminate = true;
+            archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
+            BusyDetail = "Refreshing visible installed mods…";
+            await ReloadMods(ct);
+            BusyDetail = "Recomputing compatibility after import…";
+            await RefreshAnalysis(ct);
+        }
+        MasterDebugLog.Write("MOD-INTAKE-UI",
+            $"Manual import completed. activeGame={activeId}; activeRouted={activeRouted}; " +
+            $"inboxImported={inbox.Imported}; inboxSkipped={inbox.Skipped}; duplicatesArchived={archived}; queuedOtherGames={queuedForOtherGames}; review={report.NeedsReview}");
+        return $"Installed {inbox.Imported} package(s) into {s.Paths.Game.DisplayName}; " +
+            $"{inbox.Skipped} Inbox package(s) skipped, {archived} safe duplicate(s) archived. " +
+            $"{queuedForOtherGames} package(s) queued for other registered games.";
     }
 
     [RelayCommand]

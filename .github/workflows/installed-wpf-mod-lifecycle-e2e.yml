@@ -98,8 +98,8 @@ jobs:
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          if ($summary -notmatch 'succeeded:\s+3' -or $summary -notmatch 'skipped:\s+0') {
-            throw 'Three executed passing UI tests and zero skipped tests required.'
+          if ($summary -notmatch 'succeeded:\s+4' -or $summary -notmatch 'skipped:\s+0') {
+            throw 'Four executed passing UI tests and zero skipped tests required.'
           }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
           $proof = [ordered]@{
@@ -107,7 +107,7 @@ jobs:
             sourceSha = (& git rev-parse HEAD).Trim()
             hostedDisposable = $true
             exeSha256 = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
-            succeeded = 3
+            succeeded = 4
             failed = 0
             skipped = 0
           }
