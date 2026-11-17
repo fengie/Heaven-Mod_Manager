@@ -766,6 +766,8 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Refresh" Command="{Binding RefreshActivityCommand}" Style="{StaticResource QuietButton}"/>
                             <Button Content="Collect Diagnostics" Command="{Binding CaptureDiagnosticsCommand}"/>
+                            <Button Content="Performance Report" Command="{Binding ExportPerformanceReportCommand}"
+                                    ToolTip="Open p50/p95 timing, CPU and allocation measurements for recent operations."/>
                             <Button Content="Create Support Bundle" Command="{Binding ExportSupportCommand}"/>
                         </StackPanel>
                     </Grid>
