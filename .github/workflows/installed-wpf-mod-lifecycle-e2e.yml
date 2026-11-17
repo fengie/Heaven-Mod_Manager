@@ -1,0 +1,124 @@
+name: Installed WPF Mod Lifecycle Acceptance
+
+# This workflow runs only on disposable hosted Windows, never a personal desktop.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.cs'
+      - 'src/MhwModManager.App/MainWindow.xaml'
+      - '.github/workflows/installed-wpf-mod-lifecycle-e2e.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: installed-wpf-acceptance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  installed-wpf:
+    name: Actual packaged WPF app with fake game profiles
+    runs-on: windows-2025
+    timeout-minutes: 45
+    env:
+      MHW_RUN_INSTALLED_WPF_E2E: '1'
+    steps:
+      - name: Require disposable hosted Windows namespace
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows') {
+            throw 'Refusing to exercise installed WPF UI on persistent or personal machine.'
+          }
+          $local = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
+          if ([string]::IsNullOrWhiteSpace($local) -or -not [IO.Path]::IsPathRooted($local)) {
+            throw 'Disposable hosted profile unavailable.'
+          }
+          $updater = Join-Path $local 'MhwModManager\Updater'
+          if (Test-Path -LiteralPath $updater) {
+            $item = Get-Item -LiteralPath $updater -Force
+            if (-not $item.PSIsContainer -or (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) -or
+                @(Get-ChildItem -LiteralPath $updater -Force | Select-Object -First 1).Count -gt 0) {
+              throw 'Updater state occupied; refusing to modify unrelated data.'
+            }
+          }
+
+      - name: Checkout exact candidate revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Provision pinned SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Verify SDK and prepare uniquely-owned published executable root
+        shell: powershell
+        run: |
+          .\scripts\ci\Assert-PinnedDotNetSdk.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $root = Join-Path $env:RUNNER_TEMP ("mhw-wpf-package-{0}-{1}" -f $env:GITHUB_RUN_ID,$env:GITHUB_RUN_ATTEMPT)
+          if (Test-Path -LiteralPath $root) { throw 'Refusing to overwrite an existing package root.' }
+          New-Item -ItemType Directory -Path $root | Out-Null
+          "MHW_WPF_E2E_PACKAGE_DIR=$root" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build strict Windows integration runner
+        shell: powershell
+        run: |
+          dotnet restore .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --no-restore -warnaserror
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Publish candidate app to disposable runner
+        shell: powershell
+        run: |
+          dotnet publish .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore -o "$env:MHW_WPF_E2E_PACKAGE_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (!(Test-Path -LiteralPath (Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'))) {
+            throw 'Published candidate WinExe is missing.'
+          }
+
+      - name: Real UIA import, list, preview, apply, undo and game switch
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          if (!(Test-Path -LiteralPath $runner)) { throw 'xUnit runner is missing.' }
+          $evidence = Join-Path $env:GITHUB_WORKSPACE 'BuildLogs\installed-wpf-acceptance'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          $output = @(& $runner '--filter-class' 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests' 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Set-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch 'succeeded:\s+3' -or $summary -notmatch 'skipped:\s+0') {
+            throw 'Three executed passing UI tests and zero skipped tests required.'
+          }
+          $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
+          $proof = [ordered]@{
+            schemaVersion = 1
+            sourceSha = (& git rev-parse HEAD).Trim()
+            hostedDisposable = $true
+            exeSha256 = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+            succeeded = 3
+            failed = 0
+            skipped = 0
+          }
+          $proof | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $evidence 'proof.json') -Encoding UTF8
+
+      - name: Retain bounded evidence when artifact quota allows
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: installed-wpf-mod-e2e-${{ github.sha }}-${{ github.run_id }}
+          path: BuildLogs/installed-wpf-acceptance/*
+          if-no-files-found: warn
+          retention-days: 3
