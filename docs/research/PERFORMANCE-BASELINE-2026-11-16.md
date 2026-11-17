@@ -157,3 +157,37 @@ exact-head Windows tests are required before inferring any improvement.
 This work is orthogonal to durable receipt publication and installed updater
 acceptance. Preserve the negative first experiment as evidence; do not erase it
 or silently report the first candidate as a pass.
+
+### Corrected family strong-evidence candidate: measured
+
+The revised candidate first computes the original `Strong` predicate from
+name/role/path/asset evidence and avoids calculating common-root intersections
+or materializing formatted reasons for pairs that would be discarded anyway.
+An additional deterministic unit case pins identical normalized stems under
+a shared root without shared payload files.
+
+The same AMD Ryzen 9 7945HX Windows runner ran [corrected ShortRun
+43988335566](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43988335566)
+to **SUCCESS**, exact isolated benchmark source
+`d64d0f72e4423dcada6bccaf7cc11549cb7faf25`.
+JSON artifact `14285664657` (3-day retention); full job log
+`133722175631`. The baseline was successful run
+[43984799429](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43984799429).
+Both used the same 100/500-mod, 20-file topology fixtures, BenchmarkDotNet
+ShortRun (3 measured iterations), Windows 11 and pinned .NET SDK.
+
+| Scenario | Baseline time | Corrected candidate time | Baseline allocated | Candidate allocated |
+| --- | ---: | ---: | ---: | ---: |
+| 100 mods, independent roots | 8.880 ms | 8.518 ms | 23.39 MB | 23.39 MB |
+| 100 mods, shared root | 16.068 ms | 13.460 ms | 38.94 MB | 35.47 MB |
+| 500 mods, independent roots | 45.549 ms | 47.437 ms | 116.8 MB | 116.8 MB |
+| 500 mods, shared root | 281.974 ms | **223.461 ms** | 507.76 MB | **420.2 MB** |
+
+For 500 mods with a common four-segment root: **20.8% lower mean time
+and 17.2% fewer cumulative managed allocations**. Independent-root
+allocation was unchanged. Means from three iterations are directional,
+not p95 or statistically robust regression budgets, and separate runner load
+can affect timing. The allocation reduction is the stronger evidence
+that the revised early rejection removed work. PR #839 still requires
+exact-head Windows Feature and AutoUpdate checks before main integration;
+source integration and installed UI/user corpus performance remain separate.
