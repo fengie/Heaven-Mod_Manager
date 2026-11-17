@@ -19,6 +19,18 @@ The workflow runs only on disposable GitHub-hosted windows-2025 VMs, not on a se
 
 The harness stops only the process it launched and deletes only a marker-verified GUID-named scratch root. The workflow outputs source SHA, published candidate executable SHA-256 and test result counts. It never shares raw user game paths or credentials. If the hosted UI cannot expose a native dialog or controls, the test fails rather than silently converting to an in-process unit test.
 
+## Manual bulk intake behavior
+
+For manual multi-archive, folder and single multi-mod-pack inputs, approved packages routed
+to the **active game** now flow through the existing SmartInbox safety, duplicate archiving,
+indexing and visible list refresh within the same progress operation. Unidentified,
+contradictory and installer-choice packages remain uninstalled for review. Packages
+routed to a **different registered game** remain queued in that game's Inbox; no foreign
+game database is opened by this active-session change. Background folder-watch scans
+continue to stage packages only. The four-test hosted WPF check includes a regression
+requiring that two selected archives appear as disabled mods without a separate Inbox
+action; it also verifies original archive hashes and fake live game sentinels.
+
 ## Not yet established
 
 The publish-from-source fixture is not signed/immutable release installation. Solid RAR/7z, real large Sifu/Stellar Blade mod sets, 500-mod performance, folder picker drag/drop, runtime game launch and injected crash/power-loss recovery remain distinct acceptance tasks (#791, #735, #793). No results may be claimed until exact-head hosted UIA job succeeds and all checks have terminal status.
