@@ -14,9 +14,9 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` includes #832 and #835 source 
 
 ## Verification boundary
 
-- #832 head `5cf175d871fe51ac1895378c919c8d2d1d14784c` passed exact Windows Feature [43978338548](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43978338548) and AutoUpdate 43978338567. #835 head `2974738085def5dc4183d7c7ad055b6545922c14` passed exact Feature [43979469737](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43979469737), Product Security 43979469676, Updater Publication 43979469883 and AutoUpdate 43979469626.
-- Prior main Windows Release Gates 43981825454 (#835) and 43983812212 (#836) passed. The newer [main Windows Release Gate 43987535401](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43987535401) for #838 must complete before protected version integration; never overwrite immutable updater-main-530.
-- New v8.8.110 publication is **pending** candidate exact native gates, serialized protected merge, exact-main Windows release verification and independent ZIP/manifest/sha/public-feed readback. Source CI and publication are not installed-runtime proof.
+Current hosted-Windows closure: v8.8.110 source `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` passed run `43989713722` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.110-heaven-windows-closure.log`.
+
+The tested source remains `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 

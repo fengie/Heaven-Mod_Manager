@@ -14,10 +14,9 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` source `285ba72396ce942862842
 
 ## Verification boundary
 
-1. Main Windows Release Gates [43981825454](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43981825454) and [43983812212](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43983812212) succeeded on prior source. Confirm [main Windows Release Gate 43987535401](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43987535401) for #838 source finishes before moving main; preserve immutable 8.8.109 artifacts.
-2. #838 is integrated at main 285ba723. Reconcile this metadata branch with the new main and rerun exact-head verification; previously green branch-only evidence for older main does not authorize this new candidate.
-3. Verify release metadata with Windows Feature, README timestamp, Product Security, Toolbox Ownership and AutoUpdate; merge protected main using expected head/base, never by force or stale check.
-4. Verify fresh exact-main 26/26 Windows Release Gate, distinct immutable v8.8.110 ZIP + update-manifest.json, SHA-256, exact source and public updater feed. Physical installed checks are independent.
+Current hosted-Windows closure: v8.8.110 source `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` passed run `43989713722` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.110-heaven-windows-closure.log`.
+
+The tested source remains `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
