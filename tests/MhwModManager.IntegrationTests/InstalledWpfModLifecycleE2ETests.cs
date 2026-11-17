@@ -30,7 +30,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
     public async Task InboxImportPreviewApplyUndoAndGameSwitchPreserveExactFiles()
     {
         using var run = new DisposableWpfRun(seedInbox: true);
-        using var app = run.Launch();
+        var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
         Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
 
@@ -113,7 +113,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
     public async Task NativeArchivePickerImportsOneDisabledModWithoutTouchingFakeGame()
     {
         using var run = new DisposableWpfRun(seedInbox: false);
-        using var app = run.Launch();
+        var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
         var originalHash = SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
 
@@ -225,7 +225,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             {
                 if (predicate(current)) return current;
                 var child = walker.GetFirstChild(current);
-                var sibling = walker.GetNextSibling(current);
+                var sibling = ReferenceEquals(current, root) ? null : walker.GetNextSibling(current);
                 if (sibling is not null) pending.Push(sibling);
                 if (child is not null) pending.Push(child);
             }
