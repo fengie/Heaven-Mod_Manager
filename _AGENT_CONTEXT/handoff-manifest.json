@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.111",
+  "currentVersion": "8.8.112",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.110 updater-main-535 source 968d9e7 excludes PR #839, now merged into main fefc7811 after exact native tests. Distinct v8.8.111 metadata, protected main release and immutable ZIP/manifest publication pending; real RAR/7z/WPF and isolated positive updater rollback unverified.",
+  "immediateParentRevision": "Immutable v8.8.111 updater-main-537 source 1e24b351 excludes newer #844 Inbox WPF progress and #846 coverage/inventory/regression source, both merged at canonical main e9d8c09bfeefe452eecad989aca7c612a965b57d. New distinct v8.8.112 publication and installed acceptance pending.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh current Toolbox, Mod Manager main/owner, PRs and release feed; fully read CONTINUITY_PROTOCOL and Learned Rules and recursively pass both to the next agent. Confirm main fefc7811 #839 passed Windows Release Gate 43993837451 and prior immutable updater-main-535 excludes #839. Verify v8.8.111 candidate Windows Feature/README/Security/Ownership/AutoUpdate and enforce, protected expected-head merge, new 26/26 main gate, separate immutable v8.8.111 ZIP/manifest SHA-256 and latest-feed readback. Never repurpose occupied updater state; #791 real corpus/WPF, #735 installed p95 and #793 isolated update/rollback remain open. Do not break the chain.",
+  "nextAgentObligation": "Refresh exact Toolbox and Mod Manager main/owner/PRs/release; fully read CONTINUITY_PROTOCOL and active Learned Rules and recursively pass both to every successor. Baseline e9d8c09bfeefe452eecad989aca7c612a965b57d integrates #844/#846. Require fresh v8.8.112 exact PR Feature/README/Security/Ownership/AutoUpdate/enforce, protected expected-head merge, exact new main 26/26 gate, then distinct immutable v8.8.112 ZIP/manifest SHA-256, signed source/tag/public feed parity. Preserve old updater-main-537; keep #791 real RAR/7z, #735 installed WPF p95 and #793 hosted positive/timeout plus Heaven2 health separate. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

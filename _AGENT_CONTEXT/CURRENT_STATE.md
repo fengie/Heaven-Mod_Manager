@@ -1,8 +1,13 @@
-# v8.8.111 - source verified, publication unverified
+# v8.8.112 — Inbox progress and measurable verification, serialized release candidate
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` source `e9d8c09bfeefe452eecad989aca7c612a965b57d`, including #844/#846. Prior immutable [v8.8.111 updater-main-537](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-537) is source `1e24b3519d56471bcb3995ab6b70ae9f6c09d00a`, before both changes. Bootstrap `fengie/heaven-toolbox@main` before task-specific work.
 
 ## Integrated implementation
+
+- #844 detailed package/file/byte Inbox progress, WPF overlay responsiveness and phase timing; [exact Windows Feature 44028036684](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44028036684) and [main Gate 44028954968](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44028954968) PASS; user-corpus WPF p95 not measured.
+- #846 code coverage instrumentation/workflow, 19-feature mapped test inventory, functional ZIP route→Inbox→index/dedup chain and fresh-state macrobenchmark definitions; [Feature 44029013896](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44029013896) PASS. Coverage percentage and benchmark times not yet measured; no invented score.
+
+
 
 - #829 ZIP/RAR/7z bulk-import and Explorer drag/drop already stages confidently classified candidates into registered-game Inboxes while preserving originals and no direct live-game writes; uncertain candidates remain for review.
 - #832 reduces dense shared-path planner allocations through canonical pair IDs and per-plan cached overlay names/tokens. Existing inference and explicit-rule precedence remain; synthetic measurements are not installed-client timing proof.
@@ -16,11 +21,9 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.111 source `d55d09a877760220a1105a0ba1ee522846320ca6` passed run `44019899108` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
-
-Public release status: **NOT VERIFIED** for source `d55d09a877760220a1105a0ba1ee522846320ca6`. Successful build or another source's same-version release is not proof of publication.
-
-The tested source remains `d55d09a877760220a1105a0ba1ee522846320ca6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+- Preceding immutable [v8.8.111 updater-main-537](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-537), source `1e24b3519d56471bcb3995ab6b70ae9f6c09d00a`, ZIP SHA-256 `abb63eb14c5ead6b062be75b8c01d82d8b370b0ab7cb7685c0140a2a724f35d0`, manifest SHA-256 `3e899c13f170ba92d5ab53f7bc45f7964e3c8295fdd297a37588b6be020a4361` independently published and verified.
+- Exact merged v8.8.112 implementation baseline `e9d8c09bfeefe452eecad989aca7c612a965b57d` contains #844/#846 after exact-head native CI. v8.8.112 metadata is not yet tested or published. Require its fresh PR gates, expected-head protected merge, 26/26 new main gate and independent distinct immutable ZIP/manifest/source-tag/feed verification. Never overwrite the previous immutable release.
+- This is a source verification boundary, not proof of actual installed Heaven2 version/health, user RAR/7z corpus throughput or WPF p95. #793 has two positive isolated build-537 E2E runs but one intermittent timeout; do not claim zero-flake behavior.
 
 ## Remaining acceptance and risks
 

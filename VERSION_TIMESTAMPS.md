@@ -4,7 +4,8 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
-| 8.8.111 | November 16, 2026 · 8:29:35 PM EST | release candidate: measured #839 family-inference pruning integrated at main fefc7811; immutable versioned publication pending |
+| 8.8.112 | November 17, 2026 · 1:20:57 AM EST | serialized #844 Inbox progress and #846 measured-coverage harness/source integrated at main e9d8c09b; new immutable public release pending |
+| 8.8.111 | November 16, 2026 · 8:29:35 PM EST | immutable updater-main-537, exact source 1e24b351; published ZIP/manifest verified; later #844/#846 not included |
 | 8.8.110 | November 16, 2026 · 6:49:33 PM EST | immutable updater-main-535 exact source 968d9e7d; excludes later #839; installed positive updater acceptance separate |
 | 8.8.109 | November 16, 2026 · 3:45:07 PM EST | immutable updater-main-530 published from exact source a2910311; installed-client acceptance separate |
 | 8.8.108 | November 15, 2026 · 6:20:49 AM EST | immutable updater-main-524 published from source 93eb26a7; installed-client proof remains separate |

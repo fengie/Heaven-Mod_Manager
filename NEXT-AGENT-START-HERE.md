@@ -1,10 +1,16 @@
-# v8.8.111 - source verified, publication unverified
+# v8.8.112 — Inbox progress and code coverage, serialized release candidate
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220a1105a0ba1ee522846320ca6` (Windows Gate 44019899108); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `e9d8c09bfeefe452eecad989aca7c612a965b57d`, integrating #844 and #846 after exact native CI. Previous immutable [v8.8.111 updater-main-537](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-537) was published from `1e24b3519d56471bcb3995ab6b70ae9f6c09d00a` and excludes both changes. Bootstrap current `fengie/heaven-toolbox@main`, reconcile owner/main/PRs and serialized release slot before mutation.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
+
+- #844 Inbox progress/phase-tracing/WPF responsive overlay merged `main@e5147f0a8345b6d2f35128c92fdb64f9b7ba58fd` after [Feature 44028036684](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44028036684), with [main Gate 44028954968](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44028954968) PASS. Real client p95 and multi-archive wall time are unmeasured.
+- #846 added opt-in MTP code coverage, 19-feature inventory, functional ZIP route/index/dedup and fresh-state Inbox benchmark **source**. Integrated `main@e9d8c09bfeefe452eecad989aca7c612a965b57d` after [Feature 44029013896](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44029013896) PASS, [Product Security 44029014036](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44029014036) PASS and exact `enforce`. Collection percentages and macrobenchmark timing are not yet observed.
+- Previous public immutable [v8.8.111 updater-main-537](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-537) targets exact source `1e24b3519d56471bcb3995ab6b70ae9f6c09d00a`; do not force/overwrite it. v8.8.112 requires a distinct signed immutable build.
+
+
 
 - #832 planner allocation and overlay name/token caching: source candidate `5cf175d871fe51ac1895378c919c8d2d1d14784c` passed [Windows Feature 43978338548](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43978338548) and AutoUpdate 43978338567, integrated main `550d74b62c9bbc3cef8922a4e019cf5239d90bde`. Synthetic benchmarks do not measure installed-client p95.
 - #835 SQLite 11.0.0 and SharpCompress 0.50.9 updates, third-party notices and missing native dependency-CI triggers: candidate `2974738085def5dc4183d7c7ad055b6545922c14` passed Windows Feature 43979469737, Product Security 43979469676, Updater Publication 43979469883, AutoUpdate 43979469626; integrated main `b9acd9b2fca75ccf5eda7627f9b10b88cc93ec56`.
@@ -15,11 +21,10 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `d55d09a877760220
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.111 source `d55d09a877760220a1105a0ba1ee522846320ca6` passed run `44019899108` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.111-heaven-windows-closure.log`.
-
-Public release status: **NOT VERIFIED** for source `d55d09a877760220a1105a0ba1ee522846320ca6`. Successful build or another source's same-version release is not proof of publication.
-
-The tested source remains `d55d09a877760220a1105a0ba1ee522846320ca6` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+1. This v8.8.112 metadata candidate requires exact-head Windows Feature, README timestamp, Product Security, Toolbox Ownership, AutoUpdate and strict `enforce`, then protected expected-head merge on fresh main.
+2. Await all preceding canonical main Windows Release Gate jobs; preserve immutable v8.8.111 `updater-main-537`. The new source at `e9d8c09bfeefe452eecad989aca7c612a965b57d` and earlier published build 537 are distinct proof boundaries.
+3. Run new exact-main 26/26 Windows Release Gate for the new version, verify build/test/provenance, public immutable v8.8.112 tag/source/ZIP/manifest hashes and latest updater feed independently.
+4. [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) verified isolated Windows real updater+WPF selector/rollback on build 537 in [hosted run 44001412839](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44001412839) and [run 44003492684](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44003492684); separate run 44002248099 timed out, so repeatability is not proven. New build and Heaven2 installed health remain unverified.
 
 ## Unresolved risk and acceptance
 
