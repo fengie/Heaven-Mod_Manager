@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.109</Version>
-    <InformationalVersion>8.8.109-bulk-archive-drag-drop-import</InformationalVersion>
+    <Version>8.8.110</Version>
+    <InformationalVersion>8.8.110-planner-performance-dependency-reconciliation</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

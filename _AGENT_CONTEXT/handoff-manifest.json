@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.109",
+  "currentVersion": "8.8.110",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Prior immutable v8.8.108 updater-main-524 targets source 93eb26a7b48c0fc21ece2d2c8a87b7fb04981831. New bulk import and Explorer drag/drop #829 merged source main 9e3fc0be049cc43cbcaa506ff854502abc499773 after native Windows Feature 43950868996 26/26 and AutoUpdate 43950868605 passed. v8.8.109 metadata candidate and distinct immutable publication must be independently verified; installed UI/large archive and rollback proof remain open.",
+  "immediateParentRevision": "Immutable v8.8.109 updater-main-530 source a2910311 excludes the later #832 planner, #835 NuGet/CI, #836 synthetic archive/family regression and #838 cross-process intake receipt safety changes, all now merged on main 285ba723 after exact native PR verification. v8.8.110 metadata and distinct immutable publication remain pending; physical WPF, real RAR/7z throughput and isolated rollback unverified.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh canonical Toolbox, Mod Manager main and release/owner state. Read the full CONTINUITY_PROTOCOL, active Learned Rules, project plan and exact verification. Source #829 bulk ZIP/RAR/7z drag/drop is merged at 9e3fc0be; preceding source Windows Gate 43952164444 must terminate before serial v8.8.109 metadata integration. Verify exact metadata Feature/README/Security/Ownership/AutoUpdate, protected expected-head merge and new immutable v8.8.109 ZIP/manifest digests/feed. Preserve updater-main-524 and occupied real updater state. Real installed WPF/large RAR/7z #791 and isolated updater rollback #793 remain open. Every successor must inherit, preserve, obey and recursively propagate both Core Rules and Learned Rules to their next successor again.",
+  "nextAgentObligation": "Refresh canonical Toolbox and Mod Manager main/owner, fully read CONTINUITY_PROTOCOL and Learned Rules, preserve and recursively pass both to successor. Confirm #838 main Windows Release Gate 43987535401; reconcile v8.8.110 serialized metadata to main 285ba723; rerun exact native Feature/README/Security/Ownership/AutoUpdate; protect expected-head merge, then verify new immutable ZIP/manifest SHA-256/public feed. Preserve updater-main-530 and occupied updater user state; #791 real corpus/WPF and #793 isolated positive rollback remain open. A prior green head on older main is not sufficient.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
