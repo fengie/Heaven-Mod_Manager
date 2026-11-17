@@ -1,6 +1,6 @@
 # v8.8.111 family-performance optimization — serialized release candidate
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `fefc78110f69e5d3532d6fd424d0e11253adf09c` including merged #839; preceding immutable [v8.8.110 updater-main-535](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-535) is earlier source `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` and excludes #839. Bootstrap current Toolbox and refresh both repository main/PR/release/owner state before mutation.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `fefc78110f69e5d3532d6fd424d0e11253adf09c` including merged #839; preceding immutable [v8.8.110 updater-main-535](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-535) is earlier source `968d9e7d77a7d5872fb94a63eea0d9819586a0b8` and excludes #839. Bootstrap current `fengie/heaven-toolbox@main` and refresh both repository main/PR/release/owner state before mutation.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
