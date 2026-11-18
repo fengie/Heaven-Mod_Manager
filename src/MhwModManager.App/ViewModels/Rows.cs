@@ -196,8 +196,10 @@ public partial class ModRowViewModel:ObservableObject
             var suffix=identity[DisplayName.Length..].Trim(' ','-',':','|','_','–','—');
             if(!string.IsNullOrWhiteSpace(suffix))identity=suffix;
         }
-        if(!IsComposite && NexusArchiveIdentity.TryParse(SourceName,out var sourceIdentity))
-            identity=$"Nexus {sourceIdentity.ModId} • single package";
+        // The visible source label already strips receipt hashes; parse only the
+        // untouched original package name and present its source ID as a hint.
+        if(!IsComposite && NexusArchiveIdentity.TryParse(family.Members[0].Name,out var sourceIdentity))
+            identity=$"Possible Nexus {sourceIdentity.ModId} • unverified source";
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
