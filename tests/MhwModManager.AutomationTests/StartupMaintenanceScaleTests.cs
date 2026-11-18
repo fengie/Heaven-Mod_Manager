@@ -50,7 +50,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
             // No source folder exists: the safety rule must keep both records.
             await db.UpsertModAsync(new(id, id, id, Path.Combine(root, id), false, i), Token);
             await db.ReplaceModFilesAsync(id,
-                [new ModFileDescriptor(id, @"nativePC\\shared.tex", "same-sha", null,
+                [new ModFileDescriptor(id, @"nativePC\shared.tex", "same-sha", null,
                     10, DateTimeOffset.UtcNow, FileClass.Texture)], Token);
         }
 
@@ -72,7 +72,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
             Directory.CreateDirectory(folder);
             await db.UpsertModAsync(new(id, id, id, folder, false, i), Token);
             await db.ReplaceModFilesAsync(id,
-                [new ModFileDescriptor(id, @"nativePC\\shared.tex", "same-sha", null,
+                [new ModFileDescriptor(id, @"nativePC\shared.tex", "same-sha", null,
                     10, DateTimeOffset.UtcNow, FileClass.Texture)], Token);
         }
 
