@@ -72,8 +72,8 @@ public sealed class OperationLatencyReportTests
 
             var file = await new OperationLatencyReportService(database).GenerateAsync(root, ct);
             var report = await File.ReadAllTextAsync(file, ct);
-            var row = Assert.Single(report.Split('\n').Where(line =>
-                line.TrimStart().StartsWith("metadata.sync", StringComparison.Ordinal)));
+            var row = Assert.Single(report.Split('\n'), line =>
+                line.TrimStart().StartsWith("metadata.sync", StringComparison.Ordinal));
             var columns = row.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             Assert.Equal("n/a", columns[^2]);
             Assert.Equal("n/a", columns[^1].Trim());
