@@ -60,7 +60,10 @@ function New-InboxFixture([string]$InboxRoot) {
         New-Item -ItemType Directory -Force -Path $leaf | Out-Null
         for ($f = 0; $f -lt $FilesPerInboxPackage; $f++) {
             $name = Join-Path $leaf ('file{0:D4}.tex' -f $f)
-            [IO.File]::WriteAllBytes($name, [byte[]](0..127))
+            $payload = New-Object byte[] 128
+            $payload[0] = [byte]$p
+            $payload[1] = [byte]$f
+            [IO.File]::WriteAllBytes($name, $payload)
         }
     }
 }
