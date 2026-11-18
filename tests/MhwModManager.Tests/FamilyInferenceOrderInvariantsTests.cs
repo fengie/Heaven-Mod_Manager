@@ -151,6 +151,7 @@ public sealed class FamilyInferenceOrderInvariantsTests
             ContentFile("other", @"nativePC\pl\f_equip\pl001_0000\body\other.mod3", "unrelated")
         };
 
+        var expectedParts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "part-a", "part-b" };
         for (var seed = 0; seed < 8; seed++)
         {
             var random = new Random(seed + 31);
@@ -159,7 +160,7 @@ public sealed class FamilyInferenceOrderInvariantsTests
             var families = LogicalModFamilies.Build(orderedMods, orderedFiles);
             Assert.Equal(2, families.Count);
             Assert.Contains(families, f => f.Members.Select(m => m.Id)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals(new[] { "part-a", "part-b" }));
+                .ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals(expectedParts));
             Assert.Contains(families, f => f.Members.Count == 1 && f.Members[0].Id == "other");
         }
     }

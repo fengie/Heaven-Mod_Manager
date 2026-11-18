@@ -1032,6 +1032,7 @@ public sealed class GameModIntakeService
     // archived downloads unique. Unsafe or excessive names use the safe slug.
     private static string SafeDisplayStem(string source)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var name = Directory.Exists(source)
             ? Path.GetFileName(Path.TrimEndingDirectorySeparator(source))
             : Path.GetFileNameWithoutExtension(source);

@@ -286,6 +286,7 @@ public static partial class GenericFamilyInference
     private static bool HasContentLineage(CandidateProfile a,CandidateProfile b,
         IReadOnlySet<string> rareContentAnchors,out int sharedAnchors)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         sharedAnchors=0;
         if(a.HasChoiceSignal||b.HasChoiceSignal||
             a.Files.ContentAnchors.Count<2||b.Files.ContentAnchors.Count<2)
