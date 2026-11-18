@@ -175,7 +175,7 @@ public static partial class AutoCompatibility
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(value)) return false;
         var leaf = Path.GetFileNameWithoutExtension(value.Trim());
-        leaf = NexusArchiveTailRegex().Replace(leaf, string.Empty);
+        leaf = NexusArchiveTailRegex().Replace(NexusArchiveIdentity.RemoveSuffix(leaf), string.Empty);
         leaf = Regex.Replace(leaf, @"[_-]+", " ", RegexOptions.CultureInvariant).Trim();
         return StandaloneBaseLabelRegex().IsMatch(leaf);
     }

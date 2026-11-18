@@ -16,6 +16,9 @@ internal enum ManagerDatabaseMigrationCheckpoint
 /// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
 /// shared-cache changes locking semantics and works against the WAL concurrency model.
 /// </summary>
+public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl);
+public sealed record ModArchiveDisplayBackfill(string Id, string Name, string SourcePath, string DisplayName);
+
 public sealed class ManagerDatabase
 {
     private const int BusyTimeoutSeconds = 10;
@@ -283,6 +286,69 @@ public sealed class ManagerDatabase
         return paths;
     }
 
+    /// <summary>
+    /// Lightweight catalog snapshot; avoids loading file provenance, family members and previews
+    /// every time the user refreshes an installed folder. It never modifies existing records.
+    /// </summary>
+    public async Task<IReadOnlyList<ModCatalogSourceIdentity>> GetModCatalogSourceIdentitiesAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var list = new List<ModCatalogSourceIdentity>();
+        await using var c = await OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = "SELECT id,name,source_path,nexus_mod_id,source_url FROM mods";
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct))
+            list.Add(new(r.GetString(0), r.GetString(1), r.GetString(2),
+                r.IsDBNull(3) ? null : r.GetString(3),
+                r.IsDBNull(4) ? null : r.GetString(4)));
+        return list;
+    }
+
+    /// <summary>
+    /// Repair an unedited display title from its original archive filename only.
+    /// Filename-derived IDs are untrusted and must never become authoritative Nexus IDs
+    /// or trigger an automatic family/overwrite inference. The ID/path/name guard
+    /// prevents stale catalog snapshots from changing a different package.
+    /// </summary>
+    public async Task<int> BackfillArchiveDisplayNameAsync(
+        IReadOnlyList<ModArchiveDisplayBackfill> candidates,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"candidates={candidates.Count}");
+        if (candidates.Count == 0) return 0;
+        await using var c = await OpenAsync(ct);
+        await using var tx = c.BeginTransaction(deferred: false);
+        await using var cmd = c.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = """
+        UPDATE mods
+        SET display_name=$display, updated_at=$now
+        WHERE id=$id AND name=$name AND source_path=$source
+          AND display_name=name AND nexus_mod_id IS NULL AND source_url IS NULL
+        """;
+        var pId = cmd.Parameters.Add("$id", SqliteType.Text);
+        var pName = cmd.Parameters.Add("$name", SqliteType.Text);
+        var pSource = cmd.Parameters.Add("$source", SqliteType.Text);
+        var pDisplay = cmd.Parameters.Add("$display", SqliteType.Text);
+        var pNow = cmd.Parameters.Add("$now", SqliteType.Text);
+        var updated = 0;
+        var now = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+        cmd.Prepare();
+        foreach (var row in candidates)
+        {
+            ct.ThrowIfCancellationRequested();
+            pId.Value = row.Id;
+            pName.Value = row.Name;
+            pSource.Value = row.SourcePath;
+            pDisplay.Value = row.DisplayName;
+            pNow.Value = now;
+            updated += await cmd.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+        return updated;
+    }
+
     public async Task SetEnabledAndPriorityAsync(IReadOnlyDictionary<string,(bool enabled,int priority)> state, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -432,11 +498,23 @@ public sealed class ManagerDatabase
     /// family root; every supplied child is recorded as an Optional member and receives an explicit
     /// main->optional overlay rule. No source files are moved or modified.
     /// </summary>
+    public Task<string> ChainManualFamilyAsync(
+        string mainModId,
+        IReadOnlyCollection<string> mainMemberIds,
+        IReadOnlyList<IReadOnlyList<string>> optionalGroups,
+        string familyName,
+        CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ChainManualFamilyAsync(mainModId,mainMemberIds,optionalGroups,familyName,false,ct);
+    }
+
     public async Task<string> ChainManualFamilyAsync(
         string mainModId,
         IReadOnlyCollection<string> mainMemberIds,
         IReadOnlyList<IReadOnlyList<string>> optionalGroups,
         string familyName,
+        bool refuseExistingPairRules,
         CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"main={mainModId}; mainMembers={mainMemberIds.Count}; optionalGroups={optionalGroups.Count}");
@@ -488,6 +566,16 @@ public sealed class ManagerDatabase
         {
             var a=all[i];var b=all[j];
             if(chainGroupByMod[a]==chainGroupByMod[b])continue;
+            if(refuseExistingPairRules)
+            {
+                await using var check=c.CreateCommand();check.Transaction=tx;
+                check.CommandText="SELECT id FROM conflict_rules WHERE scope=$scope AND ((left_mod_id=$a AND right_mod_id=$b) OR (left_mod_id=$b AND right_mod_id=$a)) LIMIT 1";
+                check.Parameters.AddWithValue("$scope",RuleScope.ModPair.ToString());check.Parameters.AddWithValue("$a",a);check.Parameters.AddWithValue("$b",b);
+                var existing=await check.ExecuteScalarAsync(ct);
+                if(existing is not null)
+                    throw new InvalidOperationException($"Suggested family confirmation cannot replace existing pair rule '{existing}' between '{a}' and '{b}'. Review the existing conflict rules explicitly.");
+                continue;
+            }
             await using var del=c.CreateCommand();del.Transaction=tx;
             del.CommandText="DELETE FROM conflict_rules WHERE scope=$scope AND ((left_mod_id=$a AND right_mod_id=$b) OR (left_mod_id=$b AND right_mod_id=$a))";
             del.Parameters.AddWithValue("$scope",RuleScope.ModPair.ToString());del.Parameters.AddWithValue("$a",a);del.Parameters.AddWithValue("$b",b);

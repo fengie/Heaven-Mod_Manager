@@ -138,6 +138,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public int RevalidationCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.NeedsRevalidation);
     public int IssueCount=>IssueSuspects.Count;
     public int UpdateCount=>Mods.Count(x=>x.HasUpdate);
+    public string FamilySuggestionsViewLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Review families ({Mods.Count(x=>x.HasSuggestedParents)})";
+        }
+    }
     public int SupersededCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.FullySuperseded);
     public int VisibleModCount=>ModsView.Cast<object>().Count();
     public bool HasVisibleMods
@@ -533,6 +541,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             "Enabled"=>m.StagedEnabled!=false,
             "Staged"=>m.HasStagedChanges,
             "Updates"=>m.HasUpdate,
+            "FamilyLinks"=>m.HasSuggestedParents,
             "Issues"=>m.HasIssue,
             "Revalidate"=>m.EffectiveState==EffectiveModState.NeedsRevalidation,
             "Superseded"=>m.EffectiveState==EffectiveModState.FullySuperseded,
@@ -596,13 +605,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var models=await s.Database.GetModsAsync(ct);
             var files=await s.Database.GetModFilesAsync(ct);
             var updateSettings=await s.Database.GetSettingsByPrefixAsync("update:",ct);
-            return (models,files,updateSettings);
+            // Compute topology off the WPF Dispatcher; only update bound rows on the UI thread.
+            var logical=LogicalModFamilies.Build(models,files,s.Paths.Game);
+            var suggestions=ModRelationshipInference.Suggest(models,files);
+            return (models,files,updateSettings,logical,suggestions);
         },ct);
-        var (models,files,updateSettings)=loaded;
+        var (models,files,updateSettings,logical,suggestions)=loaded;
         await Application.Current.Dispatcher.InvokeAsync(()=>
         {
-            var logical=LogicalModFamilies.Build(models,files,s.Paths.Game);
             var rows=logical.Select(m=>new ModRowViewModel(m,Changed)).ToArray();
+            var rowsByMember=rows.SelectMany(row=>row.Members.Select(member=>(member.Id,row)))
+                .ToDictionary(x=>x.Id,x=>x.row,StringComparer.OrdinalIgnoreCase);
+            foreach(var group in suggestions.GroupBy(s=>s.ChildModId,StringComparer.OrdinalIgnoreCase))
+            {
+                if(!rowsByMember.TryGetValue(group.Key,out var row))continue;
+                row.SetSuggestedParents(group.Where(s=>rowsByMember.TryGetValue(s.ParentModId,out var parent) && !ReferenceEquals(parent,row))
+                    .Select(s=>new ModFamilySuggestionRow(s.ParentModId,s.ChildModId,
+                        rowsByMember[s.ParentModId].DisplayName,s.Score,s.Evidence)));
+            }
             foreach(var row in rows)
             {
                 var latest=row.Members.Select(m=>updateSettings.TryGetValue("update:"+m.Id,out var value)?value:null).FirstOrDefault(v=>!string.IsNullOrWhiteSpace(v));
@@ -611,6 +631,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             }
             Mods.ReplaceAll(rows);
             ModsView.Refresh();
+            OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
             Changed();
         });
         await RefreshIssueSuspects(ct);

@@ -3,6 +3,18 @@ using MhwModManager.Core;
 
 namespace MhwModManager.App.ViewModels;
 
+public sealed record ModFamilySuggestionRow(string ParentId,string ChildId,string ParentName,int Score,string Evidence)
+{
+    public string Title
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Possible add-on to {ParentName} (review required)";
+        }
+    }
+}
+
 public partial class ModPartRowViewModel:ObservableObject
 {
     private readonly Action<string,bool> changed;
@@ -64,6 +76,25 @@ public partial class ModRowViewModel:ObservableObject
     public IReadOnlyList<ModDescriptor> Members{get;}
     public IReadOnlyList<ModDescriptor> ArchivedMembers{get;}
     public ObservableRangeCollection<ModPartRowViewModel> Parts{get;}=[];
+    public ObservableRangeCollection<ModFamilySuggestionRow> SuggestedParents{get;}=[];
+    public bool HasSuggestedParents
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return SuggestedParents.Count>0;
+        }
+    }
+    public string FamilyHint
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasSuggestedParents
+                ? $"Review {SuggestedParents.Count} possible parent relationship(s)"
+                : IdentityHint;
+        }
+    }
     public ObservableRangeCollection<string> GalleryPaths{get;}=[];
     public int MemberCount=>Members.Count;
     public int ArchivedCount=>ArchivedMembers.Count;
@@ -142,6 +173,14 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
 
+    public void SetSuggestedParents(IEnumerable<ModFamilySuggestionRow> suggestions)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        SuggestedParents.ReplaceAll(suggestions);
+        OnPropertyChanged(nameof(HasSuggestedParents));
+        OnPropertyChanged(nameof(FamilyHint));
+    }
+
     public ModRowViewModel(LogicalModFamily family,Action changed)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -157,6 +196,10 @@ public partial class ModRowViewModel:ObservableObject
             var suffix=identity[DisplayName.Length..].Trim(' ','-',':','|','_','–','—');
             if(!string.IsNullOrWhiteSpace(suffix))identity=suffix;
         }
+        // The visible source label already strips receipt hashes; parse only the
+        // untouched original package name and present its source ID as a hint.
+        if(!IsComposite && NexusArchiveIdentity.TryParse(family.Members[0].Name,out var sourceIdentity))
+            identity=$"Possible Nexus {sourceIdentity.ModId} • unverified source";
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
