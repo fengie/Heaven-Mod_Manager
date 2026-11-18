@@ -68,6 +68,35 @@ public sealed class CatalogScaleRegressionTests : IDisposable
         Assert.True(
             stopwatch.Elapsed < TimeSpan.FromSeconds(20),
             $"10k cached browse exceeded the generous regression ceiling: {stopwatch.Elapsed}.");
+        // The UI needs one extra read-only row to disclose that the visible
+        // capacity truncates cached results rather than reporting a complete set.
+        var withSentinel = await repository.SearchAsync(
+            query: null,
+            gameId: "monsterhunterworld",
+            includeStale: true,
+            limit: BrowseCapacity + 1,
+            now: FixtureBaseTime.AddDays(1),
+            ct: TestToken);
+        Assert.Equal(BrowseCapacity + 1, withSentinel.Count);
+        Assert.Equal("nexus:scale-08999", withSentinel[^1].Mod.CanonicalId);
+    }
+
+    [Theory]
+    [InlineData(0, false, "0 results")]
+    [InlineData(1, false, "1 result")]
+    [InlineData(7, false, "7 results")]
+    [InlineData(1000, true, "more cached matches")]
+    public void Browse_count_distinguishes_complete_results_from_truncated_local_cache(
+        int visibleCount, bool hasAdditional, string expected)
+    {
+        var label = CatalogBrowseResultState.FormatResultCountLabel(
+            visibleCount, hasAdditional);
+        Assert.Contains(expected, label, StringComparison.OrdinalIgnoreCase);
+        if (hasAdditional)
+        {
+            Assert.Contains("first", label, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("shown", label, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
