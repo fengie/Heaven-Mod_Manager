@@ -181,7 +181,11 @@ internal sealed class InboxPublicationJournalService(
         return ImportPublicationWorkspace.RootFor(modsRoot);
     }
 
-    private static bool Exists(string path) => File.Exists(path) || Directory.Exists(path);
+    private static bool Exists(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return File.Exists(path) || Directory.Exists(path);
+    }
 
     private static void RejectReparsePath(string path)
     {
