@@ -7,9 +7,13 @@ namespace MhwModManager.Automation;
 /// Keeps incomplete import work structurally outside the catalog-visible Mods root.
 /// A completed package becomes discoverable only through the final same-volume directory move.
 /// </summary>
-internal static class ImportPublicationWorkspace
+public static class ImportPublicationWorkspace
 {
-    public static string RootFor(string modsRoot)
+    /// <summary>
+    /// Resolves the catalog-invisible sibling import workspace without creating it.
+    /// Settings diagnostics can measure abandoned work without changing the import lifecycle.
+    /// </summary>
+    public static string LocationFor(string modsRoot)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var fullModsRoot = Path.GetFullPath(modsRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -19,7 +23,13 @@ internal static class ImportPublicationWorkspace
         if (string.IsNullOrWhiteSpace(leaf))
             throw new InvalidOperationException("Mods root must have a directory name.");
 
-        var workspace = Path.Combine(parent, $".{leaf}.import-work");
+        return Path.Combine(parent, $".{leaf}.import-work");
+    }
+
+    public static string RootFor(string modsRoot)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var workspace = LocationFor(modsRoot);
         Directory.CreateDirectory(workspace);
         if ((File.GetAttributes(workspace) & FileAttributes.ReparsePoint) != 0)
             throw new InvalidDataException($"Import workspace cannot be a symbolic link or reparse point: {workspace}");
