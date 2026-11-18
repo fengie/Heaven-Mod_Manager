@@ -39,7 +39,22 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     /// During bootstrap, defer optional remote metadata lookup until the Mods page requests it.
     /// Local import, indexing, hash capture and category assignment remain mandatory.
     /// </summary>
-    public async Task<InboxRunResult> ProcessAsync(IProgress<InboxRunProgress>? progress, bool refreshMetadata, CancellationToken ct = default)
+    public Task<InboxRunResult> ProcessAsync(IProgress<InboxRunProgress>? progress, bool refreshMetadata, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ProcessAsync(progress, refreshMetadata, shouldStopAfterCurrentItem: null, ct);
+    }
+
+    /// <summary>
+    /// A user may defer the remaining automatic Inbox queue only at a safe package
+    /// boundary. Previously published packages still complete catalog indexing
+    /// and authoritative hash capture before returning.
+    /// </summary>
+    public async Task<InboxRunResult> ProcessAsync(
+        IProgress<InboxRunProgress>? progress,
+        bool refreshMetadata,
+        Func<bool>? shouldStopAfterCurrentItem,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("smart-inbox");
         var totalTimer = Stopwatch.StartNew();
@@ -75,6 +90,13 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         foreach (var entry in entries)
         {
             ct.ThrowIfCancellationRequested();
+            if (shouldStopAfterCurrentItem?.Invoke() == true)
+            {
+                ReportStage(completed, "Deferred remaining packages");
+                UnifiedDebugLog.Write("INBOX",
+                    $"Deferred remaining Inbox packages after {completed}/{entries.Length} safe item(s); completing indexing for published items.");
+                break;
+            }
             var itemTimer = Stopwatch.StartNew();
             ReportStage(completed, "Preparing package", entry);
             string? staging = null;
