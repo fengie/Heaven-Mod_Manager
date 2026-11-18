@@ -62,8 +62,14 @@ public static partial class ModRelationshipInference
         {
             if (!byMod.TryGetValue(mod.Id, out var owned) || owned.Length == 0) continue;
             var paths = owned.Select(f => f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            // Index captured content once. Duplicate target rows have ambiguous
+            // ownership and must never be treated as proven identical bytes.
+            var hashesByPath = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var file in owned)
+                if (!hashesByPath.TryAdd(file.Path, file.BlobSha256))
+                    hashesByPath[file.Path] = string.Empty;
             var tokens = Tokens(NexusArchiveIdentity.RemoveSuffix(mod.DisplayName));
-            var profile = new Profile(mod, paths,
+            var profile = new Profile(mod, paths, hashesByPath,
                 owned.Any(f => f.FileClass == FileClass.Structural),
                 owned.All(f => f.FileClass == FileClass.Texture),
                 HasAddOnCue(mod), tokens);
@@ -99,6 +105,21 @@ public static partial class ModRelationshipInference
                 var shared = child.Paths.Count(path => parent.Paths.Contains(path));
                 if (shared == 0 || shared * 4 < child.Paths.Count * 3) continue;
 
+                var identical = 0;
+                foreach (var path in child.Paths)
+                {
+                    if (!parent.HashesByPath.TryGetValue(path, out var parentHash) ||
+                        !child.HashesByPath.TryGetValue(path, out var childHash) ||
+                        parentHash.Length != 64 || childHash.Length != 64 ||
+                        !parentHash.All(Uri.IsHexDigit) || !childHash.All(Uri.IsHexDigit))
+                        continue;
+                    if (StringComparer.OrdinalIgnoreCase.Equals(parentHash, childHash))
+                        identical++;
+                }
+                // A completely byte-identical overlap has no overwrite effect.
+                // Do not turn a copied resource into mod-wide precedence.
+                if (identical == shared) continue;
+
                 var sharedIdentity = child.IdentityTokens.Overlaps(parent.IdentityTokens);
                 // Texture-only replacements of a structural base can be an add-on even if
                 // their titles are different. Otherwise require a distinctive name token;
@@ -108,7 +129,7 @@ public static partial class ModRelationshipInference
                 var score = 50 + (shared == child.Paths.Count ? 10 : 0)
                     + (parent.HasStructural && child.TextureOnly ? 15 : 0)
                     + (sharedIdentity ? 15 : 0);
-                var explanation = $"Review required: {shared}/{child.Paths.Count} child file(s) replace the same target paths as '{parent.Mod.DisplayName}'. " +
+                var explanation = $"Review required: {shared}/{child.Paths.Count} child file(s) share target paths with '{parent.Mod.DisplayName}' ({identical} byte-identical, {shared-identical} different or unverified). " +
                     $"'{child.Mod.DisplayName}' has an add-on/overlay label; " +
                     (parent.HasStructural && child.TextureOnly
                         ? "the proposed parent also supplies structural assets. "
@@ -160,6 +181,7 @@ public static partial class ModRelationshipInference
     private sealed record Profile(
         ModDescriptor Mod,
         HashSet<string> Paths,
+        Dictionary<string,string> HashesByPath,
         bool HasStructural,
         bool TextureOnly,
         bool IsAddOn,
