@@ -148,6 +148,78 @@ public sealed class ModRelationshipInferenceTests
         Assert.Empty(ModRelationshipInference.Suggest(mods, files));
     }
 
+
+    [Fact]
+    public void Byte_identical_texture_copy_is_not_an_override_suggestion()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Body Base", "1965"),
+            Mod("copy", "Tattoo Skin Texture Overlay", "8397")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var same = new string('a', 64);
+        var files = new[]
+        {
+            ContentFile("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('b', 64)),
+            ContentFile("parent", shared, same),
+            ContentFile("copy", shared, same)
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal(2, LogicalModFamilies.Build(mods, files).Count);
+    }
+
+    [Fact]
+    public void Byte_different_texture_overlay_remains_reviewable()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Body Base", "1965"),
+            Mod("tattoo", "Tattoo Skin Texture Overlay", "8397")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            ContentFile("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('d', 64)),
+            ContentFile("parent", shared, new string('a', 64)),
+            ContentFile("tattoo", shared, new string('b', 64))
+        };
+
+        var suggested = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal(ModRelationshipKind.PossibleOverride, suggested.Kind);
+        Assert.Equal("parent", suggested.ParentModId);
+        Assert.Equal("tattoo", suggested.ChildModId);
+        Assert.Contains("different", suggested.Evidence, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void One_identical_and_one_different_shared_file_still_requires_review()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Body Base", "1965"),
+            Mod("patch", "Tattoo Skin Texture Overlay", "8397")
+        };
+        const string sharedA = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        const string sharedB = @"nativePC\pl\f_equip\pl001_0000\body\detail.tex";
+        var files = new[]
+        {
+            ContentFile("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('c', 64)),
+            ContentFile("parent", sharedA, new string('a', 64)),
+            ContentFile("parent", sharedB, new string('b', 64)),
+            ContentFile("patch", sharedA, new string('a', 64)),
+            ContentFile("patch", sharedB, new string('d', 64))
+        };
+
+        var result = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal(2, result.SharedPaths);
+        Assert.Contains("1 byte-identical", result.Evidence, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ModFileDescriptor ContentFile(string modId, string path, string digest) =>
+        new(modId, path, digest, null, 4096, DateTimeOffset.UnixEpoch, PathRules.ClassifyFile(path));
+
     private static ModDescriptor Mod(string id, string name, string nexusModId) =>
         new(id, name, name, id, false, 0, NexusModId: nexusModId);
 

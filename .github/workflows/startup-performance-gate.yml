@@ -12,22 +12,11 @@ on:
       - 'tests/MhwModManager.AutomationTests/StartupMaintenanceScaleTests.cs'
       - 'tests/MhwModManager.IntegrationTests/StartupPerformanceTests.cs'
       - 'scripts/diagnostics/Measure-StartupPerformance.ps1'
+      - 'scripts/diagnostics/Read-StartupUiPhase.ps1'
+      - 'scripts/testing/Test-StartupUiPhaseTelemetry.ps1'
       - '.github/workflows/startup-performance-gate.yml'
-  push:
-    branches:
-      - 'perf-startup-*'
-      - 'fix/startup-maintenance-*'
-    paths:
-      - 'src/**'
-      - 'tests/MhwModManager.IntegrationTests/**'
-      - 'scripts/diagnostics/Measure-StartupPerformance.ps1'
-      - '.github/workflows/startup-performance-gate.yml'
-      - 'Directory.Build.props'
-      - 'Directory.Packages.props'
-      - 'global.json'
-      - 'VERSION.txt'
-      - 'README.md'
-      - 'CHANGELOG.md'
+  # Explicit manual dispatch is available for trusted branch-only experiments.
+  # PR changes are measured once on hosted Windows; no redundant push run.
   workflow_dispatch:
 
 permissions:
@@ -56,7 +45,7 @@ jobs:
       - name: Check out current main baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: main
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'main' }}
           fetch-depth: 1
           persist-credentials: false
           path: baseline
@@ -75,6 +64,11 @@ jobs:
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           global-json-file: candidate/global.json
+
+      - name: Test UI phase telemetry parser (positive and negative fixtures)
+        working-directory: candidate
+        shell: powershell
+        run: .\scripts\testing\Test-StartupUiPhaseTelemetry.ps1
 
       - name: Verify pinned .NET SDK
         working-directory: candidate
@@ -109,7 +103,7 @@ jobs:
       - name: Measure candidate
         shell: powershell
         run: |
-          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 5 -ModCount 300 -FilesPerMod 25 -InboxPackages 12 -FilesPerInboxPackage 20 -TimeoutSeconds 120
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 5 -ModCount 300 -FilesPerMod 25 -InboxPackages 12 -FilesPerInboxPackage 20 -TimeoutSeconds 120 -RequireStartupUiPhaseMetrics
 
       - name: Build before-after report
         shell: powershell
@@ -136,6 +130,8 @@ jobs:
               'recovery_ms',
               'automation_ms',
               'main_window_initialize_ms',
+              'reload_mods_ms',
+              'refresh_analysis_ms',
               'master_log_mb'
           )
           $lines = New-Object System.Collections.Generic.List[string]
@@ -147,12 +143,18 @@ jobs:
           $lines.Add('')
           $lines.Add('| Metric | Main cold | Candidate cold | Cold improvement | Main warm | Candidate warm | Warm improvement |')
           $lines.Add('|---|---:|---:|---:|---:|---:|---:|')
+          function Display([object]$value) {
+              if ($null -eq $value) { return 'N/A' }
+              return ([string]$value)
+          }
           foreach ($metric in $metrics) {
-              $bc = [double]$baseline.cold.$metric
-              $cc = [double]$candidate.cold.$metric
-              $bw = [double]$baseline.warm.$metric
-              $cw = [double]$candidate.warm.$metric
-              $lines.Add("| $metric | $bc | $cc | $(Improvement $bc $cc) | $bw | $cw | $(Improvement $bw $cw) |")
+              $bc = $baseline.cold.$metric
+              $cc = $candidate.cold.$metric
+              $bw = $baseline.warm.$metric
+              $cw = $candidate.warm.$metric
+              $coldImprovement = if ($null -eq $bc -or $null -eq $cc) { 'N/A' } else { Improvement ([double]$bc) ([double]$cc) }
+              $warmImprovement = if ($null -eq $bw -or $null -eq $cw) { 'N/A' } else { Improvement ([double]$bw) ([double]$cw) }
+              $lines.Add("| $metric | $(Display $bc) | $(Display $cc) | $coldImprovement | $(Display $bw) | $(Display $cw) | $warmImprovement |")
           }
           $lines.Add('')
           $lines.Add("Build-output size: main $($baseline.package_size_mb) MB; candidate $($candidate.package_size_mb) MB.")
@@ -162,8 +164,24 @@ jobs:
           Set-Content -LiteralPath .\startup-performance-comparison.md -Value $report -Encoding UTF8
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
 
+          # Missing candidate phase measurements must fail: a zero or missing value
+          # cannot masquerade as improved WPF startup responsiveness.
+          foreach ($kind in @('cold', 'warm')) {
+              foreach ($phase in @('reload_mods_ms', 'refresh_analysis_ms')) {
+                  if ($null -eq $candidate.$kind.$phase) {
+                      throw "Candidate $kind startup UI measurement '$phase' is missing."
+                  }
+              }
+          }
+          if ($baseline.mod_count -ne $candidate.mod_count -or
+              $baseline.files_per_mod -ne $candidate.files_per_mod -or
+              $baseline.inbox_packages -ne $candidate.inbox_packages -or
+              $baseline.files_per_inbox_package -ne $candidate.files_per_inbox_package) {
+              throw 'Baseline/candidate fixture mismatch: timing comparison is invalid.'
+          }
+
           # This is a gate, not merely a comparison report: flag median startup
-          # latency regressions on the same dedicated runner, allowing for noise.
+          # latency regressions on the same runner, allowing for noise.
           $violations = New-Object System.Collections.Generic.List[string]
           foreach ($kind in @('cold', 'warm')) {
               $before = [double]$baseline.$kind.process_to_ready_ms
