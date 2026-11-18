@@ -11,6 +11,8 @@ namespace MhwModManager.App;
 public sealed class StartupWindow:Window
 {
     private readonly TextBlock detail;
+    private readonly Button maintenanceSkipButton;
+    private int skipRequested;
     private readonly Stopwatch elapsed = Stopwatch.StartNew();
     private readonly DispatcherTimer heartbeat = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private string currentDetail = "Getting everything ready…";
@@ -20,7 +22,7 @@ public sealed class StartupWindow:Window
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Title="Universal Mod Manager";
         Width=540;
-        Height=228;
+        Height=280;
         WindowStartupLocation=WindowStartupLocation.CenterScreen;
         ResizeMode=ResizeMode.NoResize;
         WindowStyle=WindowStyle.None;
@@ -71,6 +73,24 @@ public sealed class StartupWindow:Window
             BorderThickness=new Thickness(0)
         };
 
+        // Only shown after migration and interrupted-operation recovery have
+        // completed. A click defers *new* optional work; it never tears down a
+        // package while publication, catalog capture or rollback is in progress.
+        maintenanceSkipButton=new Button
+        {
+            Content="Finish current stage, then open app",
+            Visibility=Visibility.Collapsed,
+            Margin=new Thickness(0,14,0,0),
+            Padding=new Thickness(14,8,14,8),
+            HorizontalAlignment=HorizontalAlignment.Right,
+            Foreground=accentBright,
+            Background=new SolidColorBrush(Color.FromRgb(32,39,51)),
+            BorderBrush=border,
+            BorderThickness=new Thickness(1),
+            FontSize=12
+        };
+        maintenanceSkipButton.Click+=OnSkipButtonClicked;
+
         heartbeat.Tick += (_, _) => RenderDetail();
         heartbeat.Start();
         Closed += (_, _) => heartbeat.Stop();
@@ -85,7 +105,7 @@ public sealed class StartupWindow:Window
             BorderThickness=new Thickness(1),
             CornerRadius=new CornerRadius(12),
             Effect=new DropShadowEffect{BlurRadius=26,ShadowDepth=0,Opacity=0.42,Color=Colors.Black},
-            Child=new StackPanel{Children={brand,detail,progress}}
+            Child=new StackPanel{Children={brand,detail,progress,maintenanceSkipButton}}
         };
     }
 
@@ -96,9 +116,36 @@ public sealed class StartupWindow:Window
         RenderDetail();
     }
 
+    public bool SkipRequested=>Volatile.Read(ref skipRequested)!=0;
+
+    public void SetMaintenanceSkipVisible(bool visible)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(visible)
+        {
+            Interlocked.Exchange(ref skipRequested,0);
+            maintenanceSkipButton.IsEnabled=true;
+        }
+        maintenanceSkipButton.Visibility=visible?Visibility.Visible:Visibility.Collapsed;
+        RenderDetail();
+    }
+
+    private void OnSkipButtonClicked(object sender,RoutedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(maintenanceSkipButton.Visibility!=Visibility.Visible)return;
+        Interlocked.Exchange(ref skipRequested,1);
+        maintenanceSkipButton.IsEnabled=false;
+        RenderDetail();
+    }
+
     private void RenderDetail()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        detail.Text = currentDetail + Environment.NewLine + "Elapsed: " + elapsed.Elapsed.ToString(@"hh\:mm\:ss", System.Globalization.CultureInfo.InvariantCulture);
+        var waiting=SkipRequested
+            ? Environment.NewLine+"Finishing the current package or stage safely before opening the app…"
+            : string.Empty;
+        detail.Text=currentDetail+Environment.NewLine+"Elapsed: "+
+            elapsed.Elapsed.ToString(@"hh\:mm\:ss",System.Globalization.CultureInfo.InvariantCulture)+waiting;
     }
 }
