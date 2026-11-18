@@ -54,10 +54,32 @@ public sealed class EquivalentStructuralBundleTests
     }
 
     [Fact]
-    public void Missing_structural_sibling_does_not_count_as_a_complete_duplicate()
+    public void Identical_subset_of_one_complete_bundle_does_not_create_a_false_conflict()
     {
         var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
             File("beta", Mesh, MeshHash)]);
+
+        Assert.False(plan.IsBlocked);
+        Assert.Equal(2, plan.Changes.Count);
+        Assert.Contains(plan.Conflicts, c => !c.Blocking && c.ReasonCode == "identical-bytes");
+    }
+
+    [Fact]
+    public void Two_complementary_incomplete_structural_packages_still_need_review()
+    {
+        var plan = Build([File("alpha", Mesh, MeshHash),
+            File("beta", Material, MaterialHash)]);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Contains(plan.Conflicts, c => c.Blocking && c.ReasonCode == "bundle-mixed-providers");
+        Assert.Empty(plan.Changes);
+    }
+
+    [Fact]
+    public void Complete_provider_must_not_mask_a_different_byte_subset()
+    {
+        var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
+            File("beta", Mesh, DifferentHash)]);
 
         Assert.True(plan.IsBlocked);
         Assert.Contains(plan.Conflicts, c => c.Blocking && c.ReasonCode == "bundle-mixed-providers");
