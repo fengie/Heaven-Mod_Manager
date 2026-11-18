@@ -17,7 +17,7 @@ internal enum ManagerDatabaseMigrationCheckpoint
 /// shared-cache changes locking semantics and works against the WAL concurrency model.
 /// </summary>
 public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl);
-public sealed record NexusArchiveMetadataBackfill(string Id, string Name, string SourcePath, string NexusModId, string DisplayName);
+public sealed record ModArchiveDisplayBackfill(string Id, string Name, string SourcePath, string DisplayName);
 
 public sealed class ManagerDatabase
 {
@@ -306,13 +306,13 @@ public sealed class ManagerDatabase
     }
 
     /// <summary>
-    /// Repair only missing archive-derived source identity. An existing source URL, already known
-    /// Nexus identity, manually edited display name, priority, enable state, family or rules
-    /// are never overwritten. The ID/path/name guard prevents stale catalog snapshots
-    /// from applying metadata to a different package at a reused location.
+    /// Repair an unedited display title from its original archive filename only.
+    /// Filename-derived IDs are untrusted and must never become authoritative Nexus IDs
+    /// or trigger an automatic family/overwrite inference. The ID/path/name guard
+    /// prevents stale catalog snapshots from changing a different package.
     /// </summary>
-    public async Task<int> BackfillNexusArchiveMetadataAsync(
-        IReadOnlyList<NexusArchiveMetadataBackfill> candidates,
+    public async Task<int> BackfillArchiveDisplayNameAsync(
+        IReadOnlyList<ModArchiveDisplayBackfill> candidates,
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"candidates={candidates.Count}");
@@ -323,16 +323,13 @@ public sealed class ManagerDatabase
         cmd.Transaction = tx;
         cmd.CommandText = """
         UPDATE mods
-        SET nexus_mod_id=$nexus,
-            display_name=CASE WHEN display_name=name THEN $display ELSE display_name END,
-            updated_at=$now
+        SET display_name=$display, updated_at=$now
         WHERE id=$id AND name=$name AND source_path=$source
-          AND nexus_mod_id IS NULL AND source_url IS NULL
+          AND display_name=name AND nexus_mod_id IS NULL AND source_url IS NULL
         """;
         var pId = cmd.Parameters.Add("$id", SqliteType.Text);
         var pName = cmd.Parameters.Add("$name", SqliteType.Text);
         var pSource = cmd.Parameters.Add("$source", SqliteType.Text);
-        var pNexus = cmd.Parameters.Add("$nexus", SqliteType.Text);
         var pDisplay = cmd.Parameters.Add("$display", SqliteType.Text);
         var pNow = cmd.Parameters.Add("$now", SqliteType.Text);
         var updated = 0;
@@ -344,7 +341,6 @@ public sealed class ManagerDatabase
             pId.Value = row.Id;
             pName.Value = row.Name;
             pSource.Value = row.SourcePath;
-            pNexus.Value = row.NexusModId;
             pDisplay.Value = row.DisplayName;
             pNow.Value = now;
             updated += await cmd.ExecuteNonQueryAsync(ct);
@@ -507,7 +503,8 @@ public sealed class ManagerDatabase
         IReadOnlyCollection<string> mainMemberIds,
         IReadOnlyList<IReadOnlyList<string>> optionalGroups,
         string familyName,
-        CancellationToken ct=default)
+        CancellationToken ct=default,
+        bool refuseExistingPairRules=false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"main={mainModId}; mainMembers={mainMemberIds.Count}; optionalGroups={optionalGroups.Count}");
         if(string.IsNullOrWhiteSpace(mainModId))throw new ArgumentException("A main mod is required.",nameof(mainModId));
@@ -558,6 +555,16 @@ public sealed class ManagerDatabase
         {
             var a=all[i];var b=all[j];
             if(chainGroupByMod[a]==chainGroupByMod[b])continue;
+            if(refuseExistingPairRules)
+            {
+                await using var check=c.CreateCommand();check.Transaction=tx;
+                check.CommandText="SELECT id FROM conflict_rules WHERE scope=$scope AND ((left_mod_id=$a AND right_mod_id=$b) OR (left_mod_id=$b AND right_mod_id=$a)) LIMIT 1";
+                check.Parameters.AddWithValue("$scope",RuleScope.ModPair.ToString());check.Parameters.AddWithValue("$a",a);check.Parameters.AddWithValue("$b",b);
+                var existing=await check.ExecuteScalarAsync(ct);
+                if(existing is not null)
+                    throw new InvalidOperationException($"Suggested family confirmation cannot replace existing pair rule '{existing}' between '{a}' and '{b}'. Review the existing conflict rules explicitly.");
+                continue;
+            }
             await using var del=c.CreateCommand();del.Transaction=tx;
             del.CommandText="DELETE FROM conflict_rules WHERE scope=$scope AND ((left_mod_id=$a AND right_mod_id=$b) OR (left_mod_id=$b AND right_mod_id=$a))";
             del.Parameters.AddWithValue("$scope",RuleScope.ModPair.ToString());del.Parameters.AddWithValue("$a",a);del.Parameters.AddWithValue("$b",b);

@@ -14,7 +14,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         var current=await db.GetModCatalogSourceIdentitiesAsync(ct);
         var existingByPath=current.GroupBy(m=>m.SourcePath,StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g=>g.Key,g=>g.ToArray(),StringComparer.OrdinalIgnoreCase);
-        var backfills=new List<NexusArchiveMetadataBackfill>();
+        var backfills=new List<ModArchiveDisplayBackfill>();
         // Existing MHW and generic source paths stay authoritative: a migration that moves them
         // would invalidate persisted mod IDs, explicit overrides and rollback references.
         var roots=new[]{modsRoot,legacyModsRoot}
@@ -40,20 +40,20 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                         if(string.IsNullOrWhiteSpace(existing.NexusModId) &&
                            string.IsNullOrWhiteSpace(existing.SourceUrl) &&
                            StringComparer.OrdinalIgnoreCase.Equals(existing.Name,name))
-                            backfills.Add(new(existing.Id,existing.Name,dir,identity.ModId,identity.DisplayName));
+                            backfills.Add(new(existing.Id,existing.Name,dir,identity.DisplayName));
                 }
                 continue;
             }
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
             var parsed=NexusArchiveIdentity.TryParse(name,out var newIdentity);
-            var nexusModId=parsed?newIdentity.ModId:null;
+            // Filenames are untrusted: do not promote guessed IDs into verified source identity.
             var display=ModDisplayNames.StripTransportDigest(parsed?newIdentity.DisplayName:name);
-            await db.UpsertModAsync(new(id,name,display,dir,false,priority++,NexusModId:nexusModId),ct);
+            await db.UpsertModAsync(new(id,name,display,dir,false,priority++),ct);
         }
         if(backfills.Count>0)
         {
-            var updated=await db.BackfillNexusArchiveMetadataAsync(backfills,ct);
-            MasterDebugLog.Write("CATALOG", $"Backfilled Nexus archive metadata for {updated} existing mod(s).");
+            var updated=await db.BackfillArchiveDisplayNameAsync(backfills,ct);
+            MasterDebugLog.Write("CATALOG", $"Repaired filename-derived display titles for {updated} existing mod(s).");
         }
     }
 

@@ -21,13 +21,41 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
+        var preview = await s.PlannerSnapshots.LoadAsync(CancellationToken.None);
+        var previewMain = parentRow.Members.Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var previewChild = childRow.Members.Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var mainPaths = preview.Files.Where(f => previewMain.Contains(f.ModId))
+            .Select(f => f.Path).ToHashSet(PathRules.Comparer);
+        var sharedPaths = preview.Files.Where(f => previewChild.Contains(f.ModId) && mainPaths.Contains(f.Path))
+            .Select(f => f.Path).Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (sharedPaths.Length == 0 || sharedPaths.Length > 20)
+        {
+            StatusText = "The suggested family needs detailed conflict review: either no current shared target or more than 20 affected paths.";
+            return;
+        }
+
+        var existingPairRules = preview.Rules.Where(rule => rule.Scope == RuleScope.ModPair &&
+            rule.LeftModId is not null && rule.RightModId is not null &&
+            (previewMain.Contains(rule.LeftModId) && previewChild.Contains(rule.RightModId) ||
+             previewMain.Contains(rule.RightModId) && previewChild.Contains(rule.LeftModId))).ToArray();
+        if (existingPairRules.Length > 0)
+        {
+            StatusText = "An existing conflict rule would be replaced. Resolve it in the conflict editor; this shortcut has changed nothing.";
+            return;
+        }
+
+        // This shortcut is an explicit mod-wide ordering decision, not automatic classification.
+        // Show every affected existing file and warn about *future* overlaps before persisting it.
         if (MessageBox.Show(
                 $"Attach '{childRow.DisplayName}' under '{parentRow.DisplayName}'?\n\n" +
                 $"{selection.Evidence}\n\n" +
-                "This saves an explicit parent/add-on ordering rule. The source archives stay independent; game files do not change until Apply Changes.",
-                "Confirm mod family relationship",
+                $"Current overlapping target paths ({sharedPaths.Length}):\n" +
+                string.Join("\n", sharedPaths) + "\n\n" +
+                "IMPORTANT: This creates explicit MOD-WIDE overwrite precedence for these packages, including any new overlapping files imported later. " +
+                "Matching paths alone do not prove compatibility. No game files are changed until Apply Changes.\n\nContinue?",
+                "Review complete family overwrite scope",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question) != MessageBoxResult.Yes)
+                MessageBoxImage.Warning) != MessageBoxResult.Yes)
             return;
 
         var staged = CaptureStage();
@@ -59,8 +87,19 @@ public sealed partial class MainWindowViewModel
 
                 var mainIds = parentFamily.Members.Select(m => m.Id).ToArray();
                 var childIds = childFamily.Members.Select(m => m.Id).ToArray();
+                if (!previewMain.SetEquals(mainIds) || !previewChild.SetEquals(childIds))
+                    throw new InvalidOperationException("The family members changed since review; no ordering rule was saved.");
+                var freshMainPaths = files.Where(f => previewMain.Contains(f.ModId))
+                    .Select(f => f.Path).ToHashSet(PathRules.Comparer);
+                var freshShared = files.Where(f => previewChild.Contains(f.ModId) && freshMainPaths.Contains(f.Path))
+                    .Select(f => f.Path).Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+                if (!freshShared.SequenceEqual(sharedPaths, StringComparer.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("The overlapping files changed since review; inspect the new scope first.");
+                // Recheck for existing pair rules *inside the same SQLite transaction*
+                // that persists this family, closing the review-to-write race.
                 var familyId = await s.Database.ChainManualFamilyAsync(
-                    selection.ParentId, mainIds, [childIds], parentFamily.DisplayName, ct);
+                    selection.ParentId, mainIds, [childIds], parentFamily.DisplayName, ct,
+                    refuseExistingPairRules: true);
                 await ReloadMods(ct);
 
                 // Family regrouping recreates rows; preserve every unrelated pending toggle
