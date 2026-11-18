@@ -61,6 +61,16 @@ jobs:
           persist-credentials: false
           path: baseline
 
+      - name: Isolate writable pinned .NET SDK installation
+        shell: powershell
+        run: |
+          # Match the repository's job-owned SDK strategy; never modify the
+          # self-hosted system install under Program Files or another job's SDK.
+          $jobToken = ([string]$env:GITHUB_JOB -replace '[^A-Za-z0-9._-]', '-')
+          $installRoot = Join-Path $env:RUNNER_TEMP ("dotnet-startup-{0}-{1}-{2}" -f $env:GITHUB_RUN_ID, $env:GITHUB_RUN_ATTEMPT, $jobToken)
+          New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Provision pinned .NET SDK on either runner
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
