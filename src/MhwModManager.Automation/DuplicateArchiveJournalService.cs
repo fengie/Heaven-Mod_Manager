@@ -37,6 +37,7 @@ internal sealed class DuplicateArchiveJournalService(ManagerDatabase db, string 
         var journal = Path.Combine(root, $".duplicate-archive-{Guid.NewGuid():N}.pending.json");
         var temporary = journal + ".tmp";
         var payload = JsonSerializer.SerializeToUtf8Bytes(new ArchiveIntent(FormatVersion, modId, source, destination));
+        var createdTemporary = false;
         try
         {
             await using (var output = new FileStream(temporary, new FileStreamOptions
@@ -47,6 +48,7 @@ internal sealed class DuplicateArchiveJournalService(ManagerDatabase db, string 
                 Options = FileOptions.WriteThrough
             }))
             {
+                createdTemporary = true;
                 await output.WriteAsync(payload, ct);
                 output.Flush(flushToDisk: true);
             }
@@ -59,7 +61,7 @@ internal sealed class DuplicateArchiveJournalService(ManagerDatabase db, string 
         finally
         {
             // Never delete an unknown/published directory or mod file here.
-            if (File.Exists(temporary))
+            if (createdTemporary && File.Exists(temporary))
                 File.Delete(temporary);
         }
     }
