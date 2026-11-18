@@ -92,7 +92,10 @@ public sealed partial class App:Application, IDisposable
             startup.Info("bootstrap.paths.resolved", $"ToolRoot={paths.ToolRoot}; ModsRoot={paths.ModsRoot}; StateRoot={paths.StateRoot}; GameRoot={paths.GameRoot}; Database={paths.DatabasePath}; MasterLog={UnifiedDebugLog.FilePath}");
             startup.Run("bootstrap.state-directories",()=>Directory.CreateDirectory(paths.NextStateRoot));
 
-            Services=await LoadGameSessionAsync(paths,startup,e.Args.ToArray(),progress:splash.SetDetail);
+            Services=await LoadGameSessionAsync(paths,startup,e.Args.ToArray(),
+                progress:splash.SetDetail,
+                optionalSkipRequested:()=>splash.SkipRequested,
+                optionalSkipVisibility:splash.SetMaintenanceSkipVisible);
             changeHints=Services.ChangeHints;
             var logger=Services.Log;
             var buildIdentity=Services.BuildIdentity;
@@ -274,7 +277,9 @@ public sealed partial class App:Application, IDisposable
         StartupDiagnosticSession startup,
         IReadOnlyList<string> startupArguments,
         AppServices? previous = null,
-        Action<string>? progress = null)
+        Action<string>? progress = null,
+        Func<bool>? optionalSkipRequested = null,
+        Action<bool>? optionalSkipVisibility = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         FileChangeHintService? sessionChangeHints = null;
@@ -395,12 +400,25 @@ public sealed partial class App:Application, IDisposable
                 _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
                     new Action(() => progress(state.Description)));
             };
-            var maintenance=await startup.RunAsync("startup.automation",async ct=>
-                await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>
-                    await Task.Run(() => automation.RunStartupMaintenanceAsync(stageProgress,innerCt),innerCt),
-                    ct:ct));
-            logger.Information("Startup automation: {Summary}",maintenance.Summary);
-            startup.Info("startup.automation.summary",maintenance.Summary);
+            // This control is deliberately unavailable during mandatory migration,
+            // crash/publication reconciliation, game-build validation and deployment
+            // recovery. Once offered, deferral is cooperative: finish the current
+            // atomic package/stage and its indexing before returning to the UI.
+            optionalSkipVisibility?.Invoke(true);
+            try
+            {
+                var maintenance=await startup.RunAsync("startup.automation",async ct=>
+                    await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>
+                        await Task.Run(() => automation.RunStartupMaintenanceAsync(
+                            stageProgress,optionalSkipRequested,innerCt),innerCt),
+                        ct:ct));
+                logger.Information("Startup automation: {Summary}",maintenance.Summary);
+                startup.Info("startup.automation.summary",maintenance.Summary);
+            }
+            finally
+            {
+                optionalSkipVisibility?.Invoke(false);
+            }
 
 
             return sessionServices;
