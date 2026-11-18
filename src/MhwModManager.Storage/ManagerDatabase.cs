@@ -16,6 +16,9 @@ internal enum ManagerDatabaseMigrationCheckpoint
 /// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
 /// shared-cache changes locking semantics and works against the WAL concurrency model.
 /// </summary>
+public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl);
+public sealed record NexusArchiveMetadataBackfill(string Id, string Name, string SourcePath, string NexusModId, string DisplayName);
+
 public sealed class ManagerDatabase
 {
     private const int BusyTimeoutSeconds = 10;
@@ -281,6 +284,73 @@ public sealed class ManagerDatabase
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct)) paths.Add(r.GetString(0));
         return paths;
+    }
+
+    /// <summary>
+    /// Lightweight catalog snapshot; avoids loading file provenance, family members and previews
+    /// every time the user refreshes an installed folder. It never modifies existing records.
+    /// </summary>
+    public async Task<IReadOnlyList<ModCatalogSourceIdentity>> GetModCatalogSourceIdentitiesAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var list = new List<ModCatalogSourceIdentity>();
+        await using var c = await OpenAsync(ct);
+        await using var cmd = c.CreateCommand();
+        cmd.CommandText = "SELECT id,name,source_path,nexus_mod_id,source_url FROM mods";
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct))
+            list.Add(new(r.GetString(0), r.GetString(1), r.GetString(2),
+                r.IsDBNull(3) ? null : r.GetString(3),
+                r.IsDBNull(4) ? null : r.GetString(4)));
+        return list;
+    }
+
+    /// <summary>
+    /// Repair only missing archive-derived source identity. An existing source URL, already known
+    /// Nexus identity, manually edited display name, priority, enable state, family or rules
+    /// are never overwritten. The ID/path/name guard prevents stale catalog snapshots
+    /// from applying metadata to a different package at a reused location.
+    /// </summary>
+    public async Task<int> BackfillNexusArchiveMetadataAsync(
+        IReadOnlyList<NexusArchiveMetadataBackfill> candidates,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"candidates={candidates.Count}");
+        if (candidates.Count == 0) return 0;
+        await using var c = await OpenAsync(ct);
+        await using var tx = c.BeginTransaction(deferred: false);
+        await using var cmd = c.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = """
+        UPDATE mods
+        SET nexus_mod_id=$nexus,
+            display_name=CASE WHEN display_name=name THEN $display ELSE display_name END,
+            updated_at=$now
+        WHERE id=$id AND name=$name AND source_path=$source
+          AND nexus_mod_id IS NULL AND source_url IS NULL
+        """;
+        var pId = cmd.Parameters.Add("$id", SqliteType.Text);
+        var pName = cmd.Parameters.Add("$name", SqliteType.Text);
+        var pSource = cmd.Parameters.Add("$source", SqliteType.Text);
+        var pNexus = cmd.Parameters.Add("$nexus", SqliteType.Text);
+        var pDisplay = cmd.Parameters.Add("$display", SqliteType.Text);
+        var pNow = cmd.Parameters.Add("$now", SqliteType.Text);
+        var updated = 0;
+        var now = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+        cmd.Prepare();
+        foreach (var row in candidates)
+        {
+            ct.ThrowIfCancellationRequested();
+            pId.Value = row.Id;
+            pName.Value = row.Name;
+            pSource.Value = row.SourcePath;
+            pNexus.Value = row.NexusModId;
+            pDisplay.Value = row.DisplayName;
+            pNow.Value = now;
+            updated += await cmd.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+        return updated;
     }
 
     public async Task SetEnabledAndPriorityAsync(IReadOnlyDictionary<string,(bool enabled,int priority)> state, CancellationToken ct = default)

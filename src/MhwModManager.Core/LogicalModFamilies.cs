@@ -145,7 +145,7 @@ public static partial class LogicalModFamilies
     private static bool IsTextureRevision(ModDescriptor mod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var withoutNexus=NexusSuffixRegex().Replace(mod.Name,string.Empty).Trim();
+        var withoutNexus=NexusSuffixRegex().Replace(NexusArchiveIdentity.RemoveSuffix(mod.Name),string.Empty).Trim();
         if(!VersionSuffixRegex().IsMatch(withoutNexus)&&!Tokenize(withoutNexus).Any(RevisionWords.Contains))return false;
         return Tokenize(CleanName(mod.Name)).Any(TextureWords.Contains);
     }
@@ -177,7 +177,7 @@ public static partial class LogicalModFamilies
         if (inferred.TryGetValue(mod.Id, out var inferredKey))
             return inferredKey;
 
-        var withoutNexus = NexusSuffixRegex().Replace(mod.Name, string.Empty).Trim();
+        var withoutNexus = NexusSuffixRegex().Replace(NexusArchiveIdentity.RemoveSuffix(mod.Name), string.Empty).Trim();
         var hasVersionSuffix = VersionSuffixRegex().IsMatch(withoutNexus);
         var clean = CleanName(mod.Name);
         var stem = StripComposableSuffix(clean);
@@ -247,7 +247,7 @@ public static partial class LogicalModFamilies
     private static string CleanName(string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var n = NexusSuffixRegex().Replace(name, string.Empty).Trim();
+        var n = NexusSuffixRegex().Replace(NexusArchiveIdentity.RemoveSuffix(name), string.Empty).Trim();
         n = VersionSuffixRegex().Replace(n, string.Empty).Trim();
         return WhitespaceRegex().Replace(n, " ");
     }

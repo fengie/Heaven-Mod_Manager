@@ -328,7 +328,7 @@ public static partial class GenericFamilyInference
     private static string CleanName(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var n=NexusSuffixRegex().Replace(value,string.Empty);n=VersionSuffixRegex().Replace(n,string.Empty);return WhitespaceRegex().Replace(n.Replace('_',' ').Replace('-',' ')," ").Trim();
+        var n=NexusSuffixRegex().Replace(NexusArchiveIdentity.RemoveSuffix(value),string.Empty);n=VersionSuffixRegex().Replace(n,string.Empty);return WhitespaceRegex().Replace(n.Replace('_',' ').Replace('-',' ')," ").Trim();
     }
     private static string NormalizeKey(string value)
     {

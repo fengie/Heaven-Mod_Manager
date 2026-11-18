@@ -1,18 +1,20 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using MhwModManager.Core;
 using MhwModManager.Storage;
 
 namespace MhwModManager.Filesystem;
 
-public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null)
+public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null)
 {
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
-        var current=await db.GetModSourcePathsAsync(ct);
+        var current=await db.GetModCatalogSourceIdentitiesAsync(ct);
+        var existingByPath=current.GroupBy(m=>m.SourcePath,StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g=>g.Key,g=>g.ToArray(),StringComparer.OrdinalIgnoreCase);
+        var backfills=new List<NexusArchiveMetadataBackfill>();
         // Existing MHW and generic source paths stay authoritative: a migration that moves them
         // would invalidate persisted mod IDs, explicit overrides and rollback references.
         var roots=new[]{modsRoot,legacyModsRoot}
@@ -29,13 +31,29 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         foreach(var dir in directories)
         {
             ct.ThrowIfCancellationRequested();
-            if(current.Contains(dir)) continue;
             var name=Path.GetFileName(dir);
+            if(existingByPath.TryGetValue(dir,out var tracked))
+            {
+                if(NexusArchiveIdentity.TryParse(name,out var identity))
+                {
+                    foreach(var existing in tracked)
+                        if(string.IsNullOrWhiteSpace(existing.NexusModId) &&
+                           string.IsNullOrWhiteSpace(existing.SourceUrl) &&
+                           StringComparer.OrdinalIgnoreCase.Equals(existing.Name,name))
+                            backfills.Add(new(existing.Id,existing.Name,dir,identity.ModId,identity.DisplayName));
+                }
+                continue;
+            }
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
-            var nexusMatch=NexusArchiveSuffixRegex().Match(name);
-            var nexusModId=nexusMatch.Success?nexusMatch.Groups[1].Value:null;
-            var display=NexusArchiveSuffixRegex().Replace(name,string.Empty).Trim();
+            var parsed=NexusArchiveIdentity.TryParse(name,out var newIdentity);
+            var nexusModId=parsed?newIdentity.ModId:null;
+            var display=parsed?newIdentity.DisplayName:name;
             await db.UpsertModAsync(new(id,name,display,dir,false,priority++,NexusModId:nexusModId),ct);
+        }
+        if(backfills.Count>0)
+        {
+            var updated=await db.BackfillNexusArchiveMetadataAsync(backfills,ct);
+            MasterDebugLog.Write("CATALOG", $"Backfilled Nexus archive metadata for {updated} existing mod(s).");
         }
     }
 
@@ -47,6 +65,4 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         foreach(var m in mods){ct.ThrowIfCancellationRequested();await scanner.CaptureAsync(m,ct);}
     }
 
-    [GeneratedRegex(@"-(\d{2,7})-\d+(?:-\d+){0,6}(?:\s*\(\d+\))?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex NexusArchiveSuffixRegex();
 }

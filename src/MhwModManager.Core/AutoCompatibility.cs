@@ -645,7 +645,7 @@ public static partial class AutoCompatibility
     private static string CleanName(string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var n = NexusSuffixRegex().Replace(name, string.Empty).Trim();
+        var n = NexusSuffixRegex().Replace(NexusArchiveIdentity.RemoveSuffix(name), string.Empty).Trim();
         n = VersionSuffixRegex().Replace(n, string.Empty).Trim();
         return WhitespaceRegex().Replace(n, " ");
     }

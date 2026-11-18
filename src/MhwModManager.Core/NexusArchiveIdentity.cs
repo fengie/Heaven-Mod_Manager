@@ -7,7 +7,7 @@ namespace MhwModManager.Core;
 /// This is provenance, not evidence that two different Nexus pages share a family
 /// or that either archive may overwrite another without an explicit relationship.
 /// </summary>
-public sealed record NexusArchiveIdentity(string ModId, string DisplayName)
+public sealed partial record NexusArchiveIdentity(string ModId, string DisplayName)
 {
     public static bool TryParse(string? pathOrName, out NexusArchiveIdentity identity)
     {
