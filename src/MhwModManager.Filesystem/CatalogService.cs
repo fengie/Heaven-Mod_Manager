@@ -47,7 +47,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
             var parsed=NexusArchiveIdentity.TryParse(name,out var newIdentity);
             var nexusModId=parsed?newIdentity.ModId:null;
-            var display=parsed?newIdentity.DisplayName:name;
+            var display=ModDisplayNames.StripTransportDigest(parsed?newIdentity.DisplayName:name);
             await db.UpsertModAsync(new(id,name,display,dir,false,priority++,NexusModId:nexusModId),ct);
         }
         if(backfills.Count>0)

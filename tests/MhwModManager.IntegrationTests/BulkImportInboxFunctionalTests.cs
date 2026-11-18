@@ -53,6 +53,8 @@ public sealed class BulkImportInboxFunctionalTests : IDisposable
         Assert.Equal(1, result.Imported);
         var mod = Assert.Single(await db.GetModsAsync(TestToken));
         Assert.False(mod.Enabled);
+        Assert.Equal("MHW Armor", mod.DisplayName);
+        Assert.Equal("MHW Armor", Path.GetFileName(mod.SourcePath));
         Assert.True(Directory.Exists(mod.SourcePath));
         Assert.Contains(await db.GetModFilesAsync(TestToken),
             file => file.ModId == mod.Id && file.Path.Contains("nativePC", StringComparison.OrdinalIgnoreCase));
