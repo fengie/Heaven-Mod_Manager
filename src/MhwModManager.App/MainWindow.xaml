@@ -290,6 +290,7 @@
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Enabled"><Setter Property="Text" Value="Enabled"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Staged"><Setter Property="Text" Value="Pending changes"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Updates"><Setter Property="Text" Value="Updates"/></DataTrigger>
+                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="FamilyLinks"><Setter Property="Text" Value="Possible families"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Issues"><Setter Property="Text" Value="Problems"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Revalidate"><Setter Property="Text" Value="Needs check"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Superseded"><Setter Property="Text" Value="Not currently used"/></DataTrigger>
@@ -306,6 +307,7 @@
                                        AutomationProperties.Name="Mod list filters">
                                 <TextBlock Text="FILTERS" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,2,8,2"/>
                                 <Button Content="{Binding AllViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show every mod in this library."/>
+                                <Button Content="{Binding FamilySuggestionsViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="FamilyLinks" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Review possible parent/add-on relationships, including disabled mods. No package is linked or enabled automatically."/>
                                 <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show mods enabled in the pending setup."/>
                                 <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show unapplied changes."/>
                                 <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show mods with detected updates."/>
@@ -350,7 +352,39 @@
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                            <TextBlock Text="Advanced mod options" FontWeight="SemiBold"/>
+                                            <Border Margin="0,0,0,12" Padding="10" Background="#111923" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="6">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasSuggestedParents}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <TextBlock Text="Possible parent relationships — review before linking" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                                    <TextBlock Text="Matching game paths do not prove mod dependency. These suggestions do not install or enable anything." TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,8"/>
+                                                    <ItemsControl ItemsSource="{Binding SuggestedParents}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="0,4">
+                                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                                        <TextBlock Text="{Binding Evidence}" TextWrapping="Wrap" FontSize="10" Foreground="{StaticResource Muted}" MaxWidth="640"/>
+                                                                    </StackPanel>
+                                                                    <Button Grid.Column="1" Margin="10,0,0,0" Content="Attach as add-on"
+                                                                            Command="{Binding DataContext.ConfirmSuggestedFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                            CommandParameter="{Binding}"
+                                                                            ToolTip="Confirm a saved parent/add-on override relationship. Game files remain unchanged until Apply Changes."
+                                                                            AutomationProperties.Name="{Binding Title}"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                             </Border>
+                                             <TextBlock Text="Advanced mod options" FontWeight="SemiBold"/>
                                             <TextBlock Margin="0,3,0,10" Foreground="{StaticResource Muted}" FontSize="11" Text="The main toggle controls the whole mod. Open these options only when you want to turn individual add-ons or components on or off."/>
                                             <ItemsControl ItemsSource="{Binding Parts}">
                                                 <ItemsControl.ItemTemplate>
@@ -408,7 +442,7 @@
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}"/>
-                                                <TextBlock Text="{Binding IdentityHint}" Foreground="{StaticResource Muted}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}"/>
+                                                <TextBlock Text="{Binding FamilyHint}" Foreground="{StaticResource Muted}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceSummary}"/>
                                                 <TextBlock Text="{Binding IssueBadge}" Foreground="{StaticResource Warn}" FontSize="10" FontWeight="SemiBold" ToolTip="{Binding IssueReason}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
