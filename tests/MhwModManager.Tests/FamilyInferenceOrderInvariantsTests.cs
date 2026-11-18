@@ -166,6 +166,50 @@ public sealed class FamilyInferenceOrderInvariantsTests
     }
 
     [Fact]
+    public void Third_party_copy_of_two_assets_preserves_distinctive_three_asset_family()
+    {
+        // Two independently downloaded parts share three nontrivial, identical
+        // deployable assets, while a later unrelated mod copies only two.
+        // The third package must not retroactively split the original family.
+        var a = Mod("part-a", "Solstice Mantle");
+        var b = Mod("part-b", "Veiled Counterweight");
+        var unrelated = Mod("unrelated", "Ranger Cloak");
+        const string mesh = @"nativePC\pl\f_equip\pl001_0000\body\shared.mod3";
+        const string material = @"nativePC\pl\f_equip\pl001_0000\body\shared.mrl3";
+        const string detail = @"nativePC\pl\f_equip\pl001_0000\body\detail.tex";
+        var files = new[]
+        {
+            ContentFile(a.Id, mesh, "same-mesh"),
+            ContentFile(a.Id, material, "same-material"),
+            ContentFile(a.Id, detail, "same-detail"),
+            ContentFile(a.Id, @"nativePC\pl\f_equip\pl001_0000\body\a.ctc", "a-unique"),
+            ContentFile(b.Id, mesh, "same-mesh"),
+            ContentFile(b.Id, material, "same-material"),
+            ContentFile(b.Id, detail, "same-detail"),
+            ContentFile(b.Id, @"nativePC\pl\f_equip\pl001_0000\body\b.ctc", "b-unique"),
+            ContentFile(unrelated.Id, mesh, "same-mesh"),
+            ContentFile(unrelated.Id, material, "same-material"),
+            ContentFile(unrelated.Id, @"nativePC\pl\f_equip\pl001_0000\body\unrelated.ctc", "unrelated-unique")
+        };
+
+        var before = GenericFamilyInference.InferKeys([a, b], files, out _);
+        Assert.Equal(before[a.Id], before[b.Id]);
+
+        for (var seed = 0; seed < 8; seed++)
+        {
+            var random = new Random(seed + 371);
+            var mods = new[] { a, b, unrelated }.OrderBy(_ => random.Next()).ToArray();
+            var shuffledFiles = files.OrderBy(_ => random.Next()).ToArray();
+            var after = GenericFamilyInference.InferKeys(mods, shuffledFiles, out var evidence);
+            Assert.Equal(2, after.Count);
+            Assert.Equal(before[a.Id], after[a.Id]);
+            Assert.Equal(after[a.Id], after[b.Id]);
+            Assert.False(after.ContainsKey(unrelated.Id));
+            Assert.Single(evidence);
+        }
+    }
+
+    [Fact]
     public void Common_payload_copied_by_three_unrelated_packages_is_not_family_identity()
     {
         var mods = new[] { Mod("a", "Atlas"), Mod("b", "Nebula"), Mod("c", "Tundra") };
