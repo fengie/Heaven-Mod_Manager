@@ -99,10 +99,29 @@ public sealed class AutoCategoryService(ManagerDatabase db, GameProfile? game = 
         {
             ct.ThrowIfCancellationRequested();
             var paths = indexedPaths.TryGetValue(mod.Id, out var stored) ? stored : new List<string>();
-            // Preserve the pre-capture fallback without traversing already indexed packages.
+            // For uncaptured packages, never follow a junction outside the mod's
+            // source tree. The existing safe walker also checks cancellation between
+            // directory entries. Indexed database paths remain authoritative.
             if (paths.Count == 0 && Directory.Exists(mod.SourcePath))
-                paths.AddRange(Directory.EnumerateFiles(mod.SourcePath, "*", SearchOption.AllDirectories)
-                    .Select(path => Path.GetRelativePath(mod.SourcePath, path)));
+            {
+                try
+                {
+                    var snapshot = SafeRecursiveTraversal.Snapshot(mod.SourcePath, ct);
+                    paths.AddRange(snapshot.Files.Select(path =>
+                        Path.GetRelativePath(mod.SourcePath, path)));
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Category is advisory; unsafe or unavailable uncaptured sources
+                    // remain uncategorized. Do not abort startup or classify external
+                    // files, and continue safely with other installed packages.
+                    UnifiedDebugLog.Write("AUTOCAT-MOD",
+                        $"Skipped unsafe/unavailable uncaptured mod classification; ModId={mod.Id}", ex);
+                    startupDiagnostics?.Info("startup.automation.categories.mod.skipped",
+                        $"ModId={mod.Id}; Reason={ex.GetType().Name}");
+                    continue;
+                }
+            }
             if (MasterDebugLog.DetailedDiagnosticsEnabled)
                 startupDiagnostics?.Info("startup.automation.categories.mod.paths",
                     $"ModId={mod.Id}; CandidatePaths={paths.Count}");
