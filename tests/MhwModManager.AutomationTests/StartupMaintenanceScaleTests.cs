@@ -14,7 +14,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
     public StartupMaintenanceScaleTests() => Directory.CreateDirectory(root);
 
     [Fact]
-    public async Task Large_indexed_library_preserves_categories_and_idempotent_assignments()
+    public async Task LargeIndexedLibraryPreservesCategoriesAndIdempotentAssignments()
     {
         var db = await CreateDatabaseAsync("many-categories.db");
         const int modCount = 120;
@@ -41,7 +41,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
     }
 
     [Fact]
-    public async Task Duplicate_archival_returns_existing_analysis_when_nothing_can_be_retired()
+    public async Task DuplicateArchivalReturnsExistingAnalysisWhenNothingCanBeRetired()
     {
         var db = await CreateDatabaseAsync("unchanged-duplicates.db");
         for (var i = 0; i < 2; i++)
@@ -62,7 +62,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
     }
 
     [Fact]
-    public async Task Duplicate_archival_returns_post_retirement_analysis_and_preserves_keeper()
+    public async Task DuplicateArchivalReturnsPostRetirementAnalysisAndPreservesKeeper()
     {
         var db = await CreateDatabaseAsync("retired-duplicates.db");
         for (var i = 0; i < 2; i++)
@@ -85,7 +85,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
     }
 
     [Fact]
-    public async Task Inbox_can_complete_safe_import_without_optional_network_metadata_refresh()
+    public async Task InboxCanCompleteSafeImportWithoutOptionalNetworkMetadataRefresh()
     {
         var db = await CreateDatabaseAsync("offline-inbox.db");
         var inboxRoot = Path.Combine(root, "offline-inbox");
