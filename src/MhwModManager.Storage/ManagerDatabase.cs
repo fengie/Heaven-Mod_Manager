@@ -498,13 +498,24 @@ public sealed class ManagerDatabase
     /// family root; every supplied child is recorded as an Optional member and receives an explicit
     /// main->optional overlay rule. No source files are moved or modified.
     /// </summary>
+    public Task<string> ChainManualFamilyAsync(
+        string mainModId,
+        IReadOnlyCollection<string> mainMemberIds,
+        IReadOnlyList<IReadOnlyList<string>> optionalGroups,
+        string familyName,
+        CancellationToken ct=default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ChainManualFamilyAsync(mainModId,mainMemberIds,optionalGroups,familyName,false,ct);
+    }
+
     public async Task<string> ChainManualFamilyAsync(
         string mainModId,
         IReadOnlyCollection<string> mainMemberIds,
         IReadOnlyList<IReadOnlyList<string>> optionalGroups,
         string familyName,
-        CancellationToken ct=default,
-        bool refuseExistingPairRules=false)
+        bool refuseExistingPairRules,
+        CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"main={mainModId}; mainMembers={mainMemberIds.Count}; optionalGroups={optionalGroups.Count}");
         if(string.IsNullOrWhiteSpace(mainModId))throw new ArgumentException("A main mod is required.",nameof(mainModId));

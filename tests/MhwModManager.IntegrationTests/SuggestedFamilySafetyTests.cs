@@ -26,8 +26,7 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
         }
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Bundle", Ct,
-                refuseExistingPairRules: true));
+            db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Bundle", refuseExistingPairRules: true, ct: Ct));
 
         var mods = await db.GetModsAsync(Ct);
         Assert.All(mods, mod => Assert.Null(mod.FamilyId));
@@ -41,8 +40,7 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
     public async Task Suggested_family_can_persist_explicitly_confirmed_relation_without_preexisting_pair_rule()
     {
         var db = await NewDatabaseAsync();
-        var family = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Bundle", Ct,
-            refuseExistingPairRules: true);
+        var family = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Bundle", refuseExistingPairRules: true, ct: Ct);
 
         Assert.StartsWith("manual:", family, StringComparison.OrdinalIgnoreCase);
         var mods = await db.GetModsAsync(Ct);

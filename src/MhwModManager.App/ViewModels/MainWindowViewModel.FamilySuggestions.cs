@@ -98,8 +98,8 @@ public sealed partial class MainWindowViewModel
                 // Recheck for existing pair rules *inside the same SQLite transaction*
                 // that persists this family, closing the review-to-write race.
                 var familyId = await s.Database.ChainManualFamilyAsync(
-                    selection.ParentId, mainIds, [childIds], parentFamily.DisplayName, ct,
-                    refuseExistingPairRules: true);
+                    selection.ParentId, mainIds, [childIds], parentFamily.DisplayName,
+                    refuseExistingPairRules: true, ct: ct);
                 await ReloadMods(ct);
 
                 // Family regrouping recreates rows; preserve every unrelated pending toggle
