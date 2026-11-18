@@ -85,6 +85,17 @@ public sealed class GenericMultiLoaderPackageTests : IDisposable
              "unmapped/binary.dll"]));
     }
 
+
+    [Fact]
+    public async Task Configured_nested_paks_target_is_not_scanned_twice_through_its_parent()
+    {
+        var files = await CaptureAsync(@"Content\Paks\~mods",
+            [@"Content\Paks", @"Content\Paks\~mods"],
+            ["Content/Paks/~mods/costume.pak"]);
+
+        Assert.Equal(@"root\Content\Paks\~mods\costume.pak", Assert.Single(files).Path);
+    }
+
     private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(
         string configuredRoot, string[] availableLoaderRoots, string[] packagePaths)
     {
