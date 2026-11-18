@@ -17,9 +17,9 @@ public sealed class DuplicateArchiveStartupOrderTests
         Assert.NotNull(root);
 
         var app = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App", "App.xaml.cs"));
-        var migration = app.IndexOf(""startup.migration"", StringComparison.Ordinal);
-        var recovery = app.IndexOf(""startup.duplicate-archive.recovery"", StringComparison.Ordinal);
-        var catalog = app.IndexOf(""startup.catalog.refresh"", StringComparison.Ordinal);
+        var migration = app.IndexOf("startup.migration", StringComparison.Ordinal);
+        var recovery = app.IndexOf("startup.duplicate-archive.recovery", StringComparison.Ordinal);
+        var catalog = app.IndexOf("startup.catalog.refresh", StringComparison.Ordinal);
 
         Assert.True(migration >= 0, "Missing required schema/legacy migration stage.");
         Assert.True(recovery > migration, "Duplicate archive recovery must run after migration.");
