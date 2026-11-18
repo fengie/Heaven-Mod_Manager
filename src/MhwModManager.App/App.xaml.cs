@@ -379,7 +379,7 @@ public sealed partial class App:Application, IDisposable
             };
             var maintenance=await startup.RunAsync("startup.automation",async ct=>
                 await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>
-                    await Task.Run(() => automation.RunStartupMaintenanceAsync(innerCt,stageProgress),innerCt),
+                    await Task.Run(() => automation.RunStartupMaintenanceAsync(stageProgress,innerCt),innerCt),
                     ct:ct));
             logger.Information("Startup automation: {Summary}",maintenance.Summary);
             startup.Info("startup.automation.summary",maintenance.Summary);
