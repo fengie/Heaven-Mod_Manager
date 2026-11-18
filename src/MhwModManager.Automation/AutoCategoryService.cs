@@ -1,5 +1,6 @@
 using MhwModManager.Core;
 using MhwModManager.Diagnostics;
+using MhwModManager.Filesystem;
 using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
