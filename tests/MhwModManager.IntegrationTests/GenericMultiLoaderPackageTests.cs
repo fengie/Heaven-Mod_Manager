@@ -65,6 +65,26 @@ public sealed class GenericMultiLoaderPackageTests : IDisposable
         Assert.Contains(files, f => f.Path == @"root\Content\Paks\~mods\costume.pak");
     }
 
+
+    [Fact]
+    public async Task Existing_primary_loader_does_not_authorize_a_missing_secondary_loader()
+    {
+        await Assert.ThrowsAsync<InvalidDataException>(() => CaptureAsync(
+            @"BepInEx\plugins",
+            [@"BepInEx\plugins"],
+            ["BepInEx/plugins/main.dll", "Content/Paks/~mods/unrelated.pak"]));
+    }
+
+    [Fact]
+    public async Task Mixed_loader_package_with_unknown_companion_is_not_deployed_to_game_root()
+    {
+        await Assert.ThrowsAsync<InvalidDataException>(() => CaptureAsync(
+            @"BepInEx\plugins",
+            [@"BepInEx\plugins", @"Content\Paks"],
+            ["BepInEx/plugins/main.dll", "Content/Paks/~mods/costume.pak",
+             "unmapped/binary.dll"]));
+    }
+
     private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(
         string configuredRoot, string[] availableLoaderRoots, string[] packagePaths)
     {
