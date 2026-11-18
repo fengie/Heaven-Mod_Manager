@@ -158,7 +158,13 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 if (paths.Length < 2 || memberIds.Length < 2) continue;
 
                 var memberSet = memberIds.ToHashSet(PathRules.Comparer);
-                if (IsSafeAtomicBundleComposition(memberSet, ruleIndex, enabled)) continue;
+                // Two unrelated archives can carry exactly the same complete model/
+                // material/physics payload. With identical target paths and verified
+                // content, choosing either physical provider cannot mix generations.
+                // Group identity and overwrite precedence are *not* inferred here.
+                if (IsSafeAtomicBundleComposition(memberSet, ruleIndex, enabled) ||
+                    HasEquivalentAtomicBundlePayloads(bundle, memberSet))
+                    continue;
 
                 var representative = paths[0];
                 var names = memberIds.Select(id => enabled[id].DisplayName).ToArray();
@@ -289,6 +295,39 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         }
 
         return decisions.ToArray();
+    }
+
+    /// <summary>
+    /// The only relationship-free exception to MHW atomic structural protection:
+    /// every enabled provider supplies every path in this bundle with the exact
+    /// same captured SHA-256. Partial overlap, unknown hashes or duplicate
+    /// path rows stay blocked; matching byte content is not proof of a family.
+    /// </summary>
+    private static bool HasEquivalentAtomicBundlePayloads(
+        IEnumerable<ModFileDescriptor> files, HashSet<string> memberIds)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (memberIds.Count < 2) return false;
+
+        var observedPaths = 0;
+        foreach (var group in files.GroupBy(file => file.Path, PathRules.Comparer))
+        {
+            observedPaths++;
+            var digest = group.First().BlobSha256;
+            if (digest.Length != 64 || !digest.All(Uri.IsHexDigit))
+                return false;
+            var present = new HashSet<string>(PathRules.Comparer);
+            foreach (var file in group)
+            {
+                if (!memberIds.Contains(file.ModId) ||
+                    !present.Add(file.ModId) ||
+                    !StringComparer.OrdinalIgnoreCase.Equals(digest, file.BlobSha256))
+                    return false;
+            }
+            if (present.Count != memberIds.Count)
+                return false;
+        }
+        return observedPaths > 0;
     }
 
     private static bool IsSafeAtomicBundleComposition(

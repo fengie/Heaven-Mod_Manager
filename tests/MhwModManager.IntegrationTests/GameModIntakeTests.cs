@@ -56,6 +56,24 @@ public sealed class GameModIntakeTests : IDisposable
         Assert.Equal(GameModIntakeKind.Unknown, invalid.Kind);
     }
 
+
+    [Fact]
+    public void Registered_game_name_cannot_override_unregistered_contradictory_payload_layout()
+    {
+        var nierOnly = Games.Where(g => g.Id == "nier-automata").ToArray();
+        var nativePcPayload = new[] { "nativePC/pl/armor/example.tex" };
+
+        var fromName = GameModIntakeClassifier.Classify(
+            nierOnly, "NieR Automata Outfit.zip", nativePcPayload);
+        Assert.Equal(GameModIntakeKind.Unknown, fromName.Kind);
+        Assert.Null(fromName.GameId);
+
+        var fromManifest = GameModIntakeClassifier.Classify(
+            nierOnly, "unlabelled.zip", nativePcPayload, "nier-automata");
+        Assert.Equal(GameModIntakeKind.Ambiguous, fromManifest.Kind);
+        Assert.Null(fromManifest.GameId);
+    }
+
     [Fact]
     public void Game_identity_evidence_after_first_512_paths_still_identifies_registered_game()
     {

@@ -128,6 +128,117 @@ public sealed class FamilyInferenceOrderInvariantsTests
         Assert.Empty(evidence);
     }
 
+
+    [Fact]
+    public void Different_sources_and_names_can_form_one_family_from_rare_matching_payload_anchors()
+    {
+        var mods = new[]
+        {
+            Mod("part-a", "Solstice Mantle"),
+            Mod("part-b", "Veiled Counterweight"),
+            Mod("other", "Ranger Cloak")
+        };
+        const string sharedMesh = @"nativePC\pl\f_equip\pl001_0000\body\shared.mod3";
+        const string sharedMaterial = @"nativePC\pl\f_equip\pl001_0000\body\shared.mrl3";
+        var files = new[]
+        {
+            ContentFile("part-a", sharedMesh, "private-mesh"),
+            ContentFile("part-a", sharedMaterial, "private-material"),
+            ContentFile("part-a", @"nativePC\pl\f_equip\pl001_0000\body\a.ctc", "unique-part-a"),
+            ContentFile("part-b", sharedMesh, "private-mesh"),
+            ContentFile("part-b", sharedMaterial, "private-material"),
+            ContentFile("part-b", @"nativePC\pl\f_equip\pl001_0000\wst\b.ctc", "unique-part-b"),
+            ContentFile("other", @"nativePC\pl\f_equip\pl001_0000\body\other.mod3", "unrelated")
+        };
+
+        var expectedParts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "part-a", "part-b" };
+        for (var seed = 0; seed < 8; seed++)
+        {
+            var random = new Random(seed + 31);
+            var orderedMods = mods.OrderBy(_ => random.Next()).ToArray();
+            var orderedFiles = files.OrderBy(_ => random.Next()).ToArray();
+            var families = LogicalModFamilies.Build(orderedMods, orderedFiles);
+            Assert.Equal(2, families.Count);
+            Assert.Contains(families, f => f.Members.Select(m => m.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals(expectedParts));
+            Assert.Contains(families, f => f.Members.Count == 1 && f.Members[0].Id == "other");
+        }
+    }
+
+    [Fact]
+    public void Common_payload_copied_by_three_unrelated_packages_is_not_family_identity()
+    {
+        var mods = new[] { Mod("a", "Atlas"), Mod("b", "Nebula"), Mod("c", "Tundra") };
+        const string anchorA = @"nativePC\shared\common\one.tex";
+        const string anchorB = @"nativePC\shared\common\two.tex";
+        var files = mods.SelectMany(mod => new[]
+        {
+            ContentFile(mod.Id, anchorA, "shared-a"),
+            ContentFile(mod.Id, anchorB, "shared-b"),
+            ContentFile(mod.Id, @"nativePC\shared\common\" + mod.Id + ".tex", mod.Id)
+        }).ToArray();
+
+        Assert.Empty(GenericFamilyInference.InferKeys(mods, files, out var evidence));
+        Assert.Empty(evidence);
+    }
+
+    [Fact]
+    public void One_identical_shared_payload_does_not_establish_an_unrelated_family()
+    {
+        var mods = new[] { Mod("a", "Atlas"), Mod("b", "Nebula") };
+        const string anchor = @"nativePC\shared\common\one.tex";
+        var files = new[]
+        {
+            ContentFile("a", anchor, "shared-a"),
+            ContentFile("a", @"nativePC\shared\common\a.tex", "only-a"),
+            ContentFile("b", anchor, "shared-a"),
+            ContentFile("b", @"nativePC\shared\common\b.tex", "only-b")
+        };
+        Assert.Empty(GenericFamilyInference.InferKeys(mods, files, out var evidence));
+        Assert.Empty(evidence);
+    }
+
+
+    [Fact]
+    public void Shared_asset_namespace_cannot_bridge_two_distinct_content_backed_families()
+    {
+        var mods = new[]
+        {
+            Mod("a", "Solstice"),
+            Mod("b", "Nebula"),
+            Mod("c", "Cinder")
+        };
+        const string x = @"nativePC\pl\f_equip\pl001_0000\body\x.mod3";
+        const string y = @"nativePC\pl\f_equip\pl001_0000\body\y.mrl3";
+        const string z = @"nativePC\pl\f_equip\pl001_0000\body\z.mod3";
+        const string w = @"nativePC\pl\f_equip\pl001_0000\body\w.mrl3";
+        var files = new[]
+        {
+            ContentFile("a", x, "private-x"),
+            ContentFile("a", y, "private-y"),
+            ContentFile("a", @"nativePC\pl\f_equip\pl001_0000\body\a.ctc", "a"),
+            ContentFile("b", x, "private-x"),
+            ContentFile("b", y, "private-y"),
+            ContentFile("b", z, "private-z"),
+            ContentFile("b", w, "private-w"),
+            ContentFile("b", @"nativePC\pl\f_equip\pl001_0000\body\b.ctc", "b"),
+            ContentFile("c", z, "private-z"),
+            ContentFile("c", w, "private-w"),
+            ContentFile("c", @"nativePC\pl\f_equip\pl001_0000\body\c.ctc", "c")
+        };
+        var families = LogicalModFamilies.Build(mods,files);
+        Assert.Equal(2, families.Count);
+        Assert.Contains(families,f => f.Members.Count==2 &&
+            f.Members.Any(m => m.Id=="a") && f.Members.Any(m => m.Id=="b"));
+        Assert.Contains(families,f => f.Members.Count==1 && f.Members[0].Id=="c");
+    }
+
+    private static ModFileDescriptor ContentFile(string modId, string path, string payload) =>
+        new(modId, path,
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(payload))).ToLowerInvariant(),
+            null, 4096, DateTimeOffset.UnixEpoch, PathRules.ClassifyFile(path));
+
     private static ModDescriptor Mod(string id, string name) =>
         new(id, name, name, id, false, 0);
 

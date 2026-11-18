@@ -247,6 +247,20 @@ public sealed class LogicalModFamiliesTests
         Assert.Equal(3, LogicalModFamilies.Build(mods).Count);
     }
 
+
+    [Fact]
+    public void Legacy_transport_digest_is_hidden_only_from_display_identity()
+    {
+        var digest = new string('a', 64);
+        Assert.Equal("Arcane Outfit", ModDisplayNames.StripTransportDigest("Arcane Outfit-" + digest));
+        Assert.Equal("Arcane Outfit (2)", ModDisplayNames.StripTransportDigest("Arcane Outfit-" + digest + " (2)"));
+        Assert.Equal("Arcane Outfit-short", ModDisplayNames.StripTransportDigest("Arcane Outfit-short"));
+        var original = Mod("old", "Arcane Outfit-" + digest);
+        var family = Assert.Single(LogicalModFamilies.Build(new[] { original }));
+        Assert.Equal("Arcane Outfit", family.DisplayName);
+        Assert.Equal(original.Name, family.Members[0].Name);
+    }
+
     private static ModFileDescriptor File(string modId,string path) =>
         new(modId,path,"sha-"+modId,null,1,DateTimeOffset.UnixEpoch,PathRules.ClassifyFile(path));
 

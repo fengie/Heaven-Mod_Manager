@@ -94,7 +94,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 }
                 startupDiagnostics?.Info("startup.automation.inbox.item.begin", entry);
                 UnifiedDebugLog.Write("INBOX", $"BEGIN item={entry}");
-                var name = Directory.Exists(entry) ? Path.GetFileName(entry) : Path.GetFileNameWithoutExtension(entry);
+                var name = ModDisplayNames.StripTransportDigest(Directory.Exists(entry) ? Path.GetFileName(entry) : Path.GetFileNameWithoutExtension(entry));
                 var destination = Unique(Path.Combine(modsRoot, name));
                 if (Directory.Exists(entry))
                 {

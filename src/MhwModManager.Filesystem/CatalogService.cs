@@ -34,7 +34,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
             var nexusMatch=NexusArchiveSuffixRegex().Match(name);
             var nexusModId=nexusMatch.Success?nexusMatch.Groups[1].Value:null;
-            var display=NexusArchiveSuffixRegex().Replace(name,string.Empty).Trim();
+            var display=ModDisplayNames.StripTransportDigest(NexusArchiveSuffixRegex().Replace(name,string.Empty).Trim());
             await db.UpsertModAsync(new(id,name,display,dir,false,priority++,NexusModId:nexusModId),ct);
         }
     }
