@@ -360,6 +360,16 @@ public sealed partial class App:Application, IDisposable
                 ct => duplicates.RecoverInterruptedArchivesAsync(ct));
             startup.Info("startup.duplicate-archive.recovery.result", $"Restored={restoredArchives}");
 
+            // Reconcile Inbox publish/archive intents before the catalog sees an
+            // already-published destination. Ambiguous intent never deletes either
+            // copy and must not be replayed as a second independent mod.
+            progress?.Invoke("Reconciling interrupted Inbox publications…");
+            var blockedInboxSources = await startup.RunAsync(
+                "startup.inbox-publication.recovery",
+                ct => inbox.RecoverInterruptedPublicationsAsync(ct));
+            startup.Info("startup.inbox-publication.recovery.result",
+                $"PendingReview={blockedInboxSources.Count}");
+
             progress?.Invoke(paths.Game.IsMonsterHunterWorld?"Refreshing the local catalog and armor index…":"Refreshing the local mod catalog…");
             await startup.RunAsync("startup.catalog.refresh",async ct=>await telemetry.TrackAsync("startup.catalog.refresh",async(_,innerCt)=>await catalog.RefreshFoldersAsync(innerCt),ct:ct));
             if(paths.Game.IsMonsterHunterWorld)
