@@ -124,7 +124,9 @@ public static partial class ModRelationshipInference
 
     private static bool HasAddOnCue(ModDescriptor mod)
     {
-        var tokens = Tokens($"{mod.Name} {mod.DisplayName} {mod.FamilyRole}");
+        // An add-on role must be detected before generic identity noise is removed.
+        var tokens = WordRegex().Matches($"{mod.Name} {mod.DisplayName} {mod.FamilyRole}".ToLowerInvariant())
+            .Cast<Match>().Select(x => x.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (tokens.Overlaps(AlternativeCues)) return false;
         return tokens.Overlaps(AddOnCues) ||
             tokens.Contains("add") && tokens.Contains("on") ||

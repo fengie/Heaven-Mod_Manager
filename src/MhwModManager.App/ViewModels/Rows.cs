@@ -3,6 +3,11 @@ using MhwModManager.Core;
 
 namespace MhwModManager.App.ViewModels;
 
+public sealed record ModFamilySuggestionRow(string ParentId,string ChildId,string ParentName,int Score,string Evidence)
+{
+    public string Title=>$"Possible add-on to {ParentName} (review required)";
+}
+
 public partial class ModPartRowViewModel:ObservableObject
 {
     private readonly Action<string,bool> changed;
@@ -64,6 +69,11 @@ public partial class ModRowViewModel:ObservableObject
     public IReadOnlyList<ModDescriptor> Members{get;}
     public IReadOnlyList<ModDescriptor> ArchivedMembers{get;}
     public ObservableRangeCollection<ModPartRowViewModel> Parts{get;}=[];
+    public ObservableRangeCollection<ModFamilySuggestionRow> SuggestedParents{get;}=[];
+    public bool HasSuggestedParents=>SuggestedParents.Count>0;
+    public string FamilyHint=>HasSuggestedParents
+        ? $"Review {SuggestedParents.Count} possible parent relationship(s)"
+        : IdentityHint;
     public ObservableRangeCollection<string> GalleryPaths{get;}=[];
     public int MemberCount=>Members.Count;
     public int ArchivedCount=>ArchivedMembers.Count;
@@ -142,6 +152,13 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
 
+    public void SetSuggestedParents(IEnumerable<ModFamilySuggestionRow> suggestions)
+    {
+        SuggestedParents.ReplaceAll(suggestions);
+        OnPropertyChanged(nameof(HasSuggestedParents));
+        OnPropertyChanged(nameof(FamilyHint));
+    }
+
     public ModRowViewModel(LogicalModFamily family,Action changed)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -157,6 +174,8 @@ public partial class ModRowViewModel:ObservableObject
             var suffix=identity[DisplayName.Length..].Trim(' ','-',':','|','_','–','—');
             if(!string.IsNullOrWhiteSpace(suffix))identity=suffix;
         }
+        if(!IsComposite && NexusArchiveIdentity.TryParse(SourceName,out var sourceIdentity))
+            identity=$"Nexus {sourceIdentity.ModId} • single package";
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
