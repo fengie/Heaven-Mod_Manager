@@ -180,6 +180,15 @@ public sealed record CatalogBrowseResultState(
     string Title,
     string Detail)
 {
+    public static string FormatResultCountLabel(int visibleCount, bool hasAdditional)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentOutOfRangeException.ThrowIfNegative(visibleCount);
+        return hasAdditional
+            ? $"{visibleCount:N0}+ cached matches (first {visibleCount:N0} shown; narrow search to find others)"
+            : $"{visibleCount} {(visibleCount == 1 ? "result" : "results")}";
+    }
+
     public static CatalogBrowseResultState From(string? query, int resultCount)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -379,6 +388,7 @@ public sealed partial class MainWindowViewModel
     private CancellationTokenSource? catalogQueryCts;
     private bool catalogProviderOperationInProgress;
     private bool catalogHasContinuation;
+    private bool catalogHasMoreCachedMatches;
     private bool catalogProviderAttempted;
     private int catalogConfiguredProviderCount;
     private int catalogProviderSuccessCount;
@@ -464,7 +474,8 @@ public sealed partial class MainWindowViewModel
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return $"{CatalogItemCount} {(CatalogItemCount == 1 ? "result" : "results")}";
+            return CatalogBrowseResultState.FormatResultCountLabel(
+                CatalogItemCount, catalogHasMoreCachedMatches);
         }
     }
     public Visibility CatalogResultsVisibility
@@ -1261,16 +1272,19 @@ public sealed partial class MainWindowViewModel
             CatalogQuery,
             gameId: s.Paths.Game.Id,
             includeStale: true,
-            limit: CatalogVisibleResultLimit,
+            limit: CatalogVisibleResultLimit + 1,
             now: DateTimeOffset.UtcNow,
             ct: ct);
+        var hasMoreCachedMatches = rows.Count > CatalogVisibleResultLimit;
         var now = DateTimeOffset.UtcNow;
         var projected = rows
+            .Take(CatalogVisibleResultLimit)
             .Select(row => new CatalogModRow(row.Mod, row.IsStale(now)))
             .ToArray();
         var selected = SelectedCatalogItem;
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
+            catalogHasMoreCachedMatches = hasMoreCachedMatches;
             CatalogItems.ReplaceAll(projected);
             if (selected is not null)
             {
