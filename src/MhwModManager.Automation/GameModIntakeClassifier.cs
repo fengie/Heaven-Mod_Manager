@@ -74,6 +74,16 @@ public static class GameModIntakeClassifier
                     "Declared game conflicts with Stellar Blade package files.",
                     stellarProfile is null ? [declared.Id] : [declared.Id, stellarProfile.Id]);
             }
+            // Game-root labels do not prove installation compatibility, but an
+            // explicitly game-scoped payload for *another* registered game is
+            // contradictory evidence. Require review rather than trusting the
+            // package's unverified manifest over that concrete layout.
+            var scopedConflicts = FindContradictoryGameScopes(games, declared, relativePaths);
+            if (scopedConflicts.Length > 0)
+                return new(GameModIntakeKind.Ambiguous, null,
+                    "Declared game conflicts with another registered game's scoped payload directory.",
+                    new[] { declared.Id }.Concat(scopedConflicts).ToArray());
+
             return new(GameModIntakeKind.Identified, declared.Id,
                 "Package manifest identifies a registered game.", [declared.Id]);
         }
@@ -127,6 +137,75 @@ public static class GameModIntakeClassifier
 
         return new(GameModIntakeKind.Identified, ordered[0].Key,
             "Package name or game-specific internal path matches a registered game.", [ordered[0].Key]);
+    }
+
+    /// <summary>
+    /// Negative evidence only: a distinct registered game's folder below a
+    /// known collection wrapper (or at the package root) contradicts a declared
+    /// game. It never positively identifies a game or authorizes installation.
+    /// Scan all paths once; ignore documentation trees and non-directory names.
+    /// </summary>
+    private static string[] FindContradictoryGameScopes(
+        GameProfile[] games, GameProfile declared, IReadOnlyList<string> relativePaths)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var gameIdsByAlias = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var game in games)
+        {
+            if (StringComparer.OrdinalIgnoreCase.Equals(game.Id, declared.Id)) continue;
+            foreach (var alias in new[] { game.Id, game.DisplayName, game.NexusGameDomain, game.SteamAppId })
+            {
+                if (string.IsNullOrWhiteSpace(alias)) continue;
+                var normalized = GameProfile.NormalizeId(alias);
+                if (normalized.Length < 4) continue;
+                if (!gameIdsByAlias.TryGetValue(normalized, out var ids))
+                    gameIdsByAlias[normalized] = ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                ids.Add(game.Id);
+            }
+        }
+        if (gameIdsByAlias.Count == 0) return [];
+
+        var conflicting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in relativePaths)
+        {
+            var segments = path.Replace('\\', '/')
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length < 2 || IsDocumentationFolder(segments[0])) continue;
+
+            var first = GameProfile.NormalizeId(segments[0]);
+            if (gameIdsByAlias.TryGetValue(first, out var rootIds))
+                conflicting.UnionWith(rootIds);
+            for (var i = 0; i + 2 < segments.Length; i++)
+            {
+                if (!IsCollectionWrapper(segments[i])) continue;
+                var scoped = GameProfile.NormalizeId(segments[i + 1]);
+                if (gameIdsByAlias.TryGetValue(scoped, out var ids))
+                    conflicting.UnionWith(ids);
+            }
+        }
+        return conflicting.Order(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static bool IsDocumentationFolder(string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return name.Equals("docs", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("documentation", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("screenshots", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("images", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("readme", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("licenses", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsCollectionWrapper(string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return name.Equals("mods", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("games", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("game", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("modpacks", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("mod-packs", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("downloads", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Only a canonical Stellar Blade deployment tree is distinctive;
