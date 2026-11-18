@@ -56,7 +56,7 @@ function New-ModFixture([string]$ModsRoot) {
 function New-InboxFixture([string]$InboxRoot) {
     if ($InboxPackages -le 0) { return }
     for ($p = 0; $p -lt $InboxPackages; $p++) {
-        $leaf = Join-Path $InboxRoot ('Package{0:D4}\\nativePC\\pl\\f_equip' -f $p)
+        $leaf = Join-Path $InboxRoot ('Package{0:D4}\nativePC\pl\f_equip' -f $p)
         New-Item -ItemType Directory -Force -Path $leaf | Out-Null
         for ($f = 0; $f -lt $FilesPerInboxPackage; $f++) {
             $name = Join-Path $leaf ('file{0:D4}.tex' -f $f)
