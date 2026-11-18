@@ -62,7 +62,9 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
     public async Task<int> ArchiveSafeAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return (await ArchiveSafeWithAnalysisAsync(ct)).Archived;
+        // Normal cleanup callers need only the count: preserve their original
+        // single-analysis cost even when a package actually moves.
+        return (await ArchiveSafeCoreAsync(includeRemainingAnalysis: false, ct)).Archived;
     }
 
     /// <summary>
@@ -70,6 +72,12 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
     /// Re-query only after a real retirement changed the durable catalog.
     /// </summary>
     public async Task<DuplicateArchiveOutcome> ArchiveSafeWithAnalysisAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await ArchiveSafeCoreAsync(includeRemainingAnalysis: true, ct);
+    }
+
+    private async Task<DuplicateArchiveOutcome> ArchiveSafeCoreAsync(bool includeRemainingAnalysis, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var analysis = await AnalyzeAsync(ct);
@@ -106,7 +114,8 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
             }
             moved++;
         }
-        return new DuplicateArchiveOutcome(moved, moved == 0 ? analysis : await AnalyzeAsync(ct));
+        return new DuplicateArchiveOutcome(moved,
+            includeRemainingAnalysis && moved > 0 ? await AnalyzeAsync(ct) : analysis);
     }
 
     private async Task RestoreSourceWhenDeleteDidNotCommitAsync(string modId,string sourcePath,string archivePath)
