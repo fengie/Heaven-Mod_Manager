@@ -1,6 +1,18 @@
 name: Startup Performance Gate
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/MhwModManager.App/**'
+      - 'src/MhwModManager.Automation/**'
+      - 'src/MhwModManager.Storage/**'
+      - 'src/MhwModManager.Filesystem/**'
+      - 'src/MhwModManager.Core/**'
+      - 'tests/MhwModManager.AutomationTests/StartupMaintenanceScaleTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/StartupPerformanceTests.cs'
+      - 'scripts/diagnostics/Measure-StartupPerformance.ps1'
+      - '.github/workflows/startup-performance-gate.yml'
   push:
     branches:
       - 'perf-startup-*'
@@ -28,7 +40,9 @@ concurrency:
 jobs:
   benchmark:
     name: Compare current main vs candidate on Heaven
-    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    # PR code executes on disposable hosted Windows, never an owner's self-hosted machine.
+    # Trusted owner-branch/manual runs can use the existing Heaven benchmark runner.
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"windows-2025"' || '["self-hosted","Windows","X64","mhw-mods"]') }}
     timeout-minutes: 45
     steps:
       - name: Check out candidate
@@ -46,6 +60,11 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
           path: baseline
+
+      - name: Provision pinned .NET SDK on either runner
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: candidate/global.json
 
       - name: Verify pinned .NET SDK
         shell: powershell
