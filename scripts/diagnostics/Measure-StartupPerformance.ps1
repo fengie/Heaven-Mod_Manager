@@ -3,6 +3,8 @@ param(
     [int]$WarmIterations = 3,
     [int]$ModCount = 80,
     [int]$FilesPerMod = 25,
+    [int]$InboxPackages = 0,
+    [int]$FilesPerInboxPackage = 20,
     [int]$TimeoutSeconds = 300,
     [string]$RepositoryRoot = '',
     [string]$OutputPath = ''
@@ -47,6 +49,18 @@ function New-ModFixture([string]$ModsRoot) {
                 $bytes[$i] = [byte](($m + $f + $i) % 251)
             }
             [IO.File]::WriteAllBytes($path, $bytes)
+        }
+    }
+}
+
+function New-InboxFixture([string]$InboxRoot) {
+    if ($InboxPackages -le 0) { return }
+    for ($p = 0; $p -lt $InboxPackages; $p++) {
+        $leaf = Join-Path $InboxRoot ('Package{0:D4}\\nativePC\\pl\\f_equip' -f $p)
+        New-Item -ItemType Directory -Force -Path $leaf | Out-Null
+        for ($f = 0; $f -lt $FilesPerInboxPackage; $f++) {
+            $name = Join-Path $leaf ('file{0:D4}.tex' -f $f)
+            [IO.File]::WriteAllBytes($name, [byte[]](0..127))
         }
     }
 }
@@ -211,9 +225,11 @@ $tempRoot = if (-not [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
 $fixtureRoot = Join-Path $tempRoot ('mhw-startup-perf-' + [Guid]::NewGuid().ToString('N'))
 $gameRoot = Join-Path $fixtureRoot 'game'
 $sourceMods = Join-Path $fixtureRoot 'fixture-mods'
+$sourceInbox = Join-Path $fixtureRoot 'fixture-inbox'
 New-Item -ItemType Directory -Force -Path $fixtureRoot | Out-Null
 New-GameFixture $gameRoot
 New-ModFixture $sourceMods
+New-InboxFixture $sourceInbox
 
 $runs = New-Object System.Collections.Generic.List[object]
 $warmRoot = $null
@@ -222,6 +238,9 @@ try {
         $toolRoot = Join-Path $fixtureRoot ("cold-$i")
         New-Item -ItemType Directory -Force -Path $toolRoot | Out-Null
         Copy-Item -LiteralPath $sourceMods -Destination (Join-Path $toolRoot 'Mods') -Recurse
+        if ($InboxPackages -gt 0) {
+            Copy-Item -LiteralPath $sourceInbox -Destination (Join-Path $toolRoot 'Inbox') -Recurse
+        }
         $run = Invoke-StartupRun -Kind 'cold-state' -Iteration $i -ToolRoot $toolRoot -GameRoot $gameRoot -Exe $appExe
         [void]$runs.Add($run)
         Write-Host ('STARTUP_PERF_RUN=' + ($run | ConvertTo-Json -Compress))
@@ -263,6 +282,8 @@ try {
         source_sha = (& git -C $Root rev-parse HEAD).Trim()
         mod_count = $ModCount
         files_per_mod = $FilesPerMod
+        inbox_packages = $InboxPackages
+        files_per_inbox_package = $FilesPerInboxPackage
         total_mod_files = $ModCount * $FilesPerMod
         package_size_mb = [math]::Round($packageBytes / 1MB, 1)
         cold = [ordered]@{}
