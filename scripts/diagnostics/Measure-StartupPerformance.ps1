@@ -6,6 +6,7 @@ param(
     [int]$InboxPackages = 0,
     [int]$FilesPerInboxPackage = 20,
     [int]$TimeoutSeconds = 300,
+    [switch]$RequireStartupUiPhaseMetrics,
     [string]$RepositoryRoot = '',
     [string]$OutputPath = ''
 )
@@ -135,6 +136,19 @@ function Get-ToStageMs($Report, [string]$Name) {
     return ($end - $start).TotalMilliseconds
 }
 
+function Get-StartupUiPhaseMs([string]$ToolRoot, [string]$Phase) {
+    $logPath = Join-Path $ToolRoot 'MHW-DEBUG-ALL.log'
+    try {
+        return Read-StartupUiPhaseMs -LogPath $logPath -Phase $Phase
+    }
+    catch {
+        if ($RequireStartupUiPhaseMetrics) { throw }
+        # An older main baseline may not implement the new event yet.
+        # Never allow this fallback for the candidate under test.
+        return $null
+    }
+}
+
 function Get-MasterMethodMs([string]$ToolRoot, [string]$MethodName) {
     $path = Join-Path $ToolRoot 'MHW-DEBUG-ALL.log'
     if (-not (Test-Path -LiteralPath $path)) { return $null }
@@ -170,7 +184,6 @@ function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [s
             throw "Startup report failed: $($report.summary)"
         }
 
-        $masterLogPath = Join-Path $ToolRoot 'MHW-DEBUG-ALL.log'
         return [pscustomobject][ordered]@{
             kind = $Kind
             iteration = $Iteration
@@ -187,9 +200,9 @@ function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [s
             recovery_ms = Get-StageMs $report 'startup.recovery'
             automation_ms = Get-StageMs $report 'startup.automation'
             main_window_initialize_ms = Get-StageMs $report 'ui.main-window.initialize'
-            reload_mods_ms = Read-StartupUiPhaseMs -LogPath $masterLogPath -Phase 'reload-mods'
+            reload_mods_ms = Get-StartupUiPhaseMs -ToolRoot $ToolRoot -Phase 'reload-mods'
             refresh_analysis_ms = $(if ($ModCount -gt 0 -or $InboxPackages -gt 0) {
-                Read-StartupUiPhaseMs -LogPath $masterLogPath -Phase 'conflict-analysis'
+                Get-StartupUiPhaseMs -ToolRoot $ToolRoot -Phase 'conflict-analysis'
             } else { $null })
             build_analysis_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.BuildAnalysisAsync'
             refresh_issue_suspects_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.RefreshIssueSuspects'
