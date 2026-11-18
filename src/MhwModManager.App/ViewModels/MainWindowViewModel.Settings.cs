@@ -331,6 +331,10 @@ public sealed partial class MainWindowViewModel
                 s.Paths.ModsArchiveRoot,
                 "Durable user archive. Reclaim never deletes this root."),
             (
+                "Import Workspaces",
+                ImportPublicationWorkspace.LocationFor(s.Paths.ModsRoot),
+                "Incomplete, catalog-invisible import work from this game's Mods root. Measured for visibility only; never automatically reclaimed by Settings without an independently proven lease/recovery disposition."),
+            (
                 "Manager State (total)",
                 s.Paths.StateRoot,
                 "Durable state/database total; includes managed state subdirectories and is not additive with the rows below."),
