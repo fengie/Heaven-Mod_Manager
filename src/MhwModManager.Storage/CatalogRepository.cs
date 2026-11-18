@@ -232,6 +232,47 @@ public sealed class CatalogRepository(ManagerDatabase db)
         return result;
     }
 
+    /// <summary>
+    /// Detects whether more cached matches exist beyond the ordinary result cap.
+    /// Uses a cheap existence probe, never hydrates or returns a 1,001st item.
+    /// Mirrors the Browse Mods cache query (including stale entries) and keeps
+    /// the normal SearchAsync MaxSearchResults safety bound intact.
+    /// </summary>
+    public async Task<bool> HasAdditionalMatchesAsync(
+        string? query,
+        string gameId,
+        int visibleLimit,
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
+        if (visibleLimit < 0 || visibleLimit > MaxSearchResults)
+            throw new ArgumentOutOfRangeException(nameof(visibleLimit));
+
+        var ftsQuery = BuildFtsQuery(query);
+        await using var connection = await db.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = ftsQuery is null
+            ? """
+                SELECT 1
+                FROM catalog_items i
+                WHERE i.game_id = $game
+                LIMIT 1 OFFSET $offset
+                """
+            : """
+                SELECT 1
+                FROM catalog_items_fts
+                JOIN catalog_items i ON i.canonical_id = catalog_items_fts.canonical_id
+                WHERE catalog_items_fts MATCH $query AND i.game_id = $game
+                LIMIT 1 OFFSET $offset
+                """;
+        command.Parameters.AddWithValue("$game", gameId);
+        command.Parameters.AddWithValue("$offset", visibleLimit);
+        if (ftsQuery is not null)
+            command.Parameters.AddWithValue("$query", ftsQuery);
+        return await command.ExecuteScalarAsync(ct) is not null;
+    }
+
     public async Task UpsertSyncStateAsync(CatalogSyncState state, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

@@ -68,6 +68,46 @@ public sealed class CatalogScaleRegressionTests : IDisposable
         Assert.True(
             stopwatch.Elapsed < TimeSpan.FromSeconds(20),
             $"10k cached browse exceeded the generous regression ceiling: {stopwatch.Elapsed}.");
+        // Keep the 1,000-row hard cap even when callers request more.
+        var overRequested = await repository.SearchAsync(
+            query: null,
+            gameId: "monsterhunterworld",
+            includeStale: true,
+            limit: BrowseCapacity + 1,
+            now: FixtureBaseTime.AddDays(1),
+            ct: TestToken);
+        Assert.Equal(BrowseCapacity, overRequested.Count);
+
+        // Existence-only probe makes truncation visible without loading a
+        // 1,001st result, widening the normal limit or touching provider APIs.
+        Assert.True(await repository.HasAdditionalMatchesAsync(
+            query: null, gameId: "monsterhunterworld",
+            visibleLimit: BrowseCapacity, ct: TestToken));
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            query: null, gameId: "another-game",
+            visibleLimit: BrowseCapacity, ct: TestToken));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            repository.HasAdditionalMatchesAsync(
+                query: null, gameId: "monsterhunterworld",
+                visibleLimit: BrowseCapacity + 1, ct: TestToken));
+    }
+
+    [Theory]
+    [InlineData(0, false, "0 results")]
+    [InlineData(1, false, "1 result")]
+    [InlineData(7, false, "7 results")]
+    [InlineData(1000, true, "cached matches")]
+    public void Browse_count_distinguishes_complete_results_from_truncated_local_cache(
+        int visibleCount, bool hasAdditional, string expected)
+    {
+        var label = CatalogBrowseResultState.FormatResultCountLabel(
+            visibleCount, hasAdditional);
+        Assert.Contains(expected, label, StringComparison.OrdinalIgnoreCase);
+        if (hasAdditional)
+        {
+            Assert.Contains("first", label, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("shown", label, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
