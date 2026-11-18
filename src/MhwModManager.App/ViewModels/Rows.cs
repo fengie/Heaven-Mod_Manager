@@ -148,7 +148,7 @@ public partial class ModRowViewModel:ObservableObject
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
         SourcePath=family.Members.Count==1?family.Members[0].SourcePath:string.Empty;
         SourceSummary=family.Members.Count==1?family.Members[0].SourcePath:$"{family.Members.Count} source packages";
-        SourceName=family.Members.Count==1?System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(SourcePath)):$"{family.Members.Count} source packages";
+        SourceName=family.Members.Count==1?ModDisplayNames.StripTransportDigest(System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(SourcePath))):$"{family.Members.Count} source packages";
         if(string.IsNullOrWhiteSpace(SourceName))SourceName=DisplayName;
         var identity=SourceName;
         if(StringComparer.OrdinalIgnoreCase.Equals(identity,DisplayName))identity="Single package";
