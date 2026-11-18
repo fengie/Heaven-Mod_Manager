@@ -68,7 +68,8 @@ public sealed class AutoCategoryService(ManagerDatabase db, GameProfile? game = 
 
         // One indexed query replaces one SQLite command/reader per mod. Read the whole
         // result before writing classifications on the same connection.
-        var indexedPaths = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        // SQLite mods.id is a binary TEXT primary key. Do not merge case-distinct IDs.
+        var indexedPaths = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         await using var c = await db.OpenAsync(ct);
         await using (var read = c.CreateCommand())
         {

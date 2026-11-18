@@ -15,9 +15,9 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mods = await db.GetModsAsync(ct);
         var active = mods.Where(mod => !mod.IsSuperseded)
-            .ToDictionary(mod => mod.Id, StringComparer.OrdinalIgnoreCase);
-        var partsByMod = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        var sizes = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(mod => mod.Id, StringComparer.Ordinal);
+        var partsByMod = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        var sizes = new Dictionary<string, long>(StringComparer.Ordinal);
 
         // Preserve SQLite's original ORDER BY path hashing semantics, but stream all
         // mod-file rows through one indexed read instead of N connections/queries.
@@ -82,9 +82,9 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var analysis = await AnalyzeAsync(ct);
         Directory.CreateDirectory(archiveRoot);
-        var mods = (await db.GetModsAsync(ct)).ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
-        var candidates = new HashSet<string>(analysis.SupersededModIds, StringComparer.OrdinalIgnoreCase);
-        foreach (var group in analysis.ExactDuplicates) foreach (var id in group.ModIds.Where(x => !StringComparer.OrdinalIgnoreCase.Equals(x, group.RecommendedKeeperId))) candidates.Add(id);
+        var mods = (await db.GetModsAsync(ct)).ToDictionary(x => x.Id, StringComparer.Ordinal);
+        var candidates = new HashSet<string>(analysis.SupersededModIds, StringComparer.Ordinal);
+        foreach (var group in analysis.ExactDuplicates) foreach (var id in group.ModIds.Where(x => !StringComparer.Ordinal.Equals(x, group.RecommendedKeeperId))) candidates.Add(id);
         var moved = 0;
         foreach (var id in candidates)
         {
