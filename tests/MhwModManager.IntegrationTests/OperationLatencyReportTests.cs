@@ -76,7 +76,7 @@ public sealed class OperationLatencyReportTests
                 line.TrimStart().StartsWith("metadata.sync", StringComparison.Ordinal)));
             var columns = row.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             Assert.Equal("n/a", columns[^2]);
-            Assert.Equal("n/a", columns[^1]);
+            Assert.Equal("n/a", columns[^1].Trim());
             Assert.Contains("250.0", row, StringComparison.Ordinal);
         }
         finally
