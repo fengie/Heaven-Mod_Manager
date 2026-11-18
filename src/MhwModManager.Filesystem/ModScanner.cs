@@ -131,6 +131,11 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         // nesting its payload under an unrelated loader path.
         var additional = KnownAdditionalLoaderRoots
             .Where(relative => !relative.Equals(target, StringComparison.OrdinalIgnoreCase) &&
+                // Never scan both a configured nested target and its ancestor
+                // (e.g. Content\\Paks and Content\\Paks\\~mods) as separate providers.
+                (!targetIsMirrored ||
+                    (!target.StartsWith(relative + "\\", StringComparison.OrdinalIgnoreCase) &&
+                     !relative.StartsWith(target + "\\", StringComparison.OrdinalIgnoreCase))) &&
                 Directory.Exists(Path.Combine(folder, relative)))
             .ToArray();
         if (additional.Length > 0)
