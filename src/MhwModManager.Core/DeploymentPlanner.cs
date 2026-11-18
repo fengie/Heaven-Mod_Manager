@@ -304,7 +304,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     /// path rows stay blocked; matching byte content is not proof of a family.
     /// </summary>
     private static bool HasEquivalentAtomicBundlePayloads(
-        IEnumerable<ModFileDescriptor> files, IReadOnlySet<string> memberIds)
+        IEnumerable<ModFileDescriptor> files, HashSet<string> memberIds)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (memberIds.Count < 2) return false;
