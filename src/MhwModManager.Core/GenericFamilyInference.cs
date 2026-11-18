@@ -4,8 +4,8 @@ namespace MhwModManager.Core;
 
 /// <summary>
 /// Generic evidence-based family inference. It intentionally does not know mod brands/authors.
-/// Strong source metadata wins; local inference requires both semantic/name evidence and concrete
-/// file-layout evidence so unrelated replacements do not collapse merely because their names look alike.
+/// Source metadata is supporting evidence. Distinctively shared payload bytes may also identify
+/// separately acquired components, but matching names, paths, or boilerplate alone are insufficient.
 /// </summary>
 public static partial class GenericFamilyInference
 {
@@ -45,10 +45,17 @@ public static partial class GenericFamilyInference
         }
 
         var profiles = BuildProfiles(candidates, files, includeMhwAssetSemantics);
+        // A common resource bundled into every download is not a family anchor.
+        // Count distinct packages, not occurrences within one archive.
+        var rareContentAnchors = profiles.Values.SelectMany(profile => profile.Files.ContentAnchors)
+            .GroupBy(anchor => anchor, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 2)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var pairs = new List<Evidence>();
         foreach (var (i,j) in ConcreteCandidatePairs(candidates,profiles))
         {
-            var evidence = ScorePair(candidates[i], candidates[j], profiles[candidates[i].Id], profiles[candidates[j].Id]);
+            var evidence = ScorePair(candidates[i], candidates[j], profiles[candidates[i].Id], profiles[candidates[j].Id], rareContentAnchors);
             if (evidence is not null && evidence.Score >= 75 && evidence.Strong) pairs.Add(evidence);
         }
 
@@ -91,7 +98,7 @@ public static partial class GenericFamilyInference
             {
                 foreach(var rightId in rightMembers)
                 {
-                    if(!HardBlock(candidateById[leftId],candidateById[rightId],profiles[leftId],profiles[rightId]))continue;
+                    if(!HardBlock(candidateById[leftId],candidateById[rightId],profiles[leftId],profiles[rightId],rareContentAnchors))continue;
                     blocked=true;
                     break;
                 }
@@ -183,6 +190,7 @@ public static partial class GenericFamilyInference
         var paths=files.Select(f=>f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var assets=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var roots=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var anchors=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach(var file in files)
         {
             try
@@ -192,16 +200,24 @@ public static partial class GenericFamilyInference
                 {
                     var ns=PathRules.ResourceNamespace(file.Path);if(ns is not null)assets.Add("resource:"+ns);
                 }
-                var segments=PathRules.Normalize(file.Path).Split('\\');
+                var normalized=PathRules.Normalize(file.Path);
+                // Exact path + captured SHA-256 of real deployable assets is stronger
+                // than labels. Do not treat tiny files or shared loader binaries as anchors.
+                if (file.Length >= 128 &&
+                    file.FileClass is FileClass.Structural or FileClass.Texture &&
+                    file.BlobSha256 is { Length: 64 } &&
+                    file.BlobSha256.All(Uri.IsHexDigit))
+                    anchors.Add(normalized.ToLowerInvariant() + "|" + file.BlobSha256.ToLowerInvariant());
+                var segments=normalized.Split('\\');
                 if(segments.Length>=4)roots.Add(string.Join("\\",segments.Take(4)).ToLowerInvariant());
                 else if(segments.Length>=2)roots.Add(string.Join("\\",segments.Take(2)).ToLowerInvariant());
             }
             catch(ArgumentException){ }
         }
-        return new(paths,assets,roots);
+        return new(paths,assets,roots,anchors);
     }
 
-    private static Evidence? ScorePair(ModDescriptor a,ModDescriptor b,CandidateProfile ap,CandidateProfile bp)
+    private static Evidence? ScorePair(ModDescriptor a,ModDescriptor b,CandidateProfile ap,CandidateProfile bp,IReadOnlySet<string> rareContentAnchors)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!string.IsNullOrWhiteSpace(a.NexusModId)&&!string.IsNullOrWhiteSpace(b.NexusModId)&&!StringComparer.OrdinalIgnoreCase.Equals(a.NexusModId,b.NexusModId))return null;
@@ -211,13 +227,12 @@ public static partial class GenericFamilyInference
         var prefix=IsMeaningfulPrefix(ap.IdentityStem,bp.IdentityStem)||IsMeaningfulPrefix(bp.IdentityStem,ap.IdentityStem);
         var roleDifference=ap.HasRoleSignal||bp.HasRoleSignal;
         var choiceOnly=ap.HasChoiceSignal||bp.HasChoiceSignal;
+        var contentLineage=HasContentLineage(ap,bp,rareContentAnchors,out var sharedContentAnchors);
 
-        // The only accepted strong-evidence branches below require a role signal,
-        // at least 0.60 name-token similarity, or an exact identity stem. When all
-        // three are absent no amount of shared directory/file overlap can create
-        // an accepted family pair. Avoid expensive file intersections in that case,
-        // particularly for hundreds of unrelated mods sharing a loader root.
-        if(!roleDifference && nameSimilarity < .60 && !exactStem) return null;
+        // Ordinary inference requires a role signal,
+        // matching names, or an exact stem. Two distinct *rare byte-identical assets*
+        // also permit family grouping without shared names; shared directories do not.
+        if(!roleDifference && nameSimilarity < .60 && !exactStem && !contentLineage) return null;
 
         var sharedPaths=IntersectionCount(ap.Files.Paths,bp.Files.Paths);
         var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
@@ -226,7 +241,7 @@ public static partial class GenericFamilyInference
         // No returned evidence can be accepted unless it is strong.
         // Compute that exact predicate before allocating explanations or scanning
         // shared roots: high-fanout loader roots often connect unrelated files.
-        var strong=(roleDifference&&(overlap>=.30||sharedAssets>0)) ||
+        var strong=contentLineage || (roleDifference&&(overlap>=.30||sharedAssets>0)) ||
             (nameSimilarity>=.60&&(overlap>=.55||sharedAssets>0)) ||
             (exactStem&&overlap>=.30);
         if(!strong)return null;
@@ -248,6 +263,7 @@ public static partial class GenericFamilyInference
         if(choiceOnly&&!exactStem&&nameSimilarity<.70)return null;
 
         var score=0;var reasons=new List<string>();
+        if(contentLineage){score+=90;reasons.Add($"{sharedContentAnchors} rare path-and-SHA256 payload anchors, independent of names/sources");}
         if(exactStem){score+=45;reasons.Add("same semantic name stem");}
         else if(nameSimilarity>=.80){score+=35;reasons.Add($"name tokens {nameSimilarity:P0}");}
         else if(nameSimilarity>=.60){score+=24;reasons.Add($"name tokens {nameSimilarity:P0}");}
@@ -263,19 +279,40 @@ public static partial class GenericFamilyInference
         return new(a.Id,b.Id,score,strong,string.Join("; ",reasons));
     }
 
-    private static bool HardBlock(ModDescriptor a,ModDescriptor b,CandidateProfile ap,CandidateProfile bp)
+    // Content agreement proves a possible logical family, never overwrite order.
+    // Require two uncommon, nontrivial, byte-identical assets at the same target
+    // paths and a distinct remaining payload. Same-name alternatives and copied
+    // shared runtimes do not establish this relationship.
+    private static bool HasContentLineage(CandidateProfile a,CandidateProfile b,
+        IReadOnlySet<string> rareContentAnchors,out int sharedAnchors)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        sharedAnchors=0;
+        if(a.HasChoiceSignal||b.HasChoiceSignal||
+            a.Files.ContentAnchors.Count<2||b.Files.ContentAnchors.Count<2)
+            return false;
+        var small=a.Files.ContentAnchors.Count<=b.Files.ContentAnchors.Count
+            ?a.Files.ContentAnchors:b.Files.ContentAnchors;
+        var large=ReferenceEquals(small,a.Files.ContentAnchors)
+            ?b.Files.ContentAnchors:a.Files.ContentAnchors;
+        foreach(var anchor in small)
+            if(rareContentAnchors.Contains(anchor)&&large.Contains(anchor))
+                sharedAnchors++;
+        return sharedAnchors>=2 &&
+            a.Files.Paths.Count>=3 && b.Files.Paths.Count>=3 &&
+            !a.Files.Paths.SetEquals(b.Files.Paths);
+    }
+
+    private static bool HardBlock(ModDescriptor a,ModDescriptor b,CandidateProfile ap,CandidateProfile bp,IReadOnlySet<string> rareContentAnchors)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!string.IsNullOrWhiteSpace(a.NexusModId)&&!string.IsNullOrWhiteSpace(b.NexusModId)&&!StringComparer.OrdinalIgnoreCase.Equals(a.NexusModId,b.NexusModId))return true;
+        if(HasContentLineage(ap,bp,rareContentAnchors,out _))return false;
         var sim=TokenSimilarity(ap.IdentityTokens,bp.IdentityTokens);
-        var sharedAssets=ap.Files.Assets.Overlaps(bp.Files.Assets);
-        var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
-        var pathScan=ap.Files.Paths.Count<=bp.Files.Paths.Count?ap.Files.Paths:bp.Files.Paths;
-        var pathLookup=ReferenceEquals(pathScan,ap.Files.Paths)?bp.Files.Paths:ap.Files.Paths;
-        var sharedPaths=0;
-        foreach(var path in pathScan)if(pathLookup.Contains(path))sharedPaths++;
-        var overlap=smaller==0?0:sharedPaths/(double)smaller;
-        return sim<.25&&!sharedAssets&&overlap<.20;
+        // A third package with unrelated identity cannot bridge two inferred
+        // components solely by replacing the same model/texture namespace.
+        if(sim<.25)return true;
+        return false;
     }
 
     private static string IdentityStem(string value)
@@ -328,7 +365,7 @@ public static partial class GenericFamilyInference
     private static string CleanName(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var n=NexusSuffixRegex().Replace(value,string.Empty);n=VersionSuffixRegex().Replace(n,string.Empty);return WhitespaceRegex().Replace(n.Replace('_',' ').Replace('-',' ')," ").Trim();
+        var n=ModDisplayNames.StripTransportDigest(NexusSuffixRegex().Replace(value,string.Empty));n=VersionSuffixRegex().Replace(n,string.Empty);return WhitespaceRegex().Replace(n.Replace('_',' ').Replace('-',' ')," ").Trim();
     }
     private static string NormalizeKey(string value)
     {
@@ -336,7 +373,7 @@ public static partial class GenericFamilyInference
         return string.Join('-',Tokenize(value)).ToLowerInvariant();
     }
 
-    private sealed record FileProfile(HashSet<string> Paths,HashSet<string> Assets,HashSet<string> Roots);
+    private sealed record FileProfile(HashSet<string> Paths,HashSet<string> Assets,HashSet<string> Roots,HashSet<string> ContentAnchors);
     private sealed record CandidateProfile(
         FileProfile Files,
         string IdentityStem,

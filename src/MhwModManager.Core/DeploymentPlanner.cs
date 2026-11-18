@@ -158,7 +158,13 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 if (paths.Length < 2 || memberIds.Length < 2) continue;
 
                 var memberSet = memberIds.ToHashSet(PathRules.Comparer);
-                if (IsSafeAtomicBundleComposition(memberSet, ruleIndex, enabled)) continue;
+                // Two unrelated archives can carry exactly the same complete model/
+                // material/physics payload. With identical target paths and verified
+                // content, choosing either physical provider cannot mix generations.
+                // Group identity and overwrite precedence are *not* inferred here.
+                if (IsSafeAtomicBundleComposition(memberSet, ruleIndex, enabled) ||
+                    HasEquivalentAtomicBundlePayloads(bundle, memberSet))
+                    continue;
 
                 var representative = paths[0];
                 var names = memberIds.Select(id => enabled[id].DisplayName).ToArray();
@@ -289,6 +295,44 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         }
 
         return decisions.ToArray();
+    }
+
+    /// <summary>
+    /// Relationship-free exception to MHW atomic structural protection: one
+    /// provider contains the entire bundle, and any other provider contributes
+    /// only byte-identical subsets of that bundle's paths. This guarantees the
+    /// resulting physical output is already a complete single-source bundle.
+    /// Complementary partial packages, changed bytes, unknown hashes and
+    /// duplicate path rows remain blocked. It does not infer family or order.
+    /// </summary>
+    private static bool HasEquivalentAtomicBundlePayloads(
+        IEnumerable<ModFileDescriptor> files, HashSet<string> memberIds)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (memberIds.Count < 2) return false;
+
+        var observedPaths = 0;
+        var coverageByProvider = memberIds.ToDictionary(id => id, _ => 0, PathRules.Comparer);
+        foreach (var group in files.GroupBy(file => file.Path, PathRules.Comparer))
+        {
+            observedPaths++;
+            var digest = group.First().BlobSha256;
+            if (digest.Length != 64 || !digest.All(Uri.IsHexDigit))
+                return false;
+            var present = new HashSet<string>(PathRules.Comparer);
+            foreach (var file in group)
+            {
+                if (!memberIds.Contains(file.ModId) ||
+                    !present.Add(file.ModId) ||
+                    !StringComparer.OrdinalIgnoreCase.Equals(digest, file.BlobSha256))
+                    return false;
+                coverageByProvider[file.ModId]++;
+            }
+        }
+        // A complete provider must cover *every* structural destination path.
+        // Otherwise two individually partial packages could manufacture one
+        // mixed bundle despite having no same-path byte conflicts.
+        return observedPaths > 0 && coverageByProvider.Values.Any(count => count == observedPaths);
     }
 
     private static bool IsSafeAtomicBundleComposition(

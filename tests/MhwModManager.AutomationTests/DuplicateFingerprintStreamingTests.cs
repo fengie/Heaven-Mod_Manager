@@ -49,8 +49,10 @@ public sealed class DuplicateFingerprintStreamingTests : IDisposable
         var group = Assert.Single(analysis.ExactDuplicates);
         Assert.Equal(expected, group.Fingerprint);
         Assert.Equal(2, group.ModIds.Count);
-        Assert.Equal("mod0", group.ModIds[0]);
-        Assert.Equal("mod1", group.ModIds[1]);
+        // Preserve the original keeper-first order: higher priority mod1 precedes mod0.
+        // The byte fingerprint and recommended keeper must not change under streaming.
+        Assert.Equal("mod1", group.ModIds[0]);
+        Assert.Equal("mod0", group.ModIds[1]);
         Assert.Equal("mod1", group.RecommendedKeeperId);
         Assert.Equal(66L, group.ReclaimableBytes);
         Assert.Equal(66L, analysis.ReclaimableBytes);

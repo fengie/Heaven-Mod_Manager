@@ -860,7 +860,7 @@ public sealed class GameModIntakeService
                 receipts.UnionWith(durableReceipts);
                 return false;
             }
-            var filename = SafePackageName(source) + "-" + sha + Path.GetExtension(source).ToLowerInvariant();
+            var filename = SafeDisplayStem(source) + "-" + sha + Path.GetExtension(source).ToLowerInvariant();
             var destination = Path.Combine(inboxRoot, filename);
             RefuseReparseComponents(inboxRoot);
             if (File.Exists(destination))
@@ -941,7 +941,7 @@ public sealed class GameModIntakeService
                 receipts.UnionWith(durableReceipts);
                 return false;
             }
-            var destination = Path.Combine(inboxRoot, SafePackageName(source) + "-" + sha);
+            var destination = Path.Combine(inboxRoot, SafeDisplayStem(source) + "-" + sha);
             RefuseReparseComponents(inboxRoot);
             if (Directory.Exists(destination))
             {
@@ -1025,6 +1025,19 @@ public sealed class GameModIntakeService
         var name = Directory.Exists(source) ? Path.GetFileName(source) : Path.GetFileNameWithoutExtension(source);
         var slug = GameProfile.NormalizeId(name);
         return slug[..Math.Min(slug.Length, 48)];
+    }
+
+    // Retain the original human title separately from SHA-based receipt identity.
+    // Keep the original letter case and readable spaces; the suffix still makes
+    // archived downloads unique. Unsafe or excessive names use the safe slug.
+    private static string SafeDisplayStem(string source)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var name = Directory.Exists(source)
+            ? Path.GetFileName(Path.TrimEndingDirectorySeparator(source))
+            : Path.GetFileNameWithoutExtension(source);
+        name = name.Length > 80 ? name[..80].TrimEnd(' ', '.') : name;
+        return PathRules.IsSafeArchiveRelativePath(name) ? name : SafePackageName(source);
     }
 
     private string CreateScratchPath()
