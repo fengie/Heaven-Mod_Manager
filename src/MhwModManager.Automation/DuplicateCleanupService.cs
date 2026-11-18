@@ -42,7 +42,7 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
         foreach (var mod in mods.Where(mod => !mod.IsSuperseded))
         {
             if (!partsByMod.TryGetValue(mod.Id, out var parts) || parts.Count == 0) continue;
-            var fp = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\\n", parts)))).ToLowerInvariant();
+            var fp = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", parts)))).ToLowerInvariant();
             if (!fingerprints.TryGetValue(fp, out var list)) fingerprints[fp] = list = [];
             list.Add(mod);
         }
