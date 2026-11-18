@@ -48,7 +48,9 @@ public sealed class DuplicateFingerprintStreamingTests : IDisposable
         var analysis = await new DuplicateCleanupService(db, Path.Combine(root, "archive")).AnalyzeAsync(Token);
         var group = Assert.Single(analysis.ExactDuplicates);
         Assert.Equal(expected, group.Fingerprint);
-        Assert.Equal(new[] { "mod0", "mod1" }, group.ModIds);
+        Assert.Equal(2, group.ModIds.Count);
+        Assert.Equal("mod0", group.ModIds[0]);
+        Assert.Equal("mod1", group.ModIds[1]);
         Assert.Equal("mod1", group.RecommendedKeeperId);
         Assert.Equal(66L, group.ReclaimableBytes);
         Assert.Equal(66L, analysis.ReclaimableBytes);
