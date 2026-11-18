@@ -7,7 +7,8 @@ namespace MhwModManager.Storage;
 
 public sealed class CatalogRepository(ManagerDatabase db)
 {
-    private const int MaxSearchResults = 1000;
+    // One extra row lets the Browse Mods UI detect truncated cached matches.
+    private const int MaxSearchResults = 1001;
     private const int FileHydrationBatchSize = 400;
     private const string ItemColumns = """
         i.canonical_id,i.provider_id,i.provider_mod_id,i.game_id,i.name,i.summary,i.description,i.author,
