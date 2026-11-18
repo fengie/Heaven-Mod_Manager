@@ -455,7 +455,9 @@ public static partial class AutoCompatibility
     private static bool IsDedicatedTexturePack(ModDescriptor mod, ModContentStats? stats)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var tokens = Tokenize(mod.Name);
+        // Author filenames commonly use hyphenated slugs (e.g. tattoo-skin-texture-overlay).
+        // Split those separators before checking semantic texture words.
+        var tokens = Tokenize(NexusArchiveIdentity.RemoveSuffix(mod.Name).Replace('-', ' ').Replace('_', ' '));
         var textureNamed = tokens.Any(TextureWords.Contains) ||
                            mod.Name.Contains("body texture", StringComparison.OrdinalIgnoreCase) ||
                            mod.Name.Contains("face texture", StringComparison.OrdinalIgnoreCase);
@@ -475,6 +477,14 @@ public static partial class AutoCompatibility
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!string.IsNullOrWhiteSpace(a.FamilyId) && StringComparer.OrdinalIgnoreCase.Equals(a.FamilyId, b.FamilyId)) return true;
+
+        // Identically named texture downloads can originate from DIFFERENT Nexus pages.
+        // Numeric IDs must not be treated as one revision chain because titles, texture paths,
+        // or download timestamps coincide. Only an explicit saved family may override this block.
+        if (!string.IsNullOrWhiteSpace(a.NexusModId) &&
+            !string.IsNullOrWhiteSpace(b.NexusModId) &&
+            !ProvenanceIntelligence.SameNexusMod(a, b)) return false;
+
         if (!string.IsNullOrWhiteSpace(a.NexusModId) && StringComparer.OrdinalIgnoreCase.Equals(a.NexusModId, b.NexusModId) &&
             StringComparer.OrdinalIgnoreCase.Equals(FamilyStem(a.Name), FamilyStem(b.Name))) return true;
 
