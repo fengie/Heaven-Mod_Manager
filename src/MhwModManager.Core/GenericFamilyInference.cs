@@ -263,7 +263,7 @@ public static partial class GenericFamilyInference
         if(choiceOnly&&!exactStem&&nameSimilarity<.70)return null;
 
         var score=0;var reasons=new List<string>();
-        if(contentLineage){score+=90;reasons.Add($"{sharedContentAnchors} rare path-and-SHA256 payload anchors, independent of names/sources");}
+        if(contentLineage){score+=90;reasons.Add($"{sharedContentAnchors} matching path-and-SHA256 payload anchors with distinctive content, independent of names/sources");}
         if(exactStem){score+=45;reasons.Add("same semantic name stem");}
         else if(nameSimilarity>=.80){score+=35;reasons.Add($"name tokens {nameSimilarity:P0}");}
         else if(nameSimilarity>=.60){score+=24;reasons.Add($"name tokens {nameSimilarity:P0}");}
@@ -280,9 +280,11 @@ public static partial class GenericFamilyInference
     }
 
     // Content agreement proves a possible logical family, never overwrite order.
-    // Require two uncommon, nontrivial, byte-identical assets at the same target
-    // paths and a distinct remaining payload. Same-name alternatives and copied
-    // shared runtimes do not establish this relationship.
+    // Require at least two pair-distinctive nontrivial content anchors, OR at least
+    // three matching payload anchors including one pair-distinctive anchor. A later
+    // unrelated package copying two common files must not erase a stronger A/B
+    // relationship. All-common boilerplate remains insufficient; an inherently
+    // ambiguous 2-anchor overlap must still abstain.
     private static bool HasContentLineage(CandidateProfile a,CandidateProfile b,
         IReadOnlySet<string> rareContentAnchors,out int sharedAnchors)
     {
@@ -295,10 +297,16 @@ public static partial class GenericFamilyInference
             ?a.Files.ContentAnchors:b.Files.ContentAnchors;
         var large=ReferenceEquals(small,a.Files.ContentAnchors)
             ?b.Files.ContentAnchors:a.Files.ContentAnchors;
+        var pairDistinctive=0;
         foreach(var anchor in small)
-            if(rareContentAnchors.Contains(anchor)&&large.Contains(anchor))
-                sharedAnchors++;
-        return sharedAnchors>=2 &&
+        {
+            if(!large.Contains(anchor))continue;
+            sharedAnchors++;
+            if(rareContentAnchors.Contains(anchor))pairDistinctive++;
+        }
+        // Preserve distinctive evidence when another package later copies a
+        // subset, without admitting any group based on wholly common files.
+        return (pairDistinctive>=2 || (pairDistinctive>=1 && sharedAnchors>=3)) &&
             a.Files.Paths.Count>=3 && b.Files.Paths.Count>=3 &&
             !a.Files.Paths.SetEquals(b.Files.Paths);
     }
