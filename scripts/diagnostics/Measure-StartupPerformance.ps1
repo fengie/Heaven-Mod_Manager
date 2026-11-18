@@ -11,6 +11,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'Read-StartupUiPhase.ps1')
 $Root = if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
     (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 } else {
@@ -169,6 +170,7 @@ function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [s
             throw "Startup report failed: $($report.summary)"
         }
 
+        $masterLogPath = Join-Path $ToolRoot 'MHW-DEBUG-ALL.log'
         return [pscustomobject][ordered]@{
             kind = $Kind
             iteration = $Iteration
@@ -185,8 +187,10 @@ function Invoke-StartupRun([string]$Kind, [int]$Iteration, [string]$ToolRoot, [s
             recovery_ms = Get-StageMs $report 'startup.recovery'
             automation_ms = Get-StageMs $report 'startup.automation'
             main_window_initialize_ms = Get-StageMs $report 'ui.main-window.initialize'
-            reload_mods_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.ReloadMods'
-            refresh_analysis_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.RefreshAnalysis'
+            reload_mods_ms = Read-StartupUiPhaseMs -LogPath $masterLogPath -Phase 'reload-mods'
+            refresh_analysis_ms = $(if ($ModCount -gt 0 -or $InboxPackages -gt 0) {
+                Read-StartupUiPhaseMs -LogPath $masterLogPath -Phase 'conflict-analysis'
+            } else { $null })
             build_analysis_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.BuildAnalysisAsync'
             refresh_issue_suspects_ms = Get-MasterMethodMs $ToolRoot 'MainWindowViewModel.RefreshIssueSuspects'
             refresh_profiles_ms = Get-MasterMethodMs $ToolRoot 'ProfilesPageViewModel.RefreshAsync'
