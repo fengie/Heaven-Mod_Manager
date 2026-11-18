@@ -134,7 +134,6 @@ public static partial class GenericFamilyInference
             AddPostings("p:",profile.Files.Paths,i);
             AddPostings("a:",profile.Files.Assets,i);
             AddPostings("r:",profile.Files.Roots,i);
-            AddPostings("h:",profile.Files.ContentAnchors,i);
         }
 
         var encodedPairs=new HashSet<long>();
@@ -312,14 +311,7 @@ public static partial class GenericFamilyInference
         // A third package with unrelated identity cannot bridge two inferred
         // components solely by replacing the same model/texture namespace.
         if(sim<.25)return true;
-        var sharedAssets=ap.Files.Assets.Overlaps(bp.Files.Assets);
-        var smaller=Math.Min(ap.Files.Paths.Count,bp.Files.Paths.Count);
-        var pathScan=ap.Files.Paths.Count<=bp.Files.Paths.Count?ap.Files.Paths:bp.Files.Paths;
-        var pathLookup=ReferenceEquals(pathScan,ap.Files.Paths)?bp.Files.Paths:ap.Files.Paths;
-        var sharedPaths=0;
-        foreach(var path in pathScan)if(pathLookup.Contains(path))sharedPaths++;
-        var overlap=smaller==0?0:sharedPaths/(double)smaller;
-        return sim<.25&&!sharedAssets&&overlap<.20;
+        return false;
     }
 
     private static string IdentityStem(string value)

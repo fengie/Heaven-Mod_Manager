@@ -197,6 +197,41 @@ public sealed class FamilyInferenceOrderInvariantsTests
         Assert.Empty(evidence);
     }
 
+
+    [Fact]
+    public void Shared_asset_namespace_cannot_bridge_two_distinct_content_backed_families()
+    {
+        var mods = new[]
+        {
+            Mod("a", "Solstice"),
+            Mod("b", "Nebula"),
+            Mod("c", "Cinder")
+        };
+        const string x = @"nativePC\pl\f_equip\pl001_0000\body\x.mod3";
+        const string y = @"nativePC\pl\f_equip\pl001_0000\body\y.mrl3";
+        const string z = @"nativePC\pl\f_equip\pl001_0000\body\z.mod3";
+        const string w = @"nativePC\pl\f_equip\pl001_0000\body\w.mrl3";
+        var files = new[]
+        {
+            ContentFile("a", x, "private-x"),
+            ContentFile("a", y, "private-y"),
+            ContentFile("a", @"nativePC\pl\f_equip\pl001_0000\body\a.ctc", "a"),
+            ContentFile("b", x, "private-x"),
+            ContentFile("b", y, "private-y"),
+            ContentFile("b", z, "private-z"),
+            ContentFile("b", w, "private-w"),
+            ContentFile("b", @"nativePC\pl\f_equip\pl001_0000\body\b.ctc", "b"),
+            ContentFile("c", z, "private-z"),
+            ContentFile("c", w, "private-w"),
+            ContentFile("c", @"nativePC\pl\f_equip\pl001_0000\body\c.ctc", "c")
+        };
+        var families = LogicalModFamilies.Build(mods,files);
+        Assert.Equal(2, families.Count);
+        Assert.Contains(families,f => f.Members.Count==2 &&
+            f.Members.Any(m => m.Id=="a") && f.Members.Any(m => m.Id=="b"));
+        Assert.Contains(families,f => f.Members.Count==1 && f.Members[0].Id=="c");
+    }
+
     private static ModFileDescriptor ContentFile(string modId, string path, string payload) =>
         new(modId, path,
             Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(

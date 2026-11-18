@@ -65,7 +65,8 @@ public static class GameModIntakeClassifier
             if (hasNativePcSignature && !declared.IsMonsterHunterWorld)
                 return new(GameModIntakeKind.Ambiguous, null,
                     "Declared game conflicts with Monster Hunter: World package files.",
-                    [declared.Id, games.First(game => game.IsMonsterHunterWorld).Id]);
+                    games.FirstOrDefault(game => game.IsMonsterHunterWorld) is { } registeredMhw
+                        ? [declared.Id, registeredMhw.Id] : [declared.Id]);
             if (hasStellarBladeSignature && !IsStellarBladeProfile(declared))
             {
                 var stellarProfile = games.FirstOrDefault(IsStellarBladeProfile);

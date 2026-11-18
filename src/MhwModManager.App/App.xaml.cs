@@ -352,6 +352,14 @@ public sealed partial class App:Application, IDisposable
                 throw new InvalidDataException("Legacy MHW migration stopped safely: "+migration.Message+" Report: "+migration.ReportPath);
             }
 
+            // Reconcile durable duplicate-archive intents before catalog discovery can
+            // interpret a crash-moved mod source as a missing or new package.
+            progress?.Invoke("Reconciling interrupted duplicate-archive moves…");
+            var restoredArchives = await startup.RunAsync(
+                "startup.duplicate-archive.recovery",
+                ct => duplicates.RecoverInterruptedArchivesAsync(ct));
+            startup.Info("startup.duplicate-archive.recovery.result", $"Restored={restoredArchives}");
+
             progress?.Invoke(paths.Game.IsMonsterHunterWorld?"Refreshing the local catalog and armor index…":"Refreshing the local mod catalog…");
             await startup.RunAsync("startup.catalog.refresh",async ct=>await telemetry.TrackAsync("startup.catalog.refresh",async(_,innerCt)=>await catalog.RefreshFoldersAsync(innerCt),ct:ct));
             if(paths.Game.IsMonsterHunterWorld)
