@@ -1,6 +1,6 @@
-# v8.8.112 - immutable release verified
+# v8.8.112 - source verified, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `e9b1212985f80533ce04e3ab1e43910290692687`. Public immutable [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `6b1e04d757e2fabec980dcd9a4397adf9e133588` (Windows Gate 44399804355); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -18,11 +18,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `e9b1212985f80533ce04e3ab1e
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.112 source `e9b1212985f80533ce04e3ab1e43910290692687` passed run `44044388877` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.112-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.112 source `6b1e04d757e2fabec980dcd9a4397adf9e133588` passed run `44399804355` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.112-heaven-windows-closure.log`.
 
-Verified immutable GitHub release: [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548), exact source `e9b1212985f80533ce04e3ab1e43910290692687`, ZIP SHA-256 `03ceaa8f9bb82f953a2335d54d613ebce15091a9c214925f1acb0db421a0e5a8` and manifest SHA-256 `42c867d23c0c09a5d14dafbbba4b4952bb2ebbef99e51a8436b877dcfae62d73`. Public release and tag ref independently match the built artifact.
+Public release status: **NOT VERIFIED** for source `6b1e04d757e2fabec980dcd9a4397adf9e133588`. Successful build or another source's same-version release is not proof of publication.
 
-The tested source remains `e9b1212985f80533ce04e3ab1e43910290692687` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `6b1e04d757e2fabec980dcd9a4397adf9e133588` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
