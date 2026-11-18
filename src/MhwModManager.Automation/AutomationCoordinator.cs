@@ -42,6 +42,7 @@ public sealed class AutomationCoordinator(
         var elapsed = Stopwatch.StartNew();
         void Report(string stage, string description, int? completed = null, int? total = null)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             try { progress?.Invoke(new StartupMaintenanceProgress(stage, description, elapsed.Elapsed, completed, total)); }
             catch (Exception ex) { UnifiedDebugLog.Write("AUTOMATION", "Nonfatal startup progress reporter failure.", ex); }
         }
