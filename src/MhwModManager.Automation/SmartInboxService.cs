@@ -17,6 +17,12 @@ public sealed record InboxRunProgress(int Completed, int Total, string CurrentIt
 
 public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archive, CatalogService catalog, NexusMetadataService nexus, AutoCategoryService categories, string inboxRoot, string modsRoot, StartupDiagnosticSession? startupDiagnostics = null, Action<SmartInboxFaultPoint,string>? faultInjector = null, string? legacyInboxRoot = null)
 {
+    public Task<IReadOnlySet<string>> RecoverInterruptedPublicationsAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot).RecoverAsync(ct);
+    }
+
     public Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -40,6 +46,8 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         var phaseTimer = Stopwatch.StartNew();
         var activePhase = "Enumerating Inbox";
         Directory.CreateDirectory(inboxRoot); Directory.CreateDirectory(modsRoot);
+        var journal = new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot);
+        var blockedSources = await journal.RecoverAsync(ct);
         var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
         var entries = new[]{inboxRoot,legacyInboxRoot}
             .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
@@ -71,8 +79,19 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             ReportStage(completed, "Preparing package", entry);
             string? staging = null;
             string? publishedDestination = null;
+            string? journalPath = null;
+            string? intendedDestination = null;
+            string? intendedProcessed = null;
             try
             {
+                if (blockedSources.Contains(entry))
+                {
+                    const string reason = "Interrupted Inbox publication needs manual review; both copies were preserved.";
+                    startupDiagnostics?.Info("startup.automation.inbox.item.pending-review", entry);
+                    UnifiedDebugLog.Write("INBOX-RECOVERY", $"SKIP item={entry}; {reason}");
+                    results.Add(new(entry, null, false, AutomationCategory.Unknown, reason));
+                    continue;
+                }
                 startupDiagnostics?.Info("startup.automation.inbox.item.begin", entry);
                 UnifiedDebugLog.Write("INBOX", $"BEGIN item={entry}");
                 var name = Directory.Exists(entry) ? Path.GetFileName(entry) : Path.GetFileNameWithoutExtension(entry);
@@ -113,13 +132,22 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 ReportStage(completed, "Classifying files", entry);
                 var category = categories.Classify(SafeRecursiveTraversal.Snapshot(staging, ct).Files.Select(x => Path.GetRelativePath(staging, x)));
                 ReportStage(completed, "Publishing package", entry);
+                var processedDestination = PlanProcessedDestination(entry);
+                journalPath = await journal.BeginAsync(entry, destination, processedDestination, ct);
+                intendedDestination = destination;
+                intendedProcessed = processedDestination;
                 ImportPublicationWorkspace.Publish(modsRoot, staging, destination);
                 staging = null;
                 publishedDestination = destination;
                 faultInjector?.Invoke(SmartInboxFaultPoint.AfterPublishBeforeSourceArchive, destination);
                 ReportStage(completed, "Archiving original in Inbox", entry);
-                MoveToProcessed(entry);
+                MoveToProcessed(entry, processedDestination);
                 publishedDestination = null;
+                // Intent cleanup is best-effort after both copies reach their durable
+                // destinations; restart recovery safely completes it if interrupted.
+                try { journal.Complete(journalPath); }
+                catch (IOException ex) { UnifiedDebugLog.Write("INBOX-RECOVERY", "Post-publication intent cleanup deferred.", ex); }
+                catch (UnauthorizedAccessException ex) { UnifiedDebugLog.Write("INBOX-RECOVERY", "Post-publication intent cleanup deferred.", ex); }
                 results.Add(new(entry, destination, true, category, "Imported automatically."));
                 startupDiagnostics?.Info("startup.automation.inbox.item.imported", $"Source={entry}; Destination={destination}; Category={category}");
                 UnifiedDebugLog.Write("INBOX", $"IMPORTED Source={entry}; Destination={destination}; Category={category}");
@@ -131,6 +159,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                     throw new IOException(
                         $"Smart Inbox could not archive source '{entry}' and rollback of published package '{publishedDestination}' also failed.",
                         new AggregateException(ex, rollbackFailure));
+                journal.CompleteIfRolledBack(journalPath, entry, intendedDestination, intendedProcessed);
                 ct.ThrowIfCancellationRequested();
                 startupDiagnostics?.RecordFailure("startup.automation.inbox.item.recoverable-failure", ex, entry);
                 UnifiedDebugLog.Write("INBOX", $"RECOVERABLE FAILURE item={entry}", ex);
@@ -144,6 +173,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                         $"Smart Inbox cancellation could not roll back published package '{publishedDestination}'.",
                         new AggregateException(ex, rollbackFailure),
                         ex.CancellationToken);
+                journal.CompleteIfRolledBack(journalPath, entry, intendedDestination, intendedProcessed);
                 throw;
             }
             catch (Exception ex)
@@ -153,6 +183,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                     throw new IOException(
                         $"Smart Inbox failed and rollback of published package '{publishedDestination}' also failed.",
                         new AggregateException(ex, rollbackFailure));
+                journal.CompleteIfRolledBack(journalPath, entry, intendedDestination, intendedProcessed);
                 throw;
             }
             finally
@@ -194,21 +225,27 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         return new(entries.Length, results.Count(x=>x.Imported), results.Count(x=>!x.Imported), results);
     }
 
-    private void MoveToProcessed(string source)
+    private string PlanProcessedDestination(string source)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        // Archive the source in the inbox it came from; never relocate old user-owned
-        // inbox data just because new installs use the game-scoped library.
-        var sourceRoot=Path.GetDirectoryName(Path.GetFullPath(source))
+        // Keep originals in their owning Inbox, including legacy Inbox paths.
+        var sourceRoot = Path.GetDirectoryName(Path.GetFullPath(source))
             ?? throw new InvalidDataException("Inbox entry has no owning directory.");
-        if(!StringComparer.OrdinalIgnoreCase.Equals(sourceRoot,Path.GetFullPath(inboxRoot))&&
-           (string.IsNullOrWhiteSpace(legacyInboxRoot)||
-            !StringComparer.OrdinalIgnoreCase.Equals(sourceRoot,Path.GetFullPath(legacyInboxRoot))))
+        if (!StringComparer.OrdinalIgnoreCase.Equals(sourceRoot, Path.GetFullPath(inboxRoot)) &&
+            (string.IsNullOrWhiteSpace(legacyInboxRoot) ||
+             !StringComparer.OrdinalIgnoreCase.Equals(sourceRoot, Path.GetFullPath(legacyInboxRoot))))
             throw new InvalidDataException("Inbox source escaped the configured game inbox roots.");
-        var processed = Path.Combine(sourceRoot, "Processed"); Directory.CreateDirectory(processed);
+        var processed = Path.Combine(sourceRoot, "Processed");
+        Directory.CreateDirectory(processed);
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-        var dest = Unique(Path.Combine(processed, stamp + "-" + Path.GetFileName(source)));
-        if (Directory.Exists(source)) Directory.Move(source, dest); else File.Move(source, dest);
+        return Unique(Path.Combine(processed, stamp + "-" + Path.GetFileName(source)));
+    }
+
+    private static void MoveToProcessed(string source, string destination)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (Directory.Exists(source)) Directory.Move(source, destination);
+        else File.Move(source, destination);
     }
 
     private static async Task CopyDirectoryAsync(string source, string destination, CancellationToken ct,
