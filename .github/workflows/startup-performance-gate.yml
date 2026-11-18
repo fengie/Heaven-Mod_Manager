@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'perf-startup-*'
+      - 'fix/startup-maintenance-*'
     paths:
       - 'src/**'
       - 'tests/MhwModManager.IntegrationTests/**'
@@ -71,7 +72,7 @@ jobs:
       - name: Measure current main baseline
         shell: powershell
         run: |
-          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 5 -ModCount 300 -FilesPerMod 25 -InboxPackages 12 -FilesPerInboxPackage 20 -TimeoutSeconds 120
 
       - name: Measure candidate
         shell: powershell
@@ -110,7 +111,7 @@ jobs:
           $lines.Add('')
           $lines.Add("Baseline: $($baseline.source_sha)")
           $lines.Add("Candidate: $($candidate.source_sha)")
-          $lines.Add("Fixture: $($candidate.mod_count) mods / $($candidate.total_mod_files) files; 3 cold-state + 3 warm-state runs each on the same Heaven runner.")
+          $lines.Add("Fixture: $($candidate.mod_count) mods / $($candidate.total_mod_files) indexed files plus $($candidate.inbox_packages) pending folder packages; 3 cold-state + 5 warm-state runs each on the same Heaven runner.")
           $lines.Add('')
           $lines.Add('| Metric | Main cold | Candidate cold | Cold improvement | Main warm | Candidate warm | Warm improvement |')
           $lines.Add('|---|---:|---:|---:|---:|---:|---:|')
@@ -128,6 +129,27 @@ jobs:
           $report = $lines -join [Environment]::NewLine
           Set-Content -LiteralPath .\startup-performance-comparison.md -Value $report -Encoding UTF8
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
+
+          # This is a gate, not merely a comparison report: flag median startup
+          # latency regressions on the same dedicated runner, allowing for noise.
+          $violations = New-Object System.Collections.Generic.List[string]
+          foreach ($kind in @('cold', 'warm')) {
+              $before = [double]$baseline.$kind.process_to_ready_ms
+              $after = [double]$candidate.$kind.process_to_ready_ms
+              $ceiling = [math]::Max($before * 1.25, $before + 1000)
+              if ($after -gt $ceiling) {
+                  $violations.Add("$kind process-to-ready: $after ms exceeds $([math]::Round($ceiling,1)) ms baseline-relative budget")
+              }
+          }
+          if ([double]$candidate.cold.process_to_ready_ms -gt 30000) {
+              $violations.Add("Cold startup median exceeds 30000 ms scenario budget")
+          }
+          if ([double]$candidate.warm.process_to_ready_ms -gt 15000) {
+              $violations.Add("Warm startup median exceeds 15000 ms scenario budget")
+          }
+          if ($violations.Count -gt 0) {
+              throw ("Startup performance regression detected: " + ($violations -join '; '))
+          }
 
       - name: Verify startup optimization guards
         shell: powershell
