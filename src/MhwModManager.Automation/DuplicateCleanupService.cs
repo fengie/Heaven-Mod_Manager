@@ -8,7 +8,16 @@ namespace MhwModManager.Automation;
 
 public sealed record DuplicateArchiveOutcome(int Archived, DuplicateAnalysis Analysis);
 
-public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRoot)
+public enum DuplicateArchiveFaultPoint
+{
+    AfterMoveBeforeDatabaseRetirement,
+    AfterDatabaseRetirementBeforeJournalCleanup
+}
+
+public sealed class DuplicateCleanupService(
+    ManagerDatabase db,
+    string archiveRoot,
+    Action<DuplicateArchiveFaultPoint, string>? faultInjector = null)
 {
     public async Task<DuplicateAnalysis> AnalyzeAsync(CancellationToken ct = default)
     {
@@ -77,9 +86,18 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
         return await ArchiveSafeCoreAsync(includeRemainingAnalysis: true, ct);
     }
 
+    public Task<int> RecoverInterruptedArchivesAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new DuplicateArchiveJournalService(db, archiveRoot).RecoverAsync(ct);
+    }
+
     private async Task<DuplicateArchiveOutcome> ArchiveSafeCoreAsync(bool includeRemainingAnalysis, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var journal = new DuplicateArchiveJournalService(db, archiveRoot);
+        // Manual cleanup must also reconcile interrupted work before recomputing candidates.
+        await journal.RecoverAsync(ct);
         var analysis = await AnalyzeAsync(ct);
         Directory.CreateDirectory(archiveRoot);
         var mods = (await db.GetModsAsync(ct)).ToDictionary(x => x.Id, StringComparer.Ordinal);
@@ -92,7 +110,11 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
             if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath)) continue;
             var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var dest = Unique(Path.Combine(archiveRoot, stamp + "-" + Path.GetFileName(mod.SourcePath)));
+            // Persist and flush intent before moving any mod bytes. If the process
+            // stops before SQLite retirement, startup restores the original source.
+            var intent = await journal.BeginAsync(id, mod.SourcePath, dest, ct);
             Directory.Move(mod.SourcePath, dest);
+            faultInjector?.Invoke(DuplicateArchiveFaultPoint.AfterMoveBeforeDatabaseRetirement, id);
             try
             {
                 await db.RetireModAsync(id,ct);
@@ -102,6 +124,7 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
                 try
                 {
                     await RestoreSourceWhenDeleteDidNotCommitAsync(id,mod.SourcePath,dest);
+                    journal.Complete(intent);
                 }
                 catch(Exception recoveryError)
                 {
@@ -112,6 +135,9 @@ public sealed class DuplicateCleanupService(ManagerDatabase db, string archiveRo
                 }
                 throw;
             }
+            // If the commit succeeded, recovery preserves the archived directory.
+            faultInjector?.Invoke(DuplicateArchiveFaultPoint.AfterDatabaseRetirementBeforeJournalCleanup, id);
+            journal.Complete(intent);
             moved++;
         }
         return new DuplicateArchiveOutcome(moved,
