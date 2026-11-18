@@ -36,6 +36,14 @@ public static class GameModIntakeClassifier
             return new(GameModIntakeKind.Unknown, null,
                 "Package identity inventory exceeds 50,000 paths; review smaller groups.", []);
 
+        // A familiar archive title must never override a different game's strongly
+        // characteristic payload, even if that game is not registered locally.
+        var hasNativePcSignature = relativePaths.Any(HasNativePcSegment);
+        var hasStellarBladeSignature = relativePaths.Any(HasStellarBladeSignature);
+        if (hasNativePcSignature && hasStellarBladeSignature)
+            return new(GameModIntakeKind.Ambiguous,null,
+                "Package mixes distinct MHW and Stellar Blade layouts; split or review.",[]);
+
         // A declared game from a local/package manifest must resolve to exactly one
         // registered game; an unknown declaration must not silently fall through to a guess.
         if (!string.IsNullOrWhiteSpace(declaredGame))
@@ -54,12 +62,12 @@ public static class GameModIntakeClassifier
             var declared = explicitMatches[0];
             // A manifest can be mislabeled. Contradictory strong file signatures must
             // require review instead of overriding the contents or the declaration.
-            if (relativePaths.Any(path => HasNativePcSegment(path)) && !declared.IsMonsterHunterWorld
-                && games.Any(game => game.IsMonsterHunterWorld))
+            if (hasNativePcSignature && !declared.IsMonsterHunterWorld)
                 return new(GameModIntakeKind.Ambiguous, null,
                     "Declared game conflicts with Monster Hunter: World package files.",
-                    [declared.Id, games.First(game => game.IsMonsterHunterWorld).Id]);
-            if (relativePaths.Any(HasStellarBladeSignature) && !IsStellarBladeProfile(declared))
+                    games.FirstOrDefault(game => game.IsMonsterHunterWorld) is { } registeredMhw
+                        ? [declared.Id, registeredMhw.Id] : [declared.Id]);
+            if (hasStellarBladeSignature && !IsStellarBladeProfile(declared))
             {
                 var stellarProfile = games.FirstOrDefault(IsStellarBladeProfile);
                 return new(GameModIntakeKind.Ambiguous, null,
@@ -69,6 +77,13 @@ public static class GameModIntakeClassifier
             return new(GameModIntakeKind.Identified, declared.Id,
                 "Package manifest identifies a registered game.", [declared.Id]);
         }
+
+        if (hasNativePcSignature && !games.Any(game => game.IsMonsterHunterWorld))
+            return new(GameModIntakeKind.Unknown,null,
+                "Package has an MHW nativePC layout, but Monster Hunter: World is not registered.",[]);
+        if (hasStellarBladeSignature && !games.Any(IsStellarBladeProfile))
+            return new(GameModIntakeKind.Unknown,null,
+                "Package has a Stellar Blade layout, but Stellar Blade is not registered.",[]);
 
         var normalizedName = GameProfile.NormalizeId(sourceName);
         var normalizedEntries = relativePaths.Select(GameProfile.NormalizeId).ToArray();
@@ -93,8 +108,8 @@ public static class GameModIntakeClassifier
             aliases.RemoveWhere(alias => alias.Length < 4 && alias != "mhw");
             var matchedName = aliases.Any(alias => HasTokenSequence(normalizedName, alias));
             var matchedEntries = normalizedEntries.Any(path => aliases.Any(alias => HasTokenSequence(path, alias)));
-            var nativePc = game.IsMonsterHunterWorld && relativePaths.Any(HasNativePcSegment);
-            var stellarBlade = IsStellarBladeProfile(game) && relativePaths.Any(HasStellarBladeSignature);
+            var nativePc = game.IsMonsterHunterWorld && hasNativePcSignature;
+            var stellarBlade = IsStellarBladeProfile(game) && hasStellarBladeSignature;
 
             var score = nativePc || stellarBlade ? 95 : 0;
             if (matchedName || matchedEntries) score = Math.Max(score, 85);
