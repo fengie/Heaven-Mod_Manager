@@ -6,6 +6,10 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Automation;
 
+/// <summary>Measured stage feedback; no percentage is fabricated for unknown work.</summary>
+public sealed record StartupMaintenanceProgress(
+    string Stage, string Description, TimeSpan Elapsed, int? Completed = null, int? Total = null);
+
 public sealed class AutomationCoordinator(
     ManagerDatabase db,
     SaveBackupService backups,
@@ -25,40 +29,57 @@ public sealed class AutomationCoordinator(
 {
     private readonly LaunchObservationRepository launchObservations = new(db);
 
-    public async Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(CancellationToken ct = default)
+    public async Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(
+        CancellationToken ct = default, Action<StartupMaintenanceProgress>? progress = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var elapsed = Stopwatch.StartNew();
+        void Report(string stage, string description, int? completed = null, int? total = null)
+        {
+            try { progress?.Invoke(new StartupMaintenanceProgress(stage, description, elapsed.Elapsed, completed, total)); }
+            catch (Exception ex) { UnifiedDebugLog.Write("AUTOMATION", "Nonfatal startup progress reporter failure.", ex); }
+        }
+
         var failures = new List<Exception>();
+        var inboxProgress = progress is null ? null : new ImmediateProgress<InboxRunProgress>(item =>
+            Report("Inbox", item.Total > 0
+                ? $"Inbox: {item.Stage} — {item.CurrentItem} ({item.Completed}/{item.Total} packages)"
+                : "Inbox: " + item.Stage, item.Completed, item.Total));
+        Report("Inbox", "Checking Inbox packages and importing safe downloads…");
         var imported = await AttemptAsync(
             "startup.automation.inbox",
-            token => inbox.ProcessAsync(token),
+            token => inbox.ProcessAsync(inboxProgress, refreshMetadata: false, ct: token),
             new InboxRunResult(0, 0, 0, []),
             failures,
             ct);
+
+        Report("Categories", "Classifying uncategorized mods from the indexed library…");
         var assigned = await AttemptAsync(
             "startup.automation.categories",
             token => categories.AssignMissingAsync(token),
             0,
             failures,
             ct);
-        var archived = await AttemptAsync(
+
+        Report("Duplicates", "Checking safe duplicate archives and retained packages…");
+        var duplicatesResult = await AttemptAsync(
             "startup.automation.duplicate-archive",
-            token => duplicates.ArchiveSafeAsync(token),
-            0,
+            token => duplicates.ArchiveSafeWithAnalysisAsync(token),
+            new DuplicateArchiveOutcome(0, new DuplicateAnalysis([], [], 0)),
             failures,
             ct);
-        var duplicateAnalysis = await AttemptAsync(
-            "startup.automation.duplicate-analysis",
-            token => duplicates.AnalyzeAsync(token),
-            new DuplicateAnalysis([], [], 0),
-            failures,
-            ct);
+        var archived = duplicatesResult.Archived;
+        var duplicateAnalysis = duplicatesResult.Analysis;
+
+        Report("Dependencies", "Checking effective mod dependencies…");
         var deps = await AttemptAsync<IReadOnlyList<DependencyStatus>>(
             "startup.automation.dependencies",
             async token => await dependencies.ScanAsync(token),
             [],
             failures,
             ct);
+
+        Report("Update diffs", "Recording changed mod relationships…");
         await AttemptAsync(
             "startup.automation.update-diffs",
             RecordUpdateDiffsAsync,
@@ -66,18 +87,29 @@ public sealed class AutomationCoordinator(
             ct);
 
         var dependencyIssues = deps.Count(x => !x.Ready);
-        var summary=$"Inbox: {imported.Imported} imported; categories: {assigned} assigned; safe archives: {archived}; dependency issues: {dependencyIssues}; diagnostic failures: {failures.Count}.";
+        var summary = $"Inbox: {imported.Imported} imported; categories: {assigned} assigned; safe archives: {archived}; dependency issues: {dependencyIssues}; diagnostic failures: {failures.Count}.";
+        Report("Finalizing", "Recording startup maintenance summary…");
         await AttemptAsync(
             "startup.automation.timeline",
-            token => timeline.RecordAsync("startup.maintenance", failures.Count == 0 ? AutomationSeverity.Info : AutomationSeverity.Warning, summary, new{imported=imported.Imported,assigned,archived,dependencyIssues,diagnosticFailures=failures.Count}, token),
+            token => timeline.RecordAsync("startup.maintenance", failures.Count == 0 ? AutomationSeverity.Info : AutomationSeverity.Warning, summary, new { imported = imported.Imported, assigned, archived, dependencyIssues, diagnosticFailures = failures.Count }, token),
             failures,
             ct);
         startupDiagnostics?.Info("startup.automation.maintenance-summary", summary);
+        Report("Complete", summary);
 
         if (failures.Count > 0)
             throw new AggregateException($"Startup maintenance completed with {failures.Count} failure(s). See the startup diagnostic log for each attempted maintenance stage.", failures);
 
-        return new(imported,duplicateAnalysis,assigned,deps,summary);
+        return new(imported, duplicateAnalysis, assigned, deps, summary);
+    }
+
+    private sealed class ImmediateProgress<T>(Action<T> onProgress) : IProgress<T>
+    {
+        public void Report(T value)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            onProgress(value);
+        }
     }
 
     private async Task<T> AttemptAsync<T>(string stage, Func<CancellationToken, Task<T>> action, T fallback, List<Exception> failures, CancellationToken ct)
