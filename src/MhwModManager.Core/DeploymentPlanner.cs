@@ -298,10 +298,12 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     }
 
     /// <summary>
-    /// The only relationship-free exception to MHW atomic structural protection:
-    /// every enabled provider supplies every path in this bundle with the exact
-    /// same captured SHA-256. Partial overlap, unknown hashes or duplicate
-    /// path rows stay blocked; matching byte content is not proof of a family.
+    /// Relationship-free exception to MHW atomic structural protection: one
+    /// provider contains the entire bundle, and any other provider contributes
+    /// only byte-identical subsets of that bundle's paths. This guarantees the
+    /// resulting physical output is already a complete single-source bundle.
+    /// Complementary partial packages, changed bytes, unknown hashes and
+    /// duplicate path rows remain blocked. It does not infer family or order.
     /// </summary>
     private static bool HasEquivalentAtomicBundlePayloads(
         IEnumerable<ModFileDescriptor> files, HashSet<string> memberIds)
@@ -310,6 +312,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         if (memberIds.Count < 2) return false;
 
         var observedPaths = 0;
+        var coverageByProvider = memberIds.ToDictionary(id => id, _ => 0, PathRules.Comparer);
         foreach (var group in files.GroupBy(file => file.Path, PathRules.Comparer))
         {
             observedPaths++;
@@ -323,11 +326,13 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                     !present.Add(file.ModId) ||
                     !StringComparer.OrdinalIgnoreCase.Equals(digest, file.BlobSha256))
                     return false;
+                coverageByProvider[file.ModId]++;
             }
-            if (present.Count != memberIds.Count)
-                return false;
         }
-        return observedPaths > 0;
+        // A complete provider must cover *every* structural destination path.
+        // Otherwise two individually partial packages could manufacture one
+        // mixed bundle despite having no same-path byte conflicts.
+        return observedPaths > 0 && coverageByProvider.Values.Any(count => count == observedPaths);
     }
 
     private static bool IsSafeAtomicBundleComposition(
