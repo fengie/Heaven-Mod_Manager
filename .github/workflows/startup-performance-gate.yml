@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   benchmark:
-    name: Compare current main vs candidate on Heaven
+    name: Compare main vs candidate (isolated Windows)
     # PR code executes on disposable hosted Windows, never an owner's self-hosted machine.
     # Trusted owner-branch/manual runs can use the existing Heaven benchmark runner.
     runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"windows-2025"' || '["self-hosted","Windows","X64","mhw-mods"]') }}
@@ -67,25 +67,28 @@ jobs:
           global-json-file: candidate/global.json
 
       - name: Verify pinned .NET SDK
+        working-directory: candidate
         shell: powershell
         run: |
           $version = (& dotnet --version).Trim()
           if ($version -ne '10.0.401') { throw "Startup performance gate requires .NET SDK 10.0.401; found $version." }
 
       - name: Restore and build baseline
+        working-directory: baseline
         shell: powershell
         run: |
-          dotnet restore .\baseline\src\MhwModManager.App\MhwModManager.App.csproj
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Restore and build candidate
+        working-directory: candidate
         shell: powershell
         run: |
-          dotnet restore .\candidate\src\MhwModManager.App\MhwModManager.App.csproj
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Measure current main baseline
@@ -96,7 +99,7 @@ jobs:
       - name: Measure candidate
         shell: powershell
         run: |
-          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 5 -ModCount 300 -FilesPerMod 25 -InboxPackages 12 -FilesPerInboxPackage 20 -TimeoutSeconds 120
 
       - name: Build before-after report
         shell: powershell
@@ -171,17 +174,19 @@ jobs:
           }
 
       - name: Verify startup optimization guards
+        working-directory: candidate
         shell: powershell
         run: |
-          dotnet test .\candidate\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run exact release verification on candidate
+        working-directory: candidate
         shell: powershell
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\candidate\\scripts\\release\\Verify-Release.ps1"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\release\\Verify-Release.ps1"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          git -C .\\candidate diff --check origin/main...HEAD
+          git diff --check origin/main...HEAD
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Preserve startup benchmark evidence
