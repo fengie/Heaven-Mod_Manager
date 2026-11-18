@@ -99,6 +99,6 @@ public sealed class StartupWindow:Window
     private void RenderDetail()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        detail.Text = currentDetail + Environment.NewLine + "Elapsed: " + elapsed.Elapsed.ToString(@"hh\:mm\:ss");
+        detail.Text = currentDetail + Environment.NewLine + "Elapsed: " + elapsed.Elapsed.ToString(@"hh\:mm\:ss", System.Globalization.CultureInfo.InvariantCulture);
     }
 }
