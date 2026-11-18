@@ -172,6 +172,19 @@ jobs:
               if ($after -gt $ceiling) {
                   $violations.Add("$kind process-to-ready: $after ms exceeds $([math]::Round($ceiling,1)) ms baseline-relative budget")
               }
+
+              # Do not permit a major peak-memory regression to hide behind a
+              # faster stopwatch. Use paired median samples on the same runner;
+              # require both >10% and >16 MiB over baseline to limit noise.
+              if ($null -eq $baseline.$kind.peak_working_set_mb -or $null -eq $candidate.$kind.peak_working_set_mb) {
+                  throw "Startup memory measurement missing for $kind; cannot pass a partial performance report."
+              }
+              $memoryBefore = [double]$baseline.$kind.peak_working_set_mb
+              $memoryAfter = [double]$candidate.$kind.peak_working_set_mb
+              $memoryCeiling = [math]::Max($memoryBefore * 1.10, $memoryBefore + 16)
+              if ($memoryAfter -gt $memoryCeiling) {
+                  $violations.Add("$kind peak memory: $memoryAfter MiB exceeds $([math]::Round($memoryCeiling,1)) MiB baseline-relative budget")
+              }
           }
           if ([double]$candidate.cold.process_to_ready_ms -gt 30000) {
               $violations.Add("Cold startup median exceeds 30000 ms scenario budget")
