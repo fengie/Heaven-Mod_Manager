@@ -129,13 +129,17 @@ public static partial class ModRelationshipInference
             .Take(maximumSuggestions).ToArray();
     }
 
-    private static bool IsConfirmedManualMain(ModDescriptor mod) =>
-        mod.FamilyId is not null &&
-        mod.FamilyId.StartsWith("manual:", StringComparison.OrdinalIgnoreCase) &&
-        string.Equals(mod.FamilyRole, "Main", StringComparison.OrdinalIgnoreCase);
+    private static bool IsConfirmedManualMain(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return mod.FamilyId is not null &&
+            mod.FamilyId.StartsWith("manual:", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(mod.FamilyRole, "Main", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool HasAddOnCue(ModDescriptor mod)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         // An add-on role must be detected before generic identity noise is removed.
         var tokens = WordRegex().Matches($"{mod.Name} {mod.DisplayName} {mod.FamilyRole}".ToLowerInvariant())
             .Cast<Match>().Select(x => x.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -145,10 +149,13 @@ public static partial class ModRelationshipInference
             string.Equals(mod.FamilyRole, "Optional", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static HashSet<string> Tokens(string text) =>
-        WordRegex().Matches(text.ToLowerInvariant()).Cast<Match>().Select(x => x.Value)
+    private static HashSet<string> Tokens(string text)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return WordRegex().Matches(text.ToLowerInvariant()).Cast<Match>().Select(x => x.Value)
             .Where(x => x.Length > 1 && !GenericNameWords.Contains(x))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
 
     private sealed record Profile(
         ModDescriptor Mod,

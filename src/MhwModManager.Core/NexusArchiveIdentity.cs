@@ -11,6 +11,7 @@ public sealed partial record NexusArchiveIdentity(string ModId, string DisplayNa
 {
     public static bool TryParse(string? pathOrName, out NexusArchiveIdentity identity)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         identity = null!;
         if (string.IsNullOrWhiteSpace(pathOrName)) return false;
 
@@ -33,8 +34,11 @@ public sealed partial record NexusArchiveIdentity(string ModId, string DisplayNa
         return true;
     }
 
-    public static string RemoveSuffix(string name) =>
-        TryParse(name, out var identity) ? identity.DisplayName : name;
+    public static string RemoveSuffix(string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return TryParse(name, out var identity) ? identity.DisplayName : name;
+    }
 
     // Nexus archive names may carry a download timestamp followed by a hexadecimal
     // fingerprint. The older numeric-only format is retained for existing libraries.

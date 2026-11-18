@@ -138,7 +138,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public int RevalidationCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.NeedsRevalidation);
     public int IssueCount=>IssueSuspects.Count;
     public int UpdateCount=>Mods.Count(x=>x.HasUpdate);
-    public string FamilySuggestionsViewLabel=>$"Review families ({Mods.Count(x=>x.HasSuggestedParents)})";
+    public string FamilySuggestionsViewLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Review families ({Mods.Count(x=>x.HasSuggestedParents)})";
+        }
+    }
     public int SupersededCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.FullySuperseded);
     public int VisibleModCount=>ModsView.Cast<object>().Count();
     public bool HasVisibleMods

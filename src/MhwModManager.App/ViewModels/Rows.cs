@@ -5,7 +5,14 @@ namespace MhwModManager.App.ViewModels;
 
 public sealed record ModFamilySuggestionRow(string ParentId,string ChildId,string ParentName,int Score,string Evidence)
 {
-    public string Title=>$"Possible add-on to {ParentName} (review required)";
+    public string Title
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Possible add-on to {ParentName} (review required)";
+        }
+    }
 }
 
 public partial class ModPartRowViewModel:ObservableObject
@@ -70,10 +77,24 @@ public partial class ModRowViewModel:ObservableObject
     public IReadOnlyList<ModDescriptor> ArchivedMembers{get;}
     public ObservableRangeCollection<ModPartRowViewModel> Parts{get;}=[];
     public ObservableRangeCollection<ModFamilySuggestionRow> SuggestedParents{get;}=[];
-    public bool HasSuggestedParents=>SuggestedParents.Count>0;
-    public string FamilyHint=>HasSuggestedParents
-        ? $"Review {SuggestedParents.Count} possible parent relationship(s)"
-        : IdentityHint;
+    public bool HasSuggestedParents
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return SuggestedParents.Count>0;
+        }
+    }
+    public string FamilyHint
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return HasSuggestedParents
+                ? $"Review {SuggestedParents.Count} possible parent relationship(s)"
+                : IdentityHint;
+        }
+    }
     public ObservableRangeCollection<string> GalleryPaths{get;}=[];
     public int MemberCount=>Members.Count;
     public int ArchivedCount=>ArchivedMembers.Count;
@@ -154,6 +175,7 @@ public partial class ModRowViewModel:ObservableObject
 
     public void SetSuggestedParents(IEnumerable<ModFamilySuggestionRow> suggestions)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         SuggestedParents.ReplaceAll(suggestions);
         OnPropertyChanged(nameof(HasSuggestedParents));
         OnPropertyChanged(nameof(FamilyHint));
