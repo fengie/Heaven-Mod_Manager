@@ -22,7 +22,7 @@ public sealed class ImportWorkspaceStorageVisibilityTests
 
             Directory.CreateDirectory(workspace);
             File.WriteAllBytes(Path.Combine(workspace, "incomplete-package.bin"), new byte[4096]);
-            Assert.Equal(4096, StorageUsageProbe.MeasureTree(workspace));
+            Assert.Equal(4096, StorageUsageProbe.MeasureTree(workspace, TestContext.Current.CancellationToken));
             Assert.False(Directory.Exists(modsRoot));
         }
         finally
