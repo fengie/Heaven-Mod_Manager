@@ -26,9 +26,11 @@ public sealed class StartupUiTimingContractTests
         var workflow = Read(".github", "workflows", "startup-performance-gate.yml");
 
         Assert.Contains("Read-StartupUiPhaseMs", measurement, StringComparison.Ordinal);
-        Assert.Contains("reload_mods_ms = Read-StartupUiPhaseMs", measurement, StringComparison.Ordinal);
-        Assert.Contains("refresh_analysis_ms = Read-StartupUiPhaseMs", measurement, StringComparison.Ordinal);
+        Assert.Contains("reload_mods_ms = Get-StartupUiPhaseMs", measurement, StringComparison.Ordinal);
+        Assert.Contains("Get-StartupUiPhaseMs -ToolRoot $ToolRoot -Phase 'conflict-analysis'", measurement, StringComparison.Ordinal);
         Assert.Contains("Missing startup UI phase", parser, StringComparison.Ordinal);
+        Assert.Contains("if ($RequireStartupUiPhaseMetrics) { throw }", measurement, StringComparison.Ordinal);
+        Assert.Contains("-RequireStartupUiPhaseMetrics", workflow, StringComparison.Ordinal);
         Assert.Contains("Test-StartupUiPhaseTelemetry.ps1", workflow, StringComparison.Ordinal);
     }
 
