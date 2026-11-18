@@ -236,7 +236,8 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
              !StringComparer.OrdinalIgnoreCase.Equals(sourceRoot, Path.GetFullPath(legacyInboxRoot))))
             throw new InvalidDataException("Inbox source escaped the configured game inbox roots.");
         var processed = Path.Combine(sourceRoot, "Processed");
-        Directory.CreateDirectory(processed);
+        // Do not create Processed until after publication. The existing rollback
+        // contract must still exercise a failed destination-directory creation.
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
         return Unique(Path.Combine(processed, stamp + "-" + Path.GetFileName(source)));
     }
@@ -244,6 +245,9 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     private static void MoveToProcessed(string source, string destination)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var processedRoot = Path.GetDirectoryName(destination)
+            ?? throw new InvalidDataException("Processed Inbox destination has no parent.");
+        Directory.CreateDirectory(processedRoot);
         if (Directory.Exists(source)) Directory.Move(source, destination);
         else File.Move(source, destination);
     }
