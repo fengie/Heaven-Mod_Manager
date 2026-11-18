@@ -109,6 +109,81 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
         Assert.True(Directory.Exists(Path.Combine(inboxRoot, "Processed")));
     }
 
+    [Fact]
+    public async Task DeferringAfterFirstInboxPackageFinishesIndexAndLeavesLaterSourceUntouched()
+    {
+        var db = await CreateDatabaseAsync("defer-inbox.db");
+        var inboxRoot = Path.Combine(root, "defer-inbox");
+        var modsRoot = Path.Combine(root, "defer-mods");
+        var stateRoot = Path.Combine(root, "defer-state");
+        foreach (var name in new[] { "A-Armor", "B-Armor" })
+        {
+            var folder = Path.Combine(inboxRoot, name, "nativePC", "pl", "f_equip");
+            Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(Path.Combine(folder, "body.mod3"), name, Token);
+        }
+
+        var scanner = new ModScanner(db,
+            new BlobStore(Path.Combine(stateRoot, "Blobs"), db), new HashingService());
+        var catalog = new CatalogService(db, scanner, modsRoot);
+        var nexus = new NexusMetadataService(db, new PlannerSnapshotRepository(db), stateRoot);
+        var inbox = new SmartInboxService(db, new ArchiveInspector(), catalog, nexus,
+            new AutoCategoryService(db), inboxRoot, modsRoot);
+
+        var stop = false;
+        var progress = new DirectProgress<InboxRunProgress>(state =>
+        {
+            if (state.Stage == "Finished item" && state.Completed == 1) stop = true;
+        });
+        var partial = await inbox.ProcessAsync(progress, refreshMetadata: false,
+            shouldStopAfterCurrentItem: () => stop, ct: Token);
+
+        Assert.Equal(2, partial.Found);
+        Assert.Equal(1, partial.Imported);
+        Assert.True(Directory.Exists(Path.Combine(modsRoot, "A-Armor")));
+        Assert.True(Directory.Exists(Path.Combine(inboxRoot, "B-Armor")));
+        Assert.False(Directory.Exists(Path.Combine(modsRoot, "B-Armor")));
+        Assert.Single(await db.GetModsAsync(Token));
+
+        var resumed = await inbox.ProcessAsync(progress: null, refreshMetadata: false,
+            shouldStopAfterCurrentItem: null, ct: Token);
+        Assert.Equal(1, resumed.Imported);
+        Assert.Equal(2, (await db.GetModsAsync(Token)).Count);
+        Assert.False(Directory.Exists(Path.Combine(inboxRoot, "B-Armor")));
+    }
+
+    [Fact]
+    public async Task DeferringBeforeFirstPackagePreservesAllSourcesAndPublishesNothing()
+    {
+        var db = await CreateDatabaseAsync("defer-empty.db");
+        var inboxRoot = Path.Combine(root, "defer-empty-inbox");
+        var modsRoot = Path.Combine(root, "defer-empty-mods");
+        var stateRoot = Path.Combine(root, "defer-empty-state");
+        var folder = Path.Combine(inboxRoot, "A-Armor", "nativePC", "pl", "f_equip");
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, "body.mod3"), "content", Token);
+        var scanner = new ModScanner(db,
+            new BlobStore(Path.Combine(stateRoot, "Blobs"), db), new HashingService());
+        var inbox = new SmartInboxService(db, new ArchiveInspector(),
+            new CatalogService(db, scanner, modsRoot),
+            new NexusMetadataService(db, new PlannerSnapshotRepository(db), stateRoot),
+            new AutoCategoryService(db), inboxRoot, modsRoot);
+
+        var partial = await inbox.ProcessAsync(progress: null, refreshMetadata: false,
+            shouldStopAfterCurrentItem: () => true, ct: Token);
+
+        Assert.Equal(1, partial.Found);
+        Assert.Equal(0, partial.Imported);
+        Assert.True(Directory.Exists(Path.Combine(inboxRoot, "A-Armor")));
+        Assert.False(Directory.Exists(Path.Combine(modsRoot, "A-Armor")));
+        Assert.Empty(await db.GetModsAsync(Token));
+    }
+
+    private sealed class DirectProgress<T>(Action<T> callback) : IProgress<T>
+    {
+        public void Report(T value) => callback(value);
+    }
+
     private async Task<ManagerDatabase> CreateDatabaseAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));

@@ -35,8 +35,22 @@ public sealed class AutomationCoordinator(
         return RunStartupMaintenanceAsync(null, ct);
     }
 
-    public async Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(
+    public Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(
         Action<StartupMaintenanceProgress>? progress, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return RunStartupMaintenanceAsync(progress, shouldSkip: null, ct);
+    }
+
+    /// <summary>
+    /// The splash requests a graceful stop only between complete, durable stages.
+    /// Safety recovery happens before this method; the optional maintenance
+    /// queue never cancels an in-flight publication or its catalog finalization.
+    /// </summary>
+    public async Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(
+        Action<StartupMaintenanceProgress>? progress,
+        Func<bool>? shouldSkip,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var elapsed = Stopwatch.StartNew();
@@ -48,6 +62,33 @@ public sealed class AutomationCoordinator(
         }
 
         var failures = new List<Exception>();
+
+        bool SkipRequested()
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return shouldSkip?.Invoke() == true;
+        }
+
+        StartupMaintenanceResult Deferred(
+            InboxRunResult inboxResult,
+            DuplicateAnalysis duplicateResult,
+            int categoriesAssigned,
+            IReadOnlyList<DependencyStatus> checkedDependencies,
+            string stage)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            // A manual deferral must never turn a real maintenance failure into
+            // a successful startup; those failures remain visible and fail closed.
+            if (failures.Count > 0)
+                throw new AggregateException("Optional maintenance failed before deferral.", failures);
+            var summary = $"Deferred remaining automatic maintenance after {stage}; " +
+                $"Inbox: {inboxResult.Imported} imported of {inboxResult.Found} found; " +
+                $"categories assigned: {categoriesAssigned}; remaining Inbox packages and unchecked dependency checks require a later maintenance run.";
+            startupDiagnostics?.Info("startup.automation.deferred", summary);
+            Report("Deferred", summary);
+            return new(inboxResult, duplicateResult, categoriesAssigned, checkedDependencies, summary);
+        }
+
         var inboxProgress = progress is null ? null : new ImmediateProgress<InboxRunProgress>(item =>
             Report("Inbox", item.Total > 0
                 ? $"Inbox: {item.Stage} — {item.CurrentItem} ({item.Completed}/{item.Total} packages)"
@@ -55,10 +96,13 @@ public sealed class AutomationCoordinator(
         Report("Inbox", "Checking Inbox packages and importing safe downloads…");
         var imported = await AttemptAsync(
             "startup.automation.inbox",
-            token => inbox.ProcessAsync(inboxProgress, refreshMetadata: false, ct: token),
+            token => inbox.ProcessAsync(inboxProgress, refreshMetadata: false,
+                shouldStopAfterCurrentItem: shouldSkip, ct: token),
             new InboxRunResult(0, 0, 0, []),
             failures,
             ct);
+        if (SkipRequested())
+            return Deferred(imported, new DuplicateAnalysis([], [], 0), 0, [], "Inbox");
 
         Report("Categories", "Classifying uncategorized mods from the indexed library…");
         var assigned = await AttemptAsync(
@@ -67,6 +111,8 @@ public sealed class AutomationCoordinator(
             0,
             failures,
             ct);
+        if (SkipRequested())
+            return Deferred(imported, new DuplicateAnalysis([], [], 0), assigned, [], "categories");
 
         Report("Duplicates", "Checking safe duplicate archives and retained packages…");
         var duplicatesResult = await AttemptAsync(
@@ -77,6 +123,8 @@ public sealed class AutomationCoordinator(
             ct);
         var archived = duplicatesResult.Archived;
         var duplicateAnalysis = duplicatesResult.Analysis;
+        if (SkipRequested())
+            return Deferred(imported, duplicateAnalysis, assigned, [], "duplicate analysis");
 
         Report("Dependencies", "Checking effective mod dependencies…");
         var deps = await AttemptAsync<IReadOnlyList<DependencyStatus>>(
@@ -85,6 +133,8 @@ public sealed class AutomationCoordinator(
             [],
             failures,
             ct);
+        if (SkipRequested())
+            return Deferred(imported, duplicateAnalysis, assigned, deps, "dependency validation");
 
         Report("Update diffs", "Recording changed mod relationships…");
         await AttemptAsync(
@@ -92,6 +142,8 @@ public sealed class AutomationCoordinator(
             RecordUpdateDiffsAsync,
             failures,
             ct);
+        if (SkipRequested())
+            return Deferred(imported, duplicateAnalysis, assigned, deps, "update-diff recording");
 
         var dependencyIssues = deps.Count(x => !x.Ready);
         var summary = $"Inbox: {imported.Imported} imported; categories: {assigned} assigned; safe archives: {archived}; dependency issues: {dependencyIssues}; diagnostic failures: {failures.Count}.";
