@@ -122,12 +122,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         }
 
         var targetInPackage=Path.Combine(folder,target);
-        if(Directory.Exists(targetInPackage))
-        {
-            // Package already mirrors the game root (for example Mods\Foo or Data\Foo).
-            list.Add((folder,"root\\"));
-            return list;
-        }
+        var targetIsMirrored=Directory.Exists(targetInPackage);
 
         // A game can have both a BepInEx plugin loader and an Unreal PAK
         // directory, even when its preferred profile target names just one.
@@ -140,6 +135,9 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
             .ToArray();
         if (additional.Length > 0)
         {
+            var mappedRoots = new List<string>(additional);
+            if (targetIsMirrored) mappedRoots.Add(target);
+
             foreach (var relative in additional)
             {
                 if (!Directory.Exists(Path.Combine(gameProfile.GameRoot, relative)))
@@ -154,15 +152,23 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
             {
                 if (IsIgnored(new FileInfo(file))) continue;
                 var relativeFile = Path.GetRelativePath(folder, file).Replace('/', '\\');
-                if (!additional.Any(relative => relativeFile.StartsWith(
+                if (!mappedRoots.Any(relative => relativeFile.StartsWith(
                         relative + "\\", StringComparison.OrdinalIgnoreCase)))
                     throw new InvalidDataException(
                         $"Package contains '{relativeFile}' outside recognized installed loader targets. Review the package layout before deployment.");
             }
 
-            foreach (var relative in additional)
+            foreach (var relative in mappedRoots)
                 list.Add((Path.Combine(folder, relative),
                     "root\\" + GameProfile.NormalizeRelative(relative, false) + "\\"));
+            return list;
+        }
+
+        if (targetIsMirrored)
+        {
+            // Preserve the legacy game-relative package layout when no other
+            // independently recognized loader root requires validation.
+            list.Add((folder, "root\\"));
             return list;
         }
 
