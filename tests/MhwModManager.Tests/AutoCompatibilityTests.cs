@@ -617,6 +617,60 @@ public sealed class AutoCompatibilityTests
     }
 
     [Fact]
+    public void Different_nexus_tattoo_overlay_pages_do_not_auto_choose_a_newer_timestamp()
+    {
+        const string path = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        const string first = "tattoo-skin-texture-overlay-8397-1-0-1763815951-500733aabbeeccdd00112233445566778899aabbccddeeff0011223344556677";
+        const string second = "tattoo-skin-texture-overlay-8411-1-0-1766850951-54ed6e10c979c084eb88664a3b639870e0b5f2e2a25ea270bb2f3fc042c22";
+        var candidates = new[]
+        {
+            new ProviderCandidate("first", first, 10, new("first", path, "aa", null, 100, Now, FileClass.Texture)),
+            new ProviderCandidate("second", second, 20, new("second", path, "bb", null, 100, Now.AddHours(1), FileClass.Texture))
+        };
+        var mods = new Dictionary<string, ModDescriptor>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["first"] = new("first", first, first, "first", true, 10, NexusModId: "8397"),
+            ["second"] = new("second", second, second, "second", true, 20, NexusModId: "8411")
+        };
+        var stats = new Dictionary<string, ModContentStats>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["first"] = new(1, 1, 0, 0, Now),
+            ["second"] = new(1, 1, 0, 0, Now.AddHours(1))
+        };
+
+        var result = AutoCompatibility.SelectTextureProvider(path, candidates, mods, stats);
+
+        Assert.Null(result.WinnerModId);
+        Assert.Equal("independent-texture-replacement", result.ReasonCode);
+    }
+
+    [Fact]
+    public void One_hyphenated_tattoo_overlay_beats_an_incidental_texture_in_a_structural_body()
+    {
+        const string path = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var candidates = new[]
+        {
+            new ProviderCandidate("body", "High Poly Body Base", 20, new("body", path, "aa", null, 100, Now, FileClass.Texture)),
+            new ProviderCandidate("tattoo", "tattoo-skin-texture-overlay", 10, new("tattoo", path, "bb", null, 100, Now, FileClass.Texture))
+        };
+        var mods = new Dictionary<string, ModDescriptor>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["body"] = new("body", "High Poly Body Base", "High Poly Body Base", "body", true, 20, NexusModId: "1965"),
+            ["tattoo"] = new("tattoo", "tattoo-skin-texture-overlay", "tattoo-skin-texture-overlay", "tattoo", true, 10, NexusModId: "8397")
+        };
+        var stats = new Dictionary<string, ModContentStats>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["body"] = new(4, 1, 3, 0, Now),
+            ["tattoo"] = new(1, 1, 0, 0, Now)
+        };
+
+        var result = AutoCompatibility.SelectTextureProvider(path, candidates, mods, stats);
+
+        Assert.Equal("tattoo", result.WinnerModId);
+        Assert.Equal("dedicated-texture-provider", result.ReasonCode);
+    }
+
+    [Fact]
     public void Multi_provider_texture_precedence_requires_one_complete_dominator()
     {
         var path = @"nativePC\pl\f_equip\mod_cycle\f_skin_NM.tex";
