@@ -1,40 +1,40 @@
 ﻿{
     "formatVersion":  1,
     "sourceVersion":  "8.8.112",
-    "updatedAtUtc":  "2026-11-17T08:15:11.3715761+00:00",
+    "updatedAtUtc":  "2026-11-18T08:16:40.4827206+00:00",
     "stages":  [
                    {
                        "id":  "strict:App",
-                       "fingerprint":  "c9a5c9567671320fc34113e21733daeac5a41d7f41c1f2e2dc51cf62055dfbba",
+                       "fingerprint":  "0250b7aa9c2a1b1086248d06106f858bec33e4b281d58093cecb676edbd4293b",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:13:50.9305561+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:15:10.9850271+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "App",
                        "evidence":  "Verified by current run with exit code 0."
                    },
                    {
                        "id":  "strict:Automation",
-                       "fingerprint":  "175587db0e1b77b76da09a751199f25b87fe5932abd4f597b9926e20f433f090",
+                       "fingerprint":  "52fbb13188ae9774dccf666d61007258f0e6d2ad9578c5fe16840f3edcd13ab4",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:13:23.4700728+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:14:36.9723284+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "Automation",
                        "evidence":  "Verified by current run with exit code 0."
                    },
                    {
                        "id":  "strict:AutomationTests",
-                       "fingerprint":  "3bd990df100d62b618909043175ee1dde7c7404169d6bbbc5f0b2943711f95ab",
+                       "fingerprint":  "5f4773aedf27f0c6ac59306ecc058466828360dcdd3fea712be4b98948e390da",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:13:30.5836001+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:14:42.4338470+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "AutomationTests",
                        "evidence":  "Verified by current run with exit code 0."
                    },
                    {
                        "id":  "strict:Benchmarks",
-                       "fingerprint":  "6f07780555f749fbc73a381b55e9c93e7e2fdcd181ae7f8bc4d6e2ef6d4edac5",
+                       "fingerprint":  "569b768bee176c2058af69337e0c5295e31fdcfe7bafbcc3567b94dba43746c0",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:13:39.2654741+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:14:56.7997055+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "Benchmarks",
                        "evidence":  "Verified by current run with exit code 0."
@@ -77,9 +77,9 @@
                    },
                    {
                        "id":  "strict:IntegrationTests",
-                       "fingerprint":  "60c465247ff56e12b7e0def75cecf9748e358e776ec5d5fbdd2a6232c37c811e",
+                       "fingerprint":  "529c5ccce31e42de4979ae88fb484258816581bdc3792f9e8cd99ca55817ed7c",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:13:36.4108887+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:14:52.7311378+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "IntegrationTests",
                        "evidence":  "Verified by current run with exit code 0."
@@ -95,9 +95,9 @@
                    },
                    {
                        "id":  "strict:SelfTest",
-                       "fingerprint":  "f9aa71b97682c463a0fd74cde4d442327bd580d17535d0bc0ed8a36d80aaa228",
+                       "fingerprint":  "12c9d9b8807ba99b3402d9ef650c6d8c365e7083c005a96b1ea9b50bff226494",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:13:41.8743535+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:15:00.4498145+00:00",
                        "group":  "Strict compile/analyzers",
                        "name":  "SelfTest",
                        "evidence":  "Verified by current run with exit code 0."
@@ -122,9 +122,9 @@
                    },
                    {
                        "id":  "test:Automation unit tests",
-                       "fingerprint":  "3bd990df100d62b618909043175ee1dde7c7404169d6bbbc5f0b2943711f95ab",
+                       "fingerprint":  "5f4773aedf27f0c6ac59306ecc058466828360dcdd3fea712be4b98948e390da",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:14:18.8416257+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:15:30.6317652+00:00",
                        "group":  "Tests",
                        "name":  "Automation unit tests",
                        "evidence":  "Verified by current run with exit code 0."
@@ -140,18 +140,18 @@
                    },
                    {
                        "id":  "test:Full automation self-test",
-                       "fingerprint":  "f9aa71b97682c463a0fd74cde4d442327bd580d17535d0bc0ed8a36d80aaa228",
+                       "fingerprint":  "12c9d9b8807ba99b3402d9ef650c6d8c365e7083c005a96b1ea9b50bff226494",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:15:11.3685688+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:16:40.4787217+00:00",
                        "group":  "Tests",
                        "name":  "Full automation self-test",
                        "evidence":  "Verified by current run with exit code 0."
                    },
                    {
                        "id":  "test:Integration + fault injection",
-                       "fingerprint":  "60c465247ff56e12b7e0def75cecf9748e358e776ec5d5fbdd2a6232c37c811e",
+                       "fingerprint":  "529c5ccce31e42de4979ae88fb484258816581bdc3792f9e8cd99ca55817ed7c",
                        "verified":  true,
-                       "verifiedAtUtc":  "2026-11-17T08:15:07.1662305+00:00",
+                       "verifiedAtUtc":  "2026-11-18T08:16:35.4807395+00:00",
                        "group":  "Tests",
                        "name":  "Integration + fault injection",
                        "evidence":  "Verified by current run with exit code 0."
