@@ -6,6 +6,8 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Diagnostics;
 
+// Missing CPU and allocation evidence is represented by NaN and -1 respectively.
+// A genuine observed zero is retained as a measurement, never a missing-data default.
 public sealed record OperationLatencySample(string Operation, string Outcome, double ElapsedMs,
     double CpuMs, long AllocatedBytes);
 
@@ -59,8 +61,8 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
                     var allocated = GetDouble(data, "allocatedBytesDelta");
                     samples.Add(new OperationLatencySample(operation,
                         reader.GetString(0)["operation.".Length..],
-                        elapsed, cpu, double.IsFinite(allocated) && allocated > 0
-                            ? (long)Math.Min(allocated, long.MaxValue) : 0));
+                        elapsed, cpu, double.IsFinite(allocated) && allocated >= 0
+                            ? (long)Math.Min(allocated, long.MaxValue) : -1));
                 }
                 catch (JsonException) { malformed++; }
             }
@@ -107,13 +109,17 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
                 var completed = group.Where(s => s.Outcome == "completed" &&
                     double.IsFinite(s.ElapsedMs) && s.ElapsedMs >= 0).ToArray();
                 var elapsed = completed.Select(s => s.ElapsedMs).OrderBy(v => v).ToArray();
+                var validCpu = completed.Where(s => double.IsFinite(s.CpuMs) && s.CpuMs >= 0)
+                    .Select(s => s.CpuMs).ToArray();
+                var validAllocations = completed.Where(s => s.AllocatedBytes >= 0)
+                    .Select(s => s.AllocatedBytes).ToArray();
                 return new OperationLatencyRow(group.Key, completed.Length,
                     group.Count(s => s.Outcome == "failed"),
                     group.Count(s => s.Outcome == "cancelled"),
                     Percentile(elapsed, .50), Percentile(elapsed, .95),
                     elapsed.Length > 0 ? elapsed[^1] : null,
-                    completed.Length > 0 ? completed.Average(s => s.CpuMs) : null,
-                    completed.Length > 0 ? completed.Average(s => s.AllocatedBytes) / 1048576d : null);
+                    validCpu.Length > 0 ? validCpu.Average() : null,
+                    validAllocations.Length > 0 ? validAllocations.Average() / 1048576d : null);
             })
             .OrderByDescending(row => row.P95Ms ?? -1)
             .ThenBy(row => row.Operation, StringComparer.OrdinalIgnoreCase)
@@ -132,7 +138,7 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return element.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.Number
             && property.TryGetDouble(out var number) && double.IsFinite(number)
-            ? number : 0;
+            ? number : double.NaN;
     }
 
     private static string Format(double? number)
