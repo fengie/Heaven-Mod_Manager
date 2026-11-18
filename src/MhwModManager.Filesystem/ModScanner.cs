@@ -8,6 +8,8 @@ namespace MhwModManager.Filesystem;
 public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingService hashing, GameProfile? game = null)
 {
     private readonly int maxParallelism = Math.Clamp(Environment.ProcessorCount / 2, 2, 6);
+    private static readonly string[] KnownAdditionalLoaderRoots =
+        [@"BepInEx\plugins", @"Content\Paks", @"reframework\plugins", @"reframework\autorun"];
 
     public async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default)
     {
@@ -49,7 +51,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         SafeRecursiveTraversal.EnsureRootIsNotReparse(mod.SourcePath);
         var result = new List<ScanCandidate>();
-        foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game))
+        foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game, ct))
         {
             foreach (var file in SafeRecursiveTraversal.Snapshot(diskRoot, ct).Files)
             {
@@ -89,7 +91,8 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         return result;
     }
 
-    private static List<(string root, string prefix)> ResolveRoots(string folder, GameProfile? gameProfile)
+    private static List<(string root, string prefix)> ResolveRoots(
+        string folder, GameProfile? gameProfile, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!Directory.Exists(folder)) throw new DirectoryNotFoundException($"Mod source folder is missing: {folder}");
@@ -119,10 +122,58 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         }
 
         var targetInPackage=Path.Combine(folder,target);
-        if(Directory.Exists(targetInPackage))
+        var targetIsMirrored=Directory.Exists(targetInPackage);
+
+        // A game can have both a BepInEx plugin loader and an Unreal PAK
+        // directory, even when its preferred profile target names just one.
+        // Only use another loader root if that same directory is installed in
+        // this game's own root. Otherwise refuse the package instead of quietly
+        // nesting its payload under an unrelated loader path.
+        var additional = KnownAdditionalLoaderRoots
+            .Where(relative => !relative.Equals(target, StringComparison.OrdinalIgnoreCase) &&
+                // Never scan both a configured nested target and its ancestor
+                // (e.g. Content\\Paks and Content\\Paks\\~mods) as separate providers.
+                (!targetIsMirrored ||
+                    (!target.StartsWith(relative + "\\", StringComparison.OrdinalIgnoreCase) &&
+                     !relative.StartsWith(target + "\\", StringComparison.OrdinalIgnoreCase))) &&
+                Directory.Exists(Path.Combine(folder, relative)))
+            .ToArray();
+        if (additional.Length > 0)
         {
-            // Package already mirrors the game root (for example Mods\Foo or Data\Foo).
-            list.Add((folder,"root\\"));
+            var mappedRoots = new List<string>(additional);
+            if (targetIsMirrored) mappedRoots.Add(target);
+
+            foreach (var relative in additional)
+            {
+                if (!Directory.Exists(Path.Combine(gameProfile.GameRoot, relative)))
+                    throw new InvalidDataException(
+                        $"Package targets '{relative}', but the registered game does not expose that loader root. Review the game/loader assignment.");
+            }
+
+            // Never silently discard a second required payload or deploy an
+            // unrecognized companion at game root. The bounded safe traversal
+            // validates all components (including reparse points) first.
+            foreach (var file in SafeRecursiveTraversal.Snapshot(folder, ct).Files)
+            {
+                if (IsIgnored(new FileInfo(file))) continue;
+                var relativeFile = Path.GetRelativePath(folder, file).Replace('/', '\\');
+                if (!mappedRoots.Any(relative => relativeFile.StartsWith(
+                        relative + "\\", StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidDataException(
+                        $"Package contains '{relativeFile}' outside recognized installed loader targets. Review the package layout before deployment.");
+            }
+
+            foreach (var relative in mappedRoots)
+                list.Add((Path.Combine(folder, relative),
+                    "root\\" + GameProfile.NormalizeRelative(relative, false) + "\\"));
+            return list;
+        }
+
+        if (targetIsMirrored)
+        {
+            // Preserve the legacy game-relative package layout when no other
+            // independently recognized loader root requires validation.
+            list.Add((folder, "root\\"));
             return list;
         }
 
