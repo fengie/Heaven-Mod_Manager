@@ -23,13 +23,18 @@ public sealed class DuplicateCleanupService(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mods = await db.GetModsAsync(ct);
-        var active = mods.Where(mod => !mod.IsSuperseded)
-            .ToDictionary(mod => mod.Id, StringComparer.Ordinal);
-        var partsByMod = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        var activeIds = mods.Where(mod => !mod.IsSuperseded)
+            .Select(mod => mod.Id).ToHashSet(StringComparer.Ordinal);
+        var fingerprintsByMod = new Dictionary<string, string>(StringComparer.Ordinal);
         var sizes = new Dictionary<string, long>(StringComparer.Ordinal);
 
-        // Preserve SQLite's original ORDER BY path hashing semantics, but stream all
-        // mod-file rows through one indexed read instead of N connections/queries.
+        // SQL groups rows by binary mod ID and preserves the original path collation.
+        // Hash each newline-separated path|SHA part as it is read; the previous
+        // implementation retained every path string and joined it into a second
+        // giant string. This keeps temporary memory bounded independently of file count.
+        using var incremental = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        string? currentId = null;
+        var currentFiles = 0;
         await using (var c = await db.OpenAsync(ct))
         await using (var cmd = c.CreateCommand())
         {
@@ -39,22 +44,37 @@ public sealed class DuplicateCleanupService(
             {
                 ct.ThrowIfCancellationRequested();
                 var id = reader.GetString(0);
-                if (!active.ContainsKey(id)) continue;
-                if (!partsByMod.TryGetValue(id, out var parts))
-                    partsByMod[id] = parts = [];
-                parts.Add(reader.GetString(1).ToLowerInvariant() + "|" + reader.GetString(2));
+                if (!activeIds.Contains(id)) continue;
+
+                if (currentId is not null && !StringComparer.Ordinal.Equals(currentId, id))
+                {
+                    fingerprintsByMod.Add(currentId,
+                        Convert.ToHexString(incremental.GetHashAndReset()).ToLowerInvariant());
+                    currentFiles = 0;
+                    currentId = null;
+                }
+                currentId ??= id;
+                if (currentFiles > 0) incremental.AppendData("\n"u8);
+                incremental.AppendData(Encoding.UTF8.GetBytes(
+                    reader.GetString(1).ToLowerInvariant() + "|" + reader.GetString(2)));
+                currentFiles++;
                 sizes[id] = sizes.GetValueOrDefault(id) + reader.GetInt64(3);
             }
         }
+        if (currentId is not null)
+            fingerprintsByMod.Add(currentId,
+                Convert.ToHexString(incremental.GetHashAndReset()).ToLowerInvariant());
 
+        // Preserve GetModsAsync's original mod ordering for keeper tie-breaks and
+        // group presentation, independent of SQLite's ID ordering.
         var fingerprints = new Dictionary<string, List<ModDescriptor>>(StringComparer.OrdinalIgnoreCase);
         foreach (var mod in mods.Where(mod => !mod.IsSuperseded))
         {
-            if (!partsByMod.TryGetValue(mod.Id, out var parts) || parts.Count == 0) continue;
-            var fp = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", parts)))).ToLowerInvariant();
+            if (!fingerprintsByMod.TryGetValue(mod.Id, out var fp)) continue;
             if (!fingerprints.TryGetValue(fp, out var list)) fingerprints[fp] = list = [];
             list.Add(mod);
         }
+
         var groups = new List<DuplicateGroup>(); long reclaim = 0;
         foreach (var pair in fingerprints.Where(x => x.Value.Count > 1))
         {
