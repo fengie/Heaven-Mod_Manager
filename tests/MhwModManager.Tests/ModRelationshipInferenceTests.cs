@@ -51,7 +51,8 @@ public sealed class ModRelationshipInferenceTests
         var candidates = ModRelationshipInference.Suggest(mods, files);
         Assert.Equal(2, candidates.Count);
         Assert.All(candidates, candidate => Assert.Equal("body", candidate.ParentModId));
-        Assert.Equal(new[] { "a", "b" }, candidates.Select(c => c.ChildModId).OrderBy(x => x).ToArray());
+        Assert.Contains(candidates, candidate => candidate.ChildModId == "a");
+        Assert.Contains(candidates, candidate => candidate.ChildModId == "b");
         Assert.Equal(3, LogicalModFamilies.Build(mods, files).Count);
     }
 
@@ -142,7 +143,7 @@ public sealed class ModRelationshipInferenceTests
     [Fact]
     public void Large_unrelated_library_with_common_roots_has_no_suggestions()
     {
-        var mods = Enumerable.Range(0, 500).Select(i => Mod($"m{i}", $"Unique Outfit {i}", (1000 + i).ToString())).ToArray();
+        var mods = Enumerable.Range(0, 500).Select(i => Mod($"m{i}", $"Unique Outfit {i}", (1000 + i).ToString(System.Globalization.CultureInfo.InvariantCulture))).ToArray();
         var files = mods.Select((mod, i) => File(mod.Id, $@"nativePC\pl\f_equip\pl001_0000\body\piece{i}.tex")).ToArray();
         Assert.Empty(ModRelationshipInference.Suggest(mods, files));
     }
