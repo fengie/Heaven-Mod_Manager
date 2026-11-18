@@ -374,7 +374,7 @@ public sealed partial class App:Application, IDisposable
             // remain ordered and blocking; no maintenance runs concurrently with the UI.
             Action<StartupMaintenanceProgress>? stageProgress = progress is null ? null : state =>
             {
-                _ = Dispatcher.BeginInvoke(DispatcherPriority.Background,
+                _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
                     new Action(() => progress(state.Description)));
             };
             var maintenance=await startup.RunAsync("startup.automation",async ct=>
