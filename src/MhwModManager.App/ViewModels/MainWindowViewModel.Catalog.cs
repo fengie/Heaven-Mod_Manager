@@ -1268,17 +1268,20 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         EnsureCatalogRuntime();
         var repository = catalogRepository ?? throw new InvalidOperationException("Catalog repository is unavailable.");
+        var query = CatalogQuery;
+        var gameId = s.Paths.Game.Id;
         var rows = await repository.SearchAsync(
-            CatalogQuery,
-            gameId: s.Paths.Game.Id,
+            query,
+            gameId: gameId,
             includeStale: true,
-            limit: CatalogVisibleResultLimit + 1,
+            limit: CatalogVisibleResultLimit,
             now: DateTimeOffset.UtcNow,
             ct: ct);
-        var hasMoreCachedMatches = rows.Count > CatalogVisibleResultLimit;
+        var hasMoreCachedMatches = rows.Count == CatalogVisibleResultLimit &&
+            await repository.HasAdditionalMatchesAsync(
+                query, gameId, CatalogVisibleResultLimit, ct);
         var now = DateTimeOffset.UtcNow;
         var projected = rows
-            .Take(CatalogVisibleResultLimit)
             .Select(row => new CatalogModRow(row.Mod, row.IsStale(now)))
             .ToArray();
         var selected = SelectedCatalogItem;
