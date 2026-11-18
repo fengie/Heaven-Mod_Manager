@@ -92,6 +92,29 @@ public sealed class ModRelationshipInferenceTests
     }
 
     [Fact]
+    public void A_confirmed_manual_main_still_accepts_later_addon_candidates_without_reclassifying_existing_children()
+    {
+        var mods = new[]
+        {
+            Mod("body", "High Poly Body Base", "1965") with { FamilyId = "manual:body", FamilyRole = "Main" },
+            Mod("first", "Tattoo Skin Texture Overlay A", "8397") with { FamilyId = "manual:body", FamilyRole = "Optional" },
+            Mod("second", "Tattoo Skin Texture Overlay B", "8411")
+        };
+        var path = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("body", path),
+            File("body", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("first", path),
+            File("second", path)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal("body", suggestion.ParentModId);
+        Assert.Equal("second", suggestion.ChildModId);
+    }
+
+    [Fact]
     public void Input_order_does_not_change_suggested_edges()
     {
         var mods = new[]

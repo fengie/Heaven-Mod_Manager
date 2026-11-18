@@ -46,7 +46,10 @@ public static partial class ModRelationshipInference
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (maximumSuggestions <= 0) return Array.Empty<ModRelationshipSuggestion>();
-        var eligible = mods.Where(m => !m.IsSuperseded && string.IsNullOrWhiteSpace(m.FamilyId))
+        // Confirmed manual roots remain eligible as parents of later add-ons.
+        // Confirmed child/optional members never become new candidate parents.
+        var eligible = mods.Where(m => !m.IsSuperseded &&
+                (string.IsNullOrWhiteSpace(m.FamilyId) || IsConfirmedManualMain(m)))
             .ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
         if (eligible.Count < 2) return Array.Empty<ModRelationshipSuggestion>();
 
@@ -116,11 +119,20 @@ public static partial class ModRelationshipInference
             }
         }
 
-        return suggestions.OrderBy(s => s.ChildModId, StringComparer.OrdinalIgnoreCase)
+        // Keep the review surface bounded for a child touching a common resource path.
+        return suggestions.GroupBy(s => s.ChildModId, StringComparer.OrdinalIgnoreCase)
+            .SelectMany(group => group.OrderByDescending(s => s.Score)
+                .ThenBy(s => s.ParentModId, StringComparer.OrdinalIgnoreCase).Take(5))
+            .OrderBy(s => s.ChildModId, StringComparer.OrdinalIgnoreCase)
             .ThenByDescending(s => s.Score)
             .ThenBy(s => s.ParentModId, StringComparer.OrdinalIgnoreCase)
             .Take(maximumSuggestions).ToArray();
     }
+
+    private static bool IsConfirmedManualMain(ModDescriptor mod) =>
+        mod.FamilyId is not null &&
+        mod.FamilyId.StartsWith("manual:", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(mod.FamilyRole, "Main", StringComparison.OrdinalIgnoreCase);
 
     private static bool HasAddOnCue(ModDescriptor mod)
     {
