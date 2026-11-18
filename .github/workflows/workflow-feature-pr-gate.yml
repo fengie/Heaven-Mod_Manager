@@ -240,7 +240,7 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: powershell
         run: |
-          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~WorkflowTests|FullyQualifiedName~AutomationServiceTests"
+          dotnet test .\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~WorkflowTests|FullyQualifiedName~AutomationServiceTests|FullyQualifiedName~StartupMaintenanceScaleTests"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Check patch whitespace
