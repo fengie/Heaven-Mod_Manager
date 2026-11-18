@@ -1,9 +1,22 @@
 name: Startup Performance Gate
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/MhwModManager.App/**'
+      - 'src/MhwModManager.Automation/**'
+      - 'src/MhwModManager.Storage/**'
+      - 'src/MhwModManager.Filesystem/**'
+      - 'src/MhwModManager.Core/**'
+      - 'tests/MhwModManager.AutomationTests/StartupMaintenanceScaleTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/StartupPerformanceTests.cs'
+      - 'scripts/diagnostics/Measure-StartupPerformance.ps1'
+      - '.github/workflows/startup-performance-gate.yml'
   push:
     branches:
       - 'perf-startup-*'
+      - 'fix/startup-maintenance-*'
     paths:
       - 'src/**'
       - 'tests/MhwModManager.IntegrationTests/**'
@@ -26,8 +39,10 @@ concurrency:
 
 jobs:
   benchmark:
-    name: Compare current main vs candidate on Heaven
-    runs-on: [self-hosted, Windows, X64, mhw-mods]
+    name: Compare main vs candidate (isolated Windows)
+    # PR code executes on disposable hosted Windows, never an owner's self-hosted machine.
+    # Trusted owner-branch/manual runs can use the existing Heaven benchmark runner.
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"windows-2025"' || '["self-hosted","Windows","X64","mhw-mods"]') }}
     timeout-minutes: 45
     steps:
       - name: Check out candidate
@@ -46,37 +61,55 @@ jobs:
           persist-credentials: false
           path: baseline
 
+      - name: Isolate writable pinned .NET SDK installation
+        shell: powershell
+        run: |
+          # Match the repository's job-owned SDK strategy; never modify the
+          # self-hosted system install under Program Files or another job's SDK.
+          $jobToken = ([string]$env:GITHUB_JOB -replace '[^A-Za-z0-9._-]', '-')
+          $installRoot = Join-Path $env:RUNNER_TEMP ("dotnet-startup-{0}-{1}-{2}" -f $env:GITHUB_RUN_ID, $env:GITHUB_RUN_ATTEMPT, $jobToken)
+          New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
+          "DOTNET_INSTALL_DIR=$installRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Provision pinned .NET SDK on either runner
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: candidate/global.json
+
       - name: Verify pinned .NET SDK
+        working-directory: candidate
         shell: powershell
         run: |
           $version = (& dotnet --version).Trim()
           if ($version -ne '10.0.401') { throw "Startup performance gate requires .NET SDK 10.0.401; found $version." }
 
       - name: Restore and build baseline
+        working-directory: baseline
         shell: powershell
         run: |
-          dotnet restore .\baseline\src\MhwModManager.App\MhwModManager.App.csproj
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build .\baseline\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Restore and build candidate
+        working-directory: candidate
         shell: powershell
         run: |
-          dotnet restore .\candidate\src\MhwModManager.App\MhwModManager.App.csproj
+          dotnet restore .\src\MhwModManager.App\MhwModManager.App.csproj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build .\candidate\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
+          dotnet build .\src\MhwModManager.App\MhwModManager.App.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Measure current main baseline
         shell: powershell
         run: |
-          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\baseline -OutputPath BuildLogs\startup-performance-baseline.json -ColdIterations 3 -WarmIterations 5 -ModCount 300 -FilesPerMod 25 -InboxPackages 12 -FilesPerInboxPackage 20 -TimeoutSeconds 120
 
       - name: Measure candidate
         shell: powershell
         run: |
-          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 3 -ModCount 80 -FilesPerMod 25 -TimeoutSeconds 300
+          .\candidate\scripts\diagnostics\Measure-StartupPerformance.ps1 -RepositoryRoot .\candidate -OutputPath BuildLogs\startup-performance-candidate.json -ColdIterations 3 -WarmIterations 5 -ModCount 300 -FilesPerMod 25 -InboxPackages 12 -FilesPerInboxPackage 20 -TimeoutSeconds 120
 
       - name: Build before-after report
         shell: powershell
@@ -110,7 +143,7 @@ jobs:
           $lines.Add('')
           $lines.Add("Baseline: $($baseline.source_sha)")
           $lines.Add("Candidate: $($candidate.source_sha)")
-          $lines.Add("Fixture: $($candidate.mod_count) mods / $($candidate.total_mod_files) files; 3 cold-state + 3 warm-state runs each on the same Heaven runner.")
+          $lines.Add("Fixture: $($candidate.mod_count) mods / $($candidate.total_mod_files) indexed files plus $($candidate.inbox_packages) pending folder packages; 3 cold-state + 5 warm-state runs each on the same Heaven runner.")
           $lines.Add('')
           $lines.Add('| Metric | Main cold | Candidate cold | Cold improvement | Main warm | Candidate warm | Warm improvement |')
           $lines.Add('|---|---:|---:|---:|---:|---:|---:|')
@@ -129,18 +162,41 @@ jobs:
           Set-Content -LiteralPath .\startup-performance-comparison.md -Value $report -Encoding UTF8
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
 
+          # This is a gate, not merely a comparison report: flag median startup
+          # latency regressions on the same dedicated runner, allowing for noise.
+          $violations = New-Object System.Collections.Generic.List[string]
+          foreach ($kind in @('cold', 'warm')) {
+              $before = [double]$baseline.$kind.process_to_ready_ms
+              $after = [double]$candidate.$kind.process_to_ready_ms
+              $ceiling = [math]::Max($before * 1.25, $before + 1000)
+              if ($after -gt $ceiling) {
+                  $violations.Add("$kind process-to-ready: $after ms exceeds $([math]::Round($ceiling,1)) ms baseline-relative budget")
+              }
+          }
+          if ([double]$candidate.cold.process_to_ready_ms -gt 30000) {
+              $violations.Add("Cold startup median exceeds 30000 ms scenario budget")
+          }
+          if ([double]$candidate.warm.process_to_ready_ms -gt 15000) {
+              $violations.Add("Warm startup median exceeds 15000 ms scenario budget")
+          }
+          if ($violations.Count -gt 0) {
+              throw ("Startup performance regression detected: " + ($violations -join '; '))
+          }
+
       - name: Verify startup optimization guards
+        working-directory: candidate
         shell: powershell
         run: |
-          dotnet test .\candidate\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
+          dotnet test .\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj -c Release --filter "FullyQualifiedName~DebugTraceCoverageTests|FullyQualifiedName~HiddenSecondaryPagesAreLazyLoadedAfterStartup"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run exact release verification on candidate
+        working-directory: candidate
         shell: powershell
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\candidate\\scripts\\release\\Verify-Release.ps1"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\release\\Verify-Release.ps1"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          git -C .\\candidate diff --check origin/main...HEAD
+          git diff --check origin/main...HEAD
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Preserve startup benchmark evidence

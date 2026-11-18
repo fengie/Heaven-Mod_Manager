@@ -1,14 +1,19 @@
 using MhwModManager.Core;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using System.Windows.Threading;
 
 namespace MhwModManager.App;
 
 public sealed class StartupWindow:Window
 {
     private readonly TextBlock detail;
+    private readonly Stopwatch elapsed = Stopwatch.StartNew();
+    private readonly DispatcherTimer heartbeat = new() { Interval = TimeSpan.FromMilliseconds(500) };
+    private string currentDetail = "Getting everything ready…";
 
     public StartupWindow()
     {
@@ -66,6 +71,11 @@ public sealed class StartupWindow:Window
             BorderThickness=new Thickness(0)
         };
 
+        heartbeat.Tick += (_, _) => RenderDetail();
+        heartbeat.Start();
+        Closed += (_, _) => heartbeat.Stop();
+        RenderDetail();
+
         Content=new Border
         {
             Margin=new Thickness(18),
@@ -82,6 +92,13 @@ public sealed class StartupWindow:Window
     public void SetDetail(string text)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        detail.Text=text;
+        currentDetail = text;
+        RenderDetail();
+    }
+
+    private void RenderDetail()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        detail.Text = currentDetail + Environment.NewLine + "Elapsed: " + elapsed.Elapsed.ToString(@"hh\:mm\:ss", System.Globalization.CultureInfo.InvariantCulture);
     }
 }

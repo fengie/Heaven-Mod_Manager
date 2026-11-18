@@ -23,7 +23,17 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         return ProcessAsync(null, ct);
     }
 
-    public async Task<InboxRunResult> ProcessAsync(IProgress<InboxRunProgress>? progress, CancellationToken ct = default)
+    public Task<InboxRunResult> ProcessAsync(IProgress<InboxRunProgress>? progress, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ProcessAsync(progress, refreshMetadata: true, ct);
+    }
+
+    /// <summary>
+    /// During bootstrap, defer optional remote metadata lookup until the Mods page requests it.
+    /// Local import, indexing, hash capture and category assignment remain mandatory.
+    /// </summary>
+    public async Task<InboxRunResult> ProcessAsync(IProgress<InboxRunProgress>? progress, bool refreshMetadata, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("smart-inbox");
         var totalTimer = Stopwatch.StartNew();
@@ -166,8 +176,15 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             ReportStage(completed, "Capturing imported mods");
             var importedMods=(await db.GetModsAsync(ct)).Where(m=>importedPaths.Contains(m.SourcePath)).ToArray();
             await catalog.EnsureCapturedAsync(importedMods,ct);
-            ReportStage(completed, "Refreshing metadata");
-            await nexus.RefreshAsync(ct);
+            if (refreshMetadata)
+            {
+                ReportStage(completed, "Refreshing metadata");
+                await nexus.RefreshAsync(ct);
+            }
+            else
+            {
+                UnifiedDebugLog.Write("INBOX-PHASE", "Optional network metadata refresh deferred until requested by the Mods page.");
+            }
             ReportStage(completed, "Assigning categories");
             await categories.AssignMissingAsync(ct);
         }

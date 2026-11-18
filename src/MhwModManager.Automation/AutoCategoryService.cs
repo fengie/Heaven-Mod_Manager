@@ -13,14 +13,16 @@ public sealed class AutoCategoryService(ManagerDatabase db, GameProfile? game = 
         void Add(AutomationCategory category, int score) => scores[category] = scores.GetValueOrDefault(category) + score;
         foreach (var raw in paths)
         {
-            UnifiedDebugLog.Write("AUTOCAT-PATH", $"Inspect: {raw}");
+            if (MasterDebugLog.DetailedDiagnosticsEnabled)
+                UnifiedDebugLog.Write("AUTOCAT-PATH", $"Inspect: {raw}");
             // Classification also runs against raw source-folder contents before a mod has
             // been captured into the managed nativePC/root namespace. Root-level readmes,
             // troubleshooting notes, screenshots, and similar metadata are legitimate here.
             // Reject genuinely unsafe relative paths, but do not require a deployable prefix.
             if (!PathRules.IsSafeArchiveRelativePath(raw))
             {
-                UnifiedDebugLog.Write("AUTOCAT-PATH", $"Rejected unsafe/non-relative classification input: {raw}");
+                if (MasterDebugLog.DetailedDiagnosticsEnabled)
+                    UnifiedDebugLog.Write("AUTOCAT-PATH", $"Rejected unsafe/non-relative classification input: {raw}");
                 continue;
             }
             var p = raw.Replace('/', '\\').Trim().ToLowerInvariant();
@@ -61,34 +63,55 @@ public sealed class AutoCategoryService(ManagerDatabase db, GameProfile? game = 
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mods = await db.GetModsAsync(ct);
-        var assigned = 0;
+        var missing = mods.Where(mod => string.IsNullOrWhiteSpace(mod.Category)).ToArray();
+        if (missing.Length == 0) return 0;
+
+        // One indexed query replaces one SQLite command/reader per mod. Read the whole
+        // result before writing classifications on the same connection.
+        var indexedPaths = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         await using var c = await db.OpenAsync(ct);
-        foreach (var mod in mods.Where(x => string.IsNullOrWhiteSpace(x.Category)))
+        await using (var read = c.CreateCommand())
+        {
+            read.CommandText = """
+                SELECT f.mod_id, f.path
+                FROM mod_files f
+                JOIN mods m ON m.id = f.mod_id
+                WHERE m.category IS NULL OR trim(m.category) = ''
+                ORDER BY f.mod_id, f.path
+                """;
+            await using var rows = await read.ExecuteReaderAsync(ct);
+            while (await rows.ReadAsync(ct))
+            {
+                var id = rows.GetString(0);
+                if (!indexedPaths.TryGetValue(id, out var paths))
+                    indexedPaths[id] = paths = [];
+                paths.Add(rows.GetString(1));
+            }
+        }
+
+        await using var update = c.CreateCommand();
+        update.CommandText = "UPDATE mods SET category=$c WHERE id=$m AND (category IS NULL OR trim(category)='')";
+        var categoryParam = update.Parameters.AddWithValue("$c", string.Empty);
+        var modParam = update.Parameters.AddWithValue("$m", string.Empty);
+        var assigned = 0;
+        foreach (var mod in missing)
         {
             ct.ThrowIfCancellationRequested();
-            var paths = new List<string>();
-            await using (var read = c.CreateCommand())
-            {
-                read.CommandText = "SELECT path FROM mod_files WHERE mod_id=$m";
-                read.Parameters.AddWithValue("$m", mod.Id);
-                await using var r = await read.ExecuteReaderAsync(ct);
-                while (await r.ReadAsync(ct)) paths.Add(r.GetString(0));
-            }
-            startupDiagnostics?.Info("startup.automation.categories.mod.begin", $"ModId={mod.Id}; Name={mod.Name}; Source={mod.SourcePath}; DatabasePaths={paths.Count}");
-            UnifiedDebugLog.Write("AUTOCAT-MOD", $"BEGIN ModId={mod.Id}; Name={mod.Name}; Source={mod.SourcePath}; DatabasePaths={paths.Count}");
+            var paths = indexedPaths.TryGetValue(mod.Id, out var stored) ? stored : new List<string>();
+            // Preserve the pre-capture fallback without traversing already indexed packages.
             if (paths.Count == 0 && Directory.Exists(mod.SourcePath))
-                paths.AddRange(Directory.EnumerateFiles(mod.SourcePath, "*", SearchOption.AllDirectories).Select(x => Path.GetRelativePath(mod.SourcePath, x)));
-            startupDiagnostics?.Info("startup.automation.categories.mod.paths", $"ModId={mod.Id}; CandidatePaths={paths.Count}");
-            UnifiedDebugLog.Write("AUTOCAT-MOD", $"PATHS ModId={mod.Id}; CandidatePaths={paths.Count}");
+                paths.AddRange(Directory.EnumerateFiles(mod.SourcePath, "*", SearchOption.AllDirectories)
+                    .Select(path => Path.GetRelativePath(mod.SourcePath, path)));
+            if (MasterDebugLog.DetailedDiagnosticsEnabled)
+                startupDiagnostics?.Info("startup.automation.categories.mod.paths",
+                    $"ModId={mod.Id}; CandidatePaths={paths.Count}");
             var category = ClassifyPaths(paths, game is null || game.IsMonsterHunterWorld);
-            UnifiedDebugLog.Write("AUTOCAT-MOD", $"RESULT ModId={mod.Id}; Category={category}");
             if (category == AutomationCategory.Unknown) continue;
-            await using var update = c.CreateCommand();
-            update.CommandText = "UPDATE mods SET category=$c WHERE id=$m AND (category IS NULL OR trim(category)='')";
-            update.Parameters.AddWithValue("$c", category.ToString());
-            update.Parameters.AddWithValue("$m", mod.Id);
+            categoryParam.Value = category.ToString();
+            modParam.Value = mod.Id;
             assigned += await update.ExecuteNonQueryAsync(ct);
         }
+        UnifiedDebugLog.Write("AUTOCAT", $"Assigned={assigned}; Missing={missing.Length}; IndexedMods={indexedPaths.Count}");
         return assigned;
     }
 }

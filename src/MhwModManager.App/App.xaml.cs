@@ -367,8 +367,20 @@ public sealed partial class App:Application, IDisposable
             progress?.Invoke("Checking for an interrupted transaction…");
             await startup.RunAsync("startup.recovery",async ct=>await telemetry.TrackAsync("startup.recovery",async(_,innerCt)=>await executor.RecoverIncompleteAsync(innerCt),ct:ct));
 
-            progress?.Invoke("Running automatic inbox/category/dependency maintenance…");
-            var maintenance=await startup.RunAsync("startup.automation",async ct=>await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>await automation.RunStartupMaintenanceAsync(innerCt),ct:ct));
+            progress?.Invoke("Running local maintenance (see current stage and elapsed time)…");
+            // Startup maintenance performs synchronous filesystem and SQLite work between
+            // awaits. Keep the WPF dispatcher free for splash progress and its elapsed timer.
+            // Required migration, build validation and interrupted-transaction recovery above
+            // remain ordered and blocking; no maintenance runs concurrently with the UI.
+            Action<StartupMaintenanceProgress>? stageProgress = progress is null ? null : state =>
+            {
+                _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
+                    new Action(() => progress(state.Description)));
+            };
+            var maintenance=await startup.RunAsync("startup.automation",async ct=>
+                await telemetry.TrackAsync("startup.automation",async(_,innerCt)=>
+                    await Task.Run(() => automation.RunStartupMaintenanceAsync(stageProgress,innerCt),innerCt),
+                    ct:ct));
             logger.Information("Startup automation: {Summary}",maintenance.Summary);
             startup.Info("startup.automation.summary",maintenance.Summary);
 
