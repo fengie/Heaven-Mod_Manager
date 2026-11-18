@@ -310,13 +310,27 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("startup.ui","Loading library","Reading installed mod records…",false,async ct=>
         {
             MasterDebugLog.Write("STARTUP-UI","stage=reload-mods");
-            await ReloadMods(ct);
+            var reloadStarted = Stopwatch.GetTimestamp();
+            try { await ReloadMods(ct); }
+            finally
+            {
+                var ms = Stopwatch.GetElapsedTime(reloadStarted).TotalMilliseconds;
+                MasterDebugLog.Write("STARTUP-UI-PHASE",
+                    $"phase=reload-mods; elapsedMs={ms.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
             // No mod graph or full-game manual-file scan is required for an empty library.
             // Manual adoption is an explicit action: it can traverse/hash an entire game root.
             if(Mods.Count>0)
             {
                 MasterDebugLog.Write("STARTUP-UI","stage=conflict-analysis");
-                await RefreshAnalysis(ct);
+                var analysisStarted = Stopwatch.GetTimestamp();
+                try { await RefreshAnalysis(ct); }
+                finally
+                {
+                    var ms = Stopwatch.GetElapsedTime(analysisStarted).TotalMilliseconds;
+                    MasterDebugLog.Write("STARTUP-UI-PHASE",
+                        $"phase=conflict-analysis; elapsedMs={ms.ToString("F2", CultureInfo.InvariantCulture)}");
+                }
             }
             MasterDebugLog.Write("STARTUP-UI","stage=ready");
         },rethrowOnFailure:true);
