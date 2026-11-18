@@ -116,7 +116,14 @@ public sealed class StartupWindow:Window
         RenderDetail();
     }
 
-    public bool SkipRequested=>Volatile.Read(ref skipRequested)!=0;
+    public bool SkipRequested
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Volatile.Read(ref skipRequested)!=0;
+        }
+    }
 
     public void SetMaintenanceSkipVisible(bool visible)
     {
