@@ -13,7 +13,7 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
     public CatalogNexusArchiveBackfillTests() => Directory.CreateDirectory(root);
 
     [Fact]
-    public async Task Modern_download_folder_is_indexed_with_source_id_and_readable_label()
+    public async Task Modern_download_folder_has_readable_title_without_asserting_unverified_source_identity()
     {
         const string name = "tattoo-skin-texture-overlay-8397-1-0-1763815951-500733aabbeeccdd00112233445566778899aabbccddeeff0011223344556677";
         var folder = Path.Combine(root, "Installed", name);
@@ -23,7 +23,7 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
         await catalog.RefreshFoldersAsync(TestToken);
 
         var mod = Assert.Single(await db.GetModsAsync(TestToken));
-        Assert.Equal("8397", mod.NexusModId);
+        Assert.Null(mod.NexusModId);
         Assert.Equal("tattoo-skin-texture-overlay", mod.DisplayName);
         Assert.Equal(folder, mod.SourcePath);
     }
@@ -45,7 +45,7 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
         Assert.True(mod.Enabled);
         Assert.Equal(17, mod.Priority);
         Assert.Equal("manual:keep", mod.FamilyId);
-        Assert.Equal("8411", mod.NexusModId);
+        Assert.Null(mod.NexusModId);
         Assert.Equal("tattoo-skin-texture-overlay", mod.DisplayName);
         Assert.Equal(folder, mod.SourcePath);
         Assert.True(Directory.Exists(folder));
@@ -66,11 +66,26 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
         await catalog.RefreshFoldersAsync(TestToken);
 
         var mods = (await db.GetModsAsync(TestToken)).ToDictionary(m => m.Id);
-        Assert.Equal("8397", mods["a"].NexusModId);
+        Assert.Null(mods["a"].NexusModId);
         Assert.Equal("My hand-edited name", mods["a"].DisplayName);
         Assert.Null(mods["b"].NexusModId);
         Assert.Equal("Another source", mods["b"].DisplayName);
         Assert.Equal("https://example.org/not-nexus", mods["b"].SourceUrl);
+    }
+
+    [Fact]
+    public async Task A_filename_inferred_source_page_cannot_force_a_family_for_two_unrelated_packages()
+    {
+        const string first = "Alpha-8397-1-0-1763815951-500733aabbeeccdd00112233445566778899aabbccddeeff0011223344556677";
+        const string second = "Beta-8397-1-0-1763815951-54ed6e10c979c084eb88664a3b639870e0b5f2e2a25ea270bb2f3fc042c22";
+        Directory.CreateDirectory(Path.Combine(root, "Installed", first));
+        Directory.CreateDirectory(Path.Combine(root, "Installed", second));
+        var (db, catalog) = await CreateCatalogAsync();
+        await catalog.RefreshFoldersAsync(TestToken);
+        var mods = await db.GetModsAsync(TestToken);
+        Assert.Equal(2, mods.Count);
+        Assert.All(mods, mod => Assert.Null(mod.NexusModId));
+        Assert.Equal(2, LogicalModFamilies.Build(mods).Count);
     }
 
     private async Task<(ManagerDatabase Db, CatalogService Catalog)> CreateCatalogAsync()
