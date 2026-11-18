@@ -29,8 +29,14 @@ public sealed class AutomationCoordinator(
 {
     private readonly LaunchObservationRepository launchObservations = new(db);
 
+    public Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return RunStartupMaintenanceAsync(null, ct);
+    }
+
     public async Task<StartupMaintenanceResult> RunStartupMaintenanceAsync(
-        CancellationToken ct = default, Action<StartupMaintenanceProgress>? progress = null)
+        Action<StartupMaintenanceProgress>? progress, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var elapsed = Stopwatch.StartNew();
