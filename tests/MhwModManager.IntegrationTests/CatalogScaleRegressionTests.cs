@@ -140,6 +140,8 @@ public sealed class CatalogScaleRegressionTests : IDisposable
         Assert.Contains("offset: offset", viewModel, StringComparison.Ordinal);
         // Provider continuation remains a distinct, user-initiated operation.
         Assert.Contains("Command=\"{Binding LoadMoreCatalogCommand}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("[RelayCommand]\\n    private async Task LoadMoreCatalog()".Replace("\\n", "\n"),
+            viewModel, StringComparison.Ordinal);
     }
 
     [Theory]
