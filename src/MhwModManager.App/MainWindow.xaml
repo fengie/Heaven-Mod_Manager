@@ -1221,6 +1221,21 @@
                                                    FontSize="10"
                                                    TextWrapping="Wrap"
                                                    AutomationProperties.LiveSetting="Polite"/>
+                                        <WrapPanel Margin="0,8,0,0"
+                                                   Visibility="{Binding CatalogProviderWebLinksVisibility}">
+                                            <Button Content="Nexus website"
+                                                    Command="{Binding OpenNexusBrowseCommand}"
+                                                    Margin="0,0,8,4"
+                                                    Style="{StaticResource QuietButton}"
+                                                    AutomationProperties.Name="Browse Monster Hunter World mods on the Nexus website"
+                                                    ToolTip="Browse on the official provider site; this does not bypass in-app provider policy or index results."/>
+                                            <Button Content="GameBanana website"
+                                                    Command="{Binding OpenGameBananaBrowseCommand}"
+                                                    Margin="0,0,8,4"
+                                                    Style="{StaticResource QuietButton}"
+                                                    AutomationProperties.Name="Browse Monster Hunter World mods on GameBanana"
+                                                    ToolTip="Browse on the official provider site; this does not bypass in-app provider policy or index results."/>
+                                        </WrapPanel>
                                     </StackPanel>
                                     <Button Grid.Column="1"
                                             Margin="10,0,0,0"
