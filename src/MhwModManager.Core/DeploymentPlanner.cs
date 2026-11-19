@@ -166,19 +166,37 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                     HasEquivalentAtomicBundlePayloads(bundle, memberSet))
                     continue;
 
+                // Sharing an armor model/part is NOT the same as overwriting an exact
+                // game file. Both situations need review when structural dependencies
+                // are unproven, but the evidence must say which one actually occurred.
+                var byPath = bundle.GroupBy(file => file.Path, PathRules.Comparer)
+                    .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase).ToArray();
+                var exactOverlaps = byPath.Where(group =>
+                    group.Select(file => file.ModId).Distinct(PathRules.Comparer).Skip(1).Any()).ToArray();
+                var differingOverlaps = exactOverlaps.Count(group =>
+                    group.Any(file => file.BlobSha256.Length != 64 || !file.BlobSha256.All(Uri.IsHexDigit)) ||
+                    group.Select(file => file.BlobSha256).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any());
+                var pathDetails = byPath.Take(8).Select(group =>
+                    $"{group.Key} [providers: {string.Join(", ", group.Select(file => enabled[file.ModId].DisplayName).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(name => name, StringComparer.OrdinalIgnoreCase))}]");
+                var pathEvidence = string.Join("; ", pathDetails) +
+                    (byPath.Length > 8 ? $"; and {byPath.Length - 8} more path(s)" : string.Empty);
+
                 var representative = paths[0];
                 var names = memberIds.Select(id => enabled[id].DisplayName).ToArray();
+                var overlapDescription = exactOverlaps.Length == 0
+                    ? "No exact file paths overlap. However, their different structural files target the same MHW armor component, and model/material/physics references may cross filenames."
+                    : $"{exactOverlaps.Length} exact file path(s) have multiple providers ({differingOverlaps} with different or unverified content). Other structural files in this armor component may also depend on them.";
                 atomicBundleBlockers[representative] = new(
                     representative,
                     ConflictKind.HardStructural,
                     true,
                     null,
                     "bundle-mixed-providers",
-                    $"The atomic asset bundle '{AssetBundles.DisplayNameForPath(representative)}' would mix files from unrelated or ambiguously related mods ({string.Join(", ", names)}). The manager will not build a partial model/material/physics bundle by guessing.",
+                    $"MHW armor component '{AssetBundles.DisplayNameForPath(representative)}' is targeted by {memberIds.Length} enabled packages ({string.Join(", ", names)}). {overlapDescription} Without proven compatibility, the manager will not combine them automatically. Shared armor placement does not establish a mod-family relationship.",
                     Confidence.High,
                     Inferred:false,
                     ResolverScore:100,
-                    Evidence:$"Atomic bundle {bundle.Key} contains {paths.Length} path(s) from {memberIds.Length} enabled provider(s) without a complete overlay chain or one-main/dependent-family proof.");
+                    Evidence:$"Atomic bundle {bundle.Key}: {paths.Length} structural paths, {memberIds.Length} providers, {exactOverlaps.Length} exact-path overlaps, {differingOverlaps} different-byte exact-path overlap{(differingOverlaps == 1 ? "" : "s")} (including unknown digests). Paths: {pathEvidence}. No verified complete overlay chain or one-main/dependent-family proof.");
             }
         }
 
