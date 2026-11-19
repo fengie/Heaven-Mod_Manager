@@ -1,6 +1,6 @@
 # v8.8.116 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 19, 2026 · 12:36:14 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 19, 2026 · 1:10:59 AM EST** _(repo-enforced)_
 
 Current product version: **8.8.116**.
 
