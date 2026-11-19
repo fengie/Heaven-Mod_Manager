@@ -28,7 +28,9 @@ jobs:
   readme-timestamp:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Windows, X64, mhw-mods]
-    timeout-minutes: 5
+    # The self-hosted runner can spend over five minutes in checkout/post-job cleanup;
+    # keep all checks intact and bound this job instead of cancelling successful validation.
+    timeout-minutes: 10
     steps:
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
