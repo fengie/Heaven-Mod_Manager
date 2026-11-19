@@ -33,6 +33,33 @@ public sealed class EquivalentStructuralBundleTests
     }
 
     [Fact]
+    public void Different_files_in_one_armor_slot_report_no_exact_file_collision()
+    {
+        var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
+            File("beta", Extra, DifferentHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\armor.ccl", DifferentHash)]);
+
+        Assert.True(plan.IsBlocked); // Mixing model/material/physics still requires evidence.
+        var blocker = Assert.Single(plan.Conflicts, c => c.ReasonCode == "bundle-mixed-providers");
+        Assert.Contains("0 exact-path overlaps", blocker.Evidence ?? string.Empty);
+        Assert.Contains(Mesh, blocker.Evidence ?? string.Empty);
+        Assert.Contains(Extra, blocker.Evidence ?? string.Empty);
+    }
+
+    [Fact]
+    public void Same_target_with_different_bytes_reports_real_exact_file_collision()
+    {
+        var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
+            File("beta", Mesh, DifferentHash), File("beta", Material, MaterialHash)]);
+
+        Assert.True(plan.IsBlocked);
+        var blocker = Assert.Single(plan.Conflicts, c => c.ReasonCode == "bundle-mixed-providers");
+        Assert.Contains("2 exact-path overlaps", blocker.Evidence ?? string.Empty);
+        Assert.Contains("1 different-byte exact-path overlap", blocker.Evidence ?? string.Empty);
+        Assert.Contains(Mesh, blocker.Evidence ?? string.Empty);
+    }
+
+    [Fact]
     public void Changed_structural_sibling_still_requires_a_proven_order()
     {
         var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
