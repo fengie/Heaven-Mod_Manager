@@ -1,6 +1,6 @@
-# v8.8.114 - metadata candidate, publication unverified
+# v8.8.114 - immutable release verified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `ff85ad37bf18a13ff06df4a1240869478a85a6d7` includes later #876/#879 changes after immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), published source `7c0cad829ec58af554d4976753642243fd77fa67`. v8.8.114 publication and personal Heaven2 installation are **not verified**. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `6ac4e474c8769e04d456433dab43fe97b2ae5ace`. Public immutable [updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -22,13 +22,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `ff85ad37bf18a13ff06df4a124
 
 ## Verification boundary
 
-**Current v8.8.114 is publication-unverified:** release and updater evidence below belongs to prior immutable v8.8.113 source, not the newer `ff85ad37bf18a13ff06df4a1240869478a85a6d7`. Do not claim the current code is published or installed on Heaven2 until new exact receipts exist.
+Current hosted-Windows closure: v8.8.114 source `6ac4e474c8769e04d456433dab43fe97b2ae5ace` passed run `44440884960` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.114-heaven-windows-closure.log`.
 
-Current hosted-Windows closure: v8.8.113 source `7c0cad829ec58af554d4976753642243fd77fa67` passed run `44429973426` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log`.
+Verified immutable GitHub release: [updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575), exact source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`, ZIP SHA-256 `bf501d3e1e3940d5076ff391e987fa4da64e7a7aeaf1d659ad9dd033f8d472e2` and manifest SHA-256 `5beed323998b6b1167f9ab5a009a1b4fd9f51ae6c77963d84701be67a078ded9`. Public release and tag ref independently match the built artifact.
 
-Verified immutable GitHub release: [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), exact source `7c0cad829ec58af554d4976753642243fd77fa67`, ZIP SHA-256 `60f3b2a2461fe29933b019e2e9c5c27c9d3dde44d4130940b62a6e0f0dc6772d` and manifest SHA-256 `18688f3822af7c1fb7f92f938b241f9b875d3e8eefaddb7877270af933eaa003`. Public release and tag ref independently match the built artifact.
-
-The tested source remains `7c0cad829ec58af554d4976753642243fd77fa67` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `6ac4e474c8769e04d456433dab43fe97b2ae5ace` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
