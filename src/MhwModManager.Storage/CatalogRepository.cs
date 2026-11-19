@@ -162,9 +162,11 @@ public sealed class CatalogRepository(ManagerDatabase db)
         bool includeStale = true,
         int limit = 100,
         DateTimeOffset? now = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        int offset = 0)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
         var boundedLimit = Math.Clamp(limit, 1, MaxSearchResults);
         var ftsQuery = BuildFtsQuery(query);
 
@@ -197,7 +199,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 FROM catalog_items i
                 {plainWhere}
                 ORDER BY COALESCE(i.updated_at,i.fetched_at) DESC,i.name COLLATE NOCASE
-                LIMIT $limit
+                LIMIT $limit OFFSET $offset
                 """;
         }
         else
@@ -208,11 +210,12 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 JOIN catalog_items i ON i.canonical_id=catalog_items_fts.canonical_id
                 WHERE catalog_items_fts MATCH $query{suffix}
                 ORDER BY bm25(catalog_items_fts),COALESCE(i.updated_at,i.fetched_at) DESC
-                LIMIT $limit
+                LIMIT $limit OFFSET $offset
                 """;
             cmd.Parameters.AddWithValue("$query", ftsQuery);
         }
         cmd.Parameters.AddWithValue("$limit", boundedLimit);
+        cmd.Parameters.AddWithValue("$offset", offset);
 
         var rows = await ReadRowsAsync(cmd, ct);
         var filesByCanonicalId = await LoadFilesBatchAsync(
@@ -233,10 +236,10 @@ public sealed class CatalogRepository(ManagerDatabase db)
     }
 
     /// <summary>
-    /// Detects whether more cached matches exist beyond the ordinary result cap.
-    /// Uses a cheap existence probe, never hydrates or returns a 1,001st item.
-    /// Mirrors the Browse Mods cache query (including stale entries) and keeps
-    /// the normal SearchAsync MaxSearchResults safety bound intact.
+    /// Detects whether more cached matches exist after a displayed row count,
+    /// including counts beyond one page. Only probes existence; the bounded
+    /// SearchAsync hydration cap still applies independently to every page.
+    /// Mirrors Browse Mods filtering, including stale cache entries.
     /// </summary>
     public async Task<bool> HasAdditionalMatchesAsync(
         string? query,
@@ -246,8 +249,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(gameId);
-        if (visibleLimit < 0 || visibleLimit > MaxSearchResults)
-            throw new ArgumentOutOfRangeException(nameof(visibleLimit));
+        ArgumentOutOfRangeException.ThrowIfNegative(visibleLimit);
 
         var ftsQuery = BuildFtsQuery(query);
         await using var connection = await db.OpenAsync(ct);
