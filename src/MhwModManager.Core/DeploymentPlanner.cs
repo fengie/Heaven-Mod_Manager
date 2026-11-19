@@ -163,7 +163,8 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 // content, choosing either physical provider cannot mix generations.
                 // Group identity and overwrite precedence are *not* inferred here.
                 if (IsSafeAtomicBundleComposition(memberSet, ruleIndex, enabled) ||
-                    HasEquivalentAtomicBundlePayloads(bundle, memberSet))
+                    HasEquivalentAtomicBundlePayloads(bundle, memberSet) ||
+                    HasIndependentNamespacedAtomicPayloads(bundle, memberSet))
                     continue;
 
                 // Sharing an armor model/part is NOT the same as overwriting an exact
@@ -351,6 +352,46 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         // Otherwise two individually partial packages could manufacture one
         // mixed bundle despite having no same-path byte conflicts.
         return observedPaths > 0 && coverageByProvider.Values.Any(count => count == observedPaths);
+    }
+
+    /// <summary>
+    /// Separate mod_* resource namespaces are physically isolated within an MHW
+    /// armor component. They may coexist without any file or namespace overwrite.
+    /// This is NOT evidence of a family, a model/material merge, or both packages
+    /// rendering in game. Standard armor files, shared namespaces, partial
+    /// namespace assignment and exact-path collisions remain fail-closed.
+    /// </summary>
+    private static bool HasIndependentNamespacedAtomicPayloads(
+        IEnumerable<ModFileDescriptor> files, IReadOnlySet<string> memberIds)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (memberIds.Count < 2) return false;
+
+        var ownerByNamespace = new Dictionary<string, string>(PathRules.Comparer);
+        var namespaceByOwner = new Dictionary<string, string>(PathRules.Comparer);
+        var targetPaths = new HashSet<string>(PathRules.Comparer);
+        foreach (var file in files)
+        {
+            if (!memberIds.Contains(file.ModId) || !targetPaths.Add(file.Path))
+                return false; // Even case-only collisions cannot silently pass.
+
+            var resourceNamespace = PathRules.ResourceNamespace(file.Path);
+            if (resourceNamespace is null)
+                return false; // Standard model/material files can reference one another.
+
+            if (namespaceByOwner.TryGetValue(file.ModId, out var existingNamespace) &&
+                !PathRules.Comparer.Equals(existingNamespace, resourceNamespace))
+                return false; // One package crossing namespaces needs full bundle review.
+
+            if (ownerByNamespace.TryGetValue(resourceNamespace, out var existingOwner) &&
+                !PathRules.Comparer.Equals(existingOwner, file.ModId))
+                return false; // Two packages cannot independently own one namespace.
+
+            namespaceByOwner[file.ModId] = resourceNamespace;
+            ownerByNamespace[resourceNamespace] = file.ModId;
+        }
+
+        return namespaceByOwner.Count == memberIds.Count;
     }
 
     private static bool IsSafeAtomicBundleComposition(
