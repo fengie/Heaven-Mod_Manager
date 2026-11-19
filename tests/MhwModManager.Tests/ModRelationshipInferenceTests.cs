@@ -107,6 +107,28 @@ public sealed class ModRelationshipInferenceTests
         Assert.Empty(ModRelationshipInference.Suggest(mods, files));
     }
 
+    [Theory]
+    [InlineData("Alt")]
+    [InlineData("Style")]
+    [InlineData("Choose")]
+    public void Pick_one_structural_variant_cannot_be_suggested_as_addon_parent(string label)
+    {
+        var mods = new[]
+        {
+            Mod("variant", $"High Poly Body {label}", "1001"),
+            Mod("overlay", "High Poly Body Texture Overlay", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            ContentFile("variant", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('c', 64)),
+            ContentFile("variant", shared, new string('a', 64)),
+            ContentFile("overlay", shared, new string('b', 64))
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
     [Fact]
     public void Shared_loader_roots_or_unrelated_replacements_are_not_enough_to_suggest_a_parent()
     {
