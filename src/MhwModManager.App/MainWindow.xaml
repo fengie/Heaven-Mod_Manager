@@ -720,7 +720,7 @@
                         </Border.Style>
                         <StackPanel>
                             <TextBlock Text="Choose which mod should win" FontWeight="SemiBold"/>
-                            <TextBlock Text="Use a single winner when these mods are alternatives. If one is the main mod and the others are add-ons, tell the manager that relationship instead so they can work together." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
+                            <TextBlock Text="Unrelated mods can still target the same armor slot. Review Technical details for exact overlapping files versus broader model/material dependency risk. Choose one if they are alternatives. Only mark main and add-on when that relationship and compatibility are verified." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,3,0,10" TextWrapping="Wrap"/>
                             <Expander Header="Technical details" Margin="0,0,0,10" Foreground="{StaticResource Muted}">
                                 <TextBlock Margin="0,8,0,0" Text="{Binding SelectedConflict.Evidence}" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap"/>
                             </Expander>
@@ -736,7 +736,7 @@
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="205"/>
                                                 <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#D0D5DB" TextWrapping="Wrap" MaxWidth="205" Margin="0,3,0,8"/>
                                                 <Button Content="Use This Mod" Margin="0,0,0,6" Command="{Binding DataContext.ChooseConflictOptionCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" Style="{StaticResource PrimaryButton}"/>
-                                                <Button Content="Treat as Main Mod + Add-ons" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Remember that this is the main mod and the other packages are add-ons that belong with it."/>
+                                                <Button Content="Treat as Main Mod + Add-ons" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Manual override: use only after verifying the other packages really depend on this main mod. Sharing an armor slot is not proof of a family."/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
