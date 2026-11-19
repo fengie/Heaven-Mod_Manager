@@ -85,6 +85,40 @@ public sealed class GameDownloadArchiveStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Concurrent_different_title_acquisitions_share_one_verified_copy()
+    {
+        // Every waiter starts with the same immutable bytes but a different title.
+        // Separate destination names must never let simultaneous saves publish duplicates.
+        var source = Path.Combine(root, "parallel.zip");
+        var bytes = new byte[1024 * 1024];
+        RandomNumberGenerator.Fill(bytes);
+        bytes[0] = 0x50;
+        bytes[1] = 0x4B;
+        bytes[2] = 0x03;
+        bytes[3] = 0x04;
+        await File.WriteAllBytesAsync(source, bytes, TestToken);
+        var sha = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var downloads = Path.Combine(root, "Mods by Game", "monsterhunterworld", "Downloads");
+
+        var start = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var ct = TestToken;
+        var attempts = Enumerable.Range(0, 16).Select(async index =>
+        {
+            await start.Task.WaitAsync(ct);
+            return await GameDownloadArchiveStore.SaveAsync(
+                downloads, source, $"Alias {index}", sha, ct);
+        }).ToArray();
+        start.SetResult(true);
+
+        var paths = await Task.WhenAll(attempts);
+        var kept = Assert.Single(paths.Distinct(StringComparer.OrdinalIgnoreCase));
+        Assert.Equal(kept, Assert.Single(Directory.EnumerateFiles(downloads)));
+        Assert.Equal(bytes, await File.ReadAllBytesAsync(kept, ct));
+        Assert.True(File.Exists(source));
+    }
+
+    [Fact]
     public async Task Same_verified_archive_in_different_games_remains_game_scoped()
     {
         var source = Path.Combine(root, "shared.zip");
