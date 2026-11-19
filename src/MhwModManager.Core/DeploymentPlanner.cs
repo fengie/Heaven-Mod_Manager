@@ -163,22 +163,41 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 // content, choosing either physical provider cannot mix generations.
                 // Group identity and overwrite precedence are *not* inferred here.
                 if (IsSafeAtomicBundleComposition(memberSet, ruleIndex, enabled) ||
-                    HasEquivalentAtomicBundlePayloads(bundle, memberSet))
+                    HasEquivalentAtomicBundlePayloads(bundle, memberSet) ||
+                    HasIndependentNamespacedAtomicPayloads(bundle, memberSet))
                     continue;
+
+                // Sharing an armor model/part is NOT the same as overwriting an exact
+                // game file. Both situations need review when structural dependencies
+                // are unproven, but the evidence must say which one actually occurred.
+                var byPath = bundle.GroupBy(file => file.Path, PathRules.Comparer)
+                    .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase).ToArray();
+                var exactOverlaps = byPath.Where(group =>
+                    group.Select(file => file.ModId).Distinct(PathRules.Comparer).Skip(1).Any()).ToArray();
+                var differingOverlaps = exactOverlaps.Count(group =>
+                    group.Any(file => file.BlobSha256.Length != 64 || !file.BlobSha256.All(Uri.IsHexDigit)) ||
+                    group.Select(file => file.BlobSha256).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any());
+                var pathDetails = byPath.Take(8).Select(group =>
+                    $"{group.Key} [providers: {string.Join(", ", group.Select(file => enabled[file.ModId].DisplayName).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(name => name, StringComparer.OrdinalIgnoreCase))}]");
+                var pathEvidence = string.Join("; ", pathDetails) +
+                    (byPath.Length > 8 ? $"; and {byPath.Length - 8} more path(s)" : string.Empty);
 
                 var representative = paths[0];
                 var names = memberIds.Select(id => enabled[id].DisplayName).ToArray();
+                var overlapDescription = exactOverlaps.Length == 0
+                    ? "No exact file paths overlap. However, their different structural files target the same MHW armor component, and model/material/physics references may cross filenames."
+                    : $"{exactOverlaps.Length} exact file path(s) have multiple providers ({differingOverlaps} with different or unverified content). Other structural files in this armor component may also depend on them.";
                 atomicBundleBlockers[representative] = new(
                     representative,
                     ConflictKind.HardStructural,
                     true,
                     null,
                     "bundle-mixed-providers",
-                    $"The atomic asset bundle '{AssetBundles.DisplayNameForPath(representative)}' would mix files from unrelated or ambiguously related mods ({string.Join(", ", names)}). The manager will not build a partial model/material/physics bundle by guessing.",
+                    $"MHW armor component '{AssetBundles.DisplayNameForPath(representative)}' is targeted by {memberIds.Length} enabled packages ({string.Join(", ", names)}). {overlapDescription} Without proven compatibility, the manager will not combine them automatically. Shared armor placement does not establish a mod-family relationship.",
                     Confidence.High,
                     Inferred:false,
                     ResolverScore:100,
-                    Evidence:$"Atomic bundle {bundle.Key} contains {paths.Length} path(s) from {memberIds.Length} enabled provider(s) without a complete overlay chain or one-main/dependent-family proof.");
+                    Evidence:$"Atomic bundle {bundle.Key}: {paths.Length} structural paths, {memberIds.Length} providers, {exactOverlaps.Length} exact-path overlaps, {differingOverlaps} different-byte exact-path overlap{(differingOverlaps == 1 ? "" : "s")} (including unknown digests). Paths: {pathEvidence}. No verified complete overlay chain or one-main/dependent-family proof.");
             }
         }
 
@@ -333,6 +352,48 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         // Otherwise two individually partial packages could manufacture one
         // mixed bundle despite having no same-path byte conflicts.
         return observedPaths > 0 && coverageByProvider.Values.Any(count => count == observedPaths);
+    }
+
+    /// <summary>
+    /// Separate mod_* resource namespaces are physically isolated within an MHW
+    /// armor component. They may coexist without any file or namespace overwrite.
+    /// This is NOT evidence of a family, a model/material merge, or both packages
+    /// rendering in game. Standard armor files, shared namespaces, partial
+    /// namespace assignment and exact-path collisions remain fail-closed.
+    /// </summary>
+    private static bool HasIndependentNamespacedAtomicPayloads(
+        IEnumerable<ModFileDescriptor> files, HashSet<string> memberIds)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (memberIds.Count < 2) return false;
+
+        var ownerByNamespace = new Dictionary<string, string>(PathRules.Comparer);
+        var namespaceByOwner = new Dictionary<string, string>(PathRules.Comparer);
+        var targetPaths = new HashSet<string>(PathRules.Comparer);
+        foreach (var file in files)
+        {
+            if (!memberIds.Contains(file.ModId) || !targetPaths.Add(file.Path))
+                return false; // Even case-only collisions cannot silently pass.
+
+            var resourceNamespace = PathRules.ResourceNamespace(file.Path);
+            var normalizedPath = PathRules.Normalize(file.Path);
+            if (resourceNamespace is null ||
+                !normalizedPath.StartsWith(resourceNamespace + "\\", StringComparison.OrdinalIgnoreCase))
+                return false; // Require a real mod_* directory, not just a mod_*.mod3 filename.
+
+            if (namespaceByOwner.TryGetValue(file.ModId, out var existingNamespace) &&
+                !PathRules.Comparer.Equals(existingNamespace, resourceNamespace))
+                return false; // One package crossing namespaces needs full bundle review.
+
+            if (ownerByNamespace.TryGetValue(resourceNamespace, out var existingOwner) &&
+                !PathRules.Comparer.Equals(existingOwner, file.ModId))
+                return false; // Two packages cannot independently own one namespace.
+
+            namespaceByOwner[file.ModId] = resourceNamespace;
+            ownerByNamespace[resourceNamespace] = file.ModId;
+        }
+
+        return namespaceByOwner.Count == memberIds.Count;
     }
 
     private static bool IsSafeAtomicBundleComposition(

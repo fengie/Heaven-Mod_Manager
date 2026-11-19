@@ -762,7 +762,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 {
                     var logicalName=logicalGroups[0].LogicalName;
                     foreach(var member in providers.OrderBy(x=>x.Id,StringComparer.OrdinalIgnoreCase))
-                        options.Add(new("member:"+member.Id,$"{logicalName} • {member.DisplayName}",member.PreviewPath,"Mutually exclusive component inside one logical family",new[]{member.Id}));
+                        options.Add(new("member:"+member.Id,member.DisplayName,member.PreviewPath,$"Currently shown under '{logicalName}'; shared grouping does not prove a parent/add-on or variant relationship.",new[]{member.Id}));
                 }
 
                 var bundle=s.Paths.Game.IsMonsterHunterWorld?AssetBundles.KeyForPath(conflict.Path):"file:"+PathRules.Normalize(conflict.Path).ToLowerInvariant();
