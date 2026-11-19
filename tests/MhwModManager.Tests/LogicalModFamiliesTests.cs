@@ -273,6 +273,25 @@ public sealed class LogicalModFamiliesTests
     }
 
     [Fact]
+    public void Clockworker_and_cheeky_dress_do_not_become_one_family_from_clockwork_slot_alone()
+    {
+        var mods = new[]
+        {
+            Mod("cheeky", "HPN Cheeky Dress"),
+            Mod("clockwork", "HPN Sexy Clockworker")
+        };
+        var files = new[]
+        {
+            File("cheeky", @"nativePC\pl\f_equip\pl104_0000\wst\f_wst104_0000.mod3"),
+            File("clockwork", @"nativePC\pl\f_equip\pl104_0000\wst\f_wst104_0000.mrl3")
+        };
+
+        var families = LogicalModFamilies.Build(mods, files);
+        Assert.Equal(2, families.Count);
+        Assert.All(families, family => Assert.Single(family.Members));
+    }
+
+    [Fact]
     public void Different_hpn_armors_do_not_collapse_together()
     {
         var mods = new[]

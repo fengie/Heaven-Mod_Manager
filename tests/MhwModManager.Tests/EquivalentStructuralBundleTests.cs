@@ -33,6 +33,83 @@ public sealed class EquivalentStructuralBundleTests
     }
 
     [Fact]
+    public void Independent_mod_namespaces_in_one_armor_slot_can_coexist()
+    {
+        // Custom mod_* resource namespaces are physically isolated even though both
+        // paths sit under the same armor body folder.
+        var plan = Build([
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_cheeky\mesh.mod3", MeshHash),
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_cheeky\material.mrl3", MaterialHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_clockwork\mesh.mod3", DifferentHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_clockwork\material.mrl3", MaterialHash)]);
+
+        Assert.False(plan.IsBlocked);
+        Assert.Equal(4, plan.Changes.Count);
+        Assert.DoesNotContain(plan.Conflicts, decision => decision.ReasonCode == "bundle-mixed-providers");
+    }
+
+    [Fact]
+    public void One_shared_mod_namespace_does_not_justify_mixing_structural_assets()
+    {
+        var plan = Build([
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_shared\a.mod3", MeshHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_shared\b.mrl3", MaterialHash)]);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Contains(plan.Conflicts, c => c.Blocking && c.ReasonCode == "bundle-mixed-providers");
+    }
+
+    [Fact]
+    public void Filename_mod_prefix_is_not_a_separate_resource_namespace()
+    {
+        var plan = Build([
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_cheeky.mod3", MeshHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_clockwork.mrl3", MaterialHash)]);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Contains(plan.Conflicts, c => c.Blocking && c.ReasonCode == "bundle-mixed-providers");
+    }
+
+    [Fact]
+    public void One_mod_spanning_multiple_resource_namespaces_must_not_bypass_atomic_safety()
+    {
+        var plan = Build([
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_one\a.mod3", MeshHash),
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_two\b.mrl3", MaterialHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_three\c.mod3", DifferentHash)]);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Contains(plan.Conflicts, c => c.Blocking && c.ReasonCode == "bundle-mixed-providers");
+    }
+
+    [Fact]
+    public void Different_files_in_one_armor_slot_report_no_exact_file_collision()
+    {
+        var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
+            File("beta", Extra, DifferentHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\armor.ccl", DifferentHash)]);
+
+        Assert.True(plan.IsBlocked); // Mixing model/material/physics still requires evidence.
+        var blocker = Assert.Single(plan.Conflicts, c => c.ReasonCode == "bundle-mixed-providers");
+        Assert.Contains("0 exact-path overlaps", blocker.Evidence ?? string.Empty);
+        Assert.Contains(Mesh, blocker.Evidence ?? string.Empty);
+        Assert.Contains(Extra, blocker.Evidence ?? string.Empty);
+    }
+
+    [Fact]
+    public void Same_target_with_different_bytes_reports_real_exact_file_collision()
+    {
+        var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
+            File("beta", Mesh, DifferentHash), File("beta", Material, MaterialHash)]);
+
+        Assert.True(plan.IsBlocked);
+        var blocker = Assert.Single(plan.Conflicts, c => c.ReasonCode == "bundle-mixed-providers");
+        Assert.Contains("2 exact-path overlaps", blocker.Evidence ?? string.Empty);
+        Assert.Contains("1 different-byte exact-path overlap", blocker.Evidence ?? string.Empty);
+        Assert.Contains(Mesh, blocker.Evidence ?? string.Empty);
+    }
+
+    [Fact]
     public void Changed_structural_sibling_still_requires_a_proven_order()
     {
         var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
