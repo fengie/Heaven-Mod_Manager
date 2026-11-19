@@ -1,6 +1,6 @@
-# v8.8.113 - metadata candidate, publication unverified
+# v8.8.113 - source verified, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` contains source PRs #850–#874. This v8.8.113 metadata candidate is **not yet a source-bound immutable public release**. The previous immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) targets older source `e9b1212985f80533ce04e3ab1e43910290692687`. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `55d741879a7d03b70217cd9a43d3dcb9e59f8faa` (Windows Gate 44432834810); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -13,11 +13,11 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` at `60b6a4f90e2738db4a2a75131
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.112 source `e9b1212985f80533ce04e3ab1e43910290692687` passed run `44044388877` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.112-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.113 source `55d741879a7d03b70217cd9a43d3dcb9e59f8faa` passed run `44432834810` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log`.
 
-Verified immutable GitHub release: [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548), exact source `e9b1212985f80533ce04e3ab1e43910290692687`, ZIP SHA-256 `03ceaa8f9bb82f953a2335d54d613ebce15091a9c214925f1acb0db421a0e5a8` and manifest SHA-256 `42c867d23c0c09a5d14dafbbba4b4952bb2ebbef99e51a8436b877dcfae62d73`. Public release and tag ref independently match the built artifact.
+Public release status: **NOT VERIFIED** for source `55d741879a7d03b70217cd9a43d3dcb9e59f8faa`. Successful build or another source's same-version release is not proof of publication.
 
-The tested source remains `e9b1212985f80533ce04e3ab1e43910290692687` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `55d741879a7d03b70217cd9a43d3dcb9e59f8faa` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
