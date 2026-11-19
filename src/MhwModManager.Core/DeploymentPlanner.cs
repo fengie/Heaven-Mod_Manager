@@ -362,7 +362,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     /// namespace assignment and exact-path collisions remain fail-closed.
     /// </summary>
     private static bool HasIndependentNamespacedAtomicPayloads(
-        IEnumerable<ModFileDescriptor> files, IReadOnlySet<string> memberIds)
+        IEnumerable<ModFileDescriptor> files, HashSet<string> memberIds)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (memberIds.Count < 2) return false;
