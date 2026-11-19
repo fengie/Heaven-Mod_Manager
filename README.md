@@ -1,8 +1,8 @@
-# v8.8.117 — MHW Manual Mod Manager
+# v8.8.118 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 19, 2026 · 1:38:14 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 19, 2026 · 2:25:38 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.117**.
+Current product version: **8.8.118**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,22 +10,20 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.118 — corrupt pending-state recovery safety
+
+- [PR #895](https://github.com/fengie/Heaven-Mod_Manager/pull/895) makes updater cleanup preserve staging and terminal recovery transactions when pending state is malformed or unreadable. A new regression verifies both survive; all four exact-head Windows feature/security/admission checks passed. Source merged on main at `c3d32904`.
+- **Release pending:** v8.8.118 candidate includes source main `109ee761b57e59b6293c6d16a1861882e243ef3b`. The new immutable tag/ZIP/manifest and hosted packaged update/rollback remain **UNVERIFIED** until exact-source publication. Prior v8.8.117 and its hosted updater are independently verified. Personal Heaven2 and #669 broader lifecycle acceptance are open.
+
 ## v8.8.117 — safe terminal updater transaction retention
 
 - [PR #893](https://github.com/fengie/Heaven-Mod_Manager/pull/893) prevents age-based and generation-cap cleanup from deleting terminal updater transactions with active or unverified prepared owner leases. Both new integration regressions failed before the fix and passed afterward; all four exact-head PR checks succeeded.
-- **Release pending:** implementation on canonical main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` follows immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583). No v8.8.117 immutable package, hosted real packaged update/rollback or personal Heaven2 installation is yet verified. Whole #669 lifecycle acceptance remains open.
+- **Verified historical release:** immutable [v8.8.117 updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`; Windows Gate [44475835455](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44475835455) and real hosted packaged updater/rollback [44477647687](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44477647687) PASSED. Exact E2E receipt merged via PR #896. Personal Heaven2 and whole #669 remain open.
 
 ## v8.8.116 — safe finalized catalog download retention
 
 - [#889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) protects newly created finalized download leases from premature age-based cleanup when filesystem timestamps are old. Native Windows regression, startup performance, source and CI checks passed; owner/byte-quota safety is unchanged.
 - **Verified immutable release:** [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`. Windows Release Gate [44468041048](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44468041048) PASS. Hosted real packaged update 60→583 and injected rollback [44469075908](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44469075908) PASS with four preserved user-data sentinel hashes; allowlisted receipt merged via [PR #891](https://github.com/fengie/Heaven-Mod_Manager/pull/891). Personal Heaven2 installation and whole #669 acceptance remain unverified.
-
-## v8.8.115 — family-choice safety and scalable candidate matching
-
-- [#881](https://github.com/fengie/Heaven-Mod_Manager/pull/881) prevents `Alt` and `Choose` labels from suggesting unconfirmed cross-source add-on relationships.
-- [#882](https://github.com/fengie/Heaven-Mod_Manager/pull/882) prunes redundant quadratic shared-root family candidate pairs without losing rare normalized content-anchor lineage. Native candidate checks passed; installed p95 remains unmeasured.
-- [#884](https://github.com/fengie/Heaven-Mod_Manager/pull/884) uses one hyphen-safe pick-one detector across inference layers, retaining original package-name negative evidence after display renames. Explicit saved choices remain authoritative.
-- **Verified v8.8.115 publication:** immutable [updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) targets exact release source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`; Windows Release Gate [44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`. Hosted disposable Windows [real packaged updater E2E 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) **PASSED** build 60→579, journal Confirmed, injected rollback to build 60, and all four user-data sentinel hashes preserved; this does **not** establish personal Heaven2 installed health. #791 real-mod corpus and #735/#669 acceptance remain open.
 
 ## Current plans & progress
 
