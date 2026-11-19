@@ -1,6 +1,6 @@
-# v8.8.118 - canonical state: source merged; new release unverified
+# v8.8.118 - source verified, publication unverified
 
-Canonical state: implementation main `109ee761b57e59b6293c6d16a1861882e243ef3b` includes #895 fail-closed corrupt-pending recovery and merged v8.8.117 hosted E2E evidence #896. New v8.8.118 immutable release/hosted rollback remains UNVERIFIED. Historical v8.8.117 [updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`, Windows Gate 44475835455 and real packaged E2E 44477647687 passed. Personal Heaven2, real corpora and installed p95 remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `a02a4913c903540f00db3fffbc5b04fdcdda1153` (Windows Gate 44498700368); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -28,9 +28,11 @@ Canonical state: implementation main `109ee761b57e59b6293c6d16a1861882e243ef3b` 
 
 ## Verification boundary
 
-**v8.8.118 source merged, immutable package not yet verified:** source main `109ee761b57e59b6293c6d16a1861882e243ef3b` includes PR #895 recovery fix and PR #896 hosted evidence; new Windows Release Gate, immutable public source/tag/artifact SHA-256 and actual packaged update/rollback must be independently verified for this new version. Do not claim Heaven2 installed acceptance.
+Current hosted-Windows closure: v8.8.118 source `a02a4913c903540f00db3fffbc5b04fdcdda1153` passed run `44498700368` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.118-heaven-windows-closure.log`.
 
-Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d18323a3d1af8925618` Windows Gate 44475835455 PASS, real hosted packaged update/rollback 44477647687 PASS, ZIP SHA-256 `4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0`, manifest `8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4`; receipt merged PR #896. This does not prove source additions after this immutable release, user-device health, real corpora or p95.
+Public release status: **NOT VERIFIED** for source `a02a4913c903540f00db3fffbc5b04fdcdda1153`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `a02a4913c903540f00db3fffbc5b04fdcdda1153` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
