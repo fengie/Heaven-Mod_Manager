@@ -13,6 +13,46 @@ public static class GameDownloadArchiveStore
 {
     private const int BufferSize=128*1024;
 
+    // Only identical content within one game's Downloads root is serialized. The
+    // reference count keeps completed/cancelled acquisitions from retaining locks.
+    private static readonly object saveGateSync = new();
+    private static readonly Dictionary<string, InFlightSave> activeSaves =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private sealed class InFlightSave
+    {
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+        public int Users;
+    }
+
+    private static InFlightSave RentGate(string key)
+    {
+        lock (saveGateSync)
+        {
+            if (!activeSaves.TryGetValue(key, out var gate))
+            {
+                gate = new InFlightSave();
+                activeSaves.Add(key, gate);
+            }
+            gate.Users++;
+            return gate;
+        }
+    }
+
+    private static void ReturnGate(string key, InFlightSave gate)
+    {
+        lock (saveGateSync)
+        {
+            gate.Users--;
+            if (gate.Users == 0)
+            {
+                activeSaves.Remove(key);
+                gate.Semaphore.Dispose();
+            }
+        }
+    }
+
+
     public static async Task<string> SaveAsync(
         string downloadsRoot,string sourceArchive,string modName,string expectedSha256,CancellationToken ct=default)
     {
@@ -59,6 +99,38 @@ public static class GameDownloadArchiveStore
         var extension=Path.GetExtension(sourceArchive).ToLowerInvariant();
         if(extension is not ".zip" and not ".7z" and not ".rar")extension=".archive";
         var sha=expectedSha256.ToLowerInvariant();
+
+        // Two aliases can otherwise both pass the final directory scan before
+        // either atomically publishes a differently named destination.
+        var key=root+"|"+sha+"|"+extension;
+        var gate=RentGate(key);
+        var acquired=false;
+        try
+        {
+            await gate.Semaphore.WaitAsync(ct);
+            acquired=true;
+            // Revalidate after waiting: another actor may have swapped the root.
+            foreach (var path in new[]{parent,root})
+            {
+                if (Directory.Exists(path) &&
+                    (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+                    throw new IOException("Download library became a reparse-point directory.");
+            }
+            return await SaveVerifiedUnderGateAsync(
+                root, sourceArchive, name, sha, extension, ct);
+        }
+        finally
+        {
+            if (acquired) gate.Semaphore.Release();
+            ReturnGate(key, gate);
+        }
+    }
+
+    private static async Task<string> SaveVerifiedUnderGateAsync(
+        string root, string sourceArchive, string name,
+        string sha, string extension, CancellationToken ct)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         var destination=Path.Combine(root,$"{name}-{sha}{extension}");
         // The display name is not part of content identity. Reuse a previously
         // verified archive within this game's Downloads root instead of storing
