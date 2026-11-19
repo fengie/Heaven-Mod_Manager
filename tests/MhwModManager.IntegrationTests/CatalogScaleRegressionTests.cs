@@ -86,10 +86,63 @@ public sealed class CatalogScaleRegressionTests : IDisposable
         Assert.False(await repository.HasAdditionalMatchesAsync(
             query: null, gameId: "another-game",
             visibleLimit: BrowseCapacity, ct: TestToken));
+        // Local browse paging may cross the 1,000-row hydration cap, but
+        // every individual query must remain bounded. Both the first and last
+        // pages must be reachable without provider requests or duplicate IDs.
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var offset = 0; offset < FixtureRowCount; offset += BrowseCapacity)
+        {
+            var page = await repository.SearchPageAsync(
+                query: null,
+                gameId: "monsterhunterworld",
+                includeStale: true,
+                limit: BrowseCapacity,
+                now: FixtureBaseTime.AddDays(1),
+                ct: TestToken,
+                offset: offset);
+            Assert.Equal(BrowseCapacity, page.Count);
+            Assert.Equal($"nexus:scale-{FixtureRowCount - offset - 1:D5}", page[0].Mod.CanonicalId);
+            Assert.Equal($"nexus:scale-{FixtureRowCount - offset - BrowseCapacity:D5}", page[^1].Mod.CanonicalId);
+            foreach (var row in page)
+                Assert.True(seen.Add(row.Mod.CanonicalId), $"Duplicate paged result: {row.Mod.CanonicalId}");
+        }
+
+        Assert.Equal(FixtureRowCount, seen.Count);
+        Assert.True(await repository.HasAdditionalMatchesAsync(
+            query: null, gameId: "monsterhunterworld",
+            visibleLimit: FixtureRowCount - 1, ct: TestToken));
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            query: null, gameId: "monsterhunterworld",
+            visibleLimit: FixtureRowCount, ct: TestToken));
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             repository.HasAdditionalMatchesAsync(
                 query: null, gameId: "monsterhunterworld",
-                visibleLimit: BrowseCapacity + 1, ct: TestToken));
+                visibleLimit: -1, ct: TestToken));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            repository.SearchPageAsync(
+                query: null, gameId: "monsterhunterworld",
+                offset: -1, ct: TestToken));
+    }
+
+    [Fact]
+    public void Browse_mods_exposes_separate_local_cache_paging_controls()
+    {
+        var rootPath = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(
+            rootPath, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var viewModel = File.ReadAllText(Path.Combine(
+            rootPath, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("Command=\"{Binding LoadMoreCachedCatalogCommand}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Visibility=\"{Binding CatalogLoadMoreCachedVisibility}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("AutomationProperties.Name=\"Show more cached catalog results\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("private async Task LoadMoreCachedCatalog()", viewModel, StringComparison.Ordinal);
+        Assert.Contains("offset: offset", viewModel, StringComparison.Ordinal);
+        // Provider continuation remains a distinct, user-initiated operation.
+        Assert.Contains("Command=\"{Binding LoadMoreCatalogCommand}\"", xaml, StringComparison.Ordinal);
+        Assert.Matches(
+            @"\[RelayCommand\]\s+private async Task LoadMoreCatalog\(\)",
+            viewModel);
     }
 
     [Theory]
