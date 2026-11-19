@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.116",
+  "currentVersion": "8.8.117",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.116 immutable updater-main-583 source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3 publicly published; Windows Gate 44468041048 PASS; ZIP SHA-256 d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39, manifest SHA-256 2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6. Hosted real packaged updater E2E 44469075908 passed build 60→583 and rollback, including 4 identical sentinel SHA-256 values. PR #891 merged source-bound evidence into main at 73de9a330948d569e808d2ce18c36f0287b71a1e; personal Heaven2, #669 storage lifecycle, #791 real corpora, #735 installed p95, #786 provider approvals and #350 independent publisher trust remain OPEN. Preserve recursive continuity.",
+  "immediateParentRevision": "v8.8.117 metadata candidate after PR #893 integrated on main c0615264d909f12f5fcb1e01c24d8ed3a623ff01, protecting live/unknown terminal updater owner leases. Native exact-head CI green, two red→green Windows regressions. New immutable release/hosted updater UNVERIFIED. Historical v8.8.116 updater-main-583 source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3 and hosted real packaged updater 44469075908 passed. Personal Heaven2, #669 full storage, #791 real corpora, #735 p95, #786 provider and #350 independent trust remain OPEN. Preserve recursive continuity.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh Toolbox, exact MHW main and release/tag/CI ownership; inherit and propagate CONTINUITY_PROTOCOL and active Learned Rules recursively. Verify immutable v8.8.116 updater-main-583 at exact source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3, Windows Gate 44468041048 PASS, hosted real packaged update/rollback 44469075908 PASS, PR #891 merged receipt at 73de9a330948d569e808d2ce18c36f0287b71a1e. Do not republish or remerge old evidence. Independently verify personal Heaven2 installed SHA/process health and real mixed-game archive UI, installed p95 and storage/reliability acceptance; #669/#791/#735/#793/#786/#350 and security/judiciary issues remain OPEN. Do not break the continuity chain.",
+  "nextAgentObligation": "Refresh current Toolbox, MHW main/owners/PRs/releases and fully inherit and recursively propagate CONTINUITY_PROTOCOL and active Learned Rules. Finish v8.8.117 release candidate exact-head checks and preceding main source publisher, protected merge, then exact tag/source/ZIP/manifest and real packaged update+rollback. PR #893 source c0615264d909f12f5fcb1e01c24d8ed3a623ff01 is merged; v8.8.116 updater-main-583 remains immutable. Independently verify Heaven2, #669/#791/#735/#793/#786/#350 and security/judiciary acceptance. Do not break continuity chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

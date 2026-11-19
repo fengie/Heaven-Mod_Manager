@@ -1,3 +1,8 @@
+# v8.8.117 — November 19, 2026
+
+- **Updater storage ownership:** [PR #893](https://github.com/fengie/Heaven-Mod_Manager/pull/893) protects terminal Confirmed/RolledBack transactions from age/generation reclamation while an owner lease is active or unverifiable; owner state is rechecked before generation-cap deletion. Both new Windows regressions failed on the prior source and passed after the fix, with full native feature and updater security checks green.
+- **Release pending:** implementation source main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` is newer than immutable v8.8.116 updater-main-583; the new tag/ZIP/manifest and real hosted packaged update/rollback remain unverified. #669/#793/#791/#735/#786/#350 and security acceptance stay open.
+
 # v8.8.116 — November 19, 2026
 
 - **Catalog storage safety:** [PR #889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) bounds finalized catalog-download lease retention age by the certified CreatedUtc date even with older filesystem mtimes. Windows integration regression; existing byte quota and unknown/active owner safeguards remain intact.
