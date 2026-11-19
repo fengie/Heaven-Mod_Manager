@@ -63,6 +63,12 @@ public static class GameDownloadArchiveStore
         // The display name is not part of content identity. Reuse a previously
         // verified archive within this game's Downloads root instead of storing
         // identical bytes again under a different mod title.
+        // The common same-title retry remains an O(1) file lookup.
+        if(File.Exists(destination))
+        {
+            await VerifyExistingAsync(destination,sha,ct);
+            return destination;
+        }
         var retained = await FindVerifiedExistingAsync(root,sha,extension,ct);
         if(retained is not null) return retained;
 
@@ -117,9 +123,20 @@ public static class GameDownloadArchiveStore
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod();
         var suffix="-"+digest+extension;
-        var matches=Directory.EnumerateFiles(downloadsRoot,"*",SearchOption.TopDirectoryOnly)
-            .Where(file=>Path.GetFileName(file).EndsWith(suffix,StringComparison.OrdinalIgnoreCase))
-            .OrderBy(file=>file,StringComparer.OrdinalIgnoreCase);
+        // Directory enumeration can take time in a large user library. Keep
+        // this optional alias lookup off the WPF dispatcher and cancellable.
+        var matches=await Task.Run(
+            () => Directory.EnumerateFiles(
+                    downloadsRoot,"*"+suffix,SearchOption.TopDirectoryOnly)
+                .Where(file =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    return Path.GetFileName(file) is string name &&
+                        name.EndsWith(suffix,StringComparison.OrdinalIgnoreCase);
+                })
+                .OrderBy(file=>file,StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ct);
         foreach(var match in matches)
         {
             ct.ThrowIfCancellationRequested();
