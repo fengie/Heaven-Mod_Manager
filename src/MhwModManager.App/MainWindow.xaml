@@ -1192,7 +1192,11 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox Text="{Binding CatalogQuery,UpdateSourceTrigger=PropertyChanged}"
                                              AutomationProperties.Name="Search provider catalog"
-                                             ToolTip="Typing filters the local cache. Choose Search to also query configured providers that explicitly advertise text-search support."/>
+                                             ToolTip="Typing filters the local cache. Press Enter or choose Search to query supported providers.">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding SearchCatalogCommand}"/>
+                                        </TextBox.InputBindings>
+                                    </TextBox>
                                     <Button Grid.Column="1"
                                             Margin="8,0,0,0"
                                             Content="Search"

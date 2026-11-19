@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using MhwModManager.App.ViewModels;
 using Xunit;
 
@@ -6,6 +7,22 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed partial class XamlBindingSafetyTests
 {
+    [Fact]
+    public void EnterInCatalogQueryUsesTheSearchButtonCommand()
+    {
+        var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));
+        XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var query = Assert.Single(document.Descendants(wpf + "TextBox"),
+            element => (string?)element.Attribute("AutomationProperties.Name") == "Search provider catalog");
+        var button = Assert.Single(query.Parent!.Elements(wpf + "Button"),
+            element => (string?)element.Attribute("Content") == "Search");
+        var enter = Assert.Single(query.Elements(wpf + "TextBox.InputBindings").Elements(wpf + "KeyBinding"),
+            element => (string?)element.Attribute("Key") == "Enter");
+        Assert.Null(enter.Attribute("Modifiers"));
+        Assert.Equal("{Binding SearchCatalogCommand}", (string?)button.Attribute("Command"));
+        Assert.Equal((string?)button.Attribute("Command"), (string?)enter.Attribute("Command"));
+    }
+
     [Fact]
     public void InlineRunBindingsAreExplicitlyOneWay()
     {
