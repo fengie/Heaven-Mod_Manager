@@ -81,6 +81,37 @@ public sealed class CatalogProviderComplianceTests
         Assert.Equal("nexus:1234", CatalogMod.BuildCanonicalId(" Nexus ", " 1234 "));
     }
 
+    [Fact]
+    public void Expired_provider_review_reports_the_blocker_without_renewing_permission()
+    {
+        var compliance = Create(CatalogSourceKind.OfficialApi) with
+        {
+            TermsReviewedOn = new DateOnly(2026, 9, 29),
+            ReviewIntervalDays = 30
+        };
+        var today = new DateOnly(2026, 11, 19);
+
+        var detail = CatalogProviderFailureExplanation.Describe(
+            compliance, new InvalidOperationException("provider disabled"), today);
+
+        Assert.Contains("2026-10-29", detail, StringComparison.Ordinal);
+        Assert.Contains("review", detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Throws<InvalidOperationException>(() =>
+            CatalogProviderComplianceValidator.EnsureUsable(compliance, today));
+    }
+
+    [Fact]
+    public void Current_compliant_provider_reports_a_network_failure_not_policy_expiry()
+    {
+        var detail = CatalogProviderFailureExplanation.Describe(
+            Create(CatalogSourceKind.OfficialApi),
+            new HttpRequestException("test network down"),
+            Today);
+
+        Assert.Contains("network", detail, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("expired", detail, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static CatalogProviderCompliance Create(CatalogSourceKind sourceKind)
     {
         return new(

@@ -28,9 +28,10 @@ public sealed partial record NexusArchiveIdentity(string ModId, string DisplayNa
         // Nexus changed download names in July 2026. This is a filename clue,
         // not verified provider identity; the slug denotes a specific file.
         var modern = IsoTimestampSuffix().Match(leaf);
+        if (!modern.Success) modern = HyphenIsoTimestampSuffix().Match(leaf);
         if (modern.Success)
         {
-            var date = modern.Groups["date"].Value;
+            var date = modern.Groups["date"].Value.ToUpperInvariant();
             if (!DateTime.TryParseExact(date, "yyyy-MM-dd'T'HH-mm'Z'",
                     CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                 return false;
@@ -59,6 +60,12 @@ public sealed partial record NexusArchiveIdentity(string ModId, string DisplayNa
     [GeneratedRegex(@"^(?<name>.+)\s+(?<id>[1-9]\d{1,8})\s+(?<version>\d+(?:\.[0-9A-Za-z]+){0,6})\s+(?<date>\d{4}-\d{2}-\d{2}T\d{2}-\d{2}Z)\s+(?<slug>[A-Za-z0-9]{6,20})$",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex IsoTimestampSuffix();
+
+    // Recent Nexus downloads may use a hyphen-delimited ISO timestamp with
+    // lowercase t/z. Validate the calendar date before accepting this unverified clue.
+    [GeneratedRegex(@"^(?<name>.+)-(?<id>[1-9]\d{1,8})-(?<version>\d+(?:\.[0-9A-Za-z]+){0,6})-(?<date>\d{4}-\d{2}-\d{2}T\d{2}-\d{2}Z)-(?<slug>[A-Za-z0-9]{6,20})$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex HyphenIsoTimestampSuffix();
 
     // Nexus archive names may carry a download timestamp followed by a hexadecimal
     // fingerprint. The older numeric-only format is retained for existing libraries.
