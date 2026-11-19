@@ -1131,6 +1131,12 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Check Installed Origins" Command="{Binding CheckCatalogUpdatesCommand}" Style="{StaticResource QuietButton}"/>
+                            <Button Content="More Cached"
+                                    Command="{Binding LoadMoreCachedCatalogCommand}"
+                                    Visibility="{Binding CatalogLoadMoreCachedVisibility}"
+                                    AutomationProperties.Name="Show more cached catalog results"
+                                    ToolTip="Load the next 1,000 locally indexed matches without contacting any provider."
+                                    Style="{StaticResource QuietButton}"/>
                             <Button Content="Load More"
                                     Command="{Binding LoadMoreCatalogCommand}"
                                     Visibility="{Binding CatalogLoadMoreVisibility}"
