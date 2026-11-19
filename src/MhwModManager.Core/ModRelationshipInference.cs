@@ -25,7 +25,8 @@ public static partial class ModRelationshipInference
     private const int MaxChildPaths = 64;
     private static readonly HashSet<string> AddOnCues = new(StringComparer.OrdinalIgnoreCase)
     {
-        "overlay", "addon", "optional", "patch", "hotfix", "component", "suboverride", "retexture"
+        "overlay", "addon", "optional", "patch", "hotfix", "fix", "fixed",
+        "component", "suboverride", "retexture", "texture", "textures"
     };
     private static readonly HashSet<string> GenericNameWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -82,6 +83,7 @@ public static partial class ModRelationshipInference
         foreach (var child in profiles.Values.Where(p => p.IsAddOn && p.Paths.Count <= MaxChildPaths)
                      .OrderBy(p => p.Mod.Id, StringComparer.OrdinalIgnoreCase))
         {
+            var isNegatedOption = HasNegatedOptionCue(child.Mod);
             var parentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var path in child.Paths)
             {
@@ -117,6 +119,9 @@ public static partial class ModRelationshipInference
                 if (identical == shared) continue;
 
                 var sharedIdentity = child.IdentityTokens.Overlaps(parent.IdentityTokens);
+                // 'No-X' options must retain a meaningful shared name token. Sharing
+                // one common texture with an unrelated structural mod is not enough.
+                if (isNegatedOption && !sharedIdentity) continue;
                 // Texture-only replacements of a structural base can be an add-on even if
                 // their titles are different. Otherwise require a distinctive name token;
                 // an identical texture path alone is not a parent-child relationship.
@@ -162,9 +167,25 @@ public static partial class ModRelationshipInference
         if (ModChoiceSignals.HasPickOneCue(nameAndRole)) return false;
         var tokens = WordRegex().Matches(nameAndRole.ToLowerInvariant())
             .Cast<Match>().Select(x => x.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        return tokens.Overlaps(AddOnCues) ||
+        return HasNegatedOptionCue(mod) || tokens.Overlaps(AddOnCues) ||
             tokens.Contains("add") && tokens.Contains("on") ||
             string.Equals(mod.FamilyRole, "Optional", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasNegatedOptionCue(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+
+        static bool IsNegatedPrefix(string name)
+        {
+            name = NexusArchiveIdentity.RemoveSuffix(name).TrimStart();
+            return name.StartsWith("no-", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("no ", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("without-", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("without ", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return IsNegatedPrefix(mod.Name) || IsNegatedPrefix(mod.DisplayName);
     }
 
     private static HashSet<string> Tokens(string text)
