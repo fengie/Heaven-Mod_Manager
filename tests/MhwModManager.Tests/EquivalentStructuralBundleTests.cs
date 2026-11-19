@@ -33,6 +33,33 @@ public sealed class EquivalentStructuralBundleTests
     }
 
     [Fact]
+    public void Independent_mod_namespaces_in_one_armor_slot_can_coexist()
+    {
+        // Custom mod_* resource namespaces are physically isolated even though both
+        // paths sit under the same armor body folder.
+        var plan = Build([
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_cheeky\mesh.mod3", MeshHash),
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_cheeky\material.mrl3", MaterialHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_clockwork\mesh.mod3", DifferentHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_clockwork\material.mrl3", MaterialHash)]);
+
+        Assert.False(plan.IsBlocked);
+        Assert.Equal(4, plan.Changes.Count);
+        Assert.DoesNotContain(plan.Conflicts, decision => decision.ReasonCode == "bundle-mixed-providers");
+    }
+
+    [Fact]
+    public void One_shared_mod_namespace_does_not_justify_mixing_structural_assets()
+    {
+        var plan = Build([
+            File("alpha", @"nativePC\pl\f_equip\pl018_0000\body\mod_shared\a.mod3", MeshHash),
+            File("beta", @"nativePC\pl\f_equip\pl018_0000\body\mod_shared\b.mrl3", MaterialHash)]);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Contains(plan.Conflicts, c => c.Blocking && c.ReasonCode == "bundle-mixed-providers");
+    }
+
+    [Fact]
     public void Different_files_in_one_armor_slot_report_no_exact_file_collision()
     {
         var plan = Build([File("alpha", Mesh, MeshHash), File("alpha", Material, MaterialHash),
