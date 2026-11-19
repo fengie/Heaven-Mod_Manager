@@ -1,10 +1,12 @@
-# v8.8.112 - immutable release verified
+# v8.8.113 - metadata candidate, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `e9b1212985f80533ce04e3ab1e43910290692687`. Public immutable [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` contains source PRs #850–#874. This v8.8.113 metadata candidate is **not yet a source-bound immutable public release**. The previous immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) targets older source `e9b1212985f80533ce04e3ab1e43910290692687`. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
+
+- **Post-548 integrated source:** #850–#874 includes real-format archive fixtures, interrupted import recovery, cross-source family review, content-aware game routing, identical-payload conflict safety, per-package loader targets, startup telemetry/deferral, bounded catalog result disclosure and import-workspace visibility. These changes are on `main@60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` but **not** in immutable v8.8.112 updater-main-548. v8.8.113 needs its own exact source and public artifact verification. Real hundreds-mod Sifu/Stellar Blade/MHW corpus, game-native container conflicts, Heaven2 installed source/health and p95 remain unverified.
 
 - #844 Inbox progress and diagnostics; #846 MTP Cobertura coverage and product test inventory; #847 disposable hosted-Windows WPF UIA; #848 approved active-game manual bulk import auto-install and Mods refresh. #848 exact candidate `d177254618b8d2dc48c2bd510c01e6932f392f77` passed Windows Feature 44037120853, Security 44037120935, AutoUpdate 44037120876, hosted WPF UI 44037121012 (4/4). Merged in main `62f3dee97e1e6ed56bcc098b50db515e4b08b624`. Large real RAR/7z and installed-device proof remain unresolved.
 
