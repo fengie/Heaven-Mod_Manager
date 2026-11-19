@@ -915,6 +915,7 @@ public sealed class AutoPopulateService(
     private string? FindArmorMaterialIssue(IReadOnlyList<ModFileDescriptor> files,
         Dictionary<string, bool> legacyByHash, CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         Span<byte> header = stackalloc byte[16];
         ReadOnlySpan<byte> legacy = [0x4D, 0x52, 0x4C, 0, 11, 0, 0, 0, 0xA9, 0xBC, 0xBB, 0x59, 0, 0, 0, 0];
         foreach (var file in files)
@@ -940,7 +941,7 @@ public sealed class AutoPopulateService(
                 legacyByHash.Add(file.BlobSha256, isLegacy);
             }
             if (isLegacy)
-                return $"'{file.Path}' uses a pre-Iceborne armor material. Deselect this package and Apply to restore the previous files, or install an Iceborne-compatible edition.";
+                return $"'{file.Path}' uses a pre-Iceborne armor material. Deselect this package, review the deployment preview, then Apply. You can also install an Iceborne-compatible edition.";
         }
         return null;
     }
