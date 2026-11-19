@@ -1,10 +1,12 @@
-# v8.8.113 - immutable release verified
+# v8.8.114 - metadata candidate, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `7c0cad829ec58af554d4976753642243fd77fa67`. Public immutable [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `ff85ad37bf18a13ff06df4a1240869478a85a6d7` includes later conflict/family safety PRs #876/#879, not part of immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), exact released source `7c0cad829ec58af554d4976753642243fd77fa67`. v8.8.114 is a **metadata candidate only**, not yet a verified new release or personal Heaven2 installation. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
+
+- **Post-572 candidate source:** #876 full SHA-256 validity on identical-file decisions and #879 pick-one variant non-composition are integrated at `main@ff85ad37bf18a13ff06df4a1240869478a85a6d7`, after the published v8.8.113 release. Exact PR checks passed; immutable v8.8.114 publication/hosted E2E/Heaven2 deployment remain separate and unverified.
 
 - **Post-548 integrated source:** #850–#874 includes real-format archive fixtures, interrupted import recovery, cross-source family review, content-aware game routing, identical-payload conflict safety, per-package loader targets, startup telemetry/deferral, bounded catalog result disclosure and import-workspace visibility. These changes are on `main@60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` but **not** in immutable v8.8.112 updater-main-548. v8.8.113 needs its own exact source and public artifact verification. Real hundreds-mod Sifu/Stellar Blade/MHW corpus, game-native container conflicts, Heaven2 installed source/health and p95 remain unverified.
 
@@ -12,6 +14,8 @@ Canonical source: `fengie/Heaven-Mod_Manager@main` at `7c0cad829ec58af554d497675
 - The previous immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) is preserved at source `e9b1212985f80533ce04e3ab1e43910290692687`; v8.8.113 is unverified until exact public publication and device acceptance.
 
 ## Verification boundary
+
+**v8.8.114 release pending:** `ff85ad37bf18a13ff06df4a1240869478a85a6d7` is newer than the v8.8.113 immutable published source. Do not reuse the old ZIP, manifest or hosted E2E receipt as proof of new-source publication or installed Heaven2 health.
 
 Current hosted-Windows closure: v8.8.113 source `7c0cad829ec58af554d4976753642243fd77fa67` passed run `44429973426` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log`.
 
