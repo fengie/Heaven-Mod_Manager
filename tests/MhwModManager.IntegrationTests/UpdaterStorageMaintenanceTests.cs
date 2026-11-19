@@ -65,11 +65,16 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
     }
 
     [Fact]
-    public async Task Malformed_pending_state_fails_closed_for_staging_cleanup()
+    public async Task Malformed_pending_state_preserves_staging_and_terminal_recovery_transactions()
     {
         var now = DateTimeOffset.UtcNow;
         var old = now - TimeSpan.FromHours(3);
         var orphanPayload = CreateStagingAttempt(103, old, "orphan");
+        var terminal = CreateTransaction(
+            104,
+            UpdateJournalPhase.Confirmed,
+            old,
+            legacyName: true);
 
         Directory.CreateDirectory(root);
         await File.WriteAllTextAsync(
@@ -85,7 +90,10 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
             CancellationToken.None);
 
         Assert.True(Directory.Exists(Path.GetDirectoryName(orphanPayload)!));
+        Assert.True(Directory.Exists(terminal));
         Assert.Equal(0, result.DeletedStagingAttempts);
+        Assert.Equal(0, result.DeletedTransactions);
+        Assert.True(result.DeferredEntries >= 1);
     }
 
     [Fact]
