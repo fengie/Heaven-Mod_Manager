@@ -84,6 +84,51 @@ public sealed class ModRelationshipInferenceTests
         Assert.Empty(ModRelationshipInference.Suggest(mods, files));
     }
 
+    [Theory]
+    [InlineData("Alt")]
+    [InlineData("Choose")]
+    [InlineData("Color")]
+    [InlineData("Version")]
+    public void Texture_only_pick_one_variant_is_never_promoted_to_an_implicit_parent_suggestion(string label)
+    {
+        var mods = new[]
+        {
+            Mod("main", "High Poly Body Main", "1001"),
+            Mod("variant", $"High Poly Body {label}", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            ContentFile("main", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('c', 64)),
+            ContentFile("main", shared, new string('a', 64)),
+            ContentFile("variant", shared, new string('b', 64))
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
+    [Theory]
+    [InlineData("Alt")]
+    [InlineData("Style")]
+    [InlineData("Choose")]
+    public void Pick_one_structural_variant_cannot_be_suggested_as_addon_parent(string label)
+    {
+        var mods = new[]
+        {
+            Mod("variant", $"High Poly Body {label}", "1001"),
+            Mod("overlay", "High Poly Body Texture Overlay", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            ContentFile("variant", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('c', 64)),
+            ContentFile("variant", shared, new string('a', 64)),
+            ContentFile("overlay", shared, new string('b', 64))
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
     [Fact]
     public void Shared_loader_roots_or_unrelated_replacements_are_not_enough_to_suggest_a_parent()
     {
@@ -243,6 +288,118 @@ public sealed class ModRelationshipInferenceTests
         var result = Assert.Single(ModRelationshipInference.Suggest(mods, files));
         Assert.Equal(2, result.SharedPaths);
         Assert.Contains("1 byte-identical", result.Evidence, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("no-bikini", "Summer Bikini Base")]
+    [InlineData("no-fur-shawl", "Winter Fur Shawl Base")]
+    [InlineData("wst-fix-8556-1-2026-07-24t11-22z", "Royal Wst Set")]
+    [InlineData("sweaty-effect-texture", "Sweaty Effect Main")]
+    public void Imported_component_names_produce_reviewable_parent_suggestions_on_file_evidence(
+        string childName, string parentName)
+    {
+        var mods = new[]
+        {
+            Mod("parent", parentName, "1001"),
+            Mod("child", childName, "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+
+        Assert.Equal("parent", suggestion.ParentModId);
+        Assert.Equal("child", suggestion.ChildModId);
+        Assert.Equal(1, suggestion.SharedPaths);
+        Assert.Contains("Review required", suggestion.Evidence);
+        Assert.Equal(2, LogicalModFamilies.Build(mods, files).Count);
+        Assert.All(mods, mod => Assert.False(mod.Enabled));
+    }
+
+    [Fact]
+    public void Negated_option_name_does_not_suggest_an_unrelated_parent_on_texture_path_alone()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "Winter Jacket Base", "1001"),
+            Mod("child", "no-bikini", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
+    [Fact]
+    public void Texture_named_main_remains_eligible_as_parent_of_an_explicit_overlay()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Texture Main", "1001"),
+            Mod("child", "High Poly Texture Overlay", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal("parent", suggestion.ParentModId);
+        Assert.Equal("child", suggestion.ChildModId);
+    }
+
+    [Fact]
+    public void Generic_texture_only_mod_is_not_related_without_distinctive_identity()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Body Base", "1001"),
+            Mod("child", "Unrelated Texture Atlas", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
+    [Fact]
+    public void Implicit_texture_sidecar_uses_shared_identity_and_structural_evidence()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "Sweaty Effect Base", "1001"),
+            Mod("child", "Sweaty Effect Visuals", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal("parent", suggestion.ParentModId);
+        Assert.Equal("child", suggestion.ChildModId);
+        Assert.Contains("texture-only payload without an explicit add-on label", suggestion.Evidence);
     }
 
     private static ModFileDescriptor ContentFile(string modId, string path, string digest) =>

@@ -1,3 +1,5 @@
+using System.Net.Http;
+
 namespace MhwModManager.Core;
 
 public enum CatalogSourceKind
@@ -100,5 +102,40 @@ public static class CatalogProviderComplianceValidator
         if (errors.Count > 0)
             throw new InvalidOperationException(
                 $"Catalog provider '{compliance.ProviderId}' failed compliance validation: {string.Join(" ", errors)}");
+    }
+}
+
+/// <summary>
+/// Produces actionable, non-sensitive UI diagnostics without bypassing provider use policy.
+/// The underlying provider exception is retained only in the master debug log.
+/// </summary>
+public static class CatalogProviderFailureExplanation
+{
+    public static string Describe(CatalogProviderCompliance compliance, Exception exception, DateOnly today)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(compliance);
+        ArgumentNullException.ThrowIfNull(exception);
+
+        if (!compliance.Enabled)
+            return "This provider is disabled by its configured use policy. A maintainer must review access.";
+
+        var validationErrors = CatalogProviderComplianceValidator.Validate(compliance, today);
+        if (validationErrors.Contains("Terms review is stale.", StringComparer.Ordinal))
+        {
+            var expires = compliance.TermsReviewedOn.AddDays(compliance.ReviewIntervalDays);
+            return $"Provider terms review expired {expires:yyyy-MM-dd}. A verified maintainer review is required; retrying cannot restore access. Browse the provider website meanwhile.";
+        }
+
+        if (validationErrors.Count > 0)
+            return "Provider policy or configuration validation failed. See diagnostics and obtain a verified review before retrying.";
+
+        return exception switch
+        {
+            TaskCanceledException => "Provider request timed out. Retry later or browse the provider website.",
+            HttpRequestException => "Provider network request failed. Check connectivity or browse the provider website.",
+            InvalidDataException => "Provider response could not be read safely. The adapter may need updating.",
+            _ => "Provider request failed. See the master debug log for details or browse the provider website."
+        };
     }
 }

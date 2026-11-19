@@ -22,6 +22,21 @@ public sealed partial class XamlBindingSafetyTests
     }
 
     [Fact]
+    public void Browse_mods_keeps_official_website_fallbacks_accessible_when_provider_cache_is_empty()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.Catalog.cs"));
+
+        Assert.Contains("OpenNexusBrowseCommand", xaml);
+        Assert.Contains("OpenGameBananaBrowseCommand", xaml);
+        Assert.Contains("CatalogProviderWebLinksVisibility", xaml);
+        Assert.Contains("https://www.nexusmods.com/monsterhunterworld/mods", viewModel);
+        Assert.Contains("https://gamebanana.com/games/9081", viewModel);
+        Assert.Contains("OpenExternalUri(", viewModel);
+    }
+
+    [Fact]
     public void ConflictUiOffersManualFamilyChaining()
     {
         var root = FindRepositoryRoot();

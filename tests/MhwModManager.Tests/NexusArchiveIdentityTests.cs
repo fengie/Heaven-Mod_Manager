@@ -11,6 +11,8 @@ public sealed class NexusArchiveIdentityTests
     [InlineData("Knight Commission Armor - Top-1965-3-10-0", "1965", "Knight Commission Armor - Top")]
     [InlineData("Knight Commission Armor - Top-1965-3-10-0.zip", "1965", "Knight Commission Armor - Top")]
     [InlineData("PawnCompanion 1377 1.35 2026-06-24T03-45Z G8alq8bQH.zip", "1377", "PawnCompanion")]
+    [InlineData("wst-fix-8556-1-2026-07-24t11-22z-ksakzfaie", "8556", "wst-fix")]
+    [InlineData("wst-fix-8556-1-2026-07-24T11-22Z-ksakzfaie.rar", "8556", "wst-fix")]
     [InlineData("GiftOfSpellCraft 0.0.1 184672 1 2026-07-07T17-09Z GkqKVMPSF.zip", "184672", "GiftOfSpellCraft 0.0.1")]
     public void Recognizes_archive_identity_and_keeps_distinct_mod_pages(string archiveName, string expectedModId, string expectedDisplay)
     {
@@ -24,6 +26,8 @@ public sealed class NexusArchiveIdentityTests
     [InlineData("texture-overlay-8397-1-0-1763815951-not-a-verified-hex-digest")]
     [InlineData("Texture Overlay v1.0")]
     [InlineData("PawnCompanion 1377 1.35 2026-13-40T03-45Z G8alq8bQH.zip")]
+    [InlineData("wst-fix-8556-1-2026-13-40t11-22z-ksakzfaie")]
+    [InlineData("wst-fix-8556-1-2026-07-24t11-22z-bad!")]
     [InlineData("PawnCompanion 1377 1.35 2026-06-24T03-45Z bad!.zip")]
     [InlineData("NormalFolder-123-456-notnexus")]
     [InlineData("unrelated-1-0-1763815951-54ed6e10c979c084eb88664a3b639870")]
@@ -40,6 +44,17 @@ public sealed class NexusArchiveIdentityTests
             "PawnCompanion 1377 1.35 2026-06-24T03-45Z G8alq8bQH.zip", out var identity));
         Assert.Equal("1377", identity.ModId);
         Assert.Equal("G8alq8bQH", identity.FileSlug);
+    }
+
+    [Fact]
+    public void Hyphen_delimited_mod_download_retains_file_slug_only_as_unverified_provenance()
+    {
+        Assert.True(NexusArchiveIdentity.TryParse(
+            "wst-fix-8556-1-2026-07-24t11-22z-ksakzfaie", out var identity));
+
+        Assert.Equal("8556", identity.ModId);
+        Assert.Equal("wst-fix", identity.DisplayName);
+        Assert.Equal("ksakzfaie", identity.FileSlug);
     }
 
     [Fact]

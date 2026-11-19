@@ -25,7 +25,8 @@ public static partial class ModRelationshipInference
     private const int MaxChildPaths = 64;
     private static readonly HashSet<string> AddOnCues = new(StringComparer.OrdinalIgnoreCase)
     {
-        "overlay", "addon", "optional", "patch", "hotfix", "component", "suboverride", "retexture"
+        "overlay", "addon", "optional", "patch", "hotfix", "fix", "fixed",
+        "component", "suboverride", "retexture"
     };
     private static readonly HashSet<string> GenericNameWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -68,7 +69,9 @@ public static partial class ModRelationshipInference
             var profile = new Profile(mod, paths, hashesByPath,
                 owned.Any(f => f.FileClass == FileClass.Structural),
                 owned.All(f => f.FileClass == FileClass.Texture),
-                HasAddOnCue(mod), tokens);
+                HasAddOnCue(mod),
+                ModChoiceSignals.HasPickOneCue(mod.Name + " " + mod.DisplayName + " " + mod.FamilyRole),
+                tokens);
             profiles[mod.Id] = profile;
             foreach (var path in paths)
             {
@@ -79,9 +82,17 @@ public static partial class ModRelationshipInference
         }
 
         var suggestions = new List<ModRelationshipSuggestion>();
-        foreach (var child in profiles.Values.Where(p => p.IsAddOn && p.Paths.Count <= MaxChildPaths)
+        // Unlabeled texture-only sidecars may still be reviewable when their payload
+        // and distinctive identity match a structural main. A pick-one cue is
+        // negative evidence even without an explicit "addon" label; otherwise
+        // an Alt/Choose texture variant would be admitted through TextureOnly.
+        foreach (var child in profiles.Values.Where(p =>
+                     (p.IsAddOn || p.TextureOnly) &&
+                     p.Paths.Count <= MaxChildPaths &&
+                     !p.HasPickOneCue)
                      .OrderBy(p => p.Mod.Id, StringComparer.OrdinalIgnoreCase))
         {
+            var isNegatedOption = HasNegatedOptionCue(child.Mod);
             var parentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var path in child.Paths)
             {
@@ -95,6 +106,7 @@ public static partial class ModRelationshipInference
                 if (id.Equals(child.Mod.Id, StringComparison.OrdinalIgnoreCase) ||
                     !profiles.TryGetValue(id, out var parent) ||
                     parent.IsAddOn ||
+                    parent.HasPickOneCue ||
                     parent.Paths.Count < child.Paths.Count ||
                     ProvenanceIntelligence.SameNexusMod(parent.Mod, child.Mod)) continue;
 
@@ -117,6 +129,12 @@ public static partial class ModRelationshipInference
                 if (identical == shared) continue;
 
                 var sharedIdentity = child.IdentityTokens.Overlaps(parent.IdentityTokens);
+                // An unlabeled texture package is a candidate only with both
+                // structural-parent and distinctive shared-name evidence.
+                if (!child.IsAddOn && !(child.TextureOnly && parent.HasStructural && sharedIdentity)) continue;
+                // 'No-X' options must retain a meaningful shared name token. Sharing
+                // one common texture with an unrelated structural mod is not enough.
+                if (isNegatedOption && !sharedIdentity) continue;
                 // Texture-only replacements of a structural base can be an add-on even if
                 // their titles are different. Otherwise require a distinctive name token;
                 // an identical texture path alone is not a parent-child relationship.
@@ -125,12 +143,15 @@ public static partial class ModRelationshipInference
                 var score = 50 + (shared == child.Paths.Count ? 10 : 0)
                     + (parent.HasStructural && child.TextureOnly ? 15 : 0)
                     + (sharedIdentity ? 15 : 0);
+                var roleEvidence = child.IsAddOn
+                    ? $"'{child.Mod.DisplayName}' carries an optional/add-on label; "
+                    : $"'{child.Mod.DisplayName}' has a texture-only payload without an explicit add-on label; ";
                 var explanation = $"Review required: {shared}/{child.Paths.Count} child file(s) share target paths with '{parent.Mod.DisplayName}' ({identical} byte-identical, {shared-identical} different or unverified). " +
-                    $"'{child.Mod.DisplayName}' has an add-on/overlay label; " +
+                    roleEvidence +
                     (parent.HasStructural && child.TextureOnly
                         ? "the proposed parent also supplies structural assets. "
                         : "both titles share a distinctive identity term. ") +
-                    "Cross-source file overlap does not establish dependency or overwrite order.";
+                    "Shared deployment paths alone do not establish dependency or overwrite order.";
                 suggestions.Add(new(parent.Mod.Id, child.Mod.Id,
                     ModRelationshipKind.PossibleOverride, shared, score, explanation));
             }
@@ -162,9 +183,26 @@ public static partial class ModRelationshipInference
         if (ModChoiceSignals.HasPickOneCue(nameAndRole)) return false;
         var tokens = WordRegex().Matches(nameAndRole.ToLowerInvariant())
             .Cast<Match>().Select(x => x.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        return tokens.Overlaps(AddOnCues) ||
+        return HasNegatedOptionCue(mod) || tokens.Overlaps(AddOnCues) ||
             tokens.Contains("add") && tokens.Contains("on") ||
             string.Equals(mod.FamilyRole, "Optional", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasNegatedOptionCue(ModDescriptor mod)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+
+        static bool IsNegatedPrefix(string name)
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            name = NexusArchiveIdentity.RemoveSuffix(name).TrimStart();
+            return name.StartsWith("no-", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("no ", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("without-", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("without ", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return IsNegatedPrefix(mod.Name) || IsNegatedPrefix(mod.DisplayName);
     }
 
     private static HashSet<string> Tokens(string text)
@@ -182,6 +220,7 @@ public static partial class ModRelationshipInference
         bool HasStructural,
         bool TextureOnly,
         bool IsAddOn,
+        bool HasPickOneCue,
         HashSet<string> IdentityTokens);
 
     [GeneratedRegex(@"[a-z0-9]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
