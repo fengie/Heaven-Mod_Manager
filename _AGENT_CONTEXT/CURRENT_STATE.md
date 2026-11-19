@@ -1,8 +1,10 @@
-# v8.8.112 - immutable release verified
+# v8.8.113 - metadata candidate, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `e9b1212985f80533ce04e3ab1e43910290692687`. Public immutable [updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` contains source PRs #850–#874. This v8.8.113 metadata candidate is **not yet a source-bound immutable public release**. The previous immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) targets older source `e9b1212985f80533ce04e3ab1e43910290692687`. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
+
+- **Post-548 integrated source:** #850–#874 includes real-format archive fixtures, interrupted import recovery, cross-source family review, content-aware game routing, identical-payload conflict safety, per-package loader targets, startup telemetry/deferral, bounded catalog result disclosure and import-workspace visibility. These changes are on `main@60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` but **not** in immutable v8.8.112 updater-main-548. v8.8.113 needs its own exact source and public artifact verification. Real hundreds-mod Sifu/Stellar Blade/MHW corpus, game-native container conflicts, Heaven2 installed source/health and p95 remain unverified.
 
 - #844 phase-aware Inbox progress and performance reports; #846 opt-in code coverage, matrix and synthetic benchmarks; #847 hosted-Windows UIA import/preview/apply/undo/switch; #848 automatic approved active-game manual bulk-import completion and Mods refresh. All integrated at `main@62f3dee97e1e6ed56bcc098b50db515e4b08b624`, with #848 exact-head Feature 44037120853 and hosted WPF UIA 44037121012 (4/4). These source changes are included in immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548); installation on Heaven2 is not yet verified.
 
