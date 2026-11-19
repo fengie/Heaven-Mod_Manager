@@ -494,6 +494,97 @@ public sealed class ManagerDatabase
 
 
     /// <summary>
+    /// Persist a user-confirmed separation from an incorrect logical family. A unique family key
+    /// takes precedence over stale source IDs and name/asset inference. Only overlay rules generated
+    /// by the former manual family are removed; unrelated explicit human rules are retained.
+    /// Neither package payloads nor live game files are changed.
+    /// </summary>
+    public async Task SeparateLogicalMemberAsync(string modId, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"mod={modId}");
+        if (string.IsNullOrWhiteSpace(modId))
+            throw new ArgumentException("A source package is required.", nameof(modId));
+
+        await using var c = await OpenAsync(ct);
+        await using var tx = (SqliteTransaction)await c.BeginTransactionAsync(ct);
+        string? previousFamily;
+        await using (var read = c.CreateCommand())
+        {
+            read.Transaction = tx;
+            read.CommandText = "SELECT family_id FROM mods WHERE id=$m";
+            read.Parameters.AddWithValue("$m", modId);
+            var value = await read.ExecuteScalarAsync(ct);
+            if (value is null)
+                throw new InvalidOperationException($"Source package '{modId}' no longer exists.");
+            previousFamily = value is DBNull ? null : (string)value;
+        }
+
+        // Manually chained overlays were created as one atomic relationship. Delete only those
+        // that explicitly identify this previous family, never arbitrary user-authored rules.
+        var ownedRules = new List<string>();
+        if (!string.IsNullOrWhiteSpace(previousFamily) &&
+            previousFamily.StartsWith("manual:", StringComparison.OrdinalIgnoreCase))
+        {
+            await using (var read = c.CreateCommand())
+            {
+                read.Transaction = tx;
+                read.CommandText = """
+                    SELECT id,reason FROM conflict_rules
+                    WHERE kind=$kind AND scope=$scope AND explicit=1
+                    AND (left_mod_id=$m OR right_mod_id=$m)
+                    """;
+                read.Parameters.AddWithValue("$kind", RuleKind.Overlay.ToString());
+                read.Parameters.AddWithValue("$scope", RuleScope.ModPair.ToString());
+                read.Parameters.AddWithValue("$m", modId);
+                await using var reader = await read.ExecuteReaderAsync(ct);
+                while (await reader.ReadAsync(ct))
+                {
+                    var reason = reader.GetString(1);
+                    if (reason.StartsWith("Manual family chain:", StringComparison.Ordinal) &&
+                        reason.EndsWith($" in family '{previousFamily}'.", StringComparison.Ordinal))
+                        ownedRules.Add(reader.GetString(0));
+                }
+            }
+            foreach (var ruleId in ownedRules)
+            {
+                await using var deleteRule = c.CreateCommand();
+                deleteRule.Transaction = tx;
+                deleteRule.CommandText = "DELETE FROM conflict_rules WHERE id=$id";
+                deleteRule.Parameters.AddWithValue("$id", ruleId);
+                await deleteRule.ExecuteNonQueryAsync(ct);
+            }
+        }
+
+        await using (var deleteMember = c.CreateCommand())
+        {
+            deleteMember.Transaction = tx;
+            deleteMember.CommandText = "DELETE FROM mod_family_members WHERE mod_id=$m";
+            deleteMember.Parameters.AddWithValue("$m", modId);
+            await deleteMember.ExecuteNonQueryAsync(ct);
+        }
+
+        // Use a stable hash of the exact (case-sensitive) source ID. Merely lowercasing
+        // the ID would collapse case-distinct packages in legacy libraries.
+        var separateFamily = "manual:split:" +
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(modId))).ToLowerInvariant();
+        await using (var update = c.CreateCommand())
+        {
+            update.Transaction = tx;
+            update.CommandText = "UPDATE mods SET family_id=$f,updated_at=$at WHERE id=$m";
+            update.Parameters.AddWithValue("$f", separateFamily);
+            update.Parameters.AddWithValue("$at", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            update.Parameters.AddWithValue("$m", modId);
+            if (await update.ExecuteNonQueryAsync(ct) != 1)
+                throw new InvalidOperationException($"Source package '{modId}' changed during separation.");
+        }
+
+        await tx.CommitAsync(ct);
+        MasterDebugLog.Write("FAMILY-MANUAL",
+            $"SEPARATE source={modId}; priorFamily={previousFamily ?? "<none>"}; removedOwnedRules={ownedRules.Count}; marker={separateFamily}");
+    }
+
+    /// <summary>
     /// Persists an explicit user-authored logical family. The selected main package remains the
     /// family root; every supplied child is recorded as an Optional member and receives an explicit
     /// main->optional overlay rule. No source files are moved or modified.
