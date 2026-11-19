@@ -1,6 +1,6 @@
 # v8.8.116 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 19, 2026 · 12:36:14 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 19, 2026 · 1:10:59 AM EST** _(repo-enforced)_
 
 Current product version: **8.8.116**.
 
@@ -13,7 +13,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.116 — safe finalized catalog download retention
 
 - [#889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) protects newly created finalized download leases from premature age-based cleanup when filesystem timestamps are old. Native Windows regression, startup performance, source and CI checks passed; owner/byte-quota safety is unchanged.
-- **Candidate boundary:** source `b76cd3761b5d91327a3b1138cab8ed3da0e96780` follows immutable [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) at `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`. No v8.8.116 public package, hosted packaged rollback, Heaven2 install or whole #669 acceptance is yet verified.
+- **Verified immutable release:** [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`. Windows Release Gate [44468041048](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44468041048) PASS. Hosted real packaged update 60→583 and injected rollback [44469075908](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44469075908) PASS with four preserved user-data sentinel hashes; allowlisted receipt merged via [PR #891](https://github.com/fengie/Heaven-Mod_Manager/pull/891). Personal Heaven2 installation and whole #669 acceptance remain unverified.
 
 ## v8.8.115 — family-choice safety and scalable candidate matching
 
