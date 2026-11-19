@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.112</Version>
-    <InformationalVersion>8.8.112-bulk-auto-import-and-wpf-acceptance</InformationalVersion>
+    <Version>8.8.113</Version>
+    <InformationalVersion>8.8.113-evidence-first-mod-safety-and-ux</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
