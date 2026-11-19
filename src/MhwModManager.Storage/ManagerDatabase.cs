@@ -519,8 +519,10 @@ public sealed class ManagerDatabase
             previousFamily = value is DBNull ? null : (string)value;
         }
 
-        // Manually chained overlays were created as one atomic relationship. Delete only those
-        // that explicitly identify this previous family, never arbitrary user-authored rules.
+        // Historical manually chained overlays have no persisted ownership foreign key.
+        // Match their exact generated shape, including precedence and canonical reason;
+        // broad prefix/suffix matches can erase unrelated user-authored overwrite rules.
+        // Ambiguous rules remain intact for explicit conflict review.
         var ownedRules = new List<string>();
         if (!string.IsNullOrWhiteSpace(previousFamily) &&
             previousFamily.StartsWith("manual:", StringComparison.OrdinalIgnoreCase))
@@ -529,7 +531,8 @@ public sealed class ManagerDatabase
             {
                 read.Transaction = tx;
                 read.CommandText = """
-                    SELECT id,reason FROM conflict_rules
+                    SELECT id,reason,left_mod_id,right_mod_id,winner_mod_id,path_pattern
+                    FROM conflict_rules
                     WHERE kind=$kind AND scope=$scope AND explicit=1
                     AND (left_mod_id=$m OR right_mod_id=$m)
                     """;
@@ -539,10 +542,24 @@ public sealed class ManagerDatabase
                 await using var reader = await read.ExecuteReaderAsync(ct);
                 while (await reader.ReadAsync(ct))
                 {
-                    var reason = reader.GetString(1);
-                    if (reason.StartsWith("Manual family chain:", StringComparison.Ordinal) &&
-                        reason.EndsWith($" in family '{previousFamily}'.", StringComparison.Ordinal))
-                        ownedRules.Add(reader.GetString(0));
+                    var id = reader.GetString(0);
+                    if (!Guid.TryParseExact(id, "N", out _) ||
+                        reader.IsDBNull(1) || reader.IsDBNull(2) ||
+                        reader.IsDBNull(3) || reader.IsDBNull(4) ||
+                        !reader.IsDBNull(5))
+                        continue;
+
+                    var lower = reader.GetString(2);
+                    var higher = reader.GetString(3);
+                    var winner = reader.GetString(4);
+                    if (string.Equals(lower, higher, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(higher, winner, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var generatedReason =
+                        $"Manual family chain: '{higher}' is a later optional/component layer above '{lower}' in family '{previousFamily}'.";
+                    if (string.Equals(reader.GetString(1), generatedReason, StringComparison.Ordinal))
+                        ownedRules.Add(id);
                 }
             }
             foreach (var ruleId in ownedRules)
