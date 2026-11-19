@@ -84,6 +84,29 @@ public sealed class ModRelationshipInferenceTests
         Assert.Empty(ModRelationshipInference.Suggest(mods, files));
     }
 
+    [Theory]
+    [InlineData("Alt")]
+    [InlineData("Choose")]
+    [InlineData("Color")]
+    [InlineData("Version")]
+    public void Texture_only_pick_one_variant_is_never_promoted_to_an_implicit_parent_suggestion(string label)
+    {
+        var mods = new[]
+        {
+            Mod("main", "High Poly Body Main", "1001"),
+            Mod("variant", $"High Poly Body {label}", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            ContentFile("main", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('c', 64)),
+            ContentFile("main", shared, new string('a', 64)),
+            ContentFile("variant", shared, new string('b', 64))
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
     [Fact]
     public void Shared_loader_roots_or_unrelated_replacements_are_not_enough_to_suggest_a_parent()
     {
