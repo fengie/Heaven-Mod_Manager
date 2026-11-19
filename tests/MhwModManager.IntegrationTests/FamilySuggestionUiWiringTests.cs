@@ -27,6 +27,22 @@ public sealed class FamilySuggestionUiWiringTests
         Assert.Contains("MessageBoxButton.YesNo", command);
     }
 
+    [Fact]
+    public void Conflict_cards_offer_explicit_separation_of_falsely_grouped_members()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
+        var viewModel = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
+        var rows = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "Rows.cs"));
+
+        Assert.Contains("SeparateConflictFamilyCommand", xaml);
+        Assert.Contains("CanSeparate", xaml);
+        Assert.Contains("private async Task SeparateConflictFamily", viewModel);
+        Assert.Contains("SeparateLogicalMemberAsync", viewModel);
+        Assert.Contains("bool CanSeparate", rows);
+        Assert.Contains("MessageBoxButton.YesNo", viewModel);
+    }
+
     private static string FindRepositoryRoot()
     {
         var folder = new DirectoryInfo(AppContext.BaseDirectory);
