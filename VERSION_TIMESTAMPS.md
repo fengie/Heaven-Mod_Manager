@@ -4,6 +4,7 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
+| 8.8.119 | November 19, 2026 · 5:15:34 AM EST | release metadata candidate after source main 035517cf (#898/#900/#902/#903/#905); new immutable publication and hosted updater pending, Heaven2 unverified |
 | 8.8.118 | November 19, 2026 · 2:25:38 AM EST | version-metadata timestamp; immutable updater-main-588 published at 2:56:25 AM EST from source b6e1e151; Windows Gate 44481505844 and real hosted update/rollback 44483604969 PASS; physical Heaven2 unverified |
 | 8.8.117 | November 19, 2026 · 1:38:14 AM EST | immutable updater-main-586 source 69a317ea; Windows Gate 44475835455 and hosted packaged update/rollback 44477647687 PASS; Heaven2 unverified |
 | 8.8.116 | November 19, 2026 · 12:36:14 AM EST | published immutable updater-main-583 source 407ae3fb; Windows Gate 44468041048 and real hosted packaged update/rollback 44469075908 PASS; personal Heaven2 unverified |
