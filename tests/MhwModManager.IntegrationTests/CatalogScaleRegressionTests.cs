@@ -92,7 +92,7 @@ public sealed class CatalogScaleRegressionTests : IDisposable
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (var offset = 0; offset < FixtureRowCount; offset += BrowseCapacity)
         {
-            var page = await repository.SearchAsync(
+            var page = await repository.SearchPageAsync(
                 query: null,
                 gameId: "monsterhunterworld",
                 includeStale: true,
@@ -119,7 +119,7 @@ public sealed class CatalogScaleRegressionTests : IDisposable
                 query: null, gameId: "monsterhunterworld",
                 visibleLimit: -1, ct: TestToken));
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
-            repository.SearchAsync(
+            repository.SearchPageAsync(
                 query: null, gameId: "monsterhunterworld",
                 offset: -1, ct: TestToken));
     }
