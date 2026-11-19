@@ -218,7 +218,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 SELECT {ItemColumns}
                 FROM catalog_items i
                 {plainWhere}
-                ORDER BY COALESCE(i.updated_at,i.fetched_at) DESC,i.name COLLATE NOCASE
+                ORDER BY COALESCE(i.updated_at,i.fetched_at) DESC,i.name COLLATE NOCASE,i.canonical_id COLLATE BINARY ASC
                 LIMIT $limit OFFSET $offset
                 """;
         }
@@ -229,7 +229,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
                 FROM catalog_items_fts
                 JOIN catalog_items i ON i.canonical_id=catalog_items_fts.canonical_id
                 WHERE catalog_items_fts MATCH $query{suffix}
-                ORDER BY bm25(catalog_items_fts),COALESCE(i.updated_at,i.fetched_at) DESC
+                ORDER BY bm25(catalog_items_fts),COALESCE(i.updated_at,i.fetched_at) DESC,i.canonical_id COLLATE BINARY ASC
                 LIMIT $limit OFFSET $offset
                 """;
             cmd.Parameters.AddWithValue("$query", ftsQuery);
