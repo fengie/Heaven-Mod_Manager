@@ -503,7 +503,8 @@ public sealed class AutoPopulateService(
     DeploymentPlanner planner,
     DependencyDoctorService dependencies,
     string gameRoot,
-    GameProfile game)
+    GameProfile game,
+    MhwModManager.Filesystem.BlobStore? blobs = null)
 {
     public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
     {
@@ -545,14 +546,20 @@ public sealed class AutoPopulateService(
         var preferred = requestedPreferredIds.ToHashSet(PathRules.Comparer);
 
         var requirements = new Dictionary<string,ModRequirementSpec>(PathRules.Comparer);
+        var iceborne = game.IsMonsterHunterWorld && File.Exists(Path.Combine(gameRoot, "chunk", "chunkG0.bin"));
+        var materialHeaders = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         foreach (var mod in mods)
         {
             ct.ThrowIfCancellationRequested();
-            requirements[mod.Id] = await ModRequirementReader.ReadAsync(
+            var files = filesByMod.GetValueOrDefault(mod.Id) ?? [];
+            var spec = await ModRequirementReader.ReadAsync(
                 mod,
-                filesByMod.GetValueOrDefault(mod.Id) ?? [],
+                files,
                 game.IsMonsterHunterWorld,
                 ct);
+            if (iceborne && FindArmorMaterialIssue(files, materialHeaders, ct) is string issue)
+                spec = spec with { Errors = [.. spec.Errors, issue] };
+            requirements[mod.Id] = spec;
         }
 
         var selected = new HashSet<string>(preferred, PathRules.Comparer);
@@ -903,6 +910,39 @@ public sealed class AutoPopulateService(
         }
 
         return ClosureResult.Ok(closure);
+    }
+
+    private string? FindArmorMaterialIssue(IReadOnlyList<ModFileDescriptor> files,
+        Dictionary<string, bool> legacyByHash, CancellationToken ct)
+    {
+        Span<byte> header = stackalloc byte[16];
+        ReadOnlySpan<byte> legacy = [0x4D, 0x52, 0x4C, 0, 11, 0, 0, 0, 0xA9, 0xBC, 0xBB, 0x59, 0, 0, 0, 0];
+        foreach (var file in files)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!file.Path.EndsWith(".mrl3", StringComparison.OrdinalIgnoreCase) ||
+                !PathRules.TryGetArmorComponent(file.Path, out _, out _))
+                continue;
+            if (blobs is null || file.BlobSha256.Length != 64 || !file.BlobSha256.All(Uri.IsHexDigit))
+                return $"Cannot verify the indexed armor material '{file.Path}'. Re-index the package.";
+            if (!legacyByHash.TryGetValue(file.BlobSha256, out var isLegacy))
+            {
+                try
+                {
+                    using var stream = File.OpenRead(blobs.PathFor(file.BlobSha256));
+                    stream.ReadExactly(header);
+                    isLegacy = header.SequenceEqual(legacy);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    return $"Cannot read the indexed armor material '{file.Path}'. Re-index the package.";
+                }
+                legacyByHash.Add(file.BlobSha256, isLegacy);
+            }
+            if (isLegacy)
+                return $"'{file.Path}' uses a pre-Iceborne armor material. Deselect this package and Apply to restore the previous files, or install an Iceborne-compatible edition.";
+        }
+        return null;
     }
 
     private DeploymentPlan BuildPlan(
