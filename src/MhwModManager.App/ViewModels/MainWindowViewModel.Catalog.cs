@@ -185,7 +185,7 @@ public sealed record CatalogBrowseResultState(
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentOutOfRangeException.ThrowIfNegative(visibleCount);
         return hasAdditional
-            ? $"{visibleCount:N0}+ cached matches (first {visibleCount:N0} shown; narrow search to find others)"
+            ? $"{visibleCount:N0}+ cached matches (first {visibleCount:N0} shown; use More Cached to browse others)"
             : $"{visibleCount} {(visibleCount == 1 ? "result" : "results")}";
     }
 
@@ -573,6 +573,15 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public Visibility CatalogLoadMoreCachedVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return catalogHasMoreCachedMatches ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
     private CatalogFilePresentationState CurrentCatalogFilePresentation
     {
         get
@@ -675,6 +684,9 @@ public sealed partial class MainWindowViewModel
     partial void OnCatalogQueryChanged(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Cached continuation belongs to the previous search until the new
+        // result query finishes. Hide it immediately to avoid stale paging.
+        catalogHasMoreCachedMatches = false;
         NotifyCatalogResultState();
         catalogQueryCts?.Cancel();
         catalogQueryCts?.Dispose();
@@ -696,6 +708,7 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(CatalogClearSearchVisibility));
         OnPropertyChanged(nameof(CatalogRefreshEmptyVisibility));
         OnPropertyChanged(nameof(CatalogLoadMoreVisibility));
+        OnPropertyChanged(nameof(CatalogLoadMoreCachedVisibility));
         NotifyCatalogPresentationState();
     }
 
@@ -1043,6 +1056,115 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    [RelayCommand]
+    private async Task LoadMoreCachedCatalog()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!catalogHasMoreCachedMatches)
+        {
+            CatalogStatusText = "All matching locally cached mods are already shown.";
+            return;
+        }
+
+        await RunBusy(
+            "catalog.load-more-cached",
+            "Loading more cached mods",
+            "Reading the next indexed local page without contacting providers…",
+            true,
+            async ct =>
+            {
+                await catalogSyncGate.WaitAsync(ct);
+                try
+                {
+                    EnsureCatalogRuntime();
+                    var repository = catalogRepository
+                        ?? throw new InvalidOperationException("Catalog repository is unavailable.");
+                    var query = CatalogQuery;
+                    var gameId = s.Paths.Game.Id;
+                    var offset = CatalogItems.Count;
+                    if (offset == 0)
+                    {
+                        await SearchCatalogCacheAsync(ct);
+                        return;
+                    }
+
+                    // A provider refresh or another search can reorder the
+                    // cache between clicks. Verify the previous page boundary,
+                    // then refuse stale or duplicate append results.
+                    var previousLastId = CatalogItems[offset - 1].Mod.CanonicalId;
+                    var boundary = await repository.SearchAsync(
+                        query, gameId: gameId, includeStale: true,
+                        limit: 1, ct: ct, offset: offset - 1);
+                    var page = await repository.SearchAsync(
+                        query, gameId: gameId, includeStale: true,
+                        limit: CatalogVisibleResultLimit, ct: ct, offset: offset);
+                    var visibleCount = checked(offset + page.Count);
+                    var hasMore = page.Count == CatalogVisibleResultLimit &&
+                        await repository.HasAdditionalMatchesAsync(
+                            query, gameId, visibleCount, ct);
+
+                    var now = DateTimeOffset.UtcNow;
+                    var projected = page
+                        .Select(row => new CatalogModRow(row.Mod, row.IsStale(now)))
+                        .ToArray();
+                    var restart = false;
+                    var obsolete = false;
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        if (!string.Equals(query, CatalogQuery, StringComparison.Ordinal) ||
+                            !string.Equals(gameId, s.Paths.Game.Id, StringComparison.OrdinalIgnoreCase))
+                        {
+                            obsolete = true;
+                            return;
+                        }
+
+                        if (CatalogItems.Count != offset || boundary.Count != 1 ||
+                            !string.Equals(
+                                boundary[0].Mod.CanonicalId, previousLastId,
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            restart = true;
+                            return;
+                        }
+
+                        var identities = CatalogItems
+                            .Select(row => row.Mod.CanonicalId)
+                            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                        if (projected.Any(row => !identities.Add(row.Mod.CanonicalId)))
+                        {
+                            restart = true;
+                            return;
+                        }
+
+                        // Materialize before ReplaceAll clears the collection.
+                        var combined = CatalogItems.Concat(projected).ToArray();
+                        CatalogItems.ReplaceAll(combined);
+                        catalogHasMoreCachedMatches = hasMore;
+                        NotifyCatalogResultState();
+                    });
+
+                    if (obsolete)
+                        return;
+                    if (restart)
+                    {
+                        await SearchCatalogCacheAsync(ct);
+                        CatalogStatusText = "The cached catalog changed while paging; results were refreshed to prevent duplicates.";
+                        return;
+                    }
+
+                    CatalogStatusText = projected.Length > 0
+                        ? $"Showing {visibleCount:N0} matching cached mods" +
+                            (hasMore ? " · More Cached loads the next page." : " · All cached matches shown.")
+                        : "All matching locally cached mods are already shown.";
+                }
+                finally
+                {
+                    catalogSyncGate.Release();
+                }
+            });
+    }
+
+    [RelayCommand]
     private async Task LoadMoreCatalog()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
