@@ -38,3 +38,11 @@ jobs:
         env:
           EXPECTED_REPOSITORY: ${{ github.repository }}
         run: ./scripts/ci/Verify-HeavenRepoPolicy.ps1
+      - name: Test source-update scalars (Windows)
+        if: github.event.repository.private == true
+        shell: powershell
+        run: .\scripts\ci\Test-HeavenRepoPolicyScalars.ps1
+      - name: Test source-update scalars (Linux)
+        if: github.event.repository.private == false
+        shell: pwsh
+        run: ./scripts/ci/Test-HeavenRepoPolicyScalars.ps1
