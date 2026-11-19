@@ -1,7 +1,7 @@
 # v8.8.118 — November 19, 2026
 
 - **Updater recovery safety:** [PR #895](https://github.com/fengie/Heaven-Mod_Manager/pull/895) prevents cleanup from deleting terminal updater recovery transactions or staging when pending state cannot be validated. The extended integration test guards both classes; all four exact-head feature/security/ownership checks passed. Merged source main `c3d32904`.
-- **Release pending:** candidate from main `109ee761b57e59b6293c6d16a1861882e243ef3b`; new immutable v8.8.118 ZIP/tag/manifest and hosted packaged update/rollback require fresh verification. Historical v8.8.117 updater-main-586, Windows Gate 44475835455 and real hosted update/rollback 44477647687 PASS. Personal Heaven2, #669/#793/#791/#735/#786/#350 and governance/security acceptance remain OPEN.
+- **Verified immutable release:** v8.8.118 [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) and [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS** (build 60→588, injected rollback, four preserved sentinels). ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`; manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. PR #899 merged source-bound evidence. Later main source #898/#900/#902/#903 requires a new release; physical Heaven2, #669/#793/#791/#735/#786/#350 and governance/security acceptance remain **OPEN**.
 
 # v8.8.117 — November 19, 2026
 
