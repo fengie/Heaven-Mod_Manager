@@ -1,8 +1,10 @@
-# v8.8.113 - immutable release verified
+# v8.8.114 - metadata candidate, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `7c0cad829ec58af554d4976753642243fd77fa67`. Public immutable [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `ff85ad37bf18a13ff06df4a1240869478a85a6d7` includes later #876/#879 changes after immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), published source `7c0cad829ec58af554d4976753642243fd77fa67`. v8.8.114 publication and personal Heaven2 installation are **not verified**. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
+
+- **Post-572 source candidate:** #876 valid SHA-256 identity gating and #879 pick-one local alternative separation are on `main@ff85ad37bf18a13ff06df4a1240869478a85a6d7` after passing exact-head PR checks. They are not present in immutable v8.8.113 updater-main-572; a separately verified new version is required to ship them.
 
 - **Post-548 integrated source:** #850–#874 includes real-format archive fixtures, interrupted import recovery, cross-source family review, content-aware game routing, identical-payload conflict safety, per-package loader targets, startup telemetry/deferral, bounded catalog result disclosure and import-workspace visibility. These changes are on `main@60b6a4f90e2738db4a2a75131ad8c498ce4d72e2` but **not** in immutable v8.8.112 updater-main-548. v8.8.113 needs its own exact source and public artifact verification. Real hundreds-mod Sifu/Stellar Blade/MHW corpus, game-native container conflicts, Heaven2 installed source/health and p95 remain unverified.
 
@@ -19,6 +21,8 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `7c0cad829ec58af554d4976753
 - #839 safely rejects family pairs that cannot satisfy the existing strong-evidence predicate before root intersection/formatting, with negative identical-path and uniform-stem regressions. Synthetic same-runner 500 shared-root case: 281.974 → 223.461 ms and 507.76 → 420.2 MB allocated in three benchmark iterations; real WPF p95 remains unknown.
 
 ## Verification boundary
+
+**Current v8.8.114 is publication-unverified:** release and updater evidence below belongs to prior immutable v8.8.113 source, not the newer `ff85ad37bf18a13ff06df4a1240869478a85a6d7`. Do not claim the current code is published or installed on Heaven2 until new exact receipts exist.
 
 Current hosted-Windows closure: v8.8.113 source `7c0cad829ec58af554d4976753642243fd77fa67` passed run `44429973426` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log`.
 
