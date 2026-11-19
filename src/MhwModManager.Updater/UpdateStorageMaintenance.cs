@@ -261,6 +261,18 @@ public static class UpdateStorageMaintenance
                         continue;
                     }
 
+                    if (!await IsTerminalTransactionOwnerReleasedAsync(
+                            fullRoot,
+                            transaction,
+                            transactionBuild,
+                            ct))
+                    {
+                        deferred++;
+                        log?.Invoke(
+                            $"update storage cleanup preserved terminal transaction={Path.GetFileName(transaction)} because its owner is active or unknown");
+                        continue;
+                    }
+
                     DeleteSafeTree(fullRoot, transaction, ct);
                     deletedTransactions++;
                     log?.Invoke(
@@ -308,7 +320,7 @@ public static class UpdateStorageMaintenance
         if (!Directory.Exists(transactionsRoot))
             return 0;
 
-        var terminal = new List<(string Path, DateTimeOffset NewestWriteUtc)>();
+        var terminal = new List<(string Path, long BuildNumber, DateTimeOffset NewestWriteUtc)>();
         foreach (var transaction in Directory.EnumerateDirectories(
                      transactionsRoot,
                      "*",
@@ -335,8 +347,20 @@ public static class UpdateStorageMaintenance
                             or UpdateJournalPhase.RolledBack))
                     continue;
 
+                if (!await IsTerminalTransactionOwnerReleasedAsync(
+                        updaterRoot,
+                        transaction,
+                        transactionBuild,
+                        ct))
+                {
+                    log?.Invoke(
+                        $"update storage generation cap preserved terminal transaction={Path.GetFileName(transaction)} because its owner is active or unknown");
+                    continue;
+                }
+
                 terminal.Add((
                     transaction,
+                    transactionBuild,
                     InspectSafeTreeNewestWriteUtc(updaterRoot, transaction, ct)));
             }
             catch (Exception ex) when (
@@ -358,6 +382,19 @@ public static class UpdateStorageMaintenance
             ct.ThrowIfCancellationRequested();
             try
             {
+                // Recheck the lease immediately before deleting. A terminal
+                // transaction may gain an active owner after candidate scan.
+                if (!await IsTerminalTransactionOwnerReleasedAsync(
+                        updaterRoot,
+                        candidate.Path,
+                        candidate.BuildNumber,
+                        ct))
+                {
+                    log?.Invoke(
+                        $"update storage generation cap preserved terminal transaction={Path.GetFileName(candidate.Path)} because its owner is active or unknown");
+                    continue;
+                }
+
                 DeleteSafeTree(updaterRoot, candidate.Path, ct);
                 deleted++;
                 log?.Invoke(
@@ -374,6 +411,34 @@ public static class UpdateStorageMaintenance
         }
 
         return deleted;
+    }
+
+    private static async Task<bool> IsTerminalTransactionOwnerReleasedAsync(
+        string updaterRoot,
+        string transaction,
+        long transactionBuild,
+        CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod(
+            $"transaction={transaction}; build={transactionBuild}");
+        var leasePath = Path.Combine(
+            transaction,
+            UpdatePreparedTransactionLeaseStore.FileName);
+        if (!File.Exists(leasePath))
+            return true;
+
+        UpdatePathSafety.EnsureExistingComponentsNotReparse(
+            updaterRoot,
+            leasePath);
+        var lease = await UpdatePreparedTransactionLeaseStore.ReadAsync(
+            leasePath,
+            ct);
+        lease.ValidateFor(transaction, transactionBuild);
+
+        // Preserve ambiguous owners, including PID reuse/inspection failure.
+        // Only a proven-exited owner permits reclaiming a terminal journal.
+        return UpdatePreparedTransactionLeaseStore.GetOwnerState(lease)
+            == UpdatePreparedTransactionOwnerState.Exited;
     }
 
     public static bool DeleteConfirmedStagingBestEffort(
