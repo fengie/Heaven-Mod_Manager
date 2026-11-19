@@ -1,7 +1,12 @@
+# v8.8.118 — November 19, 2026
+
+- **Updater recovery safety:** [PR #895](https://github.com/fengie/Heaven-Mod_Manager/pull/895) prevents cleanup from deleting terminal updater recovery transactions or staging when pending state cannot be validated. The extended integration test guards both classes; all four exact-head feature/security/ownership checks passed. Merged source main `c3d32904`.
+- **Release pending:** candidate from main `109ee761b57e59b6293c6d16a1861882e243ef3b`; new immutable v8.8.118 ZIP/tag/manifest and hosted packaged update/rollback require fresh verification. Historical v8.8.117 updater-main-586, Windows Gate 44475835455 and real hosted update/rollback 44477647687 PASS. Personal Heaven2, #669/#793/#791/#735/#786/#350 and governance/security acceptance remain OPEN.
+
 # v8.8.117 — November 19, 2026
 
 - **Updater storage ownership:** [PR #893](https://github.com/fengie/Heaven-Mod_Manager/pull/893) protects terminal Confirmed/RolledBack transactions from age/generation reclamation while an owner lease is active or unverifiable; owner state is rechecked before generation-cap deletion. Both new Windows regressions failed on the prior source and passed after the fix, with full native feature and updater security checks green.
-- **Release pending:** implementation source main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` is newer than immutable v8.8.116 updater-main-583; the new tag/ZIP/manifest and real hosted packaged update/rollback remain unverified. #669/#793/#791/#735/#786/#350 and security acceptance stay open.
+- **Verified immutable v8.8.117:** [updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), exact source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`; Windows Gate 44475835455 PASS, real hosted packaged update/rollback 44477647687 PASS, source-bound evidence merged via PR #896. Personal Heaven2 and remaining acceptance independently unverified.
 
 # v8.8.116 — November 19, 2026
 

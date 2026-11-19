@@ -4,22 +4,22 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.117",
+  "currentVersion": "8.8.118",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.117-source-merged-publication-unverified",
-  "nextMilestone": "v8.8.117 source main c0615264d909f12f5fcb1e01c24d8ed3a623ff01 includes PR #893 active terminal-lease cleanup safety with exact-head CI. New public immutable publication and real packaged updater/rollback remain unverified. Prior v8.8.116 updater-main-583 source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3 and hosted E2E 44469075908 passed.",
-  "nextRequiredAction": "Integrate serialized v8.8.117 release metadata after exact-head CI and preceding source main Windows publisher, then verify new immutable tag/source/ZIP/manifest and real hosted packaged update/rollback. Independently verify Heaven2 installed source/health. Keep #669/#793/#791/#735/#786/#350 and security/judiciary acceptance OPEN.",
-  "verificationAppliesToCommit": "407ae3fb6ee39b62a1451b03f3439da283ca4cc3",
-  "lastClosedVerificationCommit": "407ae3fb6ee39b62a1451b03f3439da283ca4cc3",
-  "lastClosedVerificationRun": "v8.8.116 source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3: Windows Release Gate 44468041048 PASS; hosted real packaged update 60→583 with injected rollback, WPF/health and 4 sentinel hashes PASS in 44469075908. Durable E2E receipt _AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.116.log merged via PR #891 at 73de9a330948d569e808d2ce18c36f0287b71a1e; personal Heaven2 not verified.",
-  "verificationScopeNote": "Immutable v8.8.116 updater-main-583 exact released source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3; Windows Gate 44468041048 PASS, ZIP SHA-256 d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39, manifest SHA-256 2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6. Hosted disposable Windows real packaged updater 44469075908 PASS build 60→583 and rollback 60 with 4 sentinel hashes preserved; durable receipt on canonical main via PR #891. Evidence-only persistence/continuity commits are not changes to the distributed binary. Personal Heaven2, installed UI p95, real mixed-game corpora and bounded storage lifecycle remain unverified; lastClosedWindowsVerification retains an explicitly historical v8.8.113 closure file.",
+  "status": "v8.8.118-source-merged-publication-unverified",
+  "nextMilestone": "v8.8.118 implementation main 109ee761b57e59b6293c6d16a1861882e243ef3b includes #895 corrupt-pending recovery fix and #896 source-bound v8.8.117 hosted E2E evidence. Exact new immutable publication/packaged updater remain unverified. Historical v8.8.117 updater-main-586 source 69a317ea4c7c18fed5ed5d18323a3d1af8925618 Windows Gate 44475835455 and hosted real E2E 44477647687 PASSED.",
+  "nextRequiredAction": "Integrate serialized v8.8.118 metadata only after all exact-head native checks and preceding source main publisher. Verify immutable v8.8.118 tag/source/ZIP/manifest, new Windows Gate and real packaged update+rollback. Independently verify personal Heaven2 installed source/health, real Sifu/Stellar Blade/MHW corpora, #735 p95, #669 storage lifecycle and provider/security/judiciary acceptance. No auto-closure on hosted evidence.",
+  "verificationAppliesToCommit": "69a317ea4c7c18fed5ed5d18323a3d1af8925618",
+  "lastClosedVerificationCommit": "69a317ea4c7c18fed5ed5d18323a3d1af8925618",
+  "lastClosedVerificationRun": "v8.8.117 exact published source 69a317ea4c7c18fed5ed5d18323a3d1af8925618 Windows Release Gate 44475835455 PASS, real packaged hosted update 60→586 with injected rollback and four preserved sentinels run 44477647687 PASS; E2E receipt _AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.117.log merged through PR #896 at 109ee761b57e59b6293c6d16a1861882e243ef3b. Personal Heaven2 unverified.",
+  "verificationScopeNote": "Historical immutable updater-main-586 exact published source 69a317ea4c7c18fed5ed5d18323a3d1af8925618, Windows Gate 44475835455 PASS, ZIP SHA-256 4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0 and manifest SHA-256 8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4. Hosted disposable Windows real updater E2E 44477647687 PASS. New #895 code on later main has not been packaged/verified as v8.8.118; personal Heaven2, corpus, p95 and storage lifecycle remain unverified.",
   "lastClosedVerification": {
-    "sourceSha": "407ae3fb6ee39b62a1451b03f3439da283ca4cc3",
-    "updaterBuild": 583,
-    "windowsVerificationRun": 44468041048,
-    "installedClientE2ERun": 44469075908,
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.116.log"
+    "sourceSha": "69a317ea4c7c18fed5ed5d18323a3d1af8925618",
+    "updaterBuild": 586,
+    "windowsVerificationRun": 44475835455,
+    "installedClientE2ERun": 44477647687,
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.117.log"
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
@@ -34,7 +34,7 @@
     "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
     "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
     "Issue #791: v8.8.116 source retains #881/#882/#884 choice-cue and rare-content-anchor candidate improvements, but real mixed-game corpora, opaque asset container safety and installed UI p95 remain unverified.",
-    "Issue #793: immutable updater-main-583 exact source 407ae3fb6ee39b62a1451b03f3439da283ca4cc3 Windows Gate 44468041048 and hosted real packaged update/rollback E2E 44469075908 PASS; personal Heaven2 installed source/health and bounded reliability/endurance remain unverified."
+    "Issue #793: immutable updater-main-586 source 69a317ea4c7c18fed5ed5d18323a3d1af8925618 Windows Gate 44475835455 and hosted real packaged update/rollback 44477647687 PASS; personal Heaven2 installed version/source/health and bounded reliability remain unverified."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
@@ -52,12 +52,12 @@
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log"
   },
   "publishedRelease": {
-    "tag": "updater-main-583",
-    "version": "8.8.116",
-    "sourceSha": "407ae3fb6ee39b62a1451b03f3439da283ca4cc3",
-    "buildNumber": 583,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.116-win-x64.zip",
-    "artifactSha256": "d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39",
-    "manifestSha256": "2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6"
+    "tag": "updater-main-586",
+    "version": "8.8.117",
+    "sourceSha": "69a317ea4c7c18fed5ed5d18323a3d1af8925618",
+    "buildNumber": 586,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.117-win-x64.zip",
+    "artifactSha256": "4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0",
+    "manifestSha256": "8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4"
   }
 }

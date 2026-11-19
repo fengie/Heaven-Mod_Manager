@@ -1,10 +1,12 @@
-# v8.8.117 - canonical state: source merged; new release unverified
+# v8.8.118 - canonical state: source merged; new release unverified
 
-Canonical state: implementation main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` includes PR #893 active terminal updater owner cleanup protection with red→green Windows regressions and all four exact-head PR checks passed. New v8.8.117 immutable package/hosted rollback unverified. Prior immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, hosted E2E 44469075908 remain verified. Heaven2, real corpora, installed p95 and #669 full lifecycle remain open. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: implementation main `109ee761b57e59b6293c6d16a1861882e243ef3b` includes #895 fail-closed corrupt-pending recovery and merged v8.8.117 hosted E2E evidence #896. New v8.8.118 immutable release/hosted rollback remains UNVERIFIED. Historical v8.8.117 [updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`, Windows Gate 44475835455 and real packaged E2E 44477647687 passed. Personal Heaven2, real corpora and installed p95 remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
 
-- **v8.8.117 implementation merged:** PR #893 prevents terminal updater transactions from being pruned while a prepared owner is active or unknown; 2 Windows integration regressions reproduced the previous deletion and passed after repair. New release publication for source `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` still pending.
+- **v8.8.118 candidate:** #895 protects entire updater cleanup against malformed pending state, preserving recovery transaction and staging; regression plus all four exact-head Windows/source/security checks PASSED. Merged to main `c3d32904`, with exact v8.8.117 hosted receipt #896 at main `109ee761`. Publication and real v8.8.118 hosted update/rollback still pending.
+
+- **v8.8.117 published:** #893 protects live/unknown terminal updater owner leases with red→green Windows regressions. Immutable updater-main-586 at `69a317ea4c7c18fed5ed5d18323a3d1af8925618`, Windows Gate 44475835455 and hosted real packaged update/rollback 44477647687 PASSED; receipt merged via PR #896.
 
 - **v8.8.116 published:** PR #889 fixes finalized catalog download lease-age handling and includes regression tests. Immutable updater-main-583 uses exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3` with Windows Gate 44468041048 and hosted real packaged update/rollback 44469075908 PASS; #669 full storage acceptance remains open.
 
@@ -26,15 +28,15 @@ Canonical state: implementation main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` 
 
 ## Verification boundary
 
-**v8.8.117 not yet published:** code source `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` is newer than immutable v8.8.116. Exact-head PR #893 feature/security checks passed, but new immutable public tag/ZIP/manifest, Windows Release Gate publication and real hosted packaged update/rollback have not yet been verified. Source integration is not personal-device deployment.
+**v8.8.118 source merged, immutable package not yet verified:** source main `109ee761b57e59b6293c6d16a1861882e243ef3b` includes PR #895 recovery fix and PR #896 hosted evidence; new Windows Release Gate, immutable public source/tag/artifact SHA-256 and actual packaged update/rollback must be independently verified for this new version. Do not claim Heaven2 installed acceptance.
 
-Prior verified immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, Windows Gate 44468041048, hosted real packaged E2E 44469075908 and allowlisted PR #891 receipt remain historical evidence.
+Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d18323a3d1af8925618` Windows Gate 44475835455 PASS, real hosted packaged update/rollback 44477647687 PASS, ZIP SHA-256 `4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0`, manifest `8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4`; receipt merged PR #896. This does not prove source additions after this immutable release, user-device health, real corpora or p95.
 
 ## Remaining acceptance and risks
 
 - [#836](https://github.com/fengie/Heaven-Mod_Manager/pull/836) is integrated at main 8ed0a73 and passed exact native checks. Its synthetic tests run in CI; replay/topology benchmark wall times are unmeasured unless separately dispatched, and physical mod corpus remains untested.
 - [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual large RAR/7z and nested Sifu/Stellar Blade mod collections, WPF drag/drop/progress/cancel, unknown layouts and physically installed acceptance remain unverified.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): real hosted updater build 60→583 and rollback 44469075908 PASS; independently observed personal Heaven2 source/health and bounded endurance remain unverified.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): hosted real updater 60→586 and rollback 44477647687 PASSED; independent personal Heaven2 installed SHA/health and bounded endurance remain unverified.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in this evidence-only handoff; root README/CHANGELOG wording remains a later serialized release-metadata task.
 
-Next: complete serialized v8.8.117 release candidate exact-head checks after preceding main publisher, protected expected-head merge, exact immutable source/tag/artifact and real hosted packaged update/rollback; independently verify Heaven2, #791 mixed-game archive acceptance, #735 p95 and #669 full disk lifecycle. Preserve issues and recursive Core/Learned Rules.
+Next: complete serialized v8.8.118 release candidate exact-head checks after preceding main publisher, protected expected-head merge, exact immutable source/tag/artifact and real hosted packaged update/rollback; independently verify Heaven2, #791 mixed-game archive acceptance, #735 installed p95, #669 full storage lifecycle, provider and independent trust. Preserve recursive Core/Learned Rules.
