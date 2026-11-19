@@ -1,6 +1,6 @@
 # v8.8.115 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 18, 2026 · 10:40:01 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 18, 2026 · 11:21:56 PM EST** _(repo-enforced)_
 
 Current product version: **8.8.115**.
 
@@ -15,7 +15,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 - [#881](https://github.com/fengie/Heaven-Mod_Manager/pull/881) prevents `Alt` and `Choose` labels from suggesting unconfirmed cross-source add-on relationships.
 - [#882](https://github.com/fengie/Heaven-Mod_Manager/pull/882) prunes redundant quadratic shared-root family candidate pairs without losing rare normalized content-anchor lineage. Native candidate checks passed; installed p95 remains unmeasured.
 - [#884](https://github.com/fengie/Heaven-Mod_Manager/pull/884) uses one hyphen-safe pick-one detector across inference layers, retaining original package-name negative evidence after display renames. Explicit saved choices remain authoritative.
-- **Publication boundary:** implementation source `50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb` follows immutable [v8.8.114 updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575), source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`. Do not claim v8.8.115 published, installed on Heaven2, or real-mod acceptance until independent exact-source receipts exist.
+- **Verified v8.8.115 publication:** immutable [updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) targets exact release source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`; Windows Release Gate [44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`. Hosted disposable Windows [real packaged updater E2E 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) **PASSED** build 60→579, journal Confirmed, injected rollback to build 60, and all four user-data sentinel hashes preserved; this does **not** establish personal Heaven2 installed health. #791 real-mod corpus and #735/#669 acceptance remain open.
 
 ## v8.8.114 — fail-closed mod relationship and conflict safety
 
