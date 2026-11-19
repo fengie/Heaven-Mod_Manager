@@ -18,6 +18,7 @@ internal static partial class ModChoiceSignals
 
     internal static bool HasPickOneCue(string? value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(value))
             return false;
         foreach (Match token in WordRegex().Matches(value))
