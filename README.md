@@ -1,14 +1,21 @@
-# v8.8.118 — MHW Manual Mod Manager
+# v8.8.119 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 19, 2026 · 4:26:25 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 19, 2026 · 5:15:34 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.118**.
+Current product version: **8.8.119**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.119 — safer Browse Mods and correct family grouping
+
+- [PR #898](https://github.com/fengie/Heaven-Mod_Manager/pull/898) and [PR #900](https://github.com/fengie/Heaven-Mod_Manager/pull/900) provide bounded local paging beyond 1,000 entries and deterministic ordering across ties.
+- [PR #902](https://github.com/fengie/Heaven-Mod_Manager/pull/902) improves armor-slot collision evidence and protects separately namespaced resources. [PR #903](https://github.com/fengie/Heaven-Mod_Manager/pull/903) adds provider failure diagnostics, official site fallbacks, newer Nexus filename hints and review-only relationship suggestions while excluding pick-one variants.
+- [PR #905](https://github.com/fengie/Heaven-Mod_Manager/pull/905) adds explicit separation for incorrectly grouped packages without changing installed game files. The cleanup now retains similarly worded user-authored overlay rules, with regression coverage.
+- **Release candidate, not published:** current source main `035517cf` contains these fixes; v8.8.119 still requires the exact-source Windows Release Gate, immutable ZIP/manifest publication and real hosted updater/rollback verification. Existing public v8.8.118 build 588 predates these fixes. Personal Heaven2 installation is unverified. Provider REST access remains blocked by expired policy reviews until actual Nexus/GameBanana authorization is verified; official-site browsing works without bypassing that restriction.
 
 ## v8.8.118 — corrupt pending-state recovery safety
 
@@ -19,11 +26,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - [PR #893](https://github.com/fengie/Heaven-Mod_Manager/pull/893) prevents age-based and generation-cap cleanup from deleting terminal updater transactions with active or unverified prepared owner leases. Both new integration regressions failed before the fix and passed afterward; all four exact-head PR checks succeeded.
 - **Verified historical release:** immutable [v8.8.117 updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`; Windows Gate [44475835455](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44475835455) and real hosted packaged updater/rollback [44477647687](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44477647687) PASSED. Exact E2E receipt merged via PR #896. Personal Heaven2 and whole #669 remain open.
-
-## v8.8.116 — safe finalized catalog download retention
-
-- [#889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) protects newly created finalized download leases from premature age-based cleanup when filesystem timestamps are old. Native Windows regression, startup performance, source and CI checks passed; owner/byte-quota safety is unchanged.
-- **Verified immutable release:** [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`. Windows Release Gate [44468041048](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44468041048) PASS. Hosted real packaged update 60→583 and injected rollback [44469075908](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44469075908) PASS with four preserved user-data sentinel hashes; allowlisted receipt merged via [PR #891](https://github.com/fengie/Heaven-Mod_Manager/pull/891). Personal Heaven2 installation and whole #669 acceptance remain unverified.
 
 ## Current plans & progress
 
