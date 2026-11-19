@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.118",
+  "currentVersion": "8.8.119",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.118 immutable updater-main-588 was published from exact source b6e1e151b43323218041b80204dee070002c297b; Windows Gate 44481505844 and hosted real packaged update/rollback 44483604969 PASS, with source-bound receipt PR #899 merged. Later main a02a4913c903540f00db3fffbc5b04fdcdda1153 includes #898/#900 local catalog paging, #902 armor-slot conflict evidence and #903 provider diagnostics/family review; all are excluded from immutable build 588. Physical Heaven2, #669 storage lifecycle, #791 real corpora, #735 p95, #786 provider approval, #350 independent publisher trust and judiciary acceptance remain OPEN. Preserve recursive continuity.",
+  "immediateParentRevision": "Source v8.8.119 includes #898/#900 catalog pagination, #902 conflict namespace evidence, #903 provider diagnostics and safe relationship inference, and #905 user-approved erroneous-family separation with strict user-rule retention, integrated through main 035517cf3e4351e729e47ec91abcfbb831b519ab. New immutable v8.8.119 publication and packaged updater E2E are PENDING; prior immutable v8.8.118 build588 source b6e1e151, Windows Gate 44481505844 and real hosted update/rollback 44483604969 PASSED. Personal Heaven2, #558/#786 external provider authorization, #791 corpora, #735 p95, #669 storage, #793 installation, signing and judiciary acceptance remain unverified.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh canonical Toolbox and MHW main, exact owner/PR/release state, and current rules. Read and recursively propagate CONTINUITY_PROTOCOL and active Learned Rules to every successor. Immutable v8.8.118 updater-main-588 is already published from b6e1e151b43323218041b80204dee070002c297b, with Windows Gate 44481505844 and genuine hosted package update/rollback 44483604969 PASS; receipt PR #899 merged. Never republish build 588 to correct metadata or infer physical Heaven2 installation. Later #898/#900/#902/#903 source on main requires separately versioned, serialized publication after exact-head gates. Continue #669/#791/#735/#793/#786/#350, provider approval, signing and judiciary acceptance without false closure. Preserve recovery/security, remote checkpoints, and the recursive successor chain.",
+  "nextAgentObligation": "Refresh current Toolbox and MHW main, exact PR/owner/release state, and current rules. Read and recursively propagate CONTINUITY_PROTOCOL and active Learned Rules to every successor. Source v8.8.119 is integrated through main 035517cf, but its public binary and hosted packaged update/rollback are NOT YET VERIFIED; latest proven immutable package is v8.8.118 updater-main-588 from b6e1e151 with Windows Gate 44481505844 and real hosted rollback 44483604969 PASS. Do not republish v8.8.118 or infer personal Heaven2 installation. Serialize v8.8.119 publication after exact native gates; keep #558/#786 provider access blocked without genuine review, and preserve #669/#791/#735/#793/#350/security/governance acceptance and recursive continuity.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
