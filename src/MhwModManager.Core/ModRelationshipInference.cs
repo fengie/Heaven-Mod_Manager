@@ -27,7 +27,6 @@ public static partial class ModRelationshipInference
     {
         "overlay", "addon", "optional", "patch", "hotfix", "component", "suboverride", "retexture"
     };
-    private static readonly IReadOnlySet<string> AlternativeCues = ModChoiceSignals.PickOneTokens;
     private static readonly HashSet<string> GenericNameWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "mod", "mods", "main", "base", "default", "core", "original", "overlay", "addon",
@@ -159,9 +158,10 @@ public static partial class ModRelationshipInference
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // An add-on role must be detected before generic identity noise is removed.
-        var tokens = WordRegex().Matches($"{mod.Name} {mod.DisplayName} {mod.FamilyRole}".ToLowerInvariant())
+        var nameAndRole = $"{mod.Name} {mod.DisplayName} {mod.FamilyRole}";
+        if (ModChoiceSignals.HasPickOneCue(nameAndRole)) return false;
+        var tokens = WordRegex().Matches(nameAndRole.ToLowerInvariant())
             .Cast<Match>().Select(x => x.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (tokens.Overlaps(AlternativeCues)) return false;
         return tokens.Overlaps(AddOnCues) ||
             tokens.Contains("add") && tokens.Contains("on") ||
             string.Equals(mod.FamilyRole, "Optional", StringComparison.OrdinalIgnoreCase);
