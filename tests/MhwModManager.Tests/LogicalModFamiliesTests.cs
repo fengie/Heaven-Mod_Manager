@@ -292,6 +292,19 @@ public sealed class LogicalModFamiliesTests
     }
 
     [Fact]
+    public void User_separation_outweighs_a_stale_shared_Nexus_identity()
+    {
+        var mods = new[]
+        {
+            Mod("cheeky", "HPN Cheeky Dress", "8556"),
+            Mod("clockwork", "HPN Sexy Clockworker", "8556")
+                with { FamilyId = "manual:split:clockworker" }
+        };
+
+        Assert.Equal(2, LogicalModFamilies.Build(mods).Count);
+    }
+
+    [Fact]
     public void Different_hpn_armors_do_not_collapse_together()
     {
         var mods = new[]
