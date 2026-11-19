@@ -27,6 +27,7 @@ public static class GameDownloadArchiveStore
 
     private static InFlightSave RentGate(string key)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         lock (saveGateSync)
         {
             if (!activeSaves.TryGetValue(key, out var gate))
@@ -41,6 +42,7 @@ public static class GameDownloadArchiveStore
 
     private static void ReturnGate(string key, InFlightSave gate)
     {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
         lock (saveGateSync)
         {
             gate.Users--;
