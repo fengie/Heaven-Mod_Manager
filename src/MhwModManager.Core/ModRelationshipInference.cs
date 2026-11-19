@@ -27,10 +27,7 @@ public static partial class ModRelationshipInference
     {
         "overlay", "addon", "optional", "patch", "hotfix", "component", "suboverride", "retexture"
     };
-    private static readonly HashSet<string> AlternativeCues = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "alternative", "alternate", "alt", "variant", "either", "choice", "choose"
-    };
+    private static readonly IReadOnlySet<string> AlternativeCues = ModChoiceSignals.PickOneTokens;
     private static readonly HashSet<string> GenericNameWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "mod", "mods", "main", "base", "default", "core", "original", "overlay", "addon",
