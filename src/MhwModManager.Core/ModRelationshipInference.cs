@@ -81,9 +81,14 @@ public static partial class ModRelationshipInference
 
         var suggestions = new List<ModRelationshipSuggestion>();
         // Unlabeled texture-only sidecars may still be reviewable when their payload
-        // and distinctive identity match a structural main. They must not make
-        // texture-named *main* packages ineligible as candidate parents.
-        foreach (var child in profiles.Values.Where(p => (p.IsAddOn || p.TextureOnly) && p.Paths.Count <= MaxChildPaths)
+        // and distinctive identity match a structural main. A pick-one cue is
+        // negative evidence even without an explicit "addon" label; otherwise
+        // an Alt/Choose texture variant would be admitted through TextureOnly.
+        foreach (var child in profiles.Values.Where(p =>
+                     (p.IsAddOn || p.TextureOnly) &&
+                     p.Paths.Count <= MaxChildPaths &&
+                     !ModChoiceSignals.HasPickOneCue(
+                         p.Mod.Name + " " + p.Mod.DisplayName + " " + p.Mod.FamilyRole))
                      .OrderBy(p => p.Mod.Id, StringComparer.OrdinalIgnoreCase))
         {
             var isNegatedOption = HasNegatedOptionCue(child.Mod);
