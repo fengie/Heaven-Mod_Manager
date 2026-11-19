@@ -54,7 +54,7 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
     public async Task Separating_a_false_manual_family_clears_only_its_generated_overlay_rules()
     {
         var db = await NewDatabaseAsync();
-        var priorFamily = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Misgrouped");
+        var priorFamily = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Misgrouped", ct: Ct);
 
         // An independent user-authored incompatibility must survive separation.
         await using (var connection = await db.OpenAsync(Ct))
@@ -86,7 +86,7 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
     public async Task Missing_separation_target_rolls_back_without_changing_an_existing_family()
     {
         var db = await NewDatabaseAsync();
-        var priorFamily = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Still linked");
+        var priorFamily = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Still linked", ct: Ct);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             db.SeparateLogicalMemberAsync("nonexistent", Ct));
