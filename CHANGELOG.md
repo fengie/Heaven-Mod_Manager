@@ -1,7 +1,7 @@
 # v8.8.116 — November 19, 2026
 
 - **Catalog storage safety:** [PR #889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) bounds finalized catalog-download lease retention age by the certified CreatedUtc date even with older filesystem mtimes. Windows integration regression; existing byte quota and unknown/active owner safeguards remain intact.
-- **Release pending:** implementation main `b76cd3761b5d91327a3b1138cab8ed3da0e96780`; v8.8.116 publication and packaged updater/rollback require independent exact-source proof. Immutable v8.8.115 updater-main-579 remains unchanged. #669/#793/#791/#735/#786/#350 acceptance stays open.
+- **Verified immutable release:** public [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`; Windows Gate [44468041048](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44468041048) PASS. Hosted real packaged update 60→583, WPF health, injected rollback and four sentinel hashes [44469075908](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44469075908) PASS; allowlisted source-bound E2E receipt merged via [PR #891](https://github.com/fengie/Heaven-Mod_Manager/pull/891). Personal Heaven2 and #669/#793/#791/#735/#786/#350 acceptance remain open.
 
 # v8.8.115 — November 18, 2026
 
