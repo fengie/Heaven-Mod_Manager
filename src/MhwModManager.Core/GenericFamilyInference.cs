@@ -225,8 +225,12 @@ public static partial class GenericFamilyInference
         var nameSimilarity=TokenSimilarity(ap.IdentityTokens,bp.IdentityTokens);
         var exactStem=ap.IdentityStem.Length>0&&StringComparer.OrdinalIgnoreCase.Equals(ap.IdentityStem,bp.IdentityStem);
         var prefix=IsMeaningfulPrefix(ap.IdentityStem,bp.IdentityStem)||IsMeaningfulPrefix(bp.IdentityStem,ap.IdentityStem);
+        // An explicit pick-one cue is negative evidence for automatic composition.
+        // Overlapping target paths and a matching name stem cannot overturn it.
+        // Saved human decisions and source-scoped Nexus grouping are handled
+        // independently by LogicalModFamilies and remain authoritative.
+        if(ap.HasChoiceSignal||bp.HasChoiceSignal)return null;
         var roleDifference=ap.HasRoleSignal||bp.HasRoleSignal;
-        var choiceOnly=ap.HasChoiceSignal||bp.HasChoiceSignal;
         var contentLineage=HasContentLineage(ap,bp,rareContentAnchors,out var sharedContentAnchors);
 
         // Ordinary inference requires a role signal,
@@ -257,10 +261,6 @@ public static partial class GenericFamilyInference
             foreach(var value in scan)if(lookup.Contains(value))count++;
             return count;
         }
-
-        // Identical labels alone are not evidence. Local alternatives with
-        // insufficient name lineage must remain separate even with shared files.
-        if(choiceOnly&&!exactStem&&nameSimilarity<.70)return null;
 
         var score=0;var reasons=new List<string>();
         if(contentLineage){score+=90;reasons.Add($"{sharedContentAnchors} matching path-and-SHA256 payload anchors with distinctive content, independent of names/sources");}
