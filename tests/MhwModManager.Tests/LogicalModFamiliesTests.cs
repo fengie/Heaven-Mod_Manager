@@ -196,7 +196,9 @@ public sealed class LogicalModFamiliesTests
     [InlineData("Orion Neo - Alternative")]
     [InlineData("Orion Neo - Alternate")]
     [InlineData("Orion Neo - Alternate Patch")]
+    [InlineData("Orion Neo - Alternate-Patch Texture")]
     [InlineData("Orion Neo - Alt")]
+    [InlineData("Orion Neo - Choice-Patch Texture")]
     [InlineData("Orion Neo - Variant")]
     [InlineData("Orion Neo - Choice")]
     [InlineData("Orion Neo - Choose")]
@@ -231,20 +233,23 @@ public sealed class LogicalModFamiliesTests
         }
     }
 
-    [Fact]
-    public void Original_pick_one_name_stays_negative_after_display_name_is_renamed()
+    [Theory]
+    [InlineData("Orion Neo - Alternate Patch")]
+    [InlineData("Orion Neo - Alternate-Patch")]
+    [InlineData("Orion Neo - Choice-Texture Patch")]
+    public void Original_pick_one_name_stays_negative_after_display_name_is_renamed(string originalName)
     {
         var mods = new[]
         {
             Mod("base", "Orion Neo"),
-            Mod("choice", "Orion Neo - Alternate Patch") with { DisplayName = "Orion Neo - Patch" }
+            Mod("choice", originalName) with { DisplayName = "Orion Neo - Patch" }
         };
         var files = new[]
         {
-            File("base", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.mod3"),
-            File("base", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.tex"),
-            File("choice", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.mod3"),
-            File("choice", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.tex")
+            File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.tex"),
+            File("choice", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("choice", @"nativePC\pl\f_equip\pl001_0000\body\body.tex")
         };
 
         Assert.Empty(GenericFamilyInference.InferKeys(mods, files, out var evidence));
