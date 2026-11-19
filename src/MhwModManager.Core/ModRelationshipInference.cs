@@ -69,7 +69,9 @@ public static partial class ModRelationshipInference
             var profile = new Profile(mod, paths, hashesByPath,
                 owned.Any(f => f.FileClass == FileClass.Structural),
                 owned.All(f => f.FileClass == FileClass.Texture),
-                HasAddOnCue(mod), tokens);
+                HasAddOnCue(mod),
+                ModChoiceSignals.HasPickOneCue(mod.Name + " " + mod.DisplayName + " " + mod.FamilyRole),
+                tokens);
             profiles[mod.Id] = profile;
             foreach (var path in paths)
             {
@@ -87,8 +89,7 @@ public static partial class ModRelationshipInference
         foreach (var child in profiles.Values.Where(p =>
                      (p.IsAddOn || p.TextureOnly) &&
                      p.Paths.Count <= MaxChildPaths &&
-                     !ModChoiceSignals.HasPickOneCue(
-                         p.Mod.Name + " " + p.Mod.DisplayName + " " + p.Mod.FamilyRole))
+                     !p.HasPickOneCue)
                      .OrderBy(p => p.Mod.Id, StringComparer.OrdinalIgnoreCase))
         {
             var isNegatedOption = HasNegatedOptionCue(child.Mod);
@@ -105,6 +106,7 @@ public static partial class ModRelationshipInference
                 if (id.Equals(child.Mod.Id, StringComparison.OrdinalIgnoreCase) ||
                     !profiles.TryGetValue(id, out var parent) ||
                     parent.IsAddOn ||
+                    parent.HasPickOneCue ||
                     parent.Paths.Count < child.Paths.Count ||
                     ProvenanceIntelligence.SameNexusMod(parent.Mod, child.Mod)) continue;
 
@@ -218,6 +220,7 @@ public static partial class ModRelationshipInference
         bool HasStructural,
         bool TextureOnly,
         bool IsAddOn,
+        bool HasPickOneCue,
         HashSet<string> IdentityTokens);
 
     [GeneratedRegex(@"[a-z0-9]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
