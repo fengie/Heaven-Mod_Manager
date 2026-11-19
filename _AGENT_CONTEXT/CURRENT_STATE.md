@@ -1,6 +1,6 @@
-# v8.8.116 - canonical state: immutable release published; hosted E2E PASS
+# v8.8.116 - source verified, publication unverified
 
-Canonical state: immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583) at exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, Windows Gate 44468041048 PASS and hosted real packaged update 60→583/rollback 44469075908 PASS. PR #891 integrated the source-bound allowlisted receipt. Personal Heaven2 installed health, real game corpora and p95 remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `09edb34275db7536ca3f748369445ea1975e670d` (Windows Gate 44471106797); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -24,9 +24,11 @@ Canonical state: immutable [v8.8.116 updater-main-583](https://github.com/fengie
 
 ## Verification boundary
 
-**v8.8.116 immutable publication verified:** exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, [updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`; Windows Gate 44468041048 PASS and hosted packaged update 60→583/rollback 44469075908 PASS. Source-bound receipt merged via PR #891; no installed personal Heaven2 acceptance.
+Current hosted-Windows closure: v8.8.116 source `09edb34275db7536ca3f748369445ea1975e670d` passed run `44471106797` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.116-heaven-windows-closure.log`.
 
-Prior immutable v8.8.115 updater-main-579 exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` passed Windows Gate 44455718899 and hosted real packaged update/rollback 44456946318; ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, manifest SHA-256 `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`. Those older receipts do not verify v8.8.116 or personal Heaven2 installed process health. Preserve all user data and immutable older assets.
+Public release status: **NOT VERIFIED** for source `09edb34275db7536ca3f748369445ea1975e670d`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `09edb34275db7536ca3f748369445ea1975e670d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
