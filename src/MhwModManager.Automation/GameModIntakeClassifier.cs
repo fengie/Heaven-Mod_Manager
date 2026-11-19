@@ -38,8 +38,11 @@ public static class GameModIntakeClassifier
 
         // A familiar archive title must never override a different game's strongly
         // characteristic payload, even if that game is not registered locally.
-        var hasNativePcSignature = relativePaths.Any(HasNativePcSegment);
-        var hasStellarBladeSignature = relativePaths.Any(HasStellarBladeSignature);
+        // Documentation and screenshots may quote another game's directory layout.
+        // They are not deployable payload evidence for automatic game routing.
+        var payloadPaths = relativePaths.Where(IsDeployablePayloadEvidencePath).ToArray();
+        var hasNativePcSignature = payloadPaths.Any(HasNativePcSegment);
+        var hasStellarBladeSignature = payloadPaths.Any(HasStellarBladeSignature);
         if (hasNativePcSignature && hasStellarBladeSignature)
             return new(GameModIntakeKind.Ambiguous,null,
                 "Package mixes distinct MHW and Stellar Blade layouts; split or review.",[]);
@@ -78,7 +81,7 @@ public static class GameModIntakeClassifier
             // explicitly game-scoped payload for *another* registered game is
             // contradictory evidence. Require review rather than trusting the
             // package's unverified manifest over that concrete layout.
-            var scopedConflicts = FindContradictoryGameScopes(games, declared, relativePaths);
+            var scopedConflicts = FindContradictoryGameScopes(games, declared, payloadPaths);
             if (scopedConflicts.Length > 0)
                 return new(GameModIntakeKind.Ambiguous, null,
                     "Declared game conflicts with another registered game's scoped payload directory.",
@@ -96,7 +99,7 @@ public static class GameModIntakeClassifier
                 "Package has a Stellar Blade layout, but Stellar Blade is not registered.",[]);
 
         var normalizedName = GameProfile.NormalizeId(sourceName);
-        var normalizedEntries = relativePaths.Select(GameProfile.NormalizeId).ToArray();
+        var normalizedEntries = payloadPaths.Select(GameProfile.NormalizeId).ToArray();
         var scores = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var game in games)
         {
@@ -184,6 +187,36 @@ public static class GameModIntakeClassifier
             }
         }
         return conflicting.Order(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    /// <summary>
+    /// Supporting files are not proof that their example paths are installable assets.
+    /// Preserve ordinary configuration/payload files (including .txt) and the full
+    /// bounded inventory; this filter only affects consequential game identity.
+    /// </summary>
+    private static bool IsDeployablePayloadEvidencePath(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var segments = path.Replace('\\', '/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0) return false;
+        for (var i = 0; i < segments.Length - 1; i++)
+            if (IsDocumentationFolder(segments[i])) return false;
+
+        var filename = segments[^1];
+        if (filename.StartsWith("readme", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("license", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("changelog", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("credits", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("screenshot", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("preview", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("thumbnail", StringComparison.OrdinalIgnoreCase) ||
+            filename.StartsWith("thumb", StringComparison.OrdinalIgnoreCase) ||
+            filename.Equals("cover.jpg", StringComparison.OrdinalIgnoreCase) ||
+            filename.Equals("cover.png", StringComparison.OrdinalIgnoreCase))
+            return false;
+        return !Path.GetExtension(filename).Equals(".md", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsDocumentationFolder(string name)
