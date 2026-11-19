@@ -1,3 +1,8 @@
+# v8.8.116 — November 19, 2026
+
+- **Catalog storage safety:** [PR #889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) bounds finalized catalog-download lease retention age by the certified CreatedUtc date even with older filesystem mtimes. Windows integration regression; existing byte quota and unknown/active owner safeguards remain intact.
+- **Release pending:** implementation main `b76cd3761b5d91327a3b1138cab8ed3da0e96780`; v8.8.116 publication and packaged updater/rollback require independent exact-source proof. Immutable v8.8.115 updater-main-579 remains unchanged. #669/#793/#791/#735/#786/#350 acceptance stays open.
+
 # v8.8.115 — November 18, 2026
 
 - **Family safety:** [#881](https://github.com/fengie/Heaven-Mod_Manager/pull/881) rejects Alt/Choose cross-source add-on suggestions; [#884](https://github.com/fengie/Heaven-Mod_Manager/pull/884) centralizes hyphen-safe alternative cues, preserving original package names after display renames, with regression tests.
