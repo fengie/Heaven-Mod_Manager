@@ -43,7 +43,6 @@ public static class UpdateStorageMaintenance
         EnsureCleanupRootAllowed(fullRoot);
 
         string? protectedStagingAttempt = null;
-        var skipStagingCleanup = false;
         var pendingPath = Path.Combine(
             fullRoot,
             UpdateProtocol.PendingFileName);
@@ -76,12 +75,16 @@ public static class UpdateStorageMaintenance
             }
             catch (Exception ex)
             {
-                // A malformed pending marker may represent recovery state we do
-                // not fully understand. Fail closed for staging cleanup rather
-                // than guessing which payload can be removed.
-                skipStagingCleanup = true;
+                // If pending state is unreadable, we cannot prove whether a
+                // terminal journal is still its only recoverable transaction.
+                // Preserve all updater-owned staging and transactions until
+                // the pending marker can be repaired or inspected safely.
                 log?.Invoke(
-                    $"update storage cleanup preserved all staging because pending state could not be validated type={ex.GetType().Name}");
+                    $"update storage cleanup preserved all updater state because pending state could not be validated type={ex.GetType().Name}");
+                return new UpdateStorageCleanupResult(
+                    DeletedStagingAttempts: 0,
+                    DeletedTransactions: 0,
+                    DeferredEntries: 1);
             }
         }
 
@@ -89,7 +92,6 @@ public static class UpdateStorageMaintenance
         var deletedTransactions = 0;
         var deferred = 0;
 
-        if (!skipStagingCleanup)
         {
             var stagingRoot = Path.Combine(fullRoot, "staging");
             if (Directory.Exists(stagingRoot))
