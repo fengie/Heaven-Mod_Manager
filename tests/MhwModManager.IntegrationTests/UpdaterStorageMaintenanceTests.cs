@@ -218,6 +218,71 @@ public sealed class UpdaterStorageMaintenanceTests : IDisposable
     }
 
     [Fact]
+    public async Task Cleanup_preserves_old_terminal_journal_while_its_recorded_owner_is_alive()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        var transaction = CreateTransaction(
+            115,
+            UpdateJournalPhase.Confirmed,
+            old,
+            legacyName: false);
+        await UpdatePreparedTransactionLeaseStore.WriteAsync(
+            transaction,
+            115,
+            Environment.ProcessId,
+            TestContext.Current.CancellationToken);
+        // Old mtimes do not override a certified live process lease, even if
+        // the terminal journal has already been written.
+        SetTreeLastWriteUtc(transaction, old);
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.True(Directory.Exists(transaction));
+        Assert.Equal(0, result.DeletedTransactions);
+        Assert.True(result.DeferredEntries >= 1);
+    }
+
+    [Fact]
+    public async Task Cleanup_generation_cap_does_not_delete_recent_terminal_with_live_owner()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var terminals = Enumerable.Range(0, 4)
+            .Select(index => CreateTransaction(
+                210 + index,
+                UpdateJournalPhase.RolledBack,
+                now - TimeSpan.FromMinutes(20 - index),
+                legacyName: false))
+            .ToArray();
+        await UpdatePreparedTransactionLeaseStore.WriteAsync(
+            terminals[0],
+            210,
+            Environment.ProcessId,
+            TestContext.Current.CancellationToken);
+        SetTreeLastWriteUtc(
+            terminals[0],
+            now - TimeSpan.FromMinutes(20));
+
+        var result = await UpdateStorageMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            log: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.True(Directory.Exists(terminals[0]));
+        Assert.False(Directory.Exists(terminals[1]));
+        Assert.True(Directory.Exists(terminals[2]));
+        Assert.True(Directory.Exists(terminals[3]));
+        Assert.Equal(1, result.DeletedTransactions);
+    }
+
+    [Fact]
     public async Task Cleanup_preserves_old_prepared_transaction_while_recorded_owner_is_alive()
     {
         var now = DateTimeOffset.UtcNow;
