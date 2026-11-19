@@ -329,7 +329,7 @@ public partial class ModRowViewModel:ObservableObject
         if(StringComparer.OrdinalIgnoreCase.Equals(value,DisplayName))return "Main";if(value.StartsWith(DisplayName,StringComparison.OrdinalIgnoreCase)){var suffix=value[DisplayName.Length..].Trim(' ','-',':','|','–','—');if(suffix.Length>0)return suffix;}return value;}
 }
 
-public sealed record ConflictOptionRow(string Token,string DisplayName,string? PreviewPath,string Detail,IReadOnlyList<string> MemberIds);
+public sealed record ConflictOptionRow(string Token,string DisplayName,string? PreviewPath,string Detail,IReadOnlyList<string> MemberIds,bool CanSeparate=false);
 
 public sealed record ConflictRow(
     string BundleKey,

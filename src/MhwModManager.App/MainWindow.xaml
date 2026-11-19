@@ -737,6 +737,23 @@
                                                 <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#D0D5DB" TextWrapping="Wrap" MaxWidth="205" Margin="0,3,0,8"/>
                                                 <Button Content="Use This Mod" Margin="0,0,0,6" Command="{Binding DataContext.ChooseConflictOptionCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" Style="{StaticResource PrimaryButton}"/>
                                                 <Button Content="Treat as Main Mod + Add-ons" Command="{Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Token}" ToolTip="Manual override: use only after verifying the other packages really depend on this main mod. Sharing an armor slot is not proof of a family."/>
+                                                <Button Content="Separate from this group"
+                                                        Margin="0,7,0,0"
+                                                        AutomationProperties.Name="{Binding DisplayName,StringFormat='Separate {0} from incorrect family'}"
+                                                        Command="{Binding DataContext.SeparateConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding Token}"
+                                                        ToolTip="Remove an incorrect family link without deleting the mod or touching installed game files. Remaining real conflicts will still require review.">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding CanSeparate}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>

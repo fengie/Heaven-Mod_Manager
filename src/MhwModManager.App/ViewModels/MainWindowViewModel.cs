@@ -762,7 +762,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 {
                     var logicalName=logicalGroups[0].LogicalName;
                     foreach(var member in providers.OrderBy(x=>x.Id,StringComparer.OrdinalIgnoreCase))
-                        options.Add(new("member:"+member.Id,member.DisplayName,member.PreviewPath,$"Currently shown under '{logicalName}'; shared grouping does not prove a parent/add-on or variant relationship.",new[]{member.Id}));
+                        options.Add(new("member:"+member.Id,member.DisplayName,member.PreviewPath,$"Currently shown under '{logicalName}'; shared grouping does not prove a parent/add-on or variant relationship.",new[]{member.Id},CanSeparate:true));
                 }
 
                 var bundle=s.Paths.Game.IsMonsterHunterWorld?AssetBundles.KeyForPath(conflict.Path):"file:"+PathRules.Normalize(conflict.Path).ToLowerInvariant();
@@ -1791,6 +1791,72 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText=$"Saved '{mainOption.DisplayName}' as the main mod with {childIds.Length} add-on package(s). The manager will remember this relationship for future conflict checks.";
             await s.Timeline.RecordAsync("family.manual-chain",AutomationSeverity.Info,$"User chained conflicting packages under {mainOption.DisplayName}.",new{conflict.BundleKey,familyId,mainMemberId,mainIds,childGroups},ct);
         });
+    }
+
+    [RelayCommand]
+    private async Task SeparateConflictFamily(string? memberToken)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"memberToken={memberToken ?? "<null>"}");
+        var conflict = SelectedConflict;
+        if (conflict is null || string.IsNullOrWhiteSpace(memberToken))
+        {
+            StatusText = "Select a source package to separate from the incorrect grouping.";
+            return;
+        }
+        var option = conflict.Options.FirstOrDefault(o =>
+            o.CanSeparate && StringComparer.OrdinalIgnoreCase.Equals(o.Token, memberToken));
+        if (option is null || !memberToken.StartsWith("member:", StringComparison.OrdinalIgnoreCase))
+        {
+            StatusText = "Separation is available only for individual packages currently grouped together.";
+            return;
+        }
+        var memberId = memberToken["member:".Length..];
+        var group = Mods.FirstOrDefault(row => row.IsComposite && row.ContainsMember(memberId));
+        if (group is null)
+        {
+            StatusText = "That family has changed. Refresh and review the packages again.";
+            return;
+        }
+
+        if (MessageBox.Show(
+                $"Separate '{option.DisplayName}' from '{group.DisplayName}'?\n\n" +
+                "This only corrects the saved grouping and its generated family overlay rules. " +
+                "Other explicit conflict rules, source archives, installed files and pending toggles remain intact. " +
+                "If the packages really target the same assets, a conflict may still need your choice.",
+                "Separate incorrectly grouped mods", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        var staged = CaptureStage();
+        await RunBusy("family.separate", "Separating Mod Packages",
+            $"Separating '{option.DisplayName}' from its saved logical family…", true, async ct =>
+            {
+                // Never apply a stale UI selection after the family changed in storage.
+                var currentMods = await s.Database.GetModsAsync(ct);
+                var currentFiles = await s.Database.GetModFilesAsync(ct);
+                var currentGroup = LogicalModFamilies.Build(currentMods, currentFiles, s.Paths.Game)
+                    .FirstOrDefault(family => family.Members.Count > 1 &&
+                        family.Members.Any(member =>
+                            member.Id.Equals(memberId, StringComparison.OrdinalIgnoreCase)));
+                if (currentGroup is null ||
+                    !currentGroup.Members.Select(member => member.Id).ToHashSet(StringComparer.OrdinalIgnoreCase)
+                        .SetEquals(group.Members.Select(member => member.Id)))
+                    throw new InvalidOperationException("The saved family members changed during review. Refresh before separating them.");
+
+                await s.Database.SeparateLogicalMemberAsync(memberId, ct);
+                await ReloadMods(ct);
+                suppressChanged = true;
+                try
+                {
+                    foreach (var row in Mods) row.ApplyProfileState(staged);
+                }
+                finally { suppressChanged = false; Changed(); }
+
+                await RefreshAnalysis(ct);
+                StatusText = $"Separated '{option.DisplayName}' from its logical family. Review any remaining actual file conflicts before applying changes.";
+                await s.Timeline.RecordAsync("family.manual-separate", AutomationSeverity.Info,
+                    $"User separated incorrectly grouped source package '{option.DisplayName}'.",
+                    new { conflict.BundleKey, memberId }, ct);
+            });
     }
 
     private void SetConflictToken(string token,bool enabled)
