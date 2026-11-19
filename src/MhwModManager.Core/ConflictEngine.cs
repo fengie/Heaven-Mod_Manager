@@ -74,7 +74,11 @@ public sealed class ConflictEngine
             return new(path, ConflictKind.UserOverlayRule, false, exact, "exact-file-winner", "A saved exact-file winner applies.", Confidence.Explicit, ResolverScore:100, Evidence:"Explicit human exact-path rule.");
 
         var firstHash = candidates[0].File.BlobSha256;
-        if (candidates.All(c => StringComparer.OrdinalIgnoreCase.Equals(c.File.BlobSha256,firstHash)))
+        // A matching empty, missing or malformed digest cannot establish byte identity.
+        // The blob store validates content separately; the planner must not promote
+        // absent or invalid evidence into an automatic overwrite decision.
+        if (firstHash is { Length: 64 } && firstHash.All(Uri.IsHexDigit) &&
+            candidates.All(c => StringComparer.OrdinalIgnoreCase.Equals(c.File.BlobSha256,firstHash)))
             return new(path, ConflictKind.Identical, false, candidates.MaxBy(c => c.Priority)!.ModId, "identical-bytes", "Every provider contains byte-identical content, so only one physical copy is needed.", Confidence.High, Inferred:true, ResolverScore:100, Evidence:"All SHA-256 hashes are identical.");
 
         // Game-root bootstrap and loader files execute before ordinary nativePC content. A mismatched
