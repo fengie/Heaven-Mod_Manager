@@ -122,7 +122,7 @@ public sealed class FamilyInferenceOrderInvariantsTests
             .Select(i => Mod($"unrelated-{i:D4}", $"Distinct Item {i:D4}"))
             .ToArray();
         var files = mods.Select((mod, i) =>
-            File(mod.Id, $@"Mods\Shared\Common\Assets\distinct-{i:D4}\payload.bin"))
+            File(mod.Id, $@"root\shared\common\assets\distinct-{i:D4}\payload.bin"))
             .ToArray();
 
         var inferred = GenericFamilyInference.InferKeys(
@@ -130,6 +130,35 @@ public sealed class FamilyInferenceOrderInvariantsTests
 
         Assert.Empty(inferred);
         Assert.Empty(evidence);
+    }
+
+    [Fact]
+    public void Rare_identical_content_anchors_survive_mixed_path_separator_postings()
+    {
+        // Raw path labels differ, but normalized path + SHA-256 matches.
+        // Semantic MHW asset IDs are intentionally disabled to ensure the
+        // rare content anchor itself supplies the pair discovery edge.
+        var mods = new[]
+        {
+            Mod("base", "Solstice Mantle"),
+            Mod("part", "Veiled Counterweight")
+        };
+        var files = new[]
+        {
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\shared.mod3", "common-mesh"),
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\shared.mrl3", "common-material"),
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\base.ctc", "base-only"),
+            ContentFile("part", "nativePC/pl/f_equip/pl001_0000/body/shared.mod3", "common-mesh"),
+            ContentFile("part", "nativePC/pl/f_equip/pl001_0000/body/shared.mrl3", "common-material"),
+            ContentFile("part", "nativePC/pl/f_equip/pl001_0000/wst/part.ctc", "part-only")
+        };
+
+        var inferred = GenericFamilyInference.InferKeys(
+            mods, files, out var evidence, includeMhwAssetSemantics: false);
+
+        Assert.Equal(2, inferred.Count);
+        Assert.Equal(inferred["base"], inferred["part"]);
+        Assert.Single(evidence);
     }
 
     [Fact]
