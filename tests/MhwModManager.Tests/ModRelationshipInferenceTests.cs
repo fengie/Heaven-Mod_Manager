@@ -354,6 +354,7 @@ public sealed class ModRelationshipInferenceTests
         var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
         Assert.Equal("parent", suggestion.ParentModId);
         Assert.Equal("child", suggestion.ChildModId);
+        Assert.Contains("texture-only payload without an explicit add-on label", suggestion.Evidence);
     }
 
     private static ModFileDescriptor ContentFile(string modId, string path, string digest) =>
