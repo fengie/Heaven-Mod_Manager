@@ -1,6 +1,6 @@
 # v8.8.119 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 19, 2026 · 5:15:34 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 19, 2026 · 2:13:03 PM EST** _(repo-enforced)_
 
 Current product version: **8.8.119**.
 
@@ -15,7 +15,8 @@ Keep this section intentionally short. The README shows the **current patch plus
 - [PR #898](https://github.com/fengie/Heaven-Mod_Manager/pull/898) and [PR #900](https://github.com/fengie/Heaven-Mod_Manager/pull/900) provide bounded local paging beyond 1,000 entries and deterministic ordering across ties.
 - [PR #902](https://github.com/fengie/Heaven-Mod_Manager/pull/902) improves armor-slot collision evidence and protects separately namespaced resources. [PR #903](https://github.com/fengie/Heaven-Mod_Manager/pull/903) adds provider failure diagnostics, official site fallbacks, newer Nexus filename hints and review-only relationship suggestions while excluding pick-one variants.
 - [PR #905](https://github.com/fengie/Heaven-Mod_Manager/pull/905) adds explicit separation for incorrectly grouped packages without changing installed game files. The cleanup now retains similarly worded user-authored overlay rules, with regression coverage.
-- **Release candidate, not published:** current source main `035517cf` contains these fixes; v8.8.119 still requires the exact-source Windows Release Gate, immutable ZIP/manifest publication and real hosted updater/rollback verification. Existing public v8.8.118 build 588 predates these fixes. Personal Heaven2 installation is unverified. Provider REST access remains blocked by expired policy reviews until actual Nexus/GameBanana authorization is verified; official-site browsing works without bypassing that restriction.
+- Auto Populate checks for pre-Iceborne armor materials. If an affected package is already selected, deselect it, review the deployment preview, then Apply. [Fix and regression tests](https://github.com/fengie/Heaven-Mod_Manager/pull/913)
+- **Release candidate, not published:** current source main `8499cf6c` contains these fixes; v8.8.119 still requires the exact-source Windows Release Gate, immutable ZIP/manifest publication and real hosted updater/rollback verification. Existing public v8.8.118 build 588 predates these fixes. Personal Heaven2 installation is unverified. Provider REST access remains blocked by expired policy reviews until actual Nexus/GameBanana authorization is verified; official-site browsing works without bypassing that restriction.
 
 ## v8.8.118 — corrupt pending-state recovery safety
 

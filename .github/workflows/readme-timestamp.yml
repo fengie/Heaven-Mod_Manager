@@ -35,6 +35,8 @@ jobs:
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          # Keep the non-cone sparse index out of the runner's full build checkout.
+          path: readme-timestamp-source
           fetch-depth: 2
           persist-credentials: false
           # This job reads only these three files. Avoid full working-tree
@@ -46,6 +48,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Validate README timestamp
+        working-directory: readme-timestamp-source
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
