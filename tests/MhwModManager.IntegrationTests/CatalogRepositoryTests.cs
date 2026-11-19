@@ -96,6 +96,42 @@ public sealed class CatalogRepositoryTests : IDisposable
         Assert.Equal("Azure Wyvern Blade", hit.Mod.Name);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Tie")]
+    public async Task Cached_page_order_uses_canonical_identity_for_equal_ranked_items(string? query)
+    {
+        var repository = await CreateRepositoryAsync("ties-" + (query is null ? "plain" : "fts"));
+        // All items have the same name, update time, and FTS relevance.
+        // Insert in reverse identity order so incidental SQLite row order
+        // cannot accidentally satisfy the canonical continuation contract.
+        for (var i = 4; i >= 1; i--)
+        {
+            var id = $"tie-{i:D2}";
+            await repository.UpsertAsync(
+                CreateCached(
+                    canonicalId: "nexus:" + id,
+                    name: "Tie Fixture",
+                    summary: "Equal-ranked candidate",
+                    description: "Same cached content",
+                    expiresAt: null,
+                    providerModId: id),
+                TestToken);
+        }
+
+        var first = await repository.SearchPageAsync(
+            query, gameId: "monsterhunterworld", limit: 2, offset: 0,
+            ct: TestToken);
+        var second = await repository.SearchPageAsync(
+            query, gameId: "monsterhunterworld", limit: 2, offset: 2,
+            ct: TestToken);
+        Assert.Equal(
+            new[] { "nexus:tie-01", "nexus:tie-02", "nexus:tie-03", "nexus:tie-04" },
+            first.Concat(second).Select(x => x.Mod.CanonicalId).ToArray());
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            query, "monsterhunterworld", visibleLimit: 4, ct: TestToken));
+    }
+
     [Fact]
     public async Task Stale_cache_remains_browseable_but_can_be_excluded()
     {
