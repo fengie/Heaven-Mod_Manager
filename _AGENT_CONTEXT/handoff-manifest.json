@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.118",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.118 serialized release candidate from main 109ee761b57e59b6293c6d16a1861882e243ef3b, #895 fail-closed corrupted pending-state recovery and #896 durable v8.8.117 hosted updater E2E. New immutable v8.8.118 publication and packaged rollback UNVERIFIED. Prior immutable updater-main-586 v8.8.117 source 69a317ea4c7c18fed5ed5d18323a3d1af8925618 Windows Gate 44475835455 and real hosted E2E 44477647687 PASSED. Personal Heaven2, #669 full lifecycle, #791 corpora, #735 p95, #786 provider approval, #350 independent publisher trust and judiciary acceptance remain OPEN. Preserve recursive continuity.",
+  "immediateParentRevision": "v8.8.118 immutable updater-main-588 was published from exact source b6e1e151b43323218041b80204dee070002c297b; Windows Gate 44481505844 and hosted real packaged update/rollback 44483604969 PASS, with source-bound receipt PR #899 merged. Later main 86e473ecc1732ea0603accf21c01305fd55ecbee includes #898/#900 local catalog paging and #902 armor-slot conflict evidence, excluded from the immutable build 588. Physical Heaven2, #669 storage lifecycle, #791 real corpora, #735 p95, #786 provider approval, #350 independent publisher trust and judiciary acceptance remain OPEN. Preserve recursive continuity.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",

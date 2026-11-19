@@ -13,7 +13,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.118 — corrupt pending-state recovery safety
 
 - [PR #895](https://github.com/fengie/Heaven-Mod_Manager/pull/895) makes updater cleanup preserve staging and terminal recovery transactions when pending state is malformed or unreadable. A new regression verifies both survive; all four exact-head Windows feature/security/admission checks passed. Source merged on main at `c3d32904`.
-- **Release pending:** v8.8.118 candidate includes source main `109ee761b57e59b6293c6d16a1861882e243ef3b`. The new immutable tag/ZIP/manifest and hosted packaged update/rollback remain **UNVERIFIED** until exact-source publication. Prior v8.8.117 and its hosted updater are independently verified. Personal Heaven2 and #669 broader lifecycle acceptance are open.
+- **Published and hosted E2E verified:** immutable v8.8.118 [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), exact source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) and [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS** (build 60→588, injected rollback, four unchanged user-data sentinels). Receipt merged through [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899). Later source #898/#900/#902 is **not** part of this immutable package. Personal Heaven2 and full #669 lifecycle acceptance remain open.
 
 ## v8.8.117 — safe terminal updater transaction retention
 
