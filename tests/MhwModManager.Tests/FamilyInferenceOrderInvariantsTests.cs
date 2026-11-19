@@ -113,6 +113,55 @@ public sealed class FamilyInferenceOrderInvariantsTests
     }
 
     [Fact]
+    public void Large_generic_library_with_only_shared_folder_prefixes_has_no_inferred_families()
+    {
+        // Common directory prefixes are not file, asset, or content identity.
+        // This exercises a high-fanout four-segment root without an all-pairs
+        // family-candidate requirement.
+        var mods = Enumerable.Range(0, 1200)
+            .Select(i => Mod($"unrelated-{i:D4}", $"Distinct Item {i:D4}"))
+            .ToArray();
+        var files = mods.Select((mod, i) =>
+            File(mod.Id, $@"root\shared\common\assets\distinct-{i:D4}\payload.bin"))
+            .ToArray();
+
+        var inferred = GenericFamilyInference.InferKeys(
+            mods, files, out var evidence, includeMhwAssetSemantics: false);
+
+        Assert.Empty(inferred);
+        Assert.Empty(evidence);
+    }
+
+    [Fact]
+    public void Rare_identical_content_anchors_survive_mixed_path_separator_postings()
+    {
+        // Raw path labels differ, but normalized path + SHA-256 matches.
+        // Semantic MHW asset IDs are intentionally disabled to ensure the
+        // rare content anchor itself supplies the pair discovery edge.
+        var mods = new[]
+        {
+            Mod("base", "Solstice Mantle"),
+            Mod("part", "Veiled Counterweight")
+        };
+        var files = new[]
+        {
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\shared.mod3", "common-mesh"),
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\shared.mrl3", "common-material"),
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\base.ctc", "base-only"),
+            ContentFile("part", "nativePC/pl/f_equip/pl001_0000/body/shared.mod3", "common-mesh"),
+            ContentFile("part", "nativePC/pl/f_equip/pl001_0000/body/shared.mrl3", "common-material"),
+            ContentFile("part", "nativePC/pl/f_equip/pl001_0000/wst/part.ctc", "part-only")
+        };
+
+        var inferred = GenericFamilyInference.InferKeys(
+            mods, files, out var evidence, includeMhwAssetSemantics: false);
+
+        Assert.Equal(2, inferred.Count);
+        Assert.Equal(inferred["base"], inferred["part"]);
+        Assert.Single(evidence);
+    }
+
+    [Fact]
     public void Version_like_numeric_suffixes_with_one_shared_root_do_not_group_unrelated_files()
     {
         var mods = Enumerable.Range(0, 32)
