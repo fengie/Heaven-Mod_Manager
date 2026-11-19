@@ -45,6 +45,46 @@ public sealed class CatalogDownloadMaintenanceTests : IDisposable
     }
 
     [Fact]
+    public async Task Cleanup_preserves_recently_created_lease_even_when_archive_and_lease_file_timestamps_are_old()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        var owned = await CreateOwnedDownloadAsync(
+            old,
+            ownerProcessId: int.MaxValue,
+            ownerProcessStartUtc: old,
+            bytes: 4096);
+
+        // A restored/backdated filesystem timestamp cannot make a newly
+        // published, valid ownership lease eligible for age-based cleanup.
+        var lease = new CatalogDownloadLease(
+            CatalogDownloadLease.CurrentSchemaVersion,
+            Path.GetFileName(owned.Archive),
+            int.MaxValue,
+            old,
+            now);
+        await File.WriteAllTextAsync(
+            owned.Lease,
+            JsonSerializer.Serialize(lease),
+            TestContext.Current.CancellationToken);
+        File.SetLastWriteTimeUtc(owned.Lease, old.UtcDateTime);
+
+        var result = await CatalogDownloadMaintenance.CleanupRootAsync(
+            root,
+            now,
+            TimeSpan.FromHours(1),
+            CatalogDownloadMaintenance.DefaultMaxOwnedBytes,
+            log: null,
+            CancellationToken.None);
+
+        Assert.True(File.Exists(owned.Archive));
+        Assert.True(File.Exists(owned.Lease));
+        Assert.Equal(0, result.DeletedDownloads);
+        Assert.Equal(0, result.DeletedLeases);
+        Assert.True(result.DeferredEntries >= 1);
+    }
+
+    [Fact]
     public async Task Cleanup_preserves_download_while_recorded_owner_is_alive()
     {
         var now = DateTimeOffset.UtcNow;
