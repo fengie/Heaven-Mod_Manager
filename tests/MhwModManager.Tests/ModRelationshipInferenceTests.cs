@@ -295,6 +295,67 @@ public sealed class ModRelationshipInferenceTests
         Assert.Empty(ModRelationshipInference.Suggest(mods, files));
     }
 
+    [Fact]
+    public void Texture_named_main_remains_eligible_as_parent_of_an_explicit_overlay()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Texture Main", "1001"),
+            Mod("child", "High Poly Texture Overlay", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal("parent", suggestion.ParentModId);
+        Assert.Equal("child", suggestion.ChildModId);
+    }
+
+    [Fact]
+    public void Generic_texture_only_mod_is_not_related_without_distinctive_identity()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "High Poly Body Base", "1001"),
+            Mod("child", "Unrelated Texture Atlas", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
+    [Fact]
+    public void Implicit_texture_sidecar_uses_shared_identity_and_structural_evidence()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "Sweaty Effect Base", "1001"),
+            Mod("child", "Sweaty Effect Visuals", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal("parent", suggestion.ParentModId);
+        Assert.Equal("child", suggestion.ChildModId);
+    }
+
     private static ModFileDescriptor ContentFile(string modId, string path, string digest) =>
         new(modId, path, digest, null, 4096, DateTimeOffset.UnixEpoch, PathRules.ClassifyFile(path));
 
