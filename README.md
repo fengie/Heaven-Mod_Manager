@@ -1,8 +1,8 @@
-# v8.8.113 — MHW Manual Mod Manager
+# v8.8.114 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 18, 2026 · 7:16:10 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 18, 2026 · 8:36:24 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.113**.
+Current product version: **8.8.114**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,13 +10,19 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
+## v8.8.114 — fail-closed mod relationship and conflict safety
+
+- [#876](https://github.com/fengie/Heaven-Mod_Manager/pull/876) requires valid full SHA-256 evidence before classifying overlapping files as byte-identical, including protected loader paths. Missing and malformed digest pairs remain blocking without an explicit compatible rule.
+- [#879](https://github.com/fengie/Heaven-Mod_Manager/pull/879) keeps locally imported Alternative, Variant, and Choice packages separate despite matching identity stems/target paths; saved human decisions and Nexus source-scoped grouping remain authoritative.
+- **Publication boundary:** these fixes are integrated at `main@ff85ad37bf18a13ff06df4a1240869478a85a6d7`, newer than immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), source `7c0cad829ec58af554d4976753642243fd77fa67`. v8.8.114 publication, installed Heaven2 health and real-mod corpus/p95 acceptance are not verified.
+
 ## v8.8.113 — evidence-first mod safety, startup and catalog improvements
 
 - [#850](https://github.com/fengie/Heaven-Mod_Manager/pull/850), [#854–#860](https://github.com/fengie/Heaven-Mod_Manager/pull/860) improve real RAR/7z small-fixture coverage, startup maintenance, case-safe IDs, crash recovery, cross-source family review and bounded-memory duplicate hashing. Real hundreds-mod corpus performance remains unverified.
 - [#857](https://github.com/fengie/Heaven-Mod_Manager/pull/857), [#858](https://github.com/fengie/Heaven-Mod_Manager/pull/858), [#862](https://github.com/fengie/Heaven-Mod_Manager/pull/862), [#868](https://github.com/fengie/Heaven-Mod_Manager/pull/868), [#870](https://github.com/fengie/Heaven-Mod_Manager/pull/870) and [#874](https://github.com/fengie/Heaven-Mod_Manager/pull/874) strengthen content-grounded family inference, safe multi-loader game routing and rejection of misleading documentation-only game signatures. Ambiguous identities and byte-different overrides still require review.
 - [#861](https://github.com/fengie/Heaven-Mod_Manager/pull/861), [#863](https://github.com/fengie/Heaven-Mod_Manager/pull/863), [#867](https://github.com/fengie/Heaven-Mod_Manager/pull/867) permit strictly byte-identical MHW structural coexistence without inventing overwrite precedence. [#864](https://github.com/fengie/Heaven-Mod_Manager/pull/864) prevents classification through unsafe junctions.
 - [#865](https://github.com/fengie/Heaven-Mod_Manager/pull/865), [#866](https://github.com/fengie/Heaven-Mod_Manager/pull/866) and [#871](https://github.com/fengie/Heaven-Mod_Manager/pull/871) improve measured startup phases, optional maintenance deferral and honesty of missing resource metrics. [#872](https://github.com/fengie/Heaven-Mod_Manager/pull/872) discloses truncated cached Browse Mods results; [#873](https://github.com/fengie/Heaven-Mod_Manager/pull/873) reports hidden import-workspace storage without deleting uncertain recovery material.
-- **Publication boundary:** these source improvements are merged at `60b6a4f90e2738db4a2a75131ad8c498ce4d72e2`, but the prior immutable [v8.8.112 updater-main-548](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-548) has older source `e9b1212985f80533ce04e3ab1e43910290692687`. v8.8.113 is only a serialized metadata candidate until exact CI and new immutable ZIP/tag/manifest publication are verified. Heaven2 installed health, real mod corpus and p95 acceptance remain open.
+- **Verified historical release:** v8.8.113 was published as immutable [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), exact source `7c0cad829ec58af554d4976753642243fd77fa67`; Windows Gate 44429973426 and real hosted update/rollback 44432122940 passed. No personal Heaven2 deployment evidence is implied.
 
 ## v8.8.112 — automatic mod import and installed Windows acceptance
 
@@ -24,12 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - [#846](https://github.com/fengie/Heaven-Mod_Manager/pull/846) adds opt-in code-coverage collection, a 19-feature verification inventory, service-chain correctness checks and synthetic Inbox benchmark fixtures.
 - [#847](https://github.com/fengie/Heaven-Mod_Manager/pull/847) adds a disposable hosted-Windows UI Automation suite for real WPF import, disabled mod rows, preview, apply, undo and game switching. [#848](https://github.com/fengie/Heaven-Mod_Manager/pull/848) fixes manual bulk-folder, multi-archive and multi-mod-pack intake so high-confidence packages for the active game automatically finish Inbox installation and refresh the library, while other games stay queued and uncertain packages require review. The [hosted UI acceptance run 44037121012](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44037121012) passed 4/4 after its test first failed on the old implementation; [Windows Feature 44037120853](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44037120853), Product Security and AutoUpdate passed on the same candidate.
 - These source changes follow the earlier immutable [v8.8.111 updater-main-537](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-537). **Publication is not established by README source text:** verify the exact source SHA, tag, ZIP and manifest SHA-256 against an immutable [GitHub release](https://github.com/fengie/Heaven-Mod_Manager/releases) and its source-bound receipt. Independently verify Heaven2 installation, large real RAR/7z collections and UI p95 performance.
-
-## v8.8.111 — high-density family inference performance
-
-- [#839](https://github.com/fengie/Heaven-Mod_Manager/pull/839) skips non-strong family evidence before high-fanout shared-root intersection and explanation allocation. Conservative grouping/explicit override priority is unchanged; new negative evidence regressions pin this.
-- Native [Windows Feature 43989850199](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43989850199) passed for the PR; merged `main@fefc7811` passed [Windows Release Gate 43993837451](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/43993837451) 26/26. Same-Windows-runner synthetic 500-mod shared-root mean improved **281.974 → 223.461 ms (20.8%)** and managed allocations **507.76 → 420.2 MB (17.2%)** in three BenchmarkDotNet iterations. This is neither installed UI p95 nor actual hundreds-mod archive throughput.
-- v8.8.111 was subsequently published as immutable [updater-main-537](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-537) from source `1e24b351`, before the later #844/#846/#847/#848 source changes. Real large RAR/7z corpus, installed-device p95 and independent updater rollback acceptance remain separately unverified.
 
 ## Current plans & progress
 
