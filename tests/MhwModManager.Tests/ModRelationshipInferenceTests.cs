@@ -58,7 +58,12 @@ public sealed class ModRelationshipInferenceTests
 
     [Theory]
     [InlineData("Alt")]
+    [InlineData("Alternate")]
     [InlineData("Choose")]
+    [InlineData("Color")]
+    [InlineData("Colour")]
+    [InlineData("Style")]
+    [InlineData("Version")]
     public void Pick_one_patch_variants_are_not_suggested_as_cross_source_addons(string label)
     {
         var mods = new[]
