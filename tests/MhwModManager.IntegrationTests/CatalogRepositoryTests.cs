@@ -7,6 +7,9 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed class CatalogRepositoryTests : IDisposable
 {
+    private static readonly string[] ExpectedTieIdentityOrder =
+        ["nexus:tie-01", "nexus:tie-02", "nexus:tie-03", "nexus:tie-04"];
+
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
     private readonly string root = Path.Combine(Path.GetTempPath(), "mhwmm-catalog-" + Guid.NewGuid().ToString("N"));
 
@@ -126,7 +129,7 @@ public sealed class CatalogRepositoryTests : IDisposable
             query, gameId: "monsterhunterworld", limit: 2, offset: 2,
             ct: TestToken);
         Assert.Equal(
-            new[] { "nexus:tie-01", "nexus:tie-02", "nexus:tie-03", "nexus:tie-04" },
+            ExpectedTieIdentityOrder,
             first.Concat(second).Select(x => x.Mod.CanonicalId).ToArray());
         Assert.False(await repository.HasAdditionalMatchesAsync(
             query, "monsterhunterworld", visibleLimit: 4, ct: TestToken));
