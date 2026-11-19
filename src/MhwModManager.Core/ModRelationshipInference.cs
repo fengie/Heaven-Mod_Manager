@@ -29,7 +29,7 @@ public static partial class ModRelationshipInference
     };
     private static readonly HashSet<string> AlternativeCues = new(StringComparer.OrdinalIgnoreCase)
     {
-        "alternative", "alternate", "variant", "either", "choice"
+        "alternative", "alternate", "alt", "variant", "either", "choice", "choose"
     };
     private static readonly HashSet<string> GenericNameWords = new(StringComparer.OrdinalIgnoreCase)
     {
