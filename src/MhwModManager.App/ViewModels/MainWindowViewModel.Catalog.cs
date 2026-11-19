@@ -1667,6 +1667,7 @@ public sealed partial class MainWindowViewModel
     private void OpenNexusBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!s.Paths.Game.IsMonsterHunterWorld) return;
         OpenExternalUri(new Uri("https://www.nexusmods.com/monsterhunterworld/mods"));
     }
 
@@ -1674,6 +1675,7 @@ public sealed partial class MainWindowViewModel
     private void OpenGameBananaBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!s.Paths.Game.IsMonsterHunterWorld) return;
         OpenExternalUri(new Uri("https://gamebanana.com/games/9081"));
     }
 
