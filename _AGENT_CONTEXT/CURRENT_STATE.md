@@ -1,6 +1,6 @@
-# v8.8.114 - metadata candidate, publication unverified
+# v8.8.114 - source verified, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `ff85ad37bf18a13ff06df4a1240869478a85a6d7` includes later #876/#879 changes after immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), published source `7c0cad829ec58af554d4976753642243fd77fa67`. v8.8.114 publication and personal Heaven2 installation are **not verified**. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `ffd24428d8e4487f1b30c9c4a85bd492f52ae535` (Windows Gate 44447307111); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -22,13 +22,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `ff85ad37bf18a13ff06df4a124
 
 ## Verification boundary
 
-**Current v8.8.114 is publication-unverified:** release and updater evidence below belongs to prior immutable v8.8.113 source, not the newer `ff85ad37bf18a13ff06df4a1240869478a85a6d7`. Do not claim the current code is published or installed on Heaven2 until new exact receipts exist.
+Current hosted-Windows closure: v8.8.114 source `ffd24428d8e4487f1b30c9c4a85bd492f52ae535` passed run `44447307111` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.114-heaven-windows-closure.log`.
 
-Current hosted-Windows closure: v8.8.113 source `7c0cad829ec58af554d4976753642243fd77fa67` passed run `44429973426` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log`.
+Public release status: **NOT VERIFIED** for source `ffd24428d8e4487f1b30c9c4a85bd492f52ae535`. Successful build or another source's same-version release is not proof of publication.
 
-Verified immutable GitHub release: [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), exact source `7c0cad829ec58af554d4976753642243fd77fa67`, ZIP SHA-256 `60f3b2a2461fe29933b019e2e9c5c27c9d3dde44d4130940b62a6e0f0dc6772d` and manifest SHA-256 `18688f3822af7c1fb7f92f938b241f9b875d3e8eefaddb7877270af933eaa003`. Public release and tag ref independently match the built artifact.
-
-The tested source remains `7c0cad829ec58af554d4976753642243fd77fa67` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `ffd24428d8e4487f1b30c9c4a85bd492f52ae535` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
