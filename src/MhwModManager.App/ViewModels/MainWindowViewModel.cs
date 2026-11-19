@@ -1121,7 +1121,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     .SelectMany(row => row.ExpandStage().Where(x => x.Value.enabled).Select(x => x.Key))
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var service = new AutoPopulateService(
-                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game);
+                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game, s.Blobs);
                 result = await RunAutoPopulateBuildAsync(
                     innerCt => service.BuildAsync(preferredModIds, innerCt),
                     ct);

@@ -11,6 +11,41 @@ public sealed class AutoPopulateServiceTests : IDisposable
 
     public AutoPopulateServiceTests() => Directory.CreateDirectory(root);
 
+    [Theory]
+    [InlineData("4D524C000B000000A9BCBB5900000000", true, false)]
+    [InlineData("4D524C000B000000A9BCBB5900000000", false, true)]
+    [InlineData("4D524C000C0000005060845D00000000", true, true)]
+    [InlineData("4D524C000C0000002A66075D00000000", true, true)]
+    [InlineData("4D524C000B0000000000000000000000", true, true)]
+    public async Task AutoPopulateChecksExactMaterialGeneration(string header, bool iceborne, bool eligible)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("materials.db");
+        var gameRoot = Path.Combine(root, "game");
+        Directory.CreateDirectory(Path.Combine(gameRoot, "chunk"));
+        if (iceborne)
+            await File.WriteAllBytesAsync(Path.Combine(gameRoot, "chunk", "chunkG0.bin"), [], ct);
+        var mod = await AddModAsync(db, "armor", "Fixture armor", 100);
+        var material = Path.Combine(root, "fixture.mrl3");
+        await File.WriteAllBytesAsync(material, Convert.FromHexString(header), ct);
+        var store = new MhwModManager.Filesystem.BlobStore(Path.Combine(root, "blobs"), db);
+        var hash = await store.CaptureAsync(material, ct);
+        await db.ReplaceModFilesAsync(mod.Id,
+            [ModFile(mod.Id, @"nativePC\pl\f_equip\pl032_0010\body\fixture.mrl3", hash, FileClass.Structural)], ct);
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var service = new AutoPopulateService(new PlannerSnapshotRepository(db),
+            new DeploymentPlanner(new ConflictEngine(game), game), new DependencyDoctorService(db, gameRoot, game),
+            gameRoot, game, store);
+        var result = await service.BuildAsync(ct);
+        Assert.Equal(eligible, result.State[mod.Id].Enabled);
+        if (!eligible)
+        {
+            Assert.Contains("Iceborne", Assert.Single(result.Decisions).Reason);
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.BuildAsync([mod.Id], ct));
+            Assert.Contains("Fixture armor", error.Message);
+        }
+    }
+
     [Fact]
     public async Task AutoPopulateEnablesRequiredModAndTextureProviderAndSkipsConflictingAlternative()
     {
