@@ -348,7 +348,7 @@ public static partial class GenericFamilyInference
     private static bool HasChoiceSignal(string value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return Tokenize(value).Any(ChoiceWords.Contains);
+        return ModChoiceSignals.HasPickOneCue(value);
     }
     private static bool IsMeaningfulPrefix(string shorter,string longer)
     {
