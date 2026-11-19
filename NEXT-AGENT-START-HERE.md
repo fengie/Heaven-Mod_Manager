@@ -10,9 +10,9 @@ Canonical `fengie/Heaven-Mod_Manager@main` readback as of November 19, 2026: `f1
 
 - **v8.8.117 verified historical implementation:** PR #893 protects active/unknown terminal updater owners. Immutable public updater-main-586 source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`, Windows Gate 44475835455 and real hosted update/rollback 44477647687 passed; PR #896 preserved the durable receipt.
 
-- **v8.8.116 published implementation:** PR #889 protects recently finalized catalog-download leases despite old file mtimes; exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3` is packaged in immutable updater-main-583. Windows Release Gate 44468041048 and real hosted packaged update/rollback 44469075908 passed. Broader #669 storage lifecycle and personal-device acceptance remain open.
+- **v8.8.116:** #889 fixed catalog-download lease retention; immutable updater-main-583 and real hosted rollback passed. #669 and physical-device acceptance remain open.
 
-- **v8.8.115 published implementation:** #881 prevents false Alt/Choose cross-source add-on suggestions; #882 removes redundant quadratic shared-loader-root candidate pairs; #884 centralizes hyphen-safe pick-one cues, preserving negative evidence from original names after display renames. They are in immutable `updater-main-579` at exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`. Public ZIP/tag and Windows gate verified, hosted real packaged updater/rollback 44456946318 PASSED; personal Heaven2 installation still requires independent evidence.
+- **v8.8.115:** #881/#882/#884 fixed Alt/Choose family safety, sparse pair scaling and renamed pick-one evidence. Immutable updater-main-579 and hosted update/rollback passed; Heaven2 remains unverified.
 
 - **Historical v8.8.113 source:** #850–#874 provided genuine small archive format fixtures, crash recovery, game routing, conflict safeguards, startup telemetry, and catalog visibility. Large real Sifu/Stellar Blade/MHW corpora and installed p95 remain unverified.
 
