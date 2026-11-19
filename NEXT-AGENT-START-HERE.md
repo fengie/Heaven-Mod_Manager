@@ -1,10 +1,12 @@
-# v8.8.116 - immutable updater-main-583 published; hosted E2E PASS
+# v8.8.117 - source merged; new publication unverified
 
-Canonical published source: `fengie/Heaven-Mod_Manager@407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583). Windows Release Gate 44468041048 PASS; real hosted packaged update/rollback 44469075908 PASS. [PR #891](https://github.com/fengie/Heaven-Mod_Manager/pull/891) merged the allowlisted receipt; personal Heaven2 source/health remains unverified. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical implementation baseline: `fengie/Heaven-Mod_Manager@main` at `c0615264d909f12f5fcb1e01c24d8ed3a623ff01`. PR #893 protects active terminal updater leases with red→green native Windows regressions, but v8.8.117 publication is **unverified**. Previous immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583) source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, Windows Gate 44468041048 and real hosted packaged updater E2E 44469075908 passed. Personal Heaven2 remains unverified. Bootstrap `fengie/heaven-toolbox@main`.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
+
+- **v8.8.117 merged implementation:** PR #893 guards live/unknown updater owner leases in terminal cleanup. Source main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` is newer than immutable v8.8.116 and not yet packaged.
 
 - **v8.8.116 published implementation:** PR #889 protects recently finalized catalog-download leases despite old file mtimes; exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3` is packaged in immutable updater-main-583. Windows Release Gate 44468041048 and real hosted packaged update/rollback 44469075908 passed. Broader #669 storage lifecycle and personal-device acceptance remain open.
 
@@ -17,9 +19,9 @@ Canonical published source: `fengie/Heaven-Mod_Manager@407ae3fb6ee39b62a1451b03f
 
 ## Verification boundary
 
-**v8.8.116 immutable publication verified:** [updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`. Windows Release Gate 44468041048 PASS; hosted real packaged update-and-rollback 44469075908 PASS with all four user sentinels unchanged. Receipt on canonical main via PR #891. This does not verify installation on personal Heaven2.
+**v8.8.117 immutable publication unverified:** implementation source `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` passed PR #893 exact-head feature/security/enforce checks. The new release requires serialized candidate checks, the preceding source main Windows publishing gate, protected merge, exact new Windows Release Gate, matching public tag/source/ZIP/manifest hashes, and real packaged update+rollback. Do not reuse v8.8.116 artifacts for new source.
 
-Prior immutable v8.8.115 updater-main-579 exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` passed Windows Gate 44455718899 and hosted real packaged update/rollback 44456946318; ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, manifest SHA-256 `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`. Those older receipts do not verify v8.8.116 or personal Heaven2 installed process health. Preserve all user data and immutable older assets.
+Historical immutable v8.8.116 updater-main-583 source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, Windows Gate 44468041048 and hosted actual packaged update+rollback 44469075908 PASS; personal Heaven2 installed health and real mod corpora still require independent proof.
 
 ## Unresolved risk and acceptance
 
