@@ -50,6 +50,52 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
             rule.Kind == RuleKind.Overlay && rule.Scope == RuleScope.ModPair && rule.Explicit);
     }
 
+    [Fact]
+    public async Task Separating_a_false_manual_family_clears_only_its_generated_overlay_rules()
+    {
+        var db = await NewDatabaseAsync();
+        var priorFamily = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Misgrouped");
+
+        // An independent user-authored incompatibility must survive separation.
+        await using (var connection = await db.OpenAsync(Ct))
+        await using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = """
+                INSERT INTO conflict_rules(id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,path_pattern,reason,explicit,created_at)
+                VALUES('user-incompatible','Incompatible','ModPair','base','addon',NULL,NULL,'explicit incompatibility',1,$at)
+                """;
+            cmd.Parameters.AddWithValue("$at", DateTimeOffset.UtcNow.ToString("O"));
+            await cmd.ExecuteNonQueryAsync(Ct);
+        }
+
+        await db.SeparateLogicalMemberAsync("addon", Ct);
+
+        var mods = await db.GetModsAsync(Ct);
+        Assert.Equal(2, LogicalModFamilies.Build(mods).Count);
+        Assert.Equal(priorFamily, Assert.Single(mods, mod => mod.Id == "base").FamilyId);
+        var detached = Assert.Single(mods, mod => mod.Id == "addon");
+        Assert.StartsWith("manual:split:", detached.FamilyId, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(detached.FamilyRole);
+        var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(Ct);
+        var remaining = Assert.Single(snapshot.Rules);
+        Assert.Equal("user-incompatible", remaining.Id);
+        Assert.Equal(RuleKind.Incompatible, remaining.Kind);
+    }
+
+    [Fact]
+    public async Task Missing_separation_target_rolls_back_without_changing_an_existing_family()
+    {
+        var db = await NewDatabaseAsync();
+        var priorFamily = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Still linked");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            db.SeparateLogicalMemberAsync("nonexistent", Ct));
+
+        var mods = await db.GetModsAsync(Ct);
+        Assert.All(mods, mod => Assert.Equal(priorFamily, mod.FamilyId));
+        Assert.Single((await new PlannerSnapshotRepository(db).LoadAsync(Ct)).Rules);
+    }
+
     private async Task<ManagerDatabase> NewDatabaseAsync()
     {
         var db = new ManagerDatabase(Path.Combine(root, Guid.NewGuid().ToString("N") + ".db"));
