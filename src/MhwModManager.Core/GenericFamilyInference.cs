@@ -18,10 +18,7 @@ public static partial class GenericFamilyInference
         "texture","textures","retexture","skin","skins","mesh","meshes","physics","ctc","ccl"
     };
 
-    private static readonly HashSet<string> ChoiceWords = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "alternative","alt","variant","choice","choose","either","color","colour","style","version"
-    };
+    private static readonly IReadOnlySet<string> ChoiceWords = ModChoiceSignals.PickOneTokens;
 
     private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -180,7 +177,7 @@ public static partial class GenericFamilyInference
                 IdentityStem(m.DisplayName),
                 IdentityTokens(m.DisplayName),
                 HasRoleSignal(m.DisplayName),
-                HasChoiceSignal(m.DisplayName)),
+                HasChoiceSignal(m.Name + " " + m.DisplayName)),
             StringComparer.OrdinalIgnoreCase);
     }
 
