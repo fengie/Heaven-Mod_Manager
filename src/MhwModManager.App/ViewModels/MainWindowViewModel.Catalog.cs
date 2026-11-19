@@ -393,6 +393,7 @@ public sealed partial class MainWindowViewModel
     private int catalogConfiguredProviderCount;
     private int catalogProviderSuccessCount;
     private int catalogProviderFailureCount;
+    private string catalogProviderFailureDetails = string.Empty;
     private CatalogFilePresentationKind catalogFilePresentationKind = CatalogFilePresentationKind.NotLoaded;
     private string? catalogFileFailureDetail;
 
@@ -549,7 +550,21 @@ public sealed partial class MainWindowViewModel
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return CurrentCatalogPresentation.Detail;
+            var presentation = CurrentCatalogPresentation;
+            if ((presentation.Kind == CatalogPresentationKind.Unavailable ||
+                 presentation.Kind == CatalogPresentationKind.PartialFailure) &&
+                !string.IsNullOrWhiteSpace(catalogProviderFailureDetails))
+                return presentation.Detail + " " + catalogProviderFailureDetails;
+            return presentation.Detail;
+        }
+    }
+
+    public Visibility CatalogProviderWebLinksVisibility
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return s.Paths.Game.IsMonsterHunterWorld ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -914,6 +929,7 @@ public sealed partial class MainWindowViewModel
         var hasContinuation = false;
         var pagedFailures = 0;
         var details = new List<string>();
+        var failureDetails = new List<string>();
 
         foreach (var provider in providers)
         {
@@ -944,6 +960,9 @@ public sealed partial class MainWindowViewModel
                 if (provider is IPagedModCatalogProvider)
                     pagedFailures++;
                 details.Add($"{provider.DisplayName}: unavailable");
+                failureDetails.Add($"{provider.DisplayName}: " +
+                    CatalogProviderFailureExplanation.Describe(
+                        provider.Compliance, ex, DateOnly.FromDateTime(DateTime.UtcNow)));
                 MasterDebugLog.Write(
                     "CATALOG-UI",
                     $"Provider refresh failed without blocking other providers. provider={provider.ProviderId}",
@@ -955,6 +974,7 @@ public sealed partial class MainWindowViewModel
             hasContinuation |= catalogHasContinuation;
         SetCatalogHasContinuation(hasContinuation);
 
+        catalogProviderFailureDetails = string.Join(" ", failureDetails);
         await SearchCatalogCacheAsync(ct);
         SetCatalogProviderHealth(providers.Count, successes, failures, attempted: true);
         CatalogProviderSummary = providers.Count == 0
@@ -1334,6 +1354,7 @@ public sealed partial class MainWindowViewModel
         var failures = 0;
         var discovered = 0;
         var details = new List<string>();
+        var failureDetails = new List<string>();
 
         foreach (var provider in searchable)
         {
@@ -1360,6 +1381,9 @@ public sealed partial class MainWindowViewModel
             {
                 failures++;
                 details.Add($"{provider.DisplayName}: unavailable");
+                failureDetails.Add($"{provider.DisplayName}: " +
+                    CatalogProviderFailureExplanation.Describe(
+                        provider.Compliance, ex, DateOnly.FromDateTime(DateTime.UtcNow)));
                 MasterDebugLog.Write(
                     "CATALOG-UI",
                     $"Provider search failed without blocking cache results. provider={provider.ProviderId}",
@@ -1368,8 +1392,8 @@ public sealed partial class MainWindowViewModel
         }
 
         await SearchCatalogCacheAsync(ct);
-        SetCatalogProviderHealth(searchable.Length, successes, failures, attempted: true);
 
+        // A local-only search must not erase the most recent refresh failure status.
         if (searchable.Length == 0)
         {
             CatalogProviderSummary =
@@ -1379,6 +1403,8 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
+        catalogProviderFailureDetails = string.Join(" ", failureDetails);
+        SetCatalogProviderHealth(searchable.Length, successes, failures, attempted: true);
         CatalogProviderSummary =
             $"{successes}/{searchable.Length} search-capable provider(s) queried · {discovered} item(s) received" +
             (failures > 0 ? $" · {failures} isolated failure(s)" : "");
@@ -1635,6 +1661,20 @@ public sealed partial class MainWindowViewModel
         CatalogStatusText = rows.Count == 0
             ? "No installed catalog origins are recorded yet."
             : $"Checked {rows.Count} exact installed origin(s); {CatalogOriginAttentionCount} need review.";
+    }
+
+    [RelayCommand]
+    private void OpenNexusBrowse()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenExternalUri(new Uri("https://www.nexusmods.com/monsterhunterworld/mods"));
+    }
+
+    [RelayCommand]
+    private void OpenGameBananaBrowse()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        OpenExternalUri(new Uri("https://gamebanana.com/games/9081"));
     }
 
     private IModCatalogProvider? FindCatalogProvider(string providerId)
