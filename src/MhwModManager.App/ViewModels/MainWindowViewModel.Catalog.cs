@@ -1092,10 +1092,10 @@ public sealed partial class MainWindowViewModel
                     // cache between clicks. Verify the previous page boundary,
                     // then refuse stale or duplicate append results.
                     var previousLastId = CatalogItems[offset - 1].Mod.CanonicalId;
-                    var boundary = await repository.SearchAsync(
+                    var boundary = await repository.SearchPageAsync(
                         query, gameId: gameId, includeStale: true,
                         limit: 1, ct: ct, offset: offset - 1);
-                    var page = await repository.SearchAsync(
+                    var page = await repository.SearchPageAsync(
                         query, gameId: gameId, includeStale: true,
                         limit: CatalogVisibleResultLimit, ct: ct, offset: offset);
                     var visibleCount = checked(offset + page.Count);
