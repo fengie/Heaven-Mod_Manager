@@ -56,6 +56,27 @@ public sealed class ModRelationshipInferenceTests
         Assert.Equal(3, LogicalModFamilies.Build(mods, files).Count);
     }
 
+    [Theory]
+    [InlineData("Alt")]
+    [InlineData("Choose")]
+    public void Pick_one_patch_variants_are_not_suggested_as_cross_source_addons(string label)
+    {
+        var mods = new[]
+        {
+            Mod("base", "High Poly Body Base", "1965"),
+            Mod("variant", $"High Poly Body {label} Patch", "8397")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            ContentFile("base", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3", new string('c', 64)),
+            ContentFile("base", shared, new string('a', 64)),
+            ContentFile("variant", shared, new string('b', 64))
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
     [Fact]
     public void Shared_loader_roots_or_unrelated_replacements_are_not_enough_to_suggest_a_parent()
     {
