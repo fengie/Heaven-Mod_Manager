@@ -3,7 +3,23 @@ namespace MhwModManager.Tests;
 public sealed class ConflictEngineTests
 {
     private static ProviderCandidate C(string id,string name,string path,string hash,int priority=0)=>new(id,name,priority,new(id,path,hash,null,1,DateTimeOffset.UtcNow,PathRules.ClassifyFile(path)));
-    [Fact] public void Identical_is_non_blocking(){var e=new ConflictEngine();var d=e.Decide(@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex",[C("a","A",@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex","aa"),C("b","B",@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex","aa",1)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.Identical,d.Kind);Assert.False(d.Blocking);}
+    [Fact] public void Identical_is_non_blocking(){var e=new ConflictEngine();var d=e.Decide(@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex",[C("a","A",@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex",new string('a',64)),C("b","B",@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex",new string('a',64),1)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.Identical,d.Kind);Assert.False(d.Blocking);}
+    [Fact]
+    public void Matching_unverified_digests_cannot_prove_identical_bootstrap_files()
+    {
+        const string path = @"root\dinput8.dll";
+        var engine = new ConflictEngine();
+        foreach (var unverified in new[] { string.Empty, "aa", new string('g', 64) })
+        {
+            var decision = engine.Decide(path,
+                [C("a", "Loader A", path, unverified), C("b", "Loader B", path, unverified, 1)],
+                [], new Dictionary<string,string>(), new Dictionary<string,string>(),
+                new Dictionary<(string,string),PairStats>());
+            Assert.Equal(ConflictKind.HardGameData, decision.Kind);
+            Assert.True(decision.Blocking);
+            Assert.Equal("protected-bootstrap-collision", decision.ReasonCode);
+        }
+    }
     [Fact] public void Independent_texture_replacers_require_choice(){var p=@"nativePC\pl\f_equip\mod_hepsy\f_skin_NM.tex";var e=new ConflictEngine();var d=e.Decide(p,[C("a","Red Recolor",p,"aa"),C("b","Blue Recolor",p,"bb",2)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.TextureOverride,d.Kind);Assert.Null(d.WinnerModId);Assert.True(d.Blocking);Assert.Equal("independent-texture-replacement",d.ReasonCode);}
     [Fact] public void Structural_overlap_fails_closed(){var p=@"nativePC\pl\f_equip\pl032_0010\body\mod\f_body032_0010.mod3";var e=new ConflictEngine();var d=e.Decide(p,[C("a","Armor A",p,"aa"),C("b","Unrelated B",p,"bb",2)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.HardStructural,d.Kind);Assert.True(d.Blocking);}
     [Fact] public void Child_option_overlays_base(){var p=@"nativePC\pl\f_equip\pl032_0010\wst\mod\f_wst032_0010.mod3";var e=new ConflictEngine();var d=e.Decide(p,[C("a","HPN Sexy Kulu-Ya-Ku",p,"aa"),C("b","HPN Sexy Kulu-Ya-Ku - Skimpy Waist",p,"bb",2)],[],new Dictionary<string,string>(),new Dictionary<string,string>(),new Dictionary<(string,string),PairStats>());Assert.Equal(ConflictKind.PatchOverlay,d.Kind);Assert.Equal("b",d.WinnerModId);}
