@@ -1,0 +1,8 @@
+{
+  "schema": "heaven-toolbox/child-subscription/v1",
+  "repository": "fengie/Heaven-Mod_Manager",
+  "toolboxRevision": "873c3ac3e67cffdbeb308703566e1eaf51d8064e",
+  "capabilities": [
+    "release.autoupdate"
+  ]
+}
