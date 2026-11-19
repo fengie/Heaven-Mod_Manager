@@ -1,8 +1,10 @@
-# v8.8.115 - immutable updater-main-579 published; hosted packaged E2E PASS
+# v8.8.116 - canonical state: source merged; publication pending
 
-Canonical state source baseline: `fengie/Heaven-Mod_Manager@main` at `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` published immutable [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579). [Windows Release Gate 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed, with source/tag, ZIP and manifest digests verified. The disposable Windows [real packaged updater E2E 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) **PASSED** build 60→579 and rollback to 60 with four sentinel hashes preserved; personal Heaven2 installation/source/health remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state implementation baseline is `fengie/Heaven-Mod_Manager@main` at `b76cd3761b5d91327a3b1138cab8ed3da0e96780`. PR #889 source/regression is integrated; v8.8.116 public package/hosted rollback is **unverified**. Prior immutable v8.8.115 and hosted update/rollback passed. Personal Heaven2 installed health, real game corpus and p95 remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
+
+- **v8.8.116 candidate:** PR #889 fixes finalized catalog-download scratch age when filesystem mtimes predate a valid recent lease, with regression and exact-head Windows/native and performance checks. Source main `b76cd3761b5d91327a3b1138cab8ed3da0e96780`, not yet a new immutable package.
 
 - **v8.8.115 published:** #881 rejects Alt/Choose cross-source suggestion mistakes; #882 prunes redundant shared-root candidate pair generation; #884 shares one hyphen-safe choice vocabulary across inference routes while retaining original-name evidence. Exact-head PR checks and [canonical Windows Gate 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` is included in the immutable public v8.8.115 package, but real mixed-game corpus and Heaven2 installed tests remain outstanding.
 
@@ -22,13 +24,9 @@ Canonical state source baseline: `fengie/Heaven-Mod_Manager@main` at `caa8fd1f58
 
 ## Verification boundary
 
-**v8.8.115 published and source-bound:** [updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) is immutable source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`. The ZIP SHA-256 is `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, and the manifest SHA-256 is `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`. This establishes public release integrity, not actual user-device installation.
+**v8.8.116 is not yet published:** main implementation baseline `b76cd3761b5d91327a3b1138cab8ed3da0e96780` includes PR #889. Require a new exact-merge-source Windows Release Gate, immutable public tag/source/ZIP/manifest and an actual packaged update-and-rollback job before claiming new version production acceptance.
 
-Latest verified released-source Windows Gate: v8.8.115 source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`, [run 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) SUCCESS. Hosted real updater/rollback [run 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) independently **PASSED**, with actual installed health, journal Confirmed/RolledBack and sentinel equality; prior v8.8.114 run 44442306486 remains historical evidence.
-
-Verified immutable GitHub release: [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579), exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`, ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, manifest SHA-256 `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`.
-
-Prior v8.8.114 source and immutable ZIP remain unchanged. The newer v8.8.115 exact published source is `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`, with artifact provenance and Windows release verified; hosted real update/rollback run 44456946318 **PASSED** on disposable Windows, while personal Heaven2 installed source/process-health evidence remains separate and unverified.
+Prior immutable v8.8.115 updater-main-579 exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` passed Windows Gate 44455718899 and hosted real packaged update/rollback 44456946318; ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, manifest SHA-256 `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`. Those older receipts do not verify v8.8.116 or personal Heaven2 installed process health. Preserve all user data and immutable older assets.
 
 ## Remaining acceptance and risks
 
@@ -37,4 +35,4 @@ Prior v8.8.114 source and immutable ZIP remain unchanged. The newer v8.8.115 exa
 - [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): hosted real update/rollback run 44456946318 passed build 60→579 and WPF/sentinel checks on disposable Windows. Personal Heaven2 installed SHA/health and longer-term reliability remain unverified.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in this evidence-only handoff; root README/CHANGELOG wording remains a later serialized release-metadata task.
 
-Next: independently verify personal Heaven2 installed source/process health, then exercise real mixed-game archive corpora and installed WPF p50/p95. Release v8.8.115 and its hosted updater/rollback are already published and verified; do not republish. Retain #791 real corpora, #735 p95, #669 storage, #793 personal deployment, #786 provider terms and #350 trust/signing as OPEN. Every successor must inherit, obey and recursively propagate the permanent continuity constitution and active Learned Rules to the next agent.
+Next: finish serialized v8.8.116 metadata native checks after preceding main Windows publisher; verify new immutable tag/source/ZIP/manifest and real packaged updater/rollback, then separately Heaven2 and real #791/#735/#669 acceptance. Preserve immutable v8.8.115. Retain #791 real corpora, #735 p95, #669 storage, #793 personal deployment, #786 provider terms and #350 trust/signing as OPEN. Every successor must inherit, obey and recursively propagate the permanent continuity constitution and active Learned Rules to the next agent.

@@ -1,14 +1,19 @@
-# v8.8.115 — MHW Manual Mod Manager
+# v8.8.116 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 18, 2026 · 11:21:56 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 19, 2026 · 12:36:14 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.115**.
+Current product version: **8.8.116**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.116 — safe finalized catalog download retention
+
+- [#889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) protects newly created finalized download leases from premature age-based cleanup when filesystem timestamps are old. Native Windows regression, startup performance, source and CI checks passed; owner/byte-quota safety is unchanged.
+- **Candidate boundary:** source `b76cd3761b5d91327a3b1138cab8ed3da0e96780` follows immutable [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) at `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`. No v8.8.116 public package, hosted packaged rollback, Heaven2 install or whole #669 acceptance is yet verified.
 
 ## v8.8.115 — family-choice safety and scalable candidate matching
 
@@ -22,14 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - [#876](https://github.com/fengie/Heaven-Mod_Manager/pull/876) requires valid full SHA-256 evidence before classifying overlapping files as byte-identical, including protected loader paths. Missing and malformed digest pairs remain blocking without an explicit compatible rule.
 - [#879](https://github.com/fengie/Heaven-Mod_Manager/pull/879) keeps locally imported Alternative, Variant, and Choice packages separate despite matching identity stems/target paths; saved human decisions and Nexus source-scoped grouping remain authoritative.
 - **Verified historical release:** v8.8.114 was published as immutable [updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575), source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`; [Windows Gate 44440884960](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44440884960) and hosted real updater/rollback [44442306486](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44442306486) passed. Personal Heaven2 remains unverified.
-
-## v8.8.113 — evidence-first mod safety, startup and catalog improvements
-
-- [#850](https://github.com/fengie/Heaven-Mod_Manager/pull/850), [#854–#860](https://github.com/fengie/Heaven-Mod_Manager/pull/860) improve real RAR/7z small-fixture coverage, startup maintenance, case-safe IDs, crash recovery, cross-source family review and bounded-memory duplicate hashing. Real hundreds-mod corpus performance remains unverified.
-- [#857](https://github.com/fengie/Heaven-Mod_Manager/pull/857), [#858](https://github.com/fengie/Heaven-Mod_Manager/pull/858), [#862](https://github.com/fengie/Heaven-Mod_Manager/pull/862), [#868](https://github.com/fengie/Heaven-Mod_Manager/pull/868), [#870](https://github.com/fengie/Heaven-Mod_Manager/pull/870) and [#874](https://github.com/fengie/Heaven-Mod_Manager/pull/874) strengthen content-grounded family inference, safe multi-loader game routing and rejection of misleading documentation-only game signatures. Ambiguous identities and byte-different overrides still require review.
-- [#861](https://github.com/fengie/Heaven-Mod_Manager/pull/861), [#863](https://github.com/fengie/Heaven-Mod_Manager/pull/863), [#867](https://github.com/fengie/Heaven-Mod_Manager/pull/867) permit strictly byte-identical MHW structural coexistence without inventing overwrite precedence. [#864](https://github.com/fengie/Heaven-Mod_Manager/pull/864) prevents classification through unsafe junctions.
-- [#865](https://github.com/fengie/Heaven-Mod_Manager/pull/865), [#866](https://github.com/fengie/Heaven-Mod_Manager/pull/866) and [#871](https://github.com/fengie/Heaven-Mod_Manager/pull/871) improve measured startup phases, optional maintenance deferral and honesty of missing resource metrics. [#872](https://github.com/fengie/Heaven-Mod_Manager/pull/872) discloses truncated cached Browse Mods results; [#873](https://github.com/fengie/Heaven-Mod_Manager/pull/873) reports hidden import-workspace storage without deleting uncertain recovery material.
-- **Verified historical release:** v8.8.113 was published as immutable [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), exact source `7c0cad829ec58af554d4976753642243fd77fa67`; Windows Gate 44429973426 and real hosted update/rollback 44432122940 passed. No personal Heaven2 deployment evidence is implied.
 
 ## Current plans & progress
 
