@@ -298,6 +298,12 @@ public static class CatalogDownloadMaintenance
                 var newestWriteUtc = new DateTimeOffset(
                     File.GetLastWriteTimeUtc(leasePath),
                     TimeSpan.Zero);
+                // A valid, newly published ownership lease must not be
+                // reclaimed using backdated/restored filesystem timestamps.
+                // Match the temporary-lease age floor before applying the
+                // ordinary retention or byte-quota policy.
+                if (lease.CreatedUtc > newestWriteUtc)
+                    newestWriteUtc = lease.CreatedUtc;
                 if (File.Exists(archivePath))
                 {
                     RejectReparsePoint(archivePath);
