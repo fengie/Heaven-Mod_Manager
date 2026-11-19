@@ -194,8 +194,16 @@ public sealed class LogicalModFamiliesTests
 
     [Theory]
     [InlineData("Orion Neo - Alternative")]
+    [InlineData("Orion Neo - Alternate")]
+    [InlineData("Orion Neo - Alternate Patch")]
+    [InlineData("Orion Neo - Alt")]
     [InlineData("Orion Neo - Variant")]
     [InlineData("Orion Neo - Choice")]
+    [InlineData("Orion Neo - Choose")]
+    [InlineData("Orion Neo - Color Patch")]
+    [InlineData("Orion Neo - Colour Patch")]
+    [InlineData("Orion Neo - Style Patch")]
+    [InlineData("Orion Neo - Version Patch")]
     public void Explicit_pick_one_packages_with_overlapping_targets_stay_separate(string alternativeName)
     {
         // Exact same target layout is evidence of competition, not proof that
@@ -221,6 +229,27 @@ public sealed class LogicalModFamiliesTests
             Assert.Empty(evidence);
             Assert.Equal(2, LogicalModFamilies.Build(shuffledMods, shuffledFiles).Count);
         }
+    }
+
+    [Fact]
+    public void Original_pick_one_name_stays_negative_after_display_name_is_renamed()
+    {
+        var mods = new[]
+        {
+            Mod("base", "Orion Neo"),
+            Mod("choice", "Orion Neo - Alternate Patch") with { DisplayName = "Orion Neo - Patch" }
+        };
+        var files = new[]
+        {
+            File("base", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.mod3"),
+            File("base", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.tex"),
+            File("choice", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.mod3"),
+            File("choice", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.tex")
+        };
+
+        Assert.Empty(GenericFamilyInference.InferKeys(mods, files, out var evidence));
+        Assert.Empty(evidence);
+        Assert.Equal(2, LogicalModFamilies.Build(mods, files).Count);
     }
 
     [Fact]
