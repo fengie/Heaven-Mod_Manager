@@ -1,10 +1,10 @@
-# v8.8.115 - source metadata candidate; publication unverified
+# v8.8.115 - immutable updater-main-579 published; hosted E2E pending
 
-Canonical state source baseline: `fengie/Heaven-Mod_Manager@main` at `50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb` has #881/#882/#884 merged, not yet packaged into v8.8.115. v8.8.114 is immutable [v8.8.114 updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575) at source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`; Windows Release Gate [44440884960](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44440884960) and real hosted packaged update/rollback [44442306486](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44442306486) passed. Personal Heaven2 remains unverified. Personal Heaven2 installation still needs independent proof. Bootstrap `fengie/heaven-toolbox@main`.
+Canonical state source baseline: `fengie/Heaven-Mod_Manager@main` at `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` published immutable [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579). [Windows Release Gate 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed, with source/tag, ZIP and manifest digests verified. The [hosted packaged updater E2E 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) is independent and not yet complete; personal Heaven2 installation/source/health remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
 
-- **v8.8.115 candidate:** #881 rejects Alt/Choose cross-source suggestion mistakes; #882 prunes redundant shared-root candidate pair generation; #884 shares one hyphen-safe choice vocabulary across inference routes while retaining original-name evidence. Exact-head native PR gates passed, main source `50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb`. Await new immutable version publication.
+- **v8.8.115 published:** #881 rejects Alt/Choose cross-source suggestion mistakes; #882 prunes redundant shared-root candidate pair generation; #884 shares one hyphen-safe choice vocabulary across inference routes while retaining original-name evidence. Exact-head PR checks and [canonical Windows Gate 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` is included in the immutable public v8.8.115 package, but real mixed-game corpus and Heaven2 installed tests remain outstanding.
 
 - **Historical v8.8.113 source:** #850–#874 brought real small-format RAR/7z fixtures, durable import recovery, conflict and game-routing safeguards, startup measures and catalog visibility. Real large mixed-game collections and installed p95 remain unverified.
 
@@ -22,13 +22,13 @@ Canonical state source baseline: `fengie/Heaven-Mod_Manager@main` at `50f45ed90b
 
 ## Verification boundary
 
-**v8.8.115 publication unverified:** source `50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb` is newer than immutable [v8.8.114 updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575), source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`. A v8.8.114 ZIP or hosted E2E result does not verify the new build or Heaven2 installation.
+**v8.8.115 published and source-bound:** [updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) is immutable source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`. The ZIP SHA-256 is `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, and the manifest SHA-256 is `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`. This establishes public release integrity, not actual user-device installation.
 
-Latest verified released-source Windows Gate: v8.8.114 source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`, run [44440884960](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44440884960) success; hosted real updater/rollback run [44442306486](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44442306486) success.
+Latest verified released-source Windows Gate: v8.8.115 source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`, [run 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) SUCCESS. Hosted real updater/rollback [run 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) is independently pending; prior v8.8.114 hosted [run 44442306486](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44442306486) passed.
 
-Verified immutable GitHub release: [v8.8.114 updater-main-575](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-575), exact source `6ac4e474c8769e04d456433dab43fe97b2ae5ace`, ZIP SHA-256 `bf501d3e1e3940d5076ff391e987fa4da64e7a7aeaf1d659ad9dd033f8d472e2`, manifest SHA-256 `5beed323998b6b1167f9ab5a009a1b4fd9f51ae6c77963d84701be67a078ded9`.
+Verified immutable GitHub release: [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579), exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`, ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, manifest SHA-256 `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`.
 
-Published v8.8.114 tested source remains `6ac4e474c8769e04d456433dab43fe97b2ae5ace`; later source/evidence commits do not alter its immutable ZIP. v8.8.115 source `50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb` needs new artifact provenance and hosted update/rollback.
+Prior v8.8.114 source and immutable ZIP remain unchanged. The newer v8.8.115 exact published source is `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`, with artifact provenance and Windows release verified; hosted real update/rollback run 44456946318 and independent personal Heaven2 installed source/process-health evidence are separate gates.
 
 ## Remaining acceptance and risks
 
