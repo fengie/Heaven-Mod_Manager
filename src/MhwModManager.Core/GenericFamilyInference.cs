@@ -50,7 +50,7 @@ public static partial class GenericFamilyInference
             .Select(group => group.Key)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var pairs = new List<Evidence>();
-        foreach (var (i,j) in ConcreteCandidatePairs(candidates,profiles))
+        foreach (var (i,j) in ConcreteCandidatePairs(candidates,profiles,rareContentAnchors))
         {
             var evidence = ScorePair(candidates[i], candidates[j], profiles[candidates[i].Id], profiles[candidates[j].Id], rareContentAnchors);
             if (evidence is not null && evidence.Score >= 75 && evidence.Strong) pairs.Add(evidence);
@@ -121,16 +121,21 @@ public static partial class GenericFamilyInference
 
     private static IEnumerable<(int Left,int Right)> ConcreteCandidatePairs(
         ModDescriptor[] candidates,
-        IReadOnlyDictionary<string,CandidateProfile> profiles)
+        IReadOnlyDictionary<string,CandidateProfile> profiles,
+        IReadOnlySet<string> rareContentAnchors)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var postings=new Dictionary<string,List<int>>(StringComparer.OrdinalIgnoreCase);
         for(var i=0;i<candidates.Length;i++)
         {
             var profile=profiles[candidates[i].Id];
+            // Shared folder roots alone never satisfy ScorePair's strong evidence gate.
+            // Their high-fanout Cartesian product is therefore redundant. Paths and
+            // semantic assets cover overlap/namespace evidence; distinctive normalized
+            // path+SHA256 anchors also preserve lineage across raw separator differences.
             AddPostings("p:",profile.Files.Paths,i);
             AddPostings("a:",profile.Files.Assets,i);
-            AddPostings("r:",profile.Files.Roots,i);
+            AddPostings("h:",profile.Files.ContentAnchors.Where(rareContentAnchors.Contains),i);
         }
 
         var encodedPairs=new HashSet<long>();
