@@ -88,8 +88,10 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
         var db = await NewDatabaseAsync();
         var family = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Grouping", ct: Ct);
 
-        // Both explicit rules match the legacy broad prefix/suffix check. Neither
-        // has the canonical generated rule identity and expected precedence.
+        // Both explicit rules match the legacy broad prefix/suffix check.
+        // Realistic GUID IDs must not falsely establish generated-rule ownership.
+        var customReasonId = Guid.NewGuid().ToString("N");
+        var reversedWinnerId = Guid.NewGuid().ToString("N");
         await using (var connection = await db.OpenAsync(Ct))
         await using (var cmd = connection.CreateCommand())
         {
@@ -98,12 +100,14 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
                     id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,
                     path_pattern,reason,explicit,created_at)
                 VALUES(
-                    'human-worded-overlay','Overlay','ModPair','base','addon','addon',
+                    $customReasonId,'Overlay','ModPair','base','addon','addon',
                     NULL,$freeform,1,$at),
                 (
-                    'human-reversed-overlay','Overlay','ModPair','base','addon','base',
+                    $reversedWinnerId,'Overlay','ModPair','base','addon','base',
                     NULL,$canonical,1,$at)
                 """;
+            cmd.Parameters.AddWithValue("$customReasonId", customReasonId);
+            cmd.Parameters.AddWithValue("$reversedWinnerId", reversedWinnerId);
             cmd.Parameters.AddWithValue("$freeform",
                 $"Manual family chain: custom human preference in family '{family}'.");
             cmd.Parameters.AddWithValue("$canonical",
@@ -116,12 +120,12 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
 
         var rules = (await new PlannerSnapshotRepository(db).LoadAsync(Ct)).Rules;
         Assert.Equal(2, rules.Count);
-        Assert.Contains(rules, rule => rule.Id == "human-worded-overlay" &&
+        Assert.Contains(rules, rule => rule.Id == customReasonId &&
             rule.Kind == RuleKind.Overlay && rule.Explicit);
-        Assert.Contains(rules, rule => rule.Id == "human-reversed-overlay" &&
+        Assert.Contains(rules, rule => rule.Id == reversedWinnerId &&
             rule.Kind == RuleKind.Overlay && rule.Explicit);
-        Assert.DoesNotContain(rules, rule => rule.Id != "human-worded-overlay" &&
-            rule.Id != "human-reversed-overlay");
+        Assert.DoesNotContain(rules, rule => rule.Id != customReasonId &&
+            rule.Id != reversedWinnerId);
     }
 
     [Fact]
