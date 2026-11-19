@@ -7,13 +7,13 @@
     "currentVersion":  "8.8.113",
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
-    "status":  "v8.8.113-immutable-release-published",
-    "nextMilestone":  "Current v8.8.113 immutable updater-main-572 is source-verified at 7c0cad829ec58af554d4976753642243fd77fa67 (Windows Gate 44429973426), with exact ZIP/manifest SHA-256. Do not republish.",
-    "nextRequiredAction":  "Continue unresolved real-device, corpus and independent trust acceptance in _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve immutable release and its exact-source receipt.",
-    "verificationAppliesToCommit":  "7c0cad829ec58af554d4976753642243fd77fa67",
-    "lastClosedVerificationCommit":  "7c0cad829ec58af554d4976753642243fd77fa67",
-    "lastClosedVerificationRun":  "v8.8.113 source 7c0cad829ec58af554d4976753642243fd77fa67: hosted Windows verification run 44429973426 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.113 exact source 7c0cad829ec58af554d4976753642243fd77fa67 passed hosted Windows verification run 44429973426. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "status":  "v8.8.113-source-verified-publication-unverified",
+    "nextMilestone":  "Source v8.8.113 at ff85ad37bf18a13ff06df4a1240869478a85a6d7 passed Windows Gate 44437693054, but exact public immutable publication for this source is NOT VERIFIED.",
+    "nextRequiredAction":  "Verify a source-bound immutable public GitHub release and tag before claiming shipment. Another source\u0027s same-version release is not sufficient.",
+    "verificationAppliesToCommit":  "ff85ad37bf18a13ff06df4a1240869478a85a6d7",
+    "lastClosedVerificationCommit":  "ff85ad37bf18a13ff06df4a1240869478a85a6d7",
+    "lastClosedVerificationRun":  "v8.8.113 source ff85ad37bf18a13ff06df4a1240869478a85a6d7: hosted Windows verification run 44437693054 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "v8.8.113 exact source ff85ad37bf18a13ff06df4a1240869478a85a6d7 passed hosted Windows verification run 44437693054. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
     "lastClosedVerification":  {
                                    "sourceSha":  "7def58c1b16d115e1555738ebad51717d1c1f752",
                                    "updaterBuild":  382,
@@ -47,17 +47,8 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "7c0cad829ec58af554d4976753642243fd77fa67",
-                                          "runId":  44429973426,
+                                          "sourceSha":  "ff85ad37bf18a13ff06df4a1240869478a85a6d7",
+                                          "runId":  44437693054,
                                           "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log"
-                                      },
-    "publishedRelease":  {
-                             "tag":  "updater-main-572",
-                             "version":  "8.8.113",
-                             "sourceSha":  "7c0cad829ec58af554d4976753642243fd77fa67",
-                             "buildNumber":  572,
-                             "artifactName":  "MHW-Manual-Mod-Manager-v8.8.113-win-x64.zip",
-                             "artifactSha256":  "60f3b2a2461fe29933b019e2e9c5c27c9d3dde44d4130940b62a6e0f0dc6772d",
-                             "manifestSha256":  "18688f3822af7c1fb7f92f938b241f9b875d3e8eefaddb7877270af933eaa003"
-                         }
+                                      }
 }

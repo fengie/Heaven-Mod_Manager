@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.113",
-  "verifiedAtUtc": "2026-11-19T00:43:41.3220321+00:00",
+  "verifiedAtUtc": "2026-11-19T01:37:50.0882289+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -5850,9 +5850,9 @@
     },
     {
       "id": "src/MhwModManager.Core/ConflictEngine.cs::ConflictEngine::method:Decide(string,IReadOnlyList\u003CProviderCandidate\u003E,ConflictRuleIndex,IReadOnlyDictionary\u003Cstring,string\u003E,IReadOnlyDictionary\u003Cstring,string\u003E,IReadOnlyDictionary\u003C(string,string),PairStats\u003E,IReadOnlyDictionary\u003Cstring,ModDescriptor\u003E,IReadOnlyDictionary\u003Cstring,ModContentStats\u003E)",
-      "fingerprint": "e06d4d41720fb317d86d6d9e0f22476b4f46ad8a804411d10f3ba4d187637386",
+      "fingerprint": "e1c7d312f152f2351ae16e127d28b7910647a7d5d80811fb5862d6ad6454e82a",
       "verified": true,
-      "verifiedAtUtc": "2026-11-19T00:43:41.3220321+00:00",
+      "verifiedAtUtc": "2026-11-19T01:37:50.0882289+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -6935,9 +6935,9 @@
     },
     {
       "id": "src/MhwModManager.Core/GenericFamilyInference.cs::GenericFamilyInference::method:ScorePair(ModDescriptor,ModDescriptor,CandidateProfile,CandidateProfile,IReadOnlySet\u003Cstring\u003E)",
-      "fingerprint": "6a1361af290857d15a86d11d0d2bd5f7ec6058d2e39d3f271a555dc778bc7b68",
+      "fingerprint": "767eb1daef688891e3f5fe861fef680b07aa61d75dd6d5bb0703972d83d6895a",
       "verified": true,
-      "verifiedAtUtc": "2026-11-19T00:43:41.3220321+00:00",
+      "verifiedAtUtc": "2026-11-19T01:37:50.0882289+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
