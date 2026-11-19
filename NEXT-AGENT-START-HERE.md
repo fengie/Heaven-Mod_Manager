@@ -33,4 +33,4 @@ Canonical `fengie/Heaven-Mod_Manager@main` source `8499cf6c6ec2197bf64de8da003cc
 
 Preserve security, privacy, publisher ownership, rollback and source-bound verification. Every successor must recursively propagate the continuity protocol and active Learned Rules to the next agent again. Do not break the chain.
 
-Auto Populate checks pre-Iceborne armor materials in the v8.8.119 candidate. See product PR #913 for profile recovery and verification.
+For Iceborne armor recovery, see PR #913.
