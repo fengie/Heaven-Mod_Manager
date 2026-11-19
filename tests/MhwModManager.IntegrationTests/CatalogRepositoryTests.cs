@@ -7,6 +7,9 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed class CatalogRepositoryTests : IDisposable
 {
+    private static readonly string[] ExpectedTieIdentityOrder =
+        ["nexus:tie-01", "nexus:tie-02", "nexus:tie-03", "nexus:tie-04"];
+
     private static CancellationToken TestToken => TestContext.Current.CancellationToken;
     private readonly string root = Path.Combine(Path.GetTempPath(), "mhwmm-catalog-" + Guid.NewGuid().ToString("N"));
 
@@ -94,6 +97,42 @@ public sealed class CatalogRepositoryTests : IDisposable
         var results = await repository.SearchAsync("wyvern", ct: TestToken);
         var hit = Assert.Single(results);
         Assert.Equal("Azure Wyvern Blade", hit.Mod.Name);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Tie")]
+    public async Task Cached_page_order_uses_canonical_identity_for_equal_ranked_items(string? query)
+    {
+        var repository = await CreateRepositoryAsync("ties-" + (query is null ? "plain" : "fts"));
+        // All items have the same name, update time, and FTS relevance.
+        // Insert in reverse identity order so incidental SQLite row order
+        // cannot accidentally satisfy the canonical continuation contract.
+        for (var i = 4; i >= 1; i--)
+        {
+            var id = $"tie-{i:D2}";
+            await repository.UpsertAsync(
+                CreateCached(
+                    canonicalId: "nexus:" + id,
+                    name: "Tie Fixture",
+                    summary: "Equal-ranked candidate",
+                    description: "Same cached content",
+                    expiresAt: null,
+                    providerModId: id),
+                TestToken);
+        }
+
+        var first = await repository.SearchPageAsync(
+            query, gameId: "monsterhunterworld", limit: 2, offset: 0,
+            ct: TestToken);
+        var second = await repository.SearchPageAsync(
+            query, gameId: "monsterhunterworld", limit: 2, offset: 2,
+            ct: TestToken);
+        Assert.Equal(
+            ExpectedTieIdentityOrder,
+            first.Concat(second).Select(x => x.Mod.CanonicalId).ToArray());
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            query, "monsterhunterworld", visibleLimit: 4, ct: TestToken));
     }
 
     [Fact]
