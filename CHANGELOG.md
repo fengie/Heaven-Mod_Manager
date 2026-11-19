@@ -1,7 +1,7 @@
 # v8.8.114 — November 18, 2026
 
 - **Safety:** [#876](https://github.com/fengie/Heaven-Mod_Manager/pull/876) rejects empty, short or nonhex digests as proof of identical content, protecting loader/bootstrap collision handling. [#879](https://github.com/fengie/Heaven-Mod_Manager/pull/879) prevents automatic inferred grouping of local pick-one variants, with three labels and six input permutations each under tests.
-- **Publication boundary:** source candidate `main@ff85ad37bf18a13ff06df4a1240869478a85a6d7` is newer than immutable [updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), source `7c0cad829ec58af554d4976753642243fd77fa67`. No v8.8.114 immutable release or personal Heaven2 installation is yet verified; #791 real archive, #735 p95, #350 signing, and #793 device acceptance remain open.
+- **Publication evidence boundary:** implementation source is `main@ff85ad37bf18a13ff06df4a1240869478a85a6d7`, after immutable v8.8.113 updater-main-572 source `7c0cad829ec58af554d4976753642243fd77fa67`. Publication status is determined by exact source-bound [GitHub Releases](https://github.com/fengie/Heaven-Mod_Manager/releases), not source prose; real #791 corpus, #735 p95, #350 independent signing and #793 Heaven2 installed acceptance require separate evidence.
 
 # v8.8.113 — November 18, 2026
 
