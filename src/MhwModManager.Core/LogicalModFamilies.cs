@@ -35,8 +35,6 @@ public static partial class LogicalModFamilies
         "hoodless", "maskless", "uncensored", "censored"
     };
 
-    private static readonly IReadOnlySet<string> PickOneWords = ModChoiceSignals.PickOneTokens;
-
     private static readonly HashSet<string> BareSuffixWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "patch", "fix", "fixed", "hotfix", "update", "updated", "optional", "option", "addon", "add-on",
@@ -200,7 +198,7 @@ public static partial class LogicalModFamilies
             if (index <= 0) continue;
             var suffix = name[(index + separator.Length)..].Trim();
             var suffixTokens = Tokenize(suffix);
-            if (suffixTokens.Any(PickOneWords.Contains)) return name;
+            if (ModChoiceSignals.HasPickOneCue(suffix)) return name;
             if (suffixTokens.Any(ComposableWords.Contains) || suffixTokens.Any(RevisionWords.Contains))
                 return name[..index].Trim();
         }
@@ -212,7 +210,7 @@ public static partial class LogicalModFamilies
         {
             var suffix = tokens.Skip(i).ToArray();
             if (!suffix.Any(t => ComposableWords.Contains(t) || RevisionWords.Contains(t))) continue;
-            if (suffix.Any(PickOneWords.Contains)) return name;
+            if (ModChoiceSignals.HasPickOneCue(string.Join(' ', suffix))) return name;
             if (suffix.All(BareSuffixWords.Contains)) return string.Join(' ', tokens.Take(i));
         }
         return name;
