@@ -136,12 +136,15 @@ public static partial class ModRelationshipInference
                 var score = 50 + (shared == child.Paths.Count ? 10 : 0)
                     + (parent.HasStructural && child.TextureOnly ? 15 : 0)
                     + (sharedIdentity ? 15 : 0);
+                var roleEvidence = child.IsAddOn
+                    ? $"'{child.Mod.DisplayName}' carries an optional/add-on label; "
+                    : $"'{child.Mod.DisplayName}' has a texture-only payload without an explicit add-on label; ";
                 var explanation = $"Review required: {shared}/{child.Paths.Count} child file(s) share target paths with '{parent.Mod.DisplayName}' ({identical} byte-identical, {shared-identical} different or unverified). " +
-                    $"'{child.Mod.DisplayName}' has an add-on/overlay label; " +
+                    roleEvidence +
                     (parent.HasStructural && child.TextureOnly
                         ? "the proposed parent also supplies structural assets. "
                         : "both titles share a distinctive identity term. ") +
-                    "Cross-source file overlap does not establish dependency or overwrite order.";
+                    "Shared deployment paths alone do not establish dependency or overwrite order.";
                 suggestions.Add(new(parent.Mod.Id, child.Mod.Id,
                     ModRelationshipKind.PossibleOverride, shared, score, explanation));
             }
