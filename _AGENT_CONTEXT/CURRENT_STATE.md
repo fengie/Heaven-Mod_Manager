@@ -1,6 +1,6 @@
-# v8.8.117 - canonical state: source merged; new release unverified
+# v8.8.117 - immutable release verified
 
-Canonical state: implementation main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` includes PR #893 active terminal updater owner cleanup protection with red→green Windows regressions and all four exact-head PR checks passed. New v8.8.117 immutable package/hosted rollback unverified. Prior immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, hosted E2E 44469075908 remain verified. Heaven2, real corpora, installed p95 and #669 full lifecycle remain open. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `69a317ea4c7c18fed5ed5d18323a3d1af8925618`. Public immutable [updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -26,9 +26,11 @@ Canonical state: implementation main `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` 
 
 ## Verification boundary
 
-**v8.8.117 not yet published:** code source `c0615264d909f12f5fcb1e01c24d8ed3a623ff01` is newer than immutable v8.8.116. Exact-head PR #893 feature/security checks passed, but new immutable public tag/ZIP/manifest, Windows Release Gate publication and real hosted packaged update/rollback have not yet been verified. Source integration is not personal-device deployment.
+Current hosted-Windows closure: v8.8.117 source `69a317ea4c7c18fed5ed5d18323a3d1af8925618` passed run `44475835455` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.117-heaven-windows-closure.log`.
 
-Prior verified immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, Windows Gate 44468041048, hosted real packaged E2E 44469075908 and allowlisted PR #891 receipt remain historical evidence.
+Verified immutable GitHub release: [updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), exact source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`, ZIP SHA-256 `4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0` and manifest SHA-256 `8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4`. Public release and tag ref independently match the built artifact.
+
+The tested source remains `69a317ea4c7c18fed5ed5d18323a3d1af8925618` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
