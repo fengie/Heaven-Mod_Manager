@@ -1,6 +1,6 @@
 # v8.8.114 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 18, 2026 · 8:36:24 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 18, 2026 · 8:38:50 PM EST** _(repo-enforced)_
 
 Current product version: **8.8.114**.
 
@@ -14,7 +14,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - [#876](https://github.com/fengie/Heaven-Mod_Manager/pull/876) requires valid full SHA-256 evidence before classifying overlapping files as byte-identical, including protected loader paths. Missing and malformed digest pairs remain blocking without an explicit compatible rule.
 - [#879](https://github.com/fengie/Heaven-Mod_Manager/pull/879) keeps locally imported Alternative, Variant, and Choice packages separate despite matching identity stems/target paths; saved human decisions and Nexus source-scoped grouping remain authoritative.
-- **Publication boundary:** these fixes are integrated at `main@ff85ad37bf18a13ff06df4a1240869478a85a6d7`, newer than immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), source `7c0cad829ec58af554d4976753642243fd77fa67`. v8.8.114 publication, installed Heaven2 health and real-mod corpus/p95 acceptance are not verified.
+- **Publication evidence boundary:** these source changes follow immutable [v8.8.113 updater-main-572](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-572), exact earlier source `7c0cad829ec58af554d4976753642243fd77fa67`. Determine v8.8.114 release status only from an independently verified exact-source immutable [GitHub Release](https://github.com/fengie/Heaven-Mod_Manager/releases) and its source/tag/ZIP/manifest receipt; publication alone never proves personal Heaven2 installation or real-mod p95.
 
 ## v8.8.113 — evidence-first mod safety, startup and catalog improvements
 
