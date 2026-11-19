@@ -83,6 +83,52 @@ public sealed class SuggestedFamilySafetyTests : IDisposable
     }
 
     [Fact]
+    public async Task Separating_a_family_preserves_similarly_worded_user_overlay_rules()
+    {
+        var db = await NewDatabaseAsync();
+        var family = await db.ChainManualFamilyAsync("base", ["base"], [["addon"]], "Grouping", ct: Ct);
+
+        // Both explicit rules match the legacy broad prefix/suffix check.
+        // Realistic GUID IDs must not falsely establish generated-rule ownership.
+        var customReasonId = Guid.NewGuid().ToString("N");
+        var reversedWinnerId = Guid.NewGuid().ToString("N");
+        await using (var connection = await db.OpenAsync(Ct))
+        await using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = """
+                INSERT INTO conflict_rules(
+                    id,kind,scope,left_mod_id,right_mod_id,winner_mod_id,
+                    path_pattern,reason,explicit,created_at)
+                VALUES(
+                    $customReasonId,'Overlay','ModPair','base','addon','addon',
+                    NULL,$freeform,1,$at),
+                (
+                    $reversedWinnerId,'Overlay','ModPair','base','addon','base',
+                    NULL,$canonical,1,$at)
+                """;
+            cmd.Parameters.AddWithValue("$customReasonId", customReasonId);
+            cmd.Parameters.AddWithValue("$reversedWinnerId", reversedWinnerId);
+            cmd.Parameters.AddWithValue("$freeform",
+                $"Manual family chain: custom human preference in family '{family}'.");
+            cmd.Parameters.AddWithValue("$canonical",
+                $"Manual family chain: 'addon' is a later optional/component layer above 'base' in family '{family}'.");
+            cmd.Parameters.AddWithValue("$at", DateTimeOffset.UtcNow.ToString("O"));
+            await cmd.ExecuteNonQueryAsync(Ct);
+        }
+
+        await db.SeparateLogicalMemberAsync("addon", Ct);
+
+        var rules = (await new PlannerSnapshotRepository(db).LoadAsync(Ct)).Rules;
+        Assert.Equal(2, rules.Count);
+        Assert.Contains(rules, rule => rule.Id == customReasonId &&
+            rule.Kind == RuleKind.Overlay && rule.Explicit);
+        Assert.Contains(rules, rule => rule.Id == reversedWinnerId &&
+            rule.Kind == RuleKind.Overlay && rule.Explicit);
+        Assert.DoesNotContain(rules, rule => rule.Id != customReasonId &&
+            rule.Id != reversedWinnerId);
+    }
+
+    [Fact]
     public async Task Missing_separation_target_rolls_back_without_changing_an_existing_family()
     {
         var db = await NewDatabaseAsync();
