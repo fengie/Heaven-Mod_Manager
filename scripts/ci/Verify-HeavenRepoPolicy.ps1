@@ -7,9 +7,10 @@ if ([string]$p.repository -ne [string]$env:EXPECTED_REPOSITORY) { throw "Policy 
 if ([string]$p.branch -ne 'main') { throw 'Automatic update policy must target main.' }
 $kind = ([string]$p.kind).Trim()
 if ($kind -notin @('source','product','release-channel','mirror')) { throw "Unsupported repository kind: $kind" }
-if (-not [bool]$p.source_update.required) { throw 'Automatic main source consumption must be required.' }
+if ($p.source_update.required -isnot [bool] -or $p.source_update.required -ne $true) { throw 'Automatic main source consumption must be required.' }
 if ([string]$p.source_update.strategy -ne 'ff-only') { throw 'Source update strategy must be ff-only.' }
-$interval = [int]$p.source_update.poll_interval_minutes
+$interval = $p.source_update.poll_interval_minutes
+if ($interval -isnot [int] -and $interval -isnot [long]) { throw 'Source update poll interval must be a JSON integer.' }
 if ($interval -lt 1 -or $interval -gt 60) { throw 'Source update poll interval must be 1-60 minutes.' }
 $mode = ([string]$p.runtime_update.mode).Trim()
 if ($mode -notin @('none','apply-script','self-update-release','release-channel')) { throw "Unsupported runtime update mode: $mode" }
