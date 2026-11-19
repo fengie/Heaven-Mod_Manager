@@ -37,6 +37,13 @@ jobs:
         with:
           fetch-depth: 2
           persist-credentials: false
+          # This job reads only these three files. Avoid full working-tree
+          # materialization on the contended self-hosted Windows runner.
+          sparse-checkout: |
+            README.md
+            VERSION.txt
+            VERSION_TIMESTAMPS.md
+          sparse-checkout-cone-mode: false
 
       - name: Validate README timestamp
         shell: powershell
