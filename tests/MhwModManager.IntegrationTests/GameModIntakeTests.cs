@@ -40,6 +40,67 @@ public sealed class GameModIntakeTests : IDisposable
     }
 
     [Fact]
+    public void Documentation_and_screenshot_layouts_cannot_identify_a_game()
+    {
+        var games = Games.Append(GameProfile.Generic("stellar-blade", "Stellar Blade",
+            Path.Combine(home, "Stellar"), "SB.exe", "SB/Content/Paks/~mods")).ToArray();
+        var result = GameModIntakeClassifier.Classify(games, "Anonymous.zip",
+        [
+            "docs/nativePC/pl/armor/example.tex",
+            "Screenshots/SB/Content/Paks/~mods/preview.pak",
+            "readme-nier-automata.md"
+        ]);
+
+        Assert.Equal(GameModIntakeKind.Unknown, result.Kind);
+        Assert.Null(result.GameId);
+    }
+
+    [Fact]
+    public void Nested_documentation_layouts_do_not_override_a_real_game_scoped_payload()
+    {
+        var games = Games.Append(GameProfile.Generic("stellar-blade", "Stellar Blade",
+            Path.Combine(home, "Stellar"), "SB.exe", "SB/Content/Paks/~mods")).ToArray();
+        var result = GameModIntakeClassifier.Classify(games, "Anonymous.zip",
+        [
+            "mods/nier-automata/outfit.dds",
+            "wrapper/documentation/nativePC/pl/armor/example.tex",
+            "wrapper/screenshots/SB/Content/Paks/~mods/preview.pak"
+        ]);
+
+        Assert.Equal(GameModIntakeKind.Identified, result.Kind);
+        Assert.Equal("nier-automata", result.GameId);
+    }
+
+    [Fact]
+    public void Supporting_files_do_not_contradict_a_declared_game()
+    {
+        var result = GameModIntakeClassifier.Classify(Games, "Anonymous.zip",
+        [
+            "nativePC/README.txt",
+            "mods/another-unity-game/README.md",
+            "mods/nier-automata/real.bin"
+        ], "nier-automata");
+
+        Assert.Equal(GameModIntakeKind.Identified, result.Kind);
+        Assert.Equal("nier-automata", result.GameId);
+    }
+
+    [Fact]
+    public void Real_game_specific_payload_still_identifies_game_despite_unrelated_docs()
+    {
+        var games = Games.Append(GameProfile.Generic("stellar-blade", "Stellar Blade",
+            Path.Combine(home, "Stellar"), "SB.exe", "SB/Content/Paks/~mods")).ToArray();
+        var result = GameModIntakeClassifier.Classify(games, "Anonymous.zip",
+        [
+            "nativePC/pl/wp/wp000.tex",
+            "screenshots/SB/Content/Paks/~mods/example.pak"
+        ]);
+
+        Assert.Equal(GameModIntakeKind.Identified, result.Kind);
+        Assert.Equal("monster-hunter-world", result.GameId);
+    }
+
+    [Fact]
     public void Explicit_provider_game_identity_matches_only_registered_games()
     {
         var games = Games;
