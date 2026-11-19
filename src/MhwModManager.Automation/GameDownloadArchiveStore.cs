@@ -60,11 +60,17 @@ public static class GameDownloadArchiveStore
         if(extension is not ".zip" and not ".7z" and not ".rar")extension=".archive";
         var sha=expectedSha256.ToLowerInvariant();
         var destination=Path.Combine(root,$"{name}-{sha}{extension}");
+        // The display name is not part of content identity. Reuse a previously
+        // verified archive within this game's Downloads root instead of storing
+        // identical bytes again under a different mod title.
+        // The common same-title retry remains an O(1) file lookup.
         if(File.Exists(destination))
         {
             await VerifyExistingAsync(destination,sha,ct);
             return destination;
         }
+        var retained = await FindVerifiedExistingAsync(root,sha,extension,ct);
+        if(retained is not null) return retained;
 
         var temporary=Path.Combine(root,$".umm-owned-{Guid.NewGuid():N}.tmp");
         try
@@ -87,6 +93,11 @@ public static class GameDownloadArchiveStore
                 throw new InvalidDataException("Downloaded archive bytes changed before durable retention.");
 
             ct.ThrowIfCancellationRequested();
+            // Another acquisition can finish while we are copying. Recheck
+            // before publication, and let finally delete this owned temporary.
+            retained = await FindVerifiedExistingAsync(root,sha,extension,ct);
+            if(retained is not null) return retained;
+
             try{File.Move(temporary,destination);}
             catch(IOException) when(File.Exists(destination))
             {
@@ -99,6 +110,40 @@ public static class GameDownloadArchiveStore
             // Only a file with this invocation's unique name can be removed.
             if(File.Exists(temporary))File.Delete(temporary);
         }
+    }
+
+    /// <summary>
+    /// Find an existing verified artifact with the same digest and archive type.
+    /// Never trust a digest merely because it appears in a user-editable filename.
+    /// Only the game's own top-level Downloads root is inspected; other games,
+    /// unknown extensions and user Mods/State are untouched.
+    /// </summary>
+    private static async Task<string?> FindVerifiedExistingAsync(
+        string downloadsRoot,string digest,string extension,CancellationToken ct)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        var suffix="-"+digest+extension;
+        // Directory enumeration can take time in a large user library. Keep
+        // this optional alias lookup off the WPF dispatcher and cancellable.
+        var matches=await Task.Run(
+            () => Directory.EnumerateFiles(
+                    downloadsRoot,"*"+suffix,SearchOption.TopDirectoryOnly)
+                .Where(file =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    return Path.GetFileName(file) is string name &&
+                        name.EndsWith(suffix,StringComparison.OrdinalIgnoreCase);
+                })
+                .OrderBy(file=>file,StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ct);
+        foreach(var match in matches)
+        {
+            ct.ThrowIfCancellationRequested();
+            await VerifyExistingAsync(match,digest,ct);
+            return match;
+        }
+        return null;
     }
 
     private static async Task VerifyExistingAsync(string destination,string expectedSha256,CancellationToken ct)
