@@ -4,7 +4,7 @@ Canonical source and verification state: [CURRENT_REVISION.json](CURRENT_REVISIO
 
 ## Current release acceptance
 
-Verified immutable [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) targets exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`; Windows Release Gate [44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; ZIP/manifest SHA-256 are published and verified. [Hosted real packaged updater E2E 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) is the next separate acceptance; personal Heaven2 installation and health remain unverified.
+Verified immutable [v8.8.115 updater-main-579](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-579) targets exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5`; Windows Release Gate [44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; ZIP/manifest SHA-256 are published and verified. [Hosted real packaged updater E2E 44456946318](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44456946318) **PASSED** installed build 60→579, confirmed health and injected rollback to 60 with four matching sentinels. This disposable-Windows proof does not establish personal Heaven2 installation/health.
 
 ## Persistent product acceptance
 
