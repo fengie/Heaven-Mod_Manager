@@ -162,8 +162,28 @@ public sealed class CatalogRepository(ManagerDatabase db)
         bool includeStale = true,
         int limit = 100,
         DateTimeOffset? now = null,
-        CancellationToken ct = default,
-        int offset = 0)
+        CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await SearchPageAsync(
+            query, providerId, gameId, includeStale, limit, now,
+            offset: 0, ct: ct);
+    }
+
+    /// <summary>
+    /// Fetch a bounded window of already indexed local catalog entries.
+    /// The per-query hydration cap is unchanged; pagination never accesses
+    /// external providers or skips compliance validation for ingestion.
+    /// </summary>
+    public async Task<IReadOnlyList<CachedCatalogMod>> SearchPageAsync(
+        string? query,
+        string? providerId = null,
+        string? gameId = null,
+        bool includeStale = true,
+        int limit = 100,
+        DateTimeOffset? now = null,
+        int offset = 0,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
