@@ -35,10 +35,7 @@ public static partial class LogicalModFamilies
         "hoodless", "maskless", "uncensored", "censored"
     };
 
-    private static readonly HashSet<string> PickOneWords = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "alternative", "alt", "variant", "choice", "choose", "either"
-    };
+    private static readonly IReadOnlySet<string> PickOneWords = ModChoiceSignals.PickOneTokens;
 
     private static readonly HashSet<string> BareSuffixWords = new(StringComparer.OrdinalIgnoreCase)
     {
