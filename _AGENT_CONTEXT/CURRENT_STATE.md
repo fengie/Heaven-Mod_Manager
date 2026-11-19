@@ -1,10 +1,10 @@
-# v8.8.116 - canonical state: source merged; publication pending
+# v8.8.116 - canonical state: immutable release published; hosted E2E PASS
 
-Canonical state implementation baseline is `fengie/Heaven-Mod_Manager@main` at `b76cd3761b5d91327a3b1138cab8ed3da0e96780`. PR #889 source/regression is integrated; v8.8.116 public package/hosted rollback is **unverified**. Prior immutable v8.8.115 and hosted update/rollback passed. Personal Heaven2 installed health, real game corpus and p95 remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: immutable [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583) at exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, Windows Gate 44468041048 PASS and hosted real packaged update 60→583/rollback 44469075908 PASS. PR #891 integrated the source-bound allowlisted receipt. Personal Heaven2 installed health, real game corpora and p95 remain unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
 
-- **v8.8.116 candidate:** PR #889 fixes finalized catalog-download scratch age when filesystem mtimes predate a valid recent lease, with regression and exact-head Windows/native and performance checks. Source main `b76cd3761b5d91327a3b1138cab8ed3da0e96780`, not yet a new immutable package.
+- **v8.8.116 published:** PR #889 fixes finalized catalog download lease-age handling and includes regression tests. Immutable updater-main-583 uses exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3` with Windows Gate 44468041048 and hosted real packaged update/rollback 44469075908 PASS; #669 full storage acceptance remains open.
 
 - **v8.8.115 published:** #881 rejects Alt/Choose cross-source suggestion mistakes; #882 prunes redundant shared-root candidate pair generation; #884 shares one hyphen-safe choice vocabulary across inference routes while retaining original-name evidence. Exact-head PR checks and [canonical Windows Gate 44455718899](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44455718899) passed; source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` is included in the immutable public v8.8.115 package, but real mixed-game corpus and Heaven2 installed tests remain outstanding.
 
@@ -24,7 +24,7 @@ Canonical state implementation baseline is `fengie/Heaven-Mod_Manager@main` at `
 
 ## Verification boundary
 
-**v8.8.116 is not yet published:** main implementation baseline `b76cd3761b5d91327a3b1138cab8ed3da0e96780` includes PR #889. Require a new exact-merge-source Windows Release Gate, immutable public tag/source/ZIP/manifest and an actual packaged update-and-rollback job before claiming new version production acceptance.
+**v8.8.116 immutable publication verified:** exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, [updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`; Windows Gate 44468041048 PASS and hosted packaged update 60→583/rollback 44469075908 PASS. Source-bound receipt merged via PR #891; no installed personal Heaven2 acceptance.
 
 Prior immutable v8.8.115 updater-main-579 exact source `caa8fd1f5801a0afb3f14bb5ea205faf119497d5` passed Windows Gate 44455718899 and hosted real packaged update/rollback 44456946318; ZIP SHA-256 `df725070c0b77711d6aebcd3455daa97e7e15e591c1bba316881c8495a24fe34`, manifest SHA-256 `697a42528f452f9f20891a95a62202fe150df2110b80a38def8085f20b3b205b`. Those older receipts do not verify v8.8.116 or personal Heaven2 installed process health. Preserve all user data and immutable older assets.
 
@@ -32,7 +32,7 @@ Prior immutable v8.8.115 updater-main-579 exact source `caa8fd1f5801a0afb3f14bb5
 
 - [#836](https://github.com/fengie/Heaven-Mod_Manager/pull/836) is integrated at main 8ed0a73 and passed exact native checks. Its synthetic tests run in CI; replay/topology benchmark wall times are unmeasured unless separately dispatched, and physical mod corpus remains untested.
 - [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual large RAR/7z and nested Sifu/Stellar Blade mod collections, WPF drag/drop/progress/cancel, unknown layouts and physically installed acceptance remain unverified.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): hosted real update/rollback run 44456946318 passed build 60→579 and WPF/sentinel checks on disposable Windows. Personal Heaven2 installed SHA/health and longer-term reliability remain unverified.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793): real hosted updater build 60→583 and rollback 44469075908 PASS; independently observed personal Heaven2 source/health and bounded endurance remain unverified.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in this evidence-only handoff; root README/CHANGELOG wording remains a later serialized release-metadata task.
 
-Next: finish serialized v8.8.116 metadata native checks after preceding main Windows publisher; verify new immutable tag/source/ZIP/manifest and real packaged updater/rollback, then separately Heaven2 and real #791/#735/#669 acceptance. Preserve immutable v8.8.115. Retain #791 real corpora, #735 p95, #669 storage, #793 personal deployment, #786 provider terms and #350 trust/signing as OPEN. Every successor must inherit, obey and recursively propagate the permanent continuity constitution and active Learned Rules to the next agent.
+Next: independently verify Heaven2 installed source/process health, exercise representative real mixed-game ZIP/RAR/7z corpora, measure installed WPF p50/p95, and finish #669 bounded storage lifecycle. Immutable v8.8.116 and its hosted packaged E2E are verified; do not republish or remerge evidence. Retain #791/#735/#669/#793/#786/#350 and trust/judiciary acceptance OPEN. Every successor must inherit, obey and recursively propagate the permanent continuity constitution and active Learned Rules to the next agent.
