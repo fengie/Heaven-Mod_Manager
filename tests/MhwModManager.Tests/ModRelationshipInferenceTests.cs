@@ -245,6 +245,56 @@ public sealed class ModRelationshipInferenceTests
         Assert.Contains("1 byte-identical", result.Evidence, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData("no-bikini", "Summer Bikini Base")]
+    [InlineData("no-fur-shawl", "Winter Fur Shawl Base")]
+    [InlineData("wst-fix-8556-1-2026-07-24t11-22z", "Royal Wst Set")]
+    [InlineData("sweaty-effect-texture", "Sweaty Effect Main")]
+    public void Imported_component_names_produce_reviewable_parent_suggestions_on_file_evidence(
+        string childName, string parentName)
+    {
+        var mods = new[]
+        {
+            Mod("parent", parentName, "1001"),
+            Mod("child", childName, "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+
+        Assert.Equal("parent", suggestion.ParentModId);
+        Assert.Equal("child", suggestion.ChildModId);
+        Assert.Equal(1, suggestion.SharedPaths);
+        Assert.Contains("Review required", suggestion.Evidence);
+        Assert.Equal(2, LogicalModFamilies.Build(mods, files).Count);
+        Assert.All(mods, mod => Assert.False(mod.Enabled));
+    }
+
+    [Fact]
+    public void Negated_option_name_does_not_suggest_an_unrelated_parent_on_texture_path_alone()
+    {
+        var mods = new[]
+        {
+            Mod("parent", "Winter Jacket Base", "1001"),
+            Mod("child", "no-bikini", "2002")
+        };
+        const string shared = @"nativePC\pl\f_equip\pl001_0000\body\body.tex";
+        var files = new[]
+        {
+            File("parent", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("parent", shared),
+            File("child", shared)
+        };
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
     private static ModFileDescriptor ContentFile(string modId, string path, string digest) =>
         new(modId, path, digest, null, 4096, DateTimeOffset.UnixEpoch, PathRules.ClassifyFile(path));
 
