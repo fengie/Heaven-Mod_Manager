@@ -207,10 +207,10 @@ public sealed class LogicalModFamiliesTests
         };
         var files = new[]
         {
-            File("base", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.mod3"),
-            File("base", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.tex"),
-            File("choice", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.mod3"),
-            File("choice", @"nativePC\\pl\\f_equip\\pl001_0000\\body\\body.tex")
+            File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.tex"),
+            File("choice", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("choice", @"nativePC\pl\f_equip\pl001_0000\body\body.tex")
         };
         for (var seed = 0; seed < 6; seed++)
         {
