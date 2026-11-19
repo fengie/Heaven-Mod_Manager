@@ -4,22 +4,22 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.114",
+  "currentVersion": "8.8.115",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.114-source-merged-publication-unverified",
-  "nextMilestone": "Source candidate v8.8.114 includes #876/#879 on main ff85ad37bf18a13ff06df4a1240869478a85a6d7; prior immutable v8.8.113 updater-main-572 remains bound to release source 7c0cad829ec58af554d4976753642243fd77fa67. New immutable artifact and Heaven2 installation are unverified.",
-  "nextRequiredAction": "Finish exact-head release-metadata native gates and serial merge after preceding main publisher, then verify exact-main v8.8.114 Windows Gate, public immutable tag/source/ZIP/manifest hashes, hosted packaged updater E2E and separately installed Heaven2 source/health. Retain #791/#735/#669/#793/#350 outstanding.",
-  "verificationAppliesToCommit": "7c0cad829ec58af554d4976753642243fd77fa67",
-  "lastClosedVerificationCommit": "7c0cad829ec58af554d4976753642243fd77fa67",
-  "lastClosedVerificationRun": "v8.8.113 source 7c0cad829ec58af554d4976753642243fd77fa67: hosted Windows verification run 44429973426 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-  "verificationScopeNote": "v8.8.113 exact source 7c0cad829ec58af554d4976753642243fd77fa67 passed Windows Gate 44429973426 and immutable updater-main-572 plus hosted E2E 44432122940. Current v8.8.114 source candidate ff85ad37bf18a13ff06df4a1240869478a85a6d7 includes newer #876/#879 and has no exact immutable release or installed Heaven2 proof; evidence-only commits cannot change tested-source identity.",
+  "status": "v8.8.115-source-merged-publication-unverified",
+  "nextMilestone": "v8.8.115 implementation baseline 50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb merges #881/#882/#884 with native PR gates. Prior immutable v8.8.114 updater-main-575 is source 6ac4e474c8769e04d456433dab43fe97b2ae5ace; Windows Gate 44440884960 and hosted real packaged updater/rollback 44442306486 passed. Personal Heaven2 unverified.",
+  "nextRequiredAction": "Finish v8.8.115 release-metadata exact-head checks, serialize merge after predecessor main Windows Gate 44453007600, then verify immutable tag/source/ZIP/manifest and hosted real update/rollback. Independently prove Heaven2 installation and preserve #791/#735/#669/#793/#786/#350 open acceptance.",
+  "verificationAppliesToCommit": "6ac4e474c8769e04d456433dab43fe97b2ae5ace",
+  "lastClosedVerificationCommit": "6ac4e474c8769e04d456433dab43fe97b2ae5ace",
+  "lastClosedVerificationRun": "v8.8.114 released source 6ac4e474c8769e04d456433dab43fe97b2ae5ace, Windows Release Gate 44440884960 PASS and hosted packaged updater E2E 44442306486 PASS; durable _AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.114.log. Candidate v8.8.115 source 50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb has no new publication.",
+  "verificationScopeNote": "Immutable v8.8.114 updater-main-575 exact source 6ac4e474c8769e04d456433dab43fe97b2ae5ace passed Windows Gate 44440884960 and hosted real update/rollback 44442306486. Current v8.8.115 implementation source 50f45ed90b973e9a9c91cb8f3e3d8927d3ed18bb has no new immutable artifact or personal Heaven2 proof. lastClosedWindowsVerification retains historical durable v8.8.113 evidence file.",
   "lastClosedVerification": {
-    "sourceSha": "7def58c1b16d115e1555738ebad51717d1c1f752",
-    "updaterBuild": 382,
-    "windowsVerificationRun": 36978710736,
-    "installedClientE2ERun": 36979261045,
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.68.log"
+    "sourceSha": "6ac4e474c8769e04d456433dab43fe97b2ae5ace",
+    "updaterBuild": 575,
+    "windowsVerificationRun": 44440884960,
+    "installedClientE2ERun": 44442306486,
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.114.log"
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
@@ -33,8 +33,8 @@
     "Artifact attestations and independent signed publisher authority must be verified for the current public repository and release; visibility does not prove an entitlement, signer or installed trust root.",
     "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
     "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
-    "Issue #791: source includes #857–#879 family/conflict/game routing safeguards, including strict SHA-256 evidence and explicit local alternatives; unrelated zero-overlap dependencies, opaque asset-container collisions, real mixed hundreds-mod corpus and installed Heaven2 acceptance are not verified.",
-    "Issue #793: immutable v8.8.113 updater-main-572 at source 7c0cad82 passed disposable hosted build 60→572 apply, WPF health, sentinel preservation and rollback (run 44432122940). Personal Heaven2 installed SHA/process health and updater timeout/endurance remain unverified."
+    "Issue #791: v8.8.115 source includes #881/#882/#884 choice-cue and rare content-anchor candidate improvements, but real large mixed-game corpora, opaque asset container safety and installed UI p95 remain unverified.",
+    "Issue #793: immutable v8.8.114 updater-main-575 exact source 6ac4e474c8769e04d456433dab43fe97b2ae5ace passed hosted disposable real install/rollback 44442306486; personal Heaven2 source/health and endurance remain unverified."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
@@ -52,12 +52,12 @@
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.113-heaven-windows-closure.log"
   },
   "publishedRelease": {
-    "tag": "updater-main-572",
-    "version": "8.8.113",
-    "sourceSha": "7c0cad829ec58af554d4976753642243fd77fa67",
-    "buildNumber": 572,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.113-win-x64.zip",
-    "artifactSha256": "60f3b2a2461fe29933b019e2e9c5c27c9d3dde44d4130940b62a6e0f0dc6772d",
-    "manifestSha256": "18688f3822af7c1fb7f92f938b241f9b875d3e8eefaddb7877270af933eaa003"
+    "tag": "updater-main-575",
+    "version": "8.8.114",
+    "sourceSha": "6ac4e474c8769e04d456433dab43fe97b2ae5ace",
+    "buildNumber": 575,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.114-win-x64.zip",
+    "artifactSha256": "bf501d3e1e3940d5076ff391e987fa4da64e7a7aeaf1d659ad9dd033f8d472e2",
+    "manifestSha256": "5beed323998b6b1167f9ab5a009a1b4fd9f51ae6c77963d84701be67a078ded9"
   }
 }
