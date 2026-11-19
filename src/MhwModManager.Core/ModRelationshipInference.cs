@@ -178,6 +178,7 @@ public static partial class ModRelationshipInference
 
         static bool IsNegatedPrefix(string name)
         {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
             name = NexusArchiveIdentity.RemoveSuffix(name).TrimStart();
             return name.StartsWith("no-", StringComparison.OrdinalIgnoreCase) ||
                 name.StartsWith("no ", StringComparison.OrdinalIgnoreCase) ||
