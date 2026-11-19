@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh current Toolbox, Mod Manager main/owner, PRs and release feed; fully read CONTINUITY_PROTOCOL and Learned Rules and recursively pass both to the next agent. Confirm main fefc7811 #839 passed Windows Release Gate 43993837451 and prior immutable updater-main-535 excludes #839. Verify v8.8.111 candidate Windows Feature/README/Security/Ownership/AutoUpdate and enforce, protected expected-head merge, new 26/26 main gate, separate immutable v8.8.111 ZIP/manifest SHA-256 and latest-feed readback. Never repurpose occupied updater state; #791 real corpus/WPF, #735 installed p95 and #793 isolated update/rollback remain open. Do not break the chain.",
+  "nextAgentObligation": "Refresh current Toolbox, Mod Manager main/owner, PRs and release feed; fully read CONTINUITY_PROTOCOL and Learned Rules and recursively pass both to the next agent. Refresh exact canonical main and confirm PRs #886/#887 merged (PR #887 merge commit 9d0ae6081bf1dedab5ba5adadb730d39f91aafc4). Verify immutable v8.8.115 updater-main-579 source caa8fd1f5801a0afb3f14bb5ea205faf119497d5, Windows Gate 44455718899 PASS and hosted real packaged update/rollback 44456946318 PASS. The later documentation-only main Windows Gate 44460114106 PASS does not republish that binary. Never repurpose occupied updater state; independently verify Heaven2 installed SHA/process health and real mixed-game archives, p95 and storage acceptance. #791/#793/#735/#669/#786/#350 remain open. Do not break the chain.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
