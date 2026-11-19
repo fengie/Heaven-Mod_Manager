@@ -26,7 +26,7 @@ public static partial class ModRelationshipInference
     private static readonly HashSet<string> AddOnCues = new(StringComparer.OrdinalIgnoreCase)
     {
         "overlay", "addon", "optional", "patch", "hotfix", "fix", "fixed",
-        "component", "suboverride", "retexture", "texture", "textures"
+        "component", "suboverride", "retexture"
     };
     private static readonly HashSet<string> GenericNameWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -80,7 +80,10 @@ public static partial class ModRelationshipInference
         }
 
         var suggestions = new List<ModRelationshipSuggestion>();
-        foreach (var child in profiles.Values.Where(p => p.IsAddOn && p.Paths.Count <= MaxChildPaths)
+        // Unlabeled texture-only sidecars may still be reviewable when their payload
+        // and distinctive identity match a structural main. They must not make
+        // texture-named *main* packages ineligible as candidate parents.
+        foreach (var child in profiles.Values.Where(p => (p.IsAddOn || p.TextureOnly) && p.Paths.Count <= MaxChildPaths)
                      .OrderBy(p => p.Mod.Id, StringComparer.OrdinalIgnoreCase))
         {
             var isNegatedOption = HasNegatedOptionCue(child.Mod);
@@ -119,6 +122,9 @@ public static partial class ModRelationshipInference
                 if (identical == shared) continue;
 
                 var sharedIdentity = child.IdentityTokens.Overlaps(parent.IdentityTokens);
+                // An unlabeled texture package is a candidate only with both
+                // structural-parent and distinctive shared-name evidence.
+                if (!child.IsAddOn && !(child.TextureOnly && parent.HasStructural && sharedIdentity)) continue;
                 // 'No-X' options must retain a meaningful shared name token. Sharing
                 // one common texture with an unrelated structural mod is not enough.
                 if (isNegatedOption && !sharedIdentity) continue;
