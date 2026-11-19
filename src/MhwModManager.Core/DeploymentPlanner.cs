@@ -376,8 +376,10 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 return false; // Even case-only collisions cannot silently pass.
 
             var resourceNamespace = PathRules.ResourceNamespace(file.Path);
-            if (resourceNamespace is null)
-                return false; // Standard model/material files can reference one another.
+            var normalizedPath = PathRules.Normalize(file.Path);
+            if (resourceNamespace is null ||
+                !normalizedPath.StartsWith(resourceNamespace + "\\", StringComparison.OrdinalIgnoreCase))
+                return false; // Require a real mod_* directory, not just a mod_*.mod3 filename.
 
             if (namespaceByOwner.TryGetValue(file.ModId, out var existingNamespace) &&
                 !PathRules.Comparer.Equals(existingNamespace, resourceNamespace))
