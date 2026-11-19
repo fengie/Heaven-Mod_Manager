@@ -192,6 +192,37 @@ public sealed class LogicalModFamiliesTests
         Assert.Equal(2, families.Count);
     }
 
+    [Theory]
+    [InlineData("Orion Neo - Alternative")]
+    [InlineData("Orion Neo - Variant")]
+    [InlineData("Orion Neo - Choice")]
+    public void Explicit_pick_one_packages_with_overlapping_targets_stay_separate(string alternativeName)
+    {
+        // Exact same target layout is evidence of competition, not proof that
+        // the user intended these separate local packages to compose together.
+        var mods = new[]
+        {
+            Mod("base", "Orion Neo"),
+            Mod("choice", alternativeName)
+        };
+        var files = new[]
+        {
+            File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.tex"),
+            File("choice", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3"),
+            File("choice", @"nativePC\pl\f_equip\pl001_0000\body\body.tex")
+        };
+        for (var seed = 0; seed < 6; seed++)
+        {
+            var rng = new Random(seed + 17);
+            var shuffledMods = mods.OrderBy(_ => rng.Next()).ToArray();
+            var shuffledFiles = files.OrderBy(_ => rng.Next()).ToArray();
+            Assert.Empty(GenericFamilyInference.InferKeys(shuffledMods, shuffledFiles, out var evidence));
+            Assert.Empty(evidence);
+            Assert.Equal(2, LogicalModFamilies.Build(shuffledMods, shuffledFiles).Count);
+        }
+    }
+
     [Fact]
     public void Texture_revisions_collapse_to_one_logical_mod()
     {
