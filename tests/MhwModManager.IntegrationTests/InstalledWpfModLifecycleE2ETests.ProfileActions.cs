@@ -56,16 +56,23 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await WaitForAsync(() => toggle.Current.ToggleState == ToggleState.Off, UiTimeout, "staged mod disable", ct);
 
         await SelectTab("Profiles");
-        Invoke(await Button("Refresh"));
-        // Refresh replaces the collection and may recreate its accessibility peers.
-        var row = await WaitForElementAsync(() =>
+        AutomationElement? SavedRow()
         {
             var current = Find(window, item => item.Current.ControlType == ControlType.DataGrid &&
                 item.Current.Name == "Saved profiles");
-            return current is null ? null : Find(current, item => item.Current.ControlType == ControlType.DataItem &&
-                Find(item, cell => cell.Current.Name == profile) is not null);
-        }, UiTimeout, "refreshed saved profile", ct);
+            if (current is null) return null;
+            return current.FindFirst(TreeScope.Descendants, new AndCondition(
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem),
+                new PropertyCondition(AutomationElement.NameProperty, profile))) ??
+                Find(current, item => item.Current.ControlType == ControlType.DataItem &&
+                    Find(item, cell => cell.Current.Name == profile) is not null);
+        }
+        var row = await WaitForElementAsync(SavedRow, UiTimeout, "named saved profile", ct);
         ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        Invoke(await Button("Refresh"));
+        await WaitForAsync(() => SavedRow() is { } saved &&
+            ((SelectionItemPattern)saved.GetCurrentPattern(SelectionItemPattern.Pattern)).Current.IsSelected,
+            UiTimeout, "refresh preserves selected saved profile", ct);
         Invoke(await Button("Use Selected Profile"));
         await SelectModsTabAsync(window, ct);
         await WaitForAsync(() => FindModToggle(window, fixtureMod) is { } current &&

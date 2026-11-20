@@ -20,6 +20,9 @@ public sealed class ProfilesPageViewModel
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var rows=await profiles.ListAsync(ct);
-        await Application.Current.Dispatcher.InvokeAsync(()=>Rows.ReplaceAll(rows));
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            if (!Rows.SequenceEqual(rows)) Rows.ReplaceAll(rows);
+        });
     }
 }

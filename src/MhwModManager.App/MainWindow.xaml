@@ -807,6 +807,11 @@
                     </Border>
                     <Grid Grid.Row="2">
                         <DataGrid ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Saved profiles">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}"/>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="PROFILE" Binding="{Binding Name}" Width="2*"/>
                                 <DataGridTextColumn Header="ENABLED MODS" Binding="{Binding EnabledMods}" Width="140"/>
