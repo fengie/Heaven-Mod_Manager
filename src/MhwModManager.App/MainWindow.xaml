@@ -408,7 +408,7 @@
                                              </Border>
                                              <TextBlock Text="Advanced mod options" FontWeight="SemiBold"/>
                                             <TextBlock Margin="0,3,0,10" Foreground="{StaticResource Muted}" FontSize="11" Text="The main toggle controls the whole mod. Open these options only when you want to turn individual add-ons or components on or off."/>
-                                            <ItemsControl ItemsSource="{Binding Parts}">
+                                            <ItemsControl ItemsSource="{Binding Parts}" IsEnabled="{Binding CanStage}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Grid Margin="0,3">
@@ -430,7 +430,7 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel HorizontalAlignment="Center">
-                                                <CheckBox IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                                <CheckBox IsEnabled="{Binding CanStage}" IsChecked="{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                           IsThreeState="False"
                                                           HorizontalAlignment="Center"
                                                           AutomationProperties.Name="{Binding DisplayName}"

@@ -7,6 +7,20 @@ namespace MhwModManager.IntegrationTests;
 public sealed class ModRowCompositionTests
 {
     [Fact]
+    public void Layout_review_stays_visible_and_cannot_be_enabled_by_bulk_parts_or_profile()
+    {
+        var review = new ModDescriptor("options","Options","Camera options","shelf/options",false,9) { RequiresLayoutReview = true };
+        var row = new ModRowViewModel(Assert.Single(LogicalModFamilies.Build([review])), () => { });
+        Assert.False(row.CanStage);
+        row.StagedEnabled = true;
+        row.SetMemberEnabled(review.Id, true);
+        row.ApplyProfileState(new Dictionary<string,(bool,int)> { [review.Id] = (true,1) });
+        Assert.False(row.StagedEnabled);
+        Assert.False(row.HasStagedChanges);
+        Assert.Equal("Needs layout review", row.StateLabel);
+    }
+
+    [Fact]
     public void Selecting_hpn_v42_stages_main_and_latest_legacy_3x_without_enabling_other_variants()
     {
         var members = new[]

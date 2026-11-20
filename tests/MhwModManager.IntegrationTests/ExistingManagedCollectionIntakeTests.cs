@@ -57,7 +57,7 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
         var original = new ModDescriptor("active", "active", "Original", active, true, 12);
         await db.UpsertModAsync(original, TestToken);
         await scanner.CaptureAsync(original, TestToken);
-        await db.UpsertModAsync(new("wrapper","wrapper","Wrapper",shelf,false,51), TestToken);
+        await db.UpsertModAsync(new("wrapper","wrapper","Wrapper",shelf,false,51,Category: "Texture"), TestToken);
         await db.UpsertModAsync(new("saved","saved","Saved name",unique,false,57), TestToken);
         var intake = new GameModIntakeService(Manager, Path.Combine(Manager, "State"), () => [game]);
         var catalog = new CatalogService(db, scanner, installed, inspectShelf: (folder, ct) => intake.InspectManagedShelf(folder, game, ct));
@@ -74,7 +74,9 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
             var expected = Assert.Single(rows, row => row.SourcePath == authored);
             var indexed = (await db.GetModFilesAsync(TestToken)).Where(file => file.ModId == expected.Id).ToArray();
             Assert.EndsWith(@"~mods\final.pak", Assert.Single(indexed).Path, StringComparison.OrdinalIgnoreCase);
-            Assert.Equal(6, (await db.GetModsAsync(true, TestToken)).Count);
+            var sources = await db.GetModsAsync(true, TestToken);
+            Assert.Equal(6, sources.Count);
+            Assert.Equal("Texture", Assert.Single(sources, row => row.Id == "wrapper").Category);
         }
         var unavailable = new CatalogService(db, scanner, installed, inspectShelf: (_, _) => throw new IOException("Transient USB read failure"));
         await unavailable.RefreshFoldersAsync(TestToken);

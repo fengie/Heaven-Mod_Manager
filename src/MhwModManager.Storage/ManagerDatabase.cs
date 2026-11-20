@@ -256,7 +256,7 @@ public sealed class ManagerDatabase
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
                (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
-               fm.role
+               fm.role,shelf.role IS 'review'
         FROM mods m
         LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
@@ -279,7 +279,7 @@ public sealed class ManagerDatabase
                 r.IsDBNull(15) ? null : r.GetString(15), r.IsDBNull(16) ? null : DateTimeOffset.Parse(r.GetString(16), CultureInfo.InvariantCulture),
                 r.GetInt64(17) != 0, r.IsDBNull(18) ? null : r.GetString(18), r.IsDBNull(19) ? 0 : r.GetInt32(19),
                 r.IsDBNull(20) ? ProvenanceSource.Unknown : Enum.Parse<ProvenanceSource>(r.GetString(20), true),
-                r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)));
+                r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)) { RequiresLayoutReview = r.GetBoolean(24) });
         }
         return list;
     }
@@ -355,7 +355,7 @@ public sealed class ManagerDatabase
         await using var cmd = c.CreateCommand();
         cmd.CommandText = """
             SELECT id,name,source_path,nexus_mod_id,source_url,enabled=0 AND NOT EXISTS(SELECT 1 FROM mod_files WHERE mod_id=mods.id),
-                family_id IS NOT NULL OR source_url IS NOT NULL OR nexus_mod_id IS NOT NULL OR category IS NOT NULL
+                family_id IS NOT NULL OR source_url IS NOT NULL OR nexus_mod_id IS NOT NULL
                 OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=mods.id)
                 OR EXISTS(SELECT 1 FROM profile_mods WHERE mod_id=mods.id)
                 OR EXISTS(SELECT 1 FROM conflict_rules WHERE mods.id IN (left_mod_id,right_mod_id,winner_mod_id))
