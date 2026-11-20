@@ -411,7 +411,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 // Splash uses "Universal Mod Manager" and a startup-failure modal
                 // uses "Universal Mod Manager startup failed". Neither has the real
                 // UI controls. Never mistake either for the product's main window.
-                if (string.Equals(title, "Universal Mod Manager startup failed", StringComparison.Ordinal))
+                if (title is "Universal Mod Manager startup failed" or "Universal Mod Manager unexpected UI failure")
                 {
                     var message = Find(window, element =>
                         element.Current.ControlType == ControlType.Text &&
@@ -423,6 +423,10 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 }
                 if (title.StartsWith("Universal Mod Manager — ", StringComparison.Ordinal))
                     return window;
+                if (window.FindFirst(TreeScope.Descendants, new PropertyCondition(
+                    AutomationElement.AutomationIdProperty, "ActiveGameSelector")) is not null)
+                    throw new InvalidOperationException(
+                        $"Packaged main window has the game selector but an unexpected title: '{title}'.");
             }
             return null;
         }, UiTimeout, "packaged WPF main window", ct);
