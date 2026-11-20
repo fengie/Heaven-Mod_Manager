@@ -348,7 +348,7 @@
                                                     <Border Padding="12,5" Background="{TemplateBinding Background}" ToolTip="{Binding SourceSummary}">
                                                         <StackPanel VerticalAlignment="Center">
                                                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
-                                                            <TextBlock Text="Installed by Steam Workshop" Foreground="{StaticResource Muted}"/>
+                                                            <TextBlock Text="{Binding OwnerLabel}" Foreground="{StaticResource Muted}"/>
                                                         </StackPanel>
                                                     </Border>
                                                 </ControlTemplate>

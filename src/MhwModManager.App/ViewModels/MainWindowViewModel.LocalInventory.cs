@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -11,14 +12,14 @@ public sealed class LibraryRowStyleSelector : System.Windows.Controls.StyleSelec
     public override System.Windows.Style? SelectStyle(object item, System.Windows.DependencyObject container)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
-        return item is WorkshopLibraryReference ? ExternalStyle : base.SelectStyle(item, container);
+        return item is ExternalLibraryReference ? ExternalStyle : base.SelectStyle(item, container);
     }
 }
 
 public sealed partial class MainWindowViewModel
 {
     public IReadOnlyList<LocalModLocation> LocalModLocations { get; private set; } = [];
-    public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop librariesÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦";
+    public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop libraries…";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VisibleLocalModLocations))]
@@ -47,7 +48,8 @@ public sealed partial class MainWindowViewModel
             return LibraryView.Cast<object>().Count();
         }
     }
-    private WorkshopLibraryReference? selectedExternal;
+    private IReadOnlyList<ExternalLibraryReference> localPackageRows = [];
+    private ExternalLibraryReference? selectedExternal;
     public object? SelectedLibraryItem
     {
         get
@@ -58,7 +60,7 @@ public sealed partial class MainWindowViewModel
         set
         {
             using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
-            selectedExternal = value as WorkshopLibraryReference;
+            selectedExternal = value as ExternalLibraryReference;
             SelectedMod = value as ModRowViewModel;
         }
     }
@@ -68,7 +70,7 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         var sources = Mods.SelectMany(row => row.Members.Concat(row.ArchivedMembers)).Select(mod => mod.SourcePath);
         var external = LocalModInventory.WorkshopLibrary(LocalModLocations, s.Paths.Game.SteamAppId, sources);
-        libraryRows.ReplaceAll(Mods.Cast<object>().Concat(external));
+        libraryRows.ReplaceAll(Mods.Cast<object>().Concat(external).Concat(localPackageRows));
         OnPropertyChanged(nameof(InstalledCount));
         OnPropertyChanged(nameof(InstalledCountLabel));
         OnPropertyChanged(nameof(AllViewLabel));
@@ -78,9 +80,11 @@ public sealed partial class MainWindowViewModel
     private bool FilterLibraryItem(object item)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
-        if (item is not WorkshopLibraryReference external) return FilterMod(item);
+        if (item is not ExternalLibraryReference external) return FilterMod(item);
         var query = SearchText.Trim();
         return ModViewMode == "All" && (external.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || external.ItemId.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || external.OwnerLabel.Contains(query, StringComparison.OrdinalIgnoreCase)
             || external.SourceSummary.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -106,13 +110,20 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         try
         {
-            var result = await Task.Run(() => s.GameRegistry.ScanLocalMods(ct), ct);
+            var (result, packages) = await Task.Run(async () =>
+            {
+                var result = s.GameRegistry.ScanLocalMods(ct);
+                var sources = await s.Database.GetModsAsync(ct);
+                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, sources.Select(mod => mod.SourcePath), ct);
+                return (result, packages);
+            }, ct);
             ct.ThrowIfCancellationRequested();
             LocalModLocations = result;
+            localPackageRows = packages;
             RebuildLibraryRows();
             OnPropertyChanged(nameof(LocalModLocations));
             OnPropertyChanged(nameof(VisibleLocalModLocations));
-            LocalModInventoryStatus = $"{result.Count:N0} inventory entries Ã‚Â· checked {DateTime.Now:t}";
+            LocalModInventoryStatus = $"{result.Count:N0} inventory entries · checked {DateTime.Now:t}";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or ArgumentException or System.Text.Json.JsonException)

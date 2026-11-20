@@ -38,6 +38,9 @@ public sealed class InstalledWpfModLifecycleE2ETests
         var item = await WaitForElementAsync(() => Find(grid, element =>
             element.Current.Name == "Workshop item 314159"), UiTimeout, "verified Workshop item", TestToken);
         Assert.Null(Find(item, element => element.Current.ControlType == ControlType.CheckBox));
+        var plugin = await WaitForElementAsync(() => Find(grid, element => element.Current.Name == "Example plugin"),
+            UiTimeout, "externally owned BepInEx plugin", TestToken);
+        Assert.Null(Find(plugin, element => element.Current.ControlType == ControlType.CheckBox));
         Assert.Null(Find(grid, element => element.Current.Name == "Workshop item 271828"));
         var selectAll = await WaitForElementAsync(() => FindButton(window, "Select all visible mods"),
             UiTimeout, "managed bulk selection", TestToken);
@@ -522,6 +525,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 Directory.CreateDirectory(Path.GetDirectoryName(WorkshopPayload)!);
                 Directory.CreateDirectory(Path.Combine(workshopRoot, "content", "987654321", "271828"));
                 File.WriteAllBytes(WorkshopPayload, ModBytes);
+                var pluginDir = Directory.CreateDirectory(Path.Combine(gameA,"BepInEx","plugins"));
+                BepInExPluginLibraryTests.WritePlugin(Path.Combine(pluginDir.FullName,"sample.dll"));
                 File.WriteAllText(Path.Combine(workshopRoot, "appworkshop_987654321.acf"),
                     """ "AppWorkshop" { "appid" "987654321" "WorkshopItemsInstalled" { "314159" { "manifest" "1" } } } """);
             }

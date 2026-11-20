@@ -17,6 +17,8 @@ on:
       - 'src/MhwModManager.Automation/SmartInboxService.cs'
       - 'src/MhwModManager.Core/UnrealPakLayout.cs'
       - 'src/MhwModManager.Filesystem/ModScanner.cs'
+      - 'src/MhwModManager.Filesystem/BepInExPluginMetadata.cs'
+      - 'tests/MhwModManager.IntegrationTests/BepInExPluginLibraryTests.cs'
       - 'src/MhwModManager.Filesystem/LocalModInventory.cs'
       - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.cs'
       - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.LocalInventory.cs'
