@@ -1,6 +1,6 @@
-# v8.8.124 — canonical state and mixed-game import verification
+# v8.8.125 — canonical state and discovered Mods list
 
-Build 611 is the published v8.8.123 package from ccb8df449b0bcb0f7487224670316a3aae2b7813. The v8.8.124 mixed-import candidate preserves the registered game folder in both archive import paths. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Build 612 is the published v8.8.124 package from fc99e48270feb2c7e15df39f79733e000d4ba8a7. Verify the discovered Mods list against the installed client and the actual library. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
 

@@ -1,3 +1,7 @@
+# v8.8.125 — November 20, 2026
+
+- The Mods list restores previously discovered entries on open, reads verified Workshop titles from local package metadata, and automatically catalogs new active-game Inbox arrivals. You can search by title or Workshop ID. [Discovery report](https://github.com/fengie/Heaven-Mod_Manager/issues/933)
+
 # v8.8.124 — November 20, 2026
 
 - Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
