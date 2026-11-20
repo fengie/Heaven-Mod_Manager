@@ -88,7 +88,17 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         SeedProfileInventoryEvidence(run);
         var archiveHash = SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
         var app = run.Launch();
+        var movedPrompt = await WaitForElementAsync(() => AutomationElement.RootElement.FindFirst(TreeScope.Children,
+            new AndCondition(new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id),
+                new PropertyCondition(AutomationElement.NameProperty, "Game installation moved"))),
+            UiTimeout, "moved game repair prompt", ct);
+        Invoke(await WaitForElementAsync(() => FindButton(movedPrompt, "Yes"), UiTimeout, "relink game", ct));
+        var picker = await WaitForElementAsync(() => FindFileDialog(app.Id), UiTimeout, "relink executable picker", ct);
+        var executable = FindPickerField(picker, false)!;
+        ((ValuePattern)executable.GetCurrentPattern(ValuePattern.Pattern)).SetValue(run.FirstGame.ExecutablePath);
+        Invoke(await WaitForElementAsync(() => FindButton(picker, "Open", enabled: true), UiTimeout, "open replacement executable", ct));
         var window = await WaitForMainWindowAsync(app, ct);
+        passed.Add("Repair moved installation through native executable picker");
         await WaitForElementAsync(() => Find(window, e => e.Current.AutomationId == "ActiveGameSelector"),
             UiTimeout, "active game selector", ct);
         await WaitForAsync(() => ReadActiveGame(window) == game.DisplayName, UiTimeout, "active profile " + game.Id, ct);

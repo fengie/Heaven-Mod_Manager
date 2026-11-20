@@ -88,7 +88,15 @@ public sealed partial class GameProfileRegistry
         if(!File.Exists(full)||!full.EndsWith(".exe",StringComparison.OrdinalIgnoreCase))throw new FileNotFoundException("Select the game's Windows executable.",full);
         if(existing.IsMonsterHunterWorld&&!Path.GetFileName(full).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("The Monster Hunter: World profile must point to MonsterHunterWorld.exe.",nameof(executablePath));
-        var root=InferGameRoot(full);
+        var registeredRelative = GameProfile.NormalizeRelative(existing.ExecutableRelativePath, false);
+        var root = InferGameRoot(full);
+        // A moved install keeps its registered executable and loader paths relative to the installation.
+        if (full.EndsWith(Path.DirectorySeparatorChar + registeredRelative, StringComparison.OrdinalIgnoreCase))
+        {
+            root = full;
+            foreach (var _ in registeredRelative.Split(Path.DirectorySeparatorChar))
+                root = Path.GetDirectoryName(root)!;
+        }
         var repaired=existing with
         {
             GameRoot=Path.GetFullPath(root),

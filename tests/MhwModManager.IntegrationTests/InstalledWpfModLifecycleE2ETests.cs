@@ -684,7 +684,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");
             var state = Path.Combine(home, "State");
             var registry = new GameProfileRegistry(state);
-            registry.Upsert(FirstGame);
+            registry.Upsert(profile is null ? FirstGame : FirstGame with { GameRoot = Path.Combine(root, "previous-game-location") });
             registry.Upsert(SecondGame);
             registry.SetActive(FirstGame.Id);
 
