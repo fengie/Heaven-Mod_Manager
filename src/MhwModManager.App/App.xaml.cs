@@ -299,7 +299,8 @@ public sealed partial class App:Application, IDisposable
             var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
             var collectionIntake = new GameModIntakeService(paths.ToolRoot, paths.StateRoot, gameRegistry.Load, archive);
             var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot,paths.LegacyModsRoot,
-                paths.Game.AdapterId == "unreal-paks" ? (dir, ct) => collectionIntake.SelectableManagedFolders(dir, paths.Game, ct) : null));
+                inspectShelf: paths.Game.AdapterId == "unreal-paks" ? (dir, ct) => collectionIntake.InspectManagedShelf(dir, paths.Game, ct) : null,
+                discoverChildren: paths.Game.AdapterId == "unreal-paks" ? (dir, ct) => collectionIntake.SelectableManagedFolders(dir, paths.Game, ct) : null));
             var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
             var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
             var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));

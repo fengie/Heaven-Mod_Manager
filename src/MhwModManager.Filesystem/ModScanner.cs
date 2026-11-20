@@ -22,11 +22,28 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         return separator > 0 && PathRules.Comparer.Equals(name, target[..separator]);
     }
 
-    public async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default)
+    public Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default) => CaptureAsync(mod, false, ct);
+
+    internal Task<IReadOnlyList<ModFileDescriptor>> CaptureShelfPackageAsync(ModDescriptor mod, CancellationToken ct) => CaptureAsync(mod, true, ct);
+
+    internal bool ShelfIndexMatchesSource(ModDescriptor mod, IReadOnlyList<ModFileDescriptor> files, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var cache = files.ToDictionary(file => file.Path, PathRules.Comparer);
+        var observed = EnumerateCandidates(mod, cache, true, ct);
+        return observed.Count == files.Count && observed.All(item =>
+            item.Cached is not null && File.Exists(blobs.PathFor(item.Cached.BlobSha256)));
+    }
+
+    private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, bool managedPackage, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
+        var role = await db.ShelfRoleAsync(mod.Id, ct);
+        if (!managedPackage && role is "review" or "wrapper")
+            throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
+        var packageOnly = managedPackage || role is "package" or "duplicate";
         var cache = await LoadCacheAsync(mod.Id, ct);
-        var candidates = await Task.Run(() => EnumerateCandidates(mod, cache, ct), ct);
+        var candidates = await Task.Run(() => EnumerateCandidates(mod, cache, packageOnly, ct), ct);
         var output = new ConcurrentBag<ModFileDescriptor>();
 
         await Parallel.ForEachAsync(candidates,
@@ -57,7 +74,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         return ordered;
     }
 
-    private List<ScanCandidate> EnumerateCandidates(ModDescriptor mod, Dictionary<string,ModFileDescriptor> cache, CancellationToken ct)
+    private List<ScanCandidate> EnumerateCandidates(ModDescriptor mod, Dictionary<string,ModFileDescriptor> cache, bool packageOnly, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         SafeRecursiveTraversal.EnsureRootIsNotReparse(mod.SourcePath);
@@ -69,12 +86,18 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
             pakMount = @"Content\Paks";
         foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game, ct))
         {
-            foreach (var file in SafeRecursiveTraversal.Snapshot(diskRoot, ct).Files)
+            var snapshot = SafeRecursiveTraversal.Snapshot(diskRoot, ct).Files;
+            var editorRoots = packageOnly ? snapshot.Where(file => file.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase))
+                .Select(file => Path.GetRelativePath(diskRoot, file).Split(Path.DirectorySeparatorChar))
+                .Where(parts => parts.Length > 1).Select(parts => parts[0]).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+            foreach (var file in snapshot)
             {
                 ct.ThrowIfCancellationRequested();
                 var fi = new FileInfo(file);
                 if (IsIgnored(fi)) continue;
                 var rel = Path.GetRelativePath(diskRoot, file).Replace('/', '\\');
+                if (packageOnly && !UnrealPakLayout.IsMember(rel) &&
+                    (ManagedCollectionNotes.IsNote(rel) || editorRoots.Contains(rel.Split(Path.DirectorySeparatorChar)[0]))) continue;
                 if (pakMount is not null && !rel.Contains('\\') &&
                     (rel.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase) ||
                      Path.GetExtension(rel).Equals(".md", StringComparison.OrdinalIgnoreCase))) continue;

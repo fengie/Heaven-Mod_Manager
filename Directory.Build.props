@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.125</Version>
-    <InformationalVersion>8.8.125-discovered-library</InformationalVersion>
+    <Version>8.8.126</Version>
+    <InformationalVersion>8.8.126-managed-collections</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

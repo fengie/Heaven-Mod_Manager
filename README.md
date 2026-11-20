@@ -1,14 +1,18 @@
-# v8.8.125 — MHW Manual Mod Manager
+# v8.8.126 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 12:12:18 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 03:54:30 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.125**.
+Current product version: **8.8.126**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.126 — nested mod collections
+
+- The Mods list separates nested Unreal packages on startup and Inbox arrival. Exact copies of enabled packages share a visible entry, and unresolved options appear as named review entries. [Collection acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/935)
 
 ## v8.8.125 — discovered mods in the library
 
@@ -17,10 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.124 — preserve archive install paths
 
 - Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
-
-## v8.8.123 — BepInEx and ReShade in the Mods list
-
-- The Mods list now shows verified BepInEx plugins and ReShade installations in the registered game. Search by plugin name, ID or source path. Exact DLL copies already in a saved package appear once, including disabled packages that have never been indexed. Different DLLs can share a plugin ID and remain distinct. [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930)
 
 ## Current plans & progress
 

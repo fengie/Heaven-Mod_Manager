@@ -22,6 +22,100 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
         Path.Combine(home, "Game"), "StellarBlade.exe", "SB/Content/Paks/~mods",
         nexusGameDomain: "stellarblade");
 
+    [Fact]
+    public async Task Existing_shelf_reuses_ids_captures_distinct_payloads_and_preserves_reviews_and_active_mod()
+    {
+        var game = GameProfile.Generic("fixture", "Fixture", Path.Combine(home, "game"), "game.exe", "Project/Content/Paks", "unreal-paks");
+        var installed = GameModStorage.Resolve(Manager, game).InstalledRoot;
+        var shelf = Path.Combine(installed, "Unnamed shelf");
+        async Task Write(string root, string name, string value)
+        {
+            var path = Path.Combine(root, name);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, value, TestToken);
+        }
+        var active = Path.Combine(installed, "Original");
+        var copy = Path.Combine(shelf, "Package copy");
+        var unique = Path.Combine(shelf, "Package variant");
+        foreach (var folder in new[] { active, copy, unique })
+        {
+            await Write(folder, "outfit.pak", folder == unique ? "different" : "same");
+            await Write(folder, "outfit.sig", "same-signature");
+        }
+        var authored = Path.Combine(shelf, "Authored");
+        await Write(authored, "final.pak", "finished");
+        await Write(authored, "sources/Project/Game.uproject", "{}");
+        await Write(authored, "sources/Model.blend", "source");
+        await Write(authored, "Installation Instructions.txt", "documentation");
+        var uncertain = Path.Combine(shelf, "Choose options");
+        await Write(uncertain, "Low/option.pak", "low");
+        await Write(uncertain, "High/option.pak", "high");
+        await Write(shelf, "desktop.ini", "metadata");
+        var db = catalogDatabase = new ManagerDatabase(Path.Combine(home, "state", "manager.db"));
+        await db.InitializeAsync(TestToken);
+        var scanner = new ModScanner(db, new BlobStore(Path.Combine(home, "blobs"), db), new HashingService(), game);
+        var original = new ModDescriptor("active", "active", "Original", active, true, 12);
+        await db.UpsertModAsync(original, TestToken);
+        await scanner.CaptureAsync(original, TestToken);
+        await db.UpsertModAsync(new("wrapper","wrapper","Wrapper",shelf,false,51), TestToken);
+        await db.UpsertModAsync(new("saved","saved","Saved name",unique,false,57), TestToken);
+        var intake = new GameModIntakeService(Manager, Path.Combine(Manager, "State"), () => [game]);
+        var catalog = new CatalogService(db, scanner, installed, inspectShelf: (folder, ct) => intake.InspectManagedShelf(folder, game, ct));
+        for (var pass = 0; pass < 2; pass++)
+        {
+            await catalog.RefreshFoldersAsync(TestToken);
+            var rows = await db.GetModsAsync(TestToken);
+            Assert.Equal(4, rows.Count);
+            Assert.Equal("active", Assert.Single(rows, row => row.Enabled).Id);
+            Assert.Equal(57, Assert.Single(rows, row => row.Id == "saved").Priority);
+            var review = Assert.Single(rows, row => row.SourcePath == uncertain);
+            Assert.True(review.NeedsRevalidation);
+            await Assert.ThrowsAsync<InvalidDataException>(() => catalog.EnsureCapturedAsync([review], TestToken));
+            var expected = Assert.Single(rows, row => row.SourcePath == authored);
+            var indexed = (await db.GetModFilesAsync(TestToken)).Where(file => file.ModId == expected.Id).ToArray();
+            Assert.EndsWith(@"~mods\final.pak", Assert.Single(indexed).Path, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(6, (await db.GetModsAsync(true, TestToken)).Count);
+        }
+        var unavailable = new CatalogService(db, scanner, installed, inspectShelf: (_, _) => throw new IOException("Transient USB read failure"));
+        await unavailable.RefreshFoldersAsync(TestToken);
+        Assert.Equal(4, (await db.GetModsAsync(TestToken)).Count);
+        Assert.Equal("review", await db.ShelfRoleAsync((await db.GetModsAsync(TestToken)).Single(row => row.SourcePath == uncertain).Id, TestToken));
+        await Write(copy, "outfit.pak", "new independent revision");
+        await catalog.RefreshFoldersAsync(TestToken);
+        Assert.Contains(await db.GetModsAsync(TestToken), row => row.SourcePath == copy && !row.Enabled);
+        Assert.True(File.Exists(Path.Combine(authored, "sources/Model.blend")));
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
+
+    [Fact]
+    public async Task Fresh_folder_inbox_publication_indexes_independent_nested_children_before_returning()
+    {
+        var game = GameProfile.Generic("quartz", "Quartz", Path.Combine(home, "game"), "game.exe", "Quartz/Content/Paks", "unreal-paks");
+        var storage = GameModStorage.Resolve(Manager, game);
+        string[] sources = ["Shelf/Outer/Favorites/Blue/blue.pak", "Shelf/Outer/Favorites/Gold/gold.pak", "Shelf/Outer/Other/Green/green.pak"];
+        foreach (var name in sources)
+        {
+            var path = Path.Combine(storage.InboxRoot, name);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, name, TestToken);
+        }
+        var db = catalogDatabase = new ManagerDatabase(Path.Combine(home, "state", "manager.db"));
+        await db.InitializeAsync(TestToken);
+        var scanner = new ModScanner(db, new BlobStore(Path.Combine(home, "blobs"), db), new HashingService(), game);
+        var inspector = new ArchiveInspector();
+        var intake = new GameModIntakeService(Manager, Path.Combine(Manager, "State"), () => [game], inspector);
+        var catalog = new CatalogService(db, scanner, storage.InstalledRoot, inspectShelf: (folder, ct) => intake.InspectManagedShelf(folder, game, ct));
+        var inbox = new SmartInboxService(db, inspector, catalog,
+            new NexusMetadataService(db, new PlannerSnapshotRepository(db), Path.Combine(Manager, "State"), game),
+            new AutoCategoryService(db), storage.InboxRoot, storage.InstalledRoot);
+        Assert.Equal(1, (await inbox.ProcessAsync(null, refreshMetadata: false, TestToken)).Imported);
+        var rows = await db.GetModsAsync(TestToken);
+        Assert.Equal("Blue,Gold,Green", string.Join(",", rows.Select(row => row.Name).Order()));
+        Assert.All(rows, row => Assert.False(row.Enabled));
+        Assert.Equal(3, (await db.GetModFilesAsync(TestToken)).Count);
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
+
     [Theory]
     [InlineData("sifu", "Sifu/Content/Paks", "fav", "mai favorite", "pakchunk99-MAI-By-serikase", false)]
     [InlineData("stellar-blade", "SB/Content/Paks/~mods", "old apply", "Scanning Invisible Drone-167-1-0-1749821637", "InvisibleDrone_P", true)]

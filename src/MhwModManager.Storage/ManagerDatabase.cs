@@ -19,6 +19,7 @@ internal enum ManagerDatabaseMigrationCheckpoint
 public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl)
 {
     public bool CanInspectCollection { get; init; }
+    public bool HasSavedReferences { get; init; }
 }
 public sealed record ModArchiveDisplayBackfill(string Id, string Name, string SourcePath, string DisplayName);
 
@@ -241,25 +242,31 @@ public sealed class ManagerDatabase
         await tx.CommitAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default) => GetModsAsync(false, ct);
+
+    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var list = new List<ModDescriptor>();
         await using var c = await OpenAsync(ct);
         await using var cmd = c.CreateCommand();
         cmd.CommandText = """
-        SELECT m.id,m.name,m.display_name,m.source_path,m.enabled,m.priority,m.family_id,m.category,m.source_url,m.nexus_mod_id,m.nexus_file_id,
+        SELECT m.id,m.name,m.display_name,m.source_path,m.enabled,m.priority,m.family_id,CASE WHEN shelf.role='review' THEN 'Needs layout review' ELSE m.category END,m.source_url,m.nexus_mod_id,m.nexus_file_id,
                p.nexus_mod_uuid,p.nexus_version_id,p.nexus_previous_version_id,p.nexus_category,p.nexus_version,p.uploaded_at,
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
-               COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0),
+               (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
                fm.role
         FROM mods m
+        LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
         LEFT JOIN mod_supersession s ON s.older_mod_id=m.id
         LEFT JOIN mod_family_members fm ON fm.mod_id=m.id AND fm.family_id=m.family_id
+        WHERE $all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
+            OR (shelf.role='duplicate' AND NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled))
         ORDER BY m.priority,m.name COLLATE NOCASE
         """;
+        cmd.Parameters.AddWithValue("$all", includeShelfSources);
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))
         {
@@ -275,6 +282,53 @@ public sealed class ManagerDatabase
                 r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)));
         }
         return list;
+    }
+
+    public async Task<string?> ShelfRoleAsync(string id, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT role FROM managed_shelf_entries WHERE mod_id=$id";
+        command.Parameters.AddWithValue("$id", id);
+        return await command.ExecuteScalarAsync(ct) as string;
+    }
+
+    public async Task<ILookup<string,(string Id,string Role,string? Canonical)>> ReadShelfEntriesAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT shelf_path,mod_id,role,canonical_id FROM managed_shelf_entries";
+        var rows = new List<(string Shelf,string Id,string Role,string? Canonical)>();
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+            rows.Add((reader.GetString(0),reader.GetString(1),reader.GetString(2),reader.IsDBNull(3) ? null : reader.GetString(3)));
+        return rows.ToLookup(row => row.Shelf, row => (row.Id,row.Role,row.Canonical), StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task SetShelfEntriesAsync(string shelf, IReadOnlyList<(string Id,string Role,string? Canonical)> entries, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        using var transaction = connection.BeginTransaction();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "DELETE FROM managed_shelf_entries WHERE shelf_path=$shelf";
+        command.Parameters.AddWithValue("$shelf", shelf);
+        await command.ExecuteNonQueryAsync(ct);
+        command.CommandText = "INSERT INTO managed_shelf_entries(mod_id,shelf_path,role,canonical_id) VALUES($id,$shelf,$role,$canonical)";
+        var id = command.Parameters.Add("$id", SqliteType.Text);
+        var role = command.Parameters.Add("$role", SqliteType.Text);
+        var canonical = command.Parameters.Add("$canonical", SqliteType.Text);
+        foreach (var entry in entries)
+        {
+            id.Value = entry.Id;
+            role.Value = entry.Role;
+            canonical.Value = (object?)entry.Canonical ?? DBNull.Value;
+            await command.ExecuteNonQueryAsync(ct);
+        }
+        transaction.Commit();
     }
 
     public async Task<IReadOnlySet<string>> GetModSourcePathsAsync(CancellationToken ct = default)
@@ -299,12 +353,23 @@ public sealed class ManagerDatabase
         var list = new List<ModCatalogSourceIdentity>();
         await using var c = await OpenAsync(ct);
         await using var cmd = c.CreateCommand();
-        cmd.CommandText = "SELECT id,name,source_path,nexus_mod_id,source_url,enabled=0 AND NOT EXISTS(SELECT 1 FROM mod_files WHERE mod_id=mods.id) FROM mods";
+        cmd.CommandText = """
+            SELECT id,name,source_path,nexus_mod_id,source_url,enabled=0 AND NOT EXISTS(SELECT 1 FROM mod_files WHERE mod_id=mods.id),
+                family_id IS NOT NULL OR source_url IS NOT NULL OR nexus_mod_id IS NOT NULL OR category IS NOT NULL
+                OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM profile_mods WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM conflict_rules WHERE mods.id IN (left_mod_id,right_mod_id,winner_mod_id))
+                OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM mod_provenance WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM mod_supersession WHERE mods.id IN (older_mod_id,newer_mod_id))
+                OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=mods.id)
+            FROM mods
+            """;
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))
             list.Add(new(r.GetString(0), r.GetString(1), r.GetString(2),
                 r.IsDBNull(3) ? null : r.GetString(3),
-                r.IsDBNull(4) ? null : r.GetString(4)) { CanInspectCollection = r.GetBoolean(5) });
+                r.IsDBNull(4) ? null : r.GetString(4)) { CanInspectCollection = r.GetBoolean(5), HasSavedReferences = r.GetBoolean(6) });
         return list;
     }
 

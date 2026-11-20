@@ -4,6 +4,7 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
+| 8.8.126 | November 20, 2026 · 03:54:30 PM EST | Managed collections from main 70588748 |
 | 8.8.125 | November 20, 2026 · 12:12:18 PM EST | Discovered Mods list from main fc99e482 |
 | 8.8.124 | November 20, 2026 · 3:37:17 AM EST | mixed-game archive import candidate from main ccb8df44 |
 | 8.8.123 | November 20, 2026 · 2:47:01 AM EST | metadata prepared from integrated main a04a499c (#930) |
