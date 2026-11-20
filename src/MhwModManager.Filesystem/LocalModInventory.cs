@@ -8,18 +8,11 @@ namespace MhwModManager.Filesystem;
 public sealed record LocalModLocation(string Game, string Name, string Evidence, string Location)
 {
     public string? VerifiedWorkshopAppId { get; init; }
+    public string? RegisteredProfileId { get; init; }
 }
 
-public sealed record WorkshopLibraryReference(string ItemId, IReadOnlyList<string> Locations)
+public record ExternalLibraryReference(string ItemId, string DisplayName, string OwnerLabel, IReadOnlyList<string> Locations)
 {
-    public string DisplayName
-    {
-        get
-        {
-            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
-            return $"Workshop item {ItemId}";
-        }
-    }
     public string SourceSummary
     {
         get
@@ -29,6 +22,9 @@ public sealed record WorkshopLibraryReference(string ItemId, IReadOnlyList<strin
         }
     }
 }
+
+public sealed record WorkshopLibraryReference(string WorkshopId, IReadOnlyList<string> Sources)
+    : ExternalLibraryReference(WorkshopId, $"Workshop item {WorkshopId}", "Installed by Steam Workshop", Sources);
 
 public static partial class LocalModInventory
 {
@@ -85,7 +81,8 @@ public static partial class LocalModInventory
                 }
                 if (!PathRules.Comparer.Equals(root, game.GameRoot))
                     rows.Add(new(game.DisplayName, Path.GetFileName(root), origin, root));
-                ScanGame(game.DisplayName, game.IsMonsterHunterWorld, root, origin, rows, ct);
+                ScanGame(game.DisplayName, game.IsMonsterHunterWorld, root, origin, rows, ct,
+                    PathRules.Comparer.Equals(root, game.GameRoot) ? game.Id : null);
             }
         }
         if (discover)
@@ -264,7 +261,7 @@ public static partial class LocalModInventory
         return matchesApp && depth == 0 ? result : [];
     }
 
-    private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct)
+    private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct, string? registeredProfileId = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var remaining = 300_000;
@@ -293,7 +290,7 @@ public static partial class LocalModInventory
                         }
                         var relative = "/" + Path.GetRelativePath(root, item.FullName).Replace('\\', '/') + "/";
                         var evidence = Detect(relative, item.FullName, item.Extension, mhw);
-                        if (evidence is not null) rows.Add(new(game, item.Name, origin + " · " + evidence, item.FullName));
+                        if (evidence is not null) rows.Add(new(game, item.Name, origin + " · " + evidence, item.FullName) { RegisteredProfileId = registeredProfileId });
                     }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
