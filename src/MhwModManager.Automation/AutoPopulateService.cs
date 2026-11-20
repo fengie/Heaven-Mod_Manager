@@ -612,6 +612,18 @@ public sealed class AutoPopulateService(
                 continue;
             }
             var files = filesByMod.GetValueOrDefault(mod.Id) ?? [];
+            if (game.AdapterId == "unreal-paks")
+            {
+                var projectMount = UnrealPakLayout.ProjectMount(game.ModRootRelativePath) ?? game.ModRootRelativePath;
+                var mountPrefix = @"root\" + projectMount.Replace('/','\\').TrimEnd('\\') + @"\";
+                var mounted = files.Where(file => file.Path.StartsWith(mountPrefix,StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (mounted.Length > 0 && !UnrealPakLayout.Complete(mounted.Select(file => file.Path)))
+                {
+                    requirements[mod.Id] = new(mod.Id, [], [], [], false, [],
+                        ["Indexed target contains incomplete or unrelated files inside the Unreal Paks directory. Review the package layout."]);
+                    continue;
+                }
+            }
             var spec = await ModRequirementReader.ReadAsync(
                 mod,
                 files,
@@ -711,6 +723,22 @@ public sealed class AutoPopulateService(
             ct.ThrowIfCancellationRequested();
             if (selected.Contains(candidate.Id))
                 continue;
+
+            if (filesByMod.TryGetValue(candidate.Id, out var candidateFiles) && candidateFiles.Count > 0)
+            {
+                var byTarget = candidateFiles.ToDictionary(file => file.Path,PathRules.Comparer);
+                var duplicate = providersByPath[candidateFiles[0].Path].Select(file => file.ModId)
+                    .FirstOrDefault(id => selected.Contains(id) && filesByMod[id].Count == candidateFiles.Count &&
+                        filesByMod[id].All(file => byTarget.TryGetValue(file.Path, out var matching) &&
+                            matching.BlobSha256 == file.BlobSha256 && matching.Length == file.Length));
+                if (duplicate is not null)
+                {
+                    conflictSkips++;
+                    skipped[candidate.Id] = new(candidate.Id,candidate.DisplayName,false,
+                        $"Exact installed copy of '{modsById[duplicate].DisplayName}' at every deployment target.");
+                    continue;
+                }
+            }
 
             var closureResult = ResolveClosure(
                 candidate.Id,
@@ -852,17 +880,32 @@ public sealed class AutoPopulateService(
                         ? "Kept selected as a protected preference; Auto Populate filled around it."
                         : protectedSelection.Contains(m.Id)
                             ? "Enabled because it is required by the protected current selection."
-                            : "Enabled; its complete requirement chain is conflict-free with the protected current selection.")
+                            : "Enabled; the planned deployment and declared requirements permit it.")
                 : skipped.GetValueOrDefault(m.Id) ??
                   new AutoPopulateDecision(m.Id, m.DisplayName, false, "Not selected because it was unnecessary or superseded by the completed safe set."))
             .OrderByDescending(x => x.Enabled)
             .ThenBy(x => x.ModName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+        var exports = game.AdapterId == "unreal-paks" ? IoStoreExportInventory.Read(selected, filesByMod, blobs, ct) : new(new Dictionary<string,string>(), new HashSet<string>());
+        for (var i = 0; i < decisions.Length; i++)
+        {
+            var decision = decisions[i];
+            var reason = decision.Reason;
+            if (exports.SharedWith.TryGetValue(decision.ModId, out var other))
+                reason += $" Shares an Unreal export ID with '{modsById[other].DisplayName}'.";
+            if (exports.Unknown.Contains(decision.ModId))
+                reason += " Internal asset coverage is unavailable for at least one container.";
+            if (reason != decision.Reason) decisions[i] = decision with { Reason = reason };
+        }
         var summary =
-            $"Auto Populate preserved {preferred.Count} selected package(s) and filled the safe set to {selected.Count} of {mods.Length} installed package(s); " +
+            $"Auto Populate preserved {preferred.Count} selected package(s) and selected an install-compatible set of {selected.Count} of {mods.Length} installed package(s); " +
             $"skipped {conflictSkips} for conflicts and {requirementSkips} for unsatisfied requirements; " +
             $"used {plannerPasses} full planner pass(es) with {plannerFastPathCandidates} isolated candidate(s) accepted without a rebuild.";
+
+        if (exports.SharedWith.Count > 0 || exports.Unknown.Count > 0)
+            summary += $" {exports.SharedWith.Count} selected package(s) share known Unreal export IDs. " +
+                $"Internal coverage is incomplete for {exports.Unknown.Count} selected package(s). In-game precedence is unverified.";
 
         return new(
             state,

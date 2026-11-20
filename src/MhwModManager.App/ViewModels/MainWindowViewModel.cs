@@ -1180,6 +1180,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                         result.PlannerPasses,
                         result.PlannerFastPathCandidates,
                         result.PlannerMilliseconds,
+                        Decisions = result.Decisions,
                         NewlyImported = inboxResult.Imported
                     },
                     ct);
@@ -1188,7 +1189,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         if (!completed || result is null) return;
         if (StagedCount > 0)
+        {
             await Apply();
+            StatusText += " " + result.Summary;
+        }
         else
             StatusText = result.Summary + " No changes were necessary; the current setup is already applied.";
     }

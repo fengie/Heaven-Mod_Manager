@@ -12,6 +12,40 @@ public sealed class AutoPopulateServiceTests : IDisposable
 
     public AutoPopulateServiceTests() => Directory.CreateDirectory(root);
 
+    [Fact]
+    public async Task KnownInternalOverlapIsAdvisoryWhileBadMountAndExactDuplicateAreHeld()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("exports.db");
+        var game = GameProfile.Generic("unreal", "Unreal", Path.Combine(root,"game"), "game.exe", "Project/Content/Paks", "unreal-paks");
+        var store = new BlobStore(Path.Combine(root,"blobs"),db);
+        var scanner = new ModScanner(db,store,new HashingService(),game);
+        foreach (var id in new[] { "anchor", "exact-copy", "shared", "unknown" })
+        {
+            var mod = await AddModAsync(db,id,id,9);
+            var stem = id == "exact-copy" ? "anchor" : id;
+            await File.WriteAllTextAsync(Path.Combine(mod.SourcePath,stem+".pak"),stem,ct);
+            await File.WriteAllTextAsync(Path.Combine(mod.SourcePath,stem+".ucas"),stem,ct);
+            var toc = new byte[168];
+            "-==--==--==--==-"u8.CopyTo(toc);
+            toc[16]=2; toc[20]=144; toc[24]=2; toc[144]=77; toc[155]=2; toc[167]=10;
+            if (id == "unknown") toc[24]=255;
+            await File.WriteAllBytesAsync(Path.Combine(mod.SourcePath,stem+".utoc"),toc,ct);
+        }
+        await AddModAsync(db,"config","Wrong config",200);
+        await db.ReplaceModFilesAsync("config",[ModFile("config",@"root\Project\Content\Paks\Engine.ini","hash",FileClass.GameData)],ct);
+        var service = new AutoPopulateService(new PlannerSnapshotRepository(db),new DeploymentPlanner(new ConflictEngine(game),game),
+            new DependencyDoctorService(db,game.GameRoot,game),game.GameRoot,game,store,scanner);
+        var result = await service.BuildAsync(["anchor"],ct);
+        Assert.Equal(3,result.EnabledMods);
+        Assert.False(result.State["config"].Enabled);
+        Assert.False(result.State["exact-copy"].Enabled);
+        Assert.Contains("Exact installed copy", result.Decisions.Single(decision => decision.ModId == "exact-copy").Reason);
+        Assert.Contains("Shares an Unreal export ID", result.Decisions.Single(decision => decision.ModId == "shared").Reason);
+        Assert.Contains("coverage is unavailable", result.Decisions.Single(decision => decision.ModId == "unknown").Reason);
+        Assert.Contains("2 selected package(s) share known",result.Summary);
+    }
+
     [Theory]
     [InlineData("unreal-paks", "Test/Content/Paks", ".pak")]
     [InlineData("generic-files", "Mods", ".bin")]
