@@ -27,6 +27,33 @@ public sealed class InstalledWpfModLifecycleE2ETests
 
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
+    public async Task AutoPopulateAppliesAnUnindexedLibraryForARegisteredUnrealGame()
+    {
+        using var run = new DisposableWpfRun(seedInbox: false, unreal: true);
+        var expected = new Dictionary<string, byte[]>();
+        for (var index = 0; index < 104; index++)
+        {
+            var folder = Directory.CreateDirectory(Path.Combine(run.InstalledRoot, $"Outfit {index:D3}"));
+            var filename = $"outfit_{index:D3}_P.pak";
+            byte[] payload = [31, (byte)index, 90];
+            File.WriteAllBytes(Path.Combine(folder.FullName, filename), payload);
+            expected.Add(Path.Combine(run.FirstGame.LiveModRoot, "~mods", filename), payload);
+        }
+
+        var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
+        await SelectModsTabAsync(window, TestToken);
+        var button = await WaitForElementAsync(() => FindButton(window, "Auto Populate", enabled: true),
+            UiTimeout, "Auto Populate for the registered game", TestToken);
+        Invoke(button);
+        await WaitForAsync(() => expected.Keys.All(File.Exists), TimeSpan.FromMinutes(3),
+            "all 104 independent packages in the registered game's loader directory", TestToken);
+        foreach (var (path, payload) in expected)
+            Assert.Equal(payload, File.ReadAllBytes(path));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+    }
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
     public async Task PreviouslyCatalogedCollectionShowsItsIndividualModsOnOpen()
     {
         using var run = new DisposableWpfRun(seedInbox: false, unreal: true);

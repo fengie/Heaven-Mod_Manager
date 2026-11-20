@@ -25,13 +25,19 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     public Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return CaptureAsync(mod, false, ct);
+        return CaptureAsync(mod, false, false, ct);
+    }
+
+    public Task<IReadOnlyList<ModFileDescriptor>> CaptureForAutoPopulateAsync(ModDescriptor mod, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return CaptureAsync(mod, false, true, ct);
     }
 
     internal Task<IReadOnlyList<ModFileDescriptor>> CaptureShelfPackageAsync(ModDescriptor mod, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return CaptureAsync(mod, true, ct);
+        return CaptureAsync(mod, true, false, ct);
     }
 
     internal bool ShelfIndexMatchesSource(ModDescriptor mod, IReadOnlyList<ModFileDescriptor> files, CancellationToken ct)
@@ -43,7 +49,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
             item.Cached is not null && File.Exists(blobs.PathFor(item.Cached.BlobSha256)));
     }
 
-    private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, bool managedPackage, CancellationToken ct)
+    private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, bool managedPackage, bool automatic, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
         var role = await db.ShelfRoleAsync(mod.Id, ct);
@@ -51,7 +57,27 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
             throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
         var packageOnly = managedPackage || role is "package" or "duplicate";
         var cache = await LoadCacheAsync(mod.Id, ct);
-        var candidates = await Task.Run(() => EnumerateCandidates(mod, cache, packageOnly, ct), ct);
+        List<ScanCandidate> candidates;
+        try
+        {
+            candidates = await Task.Run(() => EnumerateCandidates(mod, cache, packageOnly, ct), ct);
+        }
+        catch (IOException ex) when (automatic)
+        {
+            throw new InvalidDataException($"Source could not be inspected: {ex.Message}", ex);
+        }
+        if (automatic)
+        {
+            if (candidates.Any(item => Path.GetExtension(item.File).ToLowerInvariant() is ".zip" or ".7z" or ".rar"))
+                throw new InvalidDataException("Contains a transport archive; import its contents before activation.");
+            if (game?.AdapterId == "unreal-paks")
+            {
+                var mount = "root" + Path.DirectorySeparatorChar + game.ModRootRelativePath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                var mounted = candidates.Where(item => item.Key.StartsWith(mount, StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (mounted.Length > 0 && !UnrealPakLayout.Complete(mounted.Select(item => item.Key)))
+                    throw new InvalidDataException("The loader folder contains incomplete or unrelated Unreal payloads.");
+            }
+        }
         var output = new ConcurrentBag<ModFileDescriptor>();
 
         await Parallel.ForEachAsync(candidates,

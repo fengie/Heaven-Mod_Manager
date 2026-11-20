@@ -1150,9 +1150,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     .SelectMany(row => row.ExpandStage().Where(x => x.Value.enabled).Select(x => x.Key))
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var service = new AutoPopulateService(
-                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game, s.Blobs);
+                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game, s.Blobs, s.Scanner);
+                var excluded = Mods.SelectMany(row => row.StagedChanges()).Where(change => !change.Value.enabled)
+                    .Select(change => change.Key).ToArray();
                 result = await RunAutoPopulateBuildAsync(
-                    innerCt => service.BuildAsync(preferredModIds, innerCt),
+                    innerCt => service.BuildAsync(preferredModIds, excluded, innerCt),
                     ct);
                 var stage = result.State.ToDictionary(
                     x => x.Key,
@@ -1178,6 +1180,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                         result.PlannerPasses,
                         result.PlannerFastPathCandidates,
                         result.PlannerMilliseconds,
+                        Decisions = result.Decisions,
                         NewlyImported = inboxResult.Imported
                     },
                     ct);
@@ -1186,7 +1189,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         if (!completed || result is null) return;
         if (StagedCount > 0)
+        {
             await Apply();
+            StatusText += " " + result.Summary;
+        }
         else
             StatusText = result.Summary + " No changes were necessary; the current setup is already applied.";
     }

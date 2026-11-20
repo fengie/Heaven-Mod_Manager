@@ -1,3 +1,7 @@
+# v8.8.127 — November 20, 2026
+
+- Auto Populate indexes existing packages before planning across game profiles. It keeps explicit choices, holds incomplete or misplaced files, and reports shared Unreal export IDs for supported IoStore tables. [Auto Populate acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/937)
+
 # v8.8.126 — November 20, 2026
 
 - The Mods list separates nested Unreal packages on startup and Inbox arrival. Exact copies of enabled packages share a visible entry, and unresolved options appear as named review entries. [Collection acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/935)
