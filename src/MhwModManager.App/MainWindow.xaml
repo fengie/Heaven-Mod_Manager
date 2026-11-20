@@ -1,6 +1,7 @@
 <Window x:Class="MhwModManager.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:MhwModManager.App.ViewModels"
         Title="{Binding WindowTitle}"
         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
         WindowStartupLocation="CenterScreen"
@@ -281,7 +282,7 @@
                                 <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search mod name, add-on, category, source, or problem. Ctrl+F jumps here."/>
                                 <Border Grid.Column="2" Margin="12,0,0,0" Style="{StaticResource StatusBadge}">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleModCount,Mode=OneWay}"/><Run Text=" shown · "/></TextBlock>
+                                        <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleLibraryCount,Mode=OneWay}"/><Run Text=" shown · "/></TextBlock>
                                         <TextBlock Foreground="{StaticResource AccentBright}" FontSize="11" FontWeight="SemiBold">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -335,7 +336,28 @@
 
                     <Grid x:Name="ModLibraryRegion" Grid.Row="2">
                         <Border CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="1">
-                        <DataGrid ItemsSource="{Binding ModsView}" SelectedItem="{Binding SelectedMod,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
+                        <DataGrid ItemsSource="{Binding LibraryView}" SelectedItem="{Binding SelectedLibraryItem,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
+                            <DataGrid.ItemContainerStyleSelector>
+                                <vm:LibraryRowStyleSelector>
+                                    <vm:LibraryRowStyleSelector.ExternalStyle>
+                                        <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                        <Setter Property="AutomationProperties.Name" Value="{Binding DisplayName}"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridRow">
+                                                    <Border Padding="12,5" Background="{TemplateBinding Background}" ToolTip="{Binding SourceSummary}">
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="Installed by Steam Workshop" Foreground="{StaticResource Muted}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        </Style>
+                                    </vm:LibraryRowStyleSelector.ExternalStyle>
+                                </vm:LibraryRowStyleSelector>
+                            </DataGrid.ItemContainerStyleSelector>
                             <DataGrid.RowDetailsTemplate>
                                 <DataTemplate>
                                     <Border Margin="72,2,18,10" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
@@ -541,7 +563,7 @@
                                 <Style TargetType="Border">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding VisibleModCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                        <DataTrigger Binding="{Binding VisibleLibraryCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
                                         <DataTrigger Binding="{Binding InstalledCount}" Value="0"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
                                     </Style.Triggers>
                                 </Style>

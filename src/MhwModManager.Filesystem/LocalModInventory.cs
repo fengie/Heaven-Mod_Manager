@@ -5,7 +5,16 @@ using System.Diagnostics;
 
 namespace MhwModManager.Filesystem;
 
-public sealed record LocalModLocation(string Game, string Name, string Evidence, string Location);
+public sealed record LocalModLocation(string Game, string Name, string Evidence, string Location)
+{
+    public string? VerifiedWorkshopAppId { get; init; }
+}
+
+public sealed record WorkshopLibraryReference(string ItemId, IReadOnlyList<string> Locations)
+{
+    public string DisplayName => $"Workshop item {ItemId}";
+    public string SourceSummary => string.Join(Environment.NewLine, Locations);
+}
 
 public static partial class LocalModInventory
 {
@@ -147,6 +156,19 @@ public static partial class LocalModInventory
         return result;
     }
 
+    public static IReadOnlyList<WorkshopLibraryReference> WorkshopLibrary(
+        IEnumerable<LocalModLocation> inventory, string? steamAppId, IEnumerable<string> managedSources)
+    {
+        if (string.IsNullOrEmpty(steamAppId)) return [];
+        var managed = managedSources.ToHashSet(PathRules.Comparer);
+        return inventory.Where(row => row.VerifiedWorkshopAppId == steamAppId)
+            .GroupBy(row => row.Name, StringComparer.Ordinal)
+            .Where(group => !group.Any(row => managed.Contains(row.Location)))
+            .Select(group => new WorkshopLibraryReference(group.Key, group.Select(row => row.Location)
+                .Distinct(PathRules.Comparer).OrderBy(path => path, PathRules.Comparer).ToArray()))
+            .OrderBy(item => item.ItemId, StringComparer.Ordinal).ToArray();
+    }
+
     private static void ScanWorkshop(string game, string root, List<LocalModLocation> rows, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -158,9 +180,15 @@ public static partial class LocalModInventory
             {
                 ct.ThrowIfCancellationRequested();
                 if ((dir.Attributes & FileAttributes.ReparsePoint) == 0 && dir.Name.All(char.IsAsciiDigit))
-                    rows.Add(new(game, dir.Name, installed.Contains(dir.Name)
+                {
+                    var verified = installed.Contains(dir.Name);
+                    rows.Add(new(game, dir.Name, verified
                         ? "Workshop install record and local content directory"
-                        : "Workshop content directory · installation record unconfirmed", dir.FullName));
+                        : "Workshop content directory · installation record unconfirmed", dir.FullName)
+                    {
+                        VerifiedWorkshopAppId = verified ? dir.Parent!.Name : null
+                    });
+                }
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

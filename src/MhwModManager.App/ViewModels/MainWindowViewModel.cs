@@ -120,7 +120,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public string ModLibraryPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Installed mods: {s.Paths.ModsRoot}"; } }
     public string GameDownloadsPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Downloaded archives: {s.Paths.DownloadsRoot}"; } }
-    public int InstalledCount=>Mods.Count;
+    public int InstalledCount=>libraryRows.Count;
     public string InstalledCountLabel
     {
         get
@@ -218,7 +218,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return StagedCount==0?"No pending changes":$"{StagedCount} pending • {StagedEnableCount} turning on • {StagedDisableCount} turning off";
         }
     }
-    public string AllViewLabel=>$"All ({Mods.Count})";
+    public string AllViewLabel=>$"All ({InstalledCount})";
     public string EnabledViewLabel=>$"Enabled ({EnabledCount})";
     public string StagedViewLabel
     {
@@ -301,6 +301,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         };
         ModsView=CollectionViewSource.GetDefaultView(Mods);
         ModsView.Filter=FilterMod;
+        LibraryView=CollectionViewSource.GetDefaultView(libraryRows);
+        LibraryView.Filter=FilterLibraryItem;
         GamesPage.Refresh();
         SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
     }
@@ -500,6 +502,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
     partial void OnSelectedModChanged(ModRowViewModel? value)
     {
+        OnPropertyChanged(nameof(SelectedLibraryItem));
         if(value is null)return;
         _=LoadModVisualsAsync(value);
     }
@@ -521,7 +524,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         MasterDebugLog.Write("UI-FILTER",$"Mod smart view changed to {value}");
-        ModsView.Refresh();
+        RefreshLibraryFilters();
         NotifyVisibleModState();
     }
 
@@ -541,7 +544,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             await Task.Delay(160,ct);
             await Application.Current.Dispatcher.InvokeAsync(()=>
             {
-                ModsView.Refresh();
+                RefreshLibraryFilters();
                 NotifyVisibleModState();
             });
         }
@@ -579,6 +582,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         OnPropertyChanged(nameof(VisibleModCount));
+        OnPropertyChanged(nameof(VisibleLibraryCount));
         OnPropertyChanged(nameof(HasVisibleMods));
         OnPropertyChanged(nameof(EnableVisibleLabel));
         OnPropertyChanged(nameof(DisableVisibleLabel));
@@ -608,7 +612,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(RevalidateViewLabel));
         OnPropertyChanged(nameof(SupersededViewLabel));
         OnPropertyChanged(nameof(HeaderSummary));
-        if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))ModsView.Refresh();
+        if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))RefreshLibraryFilters();
         NotifyVisibleModState();
         FooterText=StagedCount==0?"No pending changes":$"{StagedCount} pending change(s) — game files stay unchanged until you apply them";
     }
@@ -646,7 +650,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     row.SetUpdateBadge($"Update available • {when:yyyy-MM-dd}");
             }
             Mods.ReplaceAll(rows);
-            ModsView.Refresh();
+            RebuildLibraryRows();
+            RefreshLibraryFilters();
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
             Changed();
         });
@@ -864,7 +869,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             conflictPreviewLoadedGeneration=shouldEnrich?generation:-1;
             var summaryById=analysis.summaries.ToDictionary(x=>x.LogicalModId,StringComparer.OrdinalIgnoreCase);
             foreach(var row in Mods)if(summaryById.TryGetValue(row.Id,out var summary))row.SetEffective(summary);
-            ModsView.Refresh();
+            RefreshLibraryFilters();
             OnPropertyChanged(nameof(FullyEffectiveCount));
             OnPropertyChanged(nameof(ComposedCount));
             OnPropertyChanged(nameof(RevalidationCount));
@@ -993,7 +998,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RefreshAnalysisNow()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var inventory = RefreshLocalModInventoryAsync(backgroundCts.Token);
         await RunBusy("analysis.refresh","Refreshing Mod Status","Checking which mods and files will be used and whether anything needs your attention…",true,RefreshAnalysis);
+        await inventory;
     }
 
     [RelayCommand]
@@ -1443,7 +1450,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     mod.SetIssue(top.Confirmed?$"⚠ ISOLATED • {IssueKindLabel(top.Kind)}":$"⚠ {top.Score}% • {IssueKindLabel(top.Kind)}",top.Score,top.Reason);
                 }
             }
-            ModsView.Refresh();
+            RefreshLibraryFilters();
             OnPropertyChanged(nameof(IssueCount));
             OnPropertyChanged(nameof(IssuesViewLabel));
             NotifyVisibleModState();

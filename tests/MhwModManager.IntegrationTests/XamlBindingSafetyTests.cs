@@ -13,7 +13,7 @@ public sealed partial class XamlBindingSafetyTests
         var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));
         XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
         var library = Assert.Single(document.Descendants(wpf + "DataGrid"),
-            element => (string?)element.Attribute("ItemsSource") == "{Binding ModsView}");
+            element => (string?)element.Attribute("ItemsSource") == "{Binding LibraryView}");
         Assert.Equal("True", (string?)library.Attribute("IsReadOnly"));
         Assert.Equal("False", (string?)library.Attribute("CanUserAddRows"));
         var controls = library.Descendants(wpf + "CheckBox")

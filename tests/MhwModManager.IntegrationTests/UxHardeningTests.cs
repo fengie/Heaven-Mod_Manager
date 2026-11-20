@@ -90,7 +90,7 @@ public sealed class UxHardeningTests
         var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
         var vm=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
 
-        Assert.Contains("public int InstalledCount=>Mods.Count;",vm);
+        Assert.Contains("public int InstalledCount=>libraryRows.Count;",vm);
         Assert.Contains("<DataTrigger Binding=\"{Binding InstalledCount}\" Value=\"0\"><Setter Property=\"Visibility\" Value=\"Visible\"/></DataTrigger>",xaml);
 
         var changedStart=vm.IndexOf("private void Changed()",StringComparison.Ordinal);
