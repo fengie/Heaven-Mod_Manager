@@ -31,6 +31,9 @@ internal static class IsolatedWpfSession
                     var bootstrap = typeof(App.App).GetMethod("LoadGameSessionAsync", BindingFlags.Static | BindingFlags.NonPublic)!;
                     services = await (Task<AppServices>)bootstrap.Invoke(null,
                         [paths, StartupDiagnosticSession.Start(root.FullName), Array.Empty<string>(), null, null, null, null])!;
+                    // These dispatcher fixtures drive commands directly. A live file watcher
+                    // also schedules independent telemetry writes to this session database.
+                    services.ChangeHints.Dispose();
                     await run(services, token);
                 }
                 catch (Exception ex) { failure = ex; }
@@ -40,7 +43,7 @@ internal static class IsolatedWpfSession
                     {
                         if (services is not null)
                         {
-                            services.ChangeHints.Dispose();
+
                             (services.Log as IDisposable)?.Dispose();
                             await using var pool = await services.Database.OpenAsync(CancellationToken.None);
                             Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool);
