@@ -35,13 +35,16 @@ public sealed class LastKnownGoodService(ManagerDatabase db)
         return mapped.Count;
     }
 
-    public static Dictionary<string, (bool Enabled, int Priority)> RestoreState(LastKnownGoodState state, IReadOnlyList<ModDescriptor> current) =>
-        current.ToDictionary(
+    public static Dictionary<string, (bool Enabled, int Priority)> RestoreState(LastKnownGoodState state, IReadOnlyList<ModDescriptor> current)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return current.ToDictionary(
             mod => mod.Id,
             mod => state.Mods.TryGetValue(mod.Id, out var saved)
                 ? (saved.Enabled, saved.Priority)
                 : (false, mod.Priority),
             StringComparer.OrdinalIgnoreCase);
+    }
 
     public async Task<IReadOnlyList<string>> ChangedSinceLastGoodAsync(CancellationToken ct = default)
     {
