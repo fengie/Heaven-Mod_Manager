@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace MhwModManager.IntegrationTests;
@@ -37,6 +38,29 @@ public sealed class InstalledWpfAcceptanceContractTests
         Assert.DoesNotContain("schedule:", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("self-hosted", workflow.Split("runs-on:").Last()
             .Split("timeout-minutes:")[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InstalledWpfWorkflowWatchesTheNestedImportAndDeploymentPath()
+    {
+        var workflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(),
+            ".github", "workflows", "installed-wpf-mod-lifecycle-e2e.yml"));
+        var trigger = Regex.Match(workflow, @"(?ms)^  pull_request:\r?\n(?<body>.*?)(?=^  workflow_dispatch:)");
+        Assert.True(trigger.Success);
+        string[] paths =
+        [
+            "src/MhwModManager.App/MainWindow.xaml.cs",
+            "src/MhwModManager.App/ViewModels/MainWindowViewModel.AutoSort.cs",
+            "src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs",
+            "src/MhwModManager.Automation/GameModIntakeService.cs",
+            "src/MhwModManager.Automation/GameModIntakeClassifier.cs",
+            "src/MhwModManager.Automation/ModBoundaryDiscovery.cs",
+            "src/MhwModManager.Automation/SmartInboxService.cs",
+            "src/MhwModManager.Core/UnrealPakLayout.cs",
+            "src/MhwModManager.Filesystem/ModScanner.cs"
+        ];
+        foreach (var path in paths)
+            Assert.Matches($@"(?m)^      - '{Regex.Escape(path)}'\r?$", trigger.Groups["body"].Value);
     }
 
     private static string FindRepositoryRoot()

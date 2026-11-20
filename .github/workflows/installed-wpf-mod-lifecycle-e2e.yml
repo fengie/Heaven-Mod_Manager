@@ -6,7 +6,17 @@ on:
     branches: [main]
     paths:
       - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.cs'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfAcceptanceContractTests.cs'
       - 'src/MhwModManager.App/MainWindow.xaml'
+      - 'src/MhwModManager.App/MainWindow.xaml.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.AutoSort.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs'
+      - 'src/MhwModManager.Automation/GameModIntakeService.cs'
+      - 'src/MhwModManager.Automation/GameModIntakeClassifier.cs'
+      - 'src/MhwModManager.Automation/ModBoundaryDiscovery.cs'
+      - 'src/MhwModManager.Automation/SmartInboxService.cs'
+      - 'src/MhwModManager.Core/UnrealPakLayout.cs'
+      - 'src/MhwModManager.Filesystem/ModScanner.cs'
       - '.github/workflows/installed-wpf-mod-lifecycle-e2e.yml'
   workflow_dispatch:
 
@@ -98,8 +108,8 @@ jobs:
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          if ($summary -notmatch 'succeeded:\s+4' -or $summary -notmatch 'skipped:\s+0') {
-            throw 'Four executed passing UI tests and zero skipped tests required.'
+          if ($summary -notmatch 'succeeded:\s+6\b' -or $summary -notmatch 'skipped:\s+0\b') {
+            throw 'Six passing acceptance cases and zero skipped tests required.'
           }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
           $proof = [ordered]@{
@@ -107,11 +117,13 @@ jobs:
             sourceSha = (& git rev-parse HEAD).Trim()
             hostedDisposable = $true
             exeSha256 = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
-            succeeded = 4
+            succeeded = 6
             failed = 0
             skipped = 0
           }
-          $proof | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $evidence 'proof.json') -Encoding UTF8
+          $proofJson = $proof | ConvertTo-Json -Depth 4
+          $proofJson | Set-Content -LiteralPath (Join-Path $evidence 'proof.json') -Encoding UTF8
+          Write-Host $proofJson
 
       - name: Retain bounded evidence when artifact quota allows
         if: always()

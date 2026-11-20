@@ -201,6 +201,92 @@ public sealed class InstalledWpfModLifecycleE2ETests
         Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-two.bin")));
     }
 
+    [Theory(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("Category", "InstalledWpf")]
+    public async Task NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo(bool archive)
+    {
+        using var run = new DisposableWpfRun(seedInbox: false, unreal: true);
+        var input = Path.Combine(Path.GetDirectoryName(run.ArchivePath)!, "Nested Unreal Collection");
+        var members = new[] { "first.pak", "first.utoc", "first.ucas" };
+        var firstRoot = Directory.CreateDirectory(Path.Combine(input, "Mods", "Shelf", "NestedFirst",
+            run.FirstGame.ModRootRelativePath, "~mods")).FullName;
+        var secondRoot = Directory.CreateDirectory(Path.Combine(input, "Mods", "Shelf", "NestedSecond",
+            run.FirstGame.ModRootRelativePath, "~mods")).FullName;
+        var sources = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        for (var index = 0; index < members.Length; index++)
+            sources.Add(Path.Combine(firstRoot, members[index]), [(byte)(index + 1), 19, 37]);
+        sources.Add(Path.Combine(secondRoot, "second.pak"), [42, 17, 78]);
+        foreach (var source in sources)
+            File.WriteAllBytes(source.Key, source.Value);
+
+        var selectedInput = archive ? input + ".zip" : input;
+        if (archive) ZipFile.CreateFromDirectory(input, selectedInput);
+        var archiveHash = archive ? SHA256.HashData(File.ReadAllBytes(selectedInput)) : null;
+        var gameRoot = run.FirstGame.GameRoot;
+        var before = Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray();
+        var expected = members.Select(name => Path.Combine(run.FirstGame.LiveModRoot, "~mods", name)).ToArray();
+
+        var app = run.Launch();
+        var window = await WaitForMainWindowAsync(app, TestToken);
+        if (archive) await SelectModsTabAsync(window, TestToken);
+        var importName = archive ? "Install Mod" : "Import ZIP/RAR/7z Folder";
+        Invoke(await WaitForElementAsync(() => FindButton(window, importName, enabled: true),
+            UiTimeout, importName, TestToken));
+        var dialog = await WaitForElementAsync(() => FindFileDialog(app.Id, folder: !archive),
+            UiTimeout, "nested collection picker", TestToken);
+        var edit = FindPickerField(dialog, folder: !archive)
+            ?? throw new InvalidOperationException("Nested collection picker has no accessible path field.");
+        ((ValuePattern)edit.GetCurrentPattern(ValuePattern.Pattern)).SetValue(selectedInput);
+        var confirm = archive ? "Open" : "Select Folder";
+        Invoke(await WaitForElementAsync(() => FindButton(dialog, confirm, enabled: true),
+            UiTimeout, "confirm nested input", TestToken));
+
+        await SelectModsTabAsync(window, TestToken);
+        var first = (TogglePattern)(await WaitForElementAsync(() => FindModToggle(window, "NestedFirst"),
+            UiTimeout, "first routed Unreal package", TestToken)).GetCurrentPattern(TogglePattern.Pattern);
+        var second = (TogglePattern)(await WaitForElementAsync(() => FindModToggle(window, "NestedSecond"),
+            UiTimeout, "second routed Unreal package", TestToken)).GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.Off, first.Current.ToggleState);
+        Assert.Equal(ToggleState.Off, second.Current.ToggleState);
+        Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
+        first.Toggle();
+
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true),
+            UiTimeout, "preview the first nested package", TestToken));
+        await WaitForElementAsync(() => Find(window, element => element.Current.ControlType == ControlType.Text &&
+            element.Current.Name.Contains("Dry run passed. Ready", StringComparison.Ordinal) &&
+            element.Current.Name.Contains("3 add", StringComparison.Ordinal) &&
+            element.Current.Name.Contains("0 replace", StringComparison.Ordinal) &&
+            element.Current.Name.Contains("0 remove", StringComparison.Ordinal) &&
+            element.Current.Name.Contains("0 restore", StringComparison.Ordinal)),
+            UiTimeout, "preview exactly three new companion files", TestToken);
+        Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
+
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
+            UiTimeout, "apply the first nested package", TestToken));
+        await WaitForAsync(() => expected.All(File.Exists), UiTimeout,
+            "complete companion set in the exact fake loader destination", TestToken);
+        Assert.Equal(before.Concat(expected).Order(StringComparer.Ordinal),
+            Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
+        for (var index = 0; index < expected.Length; index++)
+            Assert.Equal(sources[Path.Combine(firstRoot, members[index])], File.ReadAllBytes(expected[index]));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+
+        await SelectModsTabAsync(window, TestToken);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true),
+            UiTimeout, "undo first nested package", TestToken));
+        await WaitForAsync(() => expected.All(path => !File.Exists(path)), UiTimeout,
+            "undo removed the exact companion set", TestToken);
+        Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+        foreach (var source in sources)
+            Assert.Equal(source.Value, File.ReadAllBytes(source.Key));
+        if (archiveHash is not null)
+            Assert.Equal(archiveHash, SHA256.HashData(File.ReadAllBytes(selectedInput)));
+    }
+
     [Fact]
     public void PreflightRejectsNonDisposableOrUnapprovedRunner()
     {
@@ -261,19 +347,25 @@ public sealed class InstalledWpfModLifecycleE2ETests
             return null;
         }, UiTimeout, "packaged WPF main window", ct);
 
-    private static AutomationElement? FindFileDialog(int pid)
+    private static AutomationElement? FindFileDialog(int pid, bool folder = false)
     {
         var windows = AutomationElement.RootElement.FindAll(TreeScope.Children,
             new PropertyCondition(AutomationElement.ProcessIdProperty, pid));
         foreach (AutomationElement element in windows)
         {
-            if (Find(element, node => node.Current.ControlType == ControlType.Edit &&
-                (node.Current.AutomationId == "1148" ||
-                 node.Current.Name.Contains("File name", StringComparison.OrdinalIgnoreCase))) is not null)
-                return element;
+            if (FindPickerField(element, folder) is not null) return element;
         }
         return null;
     }
+
+    private static AutomationElement? FindPickerField(AutomationElement dialog, bool folder) =>
+        Find(dialog, node => node.Current.ControlType == ControlType.Edit &&
+            (node.Current.AutomationId == "1148" ||
+             node.Current.Name.Contains(folder ? "Folder:" : "File name", StringComparison.OrdinalIgnoreCase)));
+
+    private static AutomationElement? FindModToggle(AutomationElement window, string name) =>
+        Find(window, element => element.Current.ControlType == ControlType.CheckBox &&
+            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
 
     private static AutomationElement? FindButton(AutomationElement root, string name, bool enabled = false) =>
         Find(root, element => element.Current.ControlType == ControlType.Button &&
@@ -370,7 +462,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
         public byte[] ModBytes { get; } = Enumerable.Range(0, 4096).Select(i => (byte)(i % 251)).ToArray();
         public byte[] BaselineBytes { get; } = [13, 37, 73, 101];
 
-        public DisposableWpfRun(bool seedInbox)
+        public DisposableWpfRun(bool seedInbox, bool unreal = false)
         {
             var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
             var packageDir = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR");
@@ -395,6 +487,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
             File.Copy(cmd, Path.Combine(gameB, "FakeB.exe"));
 
             FirstGame = GameProfile.Generic("e2e-game-a", "E2E Fake Game A", gameA, "FakeA.exe", "Mods");
+            if (unreal)
+                FirstGame = FirstGame with { AdapterId = "unreal-paks", ModRootRelativePath = @"Quartz\Content\Paks" };
             SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");
             var state = Path.Combine(home, "State");
             var registry = new GameProfileRegistry(state);
@@ -440,7 +534,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
             var storage = GameModStorage.Resolve(home, FirstGame);
             InstalledModPath = Path.Combine(storage.InstalledRoot, "E2E Inbox Fixture");
             LiveModPath = Path.Combine(gameA, "Mods", "e2e-payload.bin");
-            SentinelPath = Path.Combine(gameA, "Mods", "keep-user-owned.bin");
+            Directory.CreateDirectory(FirstGame.LiveModRoot);
+            SentinelPath = Path.Combine(FirstGame.LiveModRoot, "keep-user-owned.bin");
             File.WriteAllBytes(SentinelPath, BaselineBytes);
             if (seedInbox)
             {
