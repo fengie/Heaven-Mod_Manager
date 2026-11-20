@@ -15,7 +15,13 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var games = DiscoveredGameProfiles.Load();
         Assert.NotEmpty(games);
         var failures = new List<string>();
-        foreach (var game in games)
+        var failedOperations = new HashSet<(string LastSuccess, string Error)>();
+        // Test one of each adapter early so a common fixture failure is distinguishable
+        // from a single game's behavior. A green run must still exercise every profile.
+        var byAdapter = games.GroupBy(game => game.AdapterId).ToArray();
+        var ordered = byAdapter.Select(group => group.First())
+            .Concat(byAdapter.SelectMany(group => group.Skip(1))).ToArray();
+        foreach (var game in ordered)
         {
             TestToken.ThrowIfCancellationRequested();
             var passed = new List<string>();
@@ -33,6 +39,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             if (!string.IsNullOrEmpty(evidence))
                 File.WriteAllText(Path.Combine(evidence, $"game-{game.Id}.json"),
                     JsonSerializer.Serialize(new { game.Id, game.AdapterId, passed, error }));
+            if (error is not null && !failedOperations.Add((passed.LastOrDefault() ?? "startup", error)))
+            {
+                failures.Add("The same operation failed twice. Remaining profiles require a corrected candidate.");
+                break;
+            }
         }
         Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
     }

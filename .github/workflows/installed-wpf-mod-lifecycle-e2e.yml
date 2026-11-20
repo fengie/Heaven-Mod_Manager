@@ -47,7 +47,7 @@ jobs:
   installed-wpf:
     name: Actual packaged WPF app with fake game profiles
     runs-on: windows-2025
-    timeout-minutes: 45
+    timeout-minutes: 65
     env:
       MHW_RUN_INSTALLED_WPF_E2E: '1'
     steps:
@@ -111,6 +111,7 @@ jobs:
           }
 
       - name: Real UIA import, list, preview, apply, undo and game switch
+        timeout-minutes: 53
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -132,12 +133,23 @@ jobs:
           if ($summary -notmatch "succeeded:\s+$expectedCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
             throw "Expected $expectedCases passing acceptance cases and zero skipped tests."
           }
+          $inventory = @(Get-Content -Raw -Encoding UTF8 tests/fixtures/discovered-games/games.json | ConvertFrom-Json)
+          $gameReceipts = @(Get-ChildItem -LiteralPath $evidence -Filter 'game-*.json' | ForEach-Object {
+            Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          })
+          $expectedIds = @($inventory | ForEach-Object { $_.id } | Sort-Object)
+          $observedIds = @($gameReceipts | ForEach-Object { $_.Id } | Sort-Object)
+          if ($expectedIds.Count -eq 0 -or $observedIds.Count -ne $expectedIds.Count -or
+              (Compare-Object $expectedIds $observedIds) -or @($gameReceipts | Where-Object { $_.error }).Count) {
+            throw 'The installed UI receipts do not cover every registered fixture profile.'
+          }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
           $proof = [ordered]@{
             schemaVersion = 1
             sourceSha = (& git rev-parse HEAD).Trim()
             hostedDisposable = $true
             exeSha256 = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+            verifiedGameProfiles = $observedIds
             succeeded = $expectedCases
             failed = 0
             skipped = 0
