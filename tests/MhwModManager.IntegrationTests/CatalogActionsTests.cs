@@ -21,7 +21,7 @@ public sealed class CatalogActionsTests
 {
     [Fact]
     public Task ModsEnterSelectsFilteredResultsWithoutStagingAcrossRegisteredProfiles() =>
-        RunOnDispatcher((services, ct) =>
+        IsolatedWpfSession.RunAsync((services, ct) =>
         {
             foreach (var game in DiscoveredGameProfiles.Load())
             {
