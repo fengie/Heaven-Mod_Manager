@@ -116,6 +116,47 @@ public sealed class DashboardMaintenanceTests
         finally { root.Delete(true); }
     }
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CleanupRechecksTheKeeperAndCandidateBeforeArchivingAnIndexedDuplicate(bool editKeeper)
+    {
+        var root = Directory.CreateTempSubdirectory("manager-stale-duplicate-");
+        var db = new ManagerDatabase(Path.Combine(root.FullName, "state", "manager.db"));
+        var ct = TestContext.Current.CancellationToken;
+        try
+        {
+            await db.InitializeAsync(ct);
+            var game = GameProfile.Generic("example", "Example", Path.Combine(root.FullName, "game"), "Example.exe", "Mods");
+            var scanner = new ModScanner(db, new BlobStore(Path.Combine(root.FullName, "blobs"), db), new HashingService(), game);
+            var packages = new Dictionary<string, string>();
+            foreach (var id in new[] { "enabled", "disabled" })
+            {
+                var source = Directory.CreateDirectory(Path.Combine(root.FullName, "Installed", id));
+                var file = Path.Combine(source.FullName, "costume.bin");
+                File.WriteAllBytes(file, [1, 2, 3]);
+                var mod = new ModDescriptor(id, id, id, source.FullName, id == "enabled", 10);
+                await db.UpsertModAsync(mod, ct);
+                await scanner.CaptureAsync(mod, ct);
+                packages[id] = file;
+            }
+            var changed = packages[editKeeper ? "enabled" : "disabled"];
+            var oldTime = File.GetLastWriteTimeUtc(changed);
+            File.WriteAllBytes(changed, [3, 2, 1]);
+            File.SetLastWriteTimeUtc(changed, oldTime);
+            var cleanup = new DuplicateCleanupService(db, Path.Combine(root.FullName, "Archive"));
+            Assert.Equal(0, await cleanup.ArchiveSafeAsync(ct));
+            Assert.Equal(2, (await db.GetModsAsync(ct)).Count);
+            Assert.Equal(new byte[] { 3, 2, 1 }, File.ReadAllBytes(changed));
+            Assert.True(File.Exists(packages["disabled"]));
+        }
+        finally
+        {
+            await using (var connection = await db.OpenAsync(CancellationToken.None))
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            root.Delete(true);
+        }
+    }
+    [Theory]
     [MemberData(nameof(Registered))]
     public async Task DuplicateCleanupAndPortableExportPreserveTheEnabledPackageAndItsContent(string id)
     {
