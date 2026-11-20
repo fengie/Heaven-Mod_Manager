@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.119</Version>
-    <InformationalVersion>8.8.119-catalog-and-family-corrections</InformationalVersion>
+    <Version>8.8.120</Version>
+    <InformationalVersion>8.8.120-unreal-package-intake</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
