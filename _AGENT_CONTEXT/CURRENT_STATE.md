@@ -1,8 +1,13 @@
-# v8.8.120 — canonical state: integrated source and release verification
+# v8.8.121 — canonical state: integrated source and release verification
 
-Manager main `cda9bc05b54f0912787e8a7409102f3fe67a6c03` includes the empty-catalog fix [#919](https://github.com/fengie/Heaven-Mod_Manager/pull/919) and nested Unreal package intake and routing [#920](https://github.com/fengie/Heaven-Mod_Manager/pull/920). v8.8.120 requires its own immutable publication, hosted updater verification, and disposable-home smoke test. Physical game loading remains unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. v8.8.121 adds a read-only inventory of installed mod evidence across current and older game installations, standalone game folders, and Steam Workshop. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
+
+- The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
+- The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
+- Independently selectable Unreal packages in existing library folders now appear as disabled catalog entries. Existing choices and original sources are preserved. Collections with unresolved variants or companion files still require review. [#926](https://github.com/fengie/Heaven-Mod_Manager/pull/926)
+- The real-library source test found both active and older installs, removed 507 stock-file review entries, and retained the expected Workshop and loader evidence. [Inventory change](https://github.com/fengie/Heaven-Mod_Manager/pull/925)
 
 - Empty local folders no longer create catalog entries. Existing rows keep their saved state and show an actionable error if their selected source folder is empty. [#919](https://github.com/fengie/Heaven-Mod_Manager/pull/919)
 - Nested, project-qualified Unreal packages can be identified independently. Ordinary loose PAK groups use the game's mod subdirectory on supported profiles. Explicit mirrored destinations stay intact, and incomplete or ambiguous packages require review. [#920](https://github.com/fengie/Heaven-Mod_Manager/pull/920)
@@ -32,7 +37,7 @@ Manager main `cda9bc05b54f0912787e8a7409102f3fe67a6c03` includes the empty-catal
 
 ## Verification boundary
 
-v8.8.119 [build 600](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-600) binds source `7144ab22389305fc90eb4efc3bd06055209c87da`. The [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44646768083) and [hosted packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44650262798) passed for that source. The physical Heaven2 build-600 readback predates this release. v8.8.120 requires its own immutable publication, hosted updater verification, and disposable-home smoke test. Physical game loading remains unverified.
+v8.8.120 [build 603](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-603) was published from source `8ab5e050ef78bad07099fff470808c0a3af86c28`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44672735615) and [hosted updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44675183365) passed. The shipped updater also installed build 603 on Heaven2 and a separate startup exited cleanly. v8.8.121 requires its own immutable publication, hosted updater and rollback verification, and a personal Heaven2 installed check. These checks do not establish in-game mod loading.
 
 **v8.8.118 immutable release and real hosted update/rollback VERIFIED:** [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) **PASS**, [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS**; ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`, manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. This is disposable hosted Windows evidence, **not** personal Heaven2 installed acceptance.
 
@@ -42,7 +47,7 @@ Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d1832
 
 - [#836](https://github.com/fengie/Heaven-Mod_Manager/pull/836) is integrated at main 8ed0a73 and passed exact native checks. Its synthetic tests run in CI; replay/topology benchmark wall times are unmeasured unless separately dispatched, and physical mod corpus remains untested.
 - [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual large RAR/7z and nested Sifu/Stellar Blade mod collections, WPF drag/drop/progress/cancel, unknown layouts and physically installed acceptance remain unverified.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks installed verification. Build 600 has hosted packaged coverage. v8.8.120 installed health and bounded endurance remain open.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks installed verification. Build 603 has hosted and personal installed proof. v8.8.121 installed health and bounded endurance remain open.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in the canonical documentation-only release handoff. No new product binary or version was created.
 
 Next: integrate and publish v8.8.120 through the protected Windows release path. Confirm the new immutable source, ZIP and manifest, then verify the packaged updater and disposable-home startup. Preserve the active personal Manager session and recursively pass on the Core Rules and Learned Rules.
