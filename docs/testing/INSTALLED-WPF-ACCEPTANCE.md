@@ -2,6 +2,12 @@
 
 InstalledWpfModLifecycleE2ETests is an xUnit v3 suite using real Windows UI Automation on a runnable WPF application published from an exact source revision. It does not call view-model commands as a substitute for UI testing.
 
+## Running the discovered-profile checks
+
+From the repository root on Windows, run `dotnet test --project tests/MhwModManager.IntegrationTests -c Release --filter-class MhwModManager.IntegrationTests.DiscoveredGameLifecycleTests`. Manager's configured `MOD_MANAGER_HOME` or `MHW_MANAGER_HOME` supplies `State/games.json` when present. Set `MHW_DISCOVERED_GAME_REGISTRY` to select a different directory containing a registry. Clean CI uses the checked-in, sanitized H2 inventory. A dropped or duplicate registry entry fails discovery. Each case remaps executable, save, storage and deployment locations to a temporary directory.
+
+The November 20 H2 snapshot contained 37 registrations. The read-only host census found 32 available executables, five missing executables, seven retained sibling roots, ten unmatched Steam folders, 945 registered Workshop entries, and 30 Workshop entries for an unregistered app. The tests exercise both available and missing installations and external ownership with disposable fixtures for every accepted profile. Online provider responses, account actions, and actual third-party game behavior need separate evidence. [Host inventory](https://github.com/fengie/Heaven-Mod_Manager/issues/939#issuecomment-7052456441)
+
 ## Functional tests
 
 1. Create a GUID-named temporary manager home and two synthetic registered games with harmless executable placeholders (never launched), empty game Mods folders, and preserved sentinel bytes.

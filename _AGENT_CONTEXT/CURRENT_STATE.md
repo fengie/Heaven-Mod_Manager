@@ -1,6 +1,6 @@
-# v8.8.127 — canonical state and Auto Populate
+# v8.8.128 — canonical state and active game actions
 
-Build 614 is the published v8.8.126 package from 5c8673296b067ac67cd5ff12f4e1d2a35e07e9aa. Verify #937 against the installed client and the actual Stellar Blade corpus. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 615 is the published v8.8.127 package from a9bc34e61d362fc2ef0edbb0ba3cbc7d3891129f. Verify the registry-wide service and packaged Windows results in #939. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 

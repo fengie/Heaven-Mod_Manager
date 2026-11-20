@@ -77,7 +77,7 @@ public partial class WorkflowWindow : Window
         var adapter = GameAdapters.Resolve(services.Paths.Game); var game = services.Paths.Game;
         AdapterDetails.Text = $"{adapter.DisplayName} ({adapter.Id})\n\nExecutable: {adapter.Executable(game)}\nMod roots: {string.Join(", ", adapter.ModRoots(game))}\nNexus domain: {adapter.NexusDomain(game) ?? "none"}\nSave paths: {string.Join(", ", adapter.SavePaths(game))}\nMHW conflict semantics: {adapter.SupportsMhwConflictSemantics}\n\n" + string.Join("\n", adapter.Validate(game).Select(v => $"{v.Code}: {v.Message}"));
         reviewedUpdate = null; UpgradeButton.IsEnabled = false;
-        Status.Text = $"{assets.Count} game file(s) are in the pending setup. Rule changes affect future plans; live game files change only when you apply mod changes or an update.";
+        Status.Text = $"{assets.Count} indexed game file(s) are available for inspection. Rule changes affect future plans; live game files change only when you apply mod changes or an update.";
     }
     private async void RefreshClick(object sender, RoutedEventArgs e)
     {

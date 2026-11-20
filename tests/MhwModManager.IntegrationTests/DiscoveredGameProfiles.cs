@@ -11,6 +11,16 @@ internal static class DiscoveredGameProfiles
         var registry = Environment.GetEnvironmentVariable("MHW_DISCOVERED_GAME_REGISTRY");
         if (string.IsNullOrWhiteSpace(registry))
         {
+            var managerHome = Environment.GetEnvironmentVariable("MOD_MANAGER_HOME");
+            var legacyHome = Environment.GetEnvironmentVariable("MHW_MANAGER_HOME");
+            if (!string.IsNullOrWhiteSpace(managerHome) || !string.IsNullOrWhiteSpace(legacyHome))
+            {
+                var configured = Path.Combine(MhwModManager.App.AppPaths.ResolveToolRoot(managerHome,legacyHome,AppContext.BaseDirectory),"State");
+                if (File.Exists(Path.Combine(configured,"games.json"))) registry = configured;
+            }
+        }
+        if (string.IsNullOrWhiteSpace(registry))
+        {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
             while (directory is not null && !File.Exists(Path.Combine(directory.FullName,"MhwModManager.sln")))
                 directory = directory.Parent;

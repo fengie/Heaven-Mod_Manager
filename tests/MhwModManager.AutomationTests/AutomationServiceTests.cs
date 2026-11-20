@@ -21,13 +21,16 @@ public sealed class AutomationServiceTests : IDisposable
         var db=await CreateDbAsync("backup.db");
         var save=Path.Combine(root,"SAVEDATA1000");await File.WriteAllTextAsync(save,"save",TestContext.Current.CancellationToken);
         var old=Environment.GetEnvironmentVariable("MHW_SAVE_PATH");
+        var generic=Environment.GetEnvironmentVariable("MOD_MANAGER_SAVE_PATH");
         try
         {
             Environment.SetEnvironmentVariable("MHW_SAVE_PATH",save);
+            Environment.SetEnvironmentVariable("MOD_MANAGER_SAVE_PATH",null);
+            Assert.Null(SaveBackupService.FindSaveFile(GameProfile.Generic("other","Other",Path.Combine(root,"other"),"game.exe","mods")));
             var result=await new SaveBackupService(db,Path.Combine(root,"state"),GameProfile.MonsterHunterWorld(Path.Combine(root,"game"))).CreateAsync("test",TestContext.Current.CancellationToken);
             Assert.True(result.Success);Assert.Equal(1,result.FilesCopied);Assert.True(File.Exists(Path.Combine(result.SnapshotRoot,"snapshot.json")));
         }
-        finally{Environment.SetEnvironmentVariable("MHW_SAVE_PATH",old);}
+        finally{Environment.SetEnvironmentVariable("MHW_SAVE_PATH",old); Environment.SetEnvironmentVariable("MOD_MANAGER_SAVE_PATH",generic);}
     }
 
     [Fact]

@@ -1,14 +1,18 @@
-# v8.8.127 — MHW Manual Mod Manager
+# v8.8.128 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 04:54:51 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 05:46:41 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.127**.
+Current product version: **8.8.128**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.128 — active-game actions
+
+- Official catalog links now follow the active game’s provider mappings. Advanced Tools no longer shows main-window actions it cannot execute. The Windows acceptance suite uses the discovered profile registry for game-specific checks. [Game coverage](https://github.com/fengie/Heaven-Mod_Manager/issues/939)
 
 ## v8.8.127 — Auto Populate existing packages
 
@@ -17,10 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.126 — nested mod collections
 
 - The Mods list separates nested Unreal packages on startup and Inbox arrival. Exact copies of enabled packages share a visible entry, and unresolved options appear as named review entries. [Collection acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/935)
-
-## v8.8.125 — discovered mods in the library
-
-- The Mods list restores previously discovered entries on open, reads verified Workshop titles from local package metadata, and automatically catalogs new active-game Inbox arrivals. You can search by title or Workshop ID. [Discovery report](https://github.com/fengie/Heaven-Mod_Manager/issues/933)
 
 ## Current plans & progress
 

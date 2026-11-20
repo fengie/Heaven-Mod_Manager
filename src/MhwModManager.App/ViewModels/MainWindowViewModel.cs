@@ -1258,10 +1258,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var visible=ModsView.Cast<ModRowViewModel>().ToArray();
         var target=visible
             .SelectMany(x=>x.Members)
+            .Where(mod=>!mod.RequiresLayoutReview)
             .DistinctBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
             .ToArray();
         await s.Catalog.EnsureCapturedAsync(target,ct);
-        StatusText=$"Re-indexed {visible.Length} visible {(visible.Length==1?"mod":"mods")} across {target.Length} source {(target.Length==1?"package":"packages")}.";
+        var held=visible.Count(row=>!row.CanStage);
+        StatusText=$"Re-indexed {target.Length} source package(s). {held} visible row(s) require layout review.";
     });
     }
 

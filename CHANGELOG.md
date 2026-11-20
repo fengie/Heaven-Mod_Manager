@@ -1,3 +1,7 @@
+# v8.8.128 — November 20, 2026
+
+- Official catalog links now follow the active game’s provider mappings. Advanced Tools no longer shows main-window actions it cannot execute. Relinking a moved game preserves its registered install layout. Review-only mods can coexist with Advanced Tools and visible reindexing. The installer keeps checkbox choices in sync and explains missing required choices. The Windows acceptance suite uses the discovered profile registry for game-specific checks. [Game coverage](https://github.com/fengie/Heaven-Mod_Manager/issues/939)
+
 # v8.8.127 — November 20, 2026
 
 - Auto Populate indexes existing packages before planning across game profiles. It keeps explicit choices, holds incomplete or misplaced files, and reports shared Unreal export IDs for supported IoStore tables. [Auto Populate acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/937)
