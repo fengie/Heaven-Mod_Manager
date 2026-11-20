@@ -222,8 +222,11 @@ public partial class ModRowViewModel:ObservableObject
         SyncParts();RaiseStateChanged();_changed();
     }
 
-    public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges() =>
-        _stagedMembers.Where(pair => _appliedMembers[pair.Key] != pair.Value);
+    public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return _stagedMembers.Where(pair => _appliedMembers[pair.Key] != pair.Value);
+    }
 
     public IReadOnlyDictionary<string,(bool enabled,int priority)> ExpandStage()
     {

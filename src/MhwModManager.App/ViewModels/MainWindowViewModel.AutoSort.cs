@@ -19,8 +19,15 @@ public sealed partial class MainWindowViewModel
     private bool scanSourcesRequested;
     private bool inboxWaitingForForeground;
 
-    private IEnumerable<string> ActiveInboxRoots => new[] { s.Paths.InboxRoot, s.Paths.LegacyInboxRoot }
+    private IEnumerable<string> ActiveInboxRoots
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return new[] { s.Paths.InboxRoot, s.Paths.LegacyInboxRoot }
         .Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+    }
 
     public ObservableRangeCollection<string> AutoSortFolders { get; } = [];
     [ObservableProperty] private string? selectedAutoSortFolder;
@@ -347,6 +354,7 @@ public sealed partial class MainWindowViewModel
 
     partial void OnBusyVisibilityChanged(Visibility value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         // A drop during Preview, Apply or another foreground operation remains in the durable Inbox.
         if (value == Visibility.Collapsed && inboxWaitingForForeground && !disposed)
         {
@@ -357,6 +365,7 @@ public sealed partial class MainWindowViewModel
 
     private async Task DrainActiveInboxAsync(CancellationToken ct)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (disposed || ct.IsCancellationRequested) return;
         if (BusyVisibility == Visibility.Visible)
         {

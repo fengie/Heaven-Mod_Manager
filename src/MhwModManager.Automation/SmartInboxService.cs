@@ -23,20 +23,30 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         return new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot).RecoverAsync(ct);
     }
 
-    private IEnumerable<string> EnumerateInboxEntries() =>
-        new[]{inboxRoot,legacyInboxRoot}
+    private IEnumerable<string> EnumerateInboxEntries()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new[]{inboxRoot,legacyInboxRoot}
             .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
             .Select(root=>Path.GetFullPath(root!))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .SelectMany(root=>Directory.EnumerateFileSystemEntries(root))
             .Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x),"Processed"));
+    }
 
-    private static bool IsInboxArchive(string path) =>
-        Path.GetExtension(path).ToLowerInvariant() is ".zip" or ".7z" or ".rar";
+    private static bool IsInboxArchive(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return Path.GetExtension(path).ToLowerInvariant() is ".zip" or ".7z" or ".rar";
+    }
 
-    public bool HasPendingPackages() => EnumerateInboxEntries().Any(entry =>
+    public bool HasPendingPackages()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return EnumerateInboxEntries().Any(entry =>
         (File.GetAttributes(entry) & FileAttributes.ReparsePoint) == 0 &&
         (Directory.Exists(entry) ? Directory.EnumerateFileSystemEntries(entry).Any() : IsInboxArchive(entry)));
+    }
 
     public Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
     {
