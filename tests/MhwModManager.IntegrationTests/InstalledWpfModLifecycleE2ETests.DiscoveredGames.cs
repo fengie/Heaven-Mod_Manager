@@ -106,7 +106,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
     {
         using var run = new DisposableWpfRun(seedInbox: false, profile: game, moved: true);
         var app = run.Launch();
-        var prompt = await WaitForElementAsync(() =>
+        AutomationElement? FindRepairPrompt()
         {
             if (app.HasExited) throw new InvalidOperationException($"Startup exited with {app.ExitCode} before repair.");
             var roots = AutomationElement.RootElement.FindAll(TreeScope.Children,
@@ -114,12 +114,30 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             foreach (AutomationElement root in roots)
             {
                 // Windows may expose an owned message box under the splash rather than at desktop level.
-                var found = Find(root, element => element.Current.ControlType == ControlType.Window &&
-                    element.Current.Name == "Game installation moved");
+                var found = Find(root, element => element.Current.Name == "Game installation moved" &&
+                    (element.Current.ControlType == ControlType.Window || element.Current.ClassName == "#32770"));
                 if (found is not null) return found;
             }
             return null;
-        }, UiTimeout, "moved game repair prompt", ct);
+        }
+        AutomationElement prompt;
+        try
+        {
+            prompt = await WaitForElementAsync(FindRepairPrompt, UiTimeout, "moved game repair prompt", ct);
+        }
+        catch (TimeoutException)
+        {
+            var evidence = Environment.GetEnvironmentVariable("MHW_GAME_UI_EVIDENCE");
+            if (!string.IsNullOrEmpty(evidence) && !app.HasExited)
+            {
+                var roots = AutomationElement.RootElement.FindAll(TreeScope.Children,
+                    new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id));
+                var windows = roots.Cast<AutomationElement>().Take(8)
+                    .Select(e => new { e.Current.Name, e.Current.ClassName, type = e.Current.ControlType.ProgrammaticName });
+                File.WriteAllText(Path.Combine(evidence, $"windows-{game.Id}.json"), JsonSerializer.Serialize(windows));
+            }
+            throw;
+        }
         passed.Add("Recognize unavailable registered executable");
         var yes = await WaitForElementAsync(() => FindButton(prompt, "Yes"), UiTimeout, "relink game", ct);
         var confirmation = Task.Run(() => Invoke(yes), ct);
