@@ -27,6 +27,27 @@ public sealed class InstalledWpfModLifecycleE2ETests
 
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
+    public async Task VerifiedWorkshopItemAppearsInOrdinaryLibraryWithoutDeploymentControls()
+    {
+        using var run = new DisposableWpfRun(seedInbox: false, workshop: true);
+        var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
+        await SelectModsTabAsync(window, TestToken);
+        var grid = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.DataGrid && element.Current.Name == "Mod library"),
+            UiTimeout, "ordinary mod library", TestToken);
+        var item = await WaitForElementAsync(() => Find(grid, element =>
+            element.Current.Name == "Workshop item 314159"), UiTimeout, "verified Workshop item", TestToken);
+        Assert.Null(Find(item, element => element.Current.ControlType == ControlType.CheckBox));
+        Assert.Null(Find(grid, element => element.Current.Name == "Workshop item 271828"));
+        var selectAll = await WaitForElementAsync(() => FindButton(window, "Select all visible mods"),
+            UiTimeout, "managed bulk selection", TestToken);
+        Assert.False(selectAll.Current.IsEnabled);
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.WorkshopPayload));
+        Assert.False(File.Exists(run.LiveModPath));
+    }
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
     public async Task InboxImportPreviewApplyUndoAndGameSwitchPreserveExactFiles()
     {
         using var run = new DisposableWpfRun(seedInbox: true);
@@ -467,7 +488,9 @@ public sealed class InstalledWpfModLifecycleE2ETests
         public byte[] ModBytes { get; } = Enumerable.Range(0, 4096).Select(i => (byte)(i % 251)).ToArray();
         public byte[] BaselineBytes { get; } = [13, 37, 73, 101];
 
-        public DisposableWpfRun(bool seedInbox, bool unreal = false)
+        public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", "987654321", "314159", "payload.bin");
+
+        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false)
         {
             var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
             var packageDir = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR");
@@ -480,7 +503,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             marker = Guid.NewGuid().ToString("N");
             File.WriteAllText(Path.Combine(root, ".owned-e2e-root"), marker);
             home = Path.Combine(root, "manager-home");
-            gameA = Path.Combine(root, "game-A");
+            gameA = workshop ? Path.Combine(root, "steamapps", "common", "game-A") : Path.Combine(root, "game-A");
             gameB = Path.Combine(root, "game-B");
             Directory.CreateDirectory(gameA);
             Directory.CreateDirectory(gameB);
@@ -492,6 +515,16 @@ public sealed class InstalledWpfModLifecycleE2ETests
             File.Copy(cmd, Path.Combine(gameB, "FakeB.exe"));
 
             FirstGame = GameProfile.Generic("e2e-game-a", "E2E Fake Game A", gameA, "FakeA.exe", "Mods");
+            if (workshop)
+            {
+                FirstGame = FirstGame with { SteamAppId = "987654321" };
+                var workshopRoot = Path.Combine(root, "steamapps", "workshop");
+                Directory.CreateDirectory(Path.GetDirectoryName(WorkshopPayload)!);
+                Directory.CreateDirectory(Path.Combine(workshopRoot, "content", "987654321", "271828"));
+                File.WriteAllBytes(WorkshopPayload, ModBytes);
+                File.WriteAllText(Path.Combine(workshopRoot, "appworkshop_987654321.acf"),
+                    """ "AppWorkshop" { "appid" "987654321" "WorkshopItemsInstalled" { "314159" { "manifest" "1" } } } """);
+            }
             if (unreal)
                 FirstGame = FirstGame with { AdapterId = "unreal-paks", ModRootRelativePath = @"Quartz\Content\Paks" };
             SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");

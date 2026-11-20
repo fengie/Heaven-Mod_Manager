@@ -46,6 +46,13 @@ public static partial class LocalModInventory
                 current.Parent.Parent?.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase) == true &&
                 game.SteamAppId is { Length: > 0 } id && id.All(char.IsAsciiDigit))
             {
+                // A registered installation may live on a library absent from the current Steam client configuration.
+                var registeredLibrary = current.Parent.Parent.Parent;
+                if (registeredLibrary is not null && !libraries.Contains(registeredLibrary.FullName, PathRules.Comparer))
+                {
+                    var workshop = Path.Combine(current.Parent.Parent.FullName, "workshop", "content", id);
+                    if (Directory.Exists(workshop)) ScanWorkshop(game.DisplayName, workshop, rows, ct);
+                }
                 foreach (var library in libraries)
                 {
                     var sibling = Path.Combine(library, "steamapps", "common", current.Name);
