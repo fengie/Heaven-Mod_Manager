@@ -18,6 +18,7 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
         const string name = "tattoo-skin-texture-overlay-8397-1-0-1763815951-500733aabbeeccdd00112233445566778899aabbccddeeff0011223344556677";
         var folder = Path.Combine(root, "Installed", name);
         Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "example.mrl3"), "fixture material");
         var (db, catalog) = await CreateCatalogAsync();
 
         await catalog.RefreshFoldersAsync(TestToken);
@@ -78,14 +79,67 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
     {
         const string first = "Alpha-8397-1-0-1763815951-500733aabbeeccdd00112233445566778899aabbccddeeff0011223344556677";
         const string second = "Beta-8397-1-0-1763815951-54ed6e10c979c084eb88664a3b639870e0b5f2e2a25ea270bb2f3fc042c22";
-        Directory.CreateDirectory(Path.Combine(root, "Installed", first));
-        Directory.CreateDirectory(Path.Combine(root, "Installed", second));
+        foreach (var name in new[] { first, second })
+        {
+            var folder = Path.Combine(root, "Installed", name);
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder, "example.mrl3"), "fixture material");
+        }
         var (db, catalog) = await CreateCatalogAsync();
         await catalog.RefreshFoldersAsync(TestToken);
         var mods = await db.GetModsAsync(TestToken);
         Assert.Equal(2, mods.Count);
         Assert.All(mods, mod => Assert.Null(mod.NexusModId));
         Assert.Equal(2, LogicalModFamilies.Build(mods).Count);
+    }
+
+    [Fact]
+    public async Task Refresh_skips_new_empty_folders_without_removing_them_and_registers_them_when_populated()
+    {
+        var folder = Path.Combine(root, "Installed", "apply");
+        Directory.CreateDirectory(folder);
+        var (db, catalog) = await CreateCatalogAsync();
+
+        await catalog.RefreshFoldersAsync(TestToken);
+
+        Assert.Empty(await db.GetModsAsync(TestToken));
+        Assert.True(Directory.Exists(folder));
+
+        File.WriteAllText(Path.Combine(folder, "example.mrl3"), "fixture material");
+        await catalog.RefreshFoldersAsync(TestToken);
+        Assert.Equal(folder, Assert.Single(await db.GetModsAsync(TestToken)).SourcePath);
+    }
+
+    [Fact]
+    public async Task Persisted_empty_folder_preserves_saved_state_and_blocks_the_capture_batch_before_indexing()
+    {
+        var empty = Path.Combine(root, "Installed", "apply");
+        var populated = Path.Combine(root, "Installed", "valid");
+        Directory.CreateDirectory(empty);
+        Directory.CreateDirectory(populated);
+        File.WriteAllText(Path.Combine(populated, "example.mrl3"), "fixture material");
+        var (db, catalog) = await CreateCatalogAsync();
+        await db.UpsertModAsync(new("existing", "apply", "Existing custom name", empty, true, 17, FamilyId: "manual:keep"), TestToken);
+        await catalog.RefreshFoldersAsync(TestToken);
+        var mods = await db.GetModsAsync(TestToken);
+        var saved = Assert.Single(mods, m => m.Id == "existing");
+        var valid = Assert.Single(mods, m => m.SourcePath == populated);
+
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => catalog.EnsureCapturedAsync([valid, saved], TestToken));
+        Assert.Contains("Existing custom name", error.Message, StringComparison.Ordinal);
+        Assert.Contains("Deselect", error.Message, StringComparison.Ordinal);
+        Assert.Empty(await db.GetModFilesAsync(TestToken));
+        Assert.True(Directory.Exists(empty));
+
+        File.WriteAllText(Path.Combine(empty, "example.mrl3"), "restored fixture material");
+        await catalog.RefreshFoldersAsync(TestToken);
+        await catalog.EnsureCapturedAsync([valid, saved], TestToken);
+        var current = Assert.Single(await db.GetModsAsync(TestToken), m => m.Id == saved.Id);
+        Assert.True(current.Enabled);
+        Assert.Equal(17, current.Priority);
+        Assert.Equal("manual:keep", current.FamilyId);
+        Assert.Equal("Existing custom name", current.DisplayName);
+        Assert.Equal(2, (await db.GetModFilesAsync(TestToken)).Count);
     }
 
     private async Task<(ManagerDatabase Db, CatalogService Catalog)> CreateCatalogAsync()
