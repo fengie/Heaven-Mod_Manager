@@ -666,7 +666,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Content=\"Select All\" Command=\"{Binding EnableVisibleCommand}\"", xaml);
         Assert.Contains("Content=\"Deselect All\" Command=\"{Binding DisableVisibleCommand}\"", xaml);
         Assert.Contains("HasVisibleMods", xaml);
-        Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().ToArray();", main);
+        Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray();", main);
+        Assert.Contains("IsEnabled=\"{Binding CanStage}\"", xaml);
         Assert.Contains("if(targets.Length>1&&MessageBox.Show(", main);
         Assert.Contains("public string PendingStateLabel", rows);
         Assert.Contains("OnPropertyChanged(nameof(PendingStateLabel));", rows);

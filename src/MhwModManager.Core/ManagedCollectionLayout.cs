@@ -10,6 +10,7 @@ public static class ManagedCollectionNotes
 {
     public static bool IsNote(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var name = Path.GetFileName(path);
         return name.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase) ||
             name.Equals("Thumbs.db", StringComparison.OrdinalIgnoreCase) ||

@@ -22,9 +22,17 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         return separator > 0 && PathRules.Comparer.Equals(name, target[..separator]);
     }
 
-    public Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default) => CaptureAsync(mod, false, ct);
+    public Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return CaptureAsync(mod, false, ct);
+    }
 
-    internal Task<IReadOnlyList<ModFileDescriptor>> CaptureShelfPackageAsync(ModDescriptor mod, CancellationToken ct) => CaptureAsync(mod, true, ct);
+    internal Task<IReadOnlyList<ModFileDescriptor>> CaptureShelfPackageAsync(ModDescriptor mod, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return CaptureAsync(mod, true, ct);
+    }
 
     internal bool ShelfIndexMatchesSource(ModDescriptor mod, IReadOnlyList<ModFileDescriptor> files, CancellationToken ct)
     {

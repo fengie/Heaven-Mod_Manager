@@ -96,7 +96,14 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
     public ObservableRangeCollection<string> GalleryPaths{get;}=[];
-    public bool CanStage => Members.All(member => !member.RequiresLayoutReview);
+    public bool CanStage
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Members.All(member => !member.RequiresLayoutReview);
+        }
+    }
     public int MemberCount=>Members.Count;
     public int ArchivedCount=>ArchivedMembers.Count;
     public bool IsComposite=>MemberCount>1;

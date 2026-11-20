@@ -242,7 +242,11 @@ public sealed class ManagerDatabase
         await tx.CommitAsync(ct);
     }
 
-    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default) => GetModsAsync(false, ct);
+    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return GetModsAsync(false, ct);
+    }
 
     public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
     {
