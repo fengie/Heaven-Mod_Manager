@@ -57,12 +57,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
         await SelectTab("Profiles");
         Invoke(await Button("Refresh"));
-        profiles = await Grid("Saved profiles");
-        var saved = await WaitForElementAsync(() => Find(profiles, item => item.Current.Name == profile), UiTimeout,
-            "refreshed saved profile", ct);
-        var row = saved;
-        while (row.Current.ControlType != ControlType.DataItem)
-            row = TreeWalker.RawViewWalker.GetParent(row) ?? throw new InvalidOperationException("Saved profile has no grid row.");
+        // Refresh replaces the collection and may recreate its accessibility peers.
+        var row = await WaitForElementAsync(() =>
+        {
+            var current = Find(window, item => item.Current.ControlType == ControlType.DataGrid &&
+                item.Current.Name == "Saved profiles");
+            return current is null ? null : Find(current, item => item.Current.ControlType == ControlType.DataItem &&
+                Find(item, cell => cell.Current.Name == profile) is not null);
+        }, UiTimeout, "refreshed saved profile", ct);
         ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
         Invoke(await Button("Use Selected Profile"));
         await SelectModsTabAsync(window, ct);

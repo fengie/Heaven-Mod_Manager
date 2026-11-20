@@ -198,6 +198,9 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await ExerciseProfileActionsAsync(game, run, window, passed, ct);
         await InspectGameTabsAsync(game, window, ct);
         passed.Add("Open each main tab and inspect accessible controls");
+        var dashboard = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.TabItem &&
+            e.Current.Name == "Dashboard"), UiTimeout, "Dashboard launch status", ct);
+        ((SelectionItemPattern)dashboard.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
         await Click("Launch Game");
         await WaitForAsync(() => File.Exists(run.LaunchReceipt) && File.ReadAllLines(run.LaunchReceipt).Length == 3,
             UiTimeout, "fixture game launch receipt", ct);
@@ -207,9 +210,19 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         using var process = System.Diagnostics.Process.GetProcessById(int.Parse(launched[2], System.Globalization.CultureInfo.InvariantCulture));
         try
         {
-            await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
-                e.Current.Name.Contains("survived the startup observation window", StringComparison.OrdinalIgnoreCase)),
-                UiTimeout, "launch health for this profile", ct);
+            // The launch journal also survives a subsequent status message or tab change.
+            var connectionString = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+            {
+                DataSource = Path.Combine(Path.GetDirectoryName(run.SettingsPath)!, "manager.db"),
+                Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly,
+                Pooling = false
+            }.ToString();
+            using var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            connection.Open();
+            using var verifiedLaunch = connection.CreateCommand();
+            verifiedLaunch.CommandText = "SELECT COUNT(*) FROM launch_history WHERE success=1 AND startup_survived=1";
+            await WaitForAsync(() => (long)verifiedLaunch.ExecuteScalar()! == 1,
+                UiTimeout, "committed successful observed launch for this profile", ct);
         }
         finally
         {
