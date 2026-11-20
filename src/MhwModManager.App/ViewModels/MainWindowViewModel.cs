@@ -632,7 +632,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         FooterText=StagedCount==0?"No pending changes":$"{StagedCount} pending change(s) — game files stay unchanged until you apply them";
     }
 
-    private async Task ReloadMods(CancellationToken ct)
+    private async Task ReloadMods(CancellationToken ct, bool preserveStagedChanges = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var loaded=await Task.Run(async ()=>
@@ -648,7 +648,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var (models,files,updateSettings,logical,suggestions)=loaded;
         await Application.Current.Dispatcher.InvokeAsync(()=>
         {
-            var rows=logical.Select(m=>new ModRowViewModel(m,Changed)).ToArray();
+            var pending = preserveStagedChanges
+                ? Mods.Where(row => row.HasStagedChanges).SelectMany(row => row.StagedChanges())
+                    .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+                : null;
+            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending)).ToArray();
             var rowsByMember=rows.SelectMany(row=>row.Members.Select(member=>(member.Id,row)))
                 .ToDictionary(x=>x.Id,x=>x.row,StringComparer.OrdinalIgnoreCase);
             foreach(var group in suggestions.GroupBy(s=>s.ChildModId,StringComparer.OrdinalIgnoreCase))
