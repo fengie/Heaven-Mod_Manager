@@ -17,6 +17,9 @@ on:
       - 'src/MhwModManager.Automation/SmartInboxService.cs'
       - 'src/MhwModManager.Core/UnrealPakLayout.cs'
       - 'src/MhwModManager.Filesystem/ModScanner.cs'
+      - 'src/MhwModManager.Filesystem/LocalModInventory.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.LocalInventory.cs'
       - 'src/MhwModManager.Filesystem/CatalogService.cs'
       - 'src/MhwModManager.Storage/ManagerDatabase.cs'
       - 'src/MhwModManager.App/App.xaml.cs'
@@ -111,7 +114,7 @@ jobs:
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          $expectedCases = 7
+          $expectedCases = 8
           if ($summary -notmatch "succeeded:\s+$expectedCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
             throw "Expected $expectedCases passing acceptance cases and zero skipped tests."
           }

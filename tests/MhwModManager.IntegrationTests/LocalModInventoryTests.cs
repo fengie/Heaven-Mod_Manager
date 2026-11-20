@@ -64,6 +64,16 @@ public sealed class LocalModInventoryTests
             Assert.Contains(result, x => x.Location == other && x.Evidence.Contains("Unmatched", StringComparison.Ordinal));
             Assert.Contains(result, x => x.Location == workshop && x.Game == "Game" && x.Name == "456" && x.Evidence.Contains("install record", StringComparison.Ordinal));
             Assert.Contains(result, x => x.Name == "777" && x.Evidence.Contains("unconfirmed", StringComparison.Ordinal));
+            var catalog = Assert.Single(LocalModInventory.WorkshopLibrary(result.Concat(result), "123", []));
+            Assert.Equal("456", catalog.ItemId);
+            Assert.Equal(workshop, Assert.Single(catalog.Locations));
+            Assert.Empty(LocalModInventory.WorkshopLibrary(result, separate.SteamAppId, []));
+            Assert.Empty(LocalModInventory.WorkshopLibrary(result, "124", []));
+            Assert.Empty(LocalModInventory.WorkshopLibrary(result, "123", [workshop]));
+            File.Delete(Path.Combine(old, "steamapps", "workshop", "appworkshop_123.acf"));
+            var refreshed = LocalModInventory.Scan([game], [old], [], ct: TestContext.Current.CancellationToken);
+            Assert.Empty(LocalModInventory.WorkshopLibrary(refreshed, "123", []));
+            Assert.Equal("fixture", File.ReadAllText(Path.Combine(workshop, "mod.pak")));
             Assert.Equal("fixture", File.ReadAllText(staleMod));
         }
         finally { temp.Delete(true); }

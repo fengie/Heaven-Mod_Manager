@@ -1,12 +1,24 @@
+using System.ComponentModel;
 using MhwModManager.Filesystem;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MhwModManager.App.ViewModels;
 
+public sealed class LibraryRowStyleSelector : System.Windows.Controls.StyleSelector
+{
+    public System.Windows.Style? ExternalStyle { get; set; }
+
+    public override System.Windows.Style? SelectStyle(object item, System.Windows.DependencyObject container)
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        return item is WorkshopLibraryReference ? ExternalStyle : base.SelectStyle(item, container);
+    }
+}
+
 public sealed partial class MainWindowViewModel
 {
     public IReadOnlyList<LocalModLocation> LocalModLocations { get; private set; } = [];
-    public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop libraries…";
+    public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop librariesÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VisibleLocalModLocations))]
@@ -23,6 +35,60 @@ public sealed partial class MainWindowViewModel
                 row.Evidence.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Location.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
+    }
+
+    private readonly ObservableRangeCollection<object> libraryRows = [];
+    public ICollectionView LibraryView { get; }
+    public int VisibleLibraryCount
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return LibraryView.Cast<object>().Count();
+        }
+    }
+    private WorkshopLibraryReference? selectedExternal;
+    public object? SelectedLibraryItem
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return (object?)SelectedMod ?? selectedExternal;
+        }
+        set
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            selectedExternal = value as WorkshopLibraryReference;
+            SelectedMod = value as ModRowViewModel;
+        }
+    }
+
+    private void RebuildLibraryRows()
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        var sources = Mods.SelectMany(row => row.Members.Concat(row.ArchivedMembers)).Select(mod => mod.SourcePath);
+        var external = LocalModInventory.WorkshopLibrary(LocalModLocations, s.Paths.Game.SteamAppId, sources);
+        libraryRows.ReplaceAll(Mods.Cast<object>().Concat(external));
+        OnPropertyChanged(nameof(InstalledCount));
+        OnPropertyChanged(nameof(InstalledCountLabel));
+        OnPropertyChanged(nameof(AllViewLabel));
+        OnPropertyChanged(nameof(VisibleLibraryCount));
+    }
+
+    private bool FilterLibraryItem(object item)
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        if (item is not WorkshopLibraryReference external) return FilterMod(item);
+        var query = SearchText.Trim();
+        return ModViewMode == "All" && (external.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || external.SourceSummary.Contains(query, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void RefreshLibraryFilters()
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        ModsView.Refresh();
+        LibraryView.Refresh();
     }
 
     private Task? localInventoryScan;
@@ -43,9 +109,10 @@ public sealed partial class MainWindowViewModel
             var result = await Task.Run(() => s.GameRegistry.ScanLocalMods(ct), ct);
             ct.ThrowIfCancellationRequested();
             LocalModLocations = result;
+            RebuildLibraryRows();
             OnPropertyChanged(nameof(LocalModLocations));
             OnPropertyChanged(nameof(VisibleLocalModLocations));
-            LocalModInventoryStatus = $"{result.Count:N0} inventory entries � checked {DateTime.Now:t}";
+            LocalModInventoryStatus = $"{result.Count:N0} inventory entries Ã‚Â· checked {DateTime.Now:t}";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or ArgumentException or System.Text.Json.JsonException)
