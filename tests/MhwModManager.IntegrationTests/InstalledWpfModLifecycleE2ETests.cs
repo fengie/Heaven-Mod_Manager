@@ -622,6 +622,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         public GameProfile SecondGame { get; }
         public string ArchivePath { get; }
         public string SettingsPath => Path.Combine(home, "State", FirstGame.IsMonsterHunterWorld ? "" : Path.Combine("Games", FirstGame.Id), "Next", "settings.json");
+        public GameProfile RegisteredGame() => new GameProfileRegistry(Path.Combine(home, "State")).Load().Single(game => game.Id == FirstGame.Id);
         public string LaunchReceipt => Path.Combine(root, "game-launch.txt");
         public string InstalledRoot => GameModStorage.Resolve(home, FirstGame).InstalledRoot;
         public MhwModManager.Storage.ManagerDatabase OpenCatalog() =>
@@ -636,7 +637,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
         public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", FirstGame.SteamAppId!, "314159", "payload.bin");
 
-        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false, GameProfile? profile = null)
+        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false, GameProfile? profile = null, bool moved = false)
         {
             var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
             var packageDir = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR");
@@ -697,7 +698,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");
             var state = Path.Combine(home, "State");
             var registry = new GameProfileRegistry(state);
-            registry.Upsert(profile is null ? FirstGame : FirstGame with { GameRoot = Path.Combine(root, "previous-game-location") });
+            registry.Upsert(!moved ? FirstGame : FirstGame with { GameRoot = Path.Combine(root, "previous-game-location") });
             registry.Upsert(SecondGame);
             registry.SetActive(FirstGame.Id);
 

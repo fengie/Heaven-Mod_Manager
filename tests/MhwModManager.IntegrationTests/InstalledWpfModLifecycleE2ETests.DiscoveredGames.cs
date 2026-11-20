@@ -10,7 +10,16 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 {
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
-    public async Task EveryDiscoveredGameRunsItsOwnInstalledModLifecycle()
+    public Task EveryDiscoveredGameRunsItsOwnInstalledModLifecycle() =>
+        VerifyAllGamesAsync("game", ExerciseGameWindowAsync);
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public Task EveryDiscoveredGameCanRelinkItsMovedExecutable() =>
+        VerifyAllGamesAsync("repair", ExerciseRepairAsync);
+
+    private static async Task VerifyAllGamesAsync(string scenario,
+        Func<GameProfile, List<string>, CancellationToken, Task> exercise)
     {
         var games = DiscoveredGameProfiles.Load();
         Assert.NotEmpty(games);
@@ -28,7 +37,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             string? error = null;
             try
             {
-                await ExerciseGameWindowAsync(game, passed, TestToken);
+                await exercise(game, passed, TestToken);
             }
             catch (Exception ex) when (!TestToken.IsCancellationRequested)
             {
@@ -37,7 +46,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             }
             var evidence = Environment.GetEnvironmentVariable("MHW_GAME_UI_EVIDENCE");
             if (!string.IsNullOrEmpty(evidence))
-                File.WriteAllText(Path.Combine(evidence, $"game-{game.Id}.json"),
+                File.WriteAllText(Path.Combine(evidence, $"{scenario}-{game.Id}.json"),
                     JsonSerializer.Serialize(new { game.Id, game.AdapterId, passed, error }));
             if (error is not null && !failedOperations.Add((passed.LastOrDefault() ?? "startup", error)))
             {
@@ -93,23 +102,50 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             File.WriteAllText(Path.Combine(evidence, $"controls-{game.Id}.json"), JsonSerializer.Serialize(tabReports));
     }
 
+    private static async Task ExerciseRepairAsync(GameProfile game, List<string> passed, CancellationToken ct)
+    {
+        using var run = new DisposableWpfRun(seedInbox: false, profile: game, moved: true);
+        var app = run.Launch();
+        var prompt = await WaitForElementAsync(() =>
+        {
+            if (app.HasExited) throw new InvalidOperationException($"Startup exited with {app.ExitCode} before repair.");
+            var roots = AutomationElement.RootElement.FindAll(TreeScope.Children,
+                new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id));
+            foreach (AutomationElement root in roots)
+            {
+                // Windows may expose an owned message box under the splash rather than at desktop level.
+                var found = Find(root, element => element.Current.ControlType == ControlType.Window &&
+                    element.Current.Name == "Game installation moved");
+                if (found is not null) return found;
+            }
+            return null;
+        }, UiTimeout, "moved game repair prompt", ct);
+        passed.Add("Recognize unavailable registered executable");
+        var yes = await WaitForElementAsync(() => FindButton(prompt, "Yes"), UiTimeout, "relink game", ct);
+        var confirmation = Task.Run(() => Invoke(yes), ct);
+        var picker = await WaitForElementAsync(() => FindFileDialog(app.Id), UiTimeout, "relink executable picker", ct);
+        var executable = FindPickerField(picker, false)!;
+        ((ValuePattern)executable.GetCurrentPattern(ValuePattern.Pattern)).SetValue(run.FirstGame.ExecutablePath);
+        Invoke(await WaitForElementAsync(() => FindButton(picker, "Open", enabled: true),
+            UiTimeout, "open replacement executable", ct));
+        await confirmation.WaitAsync(UiTimeout, ct);
+        var window = await WaitForMainWindowAsync(app, ct);
+        await WaitForElementAsync(() => Find(window, e => e.Current.AutomationId == "ActiveGameSelector"),
+            UiTimeout, "relinked game selector", ct);
+        Assert.Equal(game.DisplayName, ReadActiveGame(window));
+        var repaired = run.RegisteredGame();
+        Assert.Equal(run.FirstGame.GameRoot, repaired.GameRoot);
+        Assert.Equal(run.FirstGame.LiveModRoot, repaired.LiveModRoot);
+        passed.Add("Relink executable and verify saved installation and mod directory");
+    }
+
     private static async Task ExerciseGameWindowAsync(GameProfile game, List<string> passed, CancellationToken ct)
     {
         using var run = new DisposableWpfRun(seedInbox: false, profile: game);
         SeedProfileInventoryEvidence(run);
         var archiveHash = SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
         var app = run.Launch();
-        var movedPrompt = await WaitForElementAsync(() => AutomationElement.RootElement.FindFirst(TreeScope.Children,
-            new AndCondition(new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id),
-                new PropertyCondition(AutomationElement.NameProperty, "Game installation moved"))),
-            UiTimeout, "moved game repair prompt", ct);
-        Invoke(await WaitForElementAsync(() => FindButton(movedPrompt, "Yes"), UiTimeout, "relink game", ct));
-        var picker = await WaitForElementAsync(() => FindFileDialog(app.Id), UiTimeout, "relink executable picker", ct);
-        var executable = FindPickerField(picker, false)!;
-        ((ValuePattern)executable.GetCurrentPattern(ValuePattern.Pattern)).SetValue(run.FirstGame.ExecutablePath);
-        Invoke(await WaitForElementAsync(() => FindButton(picker, "Open", enabled: true), UiTimeout, "open replacement executable", ct));
         var window = await WaitForMainWindowAsync(app, ct);
-        passed.Add("Repair moved installation through native executable picker");
         await WaitForElementAsync(() => Find(window, e => e.Current.AutomationId == "ActiveGameSelector"),
             UiTimeout, "active game selector", ct);
         await WaitForAsync(() => ReadActiveGame(window) == game.DisplayName, UiTimeout, "active profile " + game.Id, ct);

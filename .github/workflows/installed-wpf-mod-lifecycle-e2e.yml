@@ -129,7 +129,7 @@ jobs:
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          $expectedCases = 13
+          $expectedCases = 14
           if ($summary -notmatch "succeeded:\s+$expectedCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
             throw "Expected $expectedCases passing acceptance cases and zero skipped tests."
           }
@@ -142,6 +142,14 @@ jobs:
           if ($expectedIds.Count -eq 0 -or $observedIds.Count -ne $expectedIds.Count -or
               (Compare-Object $expectedIds $observedIds) -or @($gameReceipts | Where-Object { $_.error }).Count) {
             throw 'The installed UI receipts do not cover every registered fixture profile.'
+          }
+          $repairedIds = @(Get-ChildItem -LiteralPath $evidence -Filter 'repair-*.json' | ForEach-Object {
+            $row = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($row.error) { throw $row.error }
+            $row.Id
+          } | Sort-Object)
+          if ($repairedIds.Count -ne $expectedIds.Count -or (Compare-Object $expectedIds $repairedIds)) {
+            throw 'The move-repair receipts do not cover the registered fixture inventory.'
           }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
           $proof = [ordered]@{
