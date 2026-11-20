@@ -51,6 +51,11 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         SafeRecursiveTraversal.EnsureRootIsNotReparse(mod.SourcePath);
         var result = new List<ScanCandidate>();
+        var pakMount = game is null ? null : UnrealPakLayout.ProjectMount(game.ModRootRelativePath);
+        if (game?.AdapterId == "unreal-paks" && pakMount is null &&
+            (game.ModRootRelativePath.Equals(@"Content\Paks", StringComparison.OrdinalIgnoreCase) ||
+             game.ModRootRelativePath.Equals(@"Content\Paks\~mods", StringComparison.OrdinalIgnoreCase)))
+            pakMount = @"Content\Paks";
         foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game, ct))
         {
             foreach (var file in SafeRecursiveTraversal.Snapshot(diskRoot, ct).Files)
@@ -59,18 +64,58 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
                 var fi = new FileInfo(file);
                 if (IsIgnored(fi)) continue;
                 var rel = Path.GetRelativePath(diskRoot, file).Replace('/', '\\');
+                if (pakMount is not null && !rel.Contains('\\') &&
+                    (rel.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase) ||
+                     Path.GetExtension(rel).Equals(".md", StringComparison.OrdinalIgnoreCase))) continue;
                 if ((game is null || game.IsMonsterHunterWorld) &&
                     PathRules.Comparer.Equals(diskRoot, mod.SourcePath) &&
                     (rel.StartsWith("GameRoot\\", StringComparison.OrdinalIgnoreCase) || rel.StartsWith("nativePC\\", StringComparison.OrdinalIgnoreCase)))
                     continue;
 
                 var key = PathRules.Normalize(prefix + rel);
+                if (game?.AdapterId == "unreal-paks" &&
+                    prefix.Equals("root\\" + game.ModRootRelativePath + "\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (game.ModRootRelativePath.EndsWith(@"Content\Paks", StringComparison.OrdinalIgnoreCase) &&
+                        !rel.Contains('\\') && UnrealPakLayout.IsMember(rel))
+                        key = PathRules.Normalize(prefix + @"~mods\" + rel);
+                    else if (game.ModRootRelativePath.EndsWith(@"Content\Paks\~mods", StringComparison.OrdinalIgnoreCase) &&
+                        rel.StartsWith(@"~mods\", StringComparison.OrdinalIgnoreCase))
+                        key = PathRules.Normalize(prefix + rel[6..]);
+                }
                 cache.TryGetValue(key, out var cached);
                 if (cached is not null && (cached.Length != fi.Length || cached.LastWriteUtc.UtcDateTime != fi.LastWriteTimeUtc)) cached = null;
                 result.Add(new(file,key,cached));
             }
         }
+        if (game is not null && pakMount is not null && !Directory.Exists(Path.Combine(mod.SourcePath, "GameRoot")))
+            ValidatePakTargets(result, mod.SourcePath, game, pakMount);
         return result;
+    }
+
+    private static void ValidatePakTargets(List<ScanCandidate> result, string sourceFolder,
+        GameProfile profile, string pakMount)
+    {
+        var mount = "root\\" + pakMount.Replace('/', '\\') + "\\";
+        var members = result.Where(item => item.Key.StartsWith(mount, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (members.Length > 0 && !UnrealPakLayout.Complete(members.Select(item => item.Key)))
+            throw new InvalidDataException("Incomplete or unrecognized Unreal Paks content. Review the package before applying.");
+        var mirrored = Directory.Exists(Path.Combine(sourceFolder, profile.ModRootRelativePath));
+        foreach (var item in result)
+        {
+            var rel = Path.GetRelativePath(sourceFolder, item.File).Replace('\\', '/');
+            if (!item.Key.StartsWith(mount, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!KnownAdditionalLoaderRoots.Any(loader => item.Key.StartsWith(
+                    "root\\" + loader + "\\", StringComparison.OrdinalIgnoreCase) &&
+                    Directory.Exists(Path.Combine(profile.GameRoot, loader))))
+                    throw new InvalidDataException($"'{rel}' is outside the configured loader. Review the package before applying.");
+            }
+            else if (!mirrored && rel.Contains('/') && !rel.StartsWith("~mods/", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException($"Unrecognized Paks folder '{rel}'. Review its intended destination before applying.");
+        }
+        if (result.Select(item => item.Key).Distinct(PathRules.Comparer).Count() != result.Count)
+            throw new InvalidDataException("Multiple package files map to the same destination. Review the package before applying.");
     }
 
     private async Task<Dictionary<string, ModFileDescriptor>> LoadCacheAsync(string modId, CancellationToken ct)

@@ -135,6 +135,20 @@ public static class ModBoundaryDiscovery
             return [new(Display(prefix), ModBoundaryKind.Folder, "One Stellar Blade deployment layout.")];
         }
 
+        var mounts = relative.Where(UnrealPakLayout.IsMember)
+            .Select(UnrealPakLayout.ProjectMount).OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (mounts.Length > 0)
+        {
+            var payload = relative.Where(path => !IsSupplementary(path) || UnrealPakLayout.IsMember(path))
+                .Where(path => !PackageManifests.Contains(path)).ToArray();
+            if (mounts.Length != 1 || payload.Any(path =>
+                    !path.StartsWith(mounts[0] + "/", StringComparison.OrdinalIgnoreCase)) ||
+                !UnrealPakLayout.Complete(payload))
+                return Review(prefix, "Project Paks layout has incomplete companions or conflicting files.");
+            return [new(Display(prefix), ModBoundaryKind.Folder, "One project-qualified Unreal Paks layout.")];
+        }
+
         // Known installation roots cannot safely be separated from another
         // explicitly packaged sibling. Keep that conflicting tree in review
         // rather than installing a partial nativePC/BepInEx/UE4SS payload.
@@ -179,6 +193,11 @@ public static class ModBoundaryDiscovery
         var reviewUnattributedFiles = otherFiles.Length > 0 && directories.Length > 0 && independentRoots;
         if (otherFiles.Length > 0 && !reviewUnattributedFiles)
         {
+            if (directories.Length == 0 && archived.Length == 0 && otherFiles.Any(UnrealPakLayout.IsMember))
+                return UnrealPakLayout.Complete(otherFiles, singleStem: true)
+                    ? [new(Display(prefix), ModBoundaryKind.Folder, "One complete Unreal container set.")]
+                    : Review(prefix, "Unreal container companions are incomplete or ambiguous.");
+
             if (otherFiles.Length == 1 && directories.Length == 0 && archived.Length == 0)
                 return [new(Display(prefix), ModBoundaryKind.Folder, "One root-level payload.")];
 
@@ -267,6 +286,16 @@ public static class ModBoundaryDiscovery
                 if (roots.Count >= minimumCount) return true;
             }
             var segments = path.Split('/');
+            // A container below a named child of a collection needs its own
+            // inspection, including a review result for orphaned companions.
+            if (segments.Length >= 3 && UnrealPakLayout.IsMember(path) &&
+                !segments.Contains("Content", StringComparer.OrdinalIgnoreCase) &&
+                !segments.Contains("~mods", StringComparer.OrdinalIgnoreCase) &&
+                !segments.Any(StrongLoaderRoots.Contains))
+            {
+                roots.Add(string.Join("/", segments.Take(segments.Length - 1)));
+                if (roots.Count >= minimumCount) return true;
+            }
             if (segments.Length > 1 && PackageManifests.Contains(segments[^1]))
             {
                 roots.Add(string.Join("/", segments.Take(segments.Length - 1)));
@@ -275,7 +304,7 @@ public static class ModBoundaryDiscovery
             for (var i = 1; i < segments.Length - 1; i++)
             {
                 var segment = segments[i];
-                var isStellar = segment.Equals("SB", StringComparison.OrdinalIgnoreCase)
+                var isProjectMount = UnrealPakLayout.IsMember(path)
                     && i + 2 < segments.Length
                     && segments[i + 1].Equals("Content", StringComparison.OrdinalIgnoreCase)
                     && segments[i + 2].Equals("Paks", StringComparison.OrdinalIgnoreCase);
@@ -284,7 +313,7 @@ public static class ModBoundaryDiscovery
                     || segment.Equals("reframework", StringComparison.OrdinalIgnoreCase)
                     || segment.Equals("MelonLoader", StringComparison.OrdinalIgnoreCase)
                     || segment.Equals("UE4SS", StringComparison.OrdinalIgnoreCase);
-                if (!isStellar && !isLoader) continue;
+                if (!isProjectMount && !isLoader) continue;
                 roots.Add(string.Join("/", segments.Take(i)));
                 if (roots.Count >= minimumCount) return true;
                 break;
@@ -454,7 +483,8 @@ public static class ModBoundaryDiscovery
         {
             var child = path[prefix.Length..];
             if (PackageManifests.Contains(child) ||
-                child.StartsWith("SB/Content/Paks/", StringComparison.OrdinalIgnoreCase)) return true;
+                child.StartsWith("SB/Content/Paks/", StringComparison.OrdinalIgnoreCase) ||
+                (UnrealPakLayout.IsMember(child) && UnrealPakLayout.ProjectMount(child) is not null)) return true;
             var slash = child.IndexOf('/');
             if (slash > 0 && LayoutRoots.Contains(child[..slash])) return true;
         }
