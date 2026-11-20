@@ -1,14 +1,18 @@
-# v8.8.121 — MHW Manual Mod Manager
+# v8.8.122 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 1:01:35 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 2:19:05 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.121**.
+Current product version: **8.8.122**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.122 — Steam Workshop in the Mods list
+
+- The Mods list now includes Steam Workshop items with a matching local Steam install record and item directory for the registered game. Search by item ID or source path. Steam manages these items. Manager bulk enable, reindex and deployment continue to operate on Manager-owned packages. [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928)
 
 ## v8.8.121 — local mod inventory
 
@@ -23,14 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Nested, project-qualified Unreal packages can be identified independently. Ordinary loose PAK groups use the game's mod subdirectory on supported profiles. Explicit mirrored destinations stay intact, and incomplete or ambiguous packages require review. [#920](https://github.com/fengie/Heaven-Mod_Manager/pull/920)
 - For an older, already-enabled Unreal package, filter the library to the intended mod and use **Refresh visible mod** to reindex it. Review **Preview Mod Changes**, then use **Apply** when the staged changes and destination match your intent.
 - v8.8.120 [build 603](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-603) was published from source `8ab5e050ef78bad07099fff470808c0a3af86c28`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44672735615) and [hosted updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44675183365) passed. The shipped updater also installed build 603 on Heaven2 and a separate startup exited cleanly.
-
-## v8.8.119 — safer Browse Mods and correct family grouping
-
-- [PR #898](https://github.com/fengie/Heaven-Mod_Manager/pull/898) and [PR #900](https://github.com/fengie/Heaven-Mod_Manager/pull/900) provide bounded local paging beyond 1,000 entries and deterministic ordering across ties.
-- [PR #902](https://github.com/fengie/Heaven-Mod_Manager/pull/902) improves armor-slot collision evidence and protects separately namespaced resources. [PR #903](https://github.com/fengie/Heaven-Mod_Manager/pull/903) adds provider failure diagnostics, official site fallbacks, newer Nexus filename hints and review-only relationship suggestions while excluding pick-one variants.
-- [PR #905](https://github.com/fengie/Heaven-Mod_Manager/pull/905) adds explicit separation for incorrectly grouped packages without changing installed game files. The cleanup now retains similarly worded user-authored overlay rules, with regression coverage.
-- Auto Populate checks for pre-Iceborne armor materials. If an affected package is already selected, deselect it, review the deployment preview, then Apply. [Fix and regression tests](https://github.com/fengie/Heaven-Mod_Manager/pull/913)
-- v8.8.119 [build 600](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-600) binds source `7144ab22389305fc90eb4efc3bd06055209c87da`. The [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44646768083) and [hosted packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44650262798) passed for that source.
 
 ## Current plans & progress
 

@@ -1,8 +1,10 @@
-# v8.8.121 — canonical state: integrated source and release verification
+# v8.8.122 — canonical state: integrated source and release verification
 
-Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. v8.8.121 adds a read-only inventory of installed mod evidence across current and older game installations, standalone game folders, and Steam Workshop. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Manager main `e20d575e9737cf60feb5ef47e72503f318530706` includes the registered-game Workshop library change [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928). Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
+
+- The Mods list now includes Steam Workshop items with a matching local Steam install record and item directory for the registered game. Search by item ID or source path. Steam manages these items. Manager bulk enable, reindex and deployment continue to operate on Manager-owned packages. [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928)
 
 - The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
 - The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
@@ -37,7 +39,7 @@ Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. 
 
 ## Verification boundary
 
-v8.8.120 [build 603](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-603) was published from source `8ab5e050ef78bad07099fff470808c0a3af86c28`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44672735615) and [hosted updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44675183365) passed. The shipped updater also installed build 603 on Heaven2 and a separate startup exited cleanly. v8.8.121 requires its own immutable publication, hosted updater and rollback verification, and a personal Heaven2 installed check. These checks do not establish in-game mod loading.
+v8.8.121 [build 607](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-607) published source `f86ccd52c7688b1c46225f26c6b282ab839c5c5a`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44686378800) and [installed updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44687609888) passed. v8.8.122 publication, hosted update and rollback, and installed Heaven2 verification are pending.
 
 **v8.8.118 immutable release and real hosted update/rollback VERIFIED:** [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) **PASS**, [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS**; ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`, manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. This is disposable hosted Windows evidence, **not** personal Heaven2 installed acceptance.
 

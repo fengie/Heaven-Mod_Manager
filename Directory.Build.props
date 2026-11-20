@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.121</Version>
-    <InformationalVersion>8.8.121-local-mod-inventory</InformationalVersion>
+    <Version>8.8.122</Version>
+    <InformationalVersion>8.8.122-workshop-library</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
