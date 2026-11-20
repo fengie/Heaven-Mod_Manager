@@ -1,10 +1,32 @@
-# PowerShell 7 on Windows supplies Roslyn; the installed desktop runtime supplies WPF.
+# Use the existing Windows desktop tooling. PowerShell 7 bundles Roslyn; Windows PowerShell uses the installed MSBuild compiler.
 # Emit one stable, reviewable line per source site. Never start Manager or run its code.
 [CmdletBinding()]
-param([string]$AppRoot = (Join-Path $PSScriptRoot '../src/MhwModManager.App'))
+param([string]$AppRoot)
+if (-not $AppRoot) { $AppRoot = Join-Path $PSScriptRoot '../src/MhwModManager.App' }
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-Add-Type -AssemblyName Microsoft.CodeAnalysis.CSharp
+$resolver = $null
+try {
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+    $locator = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+    $compiler = & $locator -all -products '*' -find 'MSBuild\Current\Bin\Roslyn\Microsoft.CodeAnalysis.CSharp.dll' | Select-Object -First 1
+    if (-not $compiler) { throw 'Windows PowerShell requires the Visual Studio MSBuild Roslyn compiler to scan WPF source.' }
+    $roslyn = Split-Path -Parent $compiler
+    # MSBuild supplies binding redirects for its Roslyn dependencies. Resolve from that
+    # same compiler directory when Windows PowerShell hosts the parser directly.
+    $resolver = [ResolveEventHandler]{
+        param($sender, $request)
+        $name = [Reflection.AssemblyName]::new($request.Name).Name
+        if ($name -notmatch '^(System\.(Buffers|Collections\.Immutable|Memory|Numerics\.Vectors|Reflection\.Metadata|Runtime\.CompilerServices\.Unsafe|Threading\.Tasks\.Extensions))$') { return $null }
+        $dependency = Join-Path $roslyn ($name + '.dll')
+        if (Test-Path -LiteralPath $dependency) { return [Reflection.Assembly]::LoadFrom($dependency) }
+    }
+    [AppDomain]::CurrentDomain.add_AssemblyResolve($resolver)
+    [void][Reflection.Assembly]::LoadFrom((Join-Path $roslyn 'Microsoft.CodeAnalysis.dll'))
+    [void][Reflection.Assembly]::LoadFrom($compiler)
+} else {
+    Add-Type -AssemblyName Microsoft.CodeAnalysis.CSharp
+}
 Add-Type -AssemblyName PresentationFramework
 $app = (Resolve-Path $AppRoot).Path
 $types = @{}
@@ -34,7 +56,7 @@ do {
 } while ($before -ne $types.Count)
 
 $rows = foreach ($file in $files) {
-    $relative = [IO.Path]::GetRelativePath((Resolve-Path $app).Path,$file.FullName).Replace('\','/')
+    $relative = $file.FullName.Substring($app.Length + 1).Replace('\','/')
     if ($file.Extension -eq '.xaml') {
         $doc = [xml][IO.File]::ReadAllText($file.FullName)
         foreach ($element in $doc.SelectNodes('//*')) {
@@ -94,3 +116,6 @@ $rows = foreach ($file in $files) {
     }
 }
 $rows | Sort-Object -CaseSensitive -Culture en-US
+} finally {
+    if ($resolver) { [AppDomain]::CurrentDomain.remove_AssemblyResolve($resolver) }
+}

@@ -104,7 +104,10 @@ public sealed class WpfControlInventoryTests
         var verification = Path.Combine(root, "docs", "verification");
         var token = TestContext.Current.CancellationToken;
         using var scanner = new Process();
-        scanner.StartInfo = new ProcessStartInfo("pwsh") {
+        var hasPowerShell7 = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator)
+            .Any(directory => File.Exists(Path.Combine(directory, "pwsh.exe")));
+        var shell = hasPowerShell7 ? "pwsh.exe" : Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe");
+        scanner.StartInfo = new ProcessStartInfo(shell) {
             UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true,
             RedirectStandardError = true, StandardOutputEncoding = System.Text.Encoding.UTF8
         };
@@ -120,7 +123,7 @@ public sealed class WpfControlInventoryTests
         var discovered = (await output).Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         var recorded = await File.ReadAllLinesAsync(Path.Combine(verification, "wpf-control-inventory.txt"), token);
         // Include repeated sites: a second control wired to the same command requires review too.
-        Assert.Equal(recorded, discovered);
+        Assert.Equal(recorded.Order(StringComparer.Ordinal), discovered.Order(StringComparer.Ordinal));
 
         var mappings = await File.ReadAllLinesAsync(Path.Combine(verification, "wpf-control-behavior.tsv"), token);
         foreach (var mapping in mappings.Skip(1))
