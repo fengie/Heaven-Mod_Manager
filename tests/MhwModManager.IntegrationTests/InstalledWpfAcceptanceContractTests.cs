@@ -57,7 +57,10 @@ public sealed class InstalledWpfAcceptanceContractTests
             "src/MhwModManager.Automation/ModBoundaryDiscovery.cs",
             "src/MhwModManager.Automation/SmartInboxService.cs",
             "src/MhwModManager.Core/UnrealPakLayout.cs",
-            "src/MhwModManager.Filesystem/ModScanner.cs"
+            "src/MhwModManager.Filesystem/ModScanner.cs",
+            "src/MhwModManager.Filesystem/CatalogService.cs",
+            "src/MhwModManager.Storage/ManagerDatabase.cs",
+            "src/MhwModManager.App/App.xaml.cs"
         ];
         foreach (var path in paths)
             Assert.Matches($@"(?m)^      - '{Regex.Escape(path)}'\r?$", trigger.Groups["body"].Value);

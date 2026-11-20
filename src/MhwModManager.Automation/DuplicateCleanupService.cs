@@ -124,10 +124,23 @@ public sealed class DuplicateCleanupService(
         var candidates = new HashSet<string>(analysis.SupersededModIds, StringComparer.Ordinal);
         foreach (var group in analysis.ExactDuplicates) foreach (var id in group.ModIds.Where(x => !StringComparer.Ordinal.Equals(x, group.RecommendedKeeperId))) candidates.Add(id);
         var moved = 0;
+        // Archiving an overlapping source would change a second catalog row's files.
+        var sources = mods.Values.Where(m => Directory.Exists(m.SourcePath))
+            .Select(m => Path.TrimEndingDirectorySeparator(Path.GetFullPath(m.SourcePath)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var overlapping = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var source in sources)
+            for (var parent = Path.GetDirectoryName(source); parent is not null; parent = Path.GetDirectoryName(parent))
+                if (sources.Contains(parent))
+                {
+                    overlapping.Add(source);
+                    overlapping.Add(parent);
+                }
         foreach (var id in candidates)
         {
             ct.ThrowIfCancellationRequested();
-            if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath)) continue;
+            if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath) ||
+                overlapping.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath)))) continue;
             var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var dest = Unique(Path.Combine(archiveRoot, stamp + "-" + Path.GetFileName(mod.SourcePath)));
             // Persist and flush intent before moving any mod bytes. If the process

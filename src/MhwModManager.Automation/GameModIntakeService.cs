@@ -478,6 +478,51 @@ public sealed class GameModIntakeService
             .Select(file => Path.GetRelativePath(source, file)));
     }
 
+    /// <summary>Return physical, independently selectable Unreal packages in the registered library.
+    /// Discovery reads filenames only. Capturing the bytes belongs to selection and Preview.</summary>
+    public IReadOnlyList<string> SelectableManagedFolders(string source, GameProfile game, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (game.AdapterId != "unreal-paks") return [];
+        var preview = PreviewManagedCollection(source, game, ct);
+        var inventory = preview.FileInventory ?? [];
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var members = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in inventory)
+        {
+            ct.ThrowIfCancellationRequested();
+            var dir = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+            if (!members.TryGetValue(dir, out var group)) members[dir] = group = [];
+            group.Add(file);
+            // Ancestor counts ensure a package with unrelated sidecars never becomes selectable.
+            while (dir.Length > 0)
+            {
+                counts[dir] = counts.GetValueOrDefault(dir) + 1;
+                var separator = dir.LastIndexOf('/');
+                if (separator < 0) break;
+                dir = dir[..separator];
+            }
+        }
+        var boundaries = preview.Candidates;
+        // An unattributed PAK at the shelf root remains unselected. Re-evaluate only
+        // its nested siblings with the same manifest, variant and package checks.
+        var loose = inventory.Where(file => !file.Contains('/')).ToArray();
+        if (boundaries.All(candidate => candidate.Kind == ModBoundaryKind.Review) &&
+            loose.Length > 0 && loose.All(UnrealPakLayout.IsMember))
+            boundaries = ModBoundaryDiscovery.Discover(inventory.Where(file => file.Contains('/'))).Candidates;
+        var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var candidate in boundaries.Where(c => c.Kind == ModBoundaryKind.Folder))
+        {
+            var leaf = candidate.RelativePath.Replace('\\', '/');
+            if (!members.TryGetValue(leaf, out var files) || !UnrealPakLayout.Complete(files, singleStem: true)) continue;
+            var name = leaf.EndsWith("/~mods", StringComparison.OrdinalIgnoreCase) ? leaf[..^6] : leaf;
+            if (name == "." || name.Equals("~mods", StringComparison.OrdinalIgnoreCase) ||
+                !counts.TryGetValue(name, out var total) || total != files.Count) continue;
+            selected.Add(Path.GetFullPath(Path.Combine(source, name)));
+        }
+        return selected.Order(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
     /// <summary>
     /// Read-only complete file-accounting preview of a managed package. Unlike
     /// automatic import this reports even one, incomplete, ambiguous or unknown

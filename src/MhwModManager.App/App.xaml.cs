@@ -296,7 +296,10 @@ public sealed partial class App:Application, IDisposable
             var blobs=startup.Run("services.blob-store",()=>new BlobStore(paths.BlobRoot,db));
             var gameRegistry=startup.Run("services.game-registry",()=>new GameProfileRegistry(paths.StateRoot));
             var scanner=startup.Run("services.mod-scanner",()=>new ModScanner(db,blobs,hash,paths.Game));
-            var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot,paths.LegacyModsRoot));
+            var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
+            var collectionIntake = new GameModIntakeService(paths.ToolRoot, paths.StateRoot, gameRegistry.Load, archive);
+            var catalog=startup.Run("services.catalog",()=>new CatalogService(db,scanner,paths.ModsRoot,paths.LegacyModsRoot,
+                paths.Game.AdapterId == "unreal-paks" ? (dir, ct) => collectionIntake.SelectableManagedFolders(dir, paths.Game, ct) : null));
             var planner=startup.Run("services.deployment-planner",()=>new DeploymentPlanner(new ConflictEngine(paths.Game),paths.Game));
             var executor=startup.Run("services.deployment-executor",()=>new DeploymentExecutor(db,blobs,hash,paths.GameRoot));
             var guard=startup.Run("services.game-process-guard",()=>new GameProcessGuard(paths.Game));
@@ -304,7 +307,6 @@ public sealed partial class App:Application, IDisposable
             var profiles=startup.Run("services.profiles",()=>new ProfileRepository(db));
             var presentationReads=startup.Run("services.presentation-reads",()=>new PresentationReadRepository(db));
             var migrator=startup.Run("services.legacy-migrator",()=>new LegacyV7Migrator(db,paths.ToolRoot,paths.BlobRoot));
-            var archive=startup.Run("services.archive-inspector",()=>new ArchiveInspector());
             var support=startup.Run("services.support-bundle",()=>new SupportBundleService(db,paths.StateRoot,telemetry));
             var nexus=startup.Run("services.nexus-metadata",()=>new NexusMetadataService(db,plannerSnapshots,paths.NextStateRoot,paths.Game));
             var gameBuild=startup.Run("services.game-build-monitor",()=>new GameBuildMonitor(db,plannerSnapshots,paths.Game));
