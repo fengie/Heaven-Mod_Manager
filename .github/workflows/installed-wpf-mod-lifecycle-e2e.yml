@@ -119,7 +119,9 @@ jobs:
           if (!(Test-Path -LiteralPath $runner)) { throw 'xUnit runner is missing.' }
           $evidence = Join-Path $env:GITHUB_WORKSPACE 'BuildLogs\installed-wpf-acceptance'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          Add-Type -Path tests/fixtures/packaged-ui/GameLaunchProbe.cs -OutputAssembly (Join-Path $env:RUNNER_TEMP 'mhw-game-launch-probe.exe') -OutputType WindowsApplication
+          $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+          & $compiler /nologo /target:winexe "/out:$env:RUNNER_TEMP\mhw-game-launch-probe.exe" (Resolve-Path tests/fixtures/packaged-ui/GameLaunchProbe.cs).Path
+          if ($LASTEXITCODE -ne 0) { throw 'Disposable game launch probe failed to compile.' }
           $env:MHW_GAME_UI_EVIDENCE = $evidence
           $output = @(& $runner '--filter-class' 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests' 2>&1)
           $exit = $LASTEXITCODE
