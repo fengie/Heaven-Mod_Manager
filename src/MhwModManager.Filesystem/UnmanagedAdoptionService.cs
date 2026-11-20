@@ -86,11 +86,12 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
     private async Task<List<Candidate>> FindCandidatesAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={game.Id}");
-        var live=game.LiveModRoot;if(!Directory.Exists(live))return [];
+        var live=game.LiveModRoot;
+        if(string.IsNullOrWhiteSpace(game.ModRootRelativePath)||!Directory.Exists(live))return [];
         var snapshot=await plannerSnapshots.LoadAsync(ct);
         var managed=snapshot.CurrentManifest.Keys.Select(PathRules.Normalize).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var adopted=await LoadAdoptedAsync(ct);
-        var files=await Task.Run(()=>SafeRecursiveTraversal.Snapshot(live,ct).Files
+        var files=await Task.Run(()=>FindModFiles(live,ct)
             .Select(f=>(File:f,Key:ManagedKey(f))).Where(x=>!managed.Contains(x.Key)).ToArray(),ct);
         var result=new List<Candidate>();
         foreach(var item in files)
@@ -100,6 +101,28 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
             result.Add(new(item.File,item.Key,current.Sha256));
         }
         return result;
+    }
+
+    private IEnumerable<string> FindModFiles(string live, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!game.AdapterId.Equals("unreal-paks", StringComparison.OrdinalIgnoreCase) ||
+            !Path.GetFileName(live.TrimEnd(Path.DirectorySeparatorChar)).Equals("Paks", StringComparison.OrdinalIgnoreCase))
+            return SafeRecursiveTraversal.Snapshot(live, ct).Files;
+
+        // The shared Paks folder also contains the shipped game. Only inspect the loader's
+        // dedicated mod directories, retaining complete packages and their own companions.
+        SafeRecursiveTraversal.EnsureRootIsNotReparse(live);
+        var files = new List<string>();
+        foreach (var directory in new[] { "~mods", "LogicMods" })
+        {
+            var root = Path.Combine(live, directory);
+            if (!Directory.Exists(root)) continue;
+            var members = SafeRecursiveTraversal.Snapshot(root, ct).Files.Where(UnrealPakLayout.IsMember);
+            foreach (var package in members.GroupBy(path => Path.ChangeExtension(path, null), StringComparer.OrdinalIgnoreCase))
+                if (UnrealPakLayout.Complete(package)) files.AddRange(package);
+        }
+        return files;
     }
 
     private async Task<Dictionary<string,AdoptedRecord>> LoadAdoptedAsync(CancellationToken ct)
