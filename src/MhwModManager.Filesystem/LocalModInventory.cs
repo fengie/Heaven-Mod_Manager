@@ -13,7 +13,7 @@ public sealed record LocalModLocation(string Game, string Name, string Evidence,
     public string? RegisteredProfileId { get; init; }
 }
 
-public record ExternalLibraryReference(string ItemId, string DisplayName, string OwnerLabel, IReadOnlyList<string> Locations)
+public record ExternalLibraryReference(string ItemId, string DisplayName, string OwnerLabel, IReadOnlyList<string> Locations, bool IsSteamWorkshop = false)
 {
     [System.Text.Json.Serialization.JsonIgnore]
     public string SourceSummary
@@ -27,7 +27,7 @@ public record ExternalLibraryReference(string ItemId, string DisplayName, string
 }
 
 public sealed record WorkshopLibraryReference(string WorkshopId, IReadOnlyList<string> Sources, string? Title = null)
-    : ExternalLibraryReference(WorkshopId, Title ?? $"Workshop item {WorkshopId}", "Installed by Steam Workshop", Sources);
+    : ExternalLibraryReference(WorkshopId, Title ?? $"Workshop item {WorkshopId}", "Installed by Steam Workshop", Sources, IsSteamWorkshop: true);
 
 public static partial class LocalModInventory
 {
@@ -106,7 +106,7 @@ public static partial class LocalModInventory
             foreach (var other in SafeDirectories(common, rows, ct))
             {
                 if (!seenRoots.Add(other.FullName)) continue;
-                rows.Add(new(other.Name, "Unmatched game folder", "Steam library · ownership unverified", other.FullName));
+                rows.Add(new(other.Name, "Unmatched game folder", "Steam library Â· ownership unverified", other.FullName));
                 ScanGame(other.Name, false, other.FullName, "Unmatched Steam game folder", rows, ct);
             }
             foreach (var app in SafeDirectories(Path.Combine(apps, "workshop", "content"), rows, ct))
@@ -241,7 +241,7 @@ public static partial class LocalModInventory
                     System.Globalization.UnicodeCategory.Format or System.Globalization.UnicodeCategory.LineSeparator or
                     System.Globalization.UnicodeCategory.ParagraphSeparator) ? title : null;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
         {
             return null;
         }
@@ -262,7 +262,7 @@ public static partial class LocalModInventory
                     var verified = installed.Contains(dir.Name);
                     rows.Add(new(game, dir.Name, verified
                         ? "Workshop install record and local content directory"
-                        : "Workshop content directory · installation record unconfirmed", dir.FullName)
+                        : "Workshop content directory Â· installation record unconfirmed", dir.FullName)
                     {
                         VerifiedWorkshopAppId = verified ? dir.Parent!.Name : null,
                         VerifiedWorkshopTitle = verified ? ReadWorkshopTitle(dir) : null
@@ -381,7 +381,7 @@ public static partial class LocalModInventory
         }
         if (path.EndsWith("/bitfix/sig.lua/", cmp) &&
             File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fullPath))!, "dsound.dll")))
-            return "Paired loader files · runtime use unconfirmed";
+            return "Paired loader files Â· runtime use unconfirmed";
         if (extension.Equals(".pak", cmp) && (path.Contains("/Content/Paks/~mods/", cmp) ||
             path.Contains("/Content/Paks/LogicMods/", cmp))) return "Unreal mod container";
         if (extension.Equals(".dll", cmp) && path.Contains("/BepInEx/plugins/", cmp)) return "BepInEx plugin";
@@ -389,7 +389,7 @@ public static partial class LocalModInventory
         if (mhw && path.StartsWith("/nativePC/", cmp)) return "nativePC override";
         if (extension.Equals(".pak", cmp) && !path.Contains("/Content/Paks/", cmp) &&
             File.Exists(Path.ChangeExtension(fullPath, ".utoc")) && File.Exists(Path.ChangeExtension(fullPath, ".ucas")))
-            return "Loose Unreal companion set outside standard Paks directory · review";
+            return "Loose Unreal companion set outside standard Paks directory Â· review";
         if ((extension.Equals(".pak", cmp) || extension.Equals(".dll", cmp) || extension.Equals(".lua", cmp)) &&
             path.StartsWith("/Mods/", cmp)) return "Payload in game Mods directory";
         if (path.EndsWith("/mod.json/", cmp) && path.Contains("/Mods/", cmp))

@@ -50,7 +50,8 @@ public sealed partial class GameProfileRegistry
         var rows = verified.ToList();
         foreach (var old in previous)
         {
-            if (verifiedById[old.ItemId].Any(row => row.Locations.Intersect(old.Locations, PathRules.Comparer).Any())) continue;
+            if (verifiedById[old.ItemId].Any(row => row.IsSteamWorkshop == old.IsSteamWorkshop &&
+                (old.IsSteamWorkshop || row.Locations.Intersect(old.Locations, PathRules.Comparer).Any()))) continue;
             var offline = old.Locations.Where(location =>
             {
                 if (!Path.IsPathFullyQualified(location)) return false;

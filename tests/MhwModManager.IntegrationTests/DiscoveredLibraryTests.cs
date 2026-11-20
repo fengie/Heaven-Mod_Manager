@@ -44,14 +44,15 @@ public sealed class DiscoveredLibraryTests
             Item(content, "18", """{"id":18,"title":"spoof\u202Ename"}""");
             Item(content, "19", JsonSerializer.Serialize(new { id = 19, title = "Large", extra = new string('a', 20_000) }));
             Item(content, "20", """{"id":20,"id":20,"title":"Ambiguous descriptor"}""");
-            Install(first, "10", "11", "12", "13", "14", "15", "16", "18", "19", "20");
+            Item(content, "21", """{"id":21,"title":"invalid\uD800"}""");
+            Install(first, "21", "10", "11", "12", "13", "14", "15", "16", "18", "19", "20");
             Install(other, "16");
             var inventory = LocalModInventory.Scan([game], [other, first], [], ct: TestContext.Current.CancellationToken);
             var rows = LocalModInventory.WorkshopLibrary(inventory, "123", []).ToDictionary(row => row.ItemId);
-            Assert.Equal(10, rows.Count);
+            Assert.Equal(11, rows.Count);
             Assert.Equal("第一名皮肤", rows["10"].DisplayName);
             Assert.Equal("第一名皮肤", rows["11"].DisplayName);
-            foreach (var id in new[] { "12", "13", "14", "15", "16", "18", "19", "20" })
+            foreach (var id in new[] { "12", "13", "14", "15", "16", "18", "19", "20", "21" })
                 Assert.Equal($"Workshop item {id}", rows[id].DisplayName);
             Assert.Equal(2, rows["16"].Locations.Count);
             Assert.False(rows.ContainsKey("17"));
@@ -69,7 +70,7 @@ public sealed class DiscoveredLibraryTests
                 steamAppId: "123");
             var registry = new GameProfileRegistry(root.FullName);
             Assert.Empty(registry.LoadDiscoveredLibrary(game));
-            var original = new ExternalLibraryReference("10", "第一名皮肤", "Installed by Steam Workshop", [game.GameRoot]);
+            var original = new WorkshopLibraryReference("10", [game.GameRoot], "第一名皮肤");
             registry.SaveDiscoveredLibrary(game, [original]);
             var reopened = new GameProfileRegistry(root.FullName);
             var saved = Assert.Single(reopened.LoadDiscoveredLibrary(game));
@@ -82,6 +83,11 @@ public sealed class DiscoveredLibraryTests
             var pending = Assert.Single(reopened.ReconcileDiscoveredLibrary(game, [],
                 [new LocalModLocation("Sample", "Installation unavailable", "", game.GameRoot)]));
             Assert.Contains("source unavailable", pending.OwnerLabel);
+            var moved = new WorkshopLibraryReference("10", [Path.Combine(root.FullName, "new", "10")], original.DisplayName);
+            var unavailable = new LocalModLocation("Sample", "Installation unavailable", "", game.GameRoot);
+            Assert.Equal(moved, Assert.Single(reopened.ReconcileDiscoveredLibrary(game, [moved], [unavailable])));
+            var plugin = new ExternalLibraryReference("10", "Unrelated plugin", "BepInEx", moved.Sources);
+            Assert.Equal(2, reopened.ReconcileDiscoveredLibrary(game, [plugin], [unavailable]).Count);
             Assert.Empty(reopened.ReconcileDiscoveredLibrary(game, [], []));
             reopened.SaveDiscoveredLibrary(game, Enumerable.Repeat(original, 16385).ToArray());
             Assert.Equal(original.DisplayName, Assert.Single(reopened.LoadDiscoveredLibrary(game)).DisplayName);
