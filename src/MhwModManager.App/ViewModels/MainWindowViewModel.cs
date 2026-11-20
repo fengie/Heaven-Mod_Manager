@@ -1342,15 +1342,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void CaptureDiagnostics()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var script=Path.Combine(s.Paths.ToolRoot,"scripts","Capture-Diagnostics.ps1");
+        var script=Path.Combine(AppContext.BaseDirectory, "scripts", "diagnostics", "Capture-Diagnostics.ps1");
         if(!File.Exists(script)){StatusText="Capture-Diagnostics.ps1 is not present in this installation.";return;}
         try
         {
-            using var diagnosticProcess = ProcessDebug.Start(new ProcessStartInfo("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\" -ProcessId {Environment.ProcessId}")
+            var capture = Path.Combine(s.Paths.ToolRoot, "diagnostics",
+                $"capture-{DateTime.UtcNow:yyyyMMdd-HHmmssfff}-pid{Environment.ProcessId}");
+            var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory,
+                "WindowsPowerShell", "v1.0", "powershell.exe"))
             {
-                WorkingDirectory=s.Paths.ToolRoot,UseShellExecute=true
-            }, "capture-diagnostics");
-            StatusText="Diagnostic capture started in a separate PowerShell window. Keep the manager running while it records the freeze/load.";
+                WorkingDirectory = s.Paths.ToolRoot,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            foreach (var arg in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script,
+                "-ProcessId", Environment.ProcessId.ToString(CultureInfo.InvariantCulture), "-OutputDirectory", capture })
+                start.ArgumentList.Add(arg);
+            using var diagnosticProcess = ProcessDebug.Start(start, "capture-diagnostics");
+            StatusText=$"Diagnostic capture started. Keep the manager running while it records. Output: {capture}";
         }
         catch(Exception ex){StatusText="Could not start diagnostic capture: "+ex.Message;}
     }

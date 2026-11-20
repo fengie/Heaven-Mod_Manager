@@ -621,6 +621,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         public GameProfile FirstGame { get; }
         public GameProfile SecondGame { get; }
         public string ArchivePath { get; }
+        public string ManagerHome => home;
         public string SettingsPath => Path.Combine(home, "State", FirstGame.IsMonsterHunterWorld ? "" : Path.Combine("Games", FirstGame.Id), "Next", "settings.json");
         public GameProfile RegisteredGame() => new GameProfileRegistry(Path.Combine(home, "State")).Load().Single(game => game.Id == FirstGame.Id);
         public string LaunchReceipt => Path.Combine(root, "game-launch.txt");
@@ -785,6 +786,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 WorkingDirectory = packageDir,
                 UseShellExecute = false
             };
+            start.ArgumentList.Add("--offline-catalog");
             start.Environment["MHW_DISPOSABLE_GAME_RECEIPT"] = LaunchReceipt;
             start.Environment["MOD_MANAGER_HOME"] = home;
             start.Environment["MOD_MANAGER_GAME_ROOT"] = gameA;

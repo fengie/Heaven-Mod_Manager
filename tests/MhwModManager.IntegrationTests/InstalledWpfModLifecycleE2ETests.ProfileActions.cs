@@ -80,6 +80,42 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             Find(item, cell => cell.Current.Name.Contains("staged mod-state change", StringComparison.Ordinal)) is not null &&
             Find(item, cell => cell.Current.Name == "Committed") is not null), UiTimeout, "committed deployment in history", ct);
         passed.Add("Refresh History and verify the committed deployment");
+        Invoke(await Button("Create Support Bundle"));
+        var supportDir = Path.Combine(run.ManagerHome, "Support Bundles");
+        await WaitForAsync(() =>
+        {
+            if (!Directory.Exists(supportDir)) return false;
+            var zip = Directory.GetFiles(supportDir, "*.zip").SingleOrDefault();
+            if (zip is null) return false;
+            try
+            {
+                using var bundle = System.IO.Compression.ZipFile.OpenRead(zip);
+                var manifest = bundle.GetEntry("manifest-summary.json");
+                if (manifest is null) return false;
+                using var stream = manifest.Open();
+                using var summary = JsonDocument.Parse(stream);
+                return summary.RootElement.ToString().Contains(Path.GetFileName(run.LiveModPath), StringComparison.OrdinalIgnoreCase)
+                    && bundle.GetEntry("settings-redacted.json") is not null;
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException) { return false; }
+        }, UiTimeout, "support bundle contains this game's deployed file and redacted settings", ct);
+        passed.Add("Create support bundle with this profile's manifest");
+        Invoke(await Button("Collect Diagnostics"));
+        var captures = Path.Combine(run.ManagerHome, "diagnostics");
+        await WaitForAsync(() =>
+        {
+            if (!Directory.Exists(captures)) return false;
+            var meta = Directory.EnumerateFiles(captures, "capture.json", SearchOption.AllDirectories).SingleOrDefault();
+            if (meta is null || !File.Exists(Path.Combine(Path.GetDirectoryName(meta)!, "process.json"))) return false;
+            try
+            {
+                using var json = JsonDocument.Parse(File.ReadAllText(meta));
+                return json.RootElement.GetProperty("processId").GetInt32() == window.Current.ProcessId;
+            }
+            catch (Exception ex) when (ex is IOException or JsonException) { return false; }
+        }, UiTimeout, "packaged diagnostics script captured this Manager process", ct);
+        passed.Add("Collect diagnostics for the running Manager process");
+
 
         await SelectTab("Settings");
         var packageDirectory = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR")!;

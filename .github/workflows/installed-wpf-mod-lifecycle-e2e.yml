@@ -10,6 +10,7 @@ on:
       - 'tests/MhwModManager.IntegrationTests/DiscoveredGameProfiles.cs'
       - 'tests/fixtures/discovered-games/**'
       - 'tests/fixtures/packaged-ui/**'
+      - 'scripts/diagnostics/**'
       - 'src/MhwModManager.App/**'
       - 'src/MhwModManager.Core/GameProfiles.cs'
       - 'src/MhwModManager.Filesystem/GameProfileRegistry*.cs'
@@ -109,6 +110,10 @@ jobs:
           if (!(Test-Path -LiteralPath (Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'))) {
             throw 'Published candidate WinExe is missing.'
           }
+
+          $packagedScripts = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'scripts/diagnostics'
+          New-Item -ItemType Directory -Force -Path $packagedScripts | Out-Null
+          Copy-Item -Path scripts/diagnostics/Capture-Diagnostics.ps1,scripts/diagnostics/Master-Debug.ps1 -Destination $packagedScripts
 
       - name: Real UIA import, list, preview, apply, undo and game switch
         timeout-minutes: 53
