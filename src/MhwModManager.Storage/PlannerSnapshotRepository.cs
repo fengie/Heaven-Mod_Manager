@@ -16,6 +16,24 @@ public sealed class PlannerSnapshotRepository(ManagerDatabase db)
         return LoadAsync(null, ct);
     }
 
+    public async Task<IReadOnlyList<(string Family,string Group,string Id,string? Selected)>> LoadExclusiveChoicesAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await db.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT m.family_id,m.choice_group,m.mod_id,p.selected_mod_id
+            FROM mod_family_members m LEFT JOIN family_preferences p
+            ON p.family_id=m.family_id AND p.choice_group=m.choice_group
+            WHERE m.choice_group IS NOT NULL AND m.choice_group<>''
+            """;
+        var entries = new List<(string,string,string,string?)>();
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+            entries.Add((reader.GetString(0),reader.GetString(1),reader.GetString(2),reader.IsDBNull(3) ? null : reader.GetString(3)));
+        return entries;
+    }
+
     /// <summary>Loads all planner input, optionally restricting mod_files to the supplied mod IDs.</summary>
     public async Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, CancellationToken ct = default)
     {

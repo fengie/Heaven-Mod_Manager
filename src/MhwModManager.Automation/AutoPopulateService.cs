@@ -504,7 +504,8 @@ public sealed class AutoPopulateService(
     DependencyDoctorService dependencies,
     string gameRoot,
     GameProfile game,
-    MhwModManager.Filesystem.BlobStore? blobs = null)
+    MhwModManager.Filesystem.BlobStore? blobs = null,
+    MhwModManager.Filesystem.ModScanner? scanner = null)
 {
     public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
     {
@@ -517,7 +518,61 @@ public sealed class AutoPopulateService(
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await BuildAsync(preferredModIds, Array.Empty<string>(), ct);
+    }
+
+    public async Task<AutoPopulateResult> BuildAsync(IReadOnlyCollection<string>? preferredModIds,
+        IReadOnlyCollection<string> excludedModIds, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = await plannerSnapshots.LoadAsync(ct);
+        var preparationErrors = excludedModIds.Distinct(PathRules.Comparer)
+            .ToDictionary(id => id, _ => "Explicitly staged off for this operation.", PathRules.Comparer);
+        var anchors = (preferredModIds ?? snapshot.Mods.Where(mod => mod.Enabled).Select(mod => mod.Id).ToArray()).ToHashSet(PathRules.Comparer);
+        var choices = await plannerSnapshots.LoadExclusiveChoicesAsync(ct);
+        foreach (var group in choices.GroupBy(item => (item.Family,item.Group)))
+        {
+            var anchored = group.Where(item => anchors.Contains(item.Id)).ToArray();
+            if (anchored.Length > 1)
+                throw new InvalidOperationException($"Choose one member of '{group.Key.Group}' before Auto Populate.");
+            var selectedMember = anchored.Length == 1 ? anchored[0].Id : group.First().Selected;
+            foreach (var item in group.Where(item => !PathRules.Comparer.Equals(item.Id,selectedMember)))
+                preparationErrors[item.Id] = $"Requires one explicit selection in '{group.Key.Group}'.";
+        }
+        var indexed = snapshot.Files.Select(file => file.ModId).ToHashSet(PathRules.Comparer);
+        var filesForPlan = snapshot.Files.ToList();
+        var sourceFolders = snapshot.Mods.Where(mod => !string.IsNullOrWhiteSpace(mod.SourcePath))
+            .Select(mod => Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath))).ToHashSet(PathRules.Comparer);
+        var containers = new HashSet<string>(PathRules.Comparer);
+        foreach (var source in sourceFolders)
+            for (var parent = Path.GetDirectoryName(source); parent is not null; parent = Path.GetDirectoryName(parent))
+                if (sourceFolders.Contains(parent)) containers.Add(parent);
+
+        foreach (var mod in snapshot.Mods.Where(mod => !mod.IsSuperseded))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (mod.RequiresLayoutReview) preparationErrors[mod.Id] = "Package layout needs review before activation.";
+            if (preparationErrors.ContainsKey(mod.Id) || indexed.Contains(mod.Id)) continue;
+            if (!string.IsNullOrWhiteSpace(mod.SourcePath) && containers.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath))))
+            {
+                preparationErrors[mod.Id] = "Collection contains independently registered packages; evaluate its children.";
+                continue;
+            }
+            if (scanner is null)
+            {
+                preparationErrors[mod.Id] = "Package has no indexed deployable files.";
+                continue;
+            }
+            try
+            {
+                filesForPlan.AddRange(await scanner.CaptureForAutoPopulateAsync(mod, ct));
+            }
+            catch (Exception ex) when (ex is InvalidDataException or DirectoryNotFoundException or FileNotFoundException or UnauthorizedAccessException)
+            {
+                preparationErrors[mod.Id] = ex.Message;
+            }
+        }
+        snapshot = snapshot with { Files = filesForPlan };
         var mods = snapshot.Mods.Where(m => !m.IsSuperseded).ToArray();
         var modsById = mods.ToDictionary(m => m.Id, PathRules.Comparer);
         var filesByMod = snapshot.Files
@@ -551,6 +606,11 @@ public sealed class AutoPopulateService(
         foreach (var mod in mods)
         {
             ct.ThrowIfCancellationRequested();
+            if (preparationErrors.TryGetValue(mod.Id, out var reason))
+            {
+                requirements[mod.Id] = new(mod.Id, [], [], [], false, [], [reason]);
+                continue;
+            }
             var files = filesByMod.GetValueOrDefault(mod.Id) ?? [];
             var spec = await ModRequirementReader.ReadAsync(
                 mod,
@@ -842,7 +902,7 @@ public sealed class AutoPopulateService(
             if (!requirements.TryGetValue(id, out var spec))
                 return ClosureResult.Fail($"Requirements for '{mod.DisplayName}' could not be read.");
             if (spec.Errors.Count > 0)
-                return ClosureResult.Fail($"'{mod.DisplayName}' has invalid requirements: {string.Join("; ", spec.Errors)}");
+                return ClosureResult.Fail($"'{mod.DisplayName}' cannot be selected: {string.Join("; ", spec.Errors)}");
 
             foreach (var requirement in spec.ModRequirements.Where(x => x.Required))
             {

@@ -1,5 +1,6 @@
 using MhwModManager.Automation;
 using MhwModManager.Core;
+using MhwModManager.Filesystem;
 using MhwModManager.Storage;
 using Xunit;
 
@@ -10,6 +11,46 @@ public sealed class AutoPopulateServiceTests : IDisposable
     private readonly string root = Path.Combine(Path.GetTempPath(), "MhwAutoPopulateTests-" + Guid.NewGuid().ToString("N"));
 
     public AutoPopulateServiceTests() => Directory.CreateDirectory(root);
+
+    [Theory]
+    [InlineData("unreal-paks", "Test/Content/Paks", ".pak")]
+    [InlineData("generic-files", "Mods", ".bin")]
+    public async Task ExistingUnindexedPackagesRetainSourceAndExplicitChoice(string adapter, string mount, string extension)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("catalog.db");
+        var game = GameProfile.Generic("fixture", "Fixture", Path.Combine(root, "game"), "game.exe", mount, adapter);
+        var shelf = await AddModAsync(db, "shelf", "Shelf", 100);
+        foreach (var id in new[] { "keep", "choice-a", "choice-b", "manual-off", "archive", "partial" })
+        {
+            var source = Directory.CreateDirectory(Path.Combine(shelf.SourcePath,id)).FullName;
+            await db.UpsertModAsync(new(id,id,id,source,false,10), ct);
+            await File.WriteAllTextAsync(Path.Combine(source,id + (id == "archive" ? ".zip" :
+                id == "partial" && adapter == "unreal-paks" ? ".ucas" : extension)),id,ct);
+        }
+        await db.ExecuteAsync("""
+            INSERT INTO mod_families VALUES('family','Family','2026-11-20');
+            INSERT INTO mod_family_members VALUES('family','choice-a','option','body'),('family','choice-b','option','body');
+            INSERT INTO family_preferences VALUES('family','body','choice-b','2026-11-20');
+            """, ct: ct);
+        var store = new BlobStore(Path.Combine(root, "blobs"),db);
+        var service = new AutoPopulateService(new PlannerSnapshotRepository(db),new DeploymentPlanner(new ConflictEngine(game),game),
+            new DependencyDoctorService(db,game.GameRoot,game),game.GameRoot,game,store,new ModScanner(db,store,new HashingService(),game));
+        for (var pass = 0; pass < 2; pass++)
+        {
+            var result = await service.BuildAsync([], ["manual-off"],ct);
+            Assert.True(result.State["keep"].Enabled);
+            Assert.True(result.State["choice-b"].Enabled);
+            Assert.False(result.State["choice-a"].Enabled);
+            Assert.False(result.State["manual-off"].Enabled);
+            Assert.False(result.State["shelf"].Enabled);
+            Assert.False(result.State["archive"].Enabled);
+            Assert.Equal(adapter != "unreal-paks", result.State["partial"].Enabled);
+            Assert.All(await db.GetModsAsync(ct), mod => Assert.False(mod.Enabled));
+            Assert.DoesNotContain(await db.GetModFilesAsync(ct), file => file.ModId == "shelf" || file.ModId == "archive");
+        }
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
 
     [Theory]
     [InlineData("4D524C000B000000A9BCBB5900000000", true, false)]
