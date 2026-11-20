@@ -121,6 +121,26 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Filter mod list");
         ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
 
+        async Task Filter(string label, bool visible)
+        {
+            var filter = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Button &&
+                e.Current.Name.StartsWith(label + " (", StringComparison.Ordinal)), UiTimeout, label + " filter", ct);
+            Invoke(filter);
+            await WaitForAsync(() => (FindModToggle(window, name) is not null) == visible,
+                UiTimeout, label + " filters the staged package", ct);
+        }
+        foreach (var label in new[] { "Review families", "Updates", "Problems", "Needs check", "Not used" })
+        {
+            await Filter(label, false);
+            await Filter("All", true);
+        }
+        await Filter("Updates", false);
+        await Filter("Enabled", true);
+        await Filter("Updates", false);
+        await Filter("Pending", true);
+        await Filter("All", true);
+        passed.Add("All eight mod filters show or exclude the known staged package");
+
         async Task Click(string label) => Invoke(await WaitForElementAsync(() => FindButton(window, label, enabled: true),
             UiTimeout, label, ct));
         await Click("Preview Mod Changes");
