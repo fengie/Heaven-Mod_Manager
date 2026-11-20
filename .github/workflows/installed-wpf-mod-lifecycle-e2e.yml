@@ -6,6 +6,14 @@ on:
     branches: [main]
     paths:
       - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.cs'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.DiscoveredGames.cs'
+      - 'tests/MhwModManager.IntegrationTests/DiscoveredGameProfiles.cs'
+      - 'tests/fixtures/discovered-games/**'
+      - 'tests/fixtures/packaged-ui/**'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.ProfileActions.cs'
+      - 'src/MhwModManager.App/**'
+      - 'src/MhwModManager.Core/GameProfiles.cs'
+      - 'src/MhwModManager.Filesystem/GameProfileRegistry*.cs'
       - 'tests/MhwModManager.IntegrationTests/InstalledWpfAcceptanceContractTests.cs'
       - 'src/MhwModManager.App/MainWindow.xaml'
       - 'src/MhwModManager.App/MainWindow.xaml.cs'
@@ -111,13 +119,15 @@ jobs:
           if (!(Test-Path -LiteralPath $runner)) { throw 'xUnit runner is missing.' }
           $evidence = Join-Path $env:GITHUB_WORKSPACE 'BuildLogs\installed-wpf-acceptance'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          Add-Type -Path tests/fixtures/packaged-ui/GameLaunchProbe.cs -OutputAssembly (Join-Path $env:RUNNER_TEMP 'mhw-game-launch-probe.exe') -OutputType WindowsApplication
+          $env:MHW_GAME_UI_EVIDENCE = $evidence
           $output = @(& $runner '--filter-class' 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests' 2>&1)
           $exit = $LASTEXITCODE
           $output | Set-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          $expectedCases = 12
+          $expectedCases = 13
           if ($summary -notmatch "succeeded:\s+$expectedCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
             throw "Expected $expectedCases passing acceptance cases and zero skipped tests."
           }
