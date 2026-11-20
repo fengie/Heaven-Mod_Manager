@@ -1,6 +1,6 @@
-# v8.8.122 — integrated source and release verification
+# v8.8.123 — integrated source and release verification
 
-Manager main `e20d575e9737cf60feb5ef47e72503f318530706` includes the registered-game Workshop library change [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928). Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Manager main `a04a499c6488cd50a60bf7462511a8082d927027` includes the game-local plugin library change [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930). Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -24,7 +24,7 @@ Manager main `e20d575e9737cf60feb5ef47e72503f318530706` includes the registered-
 
 ## Verification boundary
 
-v8.8.121 [build 607](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-607) published source `f86ccd52c7688b1c46225f26c6b282ab839c5c5a`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44686378800) and [installed updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44687609888) passed. v8.8.122 publication, hosted update and rollback, and installed Heaven2 verification are pending.
+v8.8.122 [build 609](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-609) published source `b0305463e62aad3dee52fa247d36a62661fb0748`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44695358157) and [installed updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44696757234) passed. The ordinary updater installed 609 on HEAVEN2. The three registered games showed 734, 179, and 32 Steam-owned rows with searchable item IDs and unchanged catalog and deployment state. v8.8.123 publication, hosted update and rollback, and installed Heaven2 verification are pending.
 
 For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 
