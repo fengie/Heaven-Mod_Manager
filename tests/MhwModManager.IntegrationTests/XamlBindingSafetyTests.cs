@@ -8,6 +8,21 @@ namespace MhwModManager.IntegrationTests;
 public sealed partial class XamlBindingSafetyTests
 {
     [Fact]
+    public void LibraryViewRefreshCannotOverlapGridRowEdits()
+    {
+        var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));
+        XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var library = Assert.Single(document.Descendants(wpf + "DataGrid"),
+            element => (string?)element.Attribute("ItemsSource") == "{Binding ModsView}");
+        Assert.Equal("True", (string?)library.Attribute("IsReadOnly"));
+        Assert.Equal("False", (string?)library.Attribute("CanUserAddRows"));
+        var controls = library.Descendants(wpf + "CheckBox")
+            .Select(box => (string?)box.Attribute("IsChecked")).ToArray();
+        Assert.Contains("{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}", controls);
+        Assert.Contains("{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}", controls);
+    }
+
+    [Fact]
     public void EnterInCatalogQueryUsesTheSearchButtonCommand()
     {
         var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));

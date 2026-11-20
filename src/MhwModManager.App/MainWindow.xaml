@@ -335,7 +335,7 @@
 
                     <Grid x:Name="ModLibraryRegion" Grid.Row="2">
                         <Border CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="1">
-                        <DataGrid ItemsSource="{Binding ModsView}" SelectedItem="{Binding SelectedMod,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
+                        <DataGrid ItemsSource="{Binding ModsView}" SelectedItem="{Binding SelectedMod,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
                             <DataGrid.RowDetailsTemplate>
                                 <DataTemplate>
                                     <Border Margin="72,2,18,10" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
