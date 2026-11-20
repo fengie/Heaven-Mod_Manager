@@ -188,6 +188,7 @@ MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=CATEGORY ; Binding=
 MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=LOAD ORDER ; Binding={Binding Priority} ; IsReadOnly=True
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector |
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector.ExternalStyle |
+MainWindow.xaml | TabItem:Mods | KeyBinding | Key=Enter ; Command={Binding SubmitModSearchCommand}
 MainWindow.xaml | TabItem:Mods | TextBox | Name=ModSearchBox ; Text={Binding SearchText,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name=Search mods
 MainWindow.xaml | TabItem:Mods/DataGridTemplateColumn:ENABLED/DataTemplate: | CheckBox | IsEnabled={Binding CanStage} ; IsChecked={Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name={Binding DisplayName}
 MainWindow.xaml | TabItem:Mods/DataTemplate: | ItemsControl | ItemsSource={Binding GalleryPaths}

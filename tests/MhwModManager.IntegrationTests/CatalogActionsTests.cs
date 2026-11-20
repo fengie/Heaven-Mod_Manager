@@ -20,6 +20,47 @@ namespace MhwModManager.IntegrationTests;
 public sealed class CatalogActionsTests
 {
     [Fact]
+    public Task ModsEnterSelectsFilteredResultsWithoutStagingAcrossRegisteredProfiles() =>
+        RunOnDispatcher((services, ct) =>
+        {
+            foreach (var game in DiscoveredGameProfiles.Load())
+            {
+                ct.ThrowIfCancellationRequested();
+                var paths = services.Paths with { Game = DiscoveredGameProfiles.Isolate(game, services.Paths.ToolRoot) };
+                using var vm = new MainWindowViewModel(services with { Paths = paths }, new HttpClient(new NoNetwork()));
+                var rows = (System.Collections.IList)vm.LibraryView.SourceCollection;
+                var mod = new ModDescriptor("managed", "Managed", "Managed", paths.ModsRoot, false, 0);
+                var managed = new ModRowViewModel(Assert.Single(LogicalModFamilies.Build([mod])), () => { });
+                var external = new MhwModManager.Filesystem.ExternalLibraryReference("142", "Shared outfit", "Workshop", []);
+                var second = external with { ItemId = "143" };
+                rows.Add(managed);
+                rows.Add(external);
+                rows.Add(second);
+                var (field, enter) = EnterBinding(vm, "SearchText");
+                var changes = 0;
+                vm.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(vm.SelectedLibraryItem)) changes++; };
+                field.Text = "Shared outfit";
+                enter.Execute(null);
+                Assert.Equal(2, vm.VisibleLibraryCount);
+                Assert.Same(external, vm.SelectedLibraryItem);
+                field.Text = "143";
+                enter.Execute(null);
+                Assert.Same(second, vm.SelectedLibraryItem);
+                field.Text = "Managed";
+                enter.Execute(null);
+                Assert.Same(managed, vm.SelectedLibraryItem);
+                field.Text = "absent-fixture";
+                enter.Execute(null);
+                Assert.Null(vm.SelectedLibraryItem);
+                Assert.Equal(0, vm.VisibleLibraryCount);
+                Assert.Equal(4, changes);
+                Assert.False(managed.StagedEnabled);
+                Assert.False(vm.HasStagedChanges);
+            }
+            return Task.CompletedTask;
+        });
+
+    [Fact]
     public Task AllRegisteredProfilesSearchTheirOwnCacheAndClearWithoutContactingAProvider() =>
         IsolatedWpfSession.RunAsync(async (services, ct) =>
         {
@@ -38,7 +79,7 @@ public sealed class CatalogActionsTests
                 Assert.All(vm.CatalogItems, row => Assert.Equal(game.Id, row.Mod.GameId));
                 Assert.Equal(Visibility.Collapsed, vm.CatalogLoadMoreVisibility);
                 vm.CatalogQuery = "Crimson";
-                await EnterBinding(vm).ExecuteAsync(null);
+                await Assert.IsAssignableFrom<IAsyncRelayCommand>(EnterBinding(vm, "CatalogQuery").Command).ExecuteAsync(null);
                 Assert.Equal(Item(game, "Crimson").CanonicalId, Assert.Single(vm.CatalogItems).Mod.CanonicalId);
                 Assert.Contains("cached", vm.CatalogProviderSummary, StringComparison.OrdinalIgnoreCase);
                 vm.CatalogQuery = "no-such-catalog-fixture";
@@ -96,7 +137,7 @@ public sealed class CatalogActionsTests
                 await Task.Delay(25, ct);
             Assert.Equal(last.CanonicalId, Assert.Single(vm.CatalogItems).Mod.CanonicalId);
             vm.CatalogQuery = "Amber";
-            await EnterBinding(vm).ExecuteAsync(null);
+            await Assert.IsAssignableFrom<IAsyncRelayCommand>(EnterBinding(vm, "CatalogQuery").Command).ExecuteAsync(null);
             Assert.Equal("Amber", provider.LastRequest?.Query);
             vm.SelectedCatalogItem = Assert.Single(vm.CatalogItems);
             provider.FileException = new HttpRequestException("offline file-list fixture");
@@ -182,19 +223,20 @@ public sealed class CatalogActionsTests
     private static CatalogMod Item(GameProfile game, string name) =>
         CatalogSyncServiceTests.CreateMod("fixture", game.Id + "-" + name.Replace(' ', '-')) with { GameId = game.Id, Name = name };
 
-    private static IAsyncRelayCommand EnterBinding(MainWindowViewModel vm)
+    private static (TextBox Field, ICommand Command) EnterBinding(MainWindowViewModel vm, string property)
     {
         var path = new DirectoryInfo(AppContext.BaseDirectory);
         while (path is not null && !File.Exists(Path.Combine(path.FullName, "MhwModManager.sln"))) path = path.Parent;
         var source = XDocument.Load(Path.Combine(path!.FullName, "src", "MhwModManager.App", "MainWindow.xaml"));
-        var child = source.Descendants().Single(e => e.Name.LocalName == "KeyBinding" && (string?)e.Attribute("Key") == "Enter"
-            && e.Ancestors().Any(a => a.Name.LocalName == "TextBox.InputBindings"));
-        var field = new TextBox { DataContext = vm };
-        var enter = (KeyBinding)XamlReader.Parse(child.ToString());
-        field.InputBindings.Add(enter);
+        var input = source.Descendants().Single(e => e.Name.LocalName == "TextBox" &&
+            ((string?)e.Attribute("Text"))?.StartsWith("{Binding " + property + ",", StringComparison.Ordinal) == true);
+        var field = (TextBox)XamlReader.Parse(input.ToString());
+        field.DataContext = vm;
+        var enter = Assert.Single(field.InputBindings.OfType<KeyBinding>());
         Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.DataBind);
         Assert.Equal(Key.Enter, enter.Key);
-        return Assert.IsAssignableFrom<IAsyncRelayCommand>(enter.Command);
+        Assert.Equal(ModifierKeys.None, enter.Modifiers);
+        return (field, Assert.IsAssignableFrom<ICommand>(enter.Command));
     }
 
     private sealed class NoNetwork : HttpMessageHandler

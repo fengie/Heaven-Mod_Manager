@@ -279,7 +279,11 @@
                                     <TextBlock Text="SEARCH MODS" Style="{StaticResource Eyebrow}"/>
                                     <TextBlock Margin="0,2,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F"/>
                                 </StackPanel>
-                                <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search mod name, add-on, category, source, or problem. Ctrl+F jumps here."/>
+                                <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search mod name, add-on, category, source, or problem. Ctrl+F jumps here. Enter selects a result.">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitModSearchCommand}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
                                 <Border Grid.Column="2" Margin="12,0,0,0" Style="{StaticResource StatusBadge}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleLibraryCount,Mode=OneWay}"/><Run Text=" shown · "/></TextBlock>

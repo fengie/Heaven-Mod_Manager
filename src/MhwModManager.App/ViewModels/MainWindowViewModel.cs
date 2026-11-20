@@ -552,14 +552,28 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         _=DebounceSearchAsync(cts.Token);
     }
 
+    [RelayCommand]
+    private void SubmitModSearch()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        searchCts?.Cancel();
+        RefreshLibraryFilters();
+        NotifyVisibleModState();
+        if (!string.IsNullOrWhiteSpace(SearchText) &&
+            (SelectedLibraryItem is null || !LibraryView.Contains(SelectedLibraryItem)))
+            SelectedLibraryItem = LibraryView.Cast<object>().FirstOrDefault();
+    }
+
     private async Task DebounceSearchAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
             await Task.Delay(160,ct);
+            ct.ThrowIfCancellationRequested();
             await Application.Current.Dispatcher.InvokeAsync(()=>
             {
+                if (ct.IsCancellationRequested) return;
                 RefreshLibraryFilters();
                 NotifyVisibleModState();
             });
