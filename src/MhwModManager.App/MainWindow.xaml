@@ -1539,6 +1539,19 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="Installed files">
+                <DockPanel Margin="8">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding LocalModInventoryStatus}" Margin="0,0,0,8"/>
+                    <DataGrid ItemsSource="{Binding LocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Game" Binding="{Binding Game}"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}"/>
+                            <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
         </TabControl>
 
         <!-- Footer -->

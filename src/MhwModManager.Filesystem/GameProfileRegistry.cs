@@ -286,7 +286,7 @@ public sealed partial class GameProfileRegistry
         return new(added.ToArray(),repaired.ToArray());
     }
 
-    private static List<GameDiscoveryCandidate> DiscoverInstalledGameCandidates()
+    internal static List<GameDiscoveryCandidate> DiscoverInstalledGameCandidates()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var candidates=new List<GameDiscoveryCandidate>();
@@ -314,6 +314,7 @@ public sealed partial class GameProfileRegistry
         using var __mhwTrace=MasterDebugLog.BeginMethod($"owner={owner.Id}");
         if(!IsUsable(owner))throw new ArgumentException("Authoritative game profile is invalid.",nameof(owner));
 
+        RememberInstallRoot(owner, existing.FirstOrDefault(x => PathRules.Comparer.Equals(x.Id, owner.Id)));
         var removedIds=sameRootProfiles
             .Where(x=>!x.Id.Equals(owner.Id,StringComparison.OrdinalIgnoreCase))
             .Select(x=>x.Id)
@@ -341,13 +342,42 @@ public sealed partial class GameProfileRegistry
         AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(persisted,JsonOptions));
     }
 
+    internal Dictionary<string,string[]> ReadInstallHistory()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var file = Path.Combine(stateRoot, "previous-game-folders.json");
+        if (!File.Exists(file)) return new(StringComparer.OrdinalIgnoreCase);
+        return JsonSerializer.Deserialize<Dictionary<string,string[]>>(File.ReadAllBytes(file), JsonOptions)
+            ?? new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void RememberInstallRoot(GameProfile profile, GameProfile? previous)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (previous is null || PathRules.Comparer.Equals(Path.GetFullPath(profile.GameRoot),
+                Path.GetFullPath(previous.GameRoot))) return;
+        var history = ReadInstallHistory();
+        history[profile.Id] = (history.GetValueOrDefault(profile.Id) ?? []).Append(previous.GameRoot)
+            .Distinct(PathRules.Comparer).TakeLast(16).ToArray();
+        AtomicWrite(Path.Combine(stateRoot, "previous-game-folders.json"), JsonSerializer.SerializeToUtf8Bytes(history, JsonOptions));
+    }
+
+    public IReadOnlyList<LocalModLocation> ScanLocalMods(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return LocalModInventory.Scan(Load(), previousRoots: ReadInstallHistory(), ct: ct);
+    }
+
     public void Upsert(GameProfile profile)
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod($"game={profile.Id}");
         lock(mutationGate)
         {
             if(!IsUsable(profile))throw new ArgumentException("Game profile is invalid or points outside its game root.",nameof(profile));
-            var list=Load().Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
+            var existing = Load();
+            var previous = existing.FirstOrDefault(x => x.Id.Equals(profile.Id, StringComparison.OrdinalIgnoreCase));
+            RememberInstallRoot(profile, previous);
+            var list=existing.Where(x=>!x.Id.Equals(profile.Id,StringComparison.OrdinalIgnoreCase)).Append(profile).OrderBy(x=>x.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
             Directory.CreateDirectory(stateRoot);AtomicWrite(registryPath,JsonSerializer.SerializeToUtf8Bytes(list,JsonOptions));
         }
     }
@@ -443,6 +473,12 @@ public sealed partial class GameProfileRegistry
     private static List<GameDiscoveryCandidate> DiscoverSteam()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return DiscoverSteamFromRoots(SteamClientRoots());
+    }
+
+    private static HashSet<string> SteamClientRoots()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var roots=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach(var hive in new[]{RegistryHive.CurrentUser,RegistryHive.LocalMachine})
         {
@@ -461,20 +497,14 @@ public sealed partial class GameProfileRegistry
             }
         }
         var pf=Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);if(!string.IsNullOrWhiteSpace(pf)){var p=Path.Combine(pf,"Steam");if(Directory.Exists(p))roots.Add(p);}
-        return DiscoverSteamFromRoots(roots);
+        return roots;
     }
 
     internal static List<GameDiscoveryCandidate> DiscoverSteamFromRoots(IEnumerable<string> steamRoots)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(steamRoots);
-        var roots=steamRoots.Where(Directory.Exists).Select(Path.GetFullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var libraries=new HashSet<string>(roots,StringComparer.OrdinalIgnoreCase);
-        foreach(var steam in roots)
-        {
-            var vdf=Path.Combine(steam,"steamapps","libraryfolders.vdf");if(!File.Exists(vdf))continue;
-            try{foreach(Match m in Regex.Matches(File.ReadAllText(vdf),"\\\"path\\\"\\s+\\\"(?<p>[^\\\"]+)\\\""))libraries.Add(m.Groups["p"].Value.Replace("\\\\","\\"));}catch(IOException){}
-        }
+        var libraries=SteamLibraries(steamRoots);
         var result=new List<GameDiscoveryCandidate>();
         foreach(var lib in libraries)
         {
@@ -493,6 +523,20 @@ public sealed partial class GameProfileRegistry
             }
         }
         return result;
+    }
+
+    internal static HashSet<string> SteamLibraries(IEnumerable<string>? steamRoots = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        steamRoots ??= SteamClientRoots();
+        var roots=steamRoots.Where(Directory.Exists).Select(Path.GetFullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var libraries=new HashSet<string>(roots,StringComparer.OrdinalIgnoreCase);
+        foreach(var steam in roots)
+        {
+            var vdf=Path.Combine(steam,"steamapps","libraryfolders.vdf");if(!File.Exists(vdf))continue;
+            try{foreach(Match m in Regex.Matches(File.ReadAllText(vdf),"\\\"path\\\"\\s+\\\"(?<p>[^\\\"]+)\\\""))libraries.Add(m.Groups["p"].Value.Replace("\\\\","\\"));}catch(IOException){}
+        }
+        return libraries;
     }
 
     private static List<GameDiscoveryCandidate> DiscoverEpic()

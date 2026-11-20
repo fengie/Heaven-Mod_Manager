@@ -265,7 +265,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         confirmBeforeApply=settings.ConfirmBeforeApply;
         confirmBeforeDiscardStaged=settings.ConfirmBeforeDiscardStaged;
         backgroundMetadataRefreshEnabled=settings.BackgroundMetadataRefreshEnabled;
-        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,8):0;
+        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,9):0;
         UiMotion.AnimationsEnabled=uiAnimationsEnabled;
         CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0
             ? $"v{s.BuildIdentity.ProductVersion} · build {s.BuildIdentity.BuildNumber} · {s.BuildIdentity.ShortSha}"
@@ -344,12 +344,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         },rethrowOnFailure:true);
         _=AutoMetadataLoopAsync(backgroundCts.Token);
         StartAutoSorting();
+        _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
     }
 
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
-        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,8));
+        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,9));
         if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
         {
             initialMetadataRefreshStarted=true;
