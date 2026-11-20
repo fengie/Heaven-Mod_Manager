@@ -8,6 +8,15 @@ namespace MhwModManager.IntegrationTests;
 public sealed partial class XamlBindingSafetyTests
 {
     [Fact]
+    public void MainNavigationCommandsAreScopedToTheWindowThatOwnsThem()
+    {
+        var app = Path.Combine(FindRepositoryRoot(),"src","MhwModManager.App");
+        Assert.Contains("x:Key=\"MainNavigationTabs\" TargetType=\"TabControl\"", File.ReadAllText(Path.Combine(app,"App.xaml")));
+        Assert.Contains("Style=\"{StaticResource MainNavigationTabs}\"", File.ReadAllText(Path.Combine(app,"MainWindow.xaml")));
+        Assert.DoesNotContain("MainNavigationTabs",File.ReadAllText(Path.Combine(app,"WorkflowWindow.xaml")));
+    }
+
+    [Fact]
     public void LibraryViewRefreshCannotOverlapGridRowEdits()
     {
         var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));
@@ -63,8 +72,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("OpenNexusBrowseCommand", xaml);
         Assert.Contains("OpenGameBananaBrowseCommand", xaml);
         Assert.Contains("CatalogProviderWebLinksVisibility", xaml);
-        Assert.Contains("https://www.nexusmods.com/monsterhunterworld/mods", viewModel);
-        Assert.Contains("https://gamebanana.com/games/9081", viewModel);
+        Assert.Contains("s.Paths.Game.NexusBrowseUri", viewModel);
+        Assert.Contains("s.Paths.Game.GameBananaBrowseUri", viewModel);
         Assert.Contains("OpenExternalUri(", viewModel);
     }
 

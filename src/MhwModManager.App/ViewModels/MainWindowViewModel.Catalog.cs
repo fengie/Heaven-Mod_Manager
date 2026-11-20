@@ -559,12 +559,20 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public bool CanBrowseNexus
+    {
+        get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return s.Paths.Game.NexusBrowseUri is not null; }
+    }
+    public bool CanBrowseGameBanana
+    {
+        get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return s.Paths.Game.GameBananaBrowseUri is not null; }
+    }
     public Visibility CatalogProviderWebLinksVisibility
     {
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return s.Paths.Game.IsMonsterHunterWorld ? Visibility.Visible : Visibility.Collapsed;
+            return CanBrowseNexus || CanBrowseGameBanana ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -1663,20 +1671,18 @@ public sealed partial class MainWindowViewModel
             : $"Checked {rows.Count} exact installed origin(s); {CatalogOriginAttentionCount} need review.";
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanBrowseNexus))]
     private void OpenNexusBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!s.Paths.Game.IsMonsterHunterWorld) return;
-        OpenExternalUri(new Uri("https://www.nexusmods.com/monsterhunterworld/mods"));
+        if (s.Paths.Game.NexusBrowseUri is { } uri) OpenExternalUri(uri);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanBrowseGameBanana))]
     private void OpenGameBananaBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!s.Paths.Game.IsMonsterHunterWorld) return;
-        OpenExternalUri(new Uri("https://gamebanana.com/games/9081"));
+        if (s.Paths.Game.GameBananaBrowseUri is { } uri) OpenExternalUri(uri);
     }
 
     private IModCatalogProvider? FindCatalogProvider(string providerId)

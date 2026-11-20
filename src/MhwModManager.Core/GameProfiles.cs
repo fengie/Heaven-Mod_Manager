@@ -35,6 +35,25 @@ public sealed record GameProfile(
     [JsonIgnore] public string ExecutablePath => Path.GetFullPath(Path.Combine(GameRoot, ExecutableRelativePath));
     [JsonIgnore] public string LiveModRoot => string.IsNullOrWhiteSpace(ModRootRelativePath) ? Path.GetFullPath(GameRoot) : Path.GetFullPath(Path.Combine(GameRoot, ModRootRelativePath));
     [JsonIgnore] public bool IsMonsterHunterWorld => AdapterId.Equals("mhw", StringComparison.OrdinalIgnoreCase);
+    [JsonIgnore] public Uri? NexusBrowseUri
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return NexusGameDomain is { Length: > 0 } domain &&
+                domain.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_')
+                ? new Uri($"https://www.nexusmods.com/{domain}/mods") : null;
+        }
+    }
+    [JsonIgnore] public Uri? GameBananaBrowseUri
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return GameBananaGameId is > 0
+                ? new Uri(FormattableString.Invariant($"https://gamebanana.com/games/{GameBananaGameId}")) : null;
+        }
+    }
     [JsonIgnore] public bool HasNexusIntegration => !string.IsNullOrWhiteSpace(NexusGameDomain);
     [JsonIgnore]
     public bool HasGameBananaIntegration
