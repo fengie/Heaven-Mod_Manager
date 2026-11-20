@@ -133,7 +133,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace=MasterDebugLog.BeginMethod();
-            return $"{InstalledCount} {(InstalledCount==1?"mod":"mods")}";
+            return CheckingDiscoveredLibrary && InstalledCount == 0 ? "Checking for mods…" : $"{InstalledCount} {(InstalledCount==1?"mod":"mods")}";
         }
     }
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
@@ -333,6 +333,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("startup.ui","Loading library","Reading installed mod recordsâ€¦",false,async ct=>
         {
+            await RestoreDiscoveredLibraryAsync(ct);
             MasterDebugLog.Write("STARTUP-UI","stage=reload-mods");
             var reloadStarted = Stopwatch.GetTimestamp();
             try { await ReloadMods(ct); }

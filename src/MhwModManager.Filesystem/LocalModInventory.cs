@@ -2,17 +2,20 @@ using MhwModManager.Core;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Diagnostics;
+using System.Text;
 
 namespace MhwModManager.Filesystem;
 
 public sealed record LocalModLocation(string Game, string Name, string Evidence, string Location)
 {
     public string? VerifiedWorkshopAppId { get; init; }
+    public string? VerifiedWorkshopTitle { get; init; }
     public string? RegisteredProfileId { get; init; }
 }
 
 public record ExternalLibraryReference(string ItemId, string DisplayName, string OwnerLabel, IReadOnlyList<string> Locations)
 {
+    [System.Text.Json.Serialization.JsonIgnore]
     public string SourceSummary
     {
         get
@@ -23,8 +26,8 @@ public record ExternalLibraryReference(string ItemId, string DisplayName, string
     }
 }
 
-public sealed record WorkshopLibraryReference(string WorkshopId, IReadOnlyList<string> Sources)
-    : ExternalLibraryReference(WorkshopId, $"Workshop item {WorkshopId}", "Installed by Steam Workshop", Sources);
+public sealed record WorkshopLibraryReference(string WorkshopId, IReadOnlyList<string> Sources, string? Title = null)
+    : ExternalLibraryReference(WorkshopId, Title ?? $"Workshop item {WorkshopId}", "Installed by Steam Workshop", Sources);
 
 public static partial class LocalModInventory
 {
@@ -184,8 +187,64 @@ public static partial class LocalModInventory
             .GroupBy(row => row.Name, StringComparer.Ordinal)
             .Where(group => !group.Any(row => managed.Contains(row.Location)))
             .Select(group => new WorkshopLibraryReference(group.Key, group.Select(row => row.Location)
-                .Distinct(PathRules.Comparer).OrderBy(path => path, PathRules.Comparer).ToArray()))
+                .Distinct(PathRules.Comparer).OrderBy(path => path, PathRules.Comparer).ToArray(),
+                ConsensusWorkshopTitle(group)))
             .OrderBy(item => item.ItemId, StringComparer.Ordinal).ToArray();
+    }
+
+    private static string? ConsensusWorkshopTitle(IEnumerable<LocalModLocation> locations)
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        var titles = locations.Select(row => row.VerifiedWorkshopTitle).OfType<string>()
+            .Distinct(StringComparer.Ordinal).Take(2).ToArray();
+        return titles.Length == 1 ? titles[0] : null;
+    }
+
+    private static string? ReadWorkshopTitle(DirectoryInfo item)
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        try
+        {
+            var file = new FileInfo(Path.Combine(item.FullName, "data.json"));
+            if (!file.Exists || (file.Attributes & FileAttributes.ReparsePoint) != 0) return null;
+            using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            if (stream.Length is <= 0 or > 16 * 1024) return null;
+            var bytes = new byte[(int)stream.Length];
+            stream.ReadExactly(bytes);
+            if (stream.ReadByte() != -1) return null;
+            ReadOnlyMemory<byte> json = bytes;
+            if (bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble)) json = json[Encoding.UTF8.Preamble.Length..];
+            using var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 12 });
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return null;
+            string? id = null, folder = null, title = null;
+            foreach (var field in root.EnumerateObject())
+            {
+                switch (field.Name)
+                {
+                    case "id":
+                        if (id is not null || field.Value.ValueKind is not (JsonValueKind.String or JsonValueKind.Number)) return null;
+                        id = field.Value.ValueKind == JsonValueKind.String ? field.Value.GetString() : field.Value.GetRawText();
+                        break;
+                    case "folderName":
+                        if (folder is not null || field.Value.ValueKind != JsonValueKind.String) return null;
+                        folder = field.Value.GetString();
+                        break;
+                    case "title":
+                        if (title is not null || field.Value.ValueKind != JsonValueKind.String) return null;
+                        title = field.Value.GetString()?.Trim();
+                        break;
+                }
+            }
+            return id == item.Name && (folder is null || folder == id) && title is { Length: > 0 and <= 256 }
+                && !title.Any(character => char.IsControl(character) || char.GetUnicodeCategory(character) is
+                    System.Globalization.UnicodeCategory.Format or System.Globalization.UnicodeCategory.LineSeparator or
+                    System.Globalization.UnicodeCategory.ParagraphSeparator) ? title : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return null;
+        }
     }
 
     private static void ScanWorkshop(string game, string root, List<LocalModLocation> rows, CancellationToken ct)
@@ -205,7 +264,8 @@ public static partial class LocalModInventory
                         ? "Workshop install record and local content directory"
                         : "Workshop content directory · installation record unconfirmed", dir.FullName)
                     {
-                        VerifiedWorkshopAppId = verified ? dir.Parent!.Name : null
+                        VerifiedWorkshopAppId = verified ? dir.Parent!.Name : null,
+                        VerifiedWorkshopTitle = verified ? ReadWorkshopTitle(dir) : null
                     });
                 }
             }
