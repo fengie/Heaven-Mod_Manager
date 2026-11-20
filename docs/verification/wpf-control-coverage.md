@@ -4,18 +4,18 @@ The [feature matrix](feature-test-matrix.json) describes service and integration
 
 The [behavior table](wpf-control-behavior.tsv) maps individual sites to named installed WPF and in-process WPF test methods, fixture conditions, interaction and observable outcome. An absent mapping means no independently attributed installed outcome for that site in this inventory. A method reference identifies an executable test; a passing installed run must provide its own source revision, profile and result. Identically labelled actions on two surfaces need separate attribution. For example, the archive picker test proves the dialog imports a file but its window-wide lookup does not distinguish the two “Install Mod” buttons. Search text edits prove live filtering; pressing Enter is a different action.
 
-The #940 source at `984919c6` has 387 control, event and supporting sites, including 118 XAML buttons, 103 bound command sites and two routed scroll commands. The 37-profile registry fixture spans 21 generic-root, 13 Unreal, two BepInEx and one MHW adapter. In-process tests open the real settings editor for each profile, check all six fields, invoke Save and compare the complete returned profile. A separate test opens a changed editor and cancels it. The FOMOD tests cover invalid and corrected required choices, checkbox selection through accessibility, disabled options and cancellation. These tests use isolated profiles and packages.
+The #940 source at `63620ed9` has 388 control, event and supporting sites, including 118 XAML buttons, 103 bound command sites and two routed scroll commands. The 37-profile registry fixture spans 21 generic-root, 13 Unreal, two BepInEx and one MHW adapter. In-process tests open the real settings editor for each profile, check all six fields, invoke Save and compare the complete returned profile. A separate test opens a changed editor and cancels it. The FOMOD tests cover invalid and corrected required choices, checkbox selection through accessibility, disabled options and cancellation. These tests use isolated profiles and packages.
 
-The behavior table maps only attributable sites. Its installed scenarios include a registry-wide fixture and narrower generic, Workshop and Unreal fixtures. Ten main tab mappings mean the hosted test selects each tab and observes its contents; they do not establish effects for every child control. The row staging test drives the real checkbox and verifies both enabled and denied states. The feature matrix also identifies service-level tests, including row composition and catalog presentation. In-game loading and installed host coverage require their own receipts.
+The behavior table contains 82 references covering 73 distinct sites. It includes the native Advanced Tools modal, a verified winning-file digest, inherited profile state, a safe update preview and the eight individual Mods filters. Its installed scenarios include a registry-wide fixture and narrower generic, Workshop and Unreal fixtures. Ten main tab mappings mean the hosted test selects each tab and observes its contents; they do not establish effects for every child control. The row staging test drives the real checkbox and verifies both enabled and denied states. The feature matrix also identifies service-level tests, including row composition and catalog presentation. In-game loading and installed host coverage require their own receipts.
 
 | Source area at #940 | Inventoried sites | Sites with a specific behavior mapping |
 | --- | ---: | ---: |
 | Main shell and tab selection | 27 | 13 |
-| Dashboard / Mods / Coverage | 76 | 9 |
+| Dashboard / Mods / Coverage | 76 | 19 |
 | Profiles / History / Settings / Installed files | 44 | 7 |
 | Browse Mods / Needs attention / Shared Files | 70 | 0 |
-| Advanced Tools tabs and code-behind | 76 | 0 |
-| Game settings editor / FOMOD dialog | 22 | 12 |
+| Advanced Tools tabs and code-behind | 76 | 20 |
+| Game settings editor / FOMOD dialog | 23 | 12 |
 | Shared templates, code events, native pickers and other surfaces | 72 | 2 |
 
 These counts include presentation and implementation sites. Each missing mapping needs a suitable scope. For Browse Mods seed exact provider responses before exercising search, conflict choices need two competing files and an expected winner, and Advanced Tools needs paired profiles, an upgrade or portable recipe according to the selected tab. Exercise these states once per distinct implementation and verify live applicability for every registered profile. Rerunning 37 identical provider, modal or OS-dialog scenarios solely to fill a table would add cost without testing a new code path.

@@ -15,7 +15,8 @@ App.xaml.cs | OnStartup | MainWindow window |
 App.xaml.cs | OnStartup | MessageBox.Show | "Universal Mod Manager startup failed"
 App.xaml.cs | OnStartup | MessageBox.Show | "Universal Mod Manager unexpected UI failure"
 App.xaml.cs | OnStartup | StartupWindow splash |
-FomodInstallerWindow.cs | event | check.Click | inline
+FomodInstallerWindow.cs | event | check.Checked | updateChoice
+FomodInstallerWindow.cs | event | check.Unchecked | updateChoice
 FomodInstallerWindow.cs | event | install.Click | InstallClicked
 FomodInstallerWindow.cs | event | radio.Checked | inline
 FomodInstallerWindow.cs | FomodInstallerWindow | Button cancel | Content = "Cancel" ; IsCancel = true
