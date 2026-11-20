@@ -23,7 +23,8 @@ internal sealed record IoStoreExportInventory(IReadOnlyDictionary<string,string>
             foreach (var mount in mounts)
             {
                 var toc = mount.FirstOrDefault(file => file.Path.EndsWith(".utoc",StringComparison.OrdinalIgnoreCase));
-                if (toc is null || store is null || ReadExports(store.PathFor(toc.BlobSha256), ct) is not { } exports)
+                if (toc is null || store is null || toc.BlobSha256.Length != 64 || !toc.BlobSha256.All(char.IsAsciiHexDigit) ||
+                    ReadExports(store.PathFor(toc.BlobSha256), ct) is not { } exports)
                 {
                     unknown.Add(id);
                     continue;

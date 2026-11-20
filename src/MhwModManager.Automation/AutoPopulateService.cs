@@ -905,7 +905,7 @@ public sealed class AutoPopulateService(
 
         if (exports.SharedWith.Count > 0 || exports.Unknown.Count > 0)
             summary += $" {exports.SharedWith.Count} selected package(s) share known Unreal export IDs. " +
-                $"Internal coverage is incomplete for {exports.Unknown.Count} selected package(s). In-game precedence is unverified.";
+                $"{exports.Unknown.Count} selected package(s) have a container without a supported export table. In-game precedence is unverified.";
 
         return new(
             state,

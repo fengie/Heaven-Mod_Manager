@@ -1,14 +1,18 @@
-# v8.8.126 — MHW Manual Mod Manager
+# v8.8.127 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 03:54:30 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 04:54:51 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.126**.
+Current product version: **8.8.127**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.127 — Auto Populate existing packages
+
+- Auto Populate indexes existing packages before planning across game profiles. It keeps explicit choices, holds incomplete or misplaced files, and reports shared Unreal export IDs for supported IoStore tables. [Auto Populate acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/937)
 
 ## v8.8.126 — nested mod collections
 
@@ -17,10 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.125 — discovered mods in the library
 
 - The Mods list restores previously discovered entries on open, reads verified Workshop titles from local package metadata, and automatically catalogs new active-game Inbox arrivals. You can search by title or Workshop ID. [Discovery report](https://github.com/fengie/Heaven-Mod_Manager/issues/933)
-
-## v8.8.124 — preserve archive install paths
-
-- Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
 
 ## Current plans & progress
 
