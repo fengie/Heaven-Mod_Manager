@@ -105,6 +105,22 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Open registered profile");
 
         await SelectModsTabAsync(window, ct);
+        var externalName = game.SteamAppId is not null ? "新皮肤 Workshop fixture" :
+            game.AdapterId == "bepinex" ? "Example plugin" : null;
+        if (externalName is not null)
+        {
+            var grid = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.DataGrid &&
+                e.Current.Name == "Mod library"), UiTimeout, "discovered library", ct);
+            var title = await WaitForElementAsync(() => Find(grid, e => e.Current.Name == externalName),
+                UiTimeout, "external mod visible on Mods", ct);
+            var row = title;
+            while (row is not null && row.Current.ControlType != ControlType.DataItem)
+                row = TreeWalker.ControlViewWalker.GetParent(row);
+            Assert.NotNull(row);
+            Assert.Null(Find(row, e => e.Current.ControlType == ControlType.CheckBox));
+            Assert.False(FindButton(window, "Select all visible mods")!.Current.IsEnabled);
+            passed.Add("Discover externally owned mod without a deployment toggle");
+        }
         run.CopyToInbox(run.ArchivePath);
         const string name = "E2E Inbox Fixture";
         var toggle = await WaitForElementAsync(() => FindModToggle(window, name), UiTimeout, "Inbox mod in Mods", ct);
@@ -162,6 +178,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await WaitForAsync(() => File.Exists(run.LiveModPath) && File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
             UiTimeout, "Auto Populate deploys to this profile", ct);
         passed.Add("Auto Populate and read deployed file");
+        if (game.SteamAppId is not null) Assert.Equal(run.ModBytes, File.ReadAllBytes(run.WorkshopPayload));
         Assert.Equal(archiveHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
         Assert.False(File.Exists(Path.Combine(run.SecondGame.LiveModRoot, Path.GetFileName(run.LiveModPath))));

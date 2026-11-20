@@ -67,6 +67,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             [Path.Combine(second, "gold_P.pak")] = [4, 5, 6],
             [Path.Combine(second, "gold_P.sig")] = [9]
         };
+        foreach (var choice in new[] { "Low", "High" })
+        {
+            var option = Directory.CreateDirectory(Path.Combine(wrapper, "Choose options", choice));
+            files[Path.Combine(option.FullName, "option.pak")] = System.Text.Encoding.UTF8.GetBytes(choice);
+        }
         foreach (var (path, bytes) in files) File.WriteAllBytes(path, bytes);
         var db = run.OpenCatalog();
         try
@@ -89,6 +94,10 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var retained = Assert.Single(mods, m => PathRules.Comparer.Equals(m.SourcePath, first));
             Assert.Equal("saved-blue", retained.Id);
             Assert.Equal(42, retained.Priority);
+            Assert.Contains(mods, mod => mod.DisplayName == "Choose options" && mod.RequiresLayoutReview);
+            var (dialog, invocation) = await OpenWorkflowAsync(window, TestToken);
+            ((WindowPattern)dialog.GetCurrentPattern(WindowPattern.Pattern)).Close();
+            await invocation.WaitAsync(UiTimeout, TestToken);
             foreach (var (path, bytes) in files) Assert.Equal(bytes, File.ReadAllBytes(path));
             Assert.Equal(new[] { run.SentinelPath }, Directory.GetFiles(run.FirstGame.LiveModRoot, "*", SearchOption.AllDirectories));
         }
@@ -625,7 +634,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         public byte[] ModBytes { get; } = Enumerable.Range(0, 4096).Select(i => (byte)(i % 251)).ToArray();
         public byte[] BaselineBytes { get; } = [13, 37, 73, 101];
 
-        public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", "987654321", "314159", "payload.bin");
+        public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", FirstGame.SteamAppId!, "314159", "payload.bin");
 
         public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false, GameProfile? profile = null)
         {
@@ -640,7 +649,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             marker = Guid.NewGuid().ToString("N");
             File.WriteAllText(Path.Combine(root, ".owned-e2e-root"), marker);
             home = Path.Combine(root, "manager-home");
-            gameA = workshop ? Path.Combine(root, "steamapps", "common", "game-A") : Path.Combine(root, "game-A");
+            gameA = workshop || !string.IsNullOrWhiteSpace(profile?.SteamAppId) ? Path.Combine(root, "steamapps", "common", "game-A") : Path.Combine(root, "game-A");
             gameB = Path.Combine(root, "game-B");
             Directory.CreateDirectory(gameA);
             Directory.CreateDirectory(gameB);
@@ -652,20 +661,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             File.Copy(cmd, Path.Combine(gameB, "FakeB.exe"));
 
             FirstGame = GameProfile.Generic("e2e-game-a", "E2E Fake Game A", gameA, "FakeA.exe", "Mods");
-            if (workshop)
-            {
-                FirstGame = FirstGame with { SteamAppId = "987654321" };
-                var workshopRoot = Path.Combine(root, "steamapps", "workshop");
-                Directory.CreateDirectory(Path.GetDirectoryName(WorkshopPayload)!);
-                Directory.CreateDirectory(Path.Combine(workshopRoot, "content", "987654321", "271828"));
-                File.WriteAllBytes(WorkshopPayload, ModBytes);
-                File.WriteAllText(Path.Combine(Path.GetDirectoryName(WorkshopPayload)!, "data.json"),
-                    """{"folderName":"314159","id":314159,"title":"新皮肤 Workshop fixture"}""");
-                var pluginDir = Directory.CreateDirectory(Path.Combine(gameA,"BepInEx","plugins"));
-                BepInExPluginLibraryTests.WritePlugin(Path.Combine(pluginDir.FullName,"sample.dll"));
-                File.WriteAllText(Path.Combine(workshopRoot, "appworkshop_987654321.acf"),
-                    """ "AppWorkshop" { "appid" "987654321" "WorkshopItemsInstalled" { "314159" { "manifest" "1" } } } """);
-            }
+            if (workshop) FirstGame = FirstGame with { SteamAppId = "987654321" };
             if (unreal)
                 FirstGame = FirstGame with { AdapterId = "unreal-paks", ModRootRelativePath = @"Quartz\Content\Paks" };
             if (profile is not null)
@@ -680,6 +676,23 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 Directory.CreateDirectory(Path.GetDirectoryName(FirstGame.ExecutablePath)!);
                 File.Copy(Path.Combine(fullTemp, "mhw-game-launch-probe.exe"), FirstGame.ExecutablePath, overwrite: true);
                 if (FirstGame.SavePath is not null) Directory.CreateDirectory(FirstGame.SavePath);
+            }
+            if (FirstGame.SteamAppId is { } steamId)
+            {
+                if (!uint.TryParse(steamId, out _)) throw new InvalidDataException("Invalid Steam app ID.");
+                var workshopRoot = Path.Combine(root, "steamapps", "workshop");
+                Directory.CreateDirectory(Path.GetDirectoryName(WorkshopPayload)!);
+                Directory.CreateDirectory(Path.Combine(workshopRoot, "content", steamId, "271828"));
+                File.WriteAllBytes(WorkshopPayload, ModBytes);
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(WorkshopPayload)!, "data.json"),
+                    """{"folderName":"314159","id":314159,"title":"新皮肤 Workshop fixture"}""");
+                File.WriteAllText(Path.Combine(workshopRoot, $"appworkshop_{steamId}.acf"),
+                    $$""" "AppWorkshop" { "appid" "{{steamId}}" "WorkshopItemsInstalled" { "314159" { "manifest" "1" } } } """);
+            }
+            if (workshop || FirstGame.AdapterId == "bepinex")
+            {
+                var pluginDir = Directory.CreateDirectory(Path.Combine(gameA,"BepInEx","plugins"));
+                BepInExPluginLibraryTests.WritePlugin(Path.Combine(pluginDir.FullName,"sample.dll"));
             }
             SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");
             var state = Path.Combine(home, "State");

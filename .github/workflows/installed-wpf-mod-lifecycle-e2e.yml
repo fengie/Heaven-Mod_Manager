@@ -6,11 +6,10 @@ on:
     branches: [main]
     paths:
       - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.cs'
-      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.DiscoveredGames.cs'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.*.cs'
       - 'tests/MhwModManager.IntegrationTests/DiscoveredGameProfiles.cs'
       - 'tests/fixtures/discovered-games/**'
       - 'tests/fixtures/packaged-ui/**'
-      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.ProfileActions.cs'
       - 'src/MhwModManager.App/**'
       - 'src/MhwModManager.Core/GameProfiles.cs'
       - 'src/MhwModManager.Filesystem/GameProfileRegistry*.cs'

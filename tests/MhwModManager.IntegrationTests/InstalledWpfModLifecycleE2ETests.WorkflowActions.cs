@@ -6,8 +6,8 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed partial class InstalledWpfModLifecycleE2ETests
 {
-    private static async Task ExerciseWorkflowActionsAsync(DisposableWpfRun run, AutomationElement main,
-        List<string> passed, CancellationToken ct)
+    private static async Task<(AutomationElement Dialog, Task Invocation)> OpenWorkflowAsync(
+        AutomationElement main, CancellationToken ct)
     {
         const string title = "Advanced Tools & Diagnostics";
         var dashboard = await WaitForElementAsync(() => Find(main, e => e.Current.ControlType == ControlType.TabItem &&
@@ -25,6 +25,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             new PropertyCondition(AutomationElement.NameProperty, title));
         var dialog = await WaitForElementAsync(() => main.FindFirst(TreeScope.Descendants, ownerWindow) ??
             AutomationElement.RootElement.FindFirst(TreeScope.Children, ownerWindow), UiTimeout, "advanced workflow dialog", ct);
+
+        return (dialog, invoke);
+    }
+
+    private static async Task ExerciseWorkflowActionsAsync(DisposableWpfRun run, AutomationElement main,
+        List<string> passed, CancellationToken ct)
+    {
+        var (dialog, invoke) = await OpenWorkflowAsync(main, ct);
 
         async Task<AutomationElement> Id(string id) => await WaitForElementAsync(() => Find(dialog,
             e => e.Current.AutomationId == id && e.Current.IsEnabled), UiTimeout, id, ct);
