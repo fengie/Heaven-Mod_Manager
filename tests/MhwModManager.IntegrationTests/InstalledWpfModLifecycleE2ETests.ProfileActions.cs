@@ -135,6 +135,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             passed.Add("Refresh generic coverage and verify unsupported semantic rows stay empty");
         }
         await ExerciseFilteredLibraryActionsAsync(run, window, passed, ct);
+        await ExerciseWorkflowActionsAsync(run, window, passed, ct);
     }
 
     private static async Task ExerciseFilteredLibraryActionsAsync(DisposableWpfRun run, AutomationElement window,
