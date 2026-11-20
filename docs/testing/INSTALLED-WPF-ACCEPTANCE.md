@@ -17,7 +17,7 @@ The November 20 H2 snapshot contained 37 registrations. The read-only host censu
 5. Select two ZIPs with a native multi-file picker; verify that confidently routed packages for the active game automatically appear as two disabled library rows without a separate Inbox command, preserving source hashes and fake game sentinel bytes.
 6. Switch between the two registered fake games through the real WPF selector without restarting the process or altering any sentinel bytes.
 
-The hosted acceptance workflow requires 13 passing cases, zero skips, and a recorded UI result for each profile in the registry. The per-profile test launches a disposable probe from the registered executable path. Read the job results and the per-game evidence file together.
+The hosted acceptance workflow requires all configured cases to pass with zero skips and separate ordinary lifecycle and moved-install results for each registered profile. The per-profile test launches a disposable probe from the registered executable path. Read the job results and the per-game evidence file together.
 
 ## Isolation and evidence
 
