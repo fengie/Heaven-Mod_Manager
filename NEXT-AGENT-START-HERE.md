@@ -1,6 +1,6 @@
-# v8.8.121 — integrated source and release verification
+# v8.8.122 — integrated source and release verification
 
-Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. v8.8.121 adds a read-only inventory of installed mod evidence across current and older game installations, standalone game folders, and Steam Workshop. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Manager main `e20d575e9737cf60feb5ef47e72503f318530706` includes the registered-game Workshop library change [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928). Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -24,7 +24,7 @@ Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. 
 
 ## Verification boundary
 
-v8.8.120 [build 603](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-603) was published from source `8ab5e050ef78bad07099fff470808c0a3af86c28`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44672735615) and [hosted updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44675183365) passed. The shipped updater also installed build 603 on Heaven2 and a separate startup exited cleanly. v8.8.121 requires its own immutable publication, hosted updater and rollback verification, and a personal Heaven2 installed check. These checks do not establish in-game mod loading.
+v8.8.121 [build 607](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-607) published source `f86ccd52c7688b1c46225f26c6b282ab839c5c5a`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44686378800) and [installed updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44687609888) passed. v8.8.122 publication, hosted update and rollback, and installed Heaven2 verification are pending.
 
 For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 

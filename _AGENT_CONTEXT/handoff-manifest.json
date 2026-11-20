@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.121",
+  "currentVersion": "8.8.122",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Integrated Manager main 81b09514f95fd1dd3c4f4e131be9825fddfcc03a includes #925 and #926. Build 603 is the verified v8.8.120 package from 8ab5e050ef78bad07099fff470808c0a3af86c28; v8.8.121 publication and packaged verification are pending.",
+  "immediateParentRevision": "Manager main e20d575e9737cf60feb5ef47e72503f318530706 includes #928. Build 607 is the verified v8.8.121 package from f86ccd52c7688b1c46225f26c6b282ab839c5c5a. v8.8.122 publication and installed acceptance are pending.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh current Toolbox and Manager main, review ownership and release status, and propagate the full continuity protocol and active Learned Rules to every successor. Verify the v8.8.121 Windows release gate, immutable publication, hosted updater and rollback, and personal Heaven2 startup. Preserve the active personal Manager session and all open provider, runtime, performance and governance acceptance.",
+  "nextAgentObligation": "Refresh current Toolbox and Manager main, review ownership and release status, and propagate the full continuity protocol and active Learned Rules to every successor. Verify the v8.8.122 Windows release gate, immutable publication, hosted updater and rollback, and personal Heaven2 startup. Preserve the active personal Manager session and all open provider, runtime, performance and governance acceptance.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",
