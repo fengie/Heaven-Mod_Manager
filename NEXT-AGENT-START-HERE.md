@@ -1,4 +1,6 @@
-# v8.8.119 — source integrated, immutable publication and Heaven2 pending
+# v8.8.119 - immutable release verified
+
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `7144ab22389305fc90eb4efc3bd06055209c87da`. Public immutable [updater-main-600](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-600) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Canonical `fengie/Heaven-Mod_Manager@main` source `8499cf6c6ec2197bf64de8da003cc0da1e51aafb` includes #898/#900 deterministic bounded local catalog paging, #902 armor-slot conflict isolation, #903 provider expiry diagnostics/website browsing and review-only family improvements, and #905 explicit erroneous-family separation with strict user-rule preservation. A **new immutable v8.8.119 release is not yet verified**; protected version metadata and its exact native Windows publication gate, ZIP/manifest digests and real hosted packaged updater/rollback are pending. The prior **verified public [v8.8.118 updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588)** targets exact source `b6e1e151b43323218041b80204dee070002c297b` and passed [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) and [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969); it excludes later fixes. Personal Heaven2 source/health and p95 remain unverified; expired provider terms/Nexus public-app registration (#786/#558) block REST indexing even though official site links are available. Bootstrap `fengie/heaven-toolbox@main`.
 
@@ -21,9 +23,11 @@ Canonical `fengie/Heaven-Mod_Manager@main` source `8499cf6c6ec2197bf64de8da003cc
 
 ## Verification boundary
 
-**v8.8.118 published and independently verified on disposable hosted Windows:** [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), exact release source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Release Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) PASS; [real packaged update 60→588/rollback E2E 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) PASS. Public ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`; manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. PR #899 integrated immutable source-bound verification evidence; later main includes #898/#900/#902/#903, **none** part of immutable build 588. Do not re-release build 588 to resolve stale documentation.
+Current hosted-Windows closure: v8.8.119 source `7144ab22389305fc90eb4efc3bd06055209c87da` passed run `44646768083` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.119-heaven-windows-closure.log`.
 
-**Not established by hosted proof:** personal physical Heaven2 installed binary/version/health; bounded endurance/recovery distribution; real mixed-game archive UI and p95; provider authorization, independent signing and judiciary strict-mode enforcement. Reuse [Toolbox #1001](https://github.com/fengie/heaven-toolbox/issues/1001#issuecomment-7003951728) for the existing authenticated read-only Heaven2 observation capability request; never bypass host custody or modify personal updater state for the sake of proof.
+Verified immutable GitHub release: [updater-main-600](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-600), exact source `7144ab22389305fc90eb4efc3bd06055209c87da`, ZIP SHA-256 `25f522fc26f512350efdc5cd1e88ede41a0bbf6edc30eab6517d24667ccab8b8` and manifest SHA-256 `bd6719c579f12e87e3c6d5ca074bc83735cd0b1852dc6ddc9f2709b56ded8942`. Public release and tag ref independently match the built artifact.
+
+The tested source remains `7144ab22389305fc90eb4efc3bd06055209c87da` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
