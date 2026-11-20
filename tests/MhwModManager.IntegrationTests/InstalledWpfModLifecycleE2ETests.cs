@@ -137,11 +137,13 @@ public sealed class InstalledWpfModLifecycleE2ETests
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
     }
 
-    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Theory(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
-    public async Task NativeArchivePickerImportsOneDisabledModWithoutTouchingFakeGame()
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeArchivePickerImportsOneDisabledModWithoutTouchingFakeGame(bool unreal)
     {
-        using var run = new DisposableWpfRun(seedInbox: false);
+        using var run = new DisposableWpfRun(seedInbox: false, unreal: unreal);
         var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
         var originalHash = SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
@@ -166,7 +168,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             UiTimeout, "native file picker Open", TestToken));
 
         await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
-            File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
+            File.Exists(Path.Combine(run.InstalledModPath, unreal ? "Quartz/Content/Paks/~mods/e2e.pak" : "e2e-payload.bin")),
             UiTimeout, "file picker import never reached installed library", TestToken);
         await SelectModsTabAsync(window, TestToken);
         var toggle = await WaitForElementAsync(() => Find(window, element =>
@@ -176,6 +178,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
         Assert.Equal(ToggleState.Off,
             ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
         Assert.False(File.Exists(run.LiveModPath));
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(Path.Combine(run.InstalledModPath,
+            unreal ? "Quartz/Content/Paks/~mods/e2e.pak" : "e2e-payload.bin")));
         Assert.Equal(originalHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
     }
@@ -556,7 +560,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             ArchivePath = Path.Combine(input, "E2E Inbox Fixture.zip");
             using (var zip = ZipFile.Open(ArchivePath, ZipArchiveMode.Create))
             {
-                using var payload = zip.CreateEntry("Mods/e2e-payload.bin",
+                using var payload = zip.CreateEntry(unreal ? "Quartz/Content/Paks/~mods/e2e.pak" : "Mods/e2e-payload.bin",
                     CompressionLevel.NoCompression).Open();
                 payload.Write(ModBytes);
             }
@@ -576,7 +580,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
 
             var storage = GameModStorage.Resolve(home, FirstGame);
             InstalledModPath = Path.Combine(storage.InstalledRoot, "E2E Inbox Fixture");
-            LiveModPath = Path.Combine(gameA, "Mods", "e2e-payload.bin");
+            LiveModPath = Path.Combine(FirstGame.LiveModRoot, unreal ? "~mods/e2e.pak" : "e2e-payload.bin");
             Directory.CreateDirectory(FirstGame.LiveModRoot);
             SentinelPath = Path.Combine(FirstGame.LiveModRoot, "keep-user-owned.bin");
             File.WriteAllBytes(SentinelPath, BaselineBytes);

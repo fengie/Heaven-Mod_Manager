@@ -14,9 +14,12 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     internal bool IsArchiveTargetRoot(string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var target = game?.ModRootRelativePath ?? "nativePC";
-        var firstComponent = target.Split(['/', '\\'], 2)[0];
-        return PathRules.Comparer.Equals(name, firstComponent) || PathRules.Comparer.Equals(name, "GameRoot");
+        if (PathRules.Comparer.Equals(name, "GameRoot")) return true;
+        var target = game?.ModRootRelativePath ?? "";
+        var separator = target.IndexOfAny(['/', '\\']);
+        // For a one-component mount the scanner reconstructs the whole target from the
+        // profile. Preserve the existing flattened source layout for those packages.
+        return separator > 0 && PathRules.Comparer.Equals(name, target[..separator]);
     }
 
     public async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default)
