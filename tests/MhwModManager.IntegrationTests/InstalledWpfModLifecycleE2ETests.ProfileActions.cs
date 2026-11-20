@@ -80,23 +80,36 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Refresh History and verify the committed deployment");
 
         await SelectTab("Settings");
-        var animationBox = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.CheckBox &&
-            item.Current.Name == "Interface animations"), UiTimeout, "animation setting", ct);
-        var animations = (TogglePattern)animationBox.GetCurrentPattern(TogglePattern.Pattern);
-        bool SavedAnimations()
+        var packageDirectory = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR")!;
+        Assert.False(MhwModManager.Updater.UpdateClientService.CanSelfUpdate(packageDirectory));
+        foreach (var (label, key) in new[] { ("Interface animations", "uiAnimationsEnabled"),
+            ("Remember last tab", "rememberLastTab"), ("Confirm before apply", "confirmBeforeApply"),
+            ("Confirm before discard", "confirmBeforeDiscardStaged"), ("Background metadata refresh", "backgroundMetadataRefreshEnabled"),
+            ("Automatic program updates", "autoUpdateEnabled") })
         {
-            using var settings = JsonDocument.Parse(File.ReadAllBytes(run.SettingsPath));
-            return settings.RootElement.GetProperty("uiAnimationsEnabled").GetBoolean();
+            var box = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.CheckBox &&
+                item.Current.Name == label), UiTimeout, label, ct);
+            var pattern = (TogglePattern)box.GetCurrentPattern(TogglePattern.Pattern);
+            bool Saved()
+            {
+                using var settings = JsonDocument.Parse(File.ReadAllBytes(run.SettingsPath));
+                return settings.RootElement.GetProperty(key).GetBoolean();
+            }
+            var before = Saved();
+            Assert.Equal(before, pattern.Current.ToggleState == ToggleState.On);
+            pattern.Toggle();
+            await WaitForAsync(() => Saved() != before && (pattern.Current.ToggleState == ToggleState.On) != before,
+                UiTimeout, label + " persisted", ct);
+            pattern.Toggle();
+            await WaitForAsync(() => Saved() == before && (pattern.Current.ToggleState == ToggleState.On) == before,
+                UiTimeout, label + " restored", ct);
+            passed.Add("Persist and restore " + label);
         }
-        Assert.False(SavedAnimations());
-        Assert.Equal(ToggleState.Off, animations.Current.ToggleState);
-        animations.Toggle();
-        await WaitForAsync(() => animations.Current.ToggleState == ToggleState.On && SavedAnimations(),
-            UiTimeout, "enabled animation setting persisted", ct);
-        animations.Toggle();
-        await WaitForAsync(() => animations.Current.ToggleState == ToggleState.Off && !SavedAnimations(),
-            UiTimeout, "original animation setting restored on disk", ct);
-        passed.Add("Toggle interface animations, verify settings on disk and restore");
+        Invoke(await Button("Measure manager storage"));
+        await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
+            e.Current.Name.StartsWith("Storage totals refreshed", StringComparison.Ordinal)), UiTimeout, "storage measurement", ct);
+        passed.Add("Measure manager storage");
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
 
         await SelectTab("Installed files");
         var filter = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Edit &&
