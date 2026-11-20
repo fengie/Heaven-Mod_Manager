@@ -120,7 +120,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public string ModLibraryPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Installed mods: {s.Paths.ModsRoot}"; } }
     public string GameDownloadsPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Downloaded archives: {s.Paths.DownloadsRoot}"; } }
-    public int InstalledCount=>libraryRows.Count;
+    public int InstalledCount
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return libraryRows.Count;
+        }
+    }
     public string InstalledCountLabel
     {
         get
@@ -218,7 +225,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return StagedCount==0?"No pending changes":$"{StagedCount} pending • {StagedEnableCount} turning on • {StagedDisableCount} turning off";
         }
     }
-    public string AllViewLabel=>$"All ({InstalledCount})";
+    public string AllViewLabel
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return $"All ({InstalledCount})";
+        }
+    }
     public string EnabledViewLabel=>$"Enabled ({EnabledCount})";
     public string StagedViewLabel
     {
@@ -502,6 +516,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
     partial void OnSelectedModChanged(ModRowViewModel? value)
     {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         OnPropertyChanged(nameof(SelectedLibraryItem));
         if(value is null)return;
         _=LoadModVisualsAsync(value);

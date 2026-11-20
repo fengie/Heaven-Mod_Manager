@@ -9,13 +9,16 @@ public sealed class LibraryRowStyleSelector : System.Windows.Controls.StyleSelec
     public System.Windows.Style? ExternalStyle { get; set; }
 
     public override System.Windows.Style? SelectStyle(object item, System.Windows.DependencyObject container)
-        => item is WorkshopLibraryReference ? ExternalStyle : base.SelectStyle(item, container);
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        return item is WorkshopLibraryReference ? ExternalStyle : base.SelectStyle(item, container);
+    }
 }
 
 public sealed partial class MainWindowViewModel
 {
     public IReadOnlyList<LocalModLocation> LocalModLocations { get; private set; } = [];
-    public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop librariesÃ¢â‚¬Â¦";
+    public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop librariesÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VisibleLocalModLocations))]
@@ -36,13 +39,25 @@ public sealed partial class MainWindowViewModel
 
     private readonly ObservableRangeCollection<object> libraryRows = [];
     public ICollectionView LibraryView { get; }
-    public int VisibleLibraryCount => LibraryView.Cast<object>().Count();
+    public int VisibleLibraryCount
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return LibraryView.Cast<object>().Count();
+        }
+    }
     private WorkshopLibraryReference? selectedExternal;
     public object? SelectedLibraryItem
     {
-        get => (object?)SelectedMod ?? selectedExternal;
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return (object?)SelectedMod ?? selectedExternal;
+        }
         set
         {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
             selectedExternal = value as WorkshopLibraryReference;
             SelectedMod = value as ModRowViewModel;
         }
@@ -50,6 +65,7 @@ public sealed partial class MainWindowViewModel
 
     private void RebuildLibraryRows()
     {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         var sources = Mods.SelectMany(row => row.Members.Concat(row.ArchivedMembers)).Select(mod => mod.SourcePath);
         var external = LocalModInventory.WorkshopLibrary(LocalModLocations, s.Paths.Game.SteamAppId, sources);
         libraryRows.ReplaceAll(Mods.Cast<object>().Concat(external));
@@ -61,6 +77,7 @@ public sealed partial class MainWindowViewModel
 
     private bool FilterLibraryItem(object item)
     {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         if (item is not WorkshopLibraryReference external) return FilterMod(item);
         var query = SearchText.Trim();
         return ModViewMode == "All" && (external.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)
@@ -69,6 +86,7 @@ public sealed partial class MainWindowViewModel
 
     private void RefreshLibraryFilters()
     {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         ModsView.Refresh();
         LibraryView.Refresh();
     }
@@ -94,7 +112,7 @@ public sealed partial class MainWindowViewModel
             RebuildLibraryRows();
             OnPropertyChanged(nameof(LocalModLocations));
             OnPropertyChanged(nameof(VisibleLocalModLocations));
-            LocalModInventoryStatus = $"{result.Count:N0} inventory entries Â· checked {DateTime.Now:t}";
+            LocalModInventoryStatus = $"{result.Count:N0} inventory entries Ã‚Â· checked {DateTime.Now:t}";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or ArgumentException or System.Text.Json.JsonException)

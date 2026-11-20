@@ -12,8 +12,22 @@ public sealed record LocalModLocation(string Game, string Name, string Evidence,
 
 public sealed record WorkshopLibraryReference(string ItemId, IReadOnlyList<string> Locations)
 {
-    public string DisplayName => $"Workshop item {ItemId}";
-    public string SourceSummary => string.Join(Environment.NewLine, Locations);
+    public string DisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return $"Workshop item {ItemId}";
+        }
+    }
+    public string SourceSummary
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return string.Join(Environment.NewLine, Locations);
+        }
+    }
 }
 
 public static partial class LocalModInventory
@@ -166,6 +180,7 @@ public static partial class LocalModInventory
     public static IReadOnlyList<WorkshopLibraryReference> WorkshopLibrary(
         IEnumerable<LocalModLocation> inventory, string? steamAppId, IEnumerable<string> managedSources)
     {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         if (string.IsNullOrEmpty(steamAppId)) return [];
         var managed = managedSources.ToHashSet(PathRules.Comparer);
         return inventory.Where(row => row.VerifiedWorkshopAppId == steamAppId)
