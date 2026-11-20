@@ -81,7 +81,7 @@ public sealed class FomodInstallerWindow : Window
                     else
                     {
                         var check = new CheckBox { Content = optionLabel, IsChecked = option.Selected, IsEnabled = option.Type is not ("Required" or "NotUsable") && group.Type != "SelectAll", Margin = new Thickness(8), ToolTip = option.Description };
-                        check.Click += (_, _) =>
+                        RoutedEventHandler updateChoice = (_, _) =>
                         {
                             if (check.IsChecked == true)
                             {
@@ -91,6 +91,8 @@ public sealed class FomodInstallerWindow : Window
                             else SelectedOptions.Remove(option.Id);
                             try { RenderChoices(); } catch (InvalidDataException ex) { status.Text = "This installer needs a different choice: " + ex.Message; }
                         };
+                        check.Checked += updateChoice;
+                        check.Unchecked += updateChoice;
                         choices.Children.Add(check);
                     }
                     if (!string.IsNullOrWhiteSpace(option.Description)) choices.Children.Add(new TextBlock { Text = option.Description, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(30, 0, 8, 6), Opacity = 0.75 });
@@ -103,6 +105,6 @@ public sealed class FomodInstallerWindow : Window
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try { var files = installer.Plan(SelectedOptions, game); status.Text = $"Ready to install {files.Count} file(s)."; DialogResult = true; }
-        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { status.Text = "The mod cannot be installed with these choices: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or InvalidOperationException) { status.Text = "The mod cannot be installed with these choices: " + ex.Message; }
     }
 }
