@@ -35,8 +35,9 @@ public sealed class InstalledWpfModLifecycleE2ETests
         var grid = await WaitForElementAsync(() => Find(window, element =>
             element.Current.ControlType == ControlType.DataGrid && element.Current.Name == "Mod library"),
             UiTimeout, "ordinary mod library", TestToken);
+        const string title = "新皮肤 Workshop fixture";
         var item = await WaitForElementAsync(() => Find(grid, element =>
-            element.Current.Name == "Workshop item 314159"), UiTimeout, "verified Workshop item", TestToken);
+            element.Current.Name == title), UiTimeout, "verified Workshop title in unfiltered Mods", TestToken);
         Assert.Null(Find(item, element => element.Current.ControlType == ControlType.CheckBox));
         var plugin = await WaitForElementAsync(() => Find(grid, element => element.Current.Name == "Example plugin"),
             UiTimeout, "externally owned BepInEx plugin", TestToken);
@@ -45,8 +46,54 @@ public sealed class InstalledWpfModLifecycleE2ETests
         var selectAll = await WaitForElementAsync(() => FindButton(window, "Select all visible mods"),
             UiTimeout, "managed bulk selection", TestToken);
         Assert.False(selectAll.Current.IsEnabled);
+        var search = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.Edit && element.Current.Name == "Search mods"),
+            UiTimeout, "Search mods field", TestToken);
+        var field = (ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern);
+        foreach (var query in new[] { "新皮肤", "314159" })
+        {
+            field.SetValue("absent-workshop-fixture");
+            await WaitForAsync(() => Find(grid, element => element.Current.Name == title) is null,
+                UiTimeout, "Workshop row filtered out", TestToken);
+            field.SetValue(query);
+            await WaitForElementAsync(() => Find(grid, element => element.Current.Name == title),
+                UiTimeout, "Workshop title restored by " + query, TestToken);
+        }
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.WorkshopPayload));
         Assert.False(File.Exists(run.LiveModPath));
+    }
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public async Task InboxDropsAppearInOpenModsAndPreserveStagedSelections()
+    {
+        using var run = new DisposableWpfRun(seedInbox: false);
+        var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
+        await SelectModsTabAsync(window, TestToken);
+        var grid = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.DataGrid && element.Current.Name == "Mod library"),
+            UiTimeout, "open Mods before dropping any packages", TestToken);
+
+        Task<AutomationElement> WaitForToggle(string name) => WaitForElementAsync(() => Find(grid, element =>
+            element.Current.ControlType == ControlType.CheckBox &&
+            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase)),
+            UiTimeout, "automatic Inbox row " + name, TestToken);
+        var firstHash = SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive));
+        var secondHash = SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive));
+        run.CopyToInbox(run.BatchFirstArchive);
+        var first = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.Off, first.Current.ToggleState);
+        first.Toggle();
+        run.CopyToInbox(run.BatchSecondArchive);
+        var second = (TogglePattern)(await WaitForToggle("BulkTwo")).GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.Off, second.Current.ToggleState);
+        first = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, first.Current.ToggleState);
+        Assert.Equal(firstHash, SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive)));
+        Assert.Equal(secondHash, SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive)));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-one.bin")));
+        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-two.bin")));
     }
 
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
@@ -364,7 +411,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 // Splash uses "Universal Mod Manager" and a startup-failure modal
                 // uses "Universal Mod Manager startup failed". Neither has the real
                 // UI controls. Never mistake either for the product's main window.
-                if (string.Equals(title, "Universal Mod Manager startup failed", StringComparison.Ordinal))
+                if (title is "Universal Mod Manager startup failed" or "Universal Mod Manager unexpected UI failure")
                 {
                     var message = Find(window, element =>
                         element.Current.ControlType == ControlType.Text &&
@@ -376,6 +423,10 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 }
                 if (title.StartsWith("Universal Mod Manager — ", StringComparison.Ordinal))
                     return window;
+                if (window.FindFirst(TreeScope.Descendants, new PropertyCondition(
+                    AutomationElement.AutomationIdProperty, "ActiveGameSelector")) is not null)
+                    throw new InvalidOperationException(
+                        $"Packaged main window has the game selector but an unexpected title: '{title}'.");
             }
             return null;
         }, UiTimeout, "packaged WPF main window", ct);
@@ -529,6 +580,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 Directory.CreateDirectory(Path.GetDirectoryName(WorkshopPayload)!);
                 Directory.CreateDirectory(Path.Combine(workshopRoot, "content", "987654321", "271828"));
                 File.WriteAllBytes(WorkshopPayload, ModBytes);
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(WorkshopPayload)!, "data.json"),
+                    """{"folderName":"314159","id":314159,"title":"新皮肤 Workshop fixture"}""");
                 var pluginDir = Directory.CreateDirectory(Path.Combine(gameA,"BepInEx","plugins"));
                 BepInExPluginLibraryTests.WritePlugin(Path.Combine(pluginDir.FullName,"sample.dll"));
                 File.WriteAllText(Path.Combine(workshopRoot, "appworkshop_987654321.acf"),
@@ -584,11 +637,14 @@ public sealed class InstalledWpfModLifecycleE2ETests
             Directory.CreateDirectory(FirstGame.LiveModRoot);
             SentinelPath = Path.Combine(FirstGame.LiveModRoot, "keep-user-owned.bin");
             File.WriteAllBytes(SentinelPath, BaselineBytes);
-            if (seedInbox)
-            {
-                Directory.CreateDirectory(storage.InboxRoot);
-                File.Copy(ArchivePath, Path.Combine(storage.InboxRoot, Path.GetFileName(ArchivePath)));
-            }
+            if (seedInbox) CopyToInbox(ArchivePath);
+        }
+
+        public void CopyToInbox(string source)
+        {
+            var inbox = GameModStorage.Resolve(home, FirstGame).InboxRoot;
+            Directory.CreateDirectory(inbox);
+            File.Copy(source, Path.Combine(inbox, Path.GetFileName(source)));
         }
 
         public static void GuardRunner(string? optIn, string? runnerEnvironment,

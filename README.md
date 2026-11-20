@@ -1,14 +1,18 @@
-# v8.8.124 — MHW Manual Mod Manager
+# v8.8.125 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 3:37:17 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 12:12:18 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.124**.
+Current product version: **8.8.125**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.125 — discovered mods in the library
+
+- The Mods list restores previously discovered entries on open, reads verified Workshop titles from local package metadata, and automatically catalogs new active-game Inbox arrivals. You can search by title or Workshop ID. [Discovery report](https://github.com/fengie/Heaven-Mod_Manager/issues/933)
 
 ## v8.8.124 — preserve archive install paths
 
@@ -17,10 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.123 — BepInEx and ReShade in the Mods list
 
 - The Mods list now shows verified BepInEx plugins and ReShade installations in the registered game. Search by plugin name, ID or source path. Exact DLL copies already in a saved package appear once, including disabled packages that have never been indexed. Different DLLs can share a plugin ID and remain distinct. [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930)
-
-## v8.8.122 — Steam Workshop in the Mods list
-
-- The Mods list now includes Steam Workshop items with a matching local Steam install record and item directory for the registered game. Search by item ID or source path. Steam manages these items. Manager bulk enable, reindex and deployment continue to operate on Manager-owned packages. [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928)
 
 ## Current plans & progress
 

@@ -181,7 +181,8 @@ public partial class ModRowViewModel:ObservableObject
         OnPropertyChanged(nameof(FamilyHint));
     }
 
-    public ModRowViewModel(LogicalModFamily family,Action changed)
+    public ModRowViewModel(LogicalModFamily family,Action changed,
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
@@ -203,6 +204,9 @@ public partial class ModRowViewModel:ObservableObject
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
+        if (pending is not null)
+            foreach (var member in Members)
+                if (pending.TryGetValue(member.Id, out var stage)) _stagedMembers[member.Id] = stage;
         EnsureRequiredCompositionMembers();
         ThumbnailPath=family.Members.Select(m=>m.PreviewPath).FirstOrDefault(p=>!string.IsNullOrWhiteSpace(p)&&System.IO.File.Exists(p));
         foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
@@ -216,6 +220,12 @@ public partial class ModRowViewModel:ObservableObject
         if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
         EnsureRequiredCompositionMembers();
         SyncParts();RaiseStateChanged();_changed();
+    }
+
+    public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return _stagedMembers.Where(pair => _appliedMembers[pair.Key] != pair.Value);
     }
 
     public IReadOnlyDictionary<string,(bool enabled,int priority)> ExpandStage()

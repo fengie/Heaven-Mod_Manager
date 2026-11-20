@@ -49,6 +49,19 @@ public sealed partial class MainWindowViewModel
         }
     }
     private IReadOnlyList<ExternalLibraryReference> localPackageRows = [];
+    private IReadOnlyList<ExternalLibraryReference>? previousLibrary;
+    public bool CheckingDiscoveredLibrary { get; private set; } = true;
+
+    private async Task RestoreDiscoveredLibraryAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        var previous = await Task.Run(() => s.GameRegistry.LoadDiscoveredLibrary(s.Paths.Game), ct);
+        ct.ThrowIfCancellationRequested();
+        if (!CheckingDiscoveredLibrary || previous.Count == 0) return;
+        previousLibrary = previous.Select(row => row with { OwnerLabel = "Previously discovered · checking source" }).ToArray();
+        RebuildLibraryRows();
+    }
+
     private ExternalLibraryReference? selectedExternal;
     public object? SelectedLibraryItem
     {
@@ -68,9 +81,9 @@ public sealed partial class MainWindowViewModel
     private void RebuildLibraryRows()
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
-        var sources = Mods.SelectMany(row => row.Members.Concat(row.ArchivedMembers)).Select(mod => mod.SourcePath);
-        var external = LocalModInventory.WorkshopLibrary(LocalModLocations, s.Paths.Game.SteamAppId, sources);
-        libraryRows.ReplaceAll(Mods.Cast<object>().Concat(external).Concat(localPackageRows));
+        var sources = Mods.SelectMany(row => row.Members.Concat(row.ArchivedMembers)).Select(mod => mod.SourcePath).ToHashSet(PathRules.Comparer);
+        var rows = (previousLibrary ?? localPackageRows).Where(row => !row.Locations.Any(sources.Contains));
+        libraryRows.ReplaceAll(Mods.Cast<object>().Concat(rows));
         OnPropertyChanged(nameof(InstalledCount));
         OnPropertyChanged(nameof(InstalledCountLabel));
         OnPropertyChanged(nameof(AllViewLabel));
@@ -114,10 +127,26 @@ public sealed partial class MainWindowViewModel
             {
                 var result = s.GameRegistry.ScanLocalMods(ct);
                 var sources = await s.Database.GetModsAsync(ct);
-                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, sources.Select(mod => mod.SourcePath), ct);
-                return (result, packages);
+                var paths = sources.Select(mod => mod.SourcePath).ToArray();
+                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, ct);
+                var workshop = LocalModInventory.WorkshopLibrary(result, s.Paths.Game.SteamAppId, paths);
+                ct.ThrowIfCancellationRequested();
+                var library = s.GameRegistry.ReconcileDiscoveredLibrary(s.Paths.Game,
+                    workshop.Cast<ExternalLibraryReference>().Concat(packages).ToArray(), result);
+                try
+                {
+                    s.GameRegistry.SaveDiscoveredLibrary(s.Paths.Game, library);
+                }
+                catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+                {
+                    s.Log.Warning(ex, "Could not save the discovered mod library for the next startup.");
+                }
+                return (result, library);
             }, ct);
             ct.ThrowIfCancellationRequested();
+            CheckingDiscoveredLibrary = false;
+            previousLibrary = null;
+            OnPropertyChanged(nameof(CheckingDiscoveredLibrary));
             LocalModLocations = result;
             localPackageRows = packages;
             RebuildLibraryRows();
@@ -128,6 +157,10 @@ public sealed partial class MainWindowViewModel
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or ArgumentException or System.Text.Json.JsonException)
         {
+            previousLibrary = (previousLibrary ?? localPackageRows).Select(row => row with { OwnerLabel = "Previously discovered · verification unavailable" }).ToArray();
+            CheckingDiscoveredLibrary = false;
+            OnPropertyChanged(nameof(CheckingDiscoveredLibrary));
+            RebuildLibraryRows();
             LocalModInventoryStatus = "Inventory scan incomplete. " + ex.Message;
         }
         OnPropertyChanged(nameof(LocalModInventoryStatus));

@@ -1,6 +1,6 @@
-# v8.8.124 — mixed-game import verification
+# v8.8.125 — canonical state and discovered Mods list
 
-Build 611 is the published v8.8.123 package from ccb8df449b0bcb0f7487224670316a3aae2b7813. The archive import fix passed its [mixed replay](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877). Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Build 612 is the published v8.8.124 package from fc99e48270feb2c7e15df39f79733e000d4ba8a7. Verify the discovered Mods list against the installed client and the actual library. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 

@@ -16,6 +16,18 @@ public sealed partial class MainWindowViewModel
     private readonly object intakeScheduleGate = new();
     private CancellationTokenSource? intakeScheduleCts;
     private bool autoSortStarted;
+    private bool scanSourcesRequested;
+    private bool inboxWaitingForForeground;
+
+    private IEnumerable<string> ActiveInboxRoots
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return new[] { s.Paths.InboxRoot, s.Paths.LegacyInboxRoot }
+        .Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+    }
 
     public ObservableRangeCollection<string> AutoSortFolders { get; } = [];
     [ObservableProperty] private string? selectedAutoSortFolder;
@@ -237,7 +249,7 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         foreach (var watcher in intakeWatchers) watcher.Dispose();
         intakeWatchers.Clear();
-        foreach (var folder in AutoSortFolders)
+        foreach (var folder in ActiveInboxRoots.Concat(AutoSortFolders).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             if (!Directory.Exists(folder)) continue;
             try
@@ -267,23 +279,28 @@ public sealed partial class MainWindowViewModel
     private void OnAutoSortFilesystemChange(object sender, FileSystemEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        ScheduleAutoSortScan();
+        var inbox = sender is FileSystemWatcher watcher && ActiveInboxRoots.Contains(watcher.Path, StringComparer.OrdinalIgnoreCase);
+        if (inbox && e.Name is { } name && (name.Equals("Processed", StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith("Processed" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))) return;
+        ScheduleAutoSortScan(scanSources: !inbox);
     }
 
     private void OnAutoSortWatcherError(object sender, ErrorEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         s.Log.Warning(e.GetException(), "Mod-intake filesystem watcher requires authoritative rescan.");
-        ScheduleAutoSortScan();
+        ScheduleAutoSortScan(scanSources: sender is not FileSystemWatcher watcher ||
+            !ActiveInboxRoots.Contains(watcher.Path, StringComparer.OrdinalIgnoreCase));
     }
 
-    private void ScheduleAutoSortScan()
+    private void ScheduleAutoSortScan(bool scanSources = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (disposed || backgroundCts.IsCancellationRequested || AutoSortFolders.Count == 0) return;
+        if (disposed || backgroundCts.IsCancellationRequested) return;
         CancellationTokenSource trigger;
         lock (intakeScheduleGate)
         {
+            scanSourcesRequested |= scanSources;
             intakeScheduleCts?.Cancel();
             trigger = CancellationTokenSource.CreateLinkedTokenSource(backgroundCts.Token);
             intakeScheduleCts = trigger;
@@ -299,7 +316,21 @@ public sealed partial class MainWindowViewModel
             // FileSystemWatcher fires repeatedly while browsers download archives.
             // Debounce until writers go quiet rather than copying partial packages.
             await Task.Delay(TimeSpan.FromSeconds(4), trigger.Token);
-            await ScanAutoSortAsync(trigger.Token);
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                bool scanSources;
+                lock (intakeScheduleGate)
+                {
+                    if (trigger.IsCancellationRequested || disposed) return;
+                    scanSources = scanSourcesRequested;
+                    scanSourcesRequested = false;
+                }
+                // New file events debounce future work without cancelling a publication already in progress.
+                var ct = backgroundCts.Token;
+                if (scanSources && AutoSortFolders.Count > 0)
+                    await ScanAutoSortAsync(ct);
+                await DrainActiveInboxAsync(ct);
+            }).Task.Unwrap();
         }
         catch (OperationCanceledException) when (trigger.IsCancellationRequested) { }
         catch (Exception ex)
@@ -319,6 +350,45 @@ public sealed partial class MainWindowViewModel
             }
             trigger.Dispose();
         }
+    }
+
+    partial void OnBusyVisibilityChanged(Visibility value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // A drop during Preview, Apply or another foreground operation remains in the durable Inbox.
+        if (value == Visibility.Collapsed && inboxWaitingForForeground && !disposed)
+        {
+            inboxWaitingForForeground = false;
+            ScheduleAutoSortScan(scanSources: false);
+        }
+    }
+
+    private async Task DrainActiveInboxAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (disposed || ct.IsCancellationRequested) return;
+        if (BusyVisibility == Visibility.Visible)
+        {
+            inboxWaitingForForeground = true;
+            return;
+        }
+        var pending = await Task.Run(s.Inbox.HasPendingPackages, ct);
+        if (!pending || disposed || ct.IsCancellationRequested) return;
+
+        bool started = false;
+        await RunBusy("automation.inbox.auto", "Importing Inbox mods", "Reading packages for the current game…", true, async operationToken =>
+        {
+            started = true;
+            using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(ct, operationToken);
+            var result = await Task.Run(() => s.Inbox.ProcessAsync(null, refreshMetadata: false, lifetime.Token), lifetime.Token);
+            if (result.Imported > 0)
+            {
+                await ReloadMods(lifetime.Token, preserveStagedChanges: true);
+                await RefreshAnalysis(lifetime.Token);
+            }
+            StatusText = $"Inbox: {result.Imported} installed, {result.Skipped} skipped.";
+        });
+        if (!started && BusyVisibility == Visibility.Visible) inboxWaitingForForeground = true;
     }
 
     private async Task ScanAutoSortAsync(CancellationToken ct)
