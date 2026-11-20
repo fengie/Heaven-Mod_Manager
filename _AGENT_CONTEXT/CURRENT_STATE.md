@@ -1,4 +1,6 @@
-# v8.8.121 — canonical state: integrated source and release verification
+# v8.8.121 - source verified, publication unverified
+
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `e20d575e9737cf60feb5ef47e72503f318530706` (Windows Gate 44694013375); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. v8.8.121 adds a read-only inventory of installed mod evidence across current and older game installations, standalone game folders, and Steam Workshop. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
@@ -37,11 +39,11 @@ Manager main `81b09514f95fd1dd3c4f4e131be9825fddfcc03a` includes #925 and #926. 
 
 ## Verification boundary
 
-v8.8.120 [build 603](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-603) was published from source `8ab5e050ef78bad07099fff470808c0a3af86c28`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44672735615) and [hosted updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44675183365) passed. The shipped updater also installed build 603 on Heaven2 and a separate startup exited cleanly. v8.8.121 requires its own immutable publication, hosted updater and rollback verification, and a personal Heaven2 installed check. These checks do not establish in-game mod loading.
+Current hosted-Windows closure: v8.8.121 source `e20d575e9737cf60feb5ef47e72503f318530706` passed run `44694013375` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.121-heaven-windows-closure.log`.
 
-**v8.8.118 immutable release and real hosted update/rollback VERIFIED:** [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) **PASS**, [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS**; ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`, manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. This is disposable hosted Windows evidence, **not** personal Heaven2 installed acceptance.
+Public release status: **NOT VERIFIED** for source `e20d575e9737cf60feb5ef47e72503f318530706`. Successful build or another source's same-version release is not proof of publication.
 
-Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d18323a3d1af8925618` Windows Gate 44475835455 PASS, real hosted packaged update/rollback 44477647687 PASS, ZIP SHA-256 `4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0`, manifest `8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4`; receipt merged PR #896. This does not prove source additions after this immutable release, user-device health, real corpora or p95.
+The tested source remains `e20d575e9737cf60feb5ef47e72503f318530706` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
