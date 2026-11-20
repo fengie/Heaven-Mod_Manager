@@ -143,7 +143,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                         new ArchiveExtractionLimits(ArchiveInspector.MaxExpandedBytes, ArchiveInspector.MaxExpandedBytes),
                         extractProgress, ct);
                     ReportStage(completed, "Normalizing package", entry);
-                    NormalizeWrapper(staging);
+                    catalog.NormalizeStagedArchive(staging);
                 }
                 if (FomodInstallerService.HasInstaller(staging))
                 {
@@ -307,9 +307,6 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         }
     }
 
-    private static void NormalizeWrapper(string root) {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dirs=Directory.GetDirectories(root); var files=Directory.GetFiles(root); if(files.Length==0&&dirs.Length==1){var child=dirs[0];foreach(var entry in Directory.GetFileSystemEntries(child)){var dest=Path.Combine(root,Path.GetFileName(entry));if(Directory.Exists(entry))Directory.Move(entry,dest);else File.Move(entry,dest);}Directory.Delete(child,true);} }
     private static string Unique(string path){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!Directory.Exists(path)&&!File.Exists(path))return path;for(var i=2;;i++){var p=path+" ("+i.ToString(CultureInfo.InvariantCulture)+")";if(!Directory.Exists(p)&&!File.Exists(p))return p;}}

@@ -8,6 +8,24 @@ namespace MhwModManager.Filesystem;
 public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null,
     Func<string,CancellationToken,IReadOnlyList<string>>? discoverChildren=null)
 {
+    /// <summary>Remove one transport wrapper while retaining the registered game's deployment root.</summary>
+    public void NormalizeStagedArchive(string root)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var folder = new DirectoryInfo(root);
+        var children = folder.GetFileSystemInfos();
+        if (children.Length != 1 || children[0] is not DirectoryInfo child || scanner.IsArchiveTargetRoot(child.Name))
+            return;
+
+        foreach (var entry in child.GetFileSystemInfos())
+        {
+            var destination = Path.Combine(root, entry.Name);
+            if (entry is DirectoryInfo directory) directory.MoveTo(destination);
+            else ((FileInfo)entry).MoveTo(destination);
+        }
+        child.Delete();
+    }
+
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

@@ -1,3 +1,7 @@
+# v8.8.124 — November 20, 2026
+
+- Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
+
 # v8.8.123 — November 20, 2026
 
 - The Mods list now shows verified BepInEx plugins and ReShade installations in the registered game. Search by plugin name, ID or source path. Exact DLL copies already in a saved package appear once, including disabled packages that have never been indexed. Different DLLs can share a plugin ID and remain distinct. [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930)

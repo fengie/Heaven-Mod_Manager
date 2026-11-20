@@ -1,14 +1,18 @@
-# v8.8.123 — MHW Manual Mod Manager
+# v8.8.124 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 2:47:01 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 3:37:17 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.123**.
+Current product version: **8.8.124**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.124 — preserve archive install paths
+
+- Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
 
 ## v8.8.123 — BepInEx and ReShade in the Mods list
 
@@ -17,13 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.122 — Steam Workshop in the Mods list
 
 - The Mods list now includes Steam Workshop items with a matching local Steam install record and item directory for the registered game. Search by item ID or source path. Steam manages these items. Manager bulk enable, reindex and deployment continue to operate on Manager-owned packages. [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928)
-
-## v8.8.121 — local mod inventory
-
-- The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
-- The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
-- Independently selectable Unreal packages in existing library folders now appear as disabled catalog entries. Existing choices and original sources are preserved. Collections with unresolved variants or companion files still require review. [#926](https://github.com/fengie/Heaven-Mod_Manager/pull/926)
-- The real-library source test found both active and older installs, removed 507 stock-file review entries, and retained the expected Workshop and loader evidence. [Inventory change](https://github.com/fengie/Heaven-Mod_Manager/pull/925)
 
 ## Current plans & progress
 
