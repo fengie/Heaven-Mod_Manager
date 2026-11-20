@@ -6,14 +6,14 @@ The [behavior table](wpf-control-behavior.tsv) maps individual sites to named in
 
 The #940 source at `63620ed9` has 388 control, event and supporting sites, including 118 XAML buttons, 103 bound command sites and two routed scroll commands. The 37-profile registry fixture spans 21 generic-root, 13 Unreal, two BepInEx and one MHW adapter. In-process tests open the real settings editor for each profile, check all six fields, invoke Save and compare the complete returned profile. A separate test opens a changed editor and cancels it. The FOMOD tests cover invalid and corrected required choices, checkbox selection through accessibility, disabled options and cancellation. These tests use isolated profiles and packages.
 
-The behavior table contains 82 references covering 73 distinct sites. It includes the native Advanced Tools modal, a verified winning-file digest, inherited profile state, a safe update preview and the eight individual Mods filters. Its installed scenarios include a registry-wide fixture and narrower generic, Workshop and Unreal fixtures. Ten main tab mappings mean the hosted test selects each tab and observes its contents; they do not establish effects for every child control. The row staging test drives the real checkbox and verifies both enabled and denied states. The feature matrix also identifies service-level tests, including row composition and catalog presentation. In-game loading and installed host coverage require their own receipts.
+The behavior table contains 95 references covering 85 distinct sites. It includes the native Advanced Tools modal, a verified winning-file digest, inherited profile state, a safe update preview and the eight individual Mods filters. Its installed scenarios include a registry-wide fixture and narrower generic, Workshop and Unreal fixtures. Ten main tab mappings mean the hosted test selects each tab and observes its contents; they do not establish effects for every child control. Browse Mods also has command-level evidence for offline lookup on every profile and paging, retry and exact file selection using an in-process provider. Acquisition tests verify an assisted handoff without opening a browser, successful disabled import and rejection before indexing for identity or observed size mismatches. No live provider authentication or physical keyboard input is claimed. The row staging test drives the real checkbox and verifies both enabled and denied states. The feature matrix also identifies service-level tests, including row composition and catalog presentation. In-game loading and installed host coverage require their own receipts.
 
 | Source area at #940 | Inventoried sites | Sites with a specific behavior mapping |
 | --- | ---: | ---: |
 | Main shell and tab selection | 27 | 13 |
 | Dashboard / Mods / Coverage | 76 | 19 |
 | Profiles / History / Settings / Installed files | 44 | 7 |
-| Browse Mods / Needs attention / Shared Files | 70 | 0 |
+| Browse Mods / Needs attention / Shared Files | 70 | 12 |
 | Advanced Tools tabs and code-behind | 76 | 20 |
 | Game settings editor / FOMOD dialog | 23 | 12 |
 | Shared templates, code events, native pickers and other surfaces | 72 | 2 |
