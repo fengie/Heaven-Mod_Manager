@@ -74,6 +74,47 @@ public sealed class DashboardMaintenanceTests
         finally { root.Delete(true); }
     }
 
+    [Fact]
+    public void RelinkKeepsOldModsDiscoverableWithoutTreatingThemAsCurrentAfterRestart()
+    {
+        var root = Directory.CreateTempSubdirectory("manager-history-");
+        try
+        {
+            var state = Path.Combine(root.FullName, "state");
+            var registry = new GameProfileRegistry(state);
+            var evidence = new Dictionary<string, (string OldPath, string ActivePath)>();
+            foreach (var source in DiscoveredGameProfiles.Load())
+            {
+                var old = DiscoveredGameProfiles.Isolate(source, Path.Combine(root.FullName, "old"));
+                var moved = DiscoveredGameProfiles.Isolate(source, Path.Combine(root.FullName, "new"));
+                string AddMarker(string gameRoot)
+                {
+                    var directory = Directory.CreateDirectory(Path.Combine(gameRoot, "Mods", "Example"));
+                    var marker = Path.Combine(directory.FullName, "mod.json");
+                    File.WriteAllText(marker, "{}");
+                    return marker;
+                }
+                evidence.Add(source.Id, (AddMarker(old.GameRoot), AddMarker(moved.GameRoot)));
+                registry.Upsert(old);
+                Directory.CreateDirectory(Path.GetDirectoryName(moved.ExecutablePath)!);
+                File.WriteAllBytes(moved.ExecutablePath, [8, 42]);
+                registry.RepairFromExecutable(old, moved.ExecutablePath, activate: false);
+            }
+            var reopened = new GameProfileRegistry(state);
+            var observations = LocalModInventory.Scan(reopened.Load(), [], [], reopened.ReadInstallHistory(),
+                TestContext.Current.CancellationToken).ToLookup(row => row.Location, PathRules.Comparer);
+            foreach (var (id, locations) in evidence)
+            {
+                var active = Assert.Single(observations[locations.ActivePath]);
+                var old = Assert.Single(observations[locations.OldPath]);
+                Assert.Equal(id, active.RegisteredProfileId);
+                Assert.Null(old.RegisteredProfileId);
+                Assert.StartsWith("Previous installation", old.Evidence, StringComparison.Ordinal);
+                Assert.Equal("{}", File.ReadAllText(locations.OldPath));
+            }
+        }
+        finally { root.Delete(true); }
+    }
     [Theory]
     [MemberData(nameof(Registered))]
     public async Task DuplicateCleanupAndPortableExportPreserveTheEnabledPackageAndItsContent(string id)
