@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.123",
+  "currentVersion": "8.8.124",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Manager main a04a499c6488cd50a60bf7462511a8082d927027 includes #930. Build 609 is the verified v8.8.122 package from b0305463e62aad3dee52fa247d36a62661fb0748. v8.8.123 publication and installed acceptance are pending.",
+  "immediateParentRevision": "Build 611 is the published v8.8.123 package from ccb8df449b0bcb0f7487224670316a3aae2b7813. The v8.8.124 mixed-import candidate preserves the registered game folder in both archive import paths.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh current Toolbox and Manager main, review ownership and release status, and propagate the full continuity protocol and active Learned Rules to every successor. Verify the v8.8.123 Windows release gate, immutable publication, hosted updater and rollback, and personal Heaven2 startup. Preserve the active personal Manager session and all open provider, runtime, performance and governance acceptance.",
+  "nextAgentObligation": "Refresh current Toolbox and Manager main, review ownership and release status, and propagate the full continuity protocol and active Learned Rules to every successor. Verify the v8.8.124 Windows release gate, immutable publication, hosted updater and rollback, and personal Heaven2 startup. Preserve the active personal Manager session and all open provider, runtime, performance and governance acceptance.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

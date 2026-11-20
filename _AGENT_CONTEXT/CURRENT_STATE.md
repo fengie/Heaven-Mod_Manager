@@ -1,8 +1,10 @@
-# v8.8.123 — canonical state: integrated source and release verification
+# v8.8.124 — canonical state and mixed-game import verification
 
-Manager main `a04a499c6488cd50a60bf7462511a8082d927027` includes the game-local plugin library change [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930). Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Build 611 is the published v8.8.123 package from ccb8df449b0bcb0f7487224670316a3aae2b7813. The v8.8.124 mixed-import candidate preserves the registered game folder in both archive import paths. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
+
+- Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
 
 - The Mods list now shows verified BepInEx plugins and ReShade installations in the registered game. Search by plugin name, ID or source path. Exact DLL copies already in a saved package appear once, including disabled packages that have never been indexed. Different DLLs can share a plugin ID and remain distinct. [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930)
 

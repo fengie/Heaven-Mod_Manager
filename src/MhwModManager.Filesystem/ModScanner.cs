@@ -11,6 +11,14 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private static readonly string[] KnownAdditionalLoaderRoots =
         [@"BepInEx\plugins", @"Content\Paks", @"reframework\plugins", @"reframework\autorun"];
 
+    internal bool IsArchiveTargetRoot(string name)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var target = game?.ModRootRelativePath ?? "nativePC";
+        var firstComponent = target.Split(['/', '\\'], 2)[0];
+        return PathRules.Comparer.Equals(name, firstComponent) || PathRules.Comparer.Equals(name, "GameRoot");
+    }
+
     public async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
