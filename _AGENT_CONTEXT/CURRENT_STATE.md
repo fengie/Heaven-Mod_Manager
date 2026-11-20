@@ -1,4 +1,4 @@
-# v8.8.126 — managed collection reconciliation
+# v8.8.126 — canonical state and managed collection reconciliation
 
 Build 613 is the published v8.8.125 package from 705887485020a6853ef57565ae92b7654013ad1e. Verify #935 on a disposable copy of the real library before personal adoption. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
