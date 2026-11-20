@@ -42,26 +42,34 @@ public sealed class InstalledWpfModLifecycleE2ETests
         };
         foreach (var (path, bytes) in files) File.WriteAllBytes(path, bytes);
         var db = run.OpenCatalog();
-        await db.InitializeAsync(TestToken);
-        await db.InsertDiscoveredModAsync("old-shelf", "Travel shelf", "Travel shelf", wrapper, 10, TestToken);
-        await db.InsertDiscoveredModAsync("saved-blue", "Blue Outfit", "Blue Outfit", first, 42, TestToken);
-
-        var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
-        await SelectModsTabAsync(window, TestToken);
-        var grid = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.DataGrid
-            && e.Current.Name == "Mod library"), UiTimeout, "ordinary collection library", TestToken);
-        foreach (var name in new[] { "Blue Outfit", "Gold Outfit" })
+        try
         {
-            var row = await WaitForElementAsync(() => FindModToggle(grid, name), UiTimeout, name, TestToken);
-            Assert.Equal(ToggleState.Off, ((TogglePattern)row.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+            await db.InitializeAsync(TestToken);
+            await db.InsertDiscoveredModAsync("old-shelf", "Travel shelf", "Travel shelf", wrapper, 10, TestToken);
+            await db.InsertDiscoveredModAsync("saved-blue", "Blue Outfit", "Blue Outfit", first, 42, TestToken);
+
+            var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
+            await SelectModsTabAsync(window, TestToken);
+            var grid = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.DataGrid
+                && e.Current.Name == "Mod library"), UiTimeout, "ordinary collection library", TestToken);
+            foreach (var name in new[] { "Blue Outfit", "Gold Outfit" })
+            {
+                var row = await WaitForElementAsync(() => FindModToggle(grid, name), UiTimeout, name, TestToken);
+                Assert.Equal(ToggleState.Off, ((TogglePattern)row.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+            }
+            Assert.Null(FindModToggle(grid, "Travel shelf"));
+            var mods = await db.GetModsAsync(TestToken);
+            var retained = Assert.Single(mods, m => PathRules.Comparer.Equals(m.SourcePath, first));
+            Assert.Equal("saved-blue", retained.Id);
+            Assert.Equal(42, retained.Priority);
+            foreach (var (path, bytes) in files) Assert.Equal(bytes, File.ReadAllBytes(path));
+            Assert.Equal(new[] { run.SentinelPath }, Directory.GetFiles(run.FirstGame.LiveModRoot, "*", SearchOption.AllDirectories));
         }
-        Assert.Null(FindModToggle(grid, "Travel shelf"));
-        var mods = await db.GetModsAsync(TestToken);
-        var retained = Assert.Single(mods, m => PathRules.Comparer.Equals(m.SourcePath, first));
-        Assert.Equal("saved-blue", retained.Id);
-        Assert.Equal(42, retained.Priority);
-        foreach (var (path, bytes) in files) Assert.Equal(bytes, File.ReadAllBytes(path));
-        Assert.Equal(new[] { run.SentinelPath }, Directory.GetFiles(run.FirstGame.LiveModRoot, "*", SearchOption.AllDirectories));
+        finally
+        {
+            await using var connection = await db.OpenAsync(CancellationToken.None);
+            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+        }
     }
 
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
