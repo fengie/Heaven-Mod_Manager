@@ -44,6 +44,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 }
                 continue;
             }
+            if (IsEmptyLocalFolder(dir)) continue;
             var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
             var parsed=NexusArchiveIdentity.TryParse(name,out var newIdentity);
             // Filenames are untrusted: do not promote guessed IDs into verified source identity.
@@ -60,9 +61,25 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
     public async Task EnsureCapturedAsync(IEnumerable<ModDescriptor> mods,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var pending = mods.ToArray();
+        // Keep saved rows intact and reject empty sources before capturing any mod in this batch.
+        foreach (var mod in pending)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (IsEmptyLocalFolder(mod.SourcePath))
+                throw new InvalidDataException($"'{mod.DisplayName}' has an empty source folder. Deselect it or restore its package files, then try again.");
+        }
+
         // Intentionally serialize mods while each mod performs bounded file parallelism.
         // Nested parallelism would saturate the SSD and hurt UI responsiveness.
-        foreach(var m in mods){ct.ThrowIfCancellationRequested();await scanner.CaptureAsync(m,ct);}
+        foreach(var m in pending){ct.ThrowIfCancellationRequested();await scanner.CaptureAsync(m,ct);}
     }
 
+    private static bool IsEmptyLocalFolder(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var folder = new DirectoryInfo(path);
+        return folder.Exists && (folder.Attributes & FileAttributes.ReparsePoint) == 0 &&
+            !folder.EnumerateFileSystemInfos().Any();
+    }
 }
