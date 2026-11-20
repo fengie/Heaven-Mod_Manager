@@ -23,6 +23,21 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         return new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot).RecoverAsync(ct);
     }
 
+    private IEnumerable<string> EnumerateInboxEntries() =>
+        new[]{inboxRoot,legacyInboxRoot}
+            .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
+            .Select(root=>Path.GetFullPath(root!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .SelectMany(root=>Directory.EnumerateFileSystemEntries(root))
+            .Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x),"Processed"));
+
+    private static bool IsInboxArchive(string path) =>
+        Path.GetExtension(path).ToLowerInvariant() is ".zip" or ".7z" or ".rar";
+
+    public bool HasPendingPackages() => EnumerateInboxEntries().Any(entry =>
+        (File.GetAttributes(entry) & FileAttributes.ReparsePoint) == 0 &&
+        (Directory.Exists(entry) ? Directory.EnumerateFileSystemEntries(entry).Any() : IsInboxArchive(entry)));
+
     public Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -64,14 +79,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         var journal = new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot);
         var blockedSources = await journal.RecoverAsync(ct);
         var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
-        var entries = new[]{inboxRoot,legacyInboxRoot}
-            .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
-            .Select(root=>Path.GetFullPath(root!))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .SelectMany(root=>Directory.EnumerateFileSystemEntries(root))
-            .Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x),"Processed"))
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var entries = EnumerateInboxEntries().Order(StringComparer.OrdinalIgnoreCase).ToArray();
         startupDiagnostics?.Info("startup.automation.inbox.entries", $"InboxRoot={inboxRoot}; Entries={entries.Length}");
         UnifiedDebugLog.Write("INBOX", $"Scan InboxRoot={inboxRoot}; Entries={entries.Length}");
         var completed = 0;
@@ -116,6 +124,8 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 }
                 startupDiagnostics?.Info("startup.automation.inbox.item.begin", entry);
                 UnifiedDebugLog.Write("INBOX", $"BEGIN item={entry}");
+                if ((File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0)
+                    throw new InvalidDataException("Inbox links must be reviewed at their source.");
                 var name = ModDisplayNames.StripTransportDigest(Directory.Exists(entry) ? Path.GetFileName(entry) : Path.GetFileNameWithoutExtension(entry));
                 var destination = Unique(Path.Combine(modsRoot, name));
                 if (Directory.Exists(entry))
@@ -129,8 +139,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 }
                 else
                 {
-                    var ext = Path.GetExtension(entry).ToLowerInvariant();
-                    if (ext is not ".zip" and not ".7z" and not ".rar") { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsupported inbox item; left untouched.")); continue; }
+                    if (!IsInboxArchive(entry)) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsupported inbox item; left untouched.")); continue; }
                     ReportStage(completed, "Inspecting archive", entry);
                     var info = await archive.InspectAsync(entry, ct);
                     if (info.HasSuspiciousPaths) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsafe archive path detected; left untouched.")); continue; }
@@ -279,6 +288,8 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = SafeRecursiveTraversal.Snapshot(source, ct);
+        if (snapshot.Files.Count == 0)
+            throw new InvalidDataException("Inbox folder has no files to import.");
         Directory.CreateDirectory(destination);
         foreach (var dir in snapshot.Directories) Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, dir)));
         var copied = 0;
