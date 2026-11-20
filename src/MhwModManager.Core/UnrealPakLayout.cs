@@ -4,6 +4,7 @@ public static class UnrealPakLayout
 {
     public static string? ProjectMount(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var parts = path.Replace('\\', '/').Split('/', 4);
         return parts.Length >= 3 && parts[0].Length > 0 &&
             parts[1].Equals("Content", StringComparison.OrdinalIgnoreCase) &&
@@ -11,11 +12,15 @@ public static class UnrealPakLayout
             ? string.Join("/", parts.Take(3)) : null;
     }
 
-    public static bool IsMember(string path) =>
-        Path.GetExtension(path).ToLowerInvariant() is ".pak" or ".sig" or ".utoc" or ".ucas";
+    public static bool IsMember(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return Path.GetExtension(path).ToLowerInvariant() is ".pak" or ".sig" or ".utoc" or ".ucas";
+    }
 
     public static bool Complete(IEnumerable<string> files, bool singleStem = false)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var groups = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in files)
         {

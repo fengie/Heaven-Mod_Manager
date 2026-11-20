@@ -96,6 +96,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private static void ValidatePakTargets(List<ScanCandidate> result, string sourceFolder,
         GameProfile profile, string pakMount)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mount = "root\\" + pakMount.Replace('/', '\\') + "\\";
         var members = result.Where(item => item.Key.StartsWith(mount, StringComparison.OrdinalIgnoreCase)).ToArray();
         if (members.Length > 0 && !UnrealPakLayout.Complete(members.Select(item => item.Key)))
