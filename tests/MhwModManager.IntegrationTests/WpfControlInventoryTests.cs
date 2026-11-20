@@ -122,8 +122,6 @@ public sealed class WpfControlInventoryTests
         // Include repeated sites: a second control wired to the same command requires review too.
         Assert.Equal(recorded, discovered);
 
-        var fixture = await File.ReadAllTextAsync(Path.Combine(root, "tests", "MhwModManager.IntegrationTests",
-            "InstalledWpfModLifecycleE2ETests.cs"), token);
         var mappings = await File.ReadAllLinesAsync(Path.Combine(verification, "wpf-control-behavior.tsv"), token);
         foreach (var mapping in mappings.Skip(1))
         {
@@ -131,7 +129,12 @@ public sealed class WpfControlInventoryTests
             Assert.Equal(4, fields.Length);
             Assert.All(fields, value => Assert.False(string.IsNullOrWhiteSpace(value)));
             Assert.Single(recorded, site => site == fields[0]);
-            Assert.Contains("Task " + fields[1] + "(", fixture);
+            var reference = fields[1].Split('.');
+            Assert.Equal(2, reference.Length);
+            var type = GetType().Assembly.GetType($"{GetType().Namespace}.{reference[0]}", true)!;
+            var method = type.GetMethod(reference[1]);
+            Assert.NotNull(method);
+            Assert.NotEmpty(method.GetCustomAttributes<FactAttribute>());
         }
     }
 }

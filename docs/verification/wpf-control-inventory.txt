@@ -4,9 +4,9 @@ App.xaml | Style:ComboBox/ControlTemplate:ComboBox | ToggleButton | Name=DropDow
 App.xaml | Style:ScrollBar/ControlTemplate:ScrollBar | RepeatButton | Name=DecreaseButton ; Command={x:Static ScrollBar.PageUpCommand}
 App.xaml | Style:ScrollBar/ControlTemplate:ScrollBar | RepeatButton | Name=IncreaseButton ; Command={x:Static ScrollBar.PageDownCommand}
 App.xaml | Style:ScrollBar/ControlTemplate:ScrollBar | Thumb |
-App.xaml | Style:TabControl/ControlTemplate:TabControl | Button | Content=Health ; Command={Binding HealthCommand}
-App.xaml | Style:TabControl/ControlTemplate:TabControl | Button | Content=Undo ; Command={Binding UndoCommand}
-App.xaml | Style:TabControl/ControlTemplate:TabControl | ScrollViewer |
+App.xaml | Style:TabControlMainNavigationTabs/ControlTemplate:TabControl | Button | Content=Health ; Command={Binding HealthCommand}
+App.xaml | Style:TabControlMainNavigationTabs/ControlTemplate:TabControl | Button | Content=Undo ; Command={Binding UndoCommand}
+App.xaml | Style:TabControlMainNavigationTabs/ControlTemplate:TabControl | ScrollViewer |
 App.xaml | Style:TextBox/ControlTemplate:TextBox | ScrollViewer | Name=PART_ContentHost
 App.xaml.cs | DiscoverForGame | MessageBox.Show | "Game installation moved"
 App.xaml.cs | DiscoverForGame | OpenFileDialog dialog |
@@ -75,13 +75,13 @@ MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Head
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=USED PIECES ; Binding={Binding WinningPieces}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Check Installed Origins ; Command={Binding CheckCatalogUpdatesCommand}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Clear Search ; Command={Binding ClearCatalogSearchCommand} ; Visibility={Binding CatalogClearSearchVisibility} ; AutomationProperties.Name=Clear catalog search ; parent={Binding CatalogEmptyVisibility}
-MainWindow.xaml | TabItem:Browse Mods | Button | Content=GameBanana website ; Command={Binding OpenGameBananaBrowseCommand} ; AutomationProperties.Name=Browse Monster Hunter World mods on GameBanana ; parent={Binding CatalogProviderWebLinksVisibility}
+MainWindow.xaml | TabItem:Browse Mods | Button | Content=GameBanana website ; Command={Binding OpenGameBananaBrowseCommand} ; AutomationProperties.Name={Binding SelectedGame.DisplayName,StringFormat='Browse {0} mods on GameBanana'} ; parent={Binding CatalogProviderWebLinksVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Index All Available ; Command={Binding IndexAllAvailableModsCommand} ; Visibility={Binding CatalogLoadMoreVisibility} ; AutomationProperties.Name=Index all available mods
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Install Selected File ; Command={Binding InstallCatalogFileCommand} ; AutomationProperties.Name=Install selected catalog file
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Load Exact Files ; Command={Binding LoadCatalogFilesCommand} ; AutomationProperties.Name=Load exact provider files
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Load More ; Command={Binding LoadMoreCatalogCommand} ; Visibility={Binding CatalogLoadMoreVisibility} ; AutomationProperties.Name=Load more provider browse results
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=More Cached ; Command={Binding LoadMoreCachedCatalogCommand} ; Visibility={Binding CatalogLoadMoreCachedVisibility} ; AutomationProperties.Name=Show more cached catalog results
-MainWindow.xaml | TabItem:Browse Mods | Button | Content=Nexus website ; Command={Binding OpenNexusBrowseCommand} ; AutomationProperties.Name=Browse Monster Hunter World mods on the Nexus website ; parent={Binding CatalogProviderWebLinksVisibility}
+MainWindow.xaml | TabItem:Browse Mods | Button | Content=Nexus website ; Command={Binding OpenNexusBrowseCommand} ; AutomationProperties.Name={Binding SelectedGame.DisplayName,StringFormat='Browse {0} mods on Nexus Mods'} ; parent={Binding CatalogProviderWebLinksVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Open Provider Page ; Command={Binding OpenCatalogSourceCommand}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Refresh Providers ; Command={Binding RefreshCatalogCommand}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Refresh Providers ; Command={Binding RefreshCatalogCommand} ; Visibility={Binding CatalogRefreshEmptyVisibility} ; AutomationProperties.Name=Refresh catalog providers ; parent={Binding CatalogEmptyVisibility}
