@@ -27,6 +27,53 @@ public sealed class InstalledWpfModLifecycleE2ETests
 
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
     [Trait("Category", "InstalledWpf")]
+    public async Task PreviouslyCatalogedCollectionShowsItsIndividualModsOnOpen()
+    {
+        using var run = new DisposableWpfRun(seedInbox: false, unreal: true);
+        var wrapper = Directory.CreateDirectory(Path.Combine(run.InstalledRoot, "Travel shelf")).FullName;
+        var first = Directory.CreateDirectory(Path.Combine(wrapper, "Blue Outfit")).FullName;
+        var second = Directory.CreateDirectory(Path.Combine(wrapper, "Deeper", "Gold Outfit")).FullName;
+        var files = new Dictionary<string, byte[]>
+        {
+            [Path.Combine(first, "blue_P.pak")] = [1, 2, 3],
+            [Path.Combine(first, "blue_P.sig")] = [9],
+            [Path.Combine(second, "gold_P.pak")] = [4, 5, 6],
+            [Path.Combine(second, "gold_P.sig")] = [9]
+        };
+        foreach (var (path, bytes) in files) File.WriteAllBytes(path, bytes);
+        var db = run.OpenCatalog();
+        try
+        {
+            await db.InitializeAsync(TestToken);
+            await db.InsertDiscoveredModAsync("old-shelf", "Travel shelf", "Travel shelf", wrapper, 10, TestToken);
+            await db.InsertDiscoveredModAsync("saved-blue", "Blue Outfit", "Blue Outfit", first, 42, TestToken);
+
+            var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
+            await SelectModsTabAsync(window, TestToken);
+            var grid = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.DataGrid
+                && e.Current.Name == "Mod library"), UiTimeout, "ordinary collection library", TestToken);
+            foreach (var name in new[] { "Blue Outfit", "Gold Outfit" })
+            {
+                var row = await WaitForElementAsync(() => FindModToggle(grid, name), UiTimeout, name, TestToken);
+                Assert.Equal(ToggleState.Off, ((TogglePattern)row.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+            }
+            Assert.Null(FindModToggle(grid, "Travel shelf"));
+            var mods = await db.GetModsAsync(TestToken);
+            var retained = Assert.Single(mods, m => PathRules.Comparer.Equals(m.SourcePath, first));
+            Assert.Equal("saved-blue", retained.Id);
+            Assert.Equal(42, retained.Priority);
+            foreach (var (path, bytes) in files) Assert.Equal(bytes, File.ReadAllBytes(path));
+            Assert.Equal(new[] { run.SentinelPath }, Directory.GetFiles(run.FirstGame.LiveModRoot, "*", SearchOption.AllDirectories));
+        }
+        finally
+        {
+            await using var connection = await db.OpenAsync(CancellationToken.None);
+            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+        }
+    }
+
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
     public async Task VerifiedWorkshopItemAppearsInOrdinaryLibraryWithoutDeploymentControls()
     {
         using var run = new DisposableWpfRun(seedInbox: false, workshop: true);
@@ -538,6 +585,9 @@ public sealed class InstalledWpfModLifecycleE2ETests
         public GameProfile FirstGame { get; }
         public GameProfile SecondGame { get; }
         public string ArchivePath { get; }
+        public string InstalledRoot => GameModStorage.Resolve(home, FirstGame).InstalledRoot;
+        public MhwModManager.Storage.ManagerDatabase OpenCatalog() =>
+            new(Path.Combine(home, "State", "Games", FirstGame.Id, "Next", "manager.db"));
         public string BatchFirstArchive { get; }
         public string BatchSecondArchive { get; }
         public string InstalledModPath { get; }

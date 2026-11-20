@@ -96,6 +96,14 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
     public ObservableRangeCollection<string> GalleryPaths{get;}=[];
+    public bool CanStage
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Members.All(member => !member.RequiresLayoutReview);
+        }
+    }
     public int MemberCount=>Members.Count;
     public int ArchivedCount=>ArchivedMembers.Count;
     public bool IsComposite=>MemberCount>1;
@@ -127,6 +135,7 @@ public partial class ModRowViewModel:ObservableObject
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (!CanStage) return "Needs layout review";
             return HasStagedChanges
                 ? StagedEnabledMembers switch
                 {
@@ -204,7 +213,7 @@ public partial class ModRowViewModel:ObservableObject
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
-        if (pending is not null)
+        if (pending is not null && CanStage)
             foreach (var member in Members)
                 if (pending.TryGetValue(member.Id, out var stage)) _stagedMembers[member.Id] = stage;
         EnsureRequiredCompositionMembers();
@@ -217,6 +226,7 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
+        if (!CanStage) { SetSummaryFromMembers(); return; }
         if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
         EnsureRequiredCompositionMembers();
         SyncParts();RaiseStateChanged();_changed();
@@ -242,7 +252,7 @@ public partial class ModRowViewModel:ObservableObject
     public void SetMemberEnabled(string memberId,bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();
+        if(!CanStage || !_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();
     }
     public bool ContainsMember(string memberId)
     {
@@ -253,6 +263,7 @@ public partial class ModRowViewModel:ObservableObject
     public void ApplyProfileState(IReadOnlyDictionary<string,(bool enabled,int priority)> state)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!CanStage) return;
         foreach(var member in Members)_stagedMembers[member.Id]=state.TryGetValue(member.Id,out var value)?value:(false,member.Priority);
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();_changed();
@@ -300,6 +311,7 @@ public partial class ModRowViewModel:ObservableObject
 
     private void OnPartChanged(string id,bool enabled){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if(!CanStage) { SyncParts(); return; }
         if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();}
 
     private void EnsureRequiredCompositionMembers()

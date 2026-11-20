@@ -124,7 +124,10 @@ public sealed record ModDescriptor(
     NexusFileCategory NexusCategory = NexusFileCategory.Unknown, string? NexusVersion = null,
     DateTimeOffset? NexusUploadedAt = null, bool IsSuperseded = false, string? SupersededByModId = null,
     int ProvenanceScore = 0, ProvenanceSource ProvenanceSource = ProvenanceSource.Unknown,
-    string? PreviewPath = null, bool NeedsRevalidation = false, string? FamilyRole = null);
+    string? PreviewPath = null, bool NeedsRevalidation = false, string? FamilyRole = null)
+{
+    public bool RequiresLayoutReview { get; init; }
+}
 
 public sealed record ModFileDescriptor(
     string ModId, string Path, string BlobSha256, string? FastHash, long Length,

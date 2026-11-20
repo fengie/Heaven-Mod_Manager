@@ -478,6 +478,73 @@ public sealed class GameModIntakeService
             .Select(file => Path.GetRelativePath(source, file)));
     }
 
+    public ManagedCollectionLayout InspectManagedShelf(string source, GameProfile game, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var inventory = PreviewManagedCollection(source, game, ct).FileInventory ?? [];
+        var files = inventory.Where(path => !ManagedCollectionNotes.IsNote(path)).ToArray();
+        if (files.Length == 0 || files.Any(path => !path.Contains('/')))
+            return new([], false);
+
+        return PartitionShelf(source, files, ct);
+    }
+
+    private static ManagedCollectionLayout PartitionShelf(string source, string[] files, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        while (files.Length > 0 && files.All(path => path.Contains('/')))
+        {
+            var prefix = files[0][..(files[0].IndexOf('/') + 1)];
+            if (!files.All(path => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))) break;
+            // Never unwrap a shared loader, installer, manifest or project-qualified root.
+            var enclosing = ModBoundaryDiscovery.Discover(files).Candidates;
+            if (enclosing.Count < 2 || enclosing.Any(c => c.RelativePath == ".")) return new([], false);
+            source = Path.Combine(source, prefix.TrimEnd('/'));
+            files = files.Select(path => path[prefix.Length..]).ToArray();
+        }
+        if (files.Any(path => !path.Contains('/'))) return new([], false);
+        var branches = files.GroupBy(path => path[..path.IndexOf('/')], StringComparer.OrdinalIgnoreCase).ToArray();
+        var boundaries = ModBoundaryDiscovery.Discover(files);
+        if (branches.Length < 2 || boundaries.Candidates.All(candidate => candidate.RelativePath == "."))
+            return new([], false);
+        var units = new List<ManagedCollectionUnit>();
+        foreach (var branch in branches)
+        {
+            ct.ThrowIfCancellationRequested();
+            var relative = branch.Select(path => path[(branch.Key.Length + 1)..]).ToArray();
+            var branchPath = Path.Combine(source, branch.Key);
+            var containers = relative.Where(UnrealPakLayout.IsMember).ToArray();
+            // A project source tree may accompany a finished package. Its editor files
+            // are attributable only when the same subtree contains a project descriptor.
+            var editorRoots = relative.Where(path => path.Contains('/') && path.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase))
+                .Select(path => path[..(path.IndexOf('/') + 1)]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            var clean = relative.All(path => UnrealPakLayout.IsMember(path) ||
+                editorRoots.Any(root => path.StartsWith(root, StringComparison.OrdinalIgnoreCase)));
+            var protectedChoice = boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
+                c.RelativePath.Equals(branch.Key, StringComparison.OrdinalIgnoreCase) &&
+                c.Evidence.Contains("variant", StringComparison.OrdinalIgnoreCase));
+            if (clean && !protectedChoice && UnrealPakLayout.Complete(containers, singleStem: true))
+            {
+                var parent = Path.GetDirectoryName(containers[0]) ?? "";
+                if (parent.EndsWith("~mods", StringComparison.OrdinalIgnoreCase) &&
+                    Path.GetFileName(parent).Equals("~mods", StringComparison.OrdinalIgnoreCase))
+                    parent = Path.GetDirectoryName(parent) ?? "";
+                units.Add(new(Path.GetFullPath(Path.Combine(branchPath, parent)), false));
+            }
+            else
+            {
+                // Only descend through proven independent siblings. Reused output names
+                // are commonly alternate versions that must stay together for review.
+                var distinctOutputs = containers.Select(Path.GetFileName).Distinct(StringComparer.OrdinalIgnoreCase).Count() == containers.Length;
+                var children = !protectedChoice && clean && containers.Length > 1 && distinctOutputs &&
+                    relative.All(path => path.Contains('/')) ? PartitionShelf(branchPath, relative, ct) : new([], false);
+                if (children.FullyAccounted) units.AddRange(children.Units);
+                else units.Add(new(branchPath, true));
+            }
+        }
+        return units.Any(unit => !unit.NeedsReview) ? new(units, true) : new([], false);
+    }
+
     /// <summary>Return physical, independently selectable Unreal packages in the registered library.
     /// Discovery reads filenames only. Capturing the bytes belongs to selection and Preview.</summary>
     public IReadOnlyList<string> SelectableManagedFolders(string source, GameProfile game, CancellationToken ct)

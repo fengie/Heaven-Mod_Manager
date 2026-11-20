@@ -1221,10 +1221,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void StageVisible(bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var targets=ModsView.Cast<ModRowViewModel>().ToArray();
+        var targets=ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray();
         if(targets.Length==0)
         {
-            StatusText="No visible mods match the current search and filters.";
+            StatusText="No visible mods can be staged.";
             return;
         }
         if(targets.Length>1&&MessageBox.Show(

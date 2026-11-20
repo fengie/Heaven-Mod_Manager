@@ -1,3 +1,7 @@
+# v8.8.126 — November 20, 2026
+
+- The Mods list separates nested Unreal packages on startup and Inbox arrival. Exact copies of enabled packages share a visible entry, and unresolved options appear as named review entries. [Collection acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/935)
+
 # v8.8.125 — November 20, 2026
 
 - The Mods list restores previously discovered entries on open, reads verified Workshop titles from local package metadata, and automatically catalogs new active-game Inbox arrivals. You can search by title or Workshop ID. [Discovery report](https://github.com/fengie/Heaven-Mod_Manager/issues/933)

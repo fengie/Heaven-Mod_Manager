@@ -1,6 +1,6 @@
-# v8.8.125 — canonical state and discovered Mods list
+# v8.8.126 — canonical state and managed collection reconciliation
 
-Build 612 is the published v8.8.124 package from fc99e48270feb2c7e15df39f79733e000d4ba8a7. Verify the discovered Mods list against the installed client and the actual library. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Build 613 is the published v8.8.125 package from 705887485020a6853ef57565ae92b7654013ad1e. Verify #935 on a disposable copy of the real library before personal adoption. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 

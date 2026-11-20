@@ -71,7 +71,7 @@ public static partial class LogicalModFamilies
         foreach (var evidence in familyEvidence)
             MasterDebugLog.Write("FAMILY", $"GENERIC pair={evidence.LeftModId}<->{evidence.RightModId}; score={evidence.Score}; evidence={evidence.Summary}");
 
-        var keyed = mods.Where(m=>!m.IsSuperseded).Select(m => (mod: m, key: FamilyKey(m, inferred))).ToArray();
+        var keyed = mods.Where(m=>!m.IsSuperseded).Select(m => (mod: m, key: m.RequiresLayoutReview ? "review:" + m.Id : FamilyKey(m, inferred))).ToArray();
         var families = new List<LogicalModFamily>();
         foreach (var group in keyed.GroupBy(x => x.key, StringComparer.OrdinalIgnoreCase))
         {
