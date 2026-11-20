@@ -351,6 +351,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
         if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,9));
+        if(value==9)_=RefreshLocalModInventoryAsync(backgroundCts.Token);
         if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
         {
             initialMetadataRefreshStarted=true;

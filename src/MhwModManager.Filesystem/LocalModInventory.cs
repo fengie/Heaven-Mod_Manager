@@ -1,10 +1,13 @@
 using MhwModManager.Core;
+using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.Diagnostics;
 
 namespace MhwModManager.Filesystem;
 
 public sealed record LocalModLocation(string Game, string Name, string Evidence, string Location);
 
-public static class LocalModInventory
+public static partial class LocalModInventory
 {
     public static IReadOnlyList<LocalModLocation> Scan(IReadOnlyList<GameProfile> games,
         IEnumerable<string>? steamLibraries = null, IEnumerable<string>? standaloneLibraries = null, IReadOnlyDictionary<string,string[]>? previousRoots = null, CancellationToken ct = default)
@@ -150,17 +153,65 @@ public static class LocalModInventory
         try
         {
             if (HasLinkedAncestor(root)) return;
+            var installed = WorkshopInstallRecords(root);
             foreach (var dir in new DirectoryInfo(root).EnumerateDirectories())
             {
                 ct.ThrowIfCancellationRequested();
                 if ((dir.Attributes & FileAttributes.ReparsePoint) == 0 && dir.Name.All(char.IsAsciiDigit))
-                    rows.Add(new(game, dir.Name, "Workshop item directory on disk", dir.FullName));
+                    rows.Add(new(game, dir.Name, installed.Contains(dir.Name)
+                        ? "Workshop install record and local content directory"
+                        : "Workshop content directory · installation record unconfirmed", dir.FullName));
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             rows.Add(new(game, "Workshop scan incomplete", ex.Message, root));
         }
+    }
+
+    // Steam KeyValues is nested. IDs in WorkshopItemDetails or a quoted value
+    // are not installation records. Only direct block keys in WorkshopItemsInstalled count.
+    [GeneratedRegex("""//[^\r\n]*|"(?:\\.|[^"\\])*"|[{}]""", RegexOptions.CultureInvariant)]
+    private static partial Regex KeyValueTokens();
+
+    private static HashSet<string> WorkshopInstallRecords(string contentRoot)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        var app = new DirectoryInfo(contentRoot);
+        var file = new FileInfo(Path.Combine(app.Parent!.Parent!.FullName, $"appworkshop_{app.Name}.acf"));
+        if (!file.Exists || file.Length > 4 * 1024 * 1024 || (file.Attributes & FileAttributes.ReparsePoint) != 0)
+            return result;
+        var depth = 0;
+        var recordsDepth = -1;
+        string? key = null;
+        var matchesApp = false;
+        foreach (Match match in KeyValueTokens().Matches(File.ReadAllText(file.FullName)))
+        {
+            var token = match.Value;
+            if (token.StartsWith("//", StringComparison.Ordinal)) continue;
+            if (token == "{")
+            {
+                if (depth == 1 && key == "WorkshopItemsInstalled") recordsDepth = depth + 1;
+                else if (depth == recordsDepth && key is { Length: > 0 } && key.All(char.IsAsciiDigit)) result.Add(key);
+                depth++;
+                key = null;
+            }
+            else if (token == "}")
+            {
+                if (depth == recordsDepth) recordsDepth = -1;
+                if (--depth < 0) return [];
+                key = null;
+            }
+            else if (key is null) key = token[1..^1];
+            else
+            {
+                if (depth == 1 && key.Equals("appid", StringComparison.OrdinalIgnoreCase))
+                    matchesApp = token[1..^1] == app.Name;
+                key = null;
+            }
+        }
+        return matchesApp && depth == 0 ? result : [];
     }
 
     private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct)
@@ -191,7 +242,7 @@ public static class LocalModInventory
                             continue;
                         }
                         var relative = "/" + Path.GetRelativePath(root, item.FullName).Replace('\\', '/') + "/";
-                        var evidence = Detect(relative, item.Extension, mhw);
+                        var evidence = Detect(relative, item.FullName, item.Extension, mhw);
                         if (evidence is not null) rows.Add(new(game, item.Name, origin + " Â· " + evidence, item.FullName));
                     }
                 }
@@ -207,18 +258,31 @@ public static class LocalModInventory
         }
     }
 
-    private static string? Detect(string path, string extension, bool mhw)
+    private static string? Detect(string path, string fullPath, string extension, bool mhw)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         const StringComparison cmp = StringComparison.OrdinalIgnoreCase;
+        if (path.EndsWith("/installation.json/", cmp) && path.Contains("/DLSS-Nexus-Backups/", cmp) &&
+            IsCompletedDlssReceipt(fullPath)) return "DLSS Nexus completed installation receipt";
+        if (path.EndsWith("/dxgi.dll/", cmp))
+        {
+            var parent = Path.GetDirectoryName(fullPath)!;
+            if (File.Exists(Path.Combine(parent, "ReShade.ini")) &&
+                Directory.Exists(Path.Combine(parent, "reshade-shaders", "Shaders")) &&
+                FileVersionInfo.GetVersionInfo(fullPath).ProductName?.Equals("ReShade", cmp) == true)
+                return "ReShade injector and configuration";
+        }
+        if (path.EndsWith("/bitfix/sig.lua/", cmp) &&
+            File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fullPath))!, "dsound.dll")))
+            return "Paired loader files · runtime use unconfirmed";
         if (extension.Equals(".pak", cmp) && (path.Contains("/Content/Paks/~mods/", cmp) ||
             path.Contains("/Content/Paks/LogicMods/", cmp))) return "Unreal mod container";
         if (extension.Equals(".dll", cmp) && path.Contains("/BepInEx/plugins/", cmp)) return "BepInEx plugin";
         if (extension.Equals(".lua", cmp) && path.Contains("/reframework/autorun/", cmp)) return "REFramework script";
         if (mhw && path.StartsWith("/nativePC/", cmp)) return "nativePC override";
-        if (extension.Equals(".pak", cmp) &&
-            !path.Contains("/Content/Paks/", cmp))
-            return "Loose container outside standard Paks directory · review";
+        if (extension.Equals(".pak", cmp) && !path.Contains("/Content/Paks/", cmp) &&
+            File.Exists(Path.ChangeExtension(fullPath, ".utoc")) && File.Exists(Path.ChangeExtension(fullPath, ".ucas")))
+            return "Loose Unreal companion set outside standard Paks directory · review";
         if ((extension.Equals(".pak", cmp) || extension.Equals(".dll", cmp) || extension.Equals(".lua", cmp)) &&
             path.StartsWith("/Mods/", cmp)) return "Payload in game Mods directory";
         if (path.EndsWith("/mod.json/", cmp) && path.Contains("/Mods/", cmp))
@@ -227,4 +291,24 @@ public static class LocalModInventory
             path.EndsWith("/dlls/main.dll/", cmp))) return "UE4SS mod entry point";
         return null;
     }
+    private static bool IsCompletedDlssReceipt(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (new FileInfo(path).Length > 1024 * 1024) return false;
+        try
+        {
+            using var stream = File.OpenRead(path);
+            using var json = JsonDocument.Parse(stream);
+            var root = json.RootElement;
+            return root.ValueKind == JsonValueKind.Object &&
+                root.TryGetProperty("product", out var product) && product.ValueKind == JsonValueKind.String &&
+                product.GetString() == "DLSS Nexus" &&
+                root.TryGetProperty("status", out var status) && status.ValueKind == JsonValueKind.String &&
+                status.GetString() == "Complete" &&
+                root.TryGetProperty("files", out var files) && files.ValueKind == JsonValueKind.Array &&
+                files.GetArrayLength() > 0;
+        }
+        catch (JsonException) { return false; }
+    }
+
 }

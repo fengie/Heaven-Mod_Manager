@@ -30,10 +30,21 @@ public sealed class LocalModInventoryTests
             var currentMod = Write(current, "Project/Content/Paks/~mods/Active.pak");
             var stock = Write(current, "Project/Content/Paks/pakchunk0.pak");
             var staleMod = Write(stale, "outfits/example.pak");
+            Write(stale, "outfits/example.utoc");
+            Write(stale, "outfits/example.ucas");
+            var runtime = Write(current, "Engine/Binaries/ThirdParty/CEF3/resources.pak");
             var plugin = Write(standalone, "BepInEx/plugins/Example/plugin.dll");
+            var receipt = Write(standalone, "DLSS-Nexus-Backups/one/installation.json");
+            File.WriteAllText(receipt, """{"product":"DLSS Nexus","status":"Complete","files":[{}]}""");
+            var bad = Write(standalone, "DLSS-Nexus-Backups/two/installation.json");
+            var enabler = Write(stale, "package/project/Binaries/Win64/bitfix/sig.lua");
+            Write(stale, "package/project/Binaries/Win64/dsound.dll");
             var priorMod = Write(prior, "Project/Content/Paks/~mods/foo.pak");
             var other = Write(unknown, "reframework/autorun/feature.lua");
             Write(workshop, "mod.pak");
+            Write(Path.GetDirectoryName(workshop)!, "777/metadata.json");
+            File.WriteAllText(Path.Combine(old, "steamapps", "workshop", "appworkshop_123.acf"),
+                """ "AppWorkshop" { "appid" "123" "WorkshopItemsInstalled" { "456" { "manifest" "1" } } "WorkshopItemDetails" { "777" { } } } """);
             var looseLibrary = Path.Combine(temp.FullName, "more games");
             var looseGame = Path.Combine(looseLibrary, "Independent");
             Write(looseGame, "Independent.exe");
@@ -43,12 +54,16 @@ public sealed class LocalModInventoryTests
             var result = LocalModInventory.Scan([game, separate], [old, external], [looseLibrary], new Dictionary<string,string[]> { [separate.Id] = [prior] }, TestContext.Current.CancellationToken);
             Assert.Contains(result, x => x.Location == looseMod && x.Game == "Independent");
             Assert.Contains(result, x => x.Location == currentMod && x.Evidence.StartsWith("Registered", StringComparison.Ordinal));
-            Assert.DoesNotContain(result, x => x.Location == stock);
+            Assert.DoesNotContain(result, x => x.Location == stock || x.Location == runtime);
             Assert.Contains(result, x => x.Location == staleMod && x.Evidence.Contains("Other library", StringComparison.Ordinal));
+            Assert.Contains(result, x => x.Location == receipt && x.Evidence.Contains("receipt", StringComparison.Ordinal));
+            Assert.DoesNotContain(result, x => x.Location == bad);
+            Assert.Contains(result, x => x.Location == enabler && x.Evidence.Contains("unconfirmed", StringComparison.Ordinal));
             Assert.Contains(result, x => x.Location == priorMod && x.Evidence.Contains("Previous", StringComparison.Ordinal));
             Assert.Contains(result, x => x.Location == plugin && x.Game == "Other");
             Assert.Contains(result, x => x.Location == other && x.Evidence.Contains("Unmatched", StringComparison.Ordinal));
-            Assert.Contains(result, x => x.Location == workshop && x.Game == "Game" && x.Name == "456");
+            Assert.Contains(result, x => x.Location == workshop && x.Game == "Game" && x.Name == "456" && x.Evidence.Contains("install record", StringComparison.Ordinal));
+            Assert.Contains(result, x => x.Name == "777" && x.Evidence.Contains("unconfirmed", StringComparison.Ordinal));
             Assert.Equal("fixture", File.ReadAllText(staleMod));
         }
         finally { temp.Delete(true); }

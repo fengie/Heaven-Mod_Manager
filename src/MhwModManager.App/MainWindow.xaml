@@ -1542,7 +1542,11 @@
             <TabItem Header="Installed files">
                 <DockPanel Margin="8">
                     <TextBlock DockPanel.Dock="Top" Text="{Binding LocalModInventoryStatus}" Margin="0,0,0,8"/>
-                    <DataGrid ItemsSource="{Binding LocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Label Target="{Binding ElementName=LocalModSearch}" Content="Filter by game, location, or evidence"/>
+                        <TextBox x:Name="LocalModSearch" Text="{Binding LocalModQuery, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding VisibleLocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Game" Binding="{Binding Game}"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
