@@ -811,6 +811,7 @@ public sealed partial class MainWindowViewModel
     internal MainWindowViewModel(AppServices services, HttpClient http, IReadOnlyList<IModCatalogProvider>? providers = null)
         : this(services)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         catalogHttp = http;
         catalogProviders = providers;
     }
@@ -843,6 +844,7 @@ public sealed partial class MainWindowViewModel
 
     private List<IModCatalogProvider> CreateConfiguredCatalogProviders(HttpClient http)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (s.StartupArguments.Contains("--offline-catalog", StringComparer.OrdinalIgnoreCase)) return [];
         var providers = new List<IModCatalogProvider>();
         if (s.Paths.Game.IsMonsterHunterWorld)
