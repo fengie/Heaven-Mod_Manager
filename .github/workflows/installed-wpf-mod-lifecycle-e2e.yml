@@ -117,7 +117,7 @@ jobs:
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          $expectedCases = 11
+          $expectedCases = 12
           if ($summary -notmatch "succeeded:\s+$expectedCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
             throw "Expected $expectedCases passing acceptance cases and zero skipped tests."
           }
