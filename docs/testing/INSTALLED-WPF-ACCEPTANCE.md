@@ -17,7 +17,7 @@ The November 20 H2 snapshot contained 37 registrations. The read-only host censu
 5. Select two ZIPs with a native multi-file picker; verify that confidently routed packages for the active game automatically appear as two disabled library rows without a separate Inbox command, preserving source hashes and fake game sentinel bytes.
 6. Switch between the two registered fake games through the real WPF selector without restarting the process or altering any sentinel bytes.
 
-The normal unit/integration runs report the two opt-in UI tests as skipped, never as passing. The hosted acceptance workflow must execute four tests (three UI tests and a guard test), with zero skips.
+The hosted acceptance workflow requires 13 passing cases, zero skips, and a recorded UI result for each profile in the registry. The per-profile test launches a disposable probe from the registered executable path. Read the job results and the per-game evidence file together.
 
 ## Isolation and evidence
 
@@ -33,10 +33,10 @@ indexing and visible list refresh within the same progress operation. Unidentifi
 contradictory and installer-choice packages remain uninstalled for review. Packages
 routed to a **different registered game** remain queued in that game's Inbox; no foreign
 game database is opened by this active-session change. Background folder-watch scans
-continue to stage packages only. The four-test hosted WPF check includes a regression
+continue to stage packages only. The hosted WPF check includes a regression
 requiring that two selected archives appear as disabled mods without a separate Inbox
 action; it also verifies original archive hashes and fake live game sentinels.
 
 ## Not yet established
 
-The publish-from-source fixture is not signed/immutable release installation. Solid RAR/7z, real large Sifu/Stellar Blade mod sets, 500-mod performance, folder picker drag/drop, runtime game launch and injected crash/power-loss recovery remain distinct acceptance tasks (#791, #735, #793). No results may be claimed until exact-head hosted UIA job succeeds and all checks have terminal status.
+The publish-from-source fixture is not signed/immutable release installation. Solid RAR/7z, real large Sifu/Stellar Blade mod sets, 500-mod performance, folder picker drag/drop, third-party game loading and injected crash/power-loss recovery remain distinct acceptance tasks (#791, #735, #793). No results may be claimed until exact-head hosted UIA job succeeds and all checks have terminal status.
