@@ -202,18 +202,20 @@ public sealed class InstalledWpfModLifecycleE2ETests
     }
 
     [Theory(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
-    [InlineData(false)]
-    [InlineData(true)]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
     [Trait("Category", "InstalledWpf")]
-    public async Task NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo(bool archive)
+    public async Task NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo(bool archive, bool alreadyManaged)
     {
         using var run = new DisposableWpfRun(seedInbox: false, unreal: true);
-        var input = Path.Combine(Path.GetDirectoryName(run.ArchivePath)!, "Nested Unreal Collection");
+        var input = Path.Combine(Path.GetDirectoryName(alreadyManaged ? run.InstalledModPath : run.ArchivePath)!, "Nested Unreal Collection");
         var members = new[] { "first.pak", "first.utoc", "first.ucas" };
-        var firstRoot = Directory.CreateDirectory(Path.Combine(input, "Mods", "Shelf", "NestedFirst",
-            run.FirstGame.ModRootRelativePath, "~mods")).FullName;
-        var secondRoot = Directory.CreateDirectory(Path.Combine(input, "Mods", "Shelf", "NestedSecond",
-            run.FirstGame.ModRootRelativePath, "~mods")).FullName;
+        var shelf = alreadyManaged ? input : Path.Combine(input, "Mods", "Shelf");
+        var firstRoot = Directory.CreateDirectory(Path.Combine(shelf, "NestedFirst",
+            alreadyManaged ? "" : run.FirstGame.ModRootRelativePath, "~mods")).FullName;
+        var secondRoot = Directory.CreateDirectory(Path.Combine(shelf, "NestedSecond",
+            alreadyManaged ? "" : run.FirstGame.ModRootRelativePath, "~mods")).FullName;
         var sources = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
         for (var index = 0; index < members.Length; index++)
             sources.Add(Path.Combine(firstRoot, members[index]), [(byte)(index + 1), 19, 37]);
@@ -231,17 +233,20 @@ public sealed class InstalledWpfModLifecycleE2ETests
         var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
         if (archive) await SelectModsTabAsync(window, TestToken);
-        var importName = archive ? "Install Mod" : "Import ZIP/RAR/7z Folder";
-        Invoke(await WaitForElementAsync(() => FindButton(window, importName, enabled: true),
-            UiTimeout, importName, TestToken));
-        var dialog = await WaitForElementAsync(() => FindFileDialog(app.Id, folder: !archive),
-            UiTimeout, "nested collection picker", TestToken);
-        var edit = FindPickerField(dialog, folder: !archive)
-            ?? throw new InvalidOperationException("Nested collection picker has no accessible path field.");
-        ((ValuePattern)edit.GetCurrentPattern(ValuePattern.Pattern)).SetValue(selectedInput);
-        var confirm = archive ? "Open" : "Select Folder";
-        Invoke(await WaitForElementAsync(() => FindButton(dialog, confirm, enabled: true),
-            UiTimeout, "confirm nested input", TestToken));
+        if (!alreadyManaged)
+        {
+            var importName = archive ? "Install Mod" : "Import ZIP/RAR/7z Folder";
+            Invoke(await WaitForElementAsync(() => FindButton(window, importName, enabled: true),
+                UiTimeout, importName, TestToken));
+            var dialog = await WaitForElementAsync(() => FindFileDialog(app.Id, folder: !archive),
+                UiTimeout, "nested collection picker", TestToken);
+            var edit = FindPickerField(dialog, folder: !archive)
+                ?? throw new InvalidOperationException("Nested collection picker has no accessible path field.");
+            ((ValuePattern)edit.GetCurrentPattern(ValuePattern.Pattern)).SetValue(selectedInput);
+            var confirm = archive ? "Open" : "Select Folder";
+            Invoke(await WaitForElementAsync(() => FindButton(dialog, confirm, enabled: true),
+                UiTimeout, "confirm nested input", TestToken));
+        }
 
         await SelectModsTabAsync(window, TestToken);
         var first = (TogglePattern)(await WaitForElementAsync(() => FindModToggle(window, "NestedFirst"),

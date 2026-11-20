@@ -5,7 +5,8 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Filesystem;
 
-public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null)
+public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null,
+    Func<string,CancellationToken,IReadOnlyList<string>>? discoverChildren=null)
 {
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
@@ -31,8 +32,28 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         foreach(var dir in directories)
         {
             ct.ThrowIfCancellationRequested();
+            existingByPath.TryGetValue(dir, out var tracked);
+            if (discoverChildren is not null && (tracked is null || tracked.All(row => row.CanInspectCollection)))
+            {
+                IReadOnlyList<string> children = [];
+                try
+                {
+                    children = await Task.Run(() => discoverChildren(dir, ct), ct);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    MasterDebugLog.Write("CATALOG", "Collection could not be inspected; keeping original catalog source.", ex);
+                }
+                foreach (var child in children)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (!existingByPath.ContainsKey(child))
+                        await AddLocalFolderAsync(child, priority++, ct);
+                }
+                if (children.Count > 0 && tracked is null) continue;
+            }
             var name=Path.GetFileName(dir);
-            if(existingByPath.TryGetValue(dir,out var tracked))
+            if(tracked is not null)
             {
                 if(NexusArchiveIdentity.TryParse(name,out var identity))
                 {
@@ -45,17 +66,22 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 continue;
             }
             if (IsEmptyLocalFolder(dir)) continue;
-            var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
-            var parsed=NexusArchiveIdentity.TryParse(name,out var newIdentity);
-            // Filenames are untrusted: do not promote guessed IDs into verified source identity.
-            var display=ModDisplayNames.StripTransportDigest(parsed?newIdentity.DisplayName:name);
-            await db.UpsertModAsync(new(id,name,display,dir,false,priority++),ct);
+            await AddLocalFolderAsync(dir, priority++, ct);
         }
         if(backfills.Count>0)
         {
             var updated=await db.BackfillArchiveDisplayNameAsync(backfills,ct);
             MasterDebugLog.Write("CATALOG", $"Repaired filename-derived display titles for {updated} existing mod(s).");
         }
+    }
+
+    private Task AddLocalFolderAsync(string dir, int priority, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var name = Path.GetFileName(dir);
+        var id = "local-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0, 12)).ToLowerInvariant();
+        var display = ModDisplayNames.StripTransportDigest(NexusArchiveIdentity.TryParse(name, out var identity) ? identity.DisplayName : name);
+        return db.InsertDiscoveredModAsync(id, name, display, dir, priority, ct);
     }
 
     public async Task EnsureCapturedAsync(IEnumerable<ModDescriptor> mods,CancellationToken ct=default)

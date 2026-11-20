@@ -16,7 +16,10 @@ internal enum ManagerDatabaseMigrationCheckpoint
 /// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
 /// shared-cache changes locking semantics and works against the WAL concurrency model.
 /// </summary>
-public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl);
+public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl)
+{
+    public bool CanInspectCollection { get; init; }
+}
 public sealed record ModArchiveDisplayBackfill(string Id, string Name, string SourcePath, string DisplayName);
 
 public sealed class ManagerDatabase
@@ -296,12 +299,12 @@ public sealed class ManagerDatabase
         var list = new List<ModCatalogSourceIdentity>();
         await using var c = await OpenAsync(ct);
         await using var cmd = c.CreateCommand();
-        cmd.CommandText = "SELECT id,name,source_path,nexus_mod_id,source_url FROM mods";
+        cmd.CommandText = "SELECT id,name,source_path,nexus_mod_id,source_url,enabled=0 AND NOT EXISTS(SELECT 1 FROM mod_files WHERE mod_id=mods.id) FROM mods";
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))
             list.Add(new(r.GetString(0), r.GetString(1), r.GetString(2),
                 r.IsDBNull(3) ? null : r.GetString(3),
-                r.IsDBNull(4) ? null : r.GetString(4)));
+                r.IsDBNull(4) ? null : r.GetString(4)) { CanInspectCollection = r.GetBoolean(5) });
         return list;
     }
 
@@ -373,6 +376,27 @@ public sealed class ManagerDatabase
             await cmd.ExecuteNonQueryAsync(ct);
         }
         await tx.CommitAsync(ct);
+    }
+
+    public async Task InsertDiscoveredModAsync(string id, string name, string display, string path, int priority, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var cmd = connection.CreateCommand();
+        // A concurrent refresh or selection may already own this row. Discovery only inserts.
+        cmd.CommandText = """
+            INSERT INTO mods(id,name,display_name,source_path,enabled,priority,imported_at,updated_at)
+            VALUES($id,$name,$display,$path,0,$priority,$now,$now)
+            ON CONFLICT(id) DO NOTHING
+            ON CONFLICT(source_path COLLATE NOCASE) DO NOTHING
+            """;
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$name", name);
+        cmd.Parameters.AddWithValue("$display", display);
+        cmd.Parameters.AddWithValue("$path", path);
+        cmd.Parameters.AddWithValue("$priority", priority);
+        cmd.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
+        await cmd.ExecuteNonQueryAsync(ct);
     }
 
     public async Task UpsertModAsync(ModDescriptor mod, CancellationToken ct = default)

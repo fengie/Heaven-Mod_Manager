@@ -33,6 +33,10 @@ public sealed class InstalledWpfAcceptanceContractTests
         Assert.Contains("runs-on: windows-2025", workflow, StringComparison.Ordinal);
         Assert.Contains("RUNNER_ENVIRONMENT -ne 'github-hosted'", workflow, StringComparison.Ordinal);
         Assert.Contains("MHW_RUN_INSTALLED_WPF_E2E: '1'", workflow, StringComparison.Ordinal);
+        var caseCount = typeof(InstalledWpfModLifecycleE2ETests).GetMethods()
+            .Where(method => method.IsDefined(typeof(FactAttribute), true))
+            .Sum(method => Math.Max(1, method.GetCustomAttributes(typeof(InlineDataAttribute), true).Length));
+        Assert.Contains($"$expectedCases = {caseCount}\n", workflow.ReplaceLineEndings("\n"), StringComparison.Ordinal);
         Assert.Contains("succeeded:", workflow, StringComparison.Ordinal);
         Assert.Contains("skipped:", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("schedule:", workflow, StringComparison.Ordinal);
@@ -57,7 +61,10 @@ public sealed class InstalledWpfAcceptanceContractTests
             "src/MhwModManager.Automation/ModBoundaryDiscovery.cs",
             "src/MhwModManager.Automation/SmartInboxService.cs",
             "src/MhwModManager.Core/UnrealPakLayout.cs",
-            "src/MhwModManager.Filesystem/ModScanner.cs"
+            "src/MhwModManager.Filesystem/ModScanner.cs",
+            "src/MhwModManager.Filesystem/CatalogService.cs",
+            "src/MhwModManager.Storage/ManagerDatabase.cs",
+            "src/MhwModManager.App/App.xaml.cs"
         ];
         foreach (var path in paths)
             Assert.Matches($@"(?m)^      - '{Regex.Escape(path)}'\r?$", trigger.Groups["body"].Value);
