@@ -89,4 +89,3 @@ public sealed class LocalModInventoryTests
         finally { home.Delete(true); }
     }
 }
-
