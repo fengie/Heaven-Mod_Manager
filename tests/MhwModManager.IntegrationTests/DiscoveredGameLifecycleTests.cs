@@ -15,6 +15,47 @@ public sealed class DiscoveredGameLifecycleTests(ITestOutputHelper output)
 
     [Theory]
     [MemberData(nameof(ProfileIds))]
+    public void DiscoverySeparatesCurrentPreviousUnmatchedAndWorkshopOwners(string id)
+    {
+        var workspace = Directory.CreateTempSubdirectory("heaven-discovery-");
+        try
+        {
+            var game = DiscoveredGameProfiles.Isolate(DiscoveredGameProfiles.Load().Single(profile => profile.Id == id),workspace.FullName);
+            var library = Path.Combine(workspace.FullName,"library");
+            var stale = Directory.CreateDirectory(Path.Combine(workspace.FullName,"old-game")).FullName;
+            var unmatched = Directory.CreateDirectory(Path.Combine(library,"steamapps","common","unknown install")).FullName;
+            var evidence = Path.Combine(stale,"retained.pak");
+            File.WriteAllText(evidence,"old bytes");
+            var workshopRoot = Path.Combine(library,"steamapps","workshop");
+            static void AddWorkshop(string workshop, string appId, string item)
+            {
+                var source = Directory.CreateDirectory(Path.Combine(workshop,"content",appId,item)).FullName;
+                File.WriteAllText(Path.Combine(source,"payload.dat"),item);
+                File.WriteAllText(Path.Combine(workshop,"appworkshop_"+appId+".acf"),
+                    $$""" "AppWorkshop" { "appid" "{{appId}}" "WorkshopItemsInstalled" { "{{item}}" { "manifest" "1" } } } """);
+            }
+            const string outsideId = "900000000000000";
+            Assert.NotEqual(outsideId,game.SteamAppId);
+            AddWorkshop(workshopRoot,outsideId,"87102");
+            if (game.SteamAppId is { Length: > 0 } appId) AddWorkshop(workshopRoot,appId,"87101");
+            var previous = new Dictionary<string,string[]> { [id] = [stale] };
+            var inventory = LocalModInventory.Scan([game],[library],[],previous,TestContext.Current.CancellationToken);
+            Assert.Contains(inventory,row => row.Name=="Installation unavailable" && row.Location==game.GameRoot);
+            Assert.Contains(inventory,row => row.Evidence=="Previous installation" && row.Location==stale);
+            Assert.Contains(inventory,row => row.Location==unmatched && row.Name=="Unmatched game folder");
+            Assert.Contains(inventory,row => row.VerifiedWorkshopAppId==outsideId && row.Game=="Steam app "+outsideId);
+            var owned = LocalModInventory.WorkshopLibrary(inventory,game.SteamAppId,[]);
+            if (game.SteamAppId is { Length: > 0 }) Assert.Equal("87101",Assert.Single(owned).WorkshopId);
+            else Assert.Empty(owned);
+            Assert.Equal("old bytes",File.ReadAllText(evidence));
+            Assert.False(Directory.Exists(game.GameRoot));
+            output.WriteLine($"{id}: missing registered install, retained previous root, unmatched Steam folder, external Workshop ownership and unchanged stale contents verified in isolated storage.");
+        }
+        finally { workspace.Delete(true); }
+    }
+
+    [Theory]
+    [MemberData(nameof(ProfileIds))]
     public async Task CatalogDestinationsAndSaveSnapshotFollowThisGame(string id)
     {
         var ct = TestContext.Current.CancellationToken;
@@ -134,6 +175,18 @@ public sealed class DiscoveredGameLifecycleTests(ITestOutputHelper output)
             Assert.Equal("archive",await File.ReadAllTextAsync(Path.Combine(mount,"second"+suffix),ct));
             var health = new HealthService(db,snapshots,hashing,blobs,executor.Destination,game);
             Assert.DoesNotContain(await health.ScanAsync(ct), issue => issue.Code is "DEPLOYED_MISSING" or "DEPLOYED_CHANGED");
+            var activeFile = Path.Combine(mount,"second"+suffix);
+            await File.WriteAllTextAsync(activeFile,"outside change",ct);
+            Assert.Contains(await health.ScanAsync(ct), issue => issue.Code == "DEPLOYED_CHANGED");
+            await File.WriteAllTextAsync(activeFile,"archive",ct);
+            var recipes = new CollectionRecipeService(db,game);
+            var recipeFile = Path.Combine(state,"coverage-recipe.json");
+            await recipes.ExportAsync(recipeFile,ct);
+            var preview = await recipes.PreviewAsync(recipeFile,ct);
+            Assert.Equal(2,preview.Matches.Count);
+            Assert.All(preview.Matches,match => Assert.True(match.CanRestore));
+            var importedProfile = await recipes.ImportAsync(recipeFile,"Imported coverage",ct);
+            foreach (var entry in await saved.LoadAsync(importedProfile,ct)) Assert.Equal(stage[entry.Key],entry.Value);
             snapshot = await snapshots.LoadAsync(ct);
             var disabled = snapshot.Mods.Select(mod => mod with { Enabled=false }).ToArray();
             var remove = planning.Build(snapshot with { Mods=disabled });
