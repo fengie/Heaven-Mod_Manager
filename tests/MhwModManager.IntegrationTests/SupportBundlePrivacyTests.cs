@@ -93,6 +93,28 @@ public sealed class SupportBundlePrivacyTests : IDisposable
     }
 
     [Fact]
+    public async Task Support_bundle_reads_the_running_managers_log_while_the_writer_remains_open()
+    {
+        var db = new ManagerDatabase(Path.Combine(root, "manager.db"));
+        await db.InitializeAsync(TestToken);
+        var logger = AppLogging.Create(root);
+        try
+        {
+            logger.Information("before support bundle");
+            var service = new SupportBundleService(db, root, new DiagnosticTelemetry(db, logger));
+            var zip = await service.CreateAsync(Path.Combine(root, "support"), TestToken);
+            using var archive = ZipFile.OpenRead(zip);
+            var entry = Assert.Single(archive.Entries, e => e.Name.StartsWith("manager-", StringComparison.Ordinal) && e.Name.EndsWith(".jsonl", StringComparison.Ordinal));
+            using var reader = new StreamReader(entry.Open());
+            Assert.Contains("before support bundle", await reader.ReadToEndAsync(TestToken));
+            logger.Information("after support bundle");
+        }
+        finally { (logger as IDisposable)?.Dispose(); }
+        Assert.Contains("after support bundle", await File.ReadAllTextAsync(
+            Assert.Single(Directory.EnumerateFiles(Path.Combine(root, "Next", "Logs"), "*.jsonl")), TestToken));
+    }
+
+    [Fact]
     public void Runtime_diagnostics_use_current_assembly_version_identity()
     {
         var state=Path.Combine(root,"versioned-logging");
