@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.IO.Compression;
 using System.Net;
 using System.Security.Cryptography;
@@ -13,7 +12,6 @@ using MhwModManager.App;
 using MhwModManager.App.ViewModels;
 using MhwModManager.Automation;
 using MhwModManager.Core;
-using MhwModManager.Diagnostics;
 using MhwModManager.Storage;
 using Xunit;
 
@@ -23,7 +21,7 @@ public sealed class CatalogActionsTests
 {
     [Fact]
     public Task AllRegisteredProfilesSearchTheirOwnCacheAndClearWithoutContactingAProvider() =>
-        RunOnDispatcher(async (services, ct) =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
         {
             var repository = new CatalogRepository(services.Database);
             await repository.UpsertSourceAsync("Fixture", CatalogComplianceFixture.Active("fixture"), ct);
@@ -55,7 +53,7 @@ public sealed class CatalogActionsTests
 
     [Fact]
     public Task SharedBrowseCommandsPageLocalResultsAndRecoverProviderFailure() =>
-        RunOnDispatcher(async (services, ct) =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
         {
             var game = services.Paths.Game;
             var repository = new CatalogRepository(services.Database);
@@ -120,7 +118,7 @@ public sealed class CatalogActionsTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     public Task ExactFileAcquisitionPreservesIdentityAndRejectsUnexpectedSize(bool incorrectSize, bool incorrectHeader) =>
-        RunOnDispatcher(async (services, ct) =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
         {
             var game = services.Paths.Game;
             var mod = Item(game, "Chosen");
@@ -207,56 +205,5 @@ public sealed class CatalogActionsTests
             Requests++;
             throw new InvalidOperationException("Unexpected external request from isolated catalog test");
         }
-    }
-
-    private static async Task RunOnDispatcher(Func<AppServices,CancellationToken,Task> run)
-    {
-        var token = TestContext.Current.CancellationToken;
-        var finished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var thread = new Thread(() => {
-            var dispatcher = Dispatcher.CurrentDispatcher;
-            SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(dispatcher));
-            dispatcher.BeginInvoke(new Action(async () => {
-                var root = Directory.CreateTempSubdirectory("manager-catalog-actions-");
-                AppServices? services = null;
-                Exception? failure = null;
-                try
-                {
-                    var game = GameProfile.Generic("catalog-fixture", "Catalog fixture", Path.Combine(root.FullName, "game"), "Fixture.exe", "Mods");
-                    Directory.CreateDirectory(game.GameRoot);
-                    File.WriteAllBytes(game.ExecutablePath, [1, 2, 3]);
-                    string Folder(string name) => Directory.CreateDirectory(Path.Combine(root.FullName,name)).FullName;
-                    var paths = new AppPaths(root.FullName,Folder("workspace"),Folder("mods"),Folder("inbox"),Folder("archives"),
-                        Folder("state"),Folder("next"),Path.Combine(root.FullName,"catalog-test.db"),Folder("blobs"),game.GameRoot,game,DownloadsRoot:Folder("downloads"));
-                    var bootstrap = typeof(App.App).GetMethod("LoadGameSessionAsync", BindingFlags.Static | BindingFlags.NonPublic)!;
-                    services = await (Task<AppServices>)bootstrap.Invoke(null,
-                        [paths, StartupDiagnosticSession.Start(root.FullName), Array.Empty<string>(), null, null, null, null])!;
-                    await run(services, token);
-                }
-                catch (Exception ex) { failure = ex; }
-                finally
-                {
-                    try
-                    {
-                        if (services is not null)
-                        {
-                            services.ChangeHints.Dispose();
-                            (services.Log as IDisposable)?.Dispose();
-                            await using var pool = await services.Database.OpenAsync(CancellationToken.None);
-                            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool);
-                        }
-                        root.Delete(recursive: true);
-                    }
-                    catch (Exception ex) { failure = failure is null ? ex : new AggregateException(failure, ex); }
-                    if (failure is null) finished.SetResult();
-                    else finished.SetException(failure);
-                    dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
-                }
-            }));
-            Dispatcher.Run();
-        }) { IsBackground = true };
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        await finished.Task.WaitAsync(TimeSpan.FromMinutes(3), token);
     }
 }

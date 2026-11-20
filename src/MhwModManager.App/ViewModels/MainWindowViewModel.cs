@@ -1639,9 +1639,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("automation.restore-lkg","Restoring Last Working Setup","Restoring the most recent setup that successfully started the game…",false,async ct=>
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
-        var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
-        var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
+        var stage=LastKnownGoodService.RestoreState(known,snap.Mods);
+        var staged=snap.Mods.Select(m=>m with{Enabled=stage[m.Id].Enabled,Priority=stage[m.Id].Priority}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("The saved setup now has a blocking conflict under the current files; nothing was changed.");
         var dependencyBlockers=await GetDependencyBlockersAsync(stage,plan,ct);

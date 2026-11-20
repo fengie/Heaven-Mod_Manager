@@ -30,15 +30,18 @@ public sealed class LastKnownGoodService(ManagerDatabase db)
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var state = await LoadAsync(ct) ?? throw new InvalidOperationException("No last-known-good launch has been recorded yet.");
         var current = await db.GetModsAsync(ct);
-        var mapped = current.ToDictionary(
+        var mapped = RestoreState(state, current);
+        await db.SetEnabledAndPriorityAsync(mapped, ct);
+        return mapped.Count;
+    }
+
+    public static Dictionary<string, (bool Enabled, int Priority)> RestoreState(LastKnownGoodState state, IReadOnlyList<ModDescriptor> current) =>
+        current.ToDictionary(
             mod => mod.Id,
             mod => state.Mods.TryGetValue(mod.Id, out var saved)
                 ? (saved.Enabled, saved.Priority)
                 : (false, mod.Priority),
             StringComparer.OrdinalIgnoreCase);
-        await db.SetEnabledAndPriorityAsync(mapped, ct);
-        return mapped.Count;
-    }
 
     public async Task<IReadOnlyList<string>> ChangedSinceLastGoodAsync(CancellationToken ct = default)
     {
