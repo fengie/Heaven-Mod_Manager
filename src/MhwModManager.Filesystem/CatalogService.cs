@@ -77,6 +77,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
 
     private static bool IsEmptyLocalFolder(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var folder = new DirectoryInfo(path);
         return folder.Exists && (folder.Attributes & FileAttributes.ReparsePoint) == 0 &&
             !folder.EnumerateFileSystemInfos().Any();
