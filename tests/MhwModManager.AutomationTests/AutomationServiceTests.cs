@@ -442,6 +442,7 @@ public sealed class AutomationServiceTests : IDisposable
         Directory.CreateDirectory(b);
         var marker=Path.Combine(a,"marker.txt");
         await File.WriteAllTextAsync(marker,"preserve-me",TestContext.Current.CancellationToken);
+        File.Copy(marker,Path.Combine(b,"marker.txt"));
 
         await db.UpsertModAsync(new("a","A","A",a,false,1),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("b","B","B",b,false,2),TestContext.Current.CancellationToken);
@@ -478,6 +479,8 @@ public sealed class AutomationServiceTests : IDisposable
         var archive=Path.Combine(root,"archive-retirement-references");
         Directory.CreateDirectory(a);
         Directory.CreateDirectory(b);
+        File.WriteAllText(Path.Combine(a,"same.tex"),"same");
+        File.Copy(Path.Combine(a,"same.tex"),Path.Combine(b,"same.tex"));
         await db.UpsertModAsync(new("a","A","A",a,false,1),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("b","B","B",b,false,2),TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);
@@ -552,6 +555,7 @@ public sealed class AutomationServiceTests : IDisposable
         Directory.CreateDirectory(a);
         Directory.CreateDirectory(b);
         await File.WriteAllTextAsync(Path.Combine(a,"marker.txt"),"A",TestContext.Current.CancellationToken);
+        File.Copy(Path.Combine(a,"marker.txt"),Path.Combine(b,"marker.txt"));
         await db.UpsertModAsync(new("a","A","A",a,false,1),TestContext.Current.CancellationToken);
         await db.UpsertModAsync(new("b","B","B",b,false,2),TestContext.Current.CancellationToken);
         await db.ReplaceModFilesAsync("a",[ModFile("a",@"nativePC\same.tex","hash",FileClass.Texture)],TestContext.Current.CancellationToken);

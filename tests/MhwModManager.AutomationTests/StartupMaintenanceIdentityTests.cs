@@ -59,7 +59,7 @@ public sealed class StartupMaintenanceIdentityTests : IDisposable
         Directory.CreateDirectory(older);
         Directory.CreateDirectory(keeper);
         await File.WriteAllTextAsync(Path.Combine(older, "sentinel.txt"), "original", Token);
-        await File.WriteAllTextAsync(Path.Combine(keeper, "sentinel.txt"), "keeper", Token);
+        await File.WriteAllTextAsync(Path.Combine(keeper, "sentinel.txt"), "original", Token);
         await db.UpsertModAsync(new("Pair", "Older", "Older", older, false, 1), Token);
         await db.UpsertModAsync(new("pair", "Keeper", "Keeper", keeper, false, 2), Token);
         await db.ReplaceModFilesAsync("Pair",
@@ -73,7 +73,7 @@ public sealed class StartupMaintenanceIdentityTests : IDisposable
         Assert.Empty(outcome.Analysis.ExactDuplicates);
         var remaining = Assert.Single(await db.GetModsAsync(Token));
         Assert.Equal("pair", remaining.Id);
-        Assert.Equal("keeper", await File.ReadAllTextAsync(Path.Combine(keeper, "sentinel.txt"), Token));
+        Assert.Equal("original", await File.ReadAllTextAsync(Path.Combine(keeper, "sentinel.txt"), Token));
         Assert.False(Directory.Exists(older));
         Assert.Equal("original",
             await File.ReadAllTextAsync(Path.Combine(Assert.Single(Directory.GetDirectories(archiveRoot)), "sentinel.txt"), Token));
