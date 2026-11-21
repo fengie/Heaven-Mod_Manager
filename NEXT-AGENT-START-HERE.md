@@ -1,6 +1,6 @@
-# v8.8.136 — canonical state and solid archive intake
+# v8.8.137 — canonical state and automatic mod changes
 
-Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e40450d298. Verify the mixed-game intake and extraction results under #791 on the candidate and installed update. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 625 is the published v8.8.136 package from 03b07f33e6435a950594e21340153b2de50d3a48. Verify automatic mod changes, explicit choice handling and page refresh on the packaged Windows client. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -13,9 +13,9 @@ Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e
 
 - Empty local folders no longer create catalog entries. Existing rows keep their saved state and show an actionable error if their selected source folder is empty. [#919](https://github.com/fengie/Heaven-Mod_Manager/pull/919)
 - Nested, project-qualified Unreal packages can be identified independently. Ordinary loose PAK groups use the game's mod subdirectory on supported profiles. Explicit mirrored destinations stay intact, and incomplete or ambiguous packages require review. [#920](https://github.com/fengie/Heaven-Mod_Manager/pull/920)
-- For an older, already-enabled Unreal package, filter the library to the intended mod and use **Refresh visible mod** to reindex it. Review **Preview Mod Changes**, then use **Apply** when the staged changes and destination match your intent.
+- To repair an older package index, filter the Mods list to the intended packages and use the scoped index rebuild. Check the matching game paths before choosing a reviewed package.
 
-- **v8.8.118 released implementation:** #895 preserves terminal updater recovery with corrupt pending marker; #897 integrated coordinated release metadata at `b6e1e151`; immutable `updater-main-588` published after Windows Gate 44481505844 PASS. Real packaged updater E2E 44483604969 PASS (Confirmed, injected RolledBack to 60, four intact user-data hashes). Source-bound receipt `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.118.log` merged by [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899) at `e426d87d`. PR #898 added local catalog paging after release; it is not in the immutable build-588 ZIP. No claim of personal Heaven2 installation follows from this evidence.
+- Historical v8.8.118 updater proof and closure are retained in [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 
 - **Historical v8.8.113 source:** #850â€“#874 provided genuine small archive format fixtures, crash recovery, game routing, conflict safeguards, startup telemetry, and catalog visibility. Large real Sifu/Stellar Blade/MHW corpora and installed p95 remain unverified.
 
@@ -24,7 +24,9 @@ Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e
 
 ## Verification boundary
 
-v8.8.122 [build 609](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-609) published source `b0305463e62aad3dee52fa247d36a62661fb0748`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44695358157) and [installed updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44696757234) passed. The ordinary updater installed 609 on HEAVEN2. The three registered games showed 734, 179, and 32 Steam-owned rows with searchable item IDs and unchanged catalog and deployment state. v8.8.123 publication, hosted update and rollback, and installed Heaven2 verification are pending.
+v8.8.136 [build 625](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-625) published source `03b07f33e6435a950594e21340153b2de50d3a48`. Windows Gate 44924132490 passed all 26 checks. Installed-client run 44925024003 confirmed the published update and verified rollback after an injected failure. The preserved logs record the exact source and hashes. [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44924132490) · [Installed-client proof](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44925024003)
+
+On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. The v8.8.137 changes require separate packaged desktop, release and installed acceptance. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
 For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 

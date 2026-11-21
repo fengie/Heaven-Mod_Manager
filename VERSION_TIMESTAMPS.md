@@ -4,6 +4,7 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
+| 8.8.137 | November 21, 2026 · 12:08:20 PM EST | Automatic mod changes from main 03b07f33 |
 | 8.8.136 | November 21, 2026 · 10:26:04 AM EST | Solid archive intake from main 1156864d |
 | 8.8.135 | November 21, 2026 · 06:40:31 AM EST | Package options from main f39b44cd |
 | 8.8.134 | November 21, 2026 · 04:08:28 AM EST | Folder package boundaries from main e58fa67b |
