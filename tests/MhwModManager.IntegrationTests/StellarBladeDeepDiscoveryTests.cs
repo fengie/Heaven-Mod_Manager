@@ -499,7 +499,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     public async Task Archive_of_incomplete_pak_groups_reports_each_group_without_extracting()
     {
         Directory.CreateDirectory(home);
-        var sourceArchive = Path.Combine(home, "incomplete.zip");
+        var sourceArchive = Path.Combine(home, "Incomplete collection.zip");
         using (var zip = ZipFile.Open(sourceArchive, ZipArchiveMode.Create))
         {
             foreach (var file in new[] { "SB/Content/Paks/~mods/Armor_P.pak",
@@ -527,7 +527,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     public async Task Archive_stages_complete_mod_while_reviewing_an_unrelated_incomplete_group()
     {
         Directory.CreateDirectory(home);
-        var archive = Path.Combine(home, "mixed-valid-incomplete.zip");
+        var archive = Path.Combine(home, "Mixed collection.zip");
         using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
         {
             foreach (var name in Triple("SB/Content/Paks/~mods/Armor_P")
@@ -562,7 +562,7 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
     public async Task Archive_with_two_stellar_blade_pak_triples_stages_separate_complete_mods()
     {
         Directory.CreateDirectory(home);
-        var sourceArchive = Path.Combine(home, "StellarBladeMods.zip");
+        var sourceArchive = Path.Combine(home, "Stellar Blade Collection.zip");
         using (var zip = ZipFile.Open(sourceArchive, ZipArchiveMode.Create))
         {
             foreach (var entryName in Triple("SB/Content/Paks/~mods/Armor_P")
@@ -595,10 +595,43 @@ public sealed class StellarBladeDeepDiscoveryTests : IDisposable
         Assert.Equal(0, second.Routed);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Authored_folder_or_archive_with_two_required_chunks_is_one_package(bool zipped)
+    {
+        var originals = Path.Combine(home, "Full Costume");
+        foreach (var file in Triple("SB/Content/Paks/~mods/Body_P").Concat(Triple("SB/Content/Paks/~mods/Face_P")))
+        {
+            var path = Path.Combine(originals, file);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, file, TestToken);
+        }
+        var input = originals;
+        if (zipped)
+        {
+            input += ".zip";
+            ZipFile.CreateFromDirectory(originals, input);
+        }
+        var manager = Path.Combine(home, "Manager");
+        var profile = GameProfile.Generic("stellar-blade", "Stellar Blade", Path.Combine(home, "game"),
+            "SB.exe", "SB/Content/Paks/~mods", nexusGameDomain: "stellarblade");
+        var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => [profile]);
+        var result = await intake.ImportPathAsync(input, TestToken);
+        Assert.Equal(1, result.Routed);
+        var entry = Assert.Single(Directory.GetFileSystemEntries(Path.Combine(manager, "Mods by Game", profile.Id, "Inbox")));
+        if (zipped)
+        {
+            using var archive = ZipFile.OpenRead(entry);
+            Assert.Equal(6, archive.Entries.Count);
+        }
+        else Assert.Equal(6, Directory.GetFiles(entry, "*", SearchOption.AllDirectories).Length);
+    }
+
     [Fact]
     public async Task Unpacked_shared_paks_are_independently_staged_without_copying_other_groups()
     {
-        var incoming = Path.Combine(home, "Incoming");
+        var incoming = Path.Combine(home, "Mod library");
         foreach (var path in Triple("SB/Content/Paks/~mods/Armor_P")
             .Concat(Triple("SB/Content/Paks/~mods/Weapon_P")))
         {

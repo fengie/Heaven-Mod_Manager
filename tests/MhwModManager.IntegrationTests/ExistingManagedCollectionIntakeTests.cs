@@ -23,6 +23,85 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
         nexusGameDomain: "stellarblade");
 
     [Fact]
+    public async Task Exact_review_copies_share_one_guarded_entry_and_different_metadata_retains_separate_identity()
+    {
+        var game = GameProfile.Generic("quartz", "Quartz", Path.Combine(home,"game"), "game.exe",
+            "Project/Content/Paks", "unreal-paks");
+        var installed = GameModStorage.Resolve(Manager,game).InstalledRoot;
+        var shelf = Path.Combine(installed,"Mixed shelf");
+        string[] folders = [Path.Combine(shelf,"Original"),Path.Combine(installed,"Previous copy"),Path.Combine(installed,"Assigned")];
+        foreach (var folder in folders)
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder,"first.pak"),"first");
+            File.WriteAllText(Path.Combine(folder,"second.pak"),"second");
+        }
+        File.WriteAllText(Path.Combine(folders[2],"mod-intake.json"),"{\"gameId\":\"quartz\"}");
+        var component = Directory.CreateDirectory(Path.Combine(folders[2], "Pants component")).FullName;
+        File.WriteAllText(Path.Combine(component, "third.pak"), "third");
+        foreach (var name in new[] {"Other","Third"})
+        {
+            Directory.CreateDirectory(Path.Combine(shelf,name));
+            File.WriteAllText(Path.Combine(shelf,name,name+".pak"),name);
+        }
+        File.WriteAllText(Path.Combine(shelf,"loose.pak"),"loose");
+        var db = catalogDatabase = new ManagerDatabase(Path.Combine(home,"state","manager.db"));
+        await db.InitializeAsync(TestToken);
+        var scanner = new ModScanner(db,new BlobStore(Path.Combine(home,"blobs"),db),new HashingService(),game);
+        var intake = new GameModIntakeService(Manager,Path.Combine(Manager,"State"),()=>[game]);
+        var catalog = new CatalogService(db,scanner,installed,inspectShelf:(folder,ct)=>intake.InspectManagedShelf(folder,game,ct));
+        await catalog.RefreshFoldersAsync(TestToken);
+        var all = await db.GetModsAsync(true,TestToken);
+        Assert.All(folders,folder=>Assert.True(all.Single(row=>row.SourcePath==folder).RequiresLayoutReview));
+        var visible = await db.GetModsAsync(TestToken);
+        Assert.Single(visible,row=>row.SourcePath==folders[0] || row.SourcePath==folders[1]);
+        Assert.Contains(visible,row=>row.SourcePath==folders[2] && row.RequiresLayoutReview);
+        await catalog.RefreshFoldersAsync(TestToken);
+        Assert.All(folders,folder=>Assert.Equal("first",File.ReadAllText(Path.Combine(folder,"first.pak"))));
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
+
+    [Fact]
+    public async Task Ordinary_refresh_indexes_existing_children_but_keeps_loose_parent_and_authored_choices_under_review()
+    {
+        var game = GameProfile.Generic("quartz", "Quartz", Path.Combine(home,"game"), "game.exe",
+            "Project/Content/Paks", "unreal-paks");
+        var installed = GameModStorage.Resolve(Manager,game).InstalledRoot;
+        var root = Path.Combine(installed,"~mods");
+        string[] paths = ["loose.pak","Jade/hat.pak","Gold/coat.pak","Gold/coat.sig",
+            "Outfit/WITH_PHYSICS/motion.pak", "Outfit/NO_PHYSICS/rigid.pak", "Outfit/README.txt"];
+        foreach (var relative in paths)
+        {
+            var target = Path.Combine(root,relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.WriteAllText(target,relative);
+        }
+        var db = catalogDatabase = new ManagerDatabase(Path.Combine(home, "state", "manager.db"));
+        await db.InitializeAsync(TestToken);
+        await db.UpsertModAsync(new("wrapper","wrapper","Original shelf",root,false,43),TestToken);
+        await db.UpsertModAsync(new("kept","kept","Original title",Path.Combine(root,"Jade"),false,46),TestToken);
+        var scanner = new ModScanner(db,new BlobStore(Path.Combine(home,"blobs"),db),new HashingService(),game);
+        var intake = new GameModIntakeService(Manager,Path.Combine(Manager,"State"),()=>[game]);
+        var catalog = new CatalogService(db, scanner, installed, inspectShelf:(folder,ct)=>intake.InspectManagedShelf(folder,game,ct));
+        for (var i=0; i<2; i++)
+        {
+            await catalog.RefreshFoldersAsync(TestToken);
+            var rows = await db.GetModsAsync(TestToken);
+            Assert.Equal(4,rows.Count);
+            Assert.All(rows,row=>Assert.False(row.Enabled));
+            Assert.Equal("review", await db.ShelfRoleAsync("wrapper",TestToken));
+            Assert.Equal("review", await db.ShelfRoleAsync(rows.Single(row=>row.Name=="Outfit").Id,TestToken));
+            Assert.Equal("package",await db.ShelfRoleAsync("kept",TestToken));
+            Assert.Equal(46,rows.Single(row=>row.Id=="kept").Priority);
+            var files = await db.GetModFilesAsync(TestToken);
+            Assert.Equal(3,files.Count);
+            Assert.DoesNotContain(files,file=>file.ModId=="wrapper");
+        }
+        foreach (var relative in paths) Assert.Equal(relative,File.ReadAllText(Path.Combine(root,relative)));
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
+
+    [Fact]
     public async Task Existing_shelf_reuses_ids_captures_distinct_payloads_and_preserves_reviews_and_active_mod()
     {
         var game = GameProfile.Generic("fixture", "Fixture", Path.Combine(home, "game"), "game.exe", "Project/Content/Paks", "unreal-paks");

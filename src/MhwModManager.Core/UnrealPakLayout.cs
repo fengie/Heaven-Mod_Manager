@@ -18,6 +18,32 @@ public static class UnrealPakLayout
         return Path.GetExtension(path).ToLowerInvariant() is ".pak" or ".sig" or ".utoc" or ".ucas";
     }
 
+    // A complete flat container may ship alongside its editable Unreal project. Only a
+    // project descriptor accounts for the accompanying subtree; a second package or
+    // installer inside that tree still needs independent inspection.
+    public static bool HasBundledEditorProject(IReadOnlyList<string> paths)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var normalized = paths.Select(path => path.Replace('\\', '/')).ToArray();
+        var direct = normalized.Where(path => !path.Contains('/') && !ManagedCollectionNotes.IsNote(path)).ToArray();
+        if (!Complete(direct, singleStem: true)) return false;
+        var roots = normalized.Where(path => path.Contains('/') &&
+                path.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase))
+            .Select(path => path[..path.IndexOf('/')]).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (roots.Count == 0) return false;
+        return normalized.Where(path => path.Contains('/')).All(path =>
+            roots.Contains(path[..path.IndexOf('/')]) && !IsMember(path) &&
+            Path.GetExtension(path).ToLowerInvariant() is not (".zip" or ".rar" or ".7z") &&
+            !path.EndsWith("/ModuleConfig.xml", StringComparison.OrdinalIgnoreCase) &&
+            !path.EndsWith("/mod-intake.json", StringComparison.OrdinalIgnoreCase) &&
+            !path.EndsWith("/thunderstore.toml", StringComparison.OrdinalIgnoreCase) &&
+            !path.Contains("/BepInEx/plugins/", StringComparison.OrdinalIgnoreCase) &&
+            !path.Contains("/reframework/autorun/", StringComparison.OrdinalIgnoreCase) &&
+            !path.Contains("/reframework/plugins/", StringComparison.OrdinalIgnoreCase) &&
+            !path.Contains("/UE4SS/Mods/", StringComparison.OrdinalIgnoreCase) &&
+            !path.Contains("/nativePC/", StringComparison.OrdinalIgnoreCase));
+    }
+
     public static bool Complete(IEnumerable<string> files, bool singleStem = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

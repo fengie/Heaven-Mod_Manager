@@ -1,14 +1,18 @@
-# v8.8.133 — MHW Manual Mod Manager
+# v8.8.134 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 02:27:23 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 04:08:28 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.133**.
+Current product version: **8.8.134**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.134 — mod folder imports
+
+- Import a mod folder or archive to list independent packages even when a loose file sits beside them. Manager preserves container companions, keeps documented alternatives together for review, and uses a registered game folder to route its packages. [Folder import verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791)
 
 ## v8.8.133 — automatic duplicate handling
 
@@ -17,10 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.132 — installed mod discovery
 
 - Installed Files now identifies the Mods entry that accounts for a discovery. The active game's library automatically lists verified packages and loader components, keeps external files read-only and distinguishes previous installations. [Installed discovery](https://github.com/fengie/Heaven-Mod_Manager/issues/949)
-
-## v8.8.131 — add a game
-
-- Use **Add Game** beside **Find Installed Games** on the Dashboard to select a game executable and switch to its mod library. Choosing an already registered executable reuses its existing profile. [Game registration](https://github.com/fengie/Heaven-Mod_Manager/issues/946)
 
 ## Current plans & progress
 

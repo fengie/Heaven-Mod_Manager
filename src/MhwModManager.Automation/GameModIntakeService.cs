@@ -364,7 +364,7 @@ public sealed class GameModIntakeService
                 .Select(entry => entry.Key).ToArray();
         }
 
-        var boundaries = ModBoundaryDiscovery.Discover(files);
+        var boundaries = ModBoundaryDiscovery.Discover(files, isDirectory ? Path.GetFileName(source) : Path.GetFileNameWithoutExtension(source));
         if (boundaries.Candidates.Count != 1 ||
             boundaries.Candidates[0].Kind != ModBoundaryKind.Folder ||
             boundaries.Candidates[0].RelativePath != ".")
@@ -419,7 +419,7 @@ public sealed class GameModIntakeService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
-        var discovered = ModBoundaryDiscovery.Discover(paths);
+        var discovered = ModBoundaryDiscovery.Discover(paths, Path.GetFileName(root));
         // Reanalyzing an existing tracked package must never copy its whole root as
         // a duplicate when structural evidence no longer proves several child mods.
         if (requireMultipleBoundaries &&
@@ -432,6 +432,10 @@ public sealed class GameModIntakeService
         // Share one inspection and physical-copy budget across every candidate from
         // this selected collection. Nested archive recursion carries the same instance.
         var collectionBudget = new IntakeBudget(collectionCopyBudget);
+        var rootName = Path.GetFileName(Path.TrimEndingDirectorySeparator(root));
+        var selectedScope = games.Any(game =>
+            GameProfile.NormalizeId(rootName) == game.Id ||
+            GameProfile.NormalizeId(rootName) == GameProfile.NormalizeId(game.DisplayName)) ? rootName : null;
         var candidateIndex = 0;
         foreach (var candidate in discovered.Candidates)
         {
@@ -448,13 +452,13 @@ public sealed class GameModIntakeService
             {
                 if (candidate.Kind == ModBoundaryKind.FileSet)
                     await RouteFileSetAsync(root, candidate, games, output, receipts,
-                        0, collectionBudget, entry, ct).ConfigureAwait(false);
+                        0, collectionBudget, entry, ct, selectedScope).ConfigureAwait(false);
                 else
                 {
                     RefuseReparseComponents(entry);
                     await ClassifyAndRouteAsync(root, entry,
                         candidate.Kind == ModBoundaryKind.Folder,
-                        games, output, receipts, ct, 0, collectionBudget).ConfigureAwait(false);
+                        games, output, receipts, ct, 0, collectionBudget, gameContextHint: selectedScope).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
@@ -475,21 +479,26 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var source = ValidateManagedCollectionSource(sourcePath, game);
         return ModBoundaryDiscovery.Discover(SnapshotFolderFiles(source, ct)
-            .Select(file => Path.GetRelativePath(source, file)));
+            .Select(file => Path.GetRelativePath(source, file)), Path.GetFileName(source));
     }
 
     public ManagedCollectionLayout InspectManagedShelf(string source, GameProfile game, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var inventory = PreviewManagedCollection(source, game, ct).FileInventory ?? [];
-        var files = inventory.Where(path => !ManagedCollectionNotes.IsNote(path)).ToArray();
-        if (files.Length == 0 || files.Any(path => !path.Contains('/')))
+        var preview = PreviewManagedCollection(source, game, ct);
+        if (preview.Candidates is [{ RelativePath: ".", RequiresSelection: true }])
+            return new([new(source, true)], true);
+        var files = (preview.FileInventory ?? []).Where(path => !ManagedCollectionNotes.IsNote(path)).ToArray();
+        if (files.Length == 0)
             return new([], false);
 
-        return PartitionShelf(source, files, ct);
+        var choices = preview.Candidates.Where(candidate => candidate.RequiresSelection)
+            .Select(candidate => Path.GetFullPath(Path.Combine(source, candidate.RelativePath)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return PartitionShelf(source, files, choices, ct);
     }
 
-    private static ManagedCollectionLayout PartitionShelf(string source, string[] files, CancellationToken ct)
+    private static ManagedCollectionLayout PartitionShelf(string source, string[] files, HashSet<string> choices, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         while (files.Length > 0 && files.All(path => path.Contains('/')))
@@ -502,7 +511,17 @@ public sealed class GameModIntakeService
             source = Path.Combine(source, prefix.TrimEnd('/'));
             files = files.Select(path => path[prefix.Length..]).ToArray();
         }
-        if (files.Any(path => !path.Contains('/'))) return new([], false);
+        if (files.Any(path => !path.Contains('/')))
+        {
+            var discovery = ModBoundaryDiscovery.Discover(files, Path.GetFileName(source));
+            if (!discovery.Candidates.Any(c => c.Kind == ModBoundaryKind.Review && c.RelativePath == ".") ||
+                !discovery.Candidates.Any(c => c.Kind == ModBoundaryKind.Folder && c.RelativePath != "."))
+                return new([], false);
+            var nested = PartitionShelf(source, files.Where(path => path.Contains('/')).ToArray(), choices, ct);
+            return nested.FullyAccounted
+                ? new([.. nested.Units, new(source, true)], true)
+                : new([], false);
+        }
         var branches = files.GroupBy(path => path[..path.IndexOf('/')], StringComparer.OrdinalIgnoreCase).ToArray();
         var boundaries = ModBoundaryDiscovery.Discover(files);
         if (branches.Length < 2 || boundaries.Candidates.All(candidate => candidate.RelativePath == "."))
@@ -516,13 +535,10 @@ public sealed class GameModIntakeService
             var containers = relative.Where(UnrealPakLayout.IsMember).ToArray();
             // A project source tree may accompany a finished package. Its editor files
             // are attributable only when the same subtree contains a project descriptor.
-            var editorRoots = relative.Where(path => path.Contains('/') && path.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase))
-                .Select(path => path[..(path.IndexOf('/') + 1)]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-            var clean = relative.All(path => UnrealPakLayout.IsMember(path) ||
-                editorRoots.Any(root => path.StartsWith(root, StringComparison.OrdinalIgnoreCase)));
-            var protectedChoice = boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
+            var clean = relative.All(UnrealPakLayout.IsMember) || UnrealPakLayout.HasBundledEditorProject(relative);
+            var protectedChoice = choices.Contains(branchPath) || boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
                 c.RelativePath.Equals(branch.Key, StringComparison.OrdinalIgnoreCase) &&
-                c.Evidence.Contains("variant", StringComparison.OrdinalIgnoreCase));
+                c.RequiresSelection);
             if (clean && !protectedChoice && UnrealPakLayout.Complete(containers, singleStem: true))
             {
                 var parent = Path.GetDirectoryName(containers[0]) ?? "";
@@ -537,7 +553,7 @@ public sealed class GameModIntakeService
                 // are commonly alternate versions that must stay together for review.
                 var distinctOutputs = containers.Select(Path.GetFileName).Distinct(StringComparer.OrdinalIgnoreCase).Count() == containers.Length;
                 var children = !protectedChoice && clean && containers.Length > 1 && distinctOutputs &&
-                    relative.All(path => path.Contains('/')) ? PartitionShelf(branchPath, relative, ct) : new([], false);
+                    relative.All(path => path.Contains('/')) ? PartitionShelf(branchPath, relative, choices, ct) : new([], false);
                 if (children.FullyAccounted) units.AddRange(children.Units);
                 else units.Add(new(branchPath, true));
             }
@@ -680,7 +696,7 @@ public sealed class GameModIntakeService
     private async Task RouteFileSetAsync(
         string sourceDirectory, ModBoundaryCandidate candidate, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts,
-        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct)
+        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct, string? gameContextHint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (candidate.Kind != ModBoundaryKind.FileSet || candidate.Files is not { Count: > 0 })
@@ -736,7 +752,7 @@ public sealed class GameModIntakeService
                 }
             }
             await ClassifyAndRouteAsync(sourceDirectory, package, true, games, output,
-                receipts, ct, nestedDepth, budget, provenance).ConfigureAwait(false);
+                receipts, ct, nestedDepth, budget, provenance, gameContextHint).ConfigureAwait(false);
         }
         finally
         {
@@ -786,7 +802,7 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Unsafe archive paths require manual review.");
             budget.Account(info);
             var discovery = ModBoundaryDiscovery.Discover(info.Entries
-                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
+                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key), Path.GetFileNameWithoutExtension(source));
             // No extraction is necessary when every candidate requires review.
             // Preserve each incomplete group as a separate evidence-bearing row.
             if (discovery.Candidates.Count > 0 &&
@@ -846,7 +862,7 @@ public sealed class GameModIntakeService
                         var childProvenance = reportSource + "!/" + candidate.RelativePath;
                         var childGameContextHint = discovery.Candidates.Count == 1
                             && candidate.Kind == ModBoundaryKind.Folder
-                            ? gameContextHint ?? Path.GetFileName(source) : null;
+                            ? gameContextHint ?? Path.GetFileName(source) : gameContextHint;
                         if (candidate.Kind == ModBoundaryKind.Review)
                         {
                             output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
@@ -856,11 +872,11 @@ public sealed class GameModIntakeService
                         {
                             if (candidate.Kind == ModBoundaryKind.FileSet)
                                 await RouteFileSetAsync(scratch, candidate, games, output, receipts,
-                                    nestedDepth + 1, budget, childProvenance, ct).ConfigureAwait(false);
+                                    nestedDepth + 1, budget, childProvenance, ct, childGameContextHint).ConfigureAwait(false);
                             else
                             {
                                 RefuseReparseComponents(child);
-                                await ClassifyAndRouteAsync(sourceRoot, child,
+                                await ClassifyAndRouteAsync(scratch, child,
                                     candidate.Kind == ModBoundaryKind.Folder,
                                     games, output, receipts, ct, nestedDepth + 1, budget, childProvenance,
                                     childGameContextHint).ConfigureAwait(false);

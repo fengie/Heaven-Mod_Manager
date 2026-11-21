@@ -121,19 +121,19 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         foreach (var (diskRoot, prefix) in ResolveRoots(mod.SourcePath, game, ct))
         {
             var snapshot = SafeRecursiveTraversal.Snapshot(diskRoot, ct).Files;
-            var editorRoots = packageOnly ? snapshot.Where(file => file.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase))
-                .Select(file => Path.GetRelativePath(diskRoot, file).Split(Path.DirectorySeparatorChar))
-                .Where(parts => parts.Length > 1).Select(parts => parts[0]).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+            var bundledProject = pakMount is not null &&
+                snapshot.Any(file => file.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase)) &&
+                UnrealPakLayout.HasBundledEditorProject(snapshot.Select(file => Path.GetRelativePath(diskRoot, file)).ToArray());
             foreach (var file in snapshot)
             {
                 ct.ThrowIfCancellationRequested();
                 var fi = new FileInfo(file);
                 if (IsIgnored(fi)) continue;
                 var rel = Path.GetRelativePath(diskRoot, file).Replace('/', '\\');
-                if (packageOnly && !UnrealPakLayout.IsMember(rel) &&
-                    (ManagedCollectionNotes.IsNote(rel) || editorRoots.Contains(rel.Split(Path.DirectorySeparatorChar)[0]))) continue;
+                if ((packageOnly || bundledProject) && !UnrealPakLayout.IsMember(rel) &&
+                    (ManagedCollectionNotes.IsNote(rel) || (bundledProject && rel.Contains(Path.DirectorySeparatorChar)))) continue;
                 if (pakMount is not null && !rel.Contains('\\') &&
-                    (rel.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase) ||
+                    (ManagedCollectionNotes.IsNote(rel) || rel.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase) ||
                      Path.GetExtension(rel).Equals(".md", StringComparison.OrdinalIgnoreCase))) continue;
                 if ((game is null || game.IsMonsterHunterWorld) &&
                     PathRules.Comparer.Equals(diskRoot, mod.SourcePath) &&

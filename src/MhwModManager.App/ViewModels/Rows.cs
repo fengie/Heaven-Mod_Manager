@@ -206,6 +206,9 @@ public partial class ModRowViewModel:ObservableObject
             var suffix=identity[DisplayName.Length..].Trim(' ','-',':','|','_','–','—');
             if(!string.IsNullOrWhiteSpace(suffix))identity=suffix;
         }
+        if (family.Members is [{ RequiresLayoutReview: true }] &&
+            System.IO.Path.GetDirectoryName(SourcePath) is { Length: > 0 } parent)
+            SourceName = System.IO.Path.Combine(System.IO.Path.GetFileName(parent), SourceName);
         // The visible source label already strips receipt hashes; parse only the
         // untouched original package name and present its source ID as a hint.
         if(!IsComposite && NexusArchiveIdentity.TryParse(family.Members[0].Name,out var sourceIdentity))

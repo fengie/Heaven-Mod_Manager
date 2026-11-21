@@ -70,7 +70,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 try
                 {
                     var layout = await Task.Run(() => inspectShelf(dir, ct), ct);
-                    if (layout.FullyAccounted && layout.Units.Count > 1)
+                    if (layout.FullyAccounted && layout.Units.Count > 0)
                     {
                         await ReconcileShelfAsync(dir, layout.Units, tracked ?? [], savedShelves![dir], priority, ct);
                         priority += layout.Units.Count;
@@ -130,9 +130,14 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         try
         {
             var shelves = await db.ReadShelfEntriesAsync(ct);
-            var excluded = shelves.SelectMany(group=>group).Where(entry=>entry.Role is "wrapper" or "review")
-                .Select(entry=>entry.Id).ToHashSet(StringComparer.Ordinal);
             var all = await db.GetModsAsync(true,ct);
+            var sources = all.ToDictionary(mod => mod.Id, mod => mod.SourcePath, StringComparer.Ordinal);
+            // A parent representing loose files overlaps its independently indexed
+            // children. Only whole, independent review sources can be exact peers.
+            var excluded = shelves.SelectMany(group => group.Where(entry => entry.Role == "wrapper" ||
+                    (entry.Role == "review" && group.Skip(1).Any() &&
+                     sources.TryGetValue(entry.Id, out var source) && PathRules.Comparer.Equals(source, group.Key))))
+                .Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal);
             var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
             var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
             await db.ReconcileExactCopiesAsync(groups,ct);
@@ -178,7 +183,10 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 entries.Add((mod.Id, canonical is null ? "package" : "duplicate", canonical?.Id));
             }
         }
-        entries.AddRange(wrappers.Select(wrapper => (wrapper.Id, "wrapper", (string?)null)));
+        // When the shelf itself owns unresolved loose files it already has a visible
+        // review role. Reuse its original identity and keep its deployment toggle guarded.
+        if (!units.Any(unit => StringComparer.OrdinalIgnoreCase.Equals(unit.SourcePath, shelf)))
+            entries.AddRange(wrappers.Select(wrapper => (wrapper.Id, "wrapper", (string?)null)));
         if (!previous.ToHashSet().SetEquals(entries))
             await db.SetShelfEntriesAsync(shelf, entries, ct);
     }

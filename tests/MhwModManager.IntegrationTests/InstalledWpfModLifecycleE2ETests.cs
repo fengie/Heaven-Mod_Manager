@@ -378,27 +378,50 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
     [Trait("Category", "InstalledWpf")]
     public async Task NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo(bool archive, bool alreadyManaged)
     {
-        using var run = new DisposableWpfRun(seedInbox: false, unreal: true);
+        var mixed = !archive && !alreadyManaged;
+        var profile = mixed ? DiscoveredGameProfiles.Load().Single(game => game.Id == "wuchang-fallen-feathers") : null;
+        using var run = new DisposableWpfRun(seedInbox: false, unreal: true, profile: profile);
         var input = Path.Combine(Path.GetDirectoryName(alreadyManaged ? run.InstalledModPath : run.ArchivePath)!, "Nested Unreal Collection");
-        var members = new[] { "first.pak", "first.utoc", "first.ucas" };
-        var shelf = alreadyManaged ? input : Path.Combine(input, "Mods", "Shelf");
-        var firstRoot = Directory.CreateDirectory(Path.Combine(shelf, "NestedFirst",
-            alreadyManaged ? "" : run.FirstGame.ModRootRelativePath, "~mods")).FullName;
-        var secondRoot = Directory.CreateDirectory(Path.Combine(shelf, "NestedSecond",
-            alreadyManaged ? "" : run.FirstGame.ModRootRelativePath, "~mods")).FullName;
+        var shelf = alreadyManaged ? input : mixed ? Path.Combine(input, "~mods") : Path.Combine(input, "Mods", "Shelf");
+        var names = mixed
+            ? new[] { "NestedFirst", "NestedSecond", "NestedThird", "NestedFourth", "NestedFifth", "NestedSixth" }
+            : ["NestedFirst", "NestedSecond"];
         var sources = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
-        for (var index = 0; index < members.Length; index++)
-            sources.Add(Path.Combine(firstRoot, members[index]), [(byte)(index + 1), 19, 37]);
-        sources.Add(Path.Combine(secondRoot, "second.pak"), [42, 17, 78]);
+        var deployed = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        for (int index = 0; index < names.Length; index++)
+        {
+            var folder = mixed ? Path.Combine(shelf, names[index]) :
+                Path.Combine(shelf, names[index], alreadyManaged ? "" : run.FirstGame.ModRootRelativePath, "~mods");
+            Directory.CreateDirectory(folder);
+            string[] members = index == 0 ? ["first.pak", "first.utoc", "first.ucas"] : [$"outfit{index}.pak"];
+            for (int member = 0; member < members.Length; member++)
+            {
+                byte[] payload = [(byte)(index + 1), (byte)(member + 1), 37];
+                // A flat Unreal container identifies no game. These payloads carry the registered game ID.
+                var filename = mixed ? run.FirstGame.Id + "-" + members[member] : members[member];
+                sources.Add(Path.Combine(folder, filename), payload);
+                if (mixed || index == 0)
+                    deployed.Add(Path.Combine(run.FirstGame.LiveModRoot, "~mods", filename), payload);
+            }
+        }
+        if (mixed)
+        {
+            sources.Add(Path.Combine(shelf, "unassigned.pak"), [53, 71]);
+            foreach (var choice in new[] { "Explo", "1v1", "1vX" })
+            {
+                var folder = Directory.CreateDirectory(Path.Combine(shelf, "Alternative Camera"));
+                sources.Add(Path.Combine(folder.FullName, $"Camera-{choice}_P.pak"), System.Text.Encoding.UTF8.GetBytes(choice));
+            }
+        }
         foreach (var source in sources)
             File.WriteAllBytes(source.Key, source.Value);
 
-        var selectedInput = archive ? input + ".zip" : input;
+        var selectedInput = archive ? input + ".zip" : mixed ? shelf : input;
         if (archive) ZipFile.CreateFromDirectory(input, selectedInput);
         var archiveHash = archive ? SHA256.HashData(File.ReadAllBytes(selectedInput)) : null;
         var gameRoot = run.FirstGame.GameRoot;
         var before = Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray();
-        var expected = members.Select(name => Path.Combine(run.FirstGame.LiveModRoot, "~mods", name)).ToArray();
+        var expected = deployed.Keys.ToArray();
 
         var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
@@ -418,40 +441,73 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 UiTimeout, "confirm nested input", TestToken));
         }
 
+        if (mixed)
+        {
+            var review = await WaitForElementAsync(() => FindProcessDialog(app.Id, "Mod pack — candidate review"),
+                UiTimeout, "mixed package review", TestToken);
+            await WaitForElementAsync(() => Find(review, element => element.Current.Name.Contains("6 routed,", StringComparison.Ordinal) &&
+                element.Current.Name.Contains("2 require review,", StringComparison.Ordinal)),
+                UiTimeout, "six independently routed packages and two unresolved candidates", TestToken);
+            foreach (var unresolved in new[] { shelf, Path.Combine(shelf, "Alternative Camera") })
+            {
+                await WaitForElementAsync(() => Find(review, row => row.Current.ControlType == ControlType.DataItem &&
+                    Find(row, cell => cell.Current.Name == unresolved) is not null &&
+                    Find(row, cell => cell.Current.Name == "NeedsReview") is not null),
+                    UiTimeout, "unassigned parent or mutually exclusive camera files kept for review", TestToken);
+            }
+            Invoke(await WaitForElementAsync(() => FindButton(review, "Close review", enabled: true), UiTimeout, "close review", TestToken));
+            var database = run.OpenCatalog();
+            try
+            {
+                var catalog = await database.GetModsAsync(TestToken);
+                Assert.Equal(names.Order(StringComparer.Ordinal), catalog.Select(mod => mod.DisplayName).Order(StringComparer.Ordinal));
+                Assert.All(catalog, mod => Assert.False(mod.Enabled));
+            }
+            finally
+            {
+                await using var connection = await database.OpenAsync(CancellationToken.None);
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            }
+        }
         await SelectModsTabAsync(window, TestToken);
-        var first = (TogglePattern)(await WaitForElementAsync(() => FindModToggle(window, "NestedFirst"),
-            UiTimeout, "first routed Unreal package", TestToken)).GetCurrentPattern(TogglePattern.Pattern);
-        var second = (TogglePattern)(await WaitForElementAsync(() => FindModToggle(window, "NestedSecond"),
-            UiTimeout, "second routed Unreal package", TestToken)).GetCurrentPattern(TogglePattern.Pattern);
-        Assert.Equal(ToggleState.Off, first.Current.ToggleState);
-        Assert.Equal(ToggleState.Off, second.Current.ToggleState);
+        var search = await WaitForElementAsync(() => Find(window, element =>
+            element.Current.ControlType == ControlType.Edit && element.Current.Name == "Search mods"), UiTimeout, "Mods search", TestToken);
+        var query = (ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern);
+        foreach (var name in names)
+        {
+            query.SetValue(name);
+            var checkbox = await WaitForElementAsync(() => FindModToggle(window, name), UiTimeout, name + " in ordinary Mods", TestToken);
+            var toggle = (TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern);
+            Assert.Equal(ToggleState.Off, toggle.Current.ToggleState);
+            if (mixed || name == names[0]) toggle.Toggle();
+        }
+        query.SetValue("");
         Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-        first.Toggle();
 
         Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true),
-            UiTimeout, "preview the first nested package", TestToken));
+            UiTimeout, "preview selected nested packages", TestToken));
         await WaitForElementAsync(() => Find(window, element => element.Current.ControlType == ControlType.Text &&
             element.Current.Name.Contains("Dry run passed. Ready", StringComparison.Ordinal) &&
-            element.Current.Name.Contains("3 add", StringComparison.Ordinal) &&
+            element.Current.Name.Contains($"{expected.Length} add", StringComparison.Ordinal) &&
             element.Current.Name.Contains("0 replace", StringComparison.Ordinal) &&
             element.Current.Name.Contains("0 remove", StringComparison.Ordinal) &&
             element.Current.Name.Contains("0 restore", StringComparison.Ordinal)),
-            UiTimeout, "preview exactly three new companion files", TestToken);
+            UiTimeout, "preview exactly the selected package files", TestToken);
         Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
 
         Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
-            UiTimeout, "apply the first nested package", TestToken));
+            UiTimeout, "apply selected nested packages", TestToken));
         await WaitForAsync(() => expected.All(File.Exists), UiTimeout,
             "complete companion set in the exact fake loader destination", TestToken);
         Assert.Equal(before.Concat(expected).Order(StringComparer.Ordinal),
             Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-        for (var index = 0; index < expected.Length; index++)
-            Assert.Equal(sources[Path.Combine(firstRoot, members[index])], File.ReadAllBytes(expected[index]));
+        foreach (var target in deployed)
+            Assert.Equal(target.Value, File.ReadAllBytes(target.Key));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
 
         await SelectModsTabAsync(window, TestToken);
         Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true),
-            UiTimeout, "undo first nested package", TestToken));
+            UiTimeout, "undo selected nested packages", TestToken));
         await WaitForAsync(() => expected.All(path => !File.Exists(path)), UiTimeout,
             "undo removed the exact companion set", TestToken);
         Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));

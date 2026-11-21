@@ -1,3 +1,7 @@
+# v8.8.134 — November 21, 2026
+
+- Import a mod folder or archive to list independent packages even when a loose file sits beside them. Manager preserves container companions, keeps documented alternatives together for review, and uses a registered game folder to route its packages. [Folder import verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791)
+
 # v8.8.133 — November 21, 2026
 
 - Manager now shows one entry for identical package folders at startup and after intake. It keeps both originals, respects saved and staged choices, and shows a copy again when its contents change. Previously selected intake folders resume when reconnected. [Automatic duplicate handling](https://github.com/fengie/Heaven-Mod_Manager/issues/951)
