@@ -37,6 +37,8 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
             File.WriteAllText(Path.Combine(folder,"second.pak"),"second");
         }
         File.WriteAllText(Path.Combine(folders[2],"mod-intake.json"),"{\"gameId\":\"quartz\"}");
+        var component = Directory.CreateDirectory(Path.Combine(folders[2], "Pants component")).FullName;
+        File.WriteAllText(Path.Combine(component, "third.pak"), "third");
         foreach (var name in new[] {"Other","Third"})
         {
             Directory.CreateDirectory(Path.Combine(shelf,name));

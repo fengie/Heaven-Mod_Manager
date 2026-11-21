@@ -202,6 +202,10 @@ public static class ModBoundaryDiscovery
         {
             if (archived.Length > 0)
                 return Review(prefix, "Package manifest with nested archives needs review.");
+            if (directFiles.Any(UnrealPakLayout.IsMember) &&
+                relative.Any(path => path.Contains('/') && UnrealPakLayout.IsMember(path)))
+                return Review(prefix, "The declared package combines root containers with nested components. Review the layout together.",
+                    requiresSelection: true);
             return [new(Display(prefix), ModBoundaryKind.Folder, "One explicit package manifest.")];
         }
 
