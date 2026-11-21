@@ -313,6 +313,17 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
         Assert.Equal(payload, File.ReadAllBytes(alternateLive));
         passed.Add("Inspect two package layouts, close preview and preserve archives, deployed and unmanaged files");
+
+        // Vanilla-launch verification later distinguishes saved choices from deployed files.
+        // Disable only the alternate through the normal UI after proving Undo restored it.
+        var restored = await WaitForElementAsync(() => FindModToggle(window, alternateName),
+            UiTimeout, "restored alternate mod", ct);
+        var restoredToggle = (TogglePattern)restored.GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, restoredToggle.Current.ToggleState);
+        restoredToggle.Toggle();
+        await WaitForAsync(() => !File.Exists(alternateLive) && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "alternate disabled for vanilla-launch control", ct);
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
     }
 
     private static AutomationElement? FindProcessDialog(int pid, string title)
