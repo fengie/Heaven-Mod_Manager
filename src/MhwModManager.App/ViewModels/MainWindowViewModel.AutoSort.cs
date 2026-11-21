@@ -11,7 +11,7 @@ namespace MhwModManager.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     private GameModIntakeService? gameIntake;
-    private readonly List<FileSystemWatcher> intakeWatchers = [];
+    private readonly Dictionary<string, CancellationTokenSource> intakeWatchers = new(PathRules.Comparer);
     private readonly SemaphoreSlim intakeScanGate = new(1, 1);
     private readonly object intakeScheduleGate = new();
     private CancellationTokenSource? intakeScheduleCts;
@@ -236,65 +236,96 @@ public sealed partial class MainWindowViewModel
         if (folders.Count == 0)
             AutoSortStatusText = "No folders monitored. Add a source once to auto-sort future downloads.";
         else
-            AutoSortStatusText = $"Monitoring {folders.Count} source folder(s). Unknown/ambiguous packages stay in place for review.";
+            AutoSortStatusText = $"Watching {folders.Count} configured folder(s). Monitoring resumes automatically when an offline folder returns.";
     }
 
     private void RefreshAutoSortWatchers()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        foreach (var watcher in intakeWatchers) watcher.Dispose();
-        intakeWatchers.Clear();
-        foreach (var folder in ActiveInboxRoots.Concat(AutoSortFolders).Distinct(StringComparer.OrdinalIgnoreCase))
+        var inboxRoots = ActiveInboxRoots.ToHashSet(PathRules.Comparer);
+        var configured = AutoSortFolders.Concat(inboxRoots).ToHashSet(PathRules.Comparer);
+        foreach (var folder in intakeWatchers.Keys.Where(folder => !configured.Contains(folder)).ToArray())
         {
-            if (!Directory.Exists(folder)) continue;
-            try
+            intakeWatchers[folder].Cancel();
+            intakeWatchers.Remove(folder);
+        }
+        foreach (var folder in configured)
+        {
+            if (intakeWatchers.ContainsKey(folder)) continue;
+            var lifetime = CancellationTokenSource.CreateLinkedTokenSource(backgroundCts.Token);
+            intakeWatchers.Add(folder, lifetime);
+            var inbox = inboxRoots.Contains(folder);
+            var token = lifetime.Token;
+            _ = Task.Run(async () =>
             {
-                var watcher = new FileSystemWatcher(folder)
+                try
                 {
-                    IncludeSubdirectories = true,
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName
-                        | NotifyFilters.Size | NotifyFilters.LastWrite,
-                    EnableRaisingEvents = false
-                };
-                watcher.Created += OnAutoSortFilesystemChange;
-                watcher.Changed += OnAutoSortFilesystemChange;
-                watcher.Renamed += OnAutoSortFilesystemChange;
-                watcher.Error += OnAutoSortWatcherError;
-                watcher.EnableRaisingEvents = true;
-                intakeWatchers.Add(watcher);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
-            {
-                s.Log.Warning(ex, "Could not monitor designated intake folder {Folder}", folder);
-                AutoSortStatusText = "One monitored folder is unavailable. Use Scan Folders after reconnecting it.";
-            }
+                    await WatchIntakeFolderAsync(folder, TimeSpan.FromSeconds(20), name =>
+                    {
+                        if (token.IsCancellationRequested || (inbox && name is not null &&
+                            (name.Equals("Processed", StringComparison.OrdinalIgnoreCase) ||
+                             name.StartsWith("Processed" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))) return;
+                        ScheduleAutoSortScan(scanSources: !inbox);
+                    }, token);
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+                finally { lifetime.Dispose(); }
+            });
         }
     }
 
-    private void OnAutoSortFilesystemChange(object sender, FileSystemEventArgs e)
+    internal static async Task WatchIntakeFolderAsync(string folder, TimeSpan interval, Action<string?> changed, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var inbox = sender is FileSystemWatcher watcher && ActiveInboxRoots.Contains(watcher.Path, StringComparer.OrdinalIgnoreCase);
-        if (inbox && e.Name is { } name && (name.Equals("Processed", StringComparison.OrdinalIgnoreCase) ||
-            name.StartsWith("Processed" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))) return;
-        ScheduleAutoSortScan(scanSources: !inbox);
-    }
-
-    private void OnAutoSortWatcherError(object sender, ErrorEventArgs e)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        s.Log.Warning(e.GetException(), "Mod-intake filesystem watcher requires authoritative rescan.");
-        ScheduleAutoSortScan(scanSources: sender is not FileSystemWatcher watcher ||
-            !ActiveInboxRoots.Contains(watcher.Path, StringComparer.OrdinalIgnoreCase));
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var root = new DirectoryInfo(folder);
+                if (root.Exists)
+                {
+                    GameModIntakeService.RefuseReparseComponents(folder);
+                    var created = root.CreationTimeUtc;
+                    var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    using var watcher = new FileSystemWatcher(folder)
+                    {
+                        IncludeSubdirectories = true,
+                        NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size | NotifyFilters.LastWrite
+                    };
+                    watcher.Created += (_, e) => changed(e.Name);
+                    watcher.Changed += (_, e) => changed(e.Name);
+                    watcher.Renamed += (_, e) => changed(e.Name);
+                    watcher.Error += (_, _) => failed.TrySetResult();
+                    watcher.EnableRaisingEvents = true;
+                    // Subscribe before reconciling files that arrived while the folder was unavailable.
+                    changed(null);
+                    while (!failed.Task.IsCompleted)
+                    {
+                        var delay = Task.Delay(interval, ct);
+                        if (await Task.WhenAny(delay, failed.Task).ConfigureAwait(false) == failed.Task) break;
+                        await delay.ConfigureAwait(false);
+                        root.Refresh();
+                        if (!root.Exists || root.CreationTimeUtc != created ||
+                            (root.Attributes & FileAttributes.ReparsePoint) != 0) break;
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
+            {
+                // A removable or network folder can disappear between the probe and subscription.
+            }
+            await Task.Delay(interval, ct).ConfigureAwait(false);
+        }
     }
 
     private void ScheduleAutoSortScan(bool scanSources = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (disposed || backgroundCts.IsCancellationRequested) return;
         CancellationTokenSource trigger;
         lock (intakeScheduleGate)
         {
+            if (disposed || backgroundCts.IsCancellationRequested) return;
             scanSourcesRequested |= scanSources;
             intakeScheduleCts?.Cancel();
             trigger = CancellationTokenSource.CreateLinkedTokenSource(backgroundCts.Token);
@@ -422,7 +453,7 @@ public sealed partial class MainWindowViewModel
             intakeScheduleCts?.Cancel();
             intakeScheduleCts = null;
         }
-        foreach (var watcher in intakeWatchers) watcher.Dispose();
+        foreach (var lifetime in intakeWatchers.Values) lifetime.Cancel();
         intakeWatchers.Clear();
     }
 }
