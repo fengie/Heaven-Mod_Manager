@@ -21,6 +21,62 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
     ];
 
     [Fact]
+    public void Authored_alternative_parameters_keep_companions_and_situational_choices_together()
+    {
+        var result = ModBoundaryDiscovery.Discover([
+            "README.txt", "90 FOV/1v1/wideA.pak", "90 FOV/1v1/wideA.sig",
+            "105 FOV/1v1/wideB.pak", "105 FOV/1v1/wideB.sig",
+            "NoFixedCam/helper.pak", "Other/Fixed/Level.pak"
+        ]);
+        Assert.Equal(ModBoundaryKind.Review, Assert.Single(result.Candidates).Kind);
+    }
+
+    [Fact]
+    public void Signed_complete_iostore_groups_are_consistent_across_project_mounts()
+    {
+        foreach (var project in new[] { "SB", "AnotherProject" })
+        {
+            var mount = project + "/Content/Paks/~mods/";
+            string[] stems = ["Robe", "Hair"];
+            string[] extensions = [".pak", ".sig", ".utoc", ".ucas"];
+            var paths = stems.SelectMany(stem => extensions.Select(ext => mount + stem + ext)).ToArray();
+            var groups = ModBoundaryDiscovery.Discover(paths).Candidates;
+            Assert.Equal(2, groups.Count);
+            Assert.All(groups, group =>
+            {
+                Assert.Equal(ModBoundaryKind.FileSet, group.Kind);
+                Assert.Equal(4, group.Files!.Count);
+            });
+        }
+    }
+
+    [Fact]
+    public void Loose_parent_payload_does_not_hide_independent_flat_children()
+    {
+        var result = ModBoundaryDiscovery.Discover([
+            "loose.pak", "First/armor.pak", "First/armor.sig", "Second/hat.pak",
+            "Choices/option1.pak", "Choices/option2.pak"
+        ]);
+        Assert.Equal(["First", "Second"], result.Candidates.Where(c => c.Kind == ModBoundaryKind.Folder)
+            .Select(c => c.RelativePath));
+        Assert.Equal([".", "Choices"], result.Candidates.Where(c => c.Kind == ModBoundaryKind.Review)
+            .Select(c => c.RelativePath));
+    }
+
+    [Fact]
+    public void Finished_package_with_editor_project_is_one_assignable_package()
+    {
+        var files = new[] { "outfit.pak", "outfit.sig", "readme.txt", "sources/CJ.blend",
+            "sources/UEProject/CJ/CJ.uproject", "sources/UEProject/CJ/Content/Mesh.uasset" };
+        var package = Assert.Single(ModBoundaryDiscovery.Discover(files).Candidates);
+        Assert.Equal(ModBoundaryKind.Folder, package.Kind);
+        Assert.Equal(".", package.RelativePath);
+        foreach (var foreign in new[] { "Extras/runtime.dll", "sources/Extras/other.pak", "sources/download.zip" })
+            Assert.DoesNotContain(ModBoundaryDiscovery.Discover(files.Append(foreign)).Candidates,
+                c => c.RelativePath == "." && c.Kind == ModBoundaryKind.Folder);
+    }
+
+    [Fact]
     public void Two_independent_package_roots_are_not_combined_with_a_readme()
     {
         var result = ModBoundaryDiscovery.Discover(

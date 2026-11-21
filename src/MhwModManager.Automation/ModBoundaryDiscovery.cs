@@ -39,7 +39,6 @@ public static class ModBoundaryDiscovery
 {
     private const int MaxLevels = 64;
     private const int MaxPaths = 50_000;
-    private const string StellarBladePakRoot = "SB/Content/Paks/~mods/";
     private static readonly HashSet<string> VariantLabels = new(StringComparer.OrdinalIgnoreCase)
     {
         "optional", "option", "variant", "alternative", "low", "high", "resolution",
@@ -118,10 +117,10 @@ public static class ModBoundaryDiscovery
         var archived = directFiles.Where(IsArchive).Order(StringComparer.OrdinalIgnoreCase).ToArray();
         var otherFiles = directFiles.Where(file => !IsArchive(file) && !IsSupplementary(file)).ToArray();
 
-        // A recognized shared Stellar Blade Paks folder can contain several complete
+        // A project-qualified shared Paks folder can contain several complete
         // pak/utoc/ucas bundles. Carry the exact members as virtual package boundaries.
         // Never apply this split inside a named mod's own deployment layout.
-        var pakGroups = DiscoverFlatStellarBladePaks(relative, prefix);
+        var pakGroups = DiscoverSharedPakGroups(relative, prefix);
         if (pakGroups is not null) return pakGroups;
 
         // A named mod containing SB/Content/Paks is one installable unit. In particular,
@@ -190,6 +189,10 @@ public static class ModBoundaryDiscovery
         // Anonymous loose DLL/PAK/DDS files cannot be confidently separated or auto-installed.
         // A stray file at a *collection* root must not conceal proven independent
         // package descendants. Keep the loose payload in review without publishing it.
+        if (directories.Length > 0 && otherFiles.Any(UnrealPakLayout.IsMember) &&
+            UnrealPakLayout.HasBundledEditorProject(relative))
+            return [new(Display(prefix), ModBoundaryKind.Folder, "One finished Unreal package with its editor project.")];
+
         var reviewUnattributedFiles = otherFiles.Length > 0 && directories.Length > 0 && independentRoots;
         if (otherFiles.Length > 0 && !reviewUnattributedFiles)
         {
@@ -218,6 +221,15 @@ public static class ModBoundaryDiscovery
 
         var meaningfulDirectories = directories.Where(directory => !IsSupplementaryDirectory(directory)
             || children[directory].Any(path => !IsSupplementary(path))).ToArray();
+
+        // Alternate settings for one authored package may each contain a complete
+        // container. A documented set of sibling values for the same parameter is
+        // a choice, even when additional companion folders share its package root.
+        if (directFiles.Any(ManagedCollectionNotes.IsNote) &&
+            meaningfulDirectories.Select(ChoiceParameter).OfType<string>()
+                .GroupBy(parameter => parameter, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() >= 2) &&
+            relative.Where(path => !IsSupplementary(path)).All(UnrealPakLayout.IsMember))
+            return Review(prefix, "Documented alternative settings need selection as one package.");
 
         // Only siblings with matching package identity, after stripping known
         // variant tokens, are potential alternatives. One ordinary "High Heels"
@@ -288,7 +300,7 @@ public static class ModBoundaryDiscovery
             var segments = path.Split('/');
             // A container below a named child of a collection needs its own
             // inspection, including a review result for orphaned companions.
-            if (segments.Length >= 3 && UnrealPakLayout.IsMember(path) &&
+            if (segments.Length >= 2 && UnrealPakLayout.IsMember(path) &&
                 !segments.Contains("Content", StringComparer.OrdinalIgnoreCase) &&
                 !segments.Contains("~mods", StringComparer.OrdinalIgnoreCase) &&
                 !segments.Any(StrongLoaderRoots.Contains))
@@ -323,17 +335,22 @@ public static class ModBoundaryDiscovery
     }
 
     /// <summary>
-    /// Only distinct complete triplets immediately inside the canonical shared
-    /// Stellar Blade ~mods directory are individually staged. One mod wrapped in
+    /// Only distinct complete IoStore sets immediately inside a project-qualified
+    /// shared ~mods directory are individually staged. One mod wrapped in
     /// its own named folder is not decomposed, and non-triplet/variant packages
     /// remain under review rather than publishing incomplete pieces.
     /// </summary>
-    private static IReadOnlyList<ModBoundaryCandidate>? DiscoverFlatStellarBladePaks(
+    private static IReadOnlyList<ModBoundaryCandidate>? DiscoverSharedPakGroups(
         string[] relativePaths, string prefix)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var mounts = relativePaths.Where(UnrealPakLayout.IsMember)
+            .Select(UnrealPakLayout.ProjectMount).OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase).Take(2).ToArray();
+        if (mounts.Length != 1) return null;
+        var sharedRoot = mounts[0] + "/~mods/";
         var pakPaths = relativePaths.Where(path =>
-            path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)
+            path.StartsWith(sharedRoot, StringComparison.OrdinalIgnoreCase)
             && !IsSupplementary(path)).ToArray();
         if (pakPaths.Length < 2) return null;
 
@@ -342,14 +359,11 @@ public static class ModBoundaryDiscovery
         var groups = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in pakPaths)
         {
-            var leaf = path[StellarBladePakRoot.Length..];
+            var leaf = path[sharedRoot.Length..];
             if (leaf.Length == 0 || leaf.Contains('/'))
-                return Review(prefix, "Nested Stellar Blade PAK layouts require package-boundary review.");
-            var extension = Path.GetExtension(leaf);
-            if (!extension.Equals(".pak", StringComparison.OrdinalIgnoreCase)
-                && !extension.Equals(".utoc", StringComparison.OrdinalIgnoreCase)
-                && !extension.Equals(".ucas", StringComparison.OrdinalIgnoreCase))
-                return Review(prefix, "Non-PAK payload is mixed with the Stellar Blade bundle.");
+                return Review(prefix, "Nested Unreal PAK layouts require package-boundary review.");
+            if (!UnrealPakLayout.IsMember(leaf))
+                return Review(prefix, "Non-container payload is mixed with the Unreal bundle.");
             var stem = Path.GetFileNameWithoutExtension(leaf);
             if (!groups.TryGetValue(stem, out var members))
                 groups.Add(stem, members = []);
@@ -357,7 +371,7 @@ public static class ModBoundaryDiscovery
         }
         if (groups.Count < 2) return null;
         if (nonSupplementary.Any(path =>
-                !path.StartsWith(StellarBladePakRoot, StringComparison.OrdinalIgnoreCase)))
+                !path.StartsWith(sharedRoot, StringComparison.OrdinalIgnoreCase)))
             return Review(prefix, "Multiple PAK groups are coupled to unrelated package files and need review.");
         // A single incomplete group or a labelled patch/variant must not suppress
         // unrelated complete mods in a collection. Hold every member of a
@@ -371,17 +385,16 @@ public static class ModBoundaryDiscovery
         return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(pair =>
             {
-                var complete = pair.Value.Count == 3 &&
-                    pair.Value.Select(file => Path.GetExtension(file))
-                        .Distinct(StringComparer.OrdinalIgnoreCase).Count() == 3;
+                var complete = pair.Value.Any(file => file.EndsWith(".utoc", StringComparison.OrdinalIgnoreCase)) &&
+                    UnrealPakLayout.Complete(pair.Value, singleStem: true);
                 var dependent = reviewFamilies.Contains(PakFamily(pair.Key));
                 var kind = isExplicitCollection && complete && !dependent
                     ? ModBoundaryKind.FileSet : ModBoundaryKind.Review;
                 var evidence = !complete ? "PAK bundle lacks a proven complete companion set."
                     : dependent ? "Related main, patch or variant PAK packages need manual selection."
                     : !isExplicitCollection ? "Multiple chunks in a named mod need dependency review before splitting."
-                    : "Complete independent Stellar Blade PAK/UTOC/UCAS companion group.";
-                return new ModBoundaryCandidate(Join(prefix, StellarBladePakRoot + pair.Key),
+                    : "Complete independent Unreal IoStore companion group.";
+                return new ModBoundaryCandidate(Join(prefix, sharedRoot + pair.Key),
                     kind, evidence,
                     pair.Value.Select(path => Join(prefix, path))
                         .Order(StringComparer.OrdinalIgnoreCase).ToArray(),
@@ -463,7 +476,7 @@ public static class ModBoundaryDiscovery
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var file = Path.GetFileName(path.Replace('\\', '/'));
         var extension = Path.GetExtension(file);
-        return file.StartsWith("readme", StringComparison.OrdinalIgnoreCase)
+        return ManagedCollectionNotes.IsNote(file) || file.StartsWith("readme", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("license", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("changelog", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("credits", StringComparison.OrdinalIgnoreCase)
@@ -497,6 +510,16 @@ public static class ModBoundaryDiscovery
         return name.Equals("docs", StringComparison.OrdinalIgnoreCase)
             || name.Equals("screenshots", StringComparison.OrdinalIgnoreCase)
             || name.Equals("documentation", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? ChoiceParameter(string directory)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var parts = directory.Replace('_', ' ').Replace('-', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2) return null;
+        var unit = int.TryParse(parts[0], out _) ? parts[1] : int.TryParse(parts[1], out _) ? parts[0] : "";
+        return unit.ToLowerInvariant() is "fov" or "fps" or "resolution" ? unit : null;
     }
 
     private static bool LooksLikeVariant(string name)

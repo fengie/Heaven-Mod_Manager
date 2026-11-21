@@ -432,6 +432,10 @@ public sealed class GameModIntakeService
         // Share one inspection and physical-copy budget across every candidate from
         // this selected collection. Nested archive recursion carries the same instance.
         var collectionBudget = new IntakeBudget(collectionCopyBudget);
+        var rootName = Path.GetFileName(Path.TrimEndingDirectorySeparator(root));
+        var selectedScope = games.Any(game =>
+            GameProfile.NormalizeId(rootName) == game.Id ||
+            GameProfile.NormalizeId(rootName) == GameProfile.NormalizeId(game.DisplayName)) ? rootName : null;
         var candidateIndex = 0;
         foreach (var candidate in discovered.Candidates)
         {
@@ -448,13 +452,13 @@ public sealed class GameModIntakeService
             {
                 if (candidate.Kind == ModBoundaryKind.FileSet)
                     await RouteFileSetAsync(root, candidate, games, output, receipts,
-                        0, collectionBudget, entry, ct).ConfigureAwait(false);
+                        0, collectionBudget, entry, ct, selectedScope).ConfigureAwait(false);
                 else
                 {
                     RefuseReparseComponents(entry);
                     await ClassifyAndRouteAsync(root, entry,
                         candidate.Kind == ModBoundaryKind.Folder,
-                        games, output, receipts, ct, 0, collectionBudget).ConfigureAwait(false);
+                        games, output, receipts, ct, 0, collectionBudget, gameContextHint: selectedScope).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
@@ -680,7 +684,7 @@ public sealed class GameModIntakeService
     private async Task RouteFileSetAsync(
         string sourceDirectory, ModBoundaryCandidate candidate, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts,
-        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct)
+        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct, string? gameContextHint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (candidate.Kind != ModBoundaryKind.FileSet || candidate.Files is not { Count: > 0 })
@@ -736,7 +740,7 @@ public sealed class GameModIntakeService
                 }
             }
             await ClassifyAndRouteAsync(sourceDirectory, package, true, games, output,
-                receipts, ct, nestedDepth, budget, provenance).ConfigureAwait(false);
+                receipts, ct, nestedDepth, budget, provenance, gameContextHint).ConfigureAwait(false);
         }
         finally
         {
@@ -846,7 +850,7 @@ public sealed class GameModIntakeService
                         var childProvenance = reportSource + "!/" + candidate.RelativePath;
                         var childGameContextHint = discovery.Candidates.Count == 1
                             && candidate.Kind == ModBoundaryKind.Folder
-                            ? gameContextHint ?? Path.GetFileName(source) : null;
+                            ? gameContextHint ?? Path.GetFileName(source) : gameContextHint;
                         if (candidate.Kind == ModBoundaryKind.Review)
                         {
                             output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
@@ -856,11 +860,11 @@ public sealed class GameModIntakeService
                         {
                             if (candidate.Kind == ModBoundaryKind.FileSet)
                                 await RouteFileSetAsync(scratch, candidate, games, output, receipts,
-                                    nestedDepth + 1, budget, childProvenance, ct).ConfigureAwait(false);
+                                    nestedDepth + 1, budget, childProvenance, ct, childGameContextHint).ConfigureAwait(false);
                             else
                             {
                                 RefuseReparseComponents(child);
-                                await ClassifyAndRouteAsync(sourceRoot, child,
+                                await ClassifyAndRouteAsync(scratch, child,
                                     candidate.Kind == ModBoundaryKind.Folder,
                                     games, output, receipts, ct, nestedDepth + 1, budget, childProvenance,
                                     childGameContextHint).ConfigureAwait(false);
