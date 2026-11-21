@@ -43,18 +43,23 @@ public sealed class PageActivationTests
             {
                 var dir=Directory.CreateDirectory(Path.Combine(services.Paths.ModsRoot,name));
                 File.WriteAllText(Path.Combine(dir.FullName,"fixture.txt"),name);
+                // A copied shelf can retain the same parent timestamp on multiple visits.
+                Directory.SetLastWriteTimeUtc(services.Paths.ModsRoot,new DateTime(2020,1,1,0,0,0,DateTimeKind.Utc));
                 return dir;
             }
             var first=WritePackage("First Fixture");
             vm.SelectedTab=1;
             await WaitUntilAsync(()=>vm.Mods.Any(row=>row.Members.Any(m=>m.SourcePath==first.FullName)),ct);
+            Assert.False(services.Catalog.TopLevelFoldersChanged());
             var editing=Assert.Single(vm.Mods);
             vm.SelectedLibraryItem=editing;
             editing.StagedEnabled=true;
             vm.SelectedTab=4;
             var added=WritePackage("Second Fixture");
+            Assert.True(services.Catalog.TopLevelFoldersChanged());
             vm.SelectedTab=1;
             await WaitUntilAsync(()=>vm.Mods.Any(row=>row.Members.Any(m=>m.SourcePath==added.FullName)),ct);
+            Assert.False(services.Catalog.TopLevelFoldersChanged());
             var restored=Assert.Single(vm.Mods,row=>row.Id==editing.Id);
             Assert.True(restored.StagedEnabled);
             Assert.Same(restored,vm.SelectedLibraryItem);

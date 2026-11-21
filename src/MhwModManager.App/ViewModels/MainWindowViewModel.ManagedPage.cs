@@ -11,7 +11,6 @@ public sealed partial class MainWindowViewModel
 {
     private readonly Dispatcher viewDispatcher = Dispatcher.CurrentDispatcher;
     private IReadOnlyList<ModDescriptor> observedCatalog = [];
-    private DateTime shelfCheckedUtc = DateTime.UtcNow;
     private long lastShelfScan = Stopwatch.GetTimestamp();
     private int shelfDirty;
     private bool managedReadDeferred;
@@ -97,25 +96,19 @@ public sealed partial class MainWindowViewModel
             {
                 managedVisitRequested=false;
                 var changed=Interlocked.Exchange(ref shelfDirty,0)!=0;
-                var since=shelfCheckedUtc;
-                var started=DateTime.UtcNow;
                 var previous=observedCatalog;
                 var shelfRead=await Task.Run(async () =>
                 {
-                    // Parent directory times cover a newly copied package before watcher debounce.
+                    // A shallow name check catches immediate copies even when parent times are preserved.
                     // A bounded full reconciliation recovers nested changes if watcher hints were lost.
                     var rescan=changed || Stopwatch.GetElapsedTime(lastShelfScan)>=TimeSpan.FromMinutes(5) ||
-                        Directory.GetLastWriteTimeUtc(s.Paths.ModsRoot)>since ||
-                        (!string.IsNullOrEmpty(s.Paths.LegacyModsRoot) && Directory.GetLastWriteTimeUtc(s.Paths.LegacyModsRoot)>since);
+                        s.Catalog.TopLevelFoldersChanged();
                     if (rescan) await s.Catalog.RefreshFoldersAsync(ct);
                     var catalog=await s.Database.GetModsAsync(ct);
                     return (rescan,rowsChanged:!previous.SequenceEqual(catalog));
                 },ct);
                 if (shelfRead.rescan)
-                {
-                    shelfCheckedUtc=started;
                     lastShelfScan=Stopwatch.GetTimestamp();
-                }
                 ct.ThrowIfCancellationRequested();
                 if (SelectedTab!=1) return;
                 if (BusyVisibility==Visibility.Visible)

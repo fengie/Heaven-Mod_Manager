@@ -12,6 +12,27 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
 {
     private readonly ExactPackageCopies exactCopies = new(db);
     private readonly SemaphoreSlim folderRefresh = new(1,1);
+    private HashSet<string>? reconciledTopLevelFolders;
+
+    public bool TopLevelFoldersChanged()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var previous = Volatile.Read(ref reconciledTopLevelFolders);
+        if (previous is null) return true;
+        var folders = new HashSet<string>(PathRules.Comparer);
+        foreach (var root in ManagedRoots())
+            folders.UnionWith(Directory.EnumerateDirectories(root));
+        return !previous.SetEquals(folders);
+    }
+
+    private IEnumerable<string> ManagedRoots()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return new[]{modsRoot,legacyModsRoot}
+            .Where(path=>!string.IsNullOrWhiteSpace(path)&&Directory.Exists(path))
+            .Select(path=>Path.GetFullPath(path!))
+            .Distinct(PathRules.Comparer);
+    }
     public long LastDuplicateBytesHashed
     {
         get
@@ -57,11 +78,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         var backfills=new List<ModArchiveDisplayBackfill>();
         // Existing MHW and generic source paths stay authoritative: a migration that moves them
         // would invalidate persisted mod IDs, explicit overrides and rollback references.
-        var roots=new[]{modsRoot,legacyModsRoot}
-            .Where(path=>!string.IsNullOrWhiteSpace(path)&&Directory.Exists(path))
-            .Select(path=>Path.GetFullPath(path!))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var roots = ManagedRoots().ToArray();
         // Collect ordinary single-mount packages on the existing worker. Calling into
         // the UI dispatcher once per package makes even a negative family lookup costly.
         var directories = await Task.Run(() =>
@@ -191,6 +208,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
         var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
         await db.ReconcileExactCopiesAsync(groups,ct);
+        Volatile.Write(ref reconciledTopLevelFolders, directories.Select(entry=>entry.Key).ToHashSet(PathRules.Comparer));
     }
 
     private async Task ReconcileShelfAsync(string shelf, IReadOnlyList<ManagedCollectionUnit> units,
