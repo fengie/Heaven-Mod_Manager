@@ -1,19 +1,23 @@
 using System.IO;
-using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 
 namespace MhwModManager.App.ViewModels;
 
-public sealed class GamesPageViewModel
+public sealed partial class GamesPageViewModel : ObservableObject
 {
+    private static readonly TimeSpan DiscoveryInterval = TimeSpan.FromMinutes(2);
     private readonly GameProfileRegistry registry;
-    private bool discoveryAttempted;
+    private readonly TimeProvider clock;
+    private DateTimeOffset nextDiscovery;
+    [ObservableProperty] private GameProfile? selected;
 
-    public GamesPageViewModel(GameProfileRegistry registry)
+    public GamesPageViewModel(GameProfileRegistry registry, TimeProvider? clock = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         this.registry=registry;
+        this.clock=clock ?? TimeProvider.System;
     }
 
     public ObservableRangeCollection<GameProfile> Rows{get;}=[];
@@ -22,11 +26,22 @@ public sealed class GamesPageViewModel
     public void Refresh()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var registered=registry.Load();
-        if (!Rows.SequenceEqual(registered)) Rows.ReplaceAll(registered);
-        if(discoveryAttempted)return;
-        discoveryAttempted=true;
+        ReadRegistered();
+        var now=clock.GetUtcNow();
+        if (!AutomaticDiscoveryTask.IsCompleted || now<nextDiscovery) return;
+        nextDiscovery=now+DiscoveryInterval;
         AutomaticDiscoveryTask=DiscoverInstalledGamesAsync();
+    }
+
+    private void ReadRegistered()
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        var registered=registry.Load();
+        if (Rows.SequenceEqual(registered)) return;
+        var selectedId=Selected?.Id;
+        Rows.ReplaceAll(registered);
+        if (selectedId is not null)
+            Selected=Rows.FirstOrDefault(game=>StringComparer.OrdinalIgnoreCase.Equals(game.Id,selectedId));
     }
 
     private async Task DiscoverInstalledGamesAsync()
@@ -34,12 +49,9 @@ public sealed class GamesPageViewModel
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
-            var added=await Task.Run(registry.DiscoverAndRegisterInstalledGames).ConfigureAwait(false);
-            if(added.Count==0)return;
-            var dispatcher=Application.Current?.Dispatcher;
-            if(dispatcher is null)Rows.ReplaceAll(registry.Load());
-            else if(!dispatcher.HasShutdownStarted&&!dispatcher.HasShutdownFinished)
-                await dispatcher.InvokeAsync(()=>Rows.ReplaceAll(registry.Load()));
+            var changed=await Task.Run(registry.DiscoverAndRegisterInstalledGames);
+            if(changed.Count==0)return;
+            ReadRegistered();
         }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or ArgumentException or OperationCanceledException or System.Security.SecurityException)
         {MasterDebugLog.Write("GAME-DISCOVERY","Automatic installed-game discovery failed; keeping the existing game registry visible.",ex);}

@@ -33,6 +33,35 @@ public sealed class PageActivationTests
             Assert.Equal(2, vm.Profiles.Count(row => row.Name.StartsWith("External profile", StringComparison.Ordinal)));
         });
 
+    [Fact]
+    public Task ReturningToModsFindsCopiedFolderAndPreservesCurrentEdit() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            services.Settings.Update(settings=>settings.BackgroundMetadataRefreshEnabled=false);
+            using var vm=new MainWindowViewModel(services);
+            DirectoryInfo WritePackage(string name)
+            {
+                var dir=Directory.CreateDirectory(Path.Combine(services.Paths.ModsRoot,name));
+                File.WriteAllText(Path.Combine(dir.FullName,"fixture.txt"),name);
+                return dir;
+            }
+            var first=WritePackage("First Fixture");
+            vm.SelectedTab=1;
+            await WaitUntilAsync(()=>vm.Mods.Any(row=>row.Members.Any(m=>m.SourcePath==first.FullName)),ct);
+            var editing=Assert.Single(vm.Mods);
+            vm.SelectedLibraryItem=editing;
+            editing.StagedEnabled=true;
+            vm.SelectedTab=4;
+            var added=WritePackage("Second Fixture");
+            vm.SelectedTab=1;
+            await WaitUntilAsync(()=>vm.Mods.Any(row=>row.Members.Any(m=>m.SourcePath==added.FullName)),ct);
+            var restored=Assert.Single(vm.Mods,row=>row.Id==editing.Id);
+            Assert.True(restored.StagedEnabled);
+            Assert.Same(restored,vm.SelectedLibraryItem);
+            Assert.False((await services.Database.GetModsAsync(ct)).Single(m=>m.SourcePath==first.FullName).Enabled);
+            Assert.Equal("Second Fixture",File.ReadAllText(Path.Combine(added.FullName,"fixture.txt")));
+        });
+
     private static async Task WaitUntilAsync(Func<bool> assertion, CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);

@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using MhwModManager.Core;
 using MhwModManager.Storage;
 using MhwModManager.Diagnostics;
+using MhwModManager.Filesystem;
 using MhwModManager.Automation;
 using MhwModManager.Updater;
 
@@ -71,7 +72,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private bool criticalOperation;
     [ObservableProperty]private int unmanagedFileCount;
     [ObservableProperty]private bool manualFileScanCompleted;
-    [ObservableProperty]private GameProfile? selectedGame;
+    public GameProfile? SelectedGame
+    {
+        get => GamesPage.Selected;
+        set => GamesPage.Selected=value;
+    }
     [ObservableProperty]private AssetOverlapRow? selectedOverlap;
     [ObservableProperty]private EffectiveDecisionExplanation? selectedExplanation;
     [ObservableProperty]private string explainWhyStatus="Select a shared file, then choose Why This Mod Wins to see the reason.";
@@ -301,6 +306,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         ProfilesPage=new ProfilesPageViewModel(s.Profiles);
         Profiles=ProfilesPage.Rows;
         GamesPage=new GamesPageViewModel(s.GameRegistry);
+        GamesPage.PropertyChanged+=(_,args)=>{if(args.PropertyName==nameof(GamesPage.Selected)) OnPropertyChanged(nameof(SelectedGame));};
         Games=GamesPage.Rows;
         var detailedDiagnostics=MasterDebugLog.DetailedDiagnosticsEnabled;
         if(detailedDiagnostics)
@@ -322,6 +328,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         ModsView.Filter=FilterMod;
         LibraryView=CollectionViewSource.GetDefaultView(libraryRows);
         LibraryView.Filter=FilterLibraryItem;
+        s.ChangeHints.HintsAvailable+=OnManagedLibraryHint;
         GamesPage.Refresh();
         SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
     }
@@ -381,7 +388,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RefreshSelectedPageAsync(int tab,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={tab}");
-        if (!refreshingPages.Add(tab)) return;
+        if (!refreshingPages.Add(tab))
+        {
+            if (tab==1) managedVisitRequested=true;
+            return;
+        }
         try
         {
             switch(tab)
@@ -390,8 +401,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     GamesPage.Refresh();
                     break;
                 case 1:
-                    RefreshLibraryFilters();
-                    if (!initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)
+                    await ReconcileManagedPageAsync(ct);
+                    if (disposed || SelectedTab!=1) return;
+                    if (BackgroundMetadataRefreshEnabled && !initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)
                     {
                         initialMetadataRefreshStarted=true;
                         _ = EnsureInitialMetadataLoadedAsync(ct);
@@ -526,7 +538,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try
         {
             var paths=await s.Visuals.GetGalleryAsync(row.Members,16);
-            await Application.Current.Dispatcher.InvokeAsync(()=>row.SetVisuals(paths));
+            await viewDispatcher.InvokeAsync(()=>row.SetVisuals(paths));
         }
         catch(IOException ex){MasterDebugLog.Write("VISUALS",$"Gallery scan failed logicalMod={row.Id}",ex);}
         catch(UnauthorizedAccessException ex){MasterDebugLog.Write("VISUALS",$"Gallery scan denied logicalMod={row.Id}",ex);}
@@ -659,7 +671,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return (models,files,updateSettings,logical,suggestions);
         },ct);
         var (models,files,updateSettings,logical,suggestions)=loaded;
-        await Application.Current.Dispatcher.InvokeAsync(()=>
+        await viewDispatcher.InvokeAsync(()=>
         {
             var pending = preserveStagedChanges
                 ? Mods.Where(row => row.HasStagedChanges).SelectMany(row => row.StagedChanges())
@@ -684,10 +696,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var identities = models.Select(m=>(m.Id,m.SourcePath,m.DisplayName)).ToHashSet();
             var sourcesChanged = catalogInventoryIdentities != null && !catalogInventoryIdentities.SetEquals(identities);
             catalogInventoryIdentities = identities;
+            var selected=SelectedLibraryItem;
+            observedCatalog=models;
             Mods.ReplaceAll(rows);
             if (sourcesChanged) InvalidateLocalInventory();
             RebuildLibraryRows();
             RefreshLibraryFilters();
+            if (preserveStagedChanges && selected is ModRowViewModel previous && rowsByMember.TryGetValue(previous.Members[0].Id,out var replacement) && LibraryView.Contains(replacement))
+                SelectedLibraryItem=replacement;
+            else if (preserveStagedChanges && selected is ExternalLibraryReference external && LibraryView.Contains(external))
+                SelectedLibraryItem=external;
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
             Changed();
         });
@@ -899,7 +917,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var analysis=await BuildAnalysisAsync(stage,ct);
         var shouldEnrich=SelectedTab==3;
         var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
-        await Application.Current.Dispatcher.InvokeAsync(()=>
+        await viewDispatcher.InvokeAsync(()=>
         {
             if (generation!=conflictPreviewGeneration || ct.IsCancellationRequested) return;
             Conflicts.ReplaceAll(displayRows);
@@ -1488,7 +1506,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             _=>"Game crash"
         };
         var rows=suspects.Select(x=>new ModIssueRow(x.ModId,x.DisplayName,IssueKindLabel(x.Kind),x.Score,x.Reason,x.LastSeen.LocalDateTime.ToString("g",CultureInfo.CurrentCulture),x.FailureCount,x.Confirmed)).ToArray();
-        await Application.Current.Dispatcher.InvokeAsync(()=>
+        await viewDispatcher.InvokeAsync(()=>
         {
             IssueSuspects.ReplaceAll(rows);
             var byMember=suspects.GroupBy(x=>x.ModId,StringComparer.OrdinalIgnoreCase).ToDictionary(g=>g.Key,g=>g.OrderByDescending(x=>x.Confirmed).ThenByDescending(x=>x.Score).First(),StringComparer.OrdinalIgnoreCase);
@@ -2055,6 +2073,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(disposed)return;
         disposed=true;
+        s.ChangeHints.HintsAvailable-=OnManagedLibraryHint;
         DisposeAutoSorting();
         backgroundCts.Cancel();
         backgroundCts.Dispose();

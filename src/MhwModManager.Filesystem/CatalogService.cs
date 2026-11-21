@@ -11,7 +11,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     Func<string,CancellationToken,ManagedCollectionLayout>? inspectShelf=null)
 {
     private readonly ExactPackageCopies exactCopies = new(db);
-    private readonly SemaphoreSlim duplicateRefresh = new(1,1);
+    private readonly SemaphoreSlim folderRefresh = new(1,1);
     public long LastDuplicateBytesHashed
     {
         get
@@ -42,6 +42,14 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await folderRefresh.WaitAsync(ct);
+        try { await ReconcileFoldersAsync(ct); }
+        finally { folderRefresh.Release(); }
+    }
+
+    private async Task ReconcileFoldersAsync(CancellationToken ct)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
         var current=await db.GetModCatalogSourceIdentitiesAsync(ct);
         var existingByPath=current.GroupBy(m=>m.SourcePath,StringComparer.OrdinalIgnoreCase)
@@ -171,23 +179,18 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             var updated=await db.BackfillArchiveDisplayNameAsync(backfills,ct);
             MasterDebugLog.Write("CATALOG", $"Repaired filename-derived display titles for {updated} existing mod(s).");
         }
-        await duplicateRefresh.WaitAsync(ct);
-        try
-        {
-            var shelves = await db.ReadShelfEntriesAsync(ct);
-            var all = await db.GetModsAsync(true,ct);
-            var sources = all.ToDictionary(mod => mod.Id, mod => mod.SourcePath, StringComparer.Ordinal);
-            // A parent representing loose files overlaps its independently indexed
-            // children. Only whole, independent review sources can be exact peers.
-            var excluded = shelves.SelectMany(group => group.Where(entry => entry.Role == "wrapper" ||
-                    (entry.Role == "review" && group.Skip(1).Any() &&
-                     sources.TryGetValue(entry.Id, out var source) && PathRules.Comparer.Equals(source, group.Key))))
-                .Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal);
-            var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
-            var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
-            await db.ReconcileExactCopiesAsync(groups,ct);
-        }
-        finally { duplicateRefresh.Release(); }
+        var shelves = await db.ReadShelfEntriesAsync(ct);
+        var all = await db.GetModsAsync(true,ct);
+        var sources = all.ToDictionary(mod => mod.Id, mod => mod.SourcePath, StringComparer.Ordinal);
+        // A parent representing loose files overlaps its independently indexed
+        // children. Only whole, independent review sources can be exact peers.
+        var excluded = shelves.SelectMany(group => group.Where(entry => entry.Role == "wrapper" ||
+                (entry.Role == "review" && group.Skip(1).Any() &&
+                 sources.TryGetValue(entry.Id, out var source) && PathRules.Comparer.Equals(source, group.Key))))
+            .Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal);
+        var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
+        var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
+        await db.ReconcileExactCopiesAsync(groups,ct);
     }
 
     private async Task ReconcileShelfAsync(string shelf, IReadOnlyList<ManagedCollectionUnit> units,

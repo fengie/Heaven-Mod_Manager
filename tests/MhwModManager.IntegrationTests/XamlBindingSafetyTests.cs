@@ -163,7 +163,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Games=GamesPage.Rows;", mainViewModel);
         Assert.Contains("GamesPage.Refresh();", mainViewModel);
         Assert.Contains("GameProfileRegistry", gamesPage);
-        Assert.Contains("Rows.ReplaceAll(registry.Load());", gamesPage);
+        Assert.Contains("Rows.ReplaceAll(registered);", gamesPage);
         Assert.Contains("GamesPage.Refresh();", gamesFeature);
         Assert.True(Regex.IsMatch(gamesFeature, @"private async Task ScanInstalledGames\(\)\s*\{\s*using var __mhwTrace = MasterDebugLog\.BeginMethod\(\);", RegexOptions.CultureInvariant));
         // The game selector must now use an in-process session transition. Persistence
@@ -592,7 +592,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.DoesNotContain("nexus.RefreshAsync", blockingStartup);
         Assert.DoesNotContain("nexus.RefreshAsync", sessionBootstrap);
         Assert.Contains("startup.intelligence.nexus.deferred", sessionBootstrap);
-        Assert.Contains("if (!initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)", mainViewModel);
+        Assert.Contains("if (BackgroundMetadataRefreshEnabled && !initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)", mainViewModel);
         Assert.Contains("EnsureInitialMetadataLoadedAsync(ct)", mainViewModel);
         Assert.Contains("await RefreshAnalysis(ct);", mainViewModel);
         Assert.Contains("var shouldEnrich=SelectedTab==3;", mainViewModel);
