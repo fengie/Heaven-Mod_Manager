@@ -19,12 +19,12 @@ public static class AuthoredPackageFamily
         var alternatives = game?.AdapterId == "unreal-paks" && dirs.Length == 2 && contrast[0] is { } a &&
             contrast[1] is { } b && a.Feature == b.Feature && a.Enabled != b.Enabled;
         var main = Array.FindIndex(labels, label => label!.StartsWith("Main File", StringComparison.OrdinalIgnoreCase));
-        var optional = Array.FindIndex(labels, label => label!.StartsWith("Optional File", StringComparison.OrdinalIgnoreCase));
-        var overlay = dirs.Length == 2 && main >= 0 && optional >= 0;
+        var optional = Enumerable.Range(0, dirs.Length).Where(i => labels[i]!.StartsWith("Optional File", StringComparison.OrdinalIgnoreCase)).ToArray();
+        var overlay = main >= 0 && optional.Length == dirs.Length - 1;
         if (!alternatives && !overlay) return [];
         if (dirs.Concat(notes).Any(path => (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)) return [];
         var text = string.Join(" ",notes.Where(p => Path.GetExtension(p).Equals(".txt",StringComparison.OrdinalIgnoreCase) &&
-            new FileInfo(p).Length <= 65536).Select(p => Path.GetFileName(p) + " " + File.ReadAllText(p))).ToLowerInvariant();
+            new FileInfo(p).Length <= 65536).Select(p => Path.GetFileName(p) + "\n" + File.ReadAllText(p))).ToLowerInvariant();
         if (alternatives)
         {
             var feature = contrast[0]!.Value.Feature;
@@ -37,9 +37,15 @@ public static class AuthoredPackageFamily
             }
             return dirs.Select(dir => new AuthoredPart(Path.GetFileName(dir), dir, "Option", feature)).ToArray();
         }
-        var mount = game?.ModRootRelativePath ?? "nativePC";
-        if (string.IsNullOrWhiteSpace(mount) || !text.Contains("main file")) return [];
-        var paths = new HashSet<string>[2];
+        if (!text.Contains("main file")) return [];
+        if (optional.Length > 1 && !IndependentlySelectable(text)) return [];
+
+        // Compare the same declared mount in every part. GameRoot is the scanner's explicit
+        // game-relative layout, including for profiles without a narrower loader directory.
+        var mount = Directory.Exists(Path.Combine(dirs[main], "GameRoot"))
+            ? "GameRoot" : game?.ModRootRelativePath ?? "nativePC";
+        if (string.IsNullOrWhiteSpace(mount)) return [];
+        var paths = new HashSet<string>[dirs.Length];
         for (var i = 0; i < dirs.Length; i++)
         {
             var target = Path.Combine(dirs[i],mount);
@@ -48,7 +54,23 @@ public static class AuthoredPackageFamily
             if (files.Count == 0 || files.Any(f => !f.StartsWith(target + Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))) return [];
             paths[i] = files.Select(f => Path.GetRelativePath(target,f)).ToHashSet(PathRules.Comparer);
         }
-        if (!paths[optional].IsSubsetOf(paths[main])) return [];
-        return [new(labels[main]!, dirs[main], "Main", null), new(labels[optional]!, dirs[optional], "Optional", null)];
+
+        var assigned = new HashSet<string>(PathRules.Comparer);
+        foreach (var i in optional)
+        {
+            if (!paths[i].IsSubsetOf(paths[main]) || assigned.Overlaps(paths[i])) return [];
+            assigned.UnionWith(paths[i]);
+        }
+        return dirs.Select((dir, i) => new AuthoredPart(labels[i]!, dir, i == main ? "Main" : "Optional", null)).ToArray();
+    }
+
+    private static bool IndependentlySelectable(string notes)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var sentences = notes.Split(['.', '!', '?', '\n', '\r'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return sentences.Any(sentence => sentence is "optional files can be combined" or
+            "the optional files can be combined" or "optional files can be used together" or
+            "the optional files can be used together" or "optional files may be installed independently") &&
+            !(notes.Contains("only one") || notes.Contains("choose one") || notes.Contains("incompatible") || notes.Contains("except"));
     }
 }
