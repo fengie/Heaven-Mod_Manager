@@ -1295,7 +1295,7 @@ public sealed class GameModIntakeService
             || canonical.StartsWith(canonicalRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void RefuseReparseComponents(string path)
+    public static void RefuseReparseComponents(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var full = Path.GetFullPath(path);

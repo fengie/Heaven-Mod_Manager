@@ -1,3 +1,7 @@
+# v8.8.133 — November 21, 2026
+
+- Manager now shows one entry for identical package folders at startup and after intake. It keeps both originals, respects saved and staged choices, and shows a copy again when its contents change. Previously selected intake folders resume when reconnected. [Automatic duplicate handling](https://github.com/fengie/Heaven-Mod_Manager/issues/951)
+
 # v8.8.132 — November 21, 2026
 
 - Installed Files now identifies the Mods entry that accounts for a discovery. The active game's library automatically lists verified packages and loader components, keeps external files read-only and distinguishes previous installations. [Installed discovery](https://github.com/fengie/Heaven-Mod_Manager/issues/949)

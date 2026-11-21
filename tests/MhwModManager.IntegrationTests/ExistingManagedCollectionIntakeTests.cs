@@ -82,6 +82,14 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
         await unavailable.RefreshFoldersAsync(TestToken);
         Assert.Equal(4, (await db.GetModsAsync(TestToken)).Count);
         Assert.Equal("review", await db.ShelfRoleAsync((await db.GetModsAsync(TestToken)).Single(row => row.SourcePath == uncertain).Id, TestToken));
+        var offline = Path.Combine(home, "disconnected-source");
+        Directory.Move(active,offline);
+        await catalog.RefreshFoldersAsync(TestToken);
+        Assert.Contains(await db.GetModsAsync(TestToken),row=>row.SourcePath==copy && !row.Enabled);
+        Assert.True(Assert.Single(await db.GetModsAsync(TestToken),row=>row.Id=="active").Enabled);
+        Directory.Move(offline,active);
+        await catalog.RefreshFoldersAsync(TestToken);
+        Assert.DoesNotContain(await db.GetModsAsync(TestToken),row=>row.SourcePath==copy);
         await Write(copy, "outfit.pak", "new independent revision");
         await catalog.RefreshFoldersAsync(TestToken);
         Assert.Contains(await db.GetModsAsync(TestToken), row => row.SourcePath == copy && !row.Enabled);

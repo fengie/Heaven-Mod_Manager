@@ -5,10 +5,22 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Filesystem;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001", Justification="The asynchronous gate never allocates a wait handle and lives for the catalog session.")]
 public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null,
     Func<string,CancellationToken,IReadOnlyList<string>>? discoverChildren=null,
     Func<string,CancellationToken,ManagedCollectionLayout>? inspectShelf=null)
 {
+    private readonly ExactPackageCopies exactCopies = new(db);
+    private readonly SemaphoreSlim duplicateRefresh = new(1,1);
+    public long LastDuplicateBytesHashed
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return exactCopies.LastBytesHashed;
+        }
+    }
+
     /// <summary>Remove one transport wrapper while retaining the registered game's deployment root.</summary>
     public void NormalizeStagedArchive(string root)
     {
@@ -114,6 +126,18 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
             var updated=await db.BackfillArchiveDisplayNameAsync(backfills,ct);
             MasterDebugLog.Write("CATALOG", $"Repaired filename-derived display titles for {updated} existing mod(s).");
         }
+        await duplicateRefresh.WaitAsync(ct);
+        try
+        {
+            var shelves = await db.ReadShelfEntriesAsync(ct);
+            var excluded = shelves.SelectMany(group=>group).Where(entry=>entry.Role is "wrapper" or "review")
+                .Select(entry=>entry.Id).ToHashSet(StringComparer.Ordinal);
+            var all = await db.GetModsAsync(true,ct);
+            var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
+            var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
+            await db.ReconcileExactCopiesAsync(groups,ct);
+        }
+        finally { duplicateRefresh.Release(); }
     }
 
     private async Task ReconcileShelfAsync(string shelf, IReadOnlyList<ManagedCollectionUnit> units,
@@ -131,7 +155,8 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
             byPath = all.ToLookup(mod => mod.SourcePath, StringComparer.OrdinalIgnoreCase);
         }
         var files = (await db.GetModFilesAsync(ct)).ToLookup(file => file.ModId);
-        var enabled = all.Where(mod => mod.Enabled && files.Contains(mod.Id)).ToArray();
+        var enabled = all.Where(mod => mod.Enabled && files.Contains(mod.Id) && Directory.Exists(mod.SourcePath) &&
+            (File.GetAttributes(mod.SourcePath) & FileAttributes.ReparsePoint) == 0).ToArray();
         var entries = new List<(string Id, string Role, string? Canonical)>();
         foreach (var unit in units)
         {

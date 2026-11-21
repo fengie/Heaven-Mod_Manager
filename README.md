@@ -1,14 +1,18 @@
-# v8.8.132 — MHW Manual Mod Manager
+# v8.8.133 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 12:45:06 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 02:27:23 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.132**.
+Current product version: **8.8.133**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.133 — automatic duplicate handling
+
+- Manager now shows one entry for identical package folders at startup and after intake. It keeps both originals, respects saved and staged choices, and shows a copy again when its contents change. Previously selected intake folders resume when reconnected. [Automatic duplicate handling](https://github.com/fengie/Heaven-Mod_Manager/issues/951)
 
 ## v8.8.132 — installed mod discovery
 
@@ -17,11 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.131 — add a game
 
 - Use **Add Game** beside **Find Installed Games** on the Dashboard to select a game executable and switch to its mod library. Choosing an already registered executable reuses its existing profile. [Game registration](https://github.com/fengie/Heaven-Mod_Manager/issues/946)
-
-## v8.8.130 — deployment history and discovery refresh
-
-- Repeated Apply preserves the previous Undo. Successive Undos walk deployment history, and a file created outside Manager survives a refused Undo. [Deployment ordering](https://github.com/fengie/Heaven-Mod_Manager/issues/944)
-- When a verified discovery refresh exceeds cache capacity, removed items no longer return on reopening Manager. [Discovery refresh](https://github.com/fengie/Heaven-Mod_Manager/issues/945)
 
 ## Current plans & progress
 

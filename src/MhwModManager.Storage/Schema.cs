@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS schema_info(key TEXT PRIMARY KEY,value TEXT NOT NULL)
 CREATE TABLE IF NOT EXISTS mods(id TEXT PRIMARY KEY,name TEXT NOT NULL,display_name TEXT NOT NULL,source_path TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 0,priority INTEGER NOT NULL DEFAULT 0,family_id TEXT NULL,category TEXT NULL,source_url TEXT NULL,nexus_mod_id TEXT NULL,nexus_file_id TEXT NULL,imported_at TEXT NOT NULL,updated_at TEXT NOT NULL);
 CREATE UNIQUE INDEX IF NOT EXISTS ix_mods_source ON mods(source_path COLLATE NOCASE);
 CREATE INDEX IF NOT EXISTS ix_mods_enabled_priority ON mods(enabled,priority);
+CREATE TABLE IF NOT EXISTS exact_package_copies(
+    mod_id TEXT PRIMARY KEY REFERENCES mods(id) ON DELETE CASCADE,
+    keeper_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,
+    CHECK(mod_id <> keeper_id)
+);
 CREATE TABLE IF NOT EXISTS managed_shelf_entries(
     mod_id TEXT PRIMARY KEY REFERENCES mods(id) ON DELETE CASCADE,
     shelf_path TEXT NOT NULL COLLATE NOCASE,

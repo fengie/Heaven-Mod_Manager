@@ -83,7 +83,7 @@ public sealed class CatalogNexusArchiveBackfillTests : IDisposable
         {
             var folder = Path.Combine(root, "Installed", name);
             Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, "example.mrl3"), "fixture material");
+            File.WriteAllText(Path.Combine(folder, "example.mrl3"), name == first ? "alpha material" : "beta material");
         }
         var (db, catalog) = await CreateCatalogAsync();
         await catalog.RefreshFoldersAsync(TestToken);

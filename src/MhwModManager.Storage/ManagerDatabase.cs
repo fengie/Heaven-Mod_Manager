@@ -242,13 +242,76 @@ public sealed class ManagerDatabase
         await tx.CommitAsync(ct);
     }
 
+    private string[] pendingModIds = [];
+    public void SetPendingModIds(IEnumerable<string> ids)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        Volatile.Write(ref pendingModIds,ids.ToArray());
+    }
+
+    public async Task ReconcileExactCopiesAsync(IReadOnlyList<string[]> groups,CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        await using var connection=await OpenAsync(ct);
+        using var tx=connection.BeginTransaction(deferred:false);
+        using var command=connection.CreateCommand();
+        command.Transaction=tx;
+        command.CommandText="SELECT mod_id,keeper_id FROM exact_package_copies";
+        var previous=new Dictionary<string,string>(StringComparer.Ordinal);
+        await using(var reader=await command.ExecuteReaderAsync(ct))
+            while(await reader.ReadAsync(ct)) previous.Add(reader.GetString(0),reader.GetString(1));
+        var oldKeepers=previous.Values.ToHashSet(StringComparer.Ordinal);
+        var pending=Volatile.Read(ref pendingModIds).ToHashSet(StringComparer.Ordinal);
+        command.CommandText="SELECT m.id,m.enabled,m.priority,("+ProtectedCopySql+") FROM mods m";
+        var states=new Dictionary<string,(bool Enabled,int Priority,bool Protected)>(StringComparer.Ordinal);
+        await using(var reader=await command.ExecuteReaderAsync(ct))
+            while(await reader.ReadAsync(ct))
+                states[reader.GetString(0)]=(reader.GetBoolean(1),reader.GetInt32(2),reader.GetBoolean(3)||pending.Contains(reader.GetString(0)));
+        var copies=new Dictionary<string,string>(StringComparer.Ordinal);
+        foreach(var group in groups)
+        {
+            var ordered=group.Where(states.ContainsKey).OrderByDescending(id=>states[id].Enabled)
+                .ThenByDescending(id=>states[id].Protected).ThenByDescending(oldKeepers.Contains)
+                .ThenBy(id=>states[id].Priority).ThenBy(id=>id,StringComparer.Ordinal).ToArray();
+            foreach(var id in ordered.Skip(1))
+                if(!states[id].Enabled && !states[id].Protected) copies[id]=ordered[0];
+        }
+        foreach(var id in previous.Keys.Except(copies.Keys))
+        {
+            command.Parameters.Clear();command.CommandText="DELETE FROM exact_package_copies WHERE mod_id=$id";
+            command.Parameters.AddWithValue("$id",id);await command.ExecuteNonQueryAsync(ct);
+        }
+        foreach(var (id,keeper) in copies.Where(pair=>previous.GetValueOrDefault(pair.Key)!=pair.Value))
+        {
+            command.Parameters.Clear();command.CommandText="INSERT INTO exact_package_copies(mod_id,keeper_id) VALUES($id,$keeper) ON CONFLICT(mod_id) DO UPDATE SET keeper_id=excluded.keeper_id";
+            command.Parameters.AddWithValue("$id",id);command.Parameters.AddWithValue("$keeper",keeper);await command.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+    }
+
+    private const string ProtectedCopySql = """
+        m.family_id IS NOT NULL
+        OR EXISTS(SELECT 1 FROM profile_mods WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM conflict_rules WHERE m.id IN (left_mod_id,right_mod_id,winner_mod_id))
+        OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM family_preferences WHERE selected_mod_id=m.id)
+        """;
+
     public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         return GetModsAsync(false, ct);
     }
 
-    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
+    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return GetModsAsync(includeShelfSources,includeShelfSources,ct);
+    }
+
+    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, bool includeExactCopies, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var list = new List<ModDescriptor>();
@@ -266,11 +329,21 @@ public sealed class ManagerDatabase
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
         LEFT JOIN mod_supersession s ON s.older_mod_id=m.id
         LEFT JOIN mod_family_members fm ON fm.mod_id=m.id AND fm.family_id=m.family_id
-        WHERE $all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
-            OR (shelf.role='duplicate' AND NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled))
+        WHERE ($all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
+            OR (shelf.role='duplicate' AND (
+                NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled)
+                OR m.id IN (SELECT value FROM json_each($pending)) OR (
+        """ + ProtectedCopySql + """
+        ))))
+        AND ($copies OR m.enabled OR NOT EXISTS(SELECT 1 FROM exact_package_copies d WHERE d.mod_id=m.id)
+            OR m.id IN (SELECT value FROM json_each($pending)) OR (
+        """ + ProtectedCopySql + """
+        ))
         ORDER BY m.priority,m.name COLLATE NOCASE
         """;
         cmd.Parameters.AddWithValue("$all", includeShelfSources);
+        cmd.Parameters.AddWithValue("$copies", includeExactCopies);
+        cmd.Parameters.AddWithValue("$pending",System.Text.Json.JsonSerializer.Serialize(Volatile.Read(ref pendingModIds)));
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))
         {

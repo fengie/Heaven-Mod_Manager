@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows.Automation;
@@ -369,6 +370,35 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         bool Watching() => File.Exists(state) && (JsonSerializer.Deserialize<string[]>(File.ReadAllText(state)) ?? [])
             .Contains(target.FullName, StringComparer.OrdinalIgnoreCase);
         await WaitForAsync(Watching, UiTimeout, "persisted selected watched folder", ct);
+        if (run.FirstGame.IsMonsterHunterWorld)
+        {
+            await WaitForElementAsync(() => FindButton(window, fieldName, enabled: true), UiTimeout, "initial watch scan finished", ct);
+            // Allow the initial four-second event debounce to finish before replacing the watched root.
+            await Task.Delay(TimeSpan.FromSeconds(6), ct);
+            var replacement = Directory.CreateDirectory(Path.Combine(parent, "replacement"));
+            replacement.CreationTimeUtc = DateTime.UtcNow.AddDays(-2);
+            var archiveName = "MHW Reconnect Fixture.zip";
+            var archive = Path.Combine(replacement.FullName, archiveName);
+            using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+            using (var payload = zip.CreateEntry("nativePC/pl/fixture-reconnect.bin").Open())
+                payload.Write(run.ModBytes);
+            var hash = SHA256.HashData(File.ReadAllBytes(archive));
+            File.Copy(keep, Path.Combine(replacement.FullName, "keep.txt"));
+            var detached = Path.Combine(parent, "detached");
+            Directory.Move(target.FullName, detached);
+            Directory.Move(replacement.FullName, target.FullName);
+            await SelectModsTabAsync(window, ct);
+            var mod = await WaitForElementAsync(() => FindModToggle(window, "MHW Reconnect Fixture"),
+                UiTimeout, "returned-folder package in ordinary Mods without a manual scan", ct);
+            Assert.Equal(ToggleState.Off, ((TogglePattern)mod.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+            Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "pl", "fixture-reconnect.bin")));
+            Assert.Equal(hash, SHA256.HashData(File.ReadAllBytes(Path.Combine(target.FullName, archiveName))));
+            Assert.Equal("owned fixture", File.ReadAllText(Path.Combine(detached, "keep.txt")));
+            var dashboard = await WaitForElementAsync(() => Find(window, item =>
+                item.Current.ControlType == ControlType.TabItem && item.Current.Name == "Dashboard"), UiTimeout, "Dashboard", ct);
+            ((SelectionItemPattern)dashboard.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+            passed.Add("Automatically import a package deposited while a watched folder was disconnected and retain both originals");
+        }
         Invoke(await WaitForElementAsync(() => FindButton(window, "Stop monitoring selected mod folder without deleting data",
             enabled: true), UiTimeout, "remove watched fixture", ct));
         await WaitForAsync(() => !Watching(), UiTimeout, "remove folder from monitoring", ct);

@@ -114,15 +114,13 @@ public sealed class AutomationCoordinator(
         if (SkipRequested())
             return Deferred(imported, new DuplicateAnalysis([], [], 0), assigned, [], "categories");
 
-        Report("Duplicates", "Checking safe duplicate archives and retained packages…");
-        var duplicatesResult = await AttemptAsync(
-            "startup.automation.duplicate-archive",
-            token => duplicates.ArchiveSafeWithAnalysisAsync(token),
-            new DuplicateArchiveOutcome(0, new DuplicateAnalysis([], [], 0)),
+        Report("Duplicates", "Checking the visible package library…");
+        var duplicateAnalysis = await AttemptAsync(
+            "startup.automation.duplicate-analysis",
+            token => duplicates.AnalyzeAsync(token),
+            new DuplicateAnalysis([], [], 0),
             failures,
             ct);
-        var archived = duplicatesResult.Archived;
-        var duplicateAnalysis = duplicatesResult.Analysis;
         if (SkipRequested())
             return Deferred(imported, duplicateAnalysis, assigned, [], "duplicate analysis");
 
@@ -146,11 +144,11 @@ public sealed class AutomationCoordinator(
             return Deferred(imported, duplicateAnalysis, assigned, deps, "update-diff recording");
 
         var dependencyIssues = deps.Count(x => !x.Ready);
-        var summary = $"Inbox: {imported.Imported} imported; categories: {assigned} assigned; safe archives: {archived}; dependency issues: {dependencyIssues}; diagnostic failures: {failures.Count}.";
+        var summary = $"Inbox: {imported.Imported} imported; categories: {assigned} assigned; dependency issues: {dependencyIssues}; diagnostic failures: {failures.Count}.";
         Report("Finalizing", "Recording startup maintenance summary…");
         await AttemptAsync(
             "startup.automation.timeline",
-            token => timeline.RecordAsync("startup.maintenance", failures.Count == 0 ? AutomationSeverity.Info : AutomationSeverity.Warning, summary, new { imported = imported.Imported, assigned, archived, dependencyIssues, diagnosticFailures = failures.Count }, token),
+            token => timeline.RecordAsync("startup.maintenance", failures.Count == 0 ? AutomationSeverity.Info : AutomationSeverity.Warning, summary, new { imported = imported.Imported, assigned, dependencyIssues, diagnosticFailures = failures.Count }, token),
             failures,
             ct);
         startupDiagnostics?.Info("startup.automation.maintenance-summary", summary);
