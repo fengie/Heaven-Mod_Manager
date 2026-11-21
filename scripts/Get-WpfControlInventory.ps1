@@ -14,13 +14,37 @@ if ($PSVersionTable.PSEdition -eq 'Desktop') {
     $roslyn = Split-Path -Parent $compiler
     # MSBuild supplies binding redirects for its Roslyn dependencies. Resolve from that
     # same compiler directory when Windows PowerShell hosts the parser directly.
-    $resolver = [ResolveEventHandler]{
-        param($sender, $request)
-        $name = [Reflection.AssemblyName]::new($request.Name).Name
-        if ($name -notmatch '^(System\.(Buffers|Collections\.Immutable|Memory|Numerics\.Vectors|Reflection\.Metadata|Runtime\.CompilerServices\.Unsafe|Threading\.Tasks\.Extensions))$') { return $null }
-        $dependency = Join-Path $roslyn ($name + '.dll')
-        if (Test-Path -LiteralPath $dependency) { return [Reflection.Assembly]::LoadFrom($dependency) }
+    # A PowerShell scriptblock invoked by AssemblyResolve can trigger another bind while
+    # attempting to load its dependencies. Resolve only references to preloaded assemblies
+    # and keep PowerShell, filesystem probing and assembly loading out of the callback.
+    if (-not ('WpfInventoryCompilerDependencies' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+
+public static class WpfInventoryCompilerDependencies
+{
+    public static ResolveEventHandler Create(Assembly[] dependencies)
+    {
+        var loaded = new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+        foreach (var assembly in dependencies) loaded.Add(assembly.GetName().Name, assembly);
+        return delegate(object sender, ResolveEventArgs request)
+        {
+            Assembly match;
+            var name = request.Name.Split(',')[0];
+            return loaded.TryGetValue(name, out match) ? match : null;
+        };
     }
+}
+'@
+    }
+    $dependencies = @('System.Runtime.CompilerServices.Unsafe','System.Buffers','System.Numerics.Vectors',
+        'System.Memory','System.Collections.Immutable','System.Reflection.Metadata','System.Threading.Tasks.Extensions') |
+        ForEach-Object { Join-Path $roslyn ($_ + '.dll') } |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        ForEach-Object { [Reflection.Assembly]::LoadFrom($_) }
+    $resolver = [WpfInventoryCompilerDependencies]::Create([Reflection.Assembly[]]$dependencies)
     [AppDomain]::CurrentDomain.add_AssemblyResolve($resolver)
     [void][Reflection.Assembly]::LoadFrom((Join-Path $roslyn 'Microsoft.CodeAnalysis.dll'))
     [void][Reflection.Assembly]::LoadFrom($compiler)

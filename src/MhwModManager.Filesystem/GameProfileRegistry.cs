@@ -428,6 +428,7 @@ public sealed partial class GameProfileRegistry
 
     private static string ValidateExecutablePath(string executablePath)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var full = Path.GetFullPath(executablePath);
         if (!File.Exists(full) || !full.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             throw new FileNotFoundException("Select the game's Windows executable.", full);
