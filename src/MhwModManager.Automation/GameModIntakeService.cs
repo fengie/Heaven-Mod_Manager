@@ -485,15 +485,20 @@ public sealed class GameModIntakeService
     public ManagedCollectionLayout InspectManagedShelf(string source, GameProfile game, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var inventory = PreviewManagedCollection(source, game, ct).FileInventory ?? [];
-        var files = inventory.Where(path => !ManagedCollectionNotes.IsNote(path)).ToArray();
-        if (files.Length == 0 || files.Any(path => !path.Contains('/')))
+        var preview = PreviewManagedCollection(source, game, ct);
+        if (preview.Candidates is [{ RelativePath: ".", RequiresSelection: true }])
+            return new([new(source, true)], true);
+        var files = (preview.FileInventory ?? []).Where(path => !ManagedCollectionNotes.IsNote(path)).ToArray();
+        if (files.Length == 0)
             return new([], false);
 
-        return PartitionShelf(source, files, ct);
+        var choices = preview.Candidates.Where(candidate => candidate.RequiresSelection)
+            .Select(candidate => Path.GetFullPath(Path.Combine(source, candidate.RelativePath)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return PartitionShelf(source, files, choices, ct);
     }
 
-    private static ManagedCollectionLayout PartitionShelf(string source, string[] files, CancellationToken ct)
+    private static ManagedCollectionLayout PartitionShelf(string source, string[] files, HashSet<string> choices, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         while (files.Length > 0 && files.All(path => path.Contains('/')))
@@ -506,7 +511,17 @@ public sealed class GameModIntakeService
             source = Path.Combine(source, prefix.TrimEnd('/'));
             files = files.Select(path => path[prefix.Length..]).ToArray();
         }
-        if (files.Any(path => !path.Contains('/'))) return new([], false);
+        if (files.Any(path => !path.Contains('/')))
+        {
+            var discovery = ModBoundaryDiscovery.Discover(files, Path.GetFileName(source));
+            if (!discovery.Candidates.Any(c => c.Kind == ModBoundaryKind.Review && c.RelativePath == ".") ||
+                !discovery.Candidates.Any(c => c.Kind == ModBoundaryKind.Folder && c.RelativePath != "."))
+                return new([], false);
+            var nested = PartitionShelf(source, files.Where(path => path.Contains('/')).ToArray(), choices, ct);
+            return nested.FullyAccounted
+                ? new([.. nested.Units, new(source, true)], true)
+                : new([], false);
+        }
         var branches = files.GroupBy(path => path[..path.IndexOf('/')], StringComparer.OrdinalIgnoreCase).ToArray();
         var boundaries = ModBoundaryDiscovery.Discover(files);
         if (branches.Length < 2 || boundaries.Candidates.All(candidate => candidate.RelativePath == "."))
@@ -524,9 +539,9 @@ public sealed class GameModIntakeService
                 .Select(path => path[..(path.IndexOf('/') + 1)]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             var clean = relative.All(path => UnrealPakLayout.IsMember(path) ||
                 editorRoots.Any(root => path.StartsWith(root, StringComparison.OrdinalIgnoreCase)));
-            var protectedChoice = boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
+            var protectedChoice = choices.Contains(branchPath) || boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
                 c.RelativePath.Equals(branch.Key, StringComparison.OrdinalIgnoreCase) &&
-                c.Evidence.Contains("variant", StringComparison.OrdinalIgnoreCase));
+                c.RequiresSelection);
             if (clean && !protectedChoice && UnrealPakLayout.Complete(containers, singleStem: true))
             {
                 var parent = Path.GetDirectoryName(containers[0]) ?? "";
@@ -541,7 +556,7 @@ public sealed class GameModIntakeService
                 // are commonly alternate versions that must stay together for review.
                 var distinctOutputs = containers.Select(Path.GetFileName).Distinct(StringComparer.OrdinalIgnoreCase).Count() == containers.Length;
                 var children = !protectedChoice && clean && containers.Length > 1 && distinctOutputs &&
-                    relative.All(path => path.Contains('/')) ? PartitionShelf(branchPath, relative, ct) : new([], false);
+                    relative.All(path => path.Contains('/')) ? PartitionShelf(branchPath, relative, choices, ct) : new([], false);
                 if (children.FullyAccounted) units.AddRange(children.Units);
                 else units.Add(new(branchPath, true));
             }

@@ -24,7 +24,7 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
     public void Authored_alternative_parameters_keep_companions_and_situational_choices_together()
     {
         var result = ModBoundaryDiscovery.Discover([
-            "README.txt", "90 FOV/1v1/wideA.pak", "90 FOV/1v1/wideA.sig",
+            "README.txt", "desktop.ini", "90 FOV/1v1/wideA.pak", "90 FOV/1v1/wideA.sig",
             "105 FOV/1v1/wideB.pak", "105 FOV/1v1/wideB.sig",
             "NoFixedCam/helper.pak", "Other/Fixed/Level.pak"
         ]);

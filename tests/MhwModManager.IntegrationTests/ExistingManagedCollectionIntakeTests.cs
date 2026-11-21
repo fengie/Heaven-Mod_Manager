@@ -23,6 +23,46 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
         nexusGameDomain: "stellarblade");
 
     [Fact]
+    public async Task Ordinary_refresh_indexes_existing_children_but_keeps_loose_parent_and_authored_choices_under_review()
+    {
+        var game = GameProfile.Generic("quartz", "Quartz", Path.Combine(home,"game"), "game.exe",
+            "Project/Content/Paks", "unreal-paks");
+        var installed = GameModStorage.Resolve(Manager,game).InstalledRoot;
+        var root = Path.Combine(installed,"~mods");
+        string[] paths = ["loose.pak","Jade/hat.pak","Gold/coat.pak","Gold/coat.sig",
+            "Outfit/WITH_PHYSICS/motion.pak", "Outfit/NO_PHYSICS/rigid.pak", "Outfit/README.txt"];
+        foreach (var relative in paths)
+        {
+            var target = Path.Combine(root,relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.WriteAllText(target,relative);
+        }
+        var db = catalogDatabase = new ManagerDatabase(Path.Combine(home, "state", "manager.db"));
+        await db.InitializeAsync(TestToken);
+        await db.UpsertModAsync(new("wrapper","wrapper","Original shelf",root,false,43),TestToken);
+        await db.UpsertModAsync(new("kept","kept","Original title",Path.Combine(root,"Jade"),false,46),TestToken);
+        var scanner = new ModScanner(db,new BlobStore(Path.Combine(home,"blobs"),db),new HashingService(),game);
+        var intake = new GameModIntakeService(Manager,Path.Combine(Manager,"State"),()=>[game]);
+        var catalog = new CatalogService(db, scanner, installed, inspectShelf:(folder,ct)=>intake.InspectManagedShelf(folder,game,ct));
+        for (var i=0; i<2; i++)
+        {
+            await catalog.RefreshFoldersAsync(TestToken);
+            var rows = await db.GetModsAsync(TestToken);
+            Assert.Equal(4,rows.Count);
+            Assert.All(rows,row=>Assert.False(row.Enabled));
+            Assert.Equal("review", await db.ShelfRoleAsync("wrapper",TestToken));
+            Assert.Equal("review", await db.ShelfRoleAsync(rows.Single(row=>row.Name=="Outfit").Id,TestToken));
+            Assert.Equal("package",await db.ShelfRoleAsync("kept",TestToken));
+            Assert.Equal(46,rows.Single(row=>row.Id=="kept").Priority);
+            var files = await db.GetModFilesAsync(TestToken);
+            Assert.Equal(3,files.Count);
+            Assert.DoesNotContain(files,file=>file.ModId=="wrapper");
+        }
+        foreach (var relative in paths) Assert.Equal(relative,File.ReadAllText(Path.Combine(root,relative)));
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
+
+    [Fact]
     public async Task Existing_shelf_reuses_ids_captures_distinct_payloads_and_preserves_reviews_and_active_mod()
     {
         var game = GameProfile.Generic("fixture", "Fixture", Path.Combine(home, "game"), "game.exe", "Project/Content/Paks", "unreal-paks");

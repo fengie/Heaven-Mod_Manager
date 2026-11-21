@@ -70,7 +70,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 try
                 {
                     var layout = await Task.Run(() => inspectShelf(dir, ct), ct);
-                    if (layout.FullyAccounted && layout.Units.Count > 1)
+                    if (layout.FullyAccounted && layout.Units.Count > 0)
                     {
                         await ReconcileShelfAsync(dir, layout.Units, tracked ?? [], savedShelves![dir], priority, ct);
                         priority += layout.Units.Count;
@@ -178,7 +178,10 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 entries.Add((mod.Id, canonical is null ? "package" : "duplicate", canonical?.Id));
             }
         }
-        entries.AddRange(wrappers.Select(wrapper => (wrapper.Id, "wrapper", (string?)null)));
+        // When the shelf itself owns unresolved loose files it already has a visible
+        // review role. Reuse its original identity and keep its deployment toggle guarded.
+        if (!units.Any(unit => StringComparer.OrdinalIgnoreCase.Equals(unit.SourcePath, shelf)))
+            entries.AddRange(wrappers.Select(wrapper => (wrapper.Id, "wrapper", (string?)null)));
         if (!previous.ToHashSet().SetEquals(entries))
             await db.SetShelfEntriesAsync(shelf, entries, ct);
     }

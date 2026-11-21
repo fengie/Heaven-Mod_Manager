@@ -12,7 +12,7 @@ public enum ModBoundaryKind { Folder, Archive, Review, FileSet }
 /// <param name="SourcePrefix">Collection wrapper to remove from staged game-relative files.</param>
 public sealed record ModBoundaryCandidate(
     string RelativePath, ModBoundaryKind Kind, string Evidence, IReadOnlyList<string>? Files = null,
-    string? SourcePrefix = null);
+    string? SourcePrefix = null, bool RequiresSelection = false);
 
 public sealed record ModBoundaryResult(IReadOnlyList<ModBoundaryCandidate> Candidates)
 {
@@ -113,6 +113,15 @@ public static class ModBoundaryDiscovery
         if (relative.Any(path => path.StartsWith("fomod/", StringComparison.OrdinalIgnoreCase)
             && IsFomodConfiguration(path)))
             return Review(prefix, "Installer options must be selected; never split FOMOD variants.");
+
+        var opposites = directories.Select(directory => (directory, option: ContrastOption(directory)))
+            .Where(pair => pair.option.HasValue)
+            .GroupBy(pair => pair.option!.Value.Feature, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Select(pair => pair.option!.Value.Enabled).Distinct().Count() == 2)
+            .SelectMany(group => group.Select(pair => pair.directory)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (opposites.Count > 1 && directories.All(directory =>
+                opposites.Contains(directory) || IsSupplementaryDirectory(directory)))
+            return Review(prefix, "Choose between complementary variants of one package.", requiresSelection: true);
 
         var archived = directFiles.Where(IsArchive).Order(StringComparer.OrdinalIgnoreCase).ToArray();
         var otherFiles = directFiles.Where(file => !IsArchive(file) && !IsSupplementary(file)).ToArray();
@@ -228,8 +237,8 @@ public static class ModBoundaryDiscovery
         if (directFiles.Any(ManagedCollectionNotes.IsNote) &&
             meaningfulDirectories.Select(ChoiceParameter).OfType<string>()
                 .GroupBy(parameter => parameter, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() >= 2) &&
-            relative.Where(path => !IsSupplementary(path)).All(UnrealPakLayout.IsMember))
-            return Review(prefix, "Documented alternative settings need selection as one package.");
+            relative.All(path => ManagedCollectionNotes.IsNote(path) || IsSupplementary(path) || UnrealPakLayout.IsMember(path)))
+            return Review(prefix, "Documented alternative settings need selection as one package.", requiresSelection: true);
 
         // Only siblings with matching package identity, after stripping known
         // variant tokens, are potential alternatives. One ordinary "High Heels"
@@ -239,11 +248,12 @@ public static class ModBoundaryDiscovery
             .Where(group => group.Count() > 1 && group.Any(LooksLikeVariant))
             .SelectMany(group => group)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        ambiguousVariants.UnionWith(opposites);
         if (ambiguousVariants.Count == meaningfulDirectories.Length
             && meaningfulDirectories.Length > 1
             && meaningfulDirectories.Select(VariantFamily)
                 .Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1)
-            return Review(prefix, "Potential mutually exclusive variants need review as one package.");
+            return Review(prefix, "Potential mutually exclusive variants need review as one package.", requiresSelection: true);
 
         var candidates = new List<ModBoundaryCandidate>();
         if (reviewUnattributedFiles)
@@ -256,7 +266,7 @@ public static class ModBoundaryDiscovery
             var child = Join(prefix, directory);
             if (ambiguousVariants.Contains(directory))
             {
-                candidates.AddRange(Review(child, "Package variants share an identity with a sibling; choose the intended option."));
+                candidates.AddRange(Review(child, "Package variants share an identity with a sibling; choose the intended option.", requiresSelection: true));
                 continue;
             }
             var found = Analyze(children[directory].ToArray(), child, depth + 1, sourceName);
@@ -448,10 +458,10 @@ public static class ModBoundaryDiscovery
                 or "fix" or "fixed" or "hotfix")));
     }
 
-    private static IReadOnlyList<ModBoundaryCandidate> Review(string prefix, string reason)
+    private static IReadOnlyList<ModBoundaryCandidate> Review(string prefix, string reason, bool requiresSelection = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return [new(Display(prefix), ModBoundaryKind.Review, reason)];
+        return [new(Display(prefix), ModBoundaryKind.Review, reason, RequiresSelection: requiresSelection)];
     }
 
     private static string Display(string prefix)
@@ -521,6 +531,19 @@ public static class ModBoundaryDiscovery
         return name.Equals("docs", StringComparison.OrdinalIgnoreCase)
             || name.Equals("screenshots", StringComparison.OrdinalIgnoreCase)
             || name.Equals("documentation", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static (string Feature, bool Enabled)? ContrastOption(string directory)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var words = directory.ToLowerInvariant().Replace('_', ' ').Replace('-', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length < 2) return null;
+        if (words[0] is "with" or "without" or "no")
+            return (string.Join(' ', words[1..]), words[0] == "with");
+        if (words[^1] is "on" or "off" or "enabled" or "disabled")
+            return (string.Join(' ', words[..^1]), words[^1] is "on" or "enabled");
+        return null;
     }
 
     private static string? ChoiceParameter(string directory)
