@@ -41,7 +41,6 @@ GameProfileEditorWindow.cs | GameProfileEditorWindow | Button save | Content="Sa
 GameProfileEditorWindow.cs | GameProfileEditorWindow | TextBox saveBox |
 GameProfileEditorWindow.cs | Save | MessageBox.Show | "Check Game Settings"
 MainWindow.xaml |  | Border | Name=BusyOverlay ; Visibility={Binding BusyVisibility} ; IsVisibleChanged=OnBusyOverlayIsVisibleChanged
-MainWindow.xaml |  | Button | Content=Apply Changes ; Command={Binding ApplyCommand}
 MainWindow.xaml |  | Button | Content=Cancel ; Command={Binding CancelBusyCommand} ; Visibility={Binding CancelVisibility} ; parent={Binding BusyVisibility}
 MainWindow.xaml |  | Button | Content=Install Mod ; Command={Binding ImportArchiveCommand}
 MainWindow.xaml |  | Button | Content=Launch Game ; Command={Binding LaunchModdedCommand}
@@ -71,13 +70,14 @@ MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | Button | Content=See shar
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | Button | Content=View mod options ; Command={Binding SetModViewCommand} ; CommandParameter=All
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGrid | ItemsSource={Binding OutfitRows} ; SelectedItem={Binding SelectedOutfit,Mode=TwoWay} ; IsReadOnly=True
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTemplateColumn | Header=LOOK
+MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTemplateColumn | Header=OPTIONS
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=ARMOR ; Binding={Binding Armor}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=MODEL ; Binding={Binding ModelId}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=MODS ; Binding={Binding Providers}
-MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=OPTIONS ; Binding={Binding Available}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=STATUS ; Binding={Binding Status}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel} | DataGridTextColumn | Header=USED PIECES ; Binding={Binding WinningPieces}
-MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate: | TabControl | AutomationProperties.Name=Armor details and outfit options
+MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataGridTemplateColumn:OPTIONS/DataTemplate: | Button | Content={Binding OptionsLabel} ; AutomationProperties.Name={Binding Armor,StringFormat='View outfits for {0}'} ; Command={Binding DataContext.ShowOutfitOptionsCommand, RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding}
+MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate: | TabControl | AutomationProperties.Name=Armor details and outfit options ; SelectedIndex={Binding DataContext.OutfitDetailsTab,RelativeSource={RelativeSource AncestorType=Window},Mode=TwoWay}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate: | TabItem | Header=Details
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate: | TabItem | Header=Outfit options
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate:/TabItem:Outfit options | Button | Content=Use normal load order ; IsEnabled={Binding HasPreference} ; Command={Binding DataContext.ClearOutfitChoiceCommand, RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding}
@@ -125,7 +125,6 @@ MainWindow.xaml | TabItem:Browse Mods/DataTemplate: | TextBox | Text={Binding Mo
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Add Folder ; Command={Binding AddAutoSortFolderCommand} ; AutomationProperties.Name=Add automatic mod sorting folder
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Add Game ; Command={Binding AddGameCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Advanced Tools & Diagnostics ; Command={Binding OpenWorkflowsCommand}
-MainWindow.xaml | TabItem:Dashboard | Button | Content=Apply Pending Changes ; Command={Binding ApplyCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Clean Up Duplicate Mods ; Command={Binding SmartCleanupCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Export Mod List ; Command={Binding ExportRecipeCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Find Installed Games ; Command={Binding ScanInstalledGamesCommand}
@@ -184,8 +183,6 @@ MainWindow.xaml | TabItem:Mods | Button | Content={Binding RevalidateViewLabel} 
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding StagedViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Staged
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding SupersededViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Superseded
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding UpdatesViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Updates
-MainWindow.xaml | TabItem:Mods | Button | Content=Apply Mod Changes ; Command={Binding ApplyCommand} ; IsEnabled={Binding HasStagedChanges}
-MainWindow.xaml | TabItem:Mods | Button | Content=Auto Populate ; Command={Binding AutoPopulateCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Bring In Manual Mods ; Command={Binding AdoptManualFilesCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Bring In Manual Mods ; Command={Binding AdoptManualFilesCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Check Mod Info ; Command={Binding SyncMetadataCommand}
@@ -195,6 +192,7 @@ MainWindow.xaml | TabItem:Mods | Button | Content=Discard Pending Changes ; Comm
 MainWindow.xaml | TabItem:Mods | Button | Content=Inspect Existing Mod Layouts ; Command={Binding InspectExistingModCollectionsCommand} ; AutomationProperties.Name=Inspect nested mod package layouts without making changes
 MainWindow.xaml | TabItem:Mods | Button | Content=Install Mod ; Command={Binding ImportArchiveCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Preview Mod Changes ; Command={Binding PreviewApplyCommand} ; IsEnabled={Binding HasStagedChanges}
+MainWindow.xaml | TabItem:Mods | Button | Content=Review and retry ; Command={Binding ApplyCommand} ; Visibility={Binding ReviewRetryVisibility}
 MainWindow.xaml | TabItem:Mods | Button | Content=Select All ; Command={Binding EnableVisibleCommand} ; IsEnabled={Binding HasVisibleMods} ; AutomationProperties.Name=Select all visible mods
 MainWindow.xaml | TabItem:Mods | Button | Content=Undo ; Command={Binding UndoCommand} ; AutomationProperties.Name=Undo Last Applied Change
 MainWindow.xaml | TabItem:Mods | DataGrid | ItemsSource={Binding LibraryView} ; SelectedItem={Binding SelectedLibraryItem,Mode=TwoWay} ; IsReadOnly=True ; AutomationProperties.Name=Mod library
@@ -329,7 +327,8 @@ UiMotion.cs | event | tabControl.SelectionChanged | OnTabSelectionChanged
 ViewModels/MainWindowViewModel.AutoSort.cs | AddAutoSortFolder | OpenFolderDialog picker |
 ViewModels/MainWindowViewModel.AutoSort.cs | ImportModFolder | OpenFolderDialog picker |
 ViewModels/MainWindowViewModel.AutoSort.cs | ImportModPathsAsync | ModIntakeReviewWindow review |
-ViewModels/MainWindowViewModel.cs | Apply | MessageBox.Show | "Apply mod changes"
+ViewModels/MainWindowViewModel.Coverage.cs | ChangeOutfit | MessageBox.Show | "Additional package files"
+ViewModels/MainWindowViewModel.cs | ApplyStagedChangesAsync | MessageBox.Show | "Apply mod changes"
 ViewModels/MainWindowViewModel.cs | DiscardStaged | MessageBox.Show | "Discard pending changes"
 ViewModels/MainWindowViewModel.cs | SeparateConflictFamily | MessageBox.Show | "Separate incorrectly grouped mods"
 ViewModels/MainWindowViewModel.cs | StageVisible | MessageBox.Show |
