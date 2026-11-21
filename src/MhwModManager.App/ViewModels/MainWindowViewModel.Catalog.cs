@@ -887,6 +887,7 @@ public sealed partial class MainWindowViewModel
                 }
 
                 await RefreshCatalogCoreAsync(ct);
+                await CheckCatalogUpdatesCoreAsync(false,ct);
                 lastCatalogRefresh = DateTimeOffset.UtcNow;
             }
             finally
@@ -1614,10 +1615,12 @@ public sealed partial class MainWindowViewModel
             "Checking exact mod origins",
             "Re-checking only recorded provider mod/file identities. Replacement files are never guessed…",
             true,
-            CheckCatalogUpdatesCoreAsync);
+            ct => CheckCatalogUpdatesCoreAsync(ct));
     }
 
-    private async Task CheckCatalogUpdatesCoreAsync(CancellationToken ct)
+    private Task CheckCatalogUpdatesCoreAsync(CancellationToken ct) => CheckCatalogUpdatesCoreAsync(true,ct);
+
+    private async Task CheckCatalogUpdatesCoreAsync(bool announce,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         EnsureCatalogRuntime();
@@ -1674,7 +1677,7 @@ public sealed partial class MainWindowViewModel
 
         CatalogOriginStatuses.ReplaceAll(rows);
         OnPropertyChanged(nameof(CatalogOriginAttentionCount));
-        CatalogStatusText = rows.Count == 0
+        if (announce) CatalogStatusText = rows.Count == 0
             ? "No installed catalog origins are recorded yet."
             : $"Checked {rows.Count} exact installed origin(s); {CatalogOriginAttentionCount} need review.";
     }

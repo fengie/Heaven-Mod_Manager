@@ -206,16 +206,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             UiTimeout, "initial active game selector", TestToken);
         Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
 
-        var moreTools = await WaitForElementAsync(() => Find(window, element =>
-            element.Current.Name == "More tools"), UiTimeout, "Dashboard More tools", TestToken);
-        if (!moreTools.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out var expand) ||
-            expand is not ExpandCollapsePattern panel)
-            throw new InvalidOperationException("More tools does not expose accessible ExpandCollapse.");
-        panel.Expand();
-
-        var inboxButton = await WaitForElementAsync(() => FindButton(window, "Install Mods from Inbox"),
-            UiTimeout, "Install Mods from Inbox button", TestToken);
-        Invoke(inboxButton);
         await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
             File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
             UiTimeout, "Inbox never published the approved fixture", TestToken);

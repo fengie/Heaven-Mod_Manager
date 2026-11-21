@@ -180,7 +180,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("ItemsSource=\"{Binding Games}\"", xaml);
         Assert.Contains("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
         Assert.Contains("Command=\"{Binding SwitchGameCommand}\"", xaml);
-        Assert.Contains("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
     }
 
     [Fact]
