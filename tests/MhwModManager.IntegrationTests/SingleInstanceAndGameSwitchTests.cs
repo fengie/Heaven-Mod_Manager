@@ -48,6 +48,12 @@ public sealed class SingleInstanceAndGameSwitchTests
             // Preserve the original public registry behavior for existing callers.
             var activated = registry.AddGenericFromExecutable(secondExe);
             Assert.Equal(activated.Id, registry.GetActive()?.Id);
+            Assert.Equal(candidate, activated);
+            Assert.Equal(2, registry.Load().Count);
+            var otherExe = Path.Combine(firstRoot, Path.GetFileName(secondExe));
+            File.Copy(secondExe, otherExe);
+            Assert.NotEqual(candidate.Id, registry.AddGenericFromExecutable(otherExe, activate: false).Id);
+            Assert.Equal(candidate.Id, registry.GetActive()?.Id);
         }
         finally
         {

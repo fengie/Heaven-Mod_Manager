@@ -1,14 +1,18 @@
-# v8.8.130 — MHW Manual Mod Manager
+# v8.8.131 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 10:01:07 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 10:23:15 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.130**.
+Current product version: **8.8.131**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.131 — add a game
+
+- Use **Add Game** beside **Find Installed Games** on the Dashboard to select a game executable and switch to its mod library. Choosing an already registered executable reuses its existing profile. [Game registration](https://github.com/fengie/Heaven-Mod_Manager/issues/946)
 
 ## v8.8.130 — deployment history and discovery refresh
 
@@ -18,10 +22,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.129 — unmodded launch recovery
 
 - Launch Without Mods restores the files that were actually deployed when the game fails to start or exits. Enabled packages that were still pending stay unapplied. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)
-
-## v8.8.128 — active-game actions
-
-- Official catalog links now follow the active game’s provider mappings. Advanced Tools no longer shows main-window actions it cannot execute. The Windows acceptance suite uses the discovered profile registry for game-specific checks. [Game coverage](https://github.com/fengie/Heaven-Mod_Manager/issues/939)
 
 ## Current plans & progress
 

@@ -1,3 +1,7 @@
+# v8.8.131 — November 20, 2026
+
+- Use **Add Game** beside **Find Installed Games** on the Dashboard to select a game executable and switch to its mod library. Choosing an already registered executable reuses its existing profile. [Game registration](https://github.com/fengie/Heaven-Mod_Manager/issues/946)
+
 # v8.8.130 — November 20, 2026
 
 - Repeated Apply preserves the previous Undo. Successive Undos walk deployment history, and a file created outside Manager survives a refused Undo. [Deployment ordering](https://github.com/fengie/Heaven-Mod_Manager/issues/944)

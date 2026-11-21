@@ -1,6 +1,6 @@
-# v8.8.130 — canonical state and deployment history and discovery refresh
+# v8.8.131 â€” canonical state and game registration
 
-Build 618 is the published v8.8.129 package from 46688d61ea97761a1bdb31dca88a4b69c0e19d9c. Verify #944 and #945 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 619 is the published v8.8.130 package from ffc6b2526ec9d5a56712b0c8ad4e1724dd11ddcb. Verify #946 through its packaged Dashboard and native picker, then the Windows release and installed updater. The build 619 updater and rollback passed in run 44862996594. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -17,7 +17,7 @@ Build 618 is the published v8.8.129 package from 46688d61ea97761a1bdb31dca88a4b6
 
 - **v8.8.118 released implementation:** #895 preserves terminal updater recovery with corrupt pending marker; #897 integrated coordinated release metadata at `b6e1e151`; immutable `updater-main-588` published after Windows Gate 44481505844 PASS. Real packaged updater E2E 44483604969 PASS (Confirmed, injected RolledBack to 60, four intact user-data hashes). Source-bound receipt `_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.118.log` merged by [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899) at `e426d87d`. PR #898 added local catalog paging after release; it is not in the immutable build-588 ZIP. No claim of personal Heaven2 installation follows from this evidence.
 
-- **Historical v8.8.113 source:** #850–#874 provided genuine small archive format fixtures, crash recovery, game routing, conflict safeguards, startup telemetry, and catalog visibility. Large real Sifu/Stellar Blade/MHW corpora and installed p95 remain unverified.
+- **Historical v8.8.113 source:** #850â€“#874 provided genuine small archive format fixtures, crash recovery, game routing, conflict safeguards, startup telemetry, and catalog visibility. Large real Sifu/Stellar Blade/MHW corpora and installed p95 remain unverified.
 
 - Previous source details remain in [CHANGELOG.md](CHANGELOG.md): #832 planner allocations; #835 dependencies; #836 archive regressions; #838 intake receipt serialization; #839 family pruning. Their native checks predate this candidate and do not prove installed p95.
 - **Earlier v8.8.112:** immutable updater-main-548 is preserved at source `e9b1212985f80533ce04e3ab1e43910290692687`; later versions have separate immutable artifacts and receipts.

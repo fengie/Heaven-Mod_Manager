@@ -247,30 +247,16 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Refresh one filtered package and rebuild its missing content index from original bytes");
 
         int pid = window.Current.ProcessId;
-        AutomationElement? Dialog(string title)
-        {
-            var owned = AutomationElement.RootElement.FindAll(TreeScope.Children,
-                new PropertyCondition(AutomationElement.ProcessIdProperty, pid));
-            foreach (AutomationElement root in owned)
-            {
-                if (root.Current.Name == title) return root;
-                var child = root.FindFirst(TreeScope.Descendants, new AndCondition(
-                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Window),
-                    new PropertyCondition(AutomationElement.NameProperty, title)));
-                if (child is not null) return child;
-            }
-            return null;
-        }
         async Task Answer(string action, string caption, string choice)
         {
             var button = await Button(action);
             var invocation = Task.Run(() => Invoke(button), ct);
-            var dialog = await WaitForElementAsync(() => Dialog(caption), UiTimeout, caption, ct);
+            var dialog = await WaitForElementAsync(() => FindProcessDialog(pid, caption), UiTimeout, caption, ct);
             var answer = await WaitForElementAsync(() => FindButton(dialog, choice, enabled: true),
                 UiTimeout, caption + " " + choice, ct);
             Invoke(answer);
             await invocation.WaitAsync(UiTimeout, ct);
-            await WaitForAsync(() => Dialog(caption) is null, UiTimeout, "dismiss " + caption, ct);
+            await WaitForAsync(() => FindProcessDialog(pid, caption) is null, UiTimeout, "dismiss " + caption, ct);
         }
         filter.SetValue("");
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
@@ -293,18 +279,33 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         const string review = "Existing mod layouts — read-only preview";
         var inspect = await Button("Inspect nested mod package layouts without making changes");
         var inspectInvocation = Task.Run(() => Invoke(inspect), ct);
-        var preview = await WaitForElementAsync(() => Dialog(review), UiTimeout, review, ct);
+        var preview = await WaitForElementAsync(() => FindProcessDialog(pid, review), UiTimeout, review, ct);
         await WaitForElementAsync(() => Find(preview, item => item.Current.ControlType == ControlType.Text &&
             item.Current.Name.StartsWith("Inspected 2 of 2 managed packages", StringComparison.Ordinal)),
             UiTimeout, "two readable package layouts", ct);
         Invoke(await WaitForElementAsync(() => FindButton(preview, "Close preview", enabled: true), UiTimeout, "Close preview", ct));
         await inspectInvocation.WaitAsync(UiTimeout, ct);
-        await WaitForAsync(() => Dialog(review) is null, UiTimeout, "read-only preview closed", ct);
+        await WaitForAsync(() => FindProcessDialog(pid, review) is null, UiTimeout, "read-only preview closed", ct);
         Assert.Equal(originalArchiveHash, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
         Assert.Equal(alternateHash, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(archive)));
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
         Assert.False(File.Exists(alternateLive));
         passed.Add("Inspect two package layouts, close preview and preserve archives, deployed and unmanaged files");
+    }
+
+    private static AutomationElement? FindProcessDialog(int pid, string title)
+    {
+        var owned = AutomationElement.RootElement.FindAll(TreeScope.Children,
+            new PropertyCondition(AutomationElement.ProcessIdProperty, pid));
+        foreach (AutomationElement root in owned)
+        {
+            if (root.Current.Name == title) return root;
+            var child = root.FindFirst(TreeScope.Descendants, new AndCondition(
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Window),
+                new PropertyCondition(AutomationElement.NameProperty, title)));
+            if (child is not null) return child;
+        }
+        return null;
     }
 }

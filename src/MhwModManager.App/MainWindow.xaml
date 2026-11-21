@@ -217,6 +217,8 @@
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}"
                                             ToolTip="Read-only evidence for all tracked source packages, including unknown or incomplete nested mod groups."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Find Installed Games" Command="{Binding ScanInstalledGamesCommand}"/>
+                                    <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Add Game" Command="{Binding AddGameCommand}"
+                                            ToolTip="Select a game executable to register it and switch to its mod library."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Game Settings" Command="{Binding ConfigureGameCommand}"/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Open This Game's Mod Folder" Command="{Binding OpenGameModFolderCommand}"/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Open Downloaded Mod Archives" Command="{Binding OpenGameDownloadsFolderCommand}"/>

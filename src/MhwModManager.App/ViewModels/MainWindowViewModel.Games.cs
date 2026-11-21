@@ -95,8 +95,16 @@ public sealed partial class MainWindowViewModel
             Multiselect = false
         };
         if (dialog.ShowDialog() != true) return;
-        var profile = s.GameRegistry.AddGenericFromExecutable(dialog.FileName, activate: false);
-        await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(profile);
+        try
+        {
+            var profile = s.GameRegistry.AddGenericFromExecutable(dialog.FileName, activate: false);
+            await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(profile);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            MasterDebugLog.Write("GAME-SWITCH", "Could not add the selected game.", ex);
+            StatusText = "Could not add the selected game: " + ex.Message;
+        }
     }
 
     [RelayCommand]
