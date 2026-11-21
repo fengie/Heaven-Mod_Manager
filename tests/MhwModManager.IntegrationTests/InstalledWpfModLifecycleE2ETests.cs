@@ -72,6 +72,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var option = Directory.CreateDirectory(Path.Combine(wrapper, "Choose options", choice));
             files[Path.Combine(option.FullName, "option.pak")] = System.Text.Encoding.UTF8.GetBytes(choice);
         }
+        // Two plain folders arrived while Manager was closed. Neither has a saved index.
+        var duplicateNames = new[] { "Amber Costume", "Coral Costume" };
+        foreach (var name in duplicateNames)
+        {
+            var source = Directory.CreateDirectory(Path.Combine(run.InstalledRoot, name));
+            Directory.CreateDirectory(Path.Combine(source.FullName, "Extras"));
+            files[Path.Combine(source.FullName, "costume_P.pak")] = [11, 12, 13];
+            files[Path.Combine(source.FullName, "README.txt")] = [65, 66];
+        }
         foreach (var (path, bytes) in files) File.WriteAllBytes(path, bytes);
         var db = run.OpenCatalog();
         try
@@ -90,6 +99,9 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 Assert.Equal(ToggleState.Off, ((TogglePattern)row.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
             }
             Assert.Null(FindModToggle(grid, "Travel shelf"));
+            await WaitForAsync(() => duplicateNames.Count(name => FindModToggle(grid, name) is not null) == 1,
+                UiTimeout, "one selectable package for two identical source folders", TestToken);
+            Assert.All(duplicateNames, name => Assert.True(Directory.Exists(Path.Combine(run.InstalledRoot, name, "Extras"))));
             var mods = await db.GetModsAsync(TestToken);
             var retained = Assert.Single(mods, m => PathRules.Comparer.Equals(m.SourcePath, first));
             Assert.Equal("saved-blue", retained.Id);
