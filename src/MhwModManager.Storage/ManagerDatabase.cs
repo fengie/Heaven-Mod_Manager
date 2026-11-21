@@ -323,12 +323,14 @@ public sealed class ManagerDatabase
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
                (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
-               fm.role,shelf.role IS 'review'
+               fm.role,shelf.role IS 'review',family.name,fm.choice_group,fp.selected_mod_id
         FROM mods m
         LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
         LEFT JOIN mod_supersession s ON s.older_mod_id=m.id
         LEFT JOIN mod_family_members fm ON fm.mod_id=m.id AND fm.family_id=m.family_id
+        LEFT JOIN mod_families family ON family.id=fm.family_id
+        LEFT JOIN family_preferences fp ON fp.family_id=fm.family_id AND fp.choice_group=fm.choice_group
         WHERE ($all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
             OR (shelf.role='duplicate' AND (
                 NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled)
@@ -356,7 +358,12 @@ public sealed class ManagerDatabase
                 r.IsDBNull(15) ? null : r.GetString(15), r.IsDBNull(16) ? null : DateTimeOffset.Parse(r.GetString(16), CultureInfo.InvariantCulture),
                 r.GetInt64(17) != 0, r.IsDBNull(18) ? null : r.GetString(18), r.IsDBNull(19) ? 0 : r.GetInt32(19),
                 r.IsDBNull(20) ? ProvenanceSource.Unknown : Enum.Parse<ProvenanceSource>(r.GetString(20), true),
-                r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)) { RequiresLayoutReview = r.GetBoolean(24) });
+                r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)) {
+                    RequiresLayoutReview = r.GetBoolean(24),
+                    FamilyDisplayName = r.IsDBNull(25) ? null : r.GetString(25),
+                    ChoiceGroup = r.IsDBNull(26) ? null : r.GetString(26),
+                    PreferredChoiceId = r.IsDBNull(27) ? null : r.GetString(27)
+                });
         }
         return list;
     }

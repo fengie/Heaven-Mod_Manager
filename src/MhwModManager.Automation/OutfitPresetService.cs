@@ -10,6 +10,14 @@ public sealed class OutfitPresetService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (family.Members.Count <= 1) return [];
+        if (family.Members.Any(member => !string.IsNullOrWhiteSpace(member.ChoiceGroup)))
+        {
+            var selected = family.Members.Where(member => string.IsNullOrWhiteSpace(member.ChoiceGroup) ||
+                member.Enabled || (member.Id == member.PreferredChoiceId &&
+                    !family.Members.Any(other => other.ChoiceGroup == member.ChoiceGroup && other.Enabled)))
+                .Select(member => member.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return [new(family.Id,"Full",selected,"Enable additive components and keep the selected alternatives.")];
+        }
         var main = family.Members.Where(m => !HasAny(m.DisplayName,"top","waist","leg","cape","skimpy","thong","invisible","open")).Select(m=>m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var full = family.Members.Select(m=>m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var skimpy = family.Members.Where(m => main.Contains(m.Id) || HasAny(m.DisplayName,"skimpy","thong","open","invisible","no cape")).Select(m=>m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);

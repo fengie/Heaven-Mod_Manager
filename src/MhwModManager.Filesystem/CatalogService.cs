@@ -6,7 +6,7 @@ using MhwModManager.Storage;
 namespace MhwModManager.Filesystem;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001", Justification="The asynchronous gate never allocates a wait handle and lives for the catalog session.")]
-public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null,
+public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null,
     Func<string,CancellationToken,IReadOnlyList<string>>? discoverChildren=null,
     Func<string,CancellationToken,ManagedCollectionLayout>? inspectShelf=null)
 {
@@ -65,6 +65,15 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         {
             ct.ThrowIfCancellationRequested();
             existingByPath.TryGetValue(dir, out var tracked);
+            try
+            {
+                if (await DiscoverFamilyAsync(dir,priority,ct)) continue;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                MasterDebugLog.Write("CATALOG","Incomplete source inspection; preserving saved entries.",ex);
+                continue;
+            }
             if (inspectShelf is not null && (tracked is null || tracked.All(row => row.CanInspectCollection && !row.HasSavedReferences)))
             {
                 try
@@ -165,6 +174,13 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         var entries = new List<(string Id, string Role, string? Canonical)>();
         foreach (var unit in units)
         {
+            if (unit.NeedsReview && !PathRules.Comparer.Equals(unit.SourcePath,shelf) &&
+                await DiscoverFamilyAsync(unit.SourcePath,priority,ct))
+            {
+                foreach(var wrapper in byPath[unit.SourcePath].Where(mod=>!mod.Enabled))
+                    entries.Add((wrapper.Id,"wrapper",null));
+                continue;
+            }
             foreach (var mod in byPath[unit.SourcePath])
             {
                 if (mod.Enabled) continue;
@@ -195,7 +211,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var name = Path.GetFileName(dir);
-        var id = "local-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0, 12)).ToLowerInvariant();
+        var id = LocalId(dir);
         var display = ModDisplayNames.StripTransportDigest(NexusArchiveIdentity.TryParse(name, out var identity) ? identity.DisplayName : name);
         return db.InsertDiscoveredModAsync(id, name, display, dir, priority, ct);
     }

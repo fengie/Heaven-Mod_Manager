@@ -119,7 +119,7 @@ public static partial class LogicalModFamilies
             .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var representative = ChooseRepresentative(members);
-        var display = CleanDisplayName(representative.DisplayName);
+        var display = representative.FamilyDisplayName ?? CleanDisplayName(representative.DisplayName);
         if (members.Length > 1 && display.Length == 0) display = CleanDisplayName(representative.Name);
         return new(
             "logical:" + key,

@@ -62,4 +62,18 @@ public static class UnrealPakLayout
         return groups.Count > 0 && (!singleStem || groups.Count == 1) &&
             groups.Values.All(mask => mask is 1 or 3 or 13 or 15);
     }
+    public static (string Feature, bool Enabled)? ContrastOption(string? directory)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (directory is null) return null;
+        var words = directory.ToLowerInvariant().Replace('_', ' ').Replace('-', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length < 2) return null;
+        if (words[0] is "with" or "without" or "no")
+            return (string.Join(' ', words[1..]), words[0] == "with");
+        if (words[^1] is "on" or "off" or "enabled" or "disabled")
+            return (string.Join(' ', words[..^1]), words[^1] is "on" or "enabled");
+        return null;
+    }
+
 }

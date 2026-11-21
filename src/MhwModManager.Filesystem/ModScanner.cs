@@ -11,6 +11,8 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private static readonly string[] KnownAdditionalLoaderRoots =
         [@"BepInEx\plugins", @"Content\Paks", @"reframework\plugins", @"reframework\autorun"];
 
+    internal GameProfile? Profile => game;
+
     internal bool IsArchiveTargetRoot(string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -55,12 +57,33 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         var role = await db.ShelfRoleAsync(mod.Id, ct);
         if (!managedPackage && role is "review" or "wrapper")
             throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
+        HashSet<string>? subset = null;
+        if (mod.FamilyId?.StartsWith("authored:", StringComparison.Ordinal) == true)
+        {
+            await using var connection = await db.OpenAsync(ct);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT package_root,source_directory,files_json FROM authored_component_sources WHERE mod_id=$m";
+            command.Parameters.AddWithValue("$m",mod.Id);
+            await using var reader = await command.ExecuteReaderAsync(ct);
+            if (!await reader.ReadAsync(ct)) throw new InvalidDataException("Refresh this authored package before applying.");
+            var root = reader.GetString(0);
+            var directory = reader.GetString(1);
+            if (!PathRules.Comparer.Equals(root,directory) && !directory.StartsWith(root + Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Component source is outside the package.");
+            for (var current = new DirectoryInfo(directory); current is not null; current = current.Parent)
+            {
+                SafeRecursiveTraversal.EnsureRootIsNotReparse(current.FullName);
+                if (PathRules.Comparer.Equals(current.FullName,root)) break;
+            }
+            mod = mod with { SourcePath = directory };
+            if (!reader.IsDBNull(2)) subset = System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(2))!.ToHashSet(PathRules.Comparer);
+        }
         var packageOnly = managedPackage || role is "package" or "duplicate";
         var cache = await LoadCacheAsync(mod.Id, ct);
         List<ScanCandidate> candidates;
         try
         {
-            candidates = await Task.Run(() => EnumerateCandidates(mod, cache, packageOnly, ct), ct);
+            candidates = await Task.Run(() => EnumerateCandidates(mod, cache, packageOnly, ct, subset), ct);
         }
         catch (IOException ex) when (automatic)
         {
@@ -108,7 +131,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         return ordered;
     }
 
-    private List<ScanCandidate> EnumerateCandidates(ModDescriptor mod, Dictionary<string,ModFileDescriptor> cache, bool packageOnly, CancellationToken ct)
+    private List<ScanCandidate> EnumerateCandidates(ModDescriptor mod, Dictionary<string,ModFileDescriptor> cache, bool packageOnly, CancellationToken ct, HashSet<string>? subset = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         SafeRecursiveTraversal.EnsureRootIsNotReparse(mod.SourcePath);
@@ -127,6 +150,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
             foreach (var file in snapshot)
             {
                 ct.ThrowIfCancellationRequested();
+                if (subset is not null && !subset.Contains(Path.GetRelativePath(mod.SourcePath,file))) continue;
                 var fi = new FileInfo(file);
                 if (IsIgnored(fi)) continue;
                 var rel = Path.GetRelativePath(diskRoot, file).Replace('/', '\\');
@@ -156,6 +180,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
                 result.Add(new(file,key,cached));
             }
         }
+        if (subset is not null && result.Count != subset.Count) throw new InvalidDataException("A required component file is missing. Refresh the package.");
         if (game is not null && pakMount is not null && !Directory.Exists(Path.Combine(mod.SourcePath, "GameRoot")))
             ValidatePakTargets(result, mod.SourcePath, game, pakMount);
         return result;

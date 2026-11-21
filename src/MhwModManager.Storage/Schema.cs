@@ -106,8 +106,18 @@ CREATE TABLE IF NOT EXISTS conflict_rules(id TEXT PRIMARY KEY,kind TEXT NOT NULL
 CREATE INDEX IF NOT EXISTS ix_rules_pair ON conflict_rules(left_mod_id,right_mod_id);
 CREATE INDEX IF NOT EXISTS ix_rules_path ON conflict_rules(path_pattern COLLATE NOCASE);
 CREATE TABLE IF NOT EXISTS resource_providers(namespace TEXT PRIMARY KEY COLLATE NOCASE,mod_id TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS authored_component_sources(mod_id TEXT PRIMARY KEY REFERENCES mods(id) ON DELETE CASCADE,
+    package_root TEXT NOT NULL, source_directory TEXT NOT NULL, files_json TEXT NULL);
 CREATE TABLE IF NOT EXISTS mod_families(id TEXT PRIMARY KEY,name TEXT NOT NULL,created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS mod_family_members(family_id TEXT NOT NULL REFERENCES mod_families(id) ON DELETE CASCADE,mod_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,role TEXT NOT NULL,choice_group TEXT NULL,PRIMARY KEY(family_id,mod_id));
+CREATE TRIGGER IF NOT EXISTS remember_enabled_family_choice AFTER UPDATE OF enabled ON mods
+WHEN NEW.enabled=1 AND OLD.enabled=0
+BEGIN
+    INSERT INTO family_preferences(family_id,choice_group,selected_mod_id,updated_at)
+    SELECT f.family_id,f.choice_group,NEW.id,NEW.updated_at FROM mod_family_members f
+    WHERE f.mod_id=NEW.id AND f.family_id=NEW.family_id AND f.choice_group IS NOT NULL AND f.choice_group<>''
+    ON CONFLICT(family_id,choice_group) DO UPDATE SET selected_mod_id=excluded.selected_mod_id,updated_at=excluded.updated_at;
+END;
 CREATE TABLE IF NOT EXISTS profiles(id TEXT PRIMARY KEY,name TEXT NOT NULL UNIQUE COLLATE NOCASE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,legacy_json TEXT NULL);
 CREATE TABLE IF NOT EXISTS profile_mods(profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,mod_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,enabled INTEGER NOT NULL,priority INTEGER NOT NULL,PRIMARY KEY(profile_id,mod_id));
 CREATE TABLE IF NOT EXISTS profile_parents(profile_id TEXT PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,parent_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,CHECK(profile_id <> parent_id));

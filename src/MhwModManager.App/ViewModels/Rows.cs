@@ -40,6 +40,8 @@ public partial class ModPartRowViewModel:ObservableObject
     private static string DescribeRole(ModDescriptor mod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!string.IsNullOrWhiteSpace(mod.ChoiceGroup)) return "Choose one: " + mod.ChoiceGroup;
+        if (mod.FamilyId?.StartsWith("authored:", StringComparison.Ordinal) == true && mod.FamilyRole is { } role) return role;
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Main"))return "Main (manual)";
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Optional"))return "Optional (manual)";
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Component"))return "Component (manual)";
@@ -230,9 +232,17 @@ public partial class ModRowViewModel:ObservableObject
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
         if (!CanStage) { SetSummaryFromMembers(); return; }
-        if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
+        if(value.HasValue)
+            foreach(var member in Members)
+            {
+                var current = _stagedMembers[member.Id];
+                var enabled = value.Value && (string.IsNullOrWhiteSpace(member.ChoiceGroup) ||
+                    current.enabled || (!Members.Any(other => other.ChoiceGroup == member.ChoiceGroup &&
+                        _stagedMembers[other.Id].enabled) && (member.PreferredChoiceId == member.Id || member.Enabled)));
+                _stagedMembers[member.Id]=(enabled,current.priority);
+            }
         EnsureRequiredCompositionMembers();
-        SyncParts();RaiseStateChanged();_changed();
+        SetSummaryFromMembers();_changed();
     }
 
     public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
@@ -255,7 +265,15 @@ public partial class ModRowViewModel:ObservableObject
     public void SetMemberEnabled(string memberId,bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!CanStage || !_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();
+        if (!CanStage || !_stagedMembers.TryGetValue(memberId,out var current)) return;
+        var member = Members.First(item => StringComparer.OrdinalIgnoreCase.Equals(item.Id,memberId));
+        if (enabled && !string.IsNullOrWhiteSpace(member.ChoiceGroup))
+            foreach (var peer in Members.Where(item => item.Id != member.Id && item.ChoiceGroup == member.ChoiceGroup))
+                _stagedMembers[peer.Id] = (false, _stagedMembers[peer.Id].priority);
+        _stagedMembers[memberId]=(enabled,current.priority);
+        EnsureRequiredCompositionMembers();
+        SetSummaryFromMembers();
+        _changed();
     }
     public bool ContainsMember(string memberId)
     {
@@ -315,7 +333,8 @@ public partial class ModRowViewModel:ObservableObject
     private void OnPartChanged(string id,bool enabled){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!CanStage) { SyncParts(); return; }
-        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();}
+        SetMemberEnabled(id,enabled);
+    }
 
     private void EnsureRequiredCompositionMembers()
     {

@@ -6,6 +6,14 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var enabled = snapshot.Mods.Where(m => m.Enabled && !m.IsSuperseded).ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
+        var conflictingChoices = enabled.Values.Where(mod => !string.IsNullOrWhiteSpace(mod.FamilyId) &&
+                !string.IsNullOrWhiteSpace(mod.ChoiceGroup)).GroupBy(mod => (mod.FamilyId, mod.ChoiceGroup))
+            .Where(group => group.Count() > 1).Select(group => new ConflictDecision("<family>",
+                ConflictKind.Incompatible, true, null, "exclusive-family-choice",
+                $"Choose one option in '{group.Key.ChoiceGroup}': {string.Join(", ", group.Select(mod => mod.DisplayName))}.",
+                Confidence.Explicit)).ToArray();
+        if (conflictingChoices.Length != 0)
+            return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], conflictingChoices, []);
         // PairKey lowercases both IDs on every call. Dense shared namespaces can produce
         // millions of pair observations, so intern the canonical spelling once per mod.
         var pairIds = enabled.Keys.ToDictionary(id => id, id => id.ToLowerInvariant(), StringComparer.OrdinalIgnoreCase);
