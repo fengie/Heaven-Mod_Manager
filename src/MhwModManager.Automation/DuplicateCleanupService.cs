@@ -77,6 +77,8 @@ public sealed class DuplicateCleanupService(
         }
 
         var groups = new List<DuplicateGroup>(); long reclaim = 0;
+        var visible = (await db.GetModsAsync(ct)).Select(mod=>mod.Id).ToHashSet(StringComparer.Ordinal);
+        var protectedIds = await db.GetProtectedCopyIdsAsync(ct);
         foreach (var pair in fingerprints.Where(x => x.Value.Count > 1))
         {
             var ordered = pair.Value.OrderByDescending(m => m.Enabled).ThenByDescending(m=>protectedIds.Contains(m.Id)).ThenByDescending(m=>visible.Contains(m.Id)).ThenByDescending(m => m.NexusUploadedAt).ThenByDescending(m => m.Priority).ToArray();
