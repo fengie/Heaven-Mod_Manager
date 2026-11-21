@@ -125,6 +125,42 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
         return files;
     }
 
+    public async Task<HashSet<string>> RepresentedInventoryPathsAsync(IReadOnlyList<LocalModLocation> inventory,
+        IReadOnlyList<ModDescriptor> mods, Func<string,string> destination, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var paths = new HashSet<string>(PathRules.Comparer);
+        await using (var connection = await db.OpenAsync(ct))
+        {
+            await using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT path FROM deployment_manifest WHERE provider_mod_id IS NOT NULL";
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) paths.Add(destination(reader.GetString(0)));
+        }
+        var sources = mods.Select(mod => Path.TrimEndingDirectorySeparator(mod.SourcePath)).ToHashSet(PathRules.Comparer);
+        var adopted = await LoadAdoptedAsync(ct);
+        foreach (var entry in inventory.Where(e => e.RegisteredProfileId == game.Id || e.PreviousProfileId == game.Id))
+        {
+            ct.ThrowIfCancellationRequested();
+            var file = entry.Location;
+            if (paths.Contains(file)) continue;
+            for (var dir = Path.GetDirectoryName(file); dir != null && !PathRules.Comparer.Equals(dir,entry.InstallationRoot);
+                 dir = Path.GetDirectoryName(dir))
+            {
+                if (!sources.Contains(dir) || PathRules.Comparer.Equals(dir,game.LiveModRoot)) continue;
+                paths.Add(file);
+                break;
+            }
+            if (paths.Contains(file) || adopted.Count == 0 || entry.RegisteredProfileId != game.Id ||
+                !file.StartsWith(Path.TrimEndingDirectorySeparator(game.LiveModRoot)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)) continue;
+            var key = ManagedKey(file);
+            if (adopted.TryGetValue(key,out var copy) && sources.Contains(copy.SourceFolder) && Directory.Exists(copy.SourceFolder) &&
+                StringComparer.OrdinalIgnoreCase.Equals(copy.Sha256,(await hashing.HashFileAsync(file,true,ct)).Sha256))
+                paths.Add(file);
+        }
+        return paths;
+    }
+
     private async Task<Dictionary<string,AdoptedRecord>> LoadAdoptedAsync(CancellationToken ct)
     {
         var result=new Dictionary<string,AdoptedRecord>(StringComparer.OrdinalIgnoreCase);

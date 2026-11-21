@@ -131,11 +131,13 @@ public sealed partial class MainWindowViewModel
                 var result = s.GameRegistry.ScanLocalMods(ct);
                 var sources = await s.Database.GetModsAsync(ct);
                 var paths = sources.Select(mod => mod.SourcePath).ToArray();
+                var represented = await s.Adoption.RepresentedInventoryPathsAsync(result,sources,s.Executor.Destination,ct);
                 var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, ct);
+                var installed = LocalModInventory.InstalledPackages(result,s.Paths.Game,represented,ct);
                 var workshop = LocalModInventory.WorkshopLibrary(result, s.Paths.Game.SteamAppId, paths);
                 ct.ThrowIfCancellationRequested();
                 var library = s.GameRegistry.ReconcileDiscoveredLibrary(s.Paths.Game,
-                    workshop.Cast<ExternalLibraryReference>().Concat(packages).ToArray(), result);
+                    workshop.Cast<ExternalLibraryReference>().Concat(packages).Concat(installed).ToArray(), result);
                 try
                 {
                     s.GameRegistry.SaveDiscoveredLibrary(s.Paths.Game, library);
@@ -144,7 +146,15 @@ public sealed partial class MainWindowViewModel
                 {
                     s.Log.Warning(ex, "Could not save the discovered mod library for the next startup.");
                 }
-                return (result, library);
+                var references = library.SelectMany(row => row.Locations).ToHashSet(PathRules.Comparer);
+                var annotated = result.Select(entry => entry with
+                {
+                    LibraryStatus = represented.Contains(entry.Location) ? "Managed deployment or package" :
+                        entry.PreviousProfileId == s.Paths.Game.Id ? "Previous installation" :
+                        references.Contains(entry.Location) ? "External reference" :
+                        entry.RegisteredProfileId != null && entry.RegisteredProfileId != s.Paths.Game.Id ? "Other game" : "Evidence only"
+                }).ToArray();
+                return (annotated, library);
             }, ct);
             ct.ThrowIfCancellationRequested();
             CheckingDiscoveredLibrary = false;
@@ -155,7 +165,7 @@ public sealed partial class MainWindowViewModel
             RebuildLibraryRows();
             OnPropertyChanged(nameof(LocalModLocations));
             OnPropertyChanged(nameof(VisibleLocalModLocations));
-            LocalModInventoryStatus = $"{result.Count:N0} inventory entries · checked {DateTime.Now:t}";
+            LocalModInventoryStatus = $"{result.Length:N0} inventory entries · checked {DateTime.Now:t}";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or ArgumentException or System.Text.Json.JsonException)

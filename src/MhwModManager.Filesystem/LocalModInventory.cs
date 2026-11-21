@@ -10,6 +10,10 @@ public sealed record LocalModLocation(string Game, string Name, string Evidence,
 {
     public string? VerifiedWorkshopAppId { get; init; }
     public string? VerifiedWorkshopTitle { get; init; }
+    public string? InstallationRoot { get; init; }
+    public string? PreviousProfileId { get; init; }
+    public string? FileEvidence { get; init; }
+    public string LibraryStatus { get; init; } = "Evidence only";
     public string? RegisteredProfileId { get; init; }
 }
 
@@ -85,7 +89,8 @@ public static partial class LocalModInventory
                 if (!PathRules.Comparer.Equals(root, game.GameRoot))
                     rows.Add(new(game.DisplayName, Path.GetFileName(root), origin, root));
                 ScanGame(game.DisplayName, game.IsMonsterHunterWorld, root, origin, rows, ct,
-                    PathRules.Comparer.Equals(root, game.GameRoot) ? game.Id : null);
+                    PathRules.Comparer.Equals(root, game.GameRoot) ? game.Id : null,
+                    origin == "Previous installation" ? game.Id : null);
             }
         }
         if (discover)
@@ -321,7 +326,7 @@ public static partial class LocalModInventory
         return matchesApp && depth == 0 ? result : [];
     }
 
-    private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct, string? registeredProfileId = null)
+    private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct, string? registeredProfileId = null, string? previousProfileId = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var remaining = 300_000;
@@ -350,7 +355,7 @@ public static partial class LocalModInventory
                         }
                         var relative = "/" + Path.GetRelativePath(root, item.FullName).Replace('\\', '/') + "/";
                         var evidence = Detect(relative, item.FullName, item.Extension, mhw);
-                        if (evidence is not null) rows.Add(new(game, item.Name, origin + " · " + evidence, item.FullName) { RegisteredProfileId = registeredProfileId });
+                        if (evidence is not null) rows.Add(new(game, item.Name, origin + " · " + evidence, item.FullName) { RegisteredProfileId = registeredProfileId, PreviousProfileId = previousProfileId, InstallationRoot = root, FileEvidence = evidence });
                     }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
