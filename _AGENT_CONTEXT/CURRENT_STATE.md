@@ -1,6 +1,6 @@
-# v8.8.134 — canonical state and mod folder imports
+# v8.8.135 — canonical state and package options
 
-Build 622 is the published v8.8.133 package from e58fa67ba1ba45f1414ce69a3d254226435b0a6d. Verify the folder import changes under #791 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 623 is the published v8.8.134 package from f39b44cd95640ac337fc98325b2d5b8869a920ce. Verify the package family changes under #954 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 

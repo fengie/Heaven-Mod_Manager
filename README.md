@@ -1,14 +1,18 @@
-# v8.8.134 — MHW Manual Mod Manager
+# v8.8.135 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 04:08:28 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 06:40:31 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.134**.
+Current product version: **8.8.135**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.135 — package options
+
+- The Mods list shows verified package components together. Choose one documented variant per option group, or enable a supported add-on with its base. Preview shows the resulting deployment before Apply. [Package family verification](https://github.com/fengie/Heaven-Mod_Manager/issues/954)
 
 ## v8.8.134 — mod folder imports
 
@@ -17,10 +21,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.133 — automatic duplicate handling
 
 - Manager now shows one entry for identical package folders at startup and after intake. It keeps both originals, respects saved and staged choices, and shows a copy again when its contents change. Previously selected intake folders resume when reconnected. [Automatic duplicate handling](https://github.com/fengie/Heaven-Mod_Manager/issues/951)
-
-## v8.8.132 — installed mod discovery
-
-- Installed Files now identifies the Mods entry that accounts for a discovery. The active game's library automatically lists verified packages and loader components, keeps external files read-only and distinguishes previous installations. [Installed discovery](https://github.com/fengie/Heaven-Mod_Manager/issues/949)
 
 ## Current plans & progress
 
