@@ -385,7 +385,7 @@
         </Style>
 
         <!-- Navigation -->
-        <Style TargetType="TabControl">
+        <Style x:Key="MainNavigationTabs" TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="local:UiMotion.EnableSelectionTransition" Value="True"/>

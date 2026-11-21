@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MhwModManager.Core;
 using MhwModManager.Storage;
+using MhwModManager.Filesystem;
 
 namespace MhwModManager.Automation;
 
@@ -122,16 +123,23 @@ public sealed class DuplicateCleanupService(
         Directory.CreateDirectory(archiveRoot);
         var mods = (await db.GetModsAsync(ct)).ToDictionary(x => x.Id, StringComparer.Ordinal);
         var candidates = new HashSet<string>(analysis.SupersededModIds, StringComparer.Ordinal);
-        foreach (var group in analysis.ExactDuplicates) foreach (var id in group.ModIds.Where(x => !StringComparer.Ordinal.Equals(x, group.RecommendedKeeperId))) candidates.Add(id);
+        var keepers = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var group in analysis.ExactDuplicates)
+            foreach (var id in group.ModIds.Where(id => id != group.RecommendedKeeperId))
+            {
+                candidates.Add(id);
+                keepers.Add(id, group.RecommendedKeeperId);
+            }
         var moved = 0;
         // Archiving an overlapping source would change a second catalog row's files.
         var sources = mods.Values.Where(m => Directory.Exists(m.SourcePath))
             .Select(m => Path.TrimEndingDirectorySeparator(Path.GetFullPath(m.SourcePath)))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var overlapping = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var source in sources)
+            .GroupBy(source => source, StringComparer.OrdinalIgnoreCase).ToArray();
+        var overlapping = sources.Where(group => group.Count() > 1).Select(group => group.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var uniqueSources = sources.Select(group => group.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var source in uniqueSources)
             for (var parent = Path.GetDirectoryName(source); parent is not null; parent = Path.GetDirectoryName(parent))
-                if (sources.Contains(parent))
+                if (uniqueSources.Contains(parent))
                 {
                     overlapping.Add(source);
                     overlapping.Add(parent);
@@ -141,6 +149,9 @@ public sealed class DuplicateCleanupService(
             ct.ThrowIfCancellationRequested();
             if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath) ||
                 overlapping.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath)))) continue;
+            if (keepers.TryGetValue(id, out var keeperId) &&
+                (!mods.TryGetValue(keeperId, out var keeper) ||
+                 !await PackageContentsMatchAsync(mod.SourcePath, keeper.SourcePath, ct))) continue;
             var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var dest = Unique(Path.Combine(archiveRoot, stamp + "-" + Path.GetFileName(mod.SourcePath)));
             // Persist and flush intent before moving any mod bytes. If the process
@@ -175,6 +186,40 @@ public sealed class DuplicateCleanupService(
         }
         return new DuplicateArchiveOutcome(moved,
             includeRemainingAnalysis && moved > 0 ? await AnalyzeAsync(ct) : analysis);
+    }
+
+    private static async Task<bool> PackageContentsMatchAsync(string source, string keeper, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        try
+        {
+            var candidate = SafeRecursiveTraversal.Snapshot(source, ct);
+            var retained = SafeRecursiveTraversal.Snapshot(keeper, ct);
+            if (candidate.Files.Count == 0 || candidate.Files.Count != retained.Files.Count ||
+                candidate.Directories.Count != retained.Directories.Count) return false;
+
+            var directories = retained.Directories.Select(path => Path.GetRelativePath(keeper, path))
+                .ToHashSet(StringComparer.Ordinal);
+            if (candidate.Directories.Any(path => !directories.Contains(Path.GetRelativePath(source, path)))) return false;
+
+            var files = retained.Files.ToDictionary(path => Path.GetRelativePath(keeper, path), StringComparer.Ordinal);
+            foreach (var path in candidate.Files)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (!files.TryGetValue(Path.GetRelativePath(source, path), out var other)) return false;
+                using var left = File.OpenRead(path);
+                using var right = File.OpenRead(other);
+                if (left.Length != right.Length) return false;
+                var leftDigest = await SHA256.HashDataAsync(left, ct);
+                var rightDigest = await SHA256.HashDataAsync(right, ct);
+                if (!leftDigest.AsSpan().SequenceEqual(rightDigest)) return false;
+            }
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private async Task RestoreSourceWhenDeleteDidNotCommitAsync(string modId,string sourcePath,string archivePath)

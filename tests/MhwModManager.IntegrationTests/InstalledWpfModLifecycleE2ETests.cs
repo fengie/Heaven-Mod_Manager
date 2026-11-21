@@ -16,7 +16,7 @@ namespace MhwModManager.IntegrationTests;
 /// acceptance workflow opts in. Never point this at the user's live installation.
 /// </summary>
 [Collection(UpdaterGlobalStateFixture.Name)]
-public sealed class InstalledWpfModLifecycleE2ETests
+public sealed partial class InstalledWpfModLifecycleE2ETests
 {
     public static bool IsOptedIn =>
         string.Equals(Environment.GetEnvironmentVariable("MHW_RUN_INSTALLED_WPF_E2E"),
@@ -67,6 +67,11 @@ public sealed class InstalledWpfModLifecycleE2ETests
             [Path.Combine(second, "gold_P.pak")] = [4, 5, 6],
             [Path.Combine(second, "gold_P.sig")] = [9]
         };
+        foreach (var choice in new[] { "Low", "High" })
+        {
+            var option = Directory.CreateDirectory(Path.Combine(wrapper, "Choose options", choice));
+            files[Path.Combine(option.FullName, "option.pak")] = System.Text.Encoding.UTF8.GetBytes(choice);
+        }
         foreach (var (path, bytes) in files) File.WriteAllBytes(path, bytes);
         var db = run.OpenCatalog();
         try
@@ -89,6 +94,10 @@ public sealed class InstalledWpfModLifecycleE2ETests
             var retained = Assert.Single(mods, m => PathRules.Comparer.Equals(m.SourcePath, first));
             Assert.Equal("saved-blue", retained.Id);
             Assert.Equal(42, retained.Priority);
+            Assert.Contains(mods, mod => mod.DisplayName == "Choose options" && mod.RequiresLayoutReview);
+            var (dialog, invocation) = await OpenWorkflowAsync(window, TestToken);
+            ((WindowPattern)dialog.GetCurrentPattern(WindowPattern.Pattern)).Close();
+            await invocation.WaitAsync(UiTimeout, TestToken);
             foreach (var (path, bytes) in files) Assert.Equal(bytes, File.ReadAllBytes(path));
             Assert.Equal(new[] { run.SentinelPath }, Directory.GetFiles(run.FirstGame.LiveModRoot, "*", SearchOption.AllDirectories));
         }
@@ -612,9 +621,14 @@ public sealed class InstalledWpfModLifecycleE2ETests
         public GameProfile FirstGame { get; }
         public GameProfile SecondGame { get; }
         public string ArchivePath { get; }
+        public string ManagerHome => home;
+        private string ProfileState => Path.Combine(home, "State", FirstGame.IsMonsterHunterWorld ? "" : Path.Combine("Games", FirstGame.Id), "Next");
+        public string SettingsPath => Path.Combine(ProfileState, "settings.json");
+        public GameProfile RegisteredGame() => new GameProfileRegistry(Path.Combine(home, "State")).Load().Single(game => game.Id == FirstGame.Id);
+        public string LaunchReceipt => Path.Combine(root, "game-launch.txt");
         public string InstalledRoot => GameModStorage.Resolve(home, FirstGame).InstalledRoot;
         public MhwModManager.Storage.ManagerDatabase OpenCatalog() =>
-            new(Path.Combine(home, "State", "Games", FirstGame.Id, "Next", "manager.db"));
+            new(Path.Combine(ProfileState, "manager.db"));
         public string BatchFirstArchive { get; }
         public string BatchSecondArchive { get; }
         public string InstalledModPath { get; }
@@ -623,9 +637,9 @@ public sealed class InstalledWpfModLifecycleE2ETests
         public byte[] ModBytes { get; } = Enumerable.Range(0, 4096).Select(i => (byte)(i % 251)).ToArray();
         public byte[] BaselineBytes { get; } = [13, 37, 73, 101];
 
-        public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", "987654321", "314159", "payload.bin");
+        public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", FirstGame.SteamAppId!, "314159", "payload.bin");
 
-        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false)
+        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false, GameProfile? profile = null, bool moved = false)
         {
             var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
             var packageDir = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR");
@@ -638,7 +652,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
             marker = Guid.NewGuid().ToString("N");
             File.WriteAllText(Path.Combine(root, ".owned-e2e-root"), marker);
             home = Path.Combine(root, "manager-home");
-            gameA = workshop ? Path.Combine(root, "steamapps", "common", "game-A") : Path.Combine(root, "game-A");
+            gameA = workshop || !string.IsNullOrWhiteSpace(profile?.SteamAppId) ? Path.Combine(root, "steamapps", "common", "game-A") : Path.Combine(root, "game-A");
             gameB = Path.Combine(root, "game-B");
             Directory.CreateDirectory(gameA);
             Directory.CreateDirectory(gameB);
@@ -650,32 +664,50 @@ public sealed class InstalledWpfModLifecycleE2ETests
             File.Copy(cmd, Path.Combine(gameB, "FakeB.exe"));
 
             FirstGame = GameProfile.Generic("e2e-game-a", "E2E Fake Game A", gameA, "FakeA.exe", "Mods");
-            if (workshop)
+            if (workshop) FirstGame = FirstGame with { SteamAppId = "987654321" };
+            if (unreal)
+                FirstGame = FirstGame with { AdapterId = "unreal-paks", ModRootRelativePath = @"Quartz\Content\Paks" };
+            if (profile is not null)
             {
-                FirstGame = FirstGame with { SteamAppId = "987654321" };
+                FirstGame = profile with
+                {
+                    GameRoot = gameA,
+                    ExecutableRelativePath = GameProfile.NormalizeRelative(profile.ExecutableRelativePath, false),
+                    ModRootRelativePath = GameProfile.NormalizeRelative(profile.ModRootRelativePath, true),
+                    SavePath = profile.SavePath is null ? null : Path.Combine(root, "saves")
+                };
+                Directory.CreateDirectory(Path.GetDirectoryName(FirstGame.ExecutablePath)!);
+                File.Copy(Path.Combine(fullTemp, "mhw-game-launch-probe.exe"), FirstGame.ExecutablePath, overwrite: true);
+                if (FirstGame.SavePath is not null) Directory.CreateDirectory(FirstGame.SavePath);
+            }
+            if (FirstGame.SteamAppId is { } steamId)
+            {
+                if (!uint.TryParse(steamId, out _)) throw new InvalidDataException("Invalid Steam app ID.");
                 var workshopRoot = Path.Combine(root, "steamapps", "workshop");
                 Directory.CreateDirectory(Path.GetDirectoryName(WorkshopPayload)!);
-                Directory.CreateDirectory(Path.Combine(workshopRoot, "content", "987654321", "271828"));
+                Directory.CreateDirectory(Path.Combine(workshopRoot, "content", steamId, "271828"));
                 File.WriteAllBytes(WorkshopPayload, ModBytes);
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(WorkshopPayload)!, "data.json"),
                     """{"folderName":"314159","id":314159,"title":"新皮肤 Workshop fixture"}""");
+                File.WriteAllText(Path.Combine(workshopRoot, $"appworkshop_{steamId}.acf"),
+                    $$""" "AppWorkshop" { "appid" "{{steamId}}" "WorkshopItemsInstalled" { "314159" { "manifest" "1" } } } """);
+            }
+            if (workshop || FirstGame.AdapterId == "bepinex")
+            {
                 var pluginDir = Directory.CreateDirectory(Path.Combine(gameA,"BepInEx","plugins"));
                 BepInExPluginLibraryTests.WritePlugin(Path.Combine(pluginDir.FullName,"sample.dll"));
-                File.WriteAllText(Path.Combine(workshopRoot, "appworkshop_987654321.acf"),
-                    """ "AppWorkshop" { "appid" "987654321" "WorkshopItemsInstalled" { "314159" { "manifest" "1" } } } """);
             }
-            if (unreal)
-                FirstGame = FirstGame with { AdapterId = "unreal-paks", ModRootRelativePath = @"Quartz\Content\Paks" };
             SecondGame = GameProfile.Generic("e2e-game-b", "E2E Fake Game B", gameB, "FakeB.exe", "Mods");
             var state = Path.Combine(home, "State");
             var registry = new GameProfileRegistry(state);
-            registry.Upsert(FirstGame);
+            registry.Upsert(!moved ? FirstGame : FirstGame with { GameRoot = Path.Combine(root, "previous-game-location") });
             registry.Upsert(SecondGame);
             registry.SetActive(FirstGame.Id);
 
             foreach (var game in new[] { FirstGame, SecondGame })
             {
-                var settingPath = Path.Combine(state, "Games", game.Id, "Next", "settings.json");
+                var settingPath = game.IsMonsterHunterWorld ? Path.Combine(state, "Next", "settings.json") :
+                    Path.Combine(state, "Games", game.Id, "Next", "settings.json");
                 ManagerSettingsStore.Load(settingPath).Update(settings =>
                 {
                     settings.AutoUpdateEnabled = false;
@@ -688,9 +720,13 @@ public sealed class InstalledWpfModLifecycleE2ETests
             var input = Path.Combine(root, "input");
             Directory.CreateDirectory(input);
             ArchivePath = Path.Combine(input, "E2E Inbox Fixture.zip");
+            var pakProfile = FirstGame.AdapterId == "unreal-paks";
+            var inMount = pakProfile && Path.GetFileName(FirstGame.ModRootRelativePath).Equals("Paks", StringComparison.OrdinalIgnoreCase)
+                ? Path.Combine("~mods", "e2e.pak") : pakProfile ? "e2e.pak" : "e2e-payload.bin";
+            var archiveMember = Path.Combine(FirstGame.ModRootRelativePath, inMount).Replace('\\', '/');
             using (var zip = ZipFile.Open(ArchivePath, ZipArchiveMode.Create))
             {
-                using var payload = zip.CreateEntry(unreal ? "Quartz/Content/Paks/~mods/e2e.pak" : "Mods/e2e-payload.bin",
+                using var payload = zip.CreateEntry(archiveMember,
                     CompressionLevel.NoCompression).Open();
                 payload.Write(ModBytes);
             }
@@ -710,7 +746,7 @@ public sealed class InstalledWpfModLifecycleE2ETests
 
             var storage = GameModStorage.Resolve(home, FirstGame);
             InstalledModPath = Path.Combine(storage.InstalledRoot, "E2E Inbox Fixture");
-            LiveModPath = Path.Combine(FirstGame.LiveModRoot, unreal ? "~mods/e2e.pak" : "e2e-payload.bin");
+            LiveModPath = Path.Combine(FirstGame.LiveModRoot, inMount);
             Directory.CreateDirectory(FirstGame.LiveModRoot);
             SentinelPath = Path.Combine(FirstGame.LiveModRoot, "keep-user-owned.bin");
             File.WriteAllBytes(SentinelPath, BaselineBytes);
@@ -751,6 +787,8 @@ public sealed class InstalledWpfModLifecycleE2ETests
                 WorkingDirectory = packageDir,
                 UseShellExecute = false
             };
+            start.ArgumentList.Add("--offline-catalog");
+            start.Environment["MHW_DISPOSABLE_GAME_RECEIPT"] = LaunchReceipt;
             start.Environment["MOD_MANAGER_HOME"] = home;
             start.Environment["MOD_MANAGER_GAME_ROOT"] = gameA;
             start.Environment["MOD_MANAGER_DEBUG_ROOT"] = Path.Combine(root, "diagnostics");

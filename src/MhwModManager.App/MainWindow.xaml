@@ -68,7 +68,7 @@
         </Border>
 
         <!-- Sidebar + pages -->
-        <TabControl x:Name="MainTabs"
+        <TabControl x:Name="MainTabs" Style="{StaticResource MainNavigationTabs}"
                     Grid.Row="1"
                     TabStripPlacement="Left"
                     SelectedIndex="{Binding SelectedTab}"
@@ -279,7 +279,11 @@
                                     <TextBlock Text="SEARCH MODS" Style="{StaticResource Eyebrow}"/>
                                     <TextBlock Margin="0,2,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F"/>
                                 </StackPanel>
-                                <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search mod name, add-on, category, source, or problem. Ctrl+F jumps here."/>
+                                <TextBox x:Name="ModSearchBox" Grid.Column="1" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" ToolTip="Search mod name, add-on, category, source, or problem. Ctrl+F jumps here. Enter selects a result.">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitModSearchCommand}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
                                 <Border Grid.Column="2" Margin="12,0,0,0" Style="{StaticResource StatusBadge}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Foreground="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"><Run Text="{Binding VisibleLibraryCount,Mode=OneWay}"/><Run Text=" shown · "/></TextBlock>
@@ -807,6 +811,11 @@
                     </Border>
                     <Grid Grid.Row="2">
                         <DataGrid ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Saved profiles">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}"/>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="PROFILE" Binding="{Binding Name}" Width="2*"/>
                                 <DataGridTextColumn Header="ENABLED MODS" Binding="{Binding EnabledMods}" Width="140"/>
@@ -1271,13 +1280,13 @@
                                                     Command="{Binding OpenNexusBrowseCommand}"
                                                     Margin="0,0,8,4"
                                                     Style="{StaticResource QuietButton}"
-                                                    AutomationProperties.Name="Browse Monster Hunter World mods on the Nexus website"
+                                                    AutomationProperties.Name="{Binding SelectedGame.DisplayName,StringFormat='Browse {0} mods on Nexus Mods'}"
                                                     ToolTip="Browse on the official provider site; this does not bypass in-app provider policy or index results."/>
                                             <Button Content="GameBanana website"
                                                     Command="{Binding OpenGameBananaBrowseCommand}"
                                                     Margin="0,0,8,4"
                                                     Style="{StaticResource QuietButton}"
-                                                    AutomationProperties.Name="Browse Monster Hunter World mods on GameBanana"
+                                                    AutomationProperties.Name="{Binding SelectedGame.DisplayName,StringFormat='Browse {0} mods on GameBanana'}"
                                                     ToolTip="Browse on the official provider site; this does not bypass in-app provider policy or index results."/>
                                         </WrapPanel>
                                     </StackPanel>

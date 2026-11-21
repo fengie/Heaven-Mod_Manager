@@ -73,8 +73,11 @@ public sealed partial class MainWindowViewModel
         set
         {
             using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            if (ReferenceEquals(value, SelectedLibraryItem)) return;
+            var previousMod = SelectedMod;
             selectedExternal = value as ExternalLibraryReference;
             SelectedMod = value as ModRowViewModel;
+            if (previousMod == SelectedMod) OnPropertyChanged(nameof(SelectedLibraryItem));
         }
     }
 

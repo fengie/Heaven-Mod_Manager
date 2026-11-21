@@ -552,14 +552,28 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         _=DebounceSearchAsync(cts.Token);
     }
 
+    [RelayCommand]
+    private void SubmitModSearch()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        searchCts?.Cancel();
+        RefreshLibraryFilters();
+        NotifyVisibleModState();
+        if (!string.IsNullOrWhiteSpace(SearchText) &&
+            (SelectedLibraryItem is null || !LibraryView.Contains(SelectedLibraryItem)))
+            SelectedLibraryItem = LibraryView.Cast<object>().FirstOrDefault();
+    }
+
     private async Task DebounceSearchAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
             await Task.Delay(160,ct);
+            ct.ThrowIfCancellationRequested();
             await Application.Current.Dispatcher.InvokeAsync(()=>
             {
+                if (ct.IsCancellationRequested) return;
                 RefreshLibraryFilters();
                 NotifyVisibleModState();
             });
@@ -1258,10 +1272,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var visible=ModsView.Cast<ModRowViewModel>().ToArray();
         var target=visible
             .SelectMany(x=>x.Members)
+            .Where(mod=>!mod.RequiresLayoutReview)
             .DistinctBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
             .ToArray();
         await s.Catalog.EnsureCapturedAsync(target,ct);
-        StatusText=$"Re-indexed {visible.Length} visible {(visible.Length==1?"mod":"mods")} across {target.Length} source {(target.Length==1?"package":"packages")}.";
+        var held=visible.Count(row=>!row.CanStage);
+        StatusText=$"Re-indexed {target.Length} source package(s). {held} visible row(s) require layout review.";
     });
     }
 
@@ -1340,15 +1356,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void CaptureDiagnostics()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var script=Path.Combine(s.Paths.ToolRoot,"scripts","Capture-Diagnostics.ps1");
+        var script=Path.Combine(AppContext.BaseDirectory, "scripts", "diagnostics", "Capture-Diagnostics.ps1");
         if(!File.Exists(script)){StatusText="Capture-Diagnostics.ps1 is not present in this installation.";return;}
         try
         {
-            using var diagnosticProcess = ProcessDebug.Start(new ProcessStartInfo("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\" -ProcessId {Environment.ProcessId}")
+            var capture = Path.Combine(s.Paths.ToolRoot, "diagnostics",
+                $"capture-{DateTime.UtcNow:yyyyMMdd-HHmmssfff}-pid{Environment.ProcessId}");
+            var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory,
+                "WindowsPowerShell", "v1.0", "powershell.exe"))
             {
-                WorkingDirectory=s.Paths.ToolRoot,UseShellExecute=true
-            }, "capture-diagnostics");
-            StatusText="Diagnostic capture started in a separate PowerShell window. Keep the manager running while it records the freeze/load.";
+                WorkingDirectory = s.Paths.ToolRoot,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            foreach (var arg in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script,
+                "-ProcessId", Environment.ProcessId.ToString(CultureInfo.InvariantCulture), "-OutputDirectory", capture })
+                start.ArgumentList.Add(arg);
+            using var diagnosticProcess = ProcessDebug.Start(start, "capture-diagnostics");
+            StatusText=$"Diagnostic capture started. Keep the manager running while it records. Output: {capture}";
         }
         catch(Exception ex){StatusText="Could not start diagnostic capture: "+ex.Message;}
     }
@@ -1628,9 +1653,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("automation.restore-lkg","Restoring Last Working Setup","Restoring the most recent setup that successfully started the game…",false,async ct=>
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
-        var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
-        var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
+        var stage=LastKnownGoodService.RestoreState(known,snap.Mods);
+        var staged=snap.Mods.Select(m=>m with{Enabled=stage[m.Id].Enabled,Priority=stage[m.Id].Priority}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("The saved setup now has a blocking conflict under the current files; nothing was changed.");
         var dependencyBlockers=await GetDependencyBlockersAsync(stage,plan,ct);

@@ -60,7 +60,8 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={game.DisplayName}");
         if (!string.IsNullOrWhiteSpace(game.SavePath) && File.Exists(game.SavePath)) return game.SavePath;
-        var explicitPath = Environment.GetEnvironmentVariable("MOD_MANAGER_SAVE_PATH") ?? Environment.GetEnvironmentVariable("MHW_SAVE_PATH");
+        var explicitPath = Environment.GetEnvironmentVariable("MOD_MANAGER_SAVE_PATH") ??
+            (game.IsMonsterHunterWorld ? Environment.GetEnvironmentVariable("MHW_SAVE_PATH") : null);
         if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath)) return explicitPath;
         if (!game.AdapterId.Equals("mhw", StringComparison.OrdinalIgnoreCase)) return null;
         var steamRoots = new List<string>();

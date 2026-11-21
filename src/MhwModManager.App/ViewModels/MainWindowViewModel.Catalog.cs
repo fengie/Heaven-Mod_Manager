@@ -376,6 +376,7 @@ public sealed partial class MainWindowViewModel
     private const int CatalogProviderRefreshLimit = 100;
     private const int CatalogVisibleResultLimit = 1000;
 
+    private readonly System.Windows.Threading.Dispatcher catalogDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
     private HttpClient? catalogHttp;
     private CatalogRepository? catalogRepository;
     private CatalogSyncService? catalogSync;
@@ -559,12 +560,20 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public bool CanBrowseNexus
+    {
+        get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return s.Paths.Game.NexusBrowseUri is not null; }
+    }
+    public bool CanBrowseGameBanana
+    {
+        get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return s.Paths.Game.GameBananaBrowseUri is not null; }
+    }
     public Visibility CatalogProviderWebLinksVisibility
     {
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return s.Paths.Game.IsMonsterHunterWorld ? Visibility.Visible : Visibility.Collapsed;
+            return CanBrowseNexus || CanBrowseGameBanana ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -799,12 +808,20 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    internal MainWindowViewModel(AppServices services, HttpClient http, IReadOnlyList<IModCatalogProvider>? providers = null)
+        : this(services)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        catalogHttp = http;
+        catalogProviders = providers;
+    }
+
     private void EnsureCatalogRuntime()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (catalogRepository is not null) return;
 
-        catalogHttp = new HttpClient
+        catalogHttp ??= new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(30)
         };
@@ -821,11 +838,19 @@ public sealed partial class MainWindowViewModel
             Path.Combine(s.Paths.NextStateRoot, "CatalogDownloads"),
             savedArchiveRoot: s.Paths.DownloadsRoot);
 
+        catalogProviders ??= CreateConfiguredCatalogProviders(catalogHttp);
+        OnPropertyChanged(nameof(CatalogCoverageSummary));
+    }
+
+    private List<IModCatalogProvider> CreateConfiguredCatalogProviders(HttpClient http)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (s.StartupArguments.Contains("--offline-catalog", StringComparer.OrdinalIgnoreCase)) return [];
         var providers = new List<IModCatalogProvider>();
         if (s.Paths.Game.IsMonsterHunterWorld)
         {
-            providers.Add(new NexusV3CatalogProvider(new NexusV3Transport(catalogHttp)));
-            providers.Add(new GameBananaCatalogProvider(new GameBananaTransport(catalogHttp)));
+            providers.Add(new NexusV3CatalogProvider(new NexusV3Transport(http)));
+            providers.Add(new GameBananaCatalogProvider(new GameBananaTransport(http)));
 
             var curseForgeApiKey = Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_API_KEY");
             var curseForgeGameIdText = Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_GAME_ID");
@@ -838,15 +863,14 @@ public sealed partial class MainWindowViewModel
                 && curseForgeGameId > 0)
             {
                 providers.Add(new CurseForgeCatalogProvider(
-                    new CurseForgeTransport(catalogHttp, curseForgeApiKey),
+                    new CurseForgeTransport(http, curseForgeApiKey),
                     [new CurseForgeCatalogGameSource(
                         s.Paths.Game.Id,
                         s.Paths.Game.DisplayName,
                         curseForgeGameId)]));
             }
         }
-        catalogProviders = providers;
-        OnPropertyChanged(nameof(CatalogCoverageSummary));
+        return providers;
     }
 
     private async Task EnsureCatalogLoadedAsync(CancellationToken ct)
@@ -1129,7 +1153,7 @@ public sealed partial class MainWindowViewModel
                         .ToArray();
                     var restart = false;
                     var obsolete = false;
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await catalogDispatcher.InvokeAsync(() =>
                     {
                         if (!string.Equals(query, CatalogQuery, StringComparison.Ordinal) ||
                             !string.Equals(gameId, s.Paths.Game.Id, StringComparison.OrdinalIgnoreCase))
@@ -1433,7 +1457,7 @@ public sealed partial class MainWindowViewModel
             .Select(row => new CatalogModRow(row.Mod, row.IsStale(now)))
             .ToArray();
         var selected = SelectedCatalogItem;
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await catalogDispatcher.InvokeAsync(() =>
         {
             catalogHasMoreCachedMatches = hasMoreCachedMatches;
             CatalogItems.ReplaceAll(projected);
@@ -1663,20 +1687,18 @@ public sealed partial class MainWindowViewModel
             : $"Checked {rows.Count} exact installed origin(s); {CatalogOriginAttentionCount} need review.";
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanBrowseNexus))]
     private void OpenNexusBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!s.Paths.Game.IsMonsterHunterWorld) return;
-        OpenExternalUri(new Uri("https://www.nexusmods.com/monsterhunterworld/mods"));
+        if (s.Paths.Game.NexusBrowseUri is { } uri) OpenExternalUri(uri);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanBrowseGameBanana))]
     private void OpenGameBananaBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!s.Paths.Game.IsMonsterHunterWorld) return;
-        OpenExternalUri(new Uri("https://gamebanana.com/games/9081"));
+        if (s.Paths.Game.GameBananaBrowseUri is { } uri) OpenExternalUri(uri);
     }
 
     private IModCatalogProvider? FindCatalogProvider(string providerId)
