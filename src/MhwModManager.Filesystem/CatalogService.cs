@@ -54,11 +54,29 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             .Select(path=>Path.GetFullPath(path!))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var directories = await Task.Run(() => roots
-            .SelectMany(root=>Directory.EnumerateDirectories(root))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray(), ct);
+        // Collect ordinary single-mount packages on the existing worker. Calling into
+        // the UI dispatcher once per package makes even a negative family lookup costly.
+        var directories = await Task.Run(() =>
+        {
+            var entries=new Dictionary<string,bool?>(PathRules.Comparer);
+            foreach(var root in roots)
+                foreach(var folder in new DirectoryInfo(root).EnumerateDirectories())
+                {
+                    ct.ThrowIfCancellationRequested();
+                    try
+                    {
+                        if ((folder.Attributes & FileAttributes.ReparsePoint)!=0) { entries[folder.FullName]=null; continue; }
+                        entries[folder.FullName]=folder.EnumerateDirectories().Skip(1).Any() &&
+                            folder.EnumerateFiles().Take(17).Any(file=>file.Extension.Equals(".txt",StringComparison.OrdinalIgnoreCase) ||
+                                file.Extension.Equals(".md",StringComparison.OrdinalIgnoreCase));
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        entries[folder.FullName]=null;
+                    }
+                }
+            return entries.OrderBy(pair=>pair.Key,PathRules.Comparer).ToArray();
+        }, ct);
         var verifiedFamilyRoots = new HashSet<string>(PathRules.Comparer);
         await using (var connection = await db.OpenAsync(ct))
         await using (var cmd = connection.CreateCommand())
@@ -70,14 +88,15 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         var inspectedFamilyRoots = new HashSet<string>(PathRules.Comparer);
         var savedShelves = inspectShelf is null ? null : await db.ReadShelfEntriesAsync(ct);
         var priority=100000;
-        foreach(var dir in directories)
+        foreach(var (dir,mayHaveFamily) in directories)
         {
             ct.ThrowIfCancellationRequested();
             existingByPath.TryGetValue(dir, out var tracked);
             try
             {
                 inspectedFamilyRoots.Add(dir);
-                if (await DiscoverFamilyAsync(dir,priority,ct)) continue;
+                if (mayHaveFamily is null) continue;
+                if (mayHaveFamily.Value && await DiscoverFamilyAsync(dir,priority,ct)) continue;
                 if (verifiedFamilyRoots.Contains(dir))
                 {
                     await SuspendFamilyAsync(dir,ct);
