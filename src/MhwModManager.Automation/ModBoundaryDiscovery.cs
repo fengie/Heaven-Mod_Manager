@@ -59,7 +59,7 @@ public static class ModBoundaryDiscovery
         "manifest.toml", "thunderstore.toml"
     };
 
-    public static ModBoundaryResult Discover(IEnumerable<string> relativeFilePaths)
+    public static ModBoundaryResult Discover(IEnumerable<string> relativeFilePaths, string? sourceName = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(relativeFilePaths);
@@ -79,10 +79,10 @@ public static class ModBoundaryDiscovery
             .Order(StringComparer.OrdinalIgnoreCase).ToArray();
         if (files.Length != paths.Count)
             throw new InvalidDataException("Duplicate or case-colliding mod file paths require review.");
-        return new(Analyze(files, "", 0)) { FileInventory = Array.AsReadOnly(files) };
+        return new(Analyze(files, "", 0, sourceName)) { FileInventory = Array.AsReadOnly(files) };
     }
 
-    private static IReadOnlyList<ModBoundaryCandidate> Analyze(string[] relative, string prefix, int depth)
+    private static IReadOnlyList<ModBoundaryCandidate> Analyze(string[] relative, string prefix, int depth, string? sourceName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (depth > MaxLevels)
@@ -120,7 +120,7 @@ public static class ModBoundaryDiscovery
         // A project-qualified shared Paks folder can contain several complete
         // pak/utoc/ucas bundles. Carry the exact members as virtual package boundaries.
         // Never apply this split inside a named mod's own deployment layout.
-        var pakGroups = DiscoverSharedPakGroups(relative, prefix);
+        var pakGroups = DiscoverSharedPakGroups(relative, prefix, sourceName);
         if (pakGroups is not null) return pakGroups;
 
         // A named mod containing SB/Content/Paks is one installable unit. In particular,
@@ -259,7 +259,7 @@ public static class ModBoundaryDiscovery
                 candidates.AddRange(Review(child, "Package variants share an identity with a sibling; choose the intended option."));
                 continue;
             }
-            var found = Analyze(children[directory].ToArray(), child, depth + 1);
+            var found = Analyze(children[directory].ToArray(), child, depth + 1, sourceName);
             // Preserve independent siblings when one child needs review. The review
             // candidate is reported separately and never auto-installed.
             candidates.AddRange(found);
@@ -341,7 +341,7 @@ public static class ModBoundaryDiscovery
     /// remain under review rather than publishing incomplete pieces.
     /// </summary>
     private static IReadOnlyList<ModBoundaryCandidate>? DiscoverSharedPakGroups(
-        string[] relativePaths, string prefix)
+        string[] relativePaths, string prefix, string? sourceName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var mounts = relativePaths.Where(UnrealPakLayout.IsMember)
@@ -381,7 +381,18 @@ public static class ModBoundaryDiscovery
 
         // Multiple complete chunks inside a named mod can be co-required. Only
         // an explicit shared collection may decompose unrelated complete sets.
-        var isExplicitCollection = prefix.Length == 0 || IsCollectionWrapper(prefix);
+        var isExplicitCollection = prefix.Length == 0
+            ? sourceName is null || IsCollectionWrapper(sourceName)
+            : IsCollectionWrapper(prefix);
+        if (relativePaths.Any(PackageManifests.Contains)) isExplicitCollection = false;
+        if (!isExplicitCollection && prefix.Length == 0 && sourceName is not null)
+        {
+            if (groups.Values.All(members => UnrealPakLayout.Complete(members, singleStem: true)) &&
+                groups.Values.All(members => members.Any(file => file.EndsWith(".utoc", StringComparison.OrdinalIgnoreCase))) &&
+                reviewFamilies.Count == 0)
+                return [new(Display(prefix), ModBoundaryKind.Folder, "One authored multi-container package.")];
+            return Review(prefix, "One authored package has incomplete or potentially alternative container sets.");
+        }
         return groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(pair =>
             {
@@ -476,7 +487,7 @@ public static class ModBoundaryDiscovery
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var file = Path.GetFileName(path.Replace('\\', '/'));
         var extension = Path.GetExtension(file);
-        return ManagedCollectionNotes.IsNote(file) || file.StartsWith("readme", StringComparison.OrdinalIgnoreCase)
+        return file.Equals("Installation Instructions.txt", StringComparison.OrdinalIgnoreCase) || file.StartsWith("readme", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("license", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("changelog", StringComparison.OrdinalIgnoreCase)
             || file.StartsWith("credits", StringComparison.OrdinalIgnoreCase)

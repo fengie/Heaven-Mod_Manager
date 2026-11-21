@@ -364,7 +364,7 @@ public sealed class GameModIntakeService
                 .Select(entry => entry.Key).ToArray();
         }
 
-        var boundaries = ModBoundaryDiscovery.Discover(files);
+        var boundaries = ModBoundaryDiscovery.Discover(files, isDirectory ? Path.GetFileName(source) : Path.GetFileNameWithoutExtension(source));
         if (boundaries.Candidates.Count != 1 ||
             boundaries.Candidates[0].Kind != ModBoundaryKind.Folder ||
             boundaries.Candidates[0].RelativePath != ".")
@@ -419,7 +419,7 @@ public sealed class GameModIntakeService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
-        var discovered = ModBoundaryDiscovery.Discover(paths);
+        var discovered = ModBoundaryDiscovery.Discover(paths, Path.GetFileName(root));
         // Reanalyzing an existing tracked package must never copy its whole root as
         // a duplicate when structural evidence no longer proves several child mods.
         if (requireMultipleBoundaries &&
@@ -479,7 +479,7 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var source = ValidateManagedCollectionSource(sourcePath, game);
         return ModBoundaryDiscovery.Discover(SnapshotFolderFiles(source, ct)
-            .Select(file => Path.GetRelativePath(source, file)));
+            .Select(file => Path.GetRelativePath(source, file)), Path.GetFileName(source));
     }
 
     public ManagedCollectionLayout InspectManagedShelf(string source, GameProfile game, CancellationToken ct)
@@ -790,7 +790,7 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Unsafe archive paths require manual review.");
             budget.Account(info);
             var discovery = ModBoundaryDiscovery.Discover(info.Entries
-                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
+                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key), Path.GetFileNameWithoutExtension(source));
             // No extraction is necessary when every candidate requires review.
             // Preserve each incomplete group as a separate evidence-bearing row.
             if (discovery.Candidates.Count > 0 &&

@@ -136,7 +136,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
                 if ((packageOnly || bundledProject) && !UnrealPakLayout.IsMember(rel) &&
                     (ManagedCollectionNotes.IsNote(rel) || editorRoots.Contains(rel.Split(Path.DirectorySeparatorChar)[0]))) continue;
                 if (pakMount is not null && !rel.Contains('\\') &&
-                    (rel.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase) ||
+                    (ManagedCollectionNotes.IsNote(rel) || rel.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase) ||
                      Path.GetExtension(rel).Equals(".md", StringComparison.OrdinalIgnoreCase))) continue;
                 if ((game is null || game.IsMonsterHunterWorld) &&
                     PathRules.Comparer.Equals(diskRoot, mod.SourcePath) &&
