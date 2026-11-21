@@ -12,7 +12,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 ## v8.8.129 — unmodded launch recovery
 
-- Launch Without Mods restores the active deployment when the game cannot start. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)
+- Launch Without Mods restores the files that were actually deployed when the game fails to start or exits. Enabled packages that were still pending stay unapplied. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)
 
 ## v8.8.128 — active-game actions
 
