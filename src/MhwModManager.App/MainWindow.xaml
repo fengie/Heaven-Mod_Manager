@@ -61,7 +61,6 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <Button Content="Install Mod" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,0"/>
-                    <Button Content="Apply Changes" Command="{Binding ApplyCommand}" Margin="0,0,8,0" ToolTip="Safely install your pending mod changes. Ctrl+Enter."/>
                     <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Back up your saves, check the setup, and launch the game with your enabled mods."/>
                 </StackPanel>
             </Grid>
@@ -110,7 +109,6 @@
                                     <TextBlock Margin="0,9,0,0" MaxWidth="650" Text="{Binding StatusText}" FontSize="16" TextWrapping="Wrap" LineHeight="23"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                                         <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" Padding="20,11"/>
-                                        <Button Content="Apply Pending Changes" Command="{Binding ApplyCommand}" Margin="8,0,0,0" Padding="18,11"/>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -339,13 +337,11 @@
                                 <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show enabled mods whose files have been fully replaced."/>
                             </WrapPanel>
                             <WrapPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8,0,0" KeyboardNavigation.TabNavigation="Continue">
-                                <Button Content="Auto Populate" Command="{Binding AutoPopulateCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="0,0,12,0"
-                                        ToolTip="Import sorted Inbox packages, then enable and apply the largest safe compatible set of mods."/>
                                 <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Button Content="Select All" Command="{Binding EnableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
-                                        ToolTip="Stage enable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Select all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                        ToolTip="Enable mods shown by the current filters." AutomationProperties.Name="Select all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="Deselect All" Command="{Binding DisableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
-                                        ToolTip="Stage disable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Deselect all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                        ToolTip="Disable mods shown by the current filters." AutomationProperties.Name="Deselect all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5"
                                         ToolTip="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="8,0,6,0"
@@ -420,7 +416,7 @@
                                                                     <Button Grid.Column="1" Margin="10,0,0,0" Content="Attach as add-on"
                                                                             Command="{Binding DataContext.ConfirmSuggestedFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}"
                                                                             CommandParameter="{Binding}"
-                                                                            ToolTip="Confirm a saved parent/add-on override relationship. Game files remain unchanged until Apply Changes."
+                                                                            ToolTip="Confirm a saved parent/add-on override relationship."
                                                                             AutomationProperties.Name="{Binding Title}"/>
                                                                 </Grid>
                                                             </DataTemplate>
@@ -456,8 +452,8 @@
                                                           IsThreeState="False"
                                                           HorizontalAlignment="Center"
                                                           AutomationProperties.Name="{Binding DisplayName}"
-                                                          AutomationProperties.HelpText="Stage this mod to be enabled or disabled. Game files stay unchanged until Apply Mod Changes."
-                                                          ToolTip="Stage this mod to be enabled or disabled. Game files stay unchanged until Apply Mod Changes. A partial state means only some add-ons or components are enabled."/>
+                                                          AutomationProperties.HelpText="Turn this mod on or off. Manager verifies and applies eligible changes automatically."
+                                                          ToolTip="Turn this mod on or off. Manager verifies and applies eligible changes automatically. A partial state means only some add-ons or components are enabled."/>
                                                 <TextBlock Margin="0,3,0,0"
                                                            Text="{Binding PendingStateLabel}"
                                                            Foreground="{StaticResource Warn}"
@@ -609,9 +605,9 @@
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding PlanPreviewText}"/>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="Review and retry" Command="{Binding ApplyCommand}" Visibility="{Binding ReviewRetryVisibility}" ToolTip="Review a held change and retry after resolving its cause."/>
                                 <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="See exactly what would change without editing game files." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Discard all pending enable/disable changes. Installed game files are not changed." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
-                                <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Safely install your pending mod changes. Ctrl+Enter." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Restore the previous applied mod setup. Ctrl+Z." AutomationProperties.Name="Undo Last Applied Change"/>
                             </StackPanel>
                         </Grid>

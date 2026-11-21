@@ -190,7 +190,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         run.CopyToInbox(run.ArchivePath);
         const string name = "E2E Inbox Fixture";
         var toggle = await WaitForElementAsync(() => FindModToggle(window, name), UiTimeout, "Inbox mod in Mods", ct);
-        Assert.Equal(ToggleState.Off, ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes), UiTimeout,"Inbox data automatically installed under this game",ct);
         passed.Add("Discover Inbox archive in Mods");
 
         var search = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Edit &&
@@ -201,7 +201,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         query.SetValue("Inbox Fixture");
         toggle = await WaitForElementAsync(() => FindModToggle(window, name), UiTimeout, "filter returns package", ct);
         passed.Add("Filter mod list");
-        ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
 
         async Task Filter(string label, bool visible)
         {
@@ -219,31 +218,20 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Filter("Updates", false);
         await Filter("Enabled", true);
         await Filter("Updates", false);
-        await Filter("Pending", true);
+        await Filter("Pending", false);
         await Filter("All", true);
-        passed.Add("All eight mod filters show or exclude the known staged package");
+        passed.Add("All eight mod filters show or exclude the known installed package");
 
         async Task Click(string label) => Invoke(await WaitForElementAsync(() => FindButton(window, label, enabled: true),
             UiTimeout, label, ct));
-        await Click("Preview Mod Changes");
-        await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
-            e.Current.Name.Contains("Dry run passed", StringComparison.OrdinalIgnoreCase) &&
-            e.Current.Name.Contains("1 add", StringComparison.OrdinalIgnoreCase)), UiTimeout, "one addition in preview", ct);
-        Assert.False(File.Exists(run.LiveModPath));
-        passed.Add("Toggle mod and preview one addition");
-        await Click("Apply Changes");
-        await WaitForAsync(() => File.Exists(run.LiveModPath) && File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
-            UiTimeout, "correct deployed bytes", ct);
-        passed.Add("Apply and read deployed file");
-
-        await SelectModsTabAsync(window, ct);
+        passed.Add("Automatic discovery applied exact game bytes");
+        toggle=await WaitForElementAsync(()=>FindModToggle(window,name),UiTimeout,"installed mod",ct);
+        ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        await WaitForAsync(()=>!File.Exists(run.LiveModPath),UiTimeout,"explicit disable removed managed payload",ct);
+        passed.Add("Explicit off automatically updates game files");
         await Click("Undo Last Applied Change");
-        await WaitForAsync(() => !File.Exists(run.LiveModPath), UiTimeout, "undo removes managed payload", ct);
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),UiTimeout,"Undo restored the explicit switch",ct);
         passed.Add("Undo deployment");
-        await Click("Auto Populate");
-        await WaitForAsync(() => File.Exists(run.LiveModPath) && File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
-            UiTimeout, "Auto Populate deploys to this profile", ct);
-        passed.Add("Auto Populate and read deployed file");
         if (game.SteamAppId is not null) Assert.Equal(run.ModBytes, File.ReadAllBytes(run.WorkshopPayload));
         Assert.Equal(archiveHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));

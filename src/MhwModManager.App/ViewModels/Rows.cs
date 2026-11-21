@@ -63,6 +63,7 @@ public partial class ModPartRowViewModel:ObservableObject
 public partial class ModRowViewModel:ObservableObject
 {
     private readonly Action _changed;
+    private readonly Action? userEdited;
     private readonly Dictionary<string,(bool enabled,int priority)> _appliedMembers;
     private readonly Dictionary<string,(bool enabled,int priority)> _stagedMembers;
     private bool _updatingSummary;
@@ -193,7 +194,7 @@ public partial class ModRowViewModel:ObservableObject
     }
 
     public ModRowViewModel(LogicalModFamily family,Action changed,
-        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null)
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null, Action? userEdited = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
@@ -217,7 +218,7 @@ public partial class ModRowViewModel:ObservableObject
             identity=$"Possible Nexus {sourceIdentity.ModId} • unverified source";
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
-        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
+        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;this.userEdited=userEdited;
         if (pending is not null && CanStage)
             foreach (var member in Members)
                 if (pending.TryGetValue(member.Id, out var stage)) _stagedMembers[member.Id] = stage;
@@ -248,7 +249,7 @@ public partial class ModRowViewModel:ObservableObject
             }
         }
         EnsureRequiredCompositionMembers();
-        SetSummaryFromMembers();_changed();
+        SetSummaryFromMembers();_changed();userEdited?.Invoke();
     }
 
     public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
@@ -279,7 +280,7 @@ public partial class ModRowViewModel:ObservableObject
         _stagedMembers[memberId]=(enabled,current.priority);
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();
-        _changed();
+        _changed();userEdited?.Invoke();
     }
     public bool ContainsMember(string memberId)
     {

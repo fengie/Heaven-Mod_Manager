@@ -19,6 +19,7 @@ public partial class MainWindow:Window
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         InitializeComponent();
         DataContext=new MainWindowViewModel(App.Services);
+        Activated+=(_,_)=>{ if(DataContext is MainWindowViewModel vm)vm.ResumeDeferredDiscovery(); };
         Closing+=OnClosing;
         Closed+=OnClosed;
         PreviewKeyDown+=OnPreviewKeyDown;

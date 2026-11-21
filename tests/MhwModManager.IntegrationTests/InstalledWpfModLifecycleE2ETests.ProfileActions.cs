@@ -237,6 +237,10 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         filter.SetValue(alternateName);
         ToggleState? ReadToggle(string name) => FindModToggle(window, name) is { } checkbox
             ? ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState : null;
+        await WaitForAsync(()=>File.Exists(alternateLive) && File.ReadAllBytes(alternateLive).SequenceEqual(payload),UiTimeout,"second package automatically active",ct);
+        var alternate=await WaitForElementAsync(()=>FindModToggle(window,alternateName),UiTimeout,"new package",ct);
+        ((TogglePattern)alternate.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        await WaitForAsync(()=>!File.Exists(alternateLive),UiTimeout,"user disabled second package",ct);
         await WaitForAsync(() => ReadToggle(alternateName) == ToggleState.Off && ReadToggle(primaryName) is null,
             UiTimeout, "only independent disabled package visible", ct);
         async Task<AutomationElement> Button(string label) => await WaitForElementAsync(
@@ -284,15 +288,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Answer("Select all visible mods", "Enable visible mods", "Yes");
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.On,
             UiTimeout, "both packages staged on", ct);
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"confirmed bulk additions reached disk",ct);
         await Answer("Deselect all visible mods", "Disable visible mods", "Yes");
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.Off && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages staged off", ct);
-        await Answer("Discard Pending Changes", "Discard pending changes", "No");
-        Assert.Equal(ToggleState.Off, ReadToggle(primaryName));
-        await Answer("Discard Pending Changes", "Discard pending changes", "Yes");
-        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
-            UiTimeout, "discard restores independently deployed choices", ct);
-        passed.Add("Cancel and confirm bulk selection, deselect both, and cancel and confirm discard");
+        await WaitForAsync(()=>!File.Exists(run.LiveModPath)&&!File.Exists(alternateLive),UiTimeout,"confirmed bulk disable reached disk",ct);
+        Invoke(await Button("Undo Last Applied Change"));
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"Undo restored both installed mods",ct);
+        passed.Add("Cancel and confirm bulk selection, disable both, and undo the applied change");
 
         const string review = "Existing mod layouts — read-only preview";
         var inspect = await Button("Inspect nested mod package layouts without making changes");

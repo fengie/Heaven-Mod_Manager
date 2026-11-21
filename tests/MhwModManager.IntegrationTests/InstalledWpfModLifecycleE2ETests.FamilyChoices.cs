@@ -84,25 +84,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         async Task Expect(string name, bool on) =>
             Assert.Equal(on ? ToggleState.On : ToggleState.Off, (await Part(name)).Current.ToggleState);
 
-        async Task Preview(int add, int replace)
-        {
-            await SelectModsTabAsync(window, ct);
-            Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true), UiTimeout, "preview family", ct));
-            await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
-                e.Current.Name.StartsWith("Dry run passed.", StringComparison.Ordinal) &&
-                e.Current.Name.Contains($"{add} add", StringComparison.Ordinal) &&
-                e.Current.Name.Contains($"{replace} replace", StringComparison.Ordinal) &&
-                e.Current.Name.Contains("0 remove", StringComparison.Ordinal) && e.Current.Name.Contains("0 restore", StringComparison.Ordinal)),
-                UiTimeout, "exact selected family plan", ct);
-        }
-        async Task Apply()
-        {
-            Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
-                UiTimeout, "apply selected family parts", ct));
-            await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
-                e.Current.Name.StartsWith("Applying Mod Changes finished in", StringComparison.Ordinal)),
-                UiTimeout, "family deployment completed", ct);
-        }
         async Task VerifyFiles(string label, bool lantern)
         {
             var expected = ChoiceFiles.ToDictionary(file => Path.Combine(mount, file),
@@ -133,9 +114,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("Lantern", true);
         (await Part("Lantern")).Toggle();
         await Expect("Compass", true);
-        await Preview(5, 0);
-        Assert.Equal(baseline, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-        await Apply();
         await VerifyFiles("WITH_Cape", false);
 
         // Process.MainWindowHandle can still refer to the startup splash. Close the
@@ -173,14 +151,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("Main", true);
         await Expect("Compass", true);
         await Expect("Lantern", false);
+        await VerifyFiles("NO_Cape", false);
         (await Part("Lantern")).Toggle();
-        await Preview(1, 3);
-        await VerifyFiles("WITH_Cape", false);
-        await Apply();
         await VerifyFiles("NO_Cape", true);
         await SelectModsTabAsync(window, ct);
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true), UiTimeout, "undo family choice", ct));
-        await VerifyFiles("WITH_Cape", false);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true), UiTimeout, "undo last family choice", ct));
+        await VerifyFiles("NO_Cape", false);
         foreach (var source in original) Assert.Equal(source.Value, File.ReadAllBytes(source.Key));
     }
 }

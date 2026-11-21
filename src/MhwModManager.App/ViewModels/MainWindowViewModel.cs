@@ -30,6 +30,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private bool initialMetadataRefreshCompleted;
     private int conflictPreviewGeneration;
     private bool suppressChanged;
+    [ObservableProperty] private Visibility reviewRetryVisibility=Visibility.Collapsed;
     private bool disposed;
 
     public ObservableRangeCollection<ModRowViewModel> Mods{get;}=[];
@@ -634,6 +635,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(suppressChanged)return;
+        if(StagedCount==0)ReviewRetryVisibility=Visibility.Collapsed;
         s.Database.SetPendingModIds(Mods.Where(row=>row.HasStagedChanges).SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key));
         OnPropertyChanged(nameof(EnabledCount));
         OnPropertyChanged(nameof(StagedCount));
@@ -655,7 +657,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(HeaderSummary));
         if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))RefreshLibraryFilters();
         NotifyVisibleModState();
-        FooterText=StagedCount==0?"No pending changes":$"{StagedCount} pending change(s) — game files stay unchanged until you apply them";
+        FooterText=StagedCount==0?"No pending changes":$"{StagedCount} change(s) awaiting verification";
     }
 
     private async Task ReloadMods(CancellationToken ct, bool preserveStagedChanges = false)
@@ -678,7 +680,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 ? Mods.Where(row => row.HasStagedChanges).SelectMany(row => row.StagedChanges())
                     .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
                 : null;
-            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending)).ToArray();
+            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending,OnModChoiceChanged)).ToArray();
             var rowsByMember=rows.SelectMany(row=>row.Members.Select(member=>(member.Id,row)))
                 .ToDictionary(x=>x.Id,x=>x.row,StringComparer.OrdinalIgnoreCase);
             foreach(var group in suggestions.GroupBy(s=>s.ChildModId,StringComparer.OrdinalIgnoreCase))
@@ -710,6 +712,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
             Changed();
         });
+        RequestDiscoveryCheck();
         await RefreshIssueSuspects(ct);
     }
 
@@ -1058,10 +1061,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task Apply()
+    private Task Apply()
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        return ApplyStagedChangesAsync(confirm:true);
+    }
+
+    private async Task ApplyStagedChangesAsync(bool confirm)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(ConfirmBeforeApply&&StagedCount>0&&MessageBox.Show(
+        if(confirm&&ConfirmBeforeApply&&StagedCount>0&&MessageBox.Show(
             $"Apply {StagedCount} pending mod change(s) to {s.Paths.Game.DisplayName}?",
             "Apply mod changes",
             MessageBoxButton.YesNo,
@@ -1070,12 +1079,19 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText="Apply cancelled. No game files were changed.";
             return;
         }
+        ReviewRetryVisibility=Visibility.Collapsed;
         await RunBusy("deployment.apply","Applying Mod Changes","Checking the setup, creating recovery information, and safely updating the game files…",false,async ct=>
     {
         var blockers=s.ProcessGuard.GetKnownBlockers();
-        if(blockers.Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is running. Close it before deployment.");
+        if(blockers.Count>0)
+        {
+            retryExplicitOnActivation=true;
+            throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is running. Close it before deployment.");
+        }
 
         var stage=CaptureStage();
+        var explicitIds=Mods.SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key).ToArray();
+        if(explicitIds.Length>0)await s.Database.FinishDiscoveryAsync(explicitIds,ct);
         var current=await s.Database.GetModsAsync(ct);
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
@@ -1101,11 +1117,21 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return;
         }
 
+        if (!confirm && analysis.plan.Changes.Any(change =>
+            change.Kind==ChangeKind.Add && File.Exists(s.Executor.Destination(change.Path))))
+        {
+            StatusText="An existing game file would be replaced. Review the pending changes before continuing.";
+            return;
+        }
         var audits=analysis.plan.Conflicts.Where(d=>d.Inferred&&d.ResolverScore>0)
             .Select(d=>new ResolverAudit(d.Path,d.WinnerModId,d.ResolverScore,d.ReasonCode,d.Explanation,d.Evidence??string.Empty)).ToArray();
         if(audits.Length>0)await s.Database.RecordResolverAuditAsync(audits,ct);
 
-        var result=await s.Executor.ApplyAsync(analysis.plan,$"Apply {StagedCount} staged mod-state change(s)",stage,ct:ct);
+        var verifiedPlan=confirm ? analysis.plan : analysis.plan with
+        {
+            Changes=analysis.plan.Changes.Select(change=>change.Kind==ChangeKind.Add ? change with {RequireAbsent=true} : change).ToArray()
+        };
+        var result=await s.Executor.ApplyAsync(verifiedPlan,$"Apply {StagedCount} staged mod-state change(s)",stage,ct:ct);
         if(!result.Success)
             throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
 
@@ -1117,6 +1143,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RefreshActivity(ct);
         Changed();
     });
+        if(StagedCount>0)ReviewRetryVisibility=Visibility.Visible;
     }
 
     [RelayCommand]
@@ -1268,7 +1295,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return;
         }
         if(targets.Length>1&&MessageBox.Show(
-            $"{(enabled?"Enable":"Disable")} {targets.Length} currently visible mods? This only stages the changes; game files stay unchanged until you choose Apply Mod Changes.",
+            $"{(enabled?"Enable":"Disable")} {targets.Length} currently visible mods? Manager will verify and apply eligible changes to game files.",
             $"{(enabled?"Enable":"Disable")} visible mods",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question)!=MessageBoxResult.Yes)
@@ -1279,8 +1306,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         suppressChanged=true;
         try{foreach(var m in targets)m.StagedEnabled=enabled;}
-        finally{suppressChanged=false;Changed();}
-        StatusText=$"Staged {(enabled?"enable":"disable")} for {targets.Length} visible {(targets.Length==1?"mod":"mods")}. Apply Mod Changes when you are ready.";
+        finally{suppressChanged=false;Changed();OnModChoiceChanged();}
+        StatusText=$"Selected {(enabled?"enable":"disable")} for {targets.Length} visible {(targets.Length==1?"mod":"mods")}.";
     }
 
     [RelayCommand]
@@ -1476,9 +1503,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 {
                     foreach(var row in Mods)row.ApplyProfileState(state);
                 }
-                finally{suppressChanged=false;Changed();}
+                finally{suppressChanged=false;Changed();OnModChoiceChanged();}
             });
-            StatusText=$"Profile '{SelectedProfile.Name}' is ready to use. Game files stay unchanged until you apply the changes.";
+            StatusText=$"Profile '{SelectedProfile.Name}' selected.";
         });
     }
 
@@ -2066,6 +2093,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
             programUpdateHandoffGate.EndForeground();
+            ScheduleAutomaticChanges();
         }
     }
 

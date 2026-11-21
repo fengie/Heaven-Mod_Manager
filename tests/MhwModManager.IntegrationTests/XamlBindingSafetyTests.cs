@@ -656,7 +656,7 @@ public sealed partial class XamlBindingSafetyTests
 
         Assert.Contains("Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"See exactly what would change without editing game files.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
         Assert.Contains("Content=\"Discard Pending Changes\" Command=\"{Binding DiscardStagedCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"Discard all pending enable/disable changes. Installed game files are not changed.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
-        Assert.Contains("Content=\"Apply Mod Changes\" Command=\"{Binding ApplyCommand}\" Style=\"{StaticResource PrimaryButton}\" MinHeight=\"32\" Padding=\"10,5\" Margin=\"2,0\" ToolTip=\"Safely install your pending mod changes. Ctrl+Enter.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
+        Assert.Contains("Content=\"Review and retry\" Command=\"{Binding ApplyCommand}\" Visibility=\"{Binding ReviewRetryVisibility}\"", xaml);
         Assert.DoesNotContain("Style=\"{StaticResource ActionTile}\" Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" IsEnabled=\"{Binding HasStagedChanges}\"", xaml);
         Assert.Contains("public bool HasStagedChanges", main);
         Assert.Contains("return StagedCount>0;", main);
