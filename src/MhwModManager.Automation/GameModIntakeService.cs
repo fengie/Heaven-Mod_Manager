@@ -535,10 +535,7 @@ public sealed class GameModIntakeService
             var containers = relative.Where(UnrealPakLayout.IsMember).ToArray();
             // A project source tree may accompany a finished package. Its editor files
             // are attributable only when the same subtree contains a project descriptor.
-            var editorRoots = relative.Where(path => path.Contains('/') && path.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase))
-                .Select(path => path[..(path.IndexOf('/') + 1)]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-            var clean = relative.All(path => UnrealPakLayout.IsMember(path) ||
-                editorRoots.Any(root => path.StartsWith(root, StringComparison.OrdinalIgnoreCase)));
+            var clean = relative.All(UnrealPakLayout.IsMember) || UnrealPakLayout.HasBundledEditorProject(relative);
             var protectedChoice = choices.Contains(branchPath) || boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
                 c.RelativePath.Equals(branch.Key, StringComparison.OrdinalIgnoreCase) &&
                 c.RequiresSelection);

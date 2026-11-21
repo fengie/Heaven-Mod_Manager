@@ -59,6 +59,7 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         ]);
         Assert.Equal(["First", "Second"], result.Candidates.Where(c => c.Kind == ModBoundaryKind.Folder)
             .Select(c => c.RelativePath));
+        Assert.Contains("loose.pak", result.Candidates.Single(c => c.RelativePath == ".").Evidence, StringComparison.Ordinal);
         Assert.Equal([".", "Choices"], result.Candidates.Where(c => c.Kind == ModBoundaryKind.Review)
             .Select(c => c.RelativePath));
     }
@@ -71,7 +72,8 @@ public sealed class ModBoundaryDiscoveryTests : IDisposable
         var package = Assert.Single(ModBoundaryDiscovery.Discover(files).Candidates);
         Assert.Equal(ModBoundaryKind.Folder, package.Kind);
         Assert.Equal(".", package.RelativePath);
-        foreach (var foreign in new[] { "Extras/runtime.dll", "sources/Extras/other.pak", "sources/download.zip" })
+        foreach (var foreign in new[] { "Extras/runtime.dll", "sources/Extras/other.pak", "sources/download.zip",
+                "sources/another/mod-intake.json", "sources/another/BepInEx/plugins/independent.dll" })
             Assert.DoesNotContain(ModBoundaryDiscovery.Discover(files.Append(foreign)).Candidates,
                 c => c.RelativePath == "." && c.Kind == ModBoundaryKind.Folder);
     }

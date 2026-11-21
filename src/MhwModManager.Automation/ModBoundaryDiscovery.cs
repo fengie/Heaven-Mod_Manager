@@ -257,7 +257,10 @@ public static class ModBoundaryDiscovery
 
         var candidates = new List<ModBoundaryCandidate>();
         if (reviewUnattributedFiles)
-            candidates.AddRange(Review(prefix, "Unattributed collection-level loose files need review."));
+        {
+            var examples = string.Join(", ", otherFiles.Take(3).Select(file => file.Length <= 100 ? file : file[..100] + "..."));
+            candidates.AddRange(Review(prefix, $"Unattributed collection-level loose files ({otherFiles.Length}): {examples}. Review their intended package."));
+        }
         foreach (var archive in archived)
             candidates.Add(new(Join(prefix, archive), ModBoundaryKind.Archive, "Independent nested archive."));
 
@@ -354,6 +357,8 @@ public static class ModBoundaryDiscovery
         string[] relativePaths, string prefix, string? sourceName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // A root manifest declares one authored package, even in a folder called Collection.
+        if (relativePaths.Any(PackageManifests.Contains)) return null;
         var mounts = relativePaths.Where(UnrealPakLayout.IsMember)
             .Select(UnrealPakLayout.ProjectMount).OfType<string>()
             .Distinct(StringComparer.OrdinalIgnoreCase).Take(2).ToArray();
@@ -394,7 +399,6 @@ public static class ModBoundaryDiscovery
         var isExplicitCollection = prefix.Length == 0
             ? sourceName is null || IsCollectionWrapper(sourceName)
             : IsCollectionWrapper(prefix);
-        if (relativePaths.Any(PackageManifests.Contains)) isExplicitCollection = false;
         if (!isExplicitCollection && prefix.Length == 0 && sourceName is not null)
         {
             if (groups.Values.All(members => UnrealPakLayout.Complete(members, singleStem: true)) &&
