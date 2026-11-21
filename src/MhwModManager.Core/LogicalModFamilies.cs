@@ -161,7 +161,7 @@ public static partial class LogicalModFamilies
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!string.IsNullOrWhiteSpace(mod.FamilyId))
-            return "saved:" + NormalizeKey(mod.FamilyId);
+            return "saved:" + mod.FamilyId;
 
         // Source identity is stronger than author-entered file categories. A Nexus page can publish
         // several main files, optional files, patches, or mutually-exclusive variants that still belong
