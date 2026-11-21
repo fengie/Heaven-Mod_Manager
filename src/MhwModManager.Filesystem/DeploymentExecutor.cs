@@ -53,6 +53,14 @@ public sealed class DeploymentExecutor(
 
         await using var deploymentLease=await AcquireDeploymentLeaseAsync(ct);
         await RecoverIncompleteCoreAsync(ct);
+        return await ApplyUnderLeaseAsync(plan, description, metadataChanges, targetModState, parentOperationId, ct);
+    }
+
+    private async Task<OperationResult> ApplyUnderLeaseAsync(
+        DeploymentPlan plan, string description, IReadOnlyList<MetadataRowChange> metadataChanges,
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? targetModState, string? parentOperationId, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"plan={plan.Id}");
         var beforeState=await ReadModStateAsync(ct);
         var afterState=targetModState is null
             ? beforeState
@@ -146,12 +154,29 @@ public sealed class DeploymentExecutor(
     public async Task<OperationResult> UndoLastAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("undo-last");
+        // Choose and reverse the history entry under one lease, including recovery.
+        await using var deploymentLease = await AcquireDeploymentLeaseAsync(ct);
+        await RecoverIncompleteCoreAsync(ct);
         string? id=null;
         string? beforeJson=null;
         await using(var c=await db.OpenAsync(ct))
         {
             await using var cmd=c.CreateCommand();
-            cmd.CommandText="SELECT id,state_before_json FROM operations WHERE state='Committed' AND description NOT LIKE 'Undo %' AND description NOT IN ('Enter safe mode','Restore after safe mode') ORDER BY committed_at DESC LIMIT 1";
+            cmd.CommandText = """
+                SELECT op.id, op.state_before_json FROM operations op
+                WHERE op.state = 'Committed' AND op.description NOT LIKE 'Undo %'
+                  AND op.description NOT IN ('Enter safe mode', 'Restore after safe mode')
+                  AND op.id NOT IN (
+                    SELECT parent_operation_id FROM operations
+                    WHERE state = 'Committed' AND description = 'Undo ' || parent_operation_id)
+                  AND (EXISTS (SELECT 1 FROM operation_journal j WHERE j.operation_id = op.id)
+                    OR EXISTS (SELECT 1 FROM operation_metadata m WHERE m.operation_id = op.id)
+                    OR (op.state_before_json IS NOT op.state_after_json AND EXISTS (
+                      SELECT 1 FROM json_each(op.state_after_json) target
+                      JOIN json_each(op.state_before_json) original ON original.key = target.key COLLATE NOCASE
+                      WHERE original.value <> target.value)))
+                ORDER BY op.committed_at DESC, op.rowid DESC LIMIT 1
+                """;
             await using var r=await cmd.ExecuteReaderAsync(ct);
             if(await r.ReadAsync(ct)){id=r.GetString(0);beforeJson=r.IsDBNull(1)?null:r.GetString(1);}
         }
@@ -175,13 +200,22 @@ public sealed class DeploymentExecutor(
             if(row.before is null)kind=ChangeKind.Remove;
             else if(row.pb is null)kind=ChangeKind.RestoreOriginal;
             else kind=row.after is null?ChangeKind.Add:ChangeKind.Replace;
-            inverse.Add(new(++seq,kind,row.path,row.after,row.before,row.pa,row.pb,row.after,null));
+            inverse.Add(new DeploymentChange(++seq,kind,row.path,row.after,row.before,row.pa,row.pb,row.after,null)
+                { RequireAbsent = row.after is null });
         }
         var state=beforeJson is null?null:DeserializeState(beforeJson);
         var plan=new DeploymentPlan(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,inverse,[],[$"Undo committed operation {id}"]);
         await using var metadataConnection=await db.OpenAsync(ct);
         var inverseMetadata=DeploymentMetadata.Invert(await DeploymentMetadata.LoadAsync(metadataConnection,null,id,ct));
-        return await ApplyWithMetadataAsync(plan,$"Undo {id}",inverseMetadata,state,id,ct);
+        try
+        {
+            return await ApplyUnderLeaseAsync(plan,$"Undo {id}",inverseMetadata,state,id,ct);
+        }
+        catch (IOException ex)
+        {
+            // A path that was removed may have been recreated before undo preparation.
+            return new(false,ex.Message,plan.Id,ex,FailureCategory.UserActionRequired);
+        }
     }
 
     public async Task RecoverIncompleteAsync(CancellationToken ct=default)

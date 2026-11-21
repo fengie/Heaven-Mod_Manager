@@ -1,6 +1,6 @@
-# v8.8.129 — canonical state and unmodded launch recovery
+# v8.8.130 — canonical state and deployment history and discovery refresh
 
-Build 617 is the published v8.8.128 package from e637342438a0fec22de09feaf98ea7f26d066c6e. #942 tracks deployment restoration after an unsuccessful unmodded launch. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 618 is the published v8.8.129 package from 46688d61ea97761a1bdb31dca88a4b69c0e19d9c. Verify #944 and #945 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 
