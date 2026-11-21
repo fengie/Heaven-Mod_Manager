@@ -25,7 +25,10 @@ public sealed partial class MainWindowViewModel
                 window.ShowDialog();
                 var requested = window.RequestedStage ?? (window.AppliedMigration ? null : staged);
                 await ReloadMods(ct);
-                if (requested is not null) foreach (var row in Mods) row.ApplyProfileState(requested);
+                suppressChanged=true;
+                try { if (requested is not null) foreach (var row in Mods) row.ApplyProfileState(requested); }
+                finally { suppressChanged=false; Changed(); }
+                if (window.DeploymentChoicesChanged || window.RequestedStage is not null) RequestRuleApply();
                 await RefreshProfiles(ct); await RefreshAnalysis(ct);
             }
             finally { metadataGate.Release(); }

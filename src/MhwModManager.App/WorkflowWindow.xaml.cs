@@ -25,6 +25,7 @@ public partial class WorkflowWindow : Window
     private string? editingRule;
     private (string older, string newer)? reviewedUpdate;
     public IReadOnlyDictionary<string, (bool enabled, int priority)>? RequestedStage { get; private set; }
+    public bool DeploymentChoicesChanged { get; private set; }
     public bool AppliedMigration { get; private set; }
 
     public WorkflowWindow(AppServices services, Dictionary<string, (bool enabled, int priority)> stage)
@@ -214,7 +215,7 @@ public partial class WorkflowWindow : Window
         await RunAsync(async () =>
         {
             if (recipePath is null) throw new InvalidOperationException("Open and review a mod list first.");
-            var count = await services.Recipe.RestoreFamiliesAsync(recipePath); await RefreshAsync();
+            var count = await services.Recipe.RestoreFamiliesAsync(recipePath); DeploymentChoicesChanged |= count > 0; await RefreshAsync();
             Status.Text = $"Restored {count} known mod relationship(s). Existing local rules were kept; review File Decisions before applying changes.";
         });
     }
@@ -250,7 +251,7 @@ public partial class WorkflowWindow : Window
     private async void StageProfile(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(async () => { if (ProfileB.SelectedItem is not ProfileSummary p) throw new InvalidOperationException("Choose the right profile."); stage = new(await services.Profiles.LoadAsync(p.Id), StringComparer.OrdinalIgnoreCase); RequestedStage = stage; await RefreshAsync(); Status.Text = "Profile loaded as pending changes. Close this window, review the changes, then choose Apply Mod Changes."; });
+        await RunAsync(async () => { if (ProfileB.SelectedItem is not ProfileSummary p) throw new InvalidOperationException("Choose the right profile."); stage = new(await services.Profiles.LoadAsync(p.Id), StringComparer.OrdinalIgnoreCase); RequestedStage = stage; await RefreshAsync(); Status.Text = "Close this window to apply the selected profile."; });
     }
     private void RuleSelected(object sender, SelectionChangedEventArgs e)
     {
@@ -288,18 +289,19 @@ public partial class WorkflowWindow : Window
                     var kind = RuleKindBox.SelectedIndex == 1 ? RuleKind.Incompatible : RuleKindBox.SelectedIndex == 2 ? RuleKind.ExactWinner : RuleKind.Overlay;
                     await editor.SaveAsync(new(editingRule ?? Guid.NewGuid().ToString("N"), kind, kind == RuleKind.ExactWinner ? RuleScope.ExactPath : RuleScope.ModPair, left?.Id, right.Id, kind == RuleKind.Incompatible ? null : right.Id, kind == RuleKind.ExactWinner ? RulePath.Text : null, RuleReason.Text, true, DateTimeOffset.UtcNow)); break;
             }
-            editingRule = null; await RefreshAsync(); Status.Text = "Saved. Review File Decisions before applying changes.";
+            DeploymentChoicesChanged = true;
+            editingRule = null; await RefreshAsync(); Status.Text = "Saved. Manager will check these choices when you close this window.";
         });
     }
     private async void DeleteRule(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(async () => { if (RuleRows.SelectedItem is not ConflictRule r) throw new InvalidOperationException("Select a rule."); await new RulesEditorService(services.Database).RemoveAsync(r.Id); editingRule = null; await RefreshAsync(); });
+        await RunAsync(async () => { if (RuleRows.SelectedItem is not ConflictRule r) throw new InvalidOperationException("Select a rule."); await new RulesEditorService(services.Database).RemoveAsync(r.Id); DeploymentChoicesChanged = true; editingRule = null; await RefreshAsync(); });
     }
     private async void ClearProvider(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(async () => { await new RulesEditorService(services.Database).SaveProviderAsync(RulePath.Text, null); await RefreshAsync(); });
+        await RunAsync(async () => { await new RulesEditorService(services.Database).SaveProviderAsync(RulePath.Text, null); DeploymentChoicesChanged = true; await RefreshAsync(); });
     }
     private void GraphClick(object sender, RoutedEventArgs e)
     {

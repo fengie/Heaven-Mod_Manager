@@ -77,7 +77,9 @@ public sealed partial class MainWindowViewModel
             }
             if (metadata.Count > 0 || plan.Changes.Count > 0 || staged.Where((m,i) => m.Enabled != snapshot.Mods[i].Enabled).Any())
             {
-                var result = await s.Executor.ApplyWithMetadataAsync(plan,$"Choose outfit for {armor.Armor}",metadata,stage,ct:ct);
+                var checkedPlan = plan with { Changes=plan.Changes.Select(change => change.Kind==ChangeKind.Add
+                    ? change with { RequireAbsent=true } : change).ToArray() };
+                var result = await s.Executor.ApplyWithMetadataAsync(checkedPlan,$"Choose outfit for {armor.Armor}",metadata,stage,ct:ct);
                 if (!result.Success) throw result.Exception ?? new InvalidOperationException(result.Message);
                 await ReloadMods(ct);
                 await RefreshAnalysis(ct);

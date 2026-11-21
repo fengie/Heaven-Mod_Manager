@@ -1123,6 +1123,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText="An existing game file would be replaced. Review the pending changes before continuing.";
             return;
         }
+        if (analysis.plan.Changes.Count == 0 && explicitIds.Length == 0)
+        {
+            rulesNeedApply=false;
+            StatusText="Game files already match your choices.";
+            return;
+        }
         var audits=analysis.plan.Conflicts.Where(d=>d.Inferred&&d.ResolverScore>0)
             .Select(d=>new ResolverAudit(d.Path,d.WinnerModId,d.ResolverScore,d.ReasonCode,d.Explanation,d.Evidence??string.Empty)).ToArray();
         if(audits.Length>0)await s.Database.RecordResolverAuditAsync(audits,ct);
@@ -1135,6 +1141,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(!result.Success)
             throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
 
+        rulesNeedApply=false;
         var enabledAfter=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
         if(enabledAfter.Length>0)await s.Database.MarkRevalidationAsync(enabledAfter,"Validated by a successful deployment after the current game build was observed.",false,ct);
         await Application.Current.Dispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied();});
@@ -1143,7 +1150,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RefreshActivity(ct);
         Changed();
     });
-        if(StagedCount>0)ReviewRetryVisibility=Visibility.Visible;
+        if(StagedCount>0 || rulesNeedApply)ReviewRetryVisibility=Visibility.Visible;
     }
 
     [RelayCommand]
@@ -1892,7 +1899,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         await RefreshAnalysis(CancellationToken.None);
         var chosen=conflict.Options.First(o=>StringComparer.OrdinalIgnoreCase.Equals(o.Token,winnerToken));
-        StatusText=$"'{chosen.DisplayName}' will be used for this conflict. The alternatives will be turned off when you apply the pending changes.";
+        StatusText=$"Selected '{chosen.DisplayName}' for this conflict.";
+        OnModChoiceChanged();
         await s.Timeline.RecordAsync("choice.conflict",AutomationSeverity.Info,$"User chose {chosen.DisplayName} for {conflict.Scope}.",new{conflict.BundleKey,chosen.Token,chosen.DisplayName},CancellationToken.None);
     }
 
@@ -1939,6 +1947,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
             await RefreshAnalysis(ct);
             StatusText=$"Saved '{mainOption.DisplayName}' as the main mod with {childIds.Length} add-on package(s). The manager will remember this relationship for future conflict checks.";
+            RequestRuleApply();
             await s.Timeline.RecordAsync("family.manual-chain",AutomationSeverity.Info,$"User chained conflicting packages under {mainOption.DisplayName}.",new{conflict.BundleKey,familyId,mainMemberId,mainIds,childGroups},ct);
         });
     }
@@ -2003,7 +2012,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
                 await RefreshAnalysis(ct);
                 StatusText = $"Separated '{option.DisplayName}' from its logical family. Review any remaining actual file conflicts before applying changes.";
-                await s.Timeline.RecordAsync("family.manual-separate", AutomationSeverity.Info,
+                RequestRuleApply();
+            await s.Timeline.RecordAsync("family.manual-separate", AutomationSeverity.Info,
                     $"User separated incorrectly grouped source package '{option.DisplayName}'.",
                     new { conflict.BundleKey, memberId }, ct);
             });

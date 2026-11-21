@@ -12,6 +12,15 @@ public sealed partial class MainWindowViewModel
     private bool retryDiscoveryOnActivation;
     private bool retryExplicitOnActivation;
     private bool userApplyRequested;
+    private bool rulesNeedApply;
+
+    private void RequestRuleApply()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        rulesNeedApply = true;
+        userApplyRequested = true;
+        ScheduleAutomaticChanges();
+    }
     private bool automaticChangesScheduled;
 
     private void RequestDiscoveryCheck()
@@ -27,7 +36,7 @@ public sealed partial class MainWindowViewModel
         if (retryExplicitOnActivation)
         {
             retryExplicitOnActivation=false;
-            userApplyRequested=StagedCount>0;
+            userApplyRequested=rulesNeedApply || StagedCount>0;
         }
         if (retryDiscoveryOnActivation)
         {
@@ -63,7 +72,7 @@ public sealed partial class MainWindowViewModel
             if (userApplyRequested)
             {
                 userApplyRequested = false;
-                if (StagedCount > 0) await ApplyStagedChangesAsync(confirm:false);
+                if (StagedCount > 0 || rulesNeedApply) await ApplyStagedChangesAsync(confirm:false);
             }
             if (discoveryRequested && StagedCount == 0 && !backgroundCts.IsCancellationRequested)
             {

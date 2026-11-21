@@ -425,7 +425,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="KEYBOARD" Style="{StaticResource Eyebrow}"/>
                                                 <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F  Search mods"/>
-                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply changes"/>
+                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Retry pending changes"/>
                                                 <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Z  Undo"/>
                                             </StackPanel>
                                         </Border>
