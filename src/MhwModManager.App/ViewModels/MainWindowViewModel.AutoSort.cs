@@ -11,7 +11,7 @@ namespace MhwModManager.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     private GameModIntakeService? gameIntake;
-    private readonly Dictionary<string, CancellationTokenSource> intakeWatchers = new(PathRules.Comparer);
+    private readonly Dictionary<string, (CancellationTokenSource Lifetime, Task Worker)> intakeWatchers = new(PathRules.Comparer);
     private readonly SemaphoreSlim intakeScanGate = new(1, 1);
     private readonly object intakeScheduleGate = new();
     private CancellationTokenSource? intakeScheduleCts;
@@ -238,17 +238,15 @@ public sealed partial class MainWindowViewModel
         var configured = AutoSortFolders.Concat(inboxRoots).ToHashSet(PathRules.Comparer);
         foreach (var folder in intakeWatchers.Keys.Where(folder => !configured.Contains(folder)).ToArray())
         {
-            intakeWatchers[folder].Cancel();
-            intakeWatchers.Remove(folder);
+            _ = StopIntakeWatcherAsync(folder);
         }
         foreach (var folder in configured)
         {
             if (intakeWatchers.ContainsKey(folder)) continue;
             var lifetime = CancellationTokenSource.CreateLinkedTokenSource(backgroundCts.Token);
-            intakeWatchers.Add(folder, lifetime);
             var inbox = inboxRoots.Contains(folder);
             var token = lifetime.Token;
-            _ = Task.Run(async () =>
+            var worker = Task.Run(async () =>
             {
                 try
                 {
@@ -261,9 +259,21 @@ public sealed partial class MainWindowViewModel
                     }, token);
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { }
-                finally { lifetime.Dispose(); }
             });
+            intakeWatchers.Add(folder, (lifetime, worker));
         }
+    }
+
+    private async Task StopIntakeWatcherAsync(string folder)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        if (!intakeWatchers.Remove(folder, out var watcher)) return;
+        try
+        {
+            watcher.Lifetime.Cancel();
+            await watcher.Worker.ConfigureAwait(false);
+        }
+        finally { watcher.Lifetime.Dispose(); }
     }
 
     internal static async Task WatchIntakeFolderAsync(string folder, TimeSpan interval, Action<string?> changed, CancellationToken ct)
@@ -447,7 +457,6 @@ public sealed partial class MainWindowViewModel
             intakeScheduleCts?.Cancel();
             intakeScheduleCts = null;
         }
-        foreach (var lifetime in intakeWatchers.Values) lifetime.Cancel();
-        intakeWatchers.Clear();
+        foreach (var folder in intakeWatchers.Keys.ToArray()) _ = StopIntakeWatcherAsync(folder);
     }
 }

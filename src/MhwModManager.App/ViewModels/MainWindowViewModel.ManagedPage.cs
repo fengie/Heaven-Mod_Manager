@@ -50,12 +50,13 @@ public sealed partial class MainWindowViewModel
         using var trace=MasterDebugLog.BeginMethod();
         if(disposed) return;
         backgroundCts.Cancel();
+        var stoppingWatchers = Task.WhenAll(intakeWatchers.Keys.ToArray().Select(StopIntakeWatcherAsync));
         // A visit can start a catalog or inventory read before completing.
         try { await pageVisits; }
         catch(OperationCanceledException) when(backgroundCts.IsCancellationRequested) { }
         finally
         {
-            try { await Task.WhenAll(managedPageRead,pageMetadata,periodicMetadata,automaticChangeWork,localInventoryScan ?? Task.CompletedTask); }
+            try { await Task.WhenAll(stoppingWatchers,managedPageRead,pageMetadata,periodicMetadata,automaticChangeWork,localInventoryScan ?? Task.CompletedTask); }
             catch(OperationCanceledException) when(backgroundCts.IsCancellationRequested) { }
         }
     }

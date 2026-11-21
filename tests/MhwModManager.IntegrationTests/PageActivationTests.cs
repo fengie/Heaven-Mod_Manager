@@ -7,6 +7,17 @@ namespace MhwModManager.IntegrationTests;
 public sealed class PageActivationTests
 {
     [Fact]
+    public Task ClosingAnInitializedSessionDrainsInboxWatchersBeforeDisposal() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var vm = new MainWindowViewModel(services);
+            await vm.InitializeAsync();
+            await vm.StopPageReadsAsync();
+            vm.Dispose();
+            Assert.False(vm.PageReadsInProgress);
+        });
+
+    [Fact]
     public Task ReturningToProfilesAndHistoryPicksUpChangesMadeWhileHidden() =>
         IsolatedWpfSession.RunAsync(async (services, ct) =>
         {
