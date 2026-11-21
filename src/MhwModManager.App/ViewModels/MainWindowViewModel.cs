@@ -89,7 +89,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
     public bool SupportsLiveAdoption=>s.Paths.Game.IsMonsterHunterWorld||!string.IsNullOrWhiteSpace(s.Paths.Game.ModRootRelativePath);
     public bool HasSemanticCoverage=>s.Paths.Game.SupportsSemanticCoverage;
-    public string ActiveGameDisplayName => s.Paths.Game.DisplayName;
+    public string ActiveGameDisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return s.Paths.Game.DisplayName;
+        }
+    }
     public string WindowTitle=>$"Universal Mod Manager — {s.Paths.Game.DisplayName}";
     public string GameSupportText
     {
