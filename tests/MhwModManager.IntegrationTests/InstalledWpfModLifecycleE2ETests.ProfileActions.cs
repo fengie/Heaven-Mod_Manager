@@ -311,7 +311,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Assert.Equal(alternateHash, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(archive)));
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
-        Assert.False(File.Exists(alternateLive));
+        Assert.Equal(payload, File.ReadAllBytes(alternateLive));
         passed.Add("Inspect two package layouts, close preview and preserve archives, deployed and unmanaged files");
     }
 
