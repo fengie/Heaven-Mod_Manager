@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.133</Version>
-    <InformationalVersion>8.8.133-automatic-exact-copies</InformationalVersion>
+    <Version>8.8.134</Version>
+    <InformationalVersion>8.8.134-folder-package-boundaries</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
