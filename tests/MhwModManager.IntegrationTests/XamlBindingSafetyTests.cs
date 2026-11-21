@@ -130,7 +130,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await Coverage.RefreshAsync(HasSemanticCoverage,ct);", coverageFeature);
         Assert.Contains("PresentationReadRepository", coveragePage);
         Assert.Contains("ItemsSource=\"{Binding OutfitRows}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshOutfitsCommand}\"", xaml);
+        Assert.Contains("DataContext.ChooseOutfitCommand", xaml);
+        Assert.Contains("DataContext.ClearOutfitChoiceCommand", xaml);
     }
 
     [Fact]

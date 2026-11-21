@@ -25,6 +25,36 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
                 Confidence.Explicit)).ToArray();
         if (conflictingChoices.Length != 0)
             return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], conflictingChoices, []);
+        if (snapshot.ArmorOutfitChoices.Count > 0 && GameAdapters.Resolve(game).SupportsMhwConflictSemantics)
+        {
+            // Pick one source's complete structural piece. Keep stock fallbacks for files that
+            // source omits, and keep unrelated pieces and the other packages enabled.
+            var pieces = new Dictionary<(string model,string piece),string>();
+            var selectedPaths = new Dictionary<string,string>(PathRules.Comparer);
+            foreach (var file in snapshot.Files)
+            {
+                if (!enabled.ContainsKey(file.ModId) || !PathRules.TryGetArmorComponent(file.Path,out var model,out var piece) ||
+                    !snapshot.ArmorOutfitChoices.TryGetValue(model,out var owner) || owner != file.ModId) continue;
+                selectedPaths[file.Path]=owner;
+                if (file.FileClass == FileClass.Structural) pieces[(model,piece)]=owner;
+            }
+            var effectiveFiles = new List<ModFileDescriptor>();
+            foreach (var file in snapshot.Files)
+            {
+                var pinnedPiece = PathRules.TryGetArmorComponent(file.Path,out var model,out var piece) &&
+                    pieces.TryGetValue((model,piece),out var owner) && owner != file.ModId;
+                if (pinnedPiece || selectedPaths.TryGetValue(file.Path,out var selected) && selected != file.ModId)
+                {
+                    if (enabled.ContainsKey(file.ModId) && snapshot.ExactWinners.TryGetValue(file.Path,out var exact) && exact==file.ModId)
+                        return new(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,[],[new ConflictDecision(file.Path,
+                            ConflictKind.Incompatible,true,null,"outfit-file-rule","A saved file-specific rule conflicts with this armor outfit.",Confidence.Explicit)],[]);
+                    continue;
+                }
+                effectiveFiles.Add(file);
+            }
+            snapshot = snapshot with { Files=effectiveFiles };
+        }
+
         // PairKey lowercases both IDs on every call. Dense shared namespaces can produce
         // millions of pair observations, so intern the canonical spelling once per mod.
         var pairIds = enabled.Keys.ToDictionary(id => id, id => id.ToLowerInvariant(), StringComparer.OrdinalIgnoreCase);

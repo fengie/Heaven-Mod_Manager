@@ -295,6 +295,7 @@ public sealed class ManagerDatabase
         OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=m.id)
         OR EXISTS(SELECT 1 FROM conflict_rules WHERE m.id IN (left_mod_id,right_mod_id,winner_mod_id))
         OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM armor_outfit_choices WHERE mod_id=m.id)
         OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=m.id)
         OR EXISTS(SELECT 1 FROM family_preferences WHERE selected_mod_id=m.id)
         """;
@@ -449,6 +450,7 @@ public sealed class ManagerDatabase
                 OR EXISTS(SELECT 1 FROM mod_provenance WHERE mod_id=mods.id)
                 OR EXISTS(SELECT 1 FROM mod_supersession WHERE mods.id IN (older_mod_id,newer_mod_id))
                 OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM armor_outfit_choices WHERE mod_id=mods.id)
             FROM mods
             """;
         await using var r = await cmd.ExecuteReaderAsync(ct);

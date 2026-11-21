@@ -31,6 +31,31 @@ public sealed class PresentationReadRepository(ManagerDatabase db)
         return rows;
     }
 
+    public async Task<ILookup<string, ArmorOutfitOption>> GetArmorOptionsAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var available = (await db.GetModsAsync(ct)).Where(m => !m.IsSuperseded && !m.RequiresLayoutReview)
+            .ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
+        var options = new List<ArmorOutfitOption>();
+        await using var connection = await db.OpenAsync(ct);
+        await using var query = connection.CreateCommand();
+        query.CommandText = """
+            SELECT f.model_id, f.mod_id, GROUP_CONCAT(DISTINCT f.component),
+                   COUNT(*), COUNT(d.path), c.mod_id IS NOT NULL
+            FROM mod_file_armor f
+            LEFT JOIN deployment_manifest d ON d.path=f.path AND d.provider_mod_id=f.mod_id
+            LEFT JOIN armor_outfit_choices c ON c.model_id=f.model_id AND c.mod_id=f.mod_id
+            GROUP BY f.model_id,f.mod_id ORDER BY f.model_id,f.mod_id
+            """;
+        await using var rows = await query.ExecuteReaderAsync(ct);
+        while (await rows.ReadAsync(ct))
+            if (available.TryGetValue(rows.GetString(1),out var mod))
+                options.Add(new(rows.GetString(0),mod.Id,mod.DisplayName,rows.GetString(2),
+                    rows.GetInt32(3),rows.GetInt32(4),rows.GetBoolean(5)));
+        return options.OrderBy(o => o.DisplayName,StringComparer.OrdinalIgnoreCase)
+            .ToLookup(o => o.ModelId,StringComparer.OrdinalIgnoreCase);
+    }
+
     public async Task<IReadOnlyList<OutfitCoverageEntry>> GetOutfitCoverageAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -52,7 +77,7 @@ public sealed class PresentationReadRepository(ManagerDatabase db)
             FROM armor_catalog a
             LEFT JOIN mod_file_armor mfa ON mfa.model_id=a.model_id
             LEFT JOIN mods pm ON pm.id=mfa.mod_id
-            LEFT JOIN deployment_manifest dm ON dm.path=mfa.path
+            LEFT JOIN deployment_manifest dm ON dm.path=mfa.path AND dm.provider_mod_id=mfa.mod_id
             GROUP BY a.series_id,a.name,a.model_id
             ORDER BY a.series_id
             """;
@@ -73,3 +98,10 @@ public sealed class PresentationReadRepository(ManagerDatabase db)
 
 public sealed record ActivityEntry(string Id, string State, string Description, string StartedAt);
 public sealed record OutfitCoverageEntry(string Armor, string ModelId, int AvailableProviders, string WinningPieces, string Providers, string? PreviewPath);
+
+public sealed record ArmorOutfitSelection(string ModelId,string? ModId);
+public sealed record ArmorOutfitOption(string ModelId,string ModId,string DisplayName,string Pieces,
+    int FileCount,int WinningFiles,bool IsPreferred)
+{
+    public string Summary => $"{Pieces} · {WinningFiles} of {FileCount} files in use" + (IsPreferred ? " · Preferred outfit" : "");
+}
