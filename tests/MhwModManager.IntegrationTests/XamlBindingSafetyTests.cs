@@ -178,8 +178,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await replacement.InitializeAsync();", window);
         Assert.Contains("DataContext = previousViewModel;", window);
         Assert.Contains("ItemsSource=\"{Binding Games}\"", xaml);
-        Assert.Contains("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
-        Assert.Contains("Command=\"{Binding SwitchGameCommand}\"", xaml);
+        Assert.DoesNotContain("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
+        Assert.Contains("SwitchCommand=\"{Binding SwitchGameCommand}\"", xaml);
         Assert.DoesNotContain("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
     }
 
@@ -213,13 +213,13 @@ public sealed partial class XamlBindingSafetyTests
 
         Assert.Contains("AutomationProperties.Name=\"Active game\"", xaml);
         Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameSelector\"", xaml);
-        Assert.Contains("AutomationProperties.ItemStatus=\"{Binding SelectedGame.DisplayName}\"", xaml);
-        Assert.Contains("TextSearch.TextPath=\"DisplayName\"", xaml);
-        Assert.Contains("<ComboBox.ItemTemplate>", xaml);
+        Assert.Contains("AutomationProperties.ItemStatus=\"{Binding ActiveGameDisplayName}\"", xaml);
+        Assert.Contains("Header=\"{Binding ActiveGameDisplayName}\"", xaml);
+        Assert.Contains("<local:GameChoiceMenu.ItemTemplate>", xaml);
         Assert.Contains("Text=\"{Binding DisplayName}\"", xaml);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
         Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameDisplayName\"", xaml);
-        Assert.Contains("AutomationProperties.Name=\"{Binding DisplayName}\"", xaml);
+        Assert.Contains("Property=\"AutomationProperties.Name\" Value=\"{Binding DisplayName}\"", xaml);
         Assert.DoesNotContain("DisplayMemberPath=\"DisplayName\"", xaml);
     }
 

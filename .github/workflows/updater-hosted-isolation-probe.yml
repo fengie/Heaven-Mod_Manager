@@ -105,7 +105,7 @@ jobs:
             throw 'Positive update and rollback scenarios did not both pass.'
           }
           if ($doc.scenarioA.selectorDisplayText -ne 'Updater E2E Fake Game' -or
-              -not [bool]$doc.scenarioA.switchButtonEnabled -or
+              -not [bool]$doc.scenarioA.gameSelectorEnabled -or
               -not [bool]$doc.scenarioA.settingsButtonEnabled) {
             throw 'Real installed WPF game-selector and controls were not verified.'
           }

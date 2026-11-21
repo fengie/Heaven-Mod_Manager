@@ -1,6 +1,7 @@
 <Window x:Class="MhwModManager.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MhwModManager.App"
         xmlns:vm="clr-namespace:MhwModManager.App.ViewModels"
         Title="{Binding WindowTitle}"
         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
@@ -47,14 +48,38 @@
                 <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0D151F" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" Padding="10,7">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
-                        <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" TextSearch.TextPath="DisplayName" AutomationProperties.Name="Active game" AutomationProperties.AutomationId="ActiveGameSelector" AutomationProperties.ItemStatus="{Binding SelectedGame.DisplayName}" ToolTip="{Binding SelectedGame.DisplayName}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" AutomationProperties.AutomationId="ActiveGameDisplayName" AutomationProperties.Name="{Binding DisplayName}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="5,0,0,0" Padding="10,6"/>
+                        <Menu Background="Transparent" Padding="0">
+                            <local:GameChoiceMenu ItemsSource="{Binding Games}" SwitchCommand="{Binding SwitchGameCommand}"
+                                                  Header="{Binding ActiveGameDisplayName}" ToolTip="Switch game"
+                                                  AutomationProperties.Name="Active game" AutomationProperties.AutomationId="ActiveGameSelector"
+                                                  AutomationProperties.ItemStatus="{Binding ActiveGameDisplayName}">
+                                <local:GameChoiceMenu.HeaderTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource AccentDim}" CornerRadius="6" Padding="8,4">
+                                            <DockPanel Width="200">
+                                                <TextBlock DockPanel.Dock="Right" Text="▾" Foreground="{StaticResource AccentBright}" Margin="6,0,0,0"/>
+                                                <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Text}" AutomationProperties.AutomationId="ActiveGameDisplayName"/>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </local:GameChoiceMenu.HeaderTemplate>
+                                <local:GameChoiceMenu.ItemContainerStyle>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="AutomationProperties.Name" Value="{Binding DisplayName}"/>
+                                        <Setter Property="AutomationProperties.AutomationId" Value="{Binding Id}"/>
+                                        <Setter Property="AutomationProperties.HelpText" Value="{Binding GameRoot}"/>
+                                    </Style>
+                                </local:GameChoiceMenu.ItemContainerStyle>
+                                <local:GameChoiceMenu.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel MaxWidth="520">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding GameRoot}" TextTrimming="CharacterEllipsis" ToolTip="{Binding GameRoot}" FontSize="11"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </local:GameChoiceMenu.ItemTemplate>
+                            </local:GameChoiceMenu>
+                        </Menu>
                         <Button Content="Settings" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}" Margin="2,0,0,0" Padding="10,6"/>
                     </StackPanel>
                 </Border>

@@ -234,15 +234,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var expander = (ExpandCollapsePattern)selector.GetCurrentPattern(ExpandCollapsePattern.Pattern);
         expander.Expand();
         var nextGame = await WaitForElementAsync(() =>
-            Find(selector, element => element.Current.ControlType == ControlType.ListItem &&
-                element.Current.Name.Contains(run.SecondGame.DisplayName, StringComparison.Ordinal)) ??
-            Find(window, element => element.Current.ControlType == ControlType.ListItem &&
-                element.Current.Name.Contains(run.SecondGame.DisplayName, StringComparison.Ordinal)),
-            UiTimeout, "second registered game", TestToken);
-        var selection = (SelectionItemPattern)nextGame.GetCurrentPattern(SelectionItemPattern.Pattern);
-        selection.Select();
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Switch", enabled: true),
-            UiTimeout, "Switch game", TestToken));
+            Find(selector, element => element.Current.ControlType == ControlType.MenuItem &&
+                element.Current.AutomationId == run.SecondGame.Id),
+            UiTimeout, "second registered game by profile ID", TestToken);
+        nextGame.SetFocus();
+        Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
+        Invoke(nextGame);
         await WaitForAsync(() => ReadActiveGame(window) == run.SecondGame.DisplayName,
             UiTimeout, "game selector never switched to the second fake profile", TestToken);
         Assert.False(app.HasExited);
