@@ -67,11 +67,18 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var search = await WaitForElementAsync(() => Find(window, e =>
                 e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods"), UiTimeout, "Mods search", ct);
             ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).SetValue(name);
-            AutomationElement box;
             try
             {
-                box = await WaitForElementAsync(() => Find(window, e =>
-                    e.Current.ControlType == ControlType.CheckBox && e.Current.Name == name), UiTimeout, "family " + name, ct);
+                await WaitForElementAsync(() =>
+                {
+                    var row = Find(window, e => e.Current.ControlType == ControlType.CheckBox && e.Current.Name == name);
+                    while (row is not null && row.Current.ControlType != ControlType.DataItem)
+                        row = TreeWalker.RawViewWalker.GetParent(row);
+                    if (row is null || !row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var pattern)) return null;
+                    var selection = (SelectionItemPattern)pattern;
+                    if (!selection.Current.IsSelected) selection.Select();
+                    return selection.Current.IsSelected ? row : null;
+                }, UiTimeout, "family " + name, ct);
             }
             catch (TimeoutException error)
             {
@@ -102,11 +109,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 catch (Exception diagnosticFailure) { state = $"Diagnostic read failed ({diagnosticFailure.GetType().Name})"; }
                 throw new TimeoutException($"{error.Message}. {state}.", error);
             }
-            var row = box;
-            while (row is not null && row.Current.ControlType != ControlType.DataItem)
-                row = TreeWalker.RawViewWalker.GetParent(row);
-            Assert.NotNull(row);
-            ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
         }
         async Task<TogglePattern> Part(string name)
         {
