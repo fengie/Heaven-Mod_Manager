@@ -505,7 +505,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     {
                         var result=await s.Nexus.RefreshAsync(false,ct);
                         if(!result.LiveSyncRan)continue;
-                        await ReloadMods(ct);
+                        await ReloadMods(ct,preserveStagedChanges:true);
                         await RefreshAnalysis(ct);
                         MasterDebugLog.Write("AUTO-METADATA",$"Periodic refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
                     }
@@ -680,7 +680,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 ? Mods.Where(row => row.HasStagedChanges).SelectMany(row => row.StagedChanges())
                     .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
                 : null;
-            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending,OnModChoiceChanged)).ToArray();
+            if (pending is not null && discoveryUserEdits is not null)
+                foreach(var edit in discoveryUserEdits) pending[edit.Key]=edit.Value;
+            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending,RecordUserChoice)).ToArray();
             var rowsByMember=rows.SelectMany(row=>row.Members.Select(member=>(member.Id,row)))
                 .ToDictionary(x=>x.Id,x=>x.row,StringComparer.OrdinalIgnoreCase);
             foreach(var group in suggestions.GroupBy(s=>s.ChildModId,StringComparer.OrdinalIgnoreCase))
@@ -1098,7 +1100,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         var analysis=await BuildAnalysisAsync(stage,ct);
         var displayRows=analysis.plan.IsBlocked?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
-        await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
+        await viewDispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
         if(analysis.plan.IsBlocked)
         {
             SelectedTab=3;
@@ -1144,7 +1146,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         rulesNeedApply=false;
         var enabledAfter=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
         if(enabledAfter.Length>0)await s.Database.MarkRevalidationAsync(enabledAfter,"Validated by a successful deployment after the current game build was observed.",false,ct);
-        await Application.Current.Dispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied();});
+        await viewDispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied(stage);});
         StatusText=result.Message;
         await RefreshAnalysis(ct);
         await RefreshActivity(ct);

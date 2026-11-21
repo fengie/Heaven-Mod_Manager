@@ -63,7 +63,7 @@ public partial class ModPartRowViewModel:ObservableObject
 public partial class ModRowViewModel:ObservableObject
 {
     private readonly Action _changed;
-    private readonly Action? userEdited;
+    private readonly Action<string,(bool enabled,int priority)>? userEdited;
     private readonly Dictionary<string,(bool enabled,int priority)> _appliedMembers;
     private readonly Dictionary<string,(bool enabled,int priority)> _stagedMembers;
     private bool _updatingSummary;
@@ -194,7 +194,7 @@ public partial class ModRowViewModel:ObservableObject
     }
 
     public ModRowViewModel(LogicalModFamily family,Action changed,
-        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null, Action? userEdited = null)
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null, Action<string,(bool enabled,int priority)>? userEdited = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
@@ -233,6 +233,7 @@ public partial class ModRowViewModel:ObservableObject
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
         if (!CanStage) { SetSummaryFromMembers(); return; }
+        var before = userEdited is null ? null : new Dictionary<string,(bool enabled,int priority)>(_stagedMembers,PathRules.Comparer);
         if(value.HasValue)
         {
             var choices = Members.Where(member=>!string.IsNullOrWhiteSpace(member.ChoiceGroup))
@@ -249,7 +250,7 @@ public partial class ModRowViewModel:ObservableObject
             }
         }
         EnsureRequiredCompositionMembers();
-        SetSummaryFromMembers();_changed();userEdited?.Invoke();
+        SetSummaryFromMembers();_changed();ReportUserChanges(before);
     }
 
     public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
@@ -273,6 +274,7 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!CanStage || !_stagedMembers.TryGetValue(memberId,out var current)) return;
+        var before = userEdited is null ? null : new Dictionary<string,(bool enabled,int priority)>(_stagedMembers,PathRules.Comparer);
         var member = Members.First(item => StringComparer.OrdinalIgnoreCase.Equals(item.Id,memberId));
         if (enabled && !string.IsNullOrWhiteSpace(member.ChoiceGroup))
             foreach (var peer in Members.Where(item => item.Id != member.Id && item.ChoiceGroup == member.ChoiceGroup))
@@ -280,8 +282,16 @@ public partial class ModRowViewModel:ObservableObject
         _stagedMembers[memberId]=(enabled,current.priority);
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();
-        _changed();userEdited?.Invoke();
+        _changed();ReportUserChanges(before);
     }
+    private void ReportUserChanges(Dictionary<string,(bool enabled,int priority)>? before)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        if (before is null || userEdited is null) return;
+        foreach(var state in _stagedMembers)
+            if(before[state.Key]!=state.Value) userEdited(state.Key,state.Value);
+    }
+
     public bool ContainsMember(string memberId)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -296,9 +306,13 @@ public partial class ModRowViewModel:ObservableObject
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();_changed();
     }
-    public void CommitApplied(){
+    public void CommitApplied(IReadOnlyDictionary<string,(bool enabled,int priority)> committed)
+    {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        _appliedMembers.Clear();foreach(var item in _stagedMembers)_appliedMembers[item.Key]=item.Value;RaiseStateChanged();}
+        foreach(var member in Members)
+            if(committed.TryGetValue(member.Id,out var state)) _appliedMembers[member.Id]=state;
+        RaiseStateChanged();
+    }
 
     public void DiscardStaged()
     {

@@ -38,6 +38,8 @@ public sealed class AutomaticDiscoveryTests
             Assert.True(undo.Success,undo.Message);
             await s.Catalog.RefreshFoldersAsync(ct);
             Assert.Empty(await new ManagerDatabase(s.Paths.DatabasePath).GetSettingsByPrefixAsync("discovery.pending:",ct));
+            // Replay an already-fetched batch after Undo on the same catalog.
+            Assert.Equal(0,await MainWindowViewModel.ApplyDiscoveredAsync(s,[id],ct));
             Assert.False(File.Exists(target));
             Assert.Equal(payload,File.ReadAllBytes(source));
         },DiscoveredGameProfiles.Load().Single(game=>game.Id==gameId));

@@ -23,6 +23,15 @@ public sealed partial class MainWindowViewModel
     }
     private bool automaticChangesScheduled;
 
+    private Dictionary<string,(bool enabled,int priority)>? discoveryUserEdits;
+
+    private void RecordUserChoice(string id,(bool enabled,int priority) state)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        if(discoveryUserEdits is not null) discoveryUserEdits[id]=state;
+        OnModChoiceChanged();
+    }
+
     private void RequestDiscoveryCheck()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -81,16 +90,21 @@ public sealed partial class MainWindowViewModel
                 if (pending.Count > 0 && busyCts is null && StagedCount == 0)
                     await RunBusy("deployment.discovered","Checking new mods","Checking ownership, compatibility and game files…",true,async ct =>
                     {
-                        var applied = await Task.Run(()=>ApplyDiscoveredAsync(s,pending.Values.ToArray(),ct),ct);
-                        if (applied is null) { retryDiscoveryOnActivation=true; StatusText="New mods are waiting for an available game installation."; return; }
-                        if (applied.Value > 0)
+                        discoveryUserEdits=new(PathRules.Comparer);
+                        try
                         {
-                            await ReloadMods(ct,preserveStagedChanges:true);
-                            await RefreshAnalysis(ct);
-                            await RefreshActivity(ct);
-                            StatusText=$"Enabled {applied.Value} newly discovered mod(s).";
+                            var applied = await Task.Run(()=>ApplyDiscoveredAsync(s,pending.Values.ToArray(),ct),ct);
+                            if (applied is null) { retryDiscoveryOnActivation=true; StatusText="New mods are waiting for an available game installation."; return; }
+                            if (applied.Value > 0)
+                            {
+                                await ReloadMods(ct,preserveStagedChanges:true);
+                                await RefreshAnalysis(ct);
+                                await RefreshActivity(ct);
+                                StatusText=$"Enabled {applied.Value} newly discovered mod(s).";
+                            }
+                            else StatusText="Discovered packages remain in Mods for review or explicit selection.";
                         }
-                        else StatusText="Discovered packages remain in Mods for review or explicit selection.";
+                        finally { discoveryUserEdits=null; }
                     });
                 else if(pending.Count>0) discoveryRequested=true;
             }
@@ -116,8 +130,10 @@ public sealed partial class MainWindowViewModel
         {
             return null;
         }
-        var mods = await s.Database.GetModsAsync(ct);
         var pending = ids.ToHashSet(PathRules.Comparer);
+        pending.IntersectWith((await s.Database.GetSettingsByPrefixAsync("discovery.pending:",ct)).Values);
+        if(pending.Count==0) return 0;
+        var mods = await s.Database.GetModsAsync(ct);
         var protectedIds = await s.Database.GetDiscoveryProtectedIdsAsync(ct);
         var candidates = mods.Where(m => pending.Contains(m.Id) && !protectedIds.Contains(m.Id) && !m.Enabled && !m.IsSuperseded &&
             !m.RequiresLayoutReview && !m.NeedsRevalidation && m.FamilyId is null &&
