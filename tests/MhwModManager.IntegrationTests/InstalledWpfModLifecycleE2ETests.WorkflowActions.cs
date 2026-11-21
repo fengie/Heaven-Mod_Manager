@@ -119,6 +119,56 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             UiTimeout, "comparison of inherited and parent setup", ct);
         passed.Add("Save inherited setup, verify its stored parent and mod choices, and compare profiles");
 
+        await Tab("Portable Mod List");
+        async Task Pick(string action, string submit, string path)
+        {
+            var button = await WaitForElementAsync(() => FindButton(dialog, action, enabled: true),
+                UiTimeout, action, ct);
+            var opening = Task.Run(() => Invoke(button), ct);
+            var picker = await WaitForElementAsync(() => FindFileDialog(dialog.Current.ProcessId),
+                UiTimeout, action + " file picker", ct);
+            var field = await WaitForElementAsync(() => FindPickerField(picker, false), UiTimeout, "file name", ct);
+            ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).SetValue(path);
+            Invoke(await WaitForElementAsync(() => FindButton(picker, submit, enabled: true), UiTimeout, submit, ct));
+            await opening.WaitAsync(UiTimeout, ct);
+        }
+        async Task StatusContains(string message) => await WaitForElementAsync(() => Find(dialog, e =>
+            e.Current.AutomationId == "Status" && e.Current.Name.Contains(message, StringComparison.Ordinal)),
+            UiTimeout, message, ct);
+        var recipe = Path.Combine(run.ManagerHome, "portable.mhwrecipe");
+        await Pick("Export Current Mod List…", "Save", recipe);
+        await StatusContains("Exported the current mod list:");
+        using (var json = System.Text.Json.JsonDocument.Parse(File.ReadAllBytes(recipe)))
+        {
+            Assert.Equal(run.FirstGame.Id, json.RootElement.GetProperty("gameId").GetString());
+            Assert.Contains(json.RootElement.GetProperty("mods").EnumerateArray(), m =>
+                m.GetProperty("displayName").GetString() == primary && m.GetProperty("enabled").GetBoolean());
+        }
+        await Pick("Open Mod List…", "Open", recipe);
+        await StatusContains("entries can be restored.");
+        var recipeRows = await Id("RecipeRows");
+        await WaitForElementAsync(() => Find(recipeRows, e => e.Current.Name == primary), UiTimeout, "exported package in review", ct);
+        passed.Add("Save and reopen this game's exported mod list using the native file pickers");
+
+        var handoff = Path.Combine(run.ManagerHome, "portable.vortexhandoff.json");
+        if (MhwModManager.Automation.VortexInteropContract.TryGetGame(run.FirstGame) is not null)
+        {
+            await Pick("Export Vortex Handoff…", "Save", handoff);
+            await StatusContains("Exported a credential-free Vortex handoff:");
+            await Pick("Open Vortex Handoff…", "Open", handoff);
+            await StatusContains("Vortex handoff entries can be restored.");
+            passed.Add("Export and open a configured Vortex handoff using both native pickers");
+        }
+        else
+        {
+            await Click("Export Vortex Handoff…");
+            await StatusContains("Vortex handoff is not configured");
+            await File.WriteAllTextAsync(handoff, """{"format":1,"game":{"vortexGameId":"monsterhunterworld","modPath":"nativePC","executable":"MonsterHunterWorld.exe"},"mods":[]}""", ct);
+            await Pick("Open Vortex Handoff…", "Open", handoff);
+            await StatusContains("not configured for game profile '" + run.FirstGame.Id + "'");
+            passed.Add("Refuse both Vortex export and a foreign Vortex file on an unconfigured profile");
+        }
+
         await Tab("Safe Update");
         var apply = await WaitForElementAsync(() => FindButton(dialog, "Apply Update"), UiTimeout, "update action", ct);
         Assert.False(apply.Current.IsEnabled);
