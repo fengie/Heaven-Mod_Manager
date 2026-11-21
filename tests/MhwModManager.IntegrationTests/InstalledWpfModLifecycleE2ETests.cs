@@ -456,9 +456,18 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                     UiTimeout, "unassigned parent or mutually exclusive camera files kept for review", TestToken);
             }
             Invoke(await WaitForElementAsync(() => FindButton(review, "Close review", enabled: true), UiTimeout, "close review", TestToken));
-            var catalog = await run.OpenCatalog().GetModsAsync(TestToken);
-            Assert.Equal(names.Order(StringComparer.Ordinal), catalog.Select(mod => mod.DisplayName).Order(StringComparer.Ordinal));
-            Assert.All(catalog, mod => Assert.False(mod.Enabled));
+            var database = run.OpenCatalog();
+            try
+            {
+                var catalog = await database.GetModsAsync(TestToken);
+                Assert.Equal(names.Order(StringComparer.Ordinal), catalog.Select(mod => mod.DisplayName).Order(StringComparer.Ordinal));
+                Assert.All(catalog, mod => Assert.False(mod.Enabled));
+            }
+            finally
+            {
+                await using var connection = await database.OpenAsync(CancellationToken.None);
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            }
         }
         await SelectModsTabAsync(window, TestToken);
         var search = await WaitForElementAsync(() => Find(window, element =>
