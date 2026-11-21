@@ -1784,20 +1784,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             {
                 try
                 {
-                    // Reverse just the temporary removals. Other enabled packages may never
-                    // have been applied, and their saved choices must survive a failed launch.
-                    var changes = offPlan.Changes.Select(change =>
-                    {
-                        var previous = snap.CurrentManifest[change.Path];
-                        return new DeploymentChange(change.Sequence,
-                            change.AfterBlobSha256 is null ? ChangeKind.Add : ChangeKind.Replace, change.Path,
-                            change.AfterBlobSha256, previous.BlobSha256, null, previous.ProviderModId,
-                            change.AfterBlobSha256, previous.RuleId) { RequireAbsent = change.AfterBlobSha256 is null };
-                    }).ToArray();
-                    var restore = new DeploymentPlan(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, changes, [], []);
-                    var restored = await s.Executor.ApplyAsync(restore, "Restore after safe mode",
-                        parentOperationId: offPlan.Id, ct: CancellationToken.None);
-                    if (!restored.Success) throw restored.Exception ?? new InvalidOperationException(restored.Message);
+                    await RestoreSafeModeFilesAsync(snap, offPlan, CancellationToken.None);
                 }
                 catch (Exception restoreError)
                 {
@@ -1808,12 +1795,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     launchError.Message, launchError);
             }
             using (process) await process.WaitForExitAsync(ct);
-            await RestoreAfterSafeModeAsync(ct);
+            await ValidateSafeModeRestoreAsync(ct);
+            await RestoreSafeModeFilesAsync(snap, offPlan, ct);
             StatusText="Safe mode ended and the applied mod configuration was restored.";
         });
     }
 
-    private async Task RestoreAfterSafeModeAsync(CancellationToken ct)
+    private async Task ValidateSafeModeRestoreAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var restoreSnap=await s.PlannerSnapshots.LoadAsync(ct);
@@ -1823,8 +1811,25 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var restoreDependencyBlockers=await GetDependencyBlockersAsync(restoreState,restore,ct);
         if(restoreDependencyBlockers.Length>0)
             throw new InvalidOperationException("Restore after safe mode blocked by dependency preflight. "+DescribeDependencyBlockers(restoreDependencyBlockers));
-        var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
-        if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);
+    }
+
+    private async Task RestoreSafeModeFilesAsync(PlannerSnapshot before, DeploymentPlan removed, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Reverse just the temporary removals. Other enabled packages may never
+        // have been applied, and their saved choices must survive a failed launch.
+        var changes = removed.Changes.Select(change =>
+        {
+            var previous = before.CurrentManifest[change.Path];
+            return new DeploymentChange(change.Sequence,
+                change.AfterBlobSha256 is null ? ChangeKind.Add : ChangeKind.Replace, change.Path,
+                change.AfterBlobSha256, previous.BlobSha256, null, previous.ProviderModId,
+                change.AfterBlobSha256, previous.RuleId) { RequireAbsent = change.AfterBlobSha256 is null };
+        }).ToArray();
+        var restore = new DeploymentPlan(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, changes, [], []);
+        var restored = await s.Executor.ApplyAsync(restore, "Restore after safe mode",
+            parentOperationId: removed.Id, ct: ct);
+        if (!restored.Success) throw restored.Exception ?? new InvalidOperationException(restored.Message);
     }
 
     [RelayCommand]

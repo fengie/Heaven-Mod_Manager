@@ -284,5 +284,45 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         }
         await process.WaitForExitAsync(ct);
         passed.Add("Launch registered fixture and verify process path and startup");
+
+        // A saved enable that has never been applied must survive vanilla play as a
+        // choice, without being silently deployed when the game exits.
+        var db = run.OpenCatalog();
+        try
+        {
+            var waiting = Assert.Single(await db.GetModsAsync(ct), item => item.DisplayName == "Independent Verification");
+            Assert.False(waiting.Enabled);
+            var waitingPath = Path.Combine(Path.GetDirectoryName(run.LiveModPath)!, "independent-" + Path.GetFileName(run.LiveModPath));
+            Assert.False(File.Exists(waitingPath));
+            await db.SetEnabledAndPriorityAsync(new Dictionary<string, (bool, int)> { [waiting.Id] = (true, waiting.Priority) }, ct);
+            File.Delete(run.LaunchReceipt);
+            File.Delete(run.LaunchReceipt + ".done");
+            await Click("Launch Without Mods");
+            try
+            {
+                await WaitForAsync(() => File.Exists(run.LaunchReceipt) && File.ReadAllLines(run.LaunchReceipt).Length == 3,
+                    UiTimeout, "vanilla game launched", ct);
+                Assert.Equal(run.FirstGame.ExecutablePath, File.ReadAllLines(run.LaunchReceipt)[0], ignoreCase: true);
+                Assert.False(File.Exists(run.LiveModPath));
+                Assert.False(File.Exists(waitingPath));
+                Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+            }
+            finally { File.WriteAllText(run.LaunchReceipt + ".done", ""); }
+            await WaitForAsync(() => File.Exists(run.LiveModPath) && File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
+                UiTimeout, "previously applied payload restored after vanilla exit", ct);
+            await using var readback = await db.OpenAsync(ct);
+            await using var committed = readback.CreateCommand();
+            committed.CommandText = "SELECT COUNT(*) FROM operations WHERE state='Committed' AND description='Restore after safe mode'";
+            await WaitForAsync(() => (long)committed.ExecuteScalar()! == 1, UiTimeout, "vanilla restore committed", ct);
+            Assert.False(File.Exists(waitingPath));
+            Assert.True(Assert.Single(await db.GetModsAsync(ct), item => item.Id == waiting.Id).Enabled);
+            Assert.Equal(archiveHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
+            passed.Add("Launch Without Mods removes the deployed payload for play and restores only the prior deployment");
+        }
+        finally
+        {
+            await using var connection = await db.OpenAsync(CancellationToken.None);
+            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+        }
     }
 }
