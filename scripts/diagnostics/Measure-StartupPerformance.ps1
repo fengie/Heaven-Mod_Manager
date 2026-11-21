@@ -82,7 +82,7 @@ function Wait-StartupReport([string]$ToolRoot, [Diagnostics.Process]$Process, [i
             Select-Object -First 1
         if ($report) {
             try {
-                $json = Get-Content -LiteralPath $report.FullName -Raw | ConvertFrom-Json
+                $json = Read-StartupReportText $report.FullName | ConvertFrom-Json
                 if ($json.overall -eq 'PASS' -or $json.overall -eq 'FAIL') {
                     return [pscustomobject]@{ Path = $report.FullName; Report = $json }
                 }
@@ -100,7 +100,7 @@ function Wait-StartupReport([string]$ToolRoot, [Diagnostics.Process]$Process, [i
             Select-Object -First 1
         if ($latest) {
             try {
-                $json = Get-Content -LiteralPath $latest.FullName -Raw | ConvertFrom-Json
+                $json = Read-StartupReportText $latest.FullName | ConvertFrom-Json
                 $last = @($json.entries | Select-Object -Last 1)
                 if ($last.Count -gt 0) {
                     $context = "overall=$($json.overall); lastEntry=$($last[0].name); lastStatus=$($last[0].status); lastMs=$($last[0].milliseconds)"
