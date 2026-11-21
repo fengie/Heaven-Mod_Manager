@@ -74,6 +74,15 @@
                     SelectedIndex="{Binding SelectedTab}"
                     SelectionChanged="OnMainTabSelectionChanged">
             <TabItem Header="Dashboard">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=GamePathText, StringFormat='Game folder: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=ModLibraryPathText, StringFormat='Mod library: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=GameDownloadsPathText, StringFormat='Downloads: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <ScrollViewer x:Name="DashboardScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
                     <Grid MaxWidth="1320" HorizontalAlignment="Stretch" Margin="32,30,36,36">
                         <Grid.RowDefinitions>
@@ -241,6 +250,15 @@
             </TabItem>
 
             <TabItem Header="Mods">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedLibraryItem.DisplayName, FallbackValue='Select a mod to see its sources and components.', TargetNullValue='Select a mod to see its sources and components.'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedLibraryItem.SourceSummary, StringFormat='Package sources: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedMod.PartsLabel, StringFormat='Components: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid HorizontalAlignment="Stretch">
                 <Grid Margin="8,6,8,6">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -698,6 +716,15 @@
             </TabItem>
 
             <TabItem Header="Needs attention">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedConflict.Scope, FallbackValue='Select a conflict to see its evidence.', TargetNullValue='Select a conflict to see its evidence.', StringFormat='Affected files: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedConflict.Providers, StringFormat='Providers: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedConflict.Evidence, StringFormat='Evidence: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid>
@@ -828,6 +855,15 @@
             </TabItem>
 
             <TabItem Header="Profiles">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedProfile.Name, FallbackValue='Select a saved profile to see its details.', TargetNullValue='Select a saved profile to see its details.', StringFormat='Profile: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedProfile.EnabledMods, StringFormat='Enabled mods: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedProfile.UpdatedAt, StringFormat='Last updated: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <StackPanel>
@@ -874,6 +910,15 @@
             </TabItem>
 
             <TabItem Header="History">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedActivity.Description, FallbackValue='Select an activity to see its support ID.', TargetNullValue='Select an activity to see its support ID.', StringFormat='Action: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedActivity.State, StringFormat='Status: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedActivity.Id, StringFormat='Support ID: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid>
@@ -892,7 +937,7 @@
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1" Margin="0,20,0,10">
-                        <DataGrid ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
+                        <DataGrid SelectedItem="{Binding SelectedActivity,Mode=TwoWay}" ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
                                 <DataGridTextColumn Header="STATUS" Binding="{Binding State}" Width="120"/>
@@ -918,6 +963,24 @@
             </TabItem>
 
             <TabItem Header="Shared Files">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedOverlap.PrimaryPath, FallbackValue='Select a shared file to see its path and providers.', TargetNullValue='Select a shared file to see its path and providers.', StringFormat='File: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedOverlap.Providers, StringFormat='Providers: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedOverlap.Detail, StringFormat='Result: {0}'}"/>
+                            <Button Content="Explain selected file" Command="{Binding ExplainSelectedOverlapCommand}" HorizontalAlignment="Left">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedOverlap}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1045,6 +1108,15 @@
             </TabItem>
 
             <TabItem Header="Settings">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=CurrentProgramBuildText, StringFormat='Installed build: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=ProgramUpdateStatus, StringFormat='Update status: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=StorageStatusText, StringFormat='Storage: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="32,30,36,36" MaxWidth="980" HorizontalAlignment="Left">
                         <StackPanel>
@@ -1191,6 +1263,24 @@
 
 
             <TabItem Header="Browse Mods">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedCatalogItem.Provider, FallbackValue='Select a catalog item to see its source and install options.', TargetNullValue='Select a catalog item to see its source and install options.', StringFormat='Catalog provider: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedCatalogItem.Name, StringFormat='Mod: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=CatalogInstallGuidance, StringFormat='Install options: {0}'}"/>
+                            <Button Content="Show provider files" Command="{Binding LoadCatalogFilesCommand}" HorizontalAlignment="Left">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedCatalogItem}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="24,22,28,24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1595,13 +1685,22 @@
             </TabItem>
 
             <TabItem Header="Installed files">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedInstalledFile.Evidence, FallbackValue='Select an installed file to see its evidence and location.', TargetNullValue='Select an installed file to see its evidence and location.', StringFormat='Evidence: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedInstalledFile.Location, StringFormat='File location: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedInstalledFile.InstallationRoot, StringFormat='Registered installation: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <DockPanel Margin="8">
                     <TextBlock DockPanel.Dock="Top" Text="{Binding LocalModInventoryStatus}" Margin="0,0,0,8"/>
                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                         <Label Target="{Binding ElementName=LocalModSearch}" Content="Search installed files across all games"/>
                         <TextBox x:Name="LocalModSearch" Text="{Binding LocalModQuery, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
-                    <DataGrid ItemsSource="{Binding VisibleLocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                    <DataGrid SelectedItem="{Binding SelectedInstalledFile,Mode=TwoWay}" ItemsSource="{Binding VisibleLocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Game" Binding="{Binding Game}"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>

@@ -21,6 +21,8 @@ public sealed partial class MainWindowViewModel
     public IReadOnlyList<LocalModLocation> LocalModLocations { get; private set; } = [];
     public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop libraries…";
 
+    [ObservableProperty] private LocalModLocation? selectedInstalledFile;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VisibleLocalModLocations))]
     private string localModQuery = "";

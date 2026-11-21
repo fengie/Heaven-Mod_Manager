@@ -65,6 +65,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private int selectedTab;
     [ObservableProperty]private string newProfileName="";
     [ObservableProperty]private ProfileSummary? selectedProfile;
+    [ObservableProperty]private ActivityRow? selectedActivity;
     [ObservableProperty]private ConflictRow? selectedConflict;
     [ObservableProperty]private ModRowViewModel? selectedMod;
     [ObservableProperty]private OutfitRow? selectedOutfit;

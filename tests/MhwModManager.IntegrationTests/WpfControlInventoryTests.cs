@@ -85,7 +85,10 @@ public sealed class WpfControlInventoryTests
                 }
                 Assert.StartsWith("{Binding ", command.Value);
                 var member = command.Value["{Binding ".Length..].Split(',', '}')[0];
-                if (element.Ancestors().Any(parent => parent.Name.LocalName == "DataTemplate"))
+                var template = element.Ancestors().FirstOrDefault(parent => parent.Name.LocalName == "DataTemplate");
+                var pageDetails = template?.Parent?.Name.LocalName == "TabItem.Tag" &&
+                    template.Attribute("DataType")?.Value == "{x:Type vm:MainWindowViewModel}";
+                if (template is not null && !pageDetails)
                 {
                     Assert.Contains("RelativeSource AncestorType=Window", command.Value);
                     Assert.StartsWith("DataContext.", member);
