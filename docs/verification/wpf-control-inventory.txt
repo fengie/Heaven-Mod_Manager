@@ -152,9 +152,10 @@ MainWindow.xaml | TabItem:History | DataGridTextColumn | Header=WHEN ; Binding={
 MainWindow.xaml | TabItem:Installed files | DataGrid | ItemsSource={Binding VisibleLocalModLocations} ; IsReadOnly=True
 MainWindow.xaml | TabItem:Installed files | DataGridTextColumn | Header=Evidence ; Binding={Binding Evidence}
 MainWindow.xaml | TabItem:Installed files | DataGridTextColumn | Header=Game ; Binding={Binding Game}
+MainWindow.xaml | TabItem:Installed files | DataGridTextColumn | Header=Library status ; Binding={Binding LibraryStatus}
 MainWindow.xaml | TabItem:Installed files | DataGridTextColumn | Header=Location ; Binding={Binding Location}
 MainWindow.xaml | TabItem:Installed files | DataGridTextColumn | Header=Name ; Binding={Binding Name}
-MainWindow.xaml | TabItem:Installed files | Label | Content=Filter by game, location, or evidence
+MainWindow.xaml | TabItem:Installed files | Label | Content=Search installed files across all games
 MainWindow.xaml | TabItem:Installed files | TextBox | Name=LocalModSearch ; Text={Binding LocalModQuery, UpdateSourceTrigger=PropertyChanged}
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding AllViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=All
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding EnabledViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Enabled

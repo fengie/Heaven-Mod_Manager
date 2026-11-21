@@ -6,10 +6,19 @@ using System.Text;
 
 namespace MhwModManager.Filesystem;
 
+public enum InstalledEvidenceKind
+{
+    None, DlssReceipt, ReshadeInjector, LoaderPair, UnrealContainer, BepInExPlugin, ReframeworkScript, NativePcOverride, UnrealSource, ModPayload, ModManifest, Ue4ssEntrypoint
+}
+
 public sealed record LocalModLocation(string Game, string Name, string Evidence, string Location)
 {
     public string? VerifiedWorkshopAppId { get; init; }
     public string? VerifiedWorkshopTitle { get; init; }
+    public string? InstallationRoot { get; init; }
+    public string? PreviousProfileId { get; init; }
+    public InstalledEvidenceKind FileEvidence { get; init; }
+    public string LibraryStatus { get; init; } = "Evidence only";
     public string? RegisteredProfileId { get; init; }
 }
 
@@ -85,7 +94,8 @@ public static partial class LocalModInventory
                 if (!PathRules.Comparer.Equals(root, game.GameRoot))
                     rows.Add(new(game.DisplayName, Path.GetFileName(root), origin, root));
                 ScanGame(game.DisplayName, game.IsMonsterHunterWorld, root, origin, rows, ct,
-                    PathRules.Comparer.Equals(root, game.GameRoot) ? game.Id : null);
+                    PathRules.Comparer.Equals(root, game.GameRoot) ? game.Id : null,
+                    origin == "Previous installation" ? game.Id : null);
             }
         }
         if (discover)
@@ -137,6 +147,19 @@ public static partial class LocalModInventory
                 }
             }
         }
+        return rows;
+    }
+
+    public static IReadOnlyList<LocalModLocation> RefreshCurrentInstallation(IReadOnlyList<LocalModLocation> previous,
+        GameProfile game, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var rows = previous.Where(row => row.RegisteredProfileId != game.Id &&
+            !(PathRules.Comparer.Equals(row.Location,game.GameRoot) && row.Name is
+                "Installation unavailable" or "Installation scan incomplete" or "Inventory scan limit reached")).ToList();
+        if (Directory.Exists(game.GameRoot))
+            ScanGame(game.DisplayName,game.IsMonsterHunterWorld,game.GameRoot,"Registered installation",rows,ct,game.Id);
+        else rows.Add(new(game.DisplayName,"Installation unavailable","Registered installation",game.GameRoot));
         return rows;
     }
 
@@ -321,7 +344,7 @@ public static partial class LocalModInventory
         return matchesApp && depth == 0 ? result : [];
     }
 
-    private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct, string? registeredProfileId = null)
+    private static void ScanGame(string game, bool mhw, string root, string origin, List<LocalModLocation> rows, CancellationToken ct, string? registeredProfileId = null, string? previousProfileId = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var remaining = 300_000;
@@ -350,7 +373,7 @@ public static partial class LocalModInventory
                         }
                         var relative = "/" + Path.GetRelativePath(root, item.FullName).Replace('\\', '/') + "/";
                         var evidence = Detect(relative, item.FullName, item.Extension, mhw);
-                        if (evidence is not null) rows.Add(new(game, item.Name, origin + " · " + evidence, item.FullName) { RegisteredProfileId = registeredProfileId });
+                        if (evidence is { } found) rows.Add(new(game, item.Name, origin + " · " + found.Description, item.FullName) { RegisteredProfileId = registeredProfileId, PreviousProfileId = previousProfileId, InstallationRoot = root, FileEvidence = found.Kind });
                     }
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -365,37 +388,37 @@ public static partial class LocalModInventory
         }
     }
 
-    private static string? Detect(string path, string fullPath, string extension, bool mhw)
+    private static (InstalledEvidenceKind Kind,string Description)? Detect(string path, string fullPath, string extension, bool mhw)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         const StringComparison cmp = StringComparison.OrdinalIgnoreCase;
         if (path.EndsWith("/installation.json/", cmp) && path.Contains("/DLSS-Nexus-Backups/", cmp) &&
-            IsCompletedDlssReceipt(fullPath)) return "DLSS Nexus completed installation receipt";
+            IsCompletedDlssReceipt(fullPath)) return (InstalledEvidenceKind.DlssReceipt,"DLSS Nexus completed installation receipt");
         if (path.EndsWith("/dxgi.dll/", cmp))
         {
             var parent = Path.GetDirectoryName(fullPath)!;
             if (File.Exists(Path.Combine(parent, "ReShade.ini")) &&
                 Directory.Exists(Path.Combine(parent, "reshade-shaders", "Shaders")) &&
                 FileVersionInfo.GetVersionInfo(fullPath).ProductName?.Equals("ReShade", cmp) == true)
-                return "ReShade injector and configuration";
+                return (InstalledEvidenceKind.ReshadeInjector,"ReShade injector and configuration");
         }
         if (path.EndsWith("/bitfix/sig.lua/", cmp) &&
             File.Exists(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fullPath))!, "dsound.dll")))
-            return "Paired loader files · runtime use unconfirmed";
+            return (InstalledEvidenceKind.LoaderPair,"Paired loader files · runtime use unconfirmed");
         if (extension.Equals(".pak", cmp) && (path.Contains("/Content/Paks/~mods/", cmp) ||
-            path.Contains("/Content/Paks/LogicMods/", cmp))) return "Unreal mod container";
-        if (extension.Equals(".dll", cmp) && path.Contains("/BepInEx/plugins/", cmp)) return "BepInEx plugin";
-        if (extension.Equals(".lua", cmp) && path.Contains("/reframework/autorun/", cmp)) return "REFramework script";
-        if (mhw && path.StartsWith("/nativePC/", cmp)) return "nativePC override";
+            path.Contains("/Content/Paks/LogicMods/", cmp))) return (InstalledEvidenceKind.UnrealContainer,"Unreal mod container");
+        if (extension.Equals(".dll", cmp) && path.Contains("/BepInEx/plugins/", cmp)) return (InstalledEvidenceKind.BepInExPlugin,"BepInEx plugin");
+        if (extension.Equals(".lua", cmp) && path.Contains("/reframework/autorun/", cmp)) return (InstalledEvidenceKind.ReframeworkScript,"REFramework script");
+        if (mhw && path.StartsWith("/nativePC/", cmp)) return (InstalledEvidenceKind.NativePcOverride,"nativePC override");
         if (extension.Equals(".pak", cmp) && !path.Contains("/Content/Paks/", cmp) &&
             File.Exists(Path.ChangeExtension(fullPath, ".utoc")) && File.Exists(Path.ChangeExtension(fullPath, ".ucas")))
-            return "Loose Unreal companion set outside standard Paks directory · review";
+            return (InstalledEvidenceKind.UnrealSource,"Loose Unreal companion set outside standard Paks directory · review");
         if ((extension.Equals(".pak", cmp) || extension.Equals(".dll", cmp) || extension.Equals(".lua", cmp)) &&
-            path.StartsWith("/Mods/", cmp)) return "Payload in game Mods directory";
+            path.StartsWith("/Mods/", cmp)) return (InstalledEvidenceKind.ModPayload,"Payload in game Mods directory");
         if (path.EndsWith("/mod.json/", cmp) && path.Contains("/Mods/", cmp))
-            return "Mod manifest in Mods directory";
+            return (InstalledEvidenceKind.ModManifest,"Mod manifest in Mods directory");
         if (path.Contains("/UE4SS/Mods/", cmp) && (path.EndsWith("/Scripts/main.lua/", cmp) ||
-            path.EndsWith("/dlls/main.dll/", cmp))) return "UE4SS mod entry point";
+            path.EndsWith("/dlls/main.dll/", cmp))) return (InstalledEvidenceKind.Ue4ssEntrypoint,"UE4SS mod entry point");
         return null;
     }
     private static bool IsCompletedDlssReceipt(string path)

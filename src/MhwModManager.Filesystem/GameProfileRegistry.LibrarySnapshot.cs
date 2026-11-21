@@ -42,6 +42,8 @@ public sealed partial class GameProfileRegistry
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var previous = LoadDiscoveredLibrary(game);
         if (previous.Count == 0) return verified;
+        var limitedRoots = observations.Where(row => row.Name == "Inventory scan limit reached")
+            .Select(row => Path.TrimEndingDirectorySeparator(row.Location)).Distinct(PathRules.Comparer).ToArray();
         var incomplete = observations.Where(row => row.Name.EndsWith("scan incomplete", StringComparison.OrdinalIgnoreCase)
                 || row.Name == "Installation unavailable")
             .Select(row => Path.TrimEndingDirectorySeparator(row.Location)).Distinct(PathRules.Comparer).ToArray();
@@ -52,19 +54,32 @@ public sealed partial class GameProfileRegistry
         {
             if (verifiedById[old.ItemId].Any(row => row.IsSteamWorkshop == old.IsSteamWorkshop &&
                 (old.IsSteamWorkshop || row.Locations.Intersect(old.Locations, PathRules.Comparer).Any()))) continue;
-            var offline = old.Locations.Where(location =>
+            var scanLimited = false;
+            var unverified = old.Locations.Where(location =>
             {
                 if (!Path.IsPathFullyQualified(location)) return false;
                 var root = Path.GetPathRoot(location)!;
                 if (!rootsAvailable.TryGetValue(root, out var available))
                     rootsAvailable[root] = available = Directory.Exists(root);
-                return !available || incomplete.Any(folder => PathRules.Comparer.Equals(folder, location)
-                    || location.StartsWith(folder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                if (limitedRoots.Any(folder => ContainsLocation(folder, location)))
+                {
+                    scanLimited = true;
+                    return true;
+                }
+                return !available || incomplete.Any(folder => ContainsLocation(folder, location));
             }).ToArray();
-            if (offline.Length > 0)
-                rows.Add(old with { OwnerLabel = "Previously discovered · source unavailable", Locations = offline });
+            if (unverified.Length > 0)
+                rows.Add(old with { OwnerLabel = scanLimited ? "Previously discovered · scan incomplete" :
+                    "Previously discovered · source unavailable", Locations = unverified });
         }
         return rows;
+    }
+
+    private static bool ContainsLocation(string folder, string location)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return PathRules.Comparer.Equals(folder, location) || location.StartsWith(
+            Path.EndsInDirectorySeparator(folder) ? folder : folder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     }
 
     public void SaveDiscoveredLibrary(GameProfile game, IReadOnlyList<ExternalLibraryReference> rows)

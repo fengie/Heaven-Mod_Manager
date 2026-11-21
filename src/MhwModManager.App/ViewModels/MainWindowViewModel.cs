@@ -89,6 +89,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
     public bool SupportsLiveAdoption=>s.Paths.Game.IsMonsterHunterWorld||!string.IsNullOrWhiteSpace(s.Paths.Game.ModRootRelativePath);
     public bool HasSemanticCoverage=>s.Paths.Game.SupportsSemanticCoverage;
+    public string ActiveGameDisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return s.Paths.Game.DisplayName;
+        }
+    }
     public string WindowTitle=>$"Universal Mod Manager — {s.Paths.Game.DisplayName}";
     public string GameSupportText
     {
@@ -683,7 +691,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 if(latest is not null&&DateTimeOffset.TryParse(latest,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal,out var when))
                     row.SetUpdateBadge($"Update available • {when:yyyy-MM-dd}");
             }
+            var identities = models.Select(m=>(m.Id,m.SourcePath,m.DisplayName)).ToHashSet();
+            var sourcesChanged = catalogInventoryIdentities != null && !catalogInventoryIdentities.SetEquals(identities);
+            catalogInventoryIdentities = identities;
             Mods.ReplaceAll(rows);
+            if (sourcesChanged) InvalidateLocalInventory();
             RebuildLibraryRows();
             RefreshLibraryFilters();
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
@@ -2021,6 +2033,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 MasterDebugLog.Write("UI-PROGRESS",
                     $"operation={operationName}; elapsedMs={sw.Elapsed.TotalMilliseconds:F0}; phase={BusyDetail}; percent={(BusyProgressIndeterminate ? "unknown" : BusyProgressPercent.ToString("F1",CultureInfo.InvariantCulture))}");
         };
+        var startingFileRevision = s.Executor.CommittedFileRevision;
         ticker.Start();
         try
         {
@@ -2045,6 +2058,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         finally
         {
             ticker.Stop();
+            if (s.Executor.CommittedFileRevision != startingFileRevision) InvalidateLocalInventory();
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
             programUpdateHandoffGate.EndForeground();

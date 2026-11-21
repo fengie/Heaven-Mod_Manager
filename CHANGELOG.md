@@ -1,3 +1,7 @@
+# v8.8.132 — November 21, 2026
+
+- Installed Files now identifies the Mods entry that accounts for a discovery. The active game's library automatically lists verified packages and loader components, keeps external files read-only and distinguishes previous installations. [Installed discovery](https://github.com/fengie/Heaven-Mod_Manager/issues/949)
+
 # v8.8.131 — November 20, 2026
 
 - Use **Add Game** beside **Find Installed Games** on the Dashboard to select a game executable and switch to its mod library. Choosing an already registered executable reuses its existing profile. [Game registration](https://github.com/fengie/Heaven-Mod_Manager/issues/946)

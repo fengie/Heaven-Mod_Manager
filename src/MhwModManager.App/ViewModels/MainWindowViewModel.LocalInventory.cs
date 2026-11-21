@@ -33,6 +33,8 @@ public sealed partial class MainWindowViewModel
             var query = LocalModQuery.Trim();
             return query.Length == 0 ? LocalModLocations : LocalModLocations.Where(row =>
                 row.Game.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.LibraryStatus.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Evidence.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Location.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
@@ -111,31 +113,58 @@ public sealed partial class MainWindowViewModel
         LibraryView.Refresh();
     }
 
+    private HashSet<(string Id,string Path,string Name)>? catalogInventoryIdentities;
     private Task? localInventoryScan;
+    private bool localInventoryChanged;
+
+    private void InvalidateLocalInventory()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        if (disposed || localInventoryScan == null || backgroundCts.IsCancellationRequested) return;
+        localInventoryChanged = true;
+        _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
+    }
 
     private Task RefreshLocalModInventoryAsync(CancellationToken ct)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         if (localInventoryScan is { IsCompleted: false }) return localInventoryScan;
-        localInventoryScan = ScanLocalModInventoryAsync(ct);
+        localInventoryScan = ScanUntilCurrentAsync(ct);
         return localInventoryScan;
     }
 
-    private async Task ScanLocalModInventoryAsync(CancellationToken ct)
+    private async Task ScanUntilCurrentAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        do
+        {
+            var currentOnly = localInventoryChanged && !CheckingDiscoveredLibrary;
+            localInventoryChanged = false;
+            await ScanLocalModInventoryAsync(currentOnly,ct);
+        } while (localInventoryChanged && !ct.IsCancellationRequested);
+    }
+
+    private async Task ScanLocalModInventoryAsync(bool currentOnly,CancellationToken ct)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         try
         {
             var (result, packages) = await Task.Run(async () =>
             {
-                var result = s.GameRegistry.ScanLocalMods(ct);
+                var result = currentOnly ? LocalModInventory.RefreshCurrentInstallation(LocalModLocations,s.Paths.Game,ct) : s.GameRegistry.ScanLocalMods(ct);
                 var sources = await s.Database.GetModsAsync(ct);
                 var paths = sources.Select(mod => mod.SourcePath).ToArray();
-                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, ct);
+                var titles = new Dictionary<string,string>(PathRules.Comparer);
+                var represented = await s.Adoption.RepresentedInventoryPathsAsync(result,sources,s.Executor.Destination,ct,titles);
+                var sourceTitles = sources.GroupBy(mod=>mod.SourcePath,PathRules.Comparer)
+                    .ToDictionary(group=>group.Key,group=>string.Join(", ",group.Select(mod=>mod.DisplayName)),PathRules.Comparer);
+                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, sourceTitles, titles, ct);
+                represented.UnionWith(titles.Keys);
+                var installed = LocalModInventory.InstalledPackages(result,s.Paths.Game,represented,ct);
                 var workshop = LocalModInventory.WorkshopLibrary(result, s.Paths.Game.SteamAppId, paths);
                 ct.ThrowIfCancellationRequested();
                 var library = s.GameRegistry.ReconcileDiscoveredLibrary(s.Paths.Game,
-                    workshop.Cast<ExternalLibraryReference>().Concat(packages).ToArray(), result);
+                    workshop.Cast<ExternalLibraryReference>().Concat(packages).Concat(installed).ToArray(), result);
                 try
                 {
                     s.GameRegistry.SaveDiscoveredLibrary(s.Paths.Game, library);
@@ -144,7 +173,15 @@ public sealed partial class MainWindowViewModel
                 {
                     s.Log.Warning(ex, "Could not save the discovered mod library for the next startup.");
                 }
-                return (result, library);
+                var references = library.SelectMany(row => row.Locations.Select(path => (path,row.DisplayName))).ToLookup(item=>item.path,item=>item.DisplayName,PathRules.Comparer);
+                var annotated = result.Select(entry => entry with
+                {
+                    LibraryStatus = represented.Contains(entry.Location) ? "Managed deployment or package · " + titles.GetValueOrDefault(entry.Location) :
+                        entry.PreviousProfileId == s.Paths.Game.Id ? "Previous installation" :
+                        references.Contains(entry.Location) ? "External reference · " + string.Join(", ",references[entry.Location].Distinct()) :
+                        entry.RegisteredProfileId != null && entry.RegisteredProfileId != s.Paths.Game.Id ? "Other game" : "Evidence only"
+                }).ToArray();
+                return (annotated, library);
             }, ct);
             ct.ThrowIfCancellationRequested();
             CheckingDiscoveredLibrary = false;
@@ -155,7 +192,7 @@ public sealed partial class MainWindowViewModel
             RebuildLibraryRows();
             OnPropertyChanged(nameof(LocalModLocations));
             OnPropertyChanged(nameof(VisibleLocalModLocations));
-            LocalModInventoryStatus = $"{result.Count:N0} inventory entries · checked {DateTime.Now:t}";
+            LocalModInventoryStatus = $"{result.Length:N0} inventory entries · checked {DateTime.Now:t}";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or ArgumentException or System.Text.Json.JsonException)

@@ -1,14 +1,18 @@
-# v8.8.131 — MHW Manual Mod Manager
+# v8.8.132 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 10:23:15 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 12:45:06 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.131**.
+Current product version: **8.8.132**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.132 — installed mod discovery
+
+- Installed Files now identifies the Mods entry that accounts for a discovery. The active game's library automatically lists verified packages and loader components, keeps external files read-only and distinguishes previous installations. [Installed discovery](https://github.com/fengie/Heaven-Mod_Manager/issues/949)
 
 ## v8.8.131 — add a game
 
@@ -18,10 +22,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - Repeated Apply preserves the previous Undo. Successive Undos walk deployment history, and a file created outside Manager survives a refused Undo. [Deployment ordering](https://github.com/fengie/Heaven-Mod_Manager/issues/944)
 - When a verified discovery refresh exceeds cache capacity, removed items no longer return on reopening Manager. [Discovery refresh](https://github.com/fengie/Heaven-Mod_Manager/issues/945)
-
-## v8.8.129 — unmodded launch recovery
-
-- Launch Without Mods restores the files that were actually deployed when the game fails to start or exits. Enabled packages that were still pending stay unapplied. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)
 
 ## Current plans & progress
 

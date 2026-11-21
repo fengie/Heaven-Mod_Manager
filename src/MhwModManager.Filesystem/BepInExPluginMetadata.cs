@@ -64,6 +64,14 @@ public static partial class LocalModInventory
     public static IReadOnlyList<ExternalLibraryReference> RegisteredPackageLibrary(IEnumerable<LocalModLocation> inventory,
         GameProfile profile, IEnumerable<string> managedSources, CancellationToken ct = default)
     {
+        using var trace = MasterDebugLog.BeginMethod();
+        return RegisteredPackageLibrary(inventory,profile,managedSources,null,null,ct);
+    }
+
+    public static IReadOnlyList<ExternalLibraryReference> RegisteredPackageLibrary(IEnumerable<LocalModLocation> inventory,
+        GameProfile profile, IEnumerable<string> managedSources, IReadOnlyDictionary<string,string>? sourceTitles,
+        Dictionary<string,string>? ownedLocations, CancellationToken ct)
+    {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var plugins = new List<(LocalPluginIdentity Plugin, string Path, long Length)>();
         var effects = new List<(ExternalLibraryReference Row, string DllHash, string ConfigHash, long Length)>();
@@ -97,8 +105,8 @@ public static partial class LocalModInventory
 
         if (plugins.Count == 0 && effects.Count == 0) return [];
         var lengths = plugins.Select(p => p.Length).Concat(effects.Select(e => e.Length)).ToHashSet();
-        var captured = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var capturedEffects = new HashSet<(string,string)>();
+        var captured = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
+        var capturedEffects = new Dictionary<(string,string),string>();
         var options = new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint,
             IgnoreInaccessible = true, MaxRecursionDepth = 64 };
         var remainingEntries = 300_000;
@@ -116,17 +124,26 @@ public static partial class LocalModInventory
                 var digest = LocalFileDigest(file.FullName);
                 if (digest is null) continue;
                 // Equal bytes include the complete assembly's attribute, even for disabled packages without an index.
-                captured.Add(digest);
+                var title = sourceTitles?.GetValueOrDefault(source) ?? Path.GetFileName(source);
+                captured.TryAdd(digest,title);
                 if (effects.Any(e => e.DllHash == digest) && LocalFileDigest(Path.Combine(file.DirectoryName!, "ReShade.ini")) is { } config)
-                    capturedEffects.Add((digest,config));
+                    capturedEffects.TryAdd((digest,config),title);
             }
         }
 
-        var rows = plugins.Where(p => !captured.Contains(p.Plugin.Sha256)).GroupBy(p => p.Plugin)
+        if (ownedLocations != null)
+        {
+            foreach (var plugin in plugins)
+                if (captured.TryGetValue(plugin.Plugin.Sha256,out var title)) ownedLocations.TryAdd(plugin.Path,title);
+            foreach (var effect in effects)
+                if (capturedEffects.TryGetValue((effect.DllHash,effect.ConfigHash),out var title))
+                    foreach (var path in effect.Row.Locations) ownedLocations.TryAdd(path,title);
+        }
+        var rows = plugins.Where(p => !captured.ContainsKey(p.Plugin.Sha256)).GroupBy(p => p.Plugin)
             .Select(g => new ExternalLibraryReference(g.Key.Id, g.Key.Title,
                 $"BepInEx · {g.Key.Id} · {g.Key.Version} · {g.Key.Sha256[..12]}",
                 g.Select(p => p.Path).Distinct(PathRules.Comparer).OrderBy(p => p, PathRules.Comparer).ToArray()));
-        return rows.Concat(effects.Where(e => !capturedEffects.Contains((e.DllHash,e.ConfigHash))).Select(e => e.Row))
+        return rows.Concat(effects.Where(e => !capturedEffects.ContainsKey((e.DllHash,e.ConfigHash))).Select(e => e.Row))
             .OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase).ThenBy(r => r.OwnerLabel, StringComparer.Ordinal).ToArray();
     }
 

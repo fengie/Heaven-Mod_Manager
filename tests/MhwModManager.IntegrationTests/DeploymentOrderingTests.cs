@@ -58,10 +58,14 @@ public sealed class DeploymentOrderingTests
     [Theory, MemberData(nameof(GameIds))]
     public Task RepeatedApplyPreservesTheLastActualUndo(string id) => Run(id,async (f,ct) =>
     {
+        var revision = f.Services.Executor.CommittedFileRevision;
         await f.Apply(true,ct);
+        Assert.Equal(revision + 1, f.Services.Executor.CommittedFileRevision);
         await f.Check(true,ct);
         await f.Apply(true,ct);
+        Assert.Equal(revision + 1, f.Services.Executor.CommittedFileRevision);
         Assert.True((await f.Services.Executor.UndoLastAsync(ct)).Success);
+        Assert.Equal(revision + 2, f.Services.Executor.CommittedFileRevision);
         await f.Check(false,ct);
         Assert.False((await f.Services.Executor.UndoLastAsync(ct)).Success);
     });
