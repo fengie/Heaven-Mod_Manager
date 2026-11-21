@@ -694,6 +694,9 @@ public sealed class ManagerDatabase
             previousFamily = value is DBNull ? null : (string)value;
         }
 
+        if (previousFamily?.StartsWith("authored:", StringComparison.Ordinal)==true)
+            throw new InvalidOperationException("This component belongs to one authored source. Choose its options in Mods.");
+
         // Historical manually chained overlays have no persisted ownership foreign key.
         // Match their exact generated shape, including precedence and canonical reason;
         // broad prefix/suffix matches can erase unrelated user-authored overwrite rules.
@@ -832,6 +835,8 @@ public sealed class ManagerDatabase
                 priorRole[reader.GetString(0)]=reader.IsDBNull(2)?null:reader.GetString(2);
             }
         }
+        if (priorFamily.Values.Any(id=>id?.StartsWith("authored:",StringComparison.Ordinal)==true))
+            throw new InvalidOperationException("A source-defined component cannot be reassigned to a different package. Choose its options in Mods.");
         if(!priorFamily.TryGetValue(mainModId,out var existingFamily))throw new InvalidOperationException($"Main mod '{mainModId}' no longer exists.");
         var familyId=!string.IsNullOrWhiteSpace(existingFamily)&&existingFamily.StartsWith("manual:",StringComparison.OrdinalIgnoreCase)
             ?existingFamily

@@ -117,6 +117,8 @@ public sealed class AuthoredFamilyCatalogTests
             Assert.Equal(2,rows.Count);
             var primary=Assert.Single(rows,mod=>mod.FamilyRole=="Main");
             var extra=Assert.Single(rows,mod=>mod.FamilyRole=="Optional");
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>db.SeparateLogicalMemberAsync(extra.Id,ct));
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>db.ChainManualFamilyAsync(primary.Id,[primary.Id],[[extra.Id]],"Unrelated",ct));
             Assert.Equal(old.Id,primary.Id);
             Assert.True(primary.Enabled);
             Assert.False(extra.Enabled);

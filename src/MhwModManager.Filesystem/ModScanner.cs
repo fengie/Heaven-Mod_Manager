@@ -65,7 +65,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         if (!managedPackage && role is "review" or "wrapper")
             throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
         HashSet<string>? subset = null;
-        if (mod.FamilyId?.StartsWith("authored:", StringComparison.Ordinal) == true)
+        if (mod.AuthoredPartLabel is not null || mod.FamilyId?.StartsWith("authored:", StringComparison.Ordinal) == true)
         {
             await using var connection = await db.OpenAsync(ct);
             await using var command = connection.CreateCommand();
