@@ -75,8 +75,14 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
                 SafeRecursiveTraversal.EnsureRootIsNotReparse(current.FullName);
                 if (PathRules.Comparer.Equals(current.FullName,root)) break;
             }
+            var currentParts=await Task.Run(()=>AuthoredPackageFamily.Read(root,game,ct),ct);
+            var declaredFiles=reader.IsDBNull(2) ? null : System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(2));
+            if (!currentParts.Any(part=>PathRules.Comparer.Equals(part.SourceDirectory,directory) && part.Role==mod.FamilyRole &&
+                part.ChoiceGroup==mod.ChoiceGroup && (part.Files is null ? declaredFiles is null :
+                declaredFiles is not null && part.Files.ToHashSet(PathRules.Comparer).SetEquals(declaredFiles))))
+                throw new InvalidDataException("The authored package layout changed. Refresh and review its components before applying.");
             mod = mod with { SourcePath = directory };
-            if (!reader.IsDBNull(2)) subset = System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(2))!.ToHashSet(PathRules.Comparer);
+            subset=declaredFiles?.ToHashSet(PathRules.Comparer);
         }
         var packageOnly = managedPackage || role is "package" or "duplicate";
         var cache = await LoadCacheAsync(mod.Id, ct);

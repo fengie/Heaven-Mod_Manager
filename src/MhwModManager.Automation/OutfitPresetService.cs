@@ -10,7 +10,7 @@ public sealed class OutfitPresetService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (family.Members.Count <= 1) return [];
-        if (family.Members.Any(member => !string.IsNullOrWhiteSpace(member.ChoiceGroup)))
+        if (family.Members.Any(member => !string.IsNullOrWhiteSpace(member.ChoiceGroup) || member.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true))
         {
             var selected = family.Members.Where(member=>member.ChoiceGroup is null).Select(member=>member.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach(var group in family.Members.Where(member=>member.ChoiceGroup is not null).GroupBy(member=>member.ChoiceGroup))

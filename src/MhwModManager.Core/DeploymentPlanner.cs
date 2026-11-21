@@ -6,6 +6,17 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var enabled = snapshot.Mods.Where(m => m.Enabled && !m.IsSuperseded).ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
+        foreach (var family in snapshot.Mods.Where(mod=>mod.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)
+            .GroupBy(mod=>mod.FamilyId!))
+        {
+            var main = family.FirstOrDefault(mod=>mod.FamilyRole=="Main");
+            if (main is not null && !enabled.ContainsKey(main.Id) && family.Any(mod=>mod.FamilyRole=="Optional" && enabled.ContainsKey(mod.Id)))
+                return new(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,[],[new ConflictDecision("<family>",
+                    ConflictKind.Incompatible,true,null,"required-package-base",$"Enable the main package '{main.DisplayName}' with its optional overlay.",Confidence.Explicit)],[]);
+            if (family.Any(mod=>mod.RequiresLayoutReview && enabled.ContainsKey(mod.Id)))
+                return new(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,[],[new ConflictDecision("<family>",
+                    ConflictKind.Incompatible,true,null,"changed-package-layout","Review the changed authored package before deployment.",Confidence.Explicit)],[]);
+        }
         var conflictingChoices = enabled.Values.Where(mod => !string.IsNullOrWhiteSpace(mod.FamilyId) &&
                 !string.IsNullOrWhiteSpace(mod.ChoiceGroup)).GroupBy(mod => (mod.FamilyId, mod.ChoiceGroup))
             .Where(group => group.Count() > 1).Select(group => new ConflictDecision("<family>",

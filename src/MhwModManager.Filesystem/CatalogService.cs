@@ -63,7 +63,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         await using (var connection = await db.OpenAsync(ct))
         await using (var cmd = connection.CreateCommand())
         {
-            cmd.CommandText="SELECT DISTINCT package_root FROM authored_component_sources WHERE verified=1";
+            cmd.CommandText="SELECT DISTINCT package_root FROM authored_component_sources";
             await using var reader = await cmd.ExecuteReaderAsync(ct);
             while (await reader.ReadAsync(ct)) verifiedFamilyRoots.Add(reader.GetString(0));
         }
@@ -80,7 +80,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
                 {
                     await using var connection=await db.OpenAsync(ct);
                     await using var cmd=connection.CreateCommand();
-                    cmd.CommandText="UPDATE authored_component_sources SET verified=0 WHERE package_root=$dir";
+                    cmd.CommandText="UPDATE authored_component_sources SET verified=0 WHERE verified=1 AND package_root=$dir";
                     cmd.Parameters.AddWithValue("$dir",dir);
                     await cmd.ExecuteNonQueryAsync(ct);
                     continue;
