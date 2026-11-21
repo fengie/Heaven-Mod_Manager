@@ -59,13 +59,16 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
         var temp = Path.Combine(Root, ".capture-" + Guid.NewGuid().ToString("N") + ".tmp");
         var xx = new XxHash3();
         using var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        var buffer = ArrayPool<byte>.Shared.Rent(1024 * 1024);
+        // The explicit copy buffer serves both streams. Size it to the source so a
+        // shelf of small assets does not allocate megabyte buffers for every file.
+        var bufferSize = (int)Math.Clamp(before.Length, 4096L, 1024L * 1024);
+        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 
         try
         {
-            await using (var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024,
+            await using (var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, 1,
                              FileOptions.Asynchronous | FileOptions.SequentialScan))
-            await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 1024,
+            await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1,
                              FileOptions.Asynchronous | FileOptions.SequentialScan))
             {
                 int n;
@@ -86,7 +89,7 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
             if (afterInitialCopy is not null)
                 await afterInitialCopy(source, ct);
 
-            await VerifySourceStillMatchesAsync(source, shaBytes, ct);
+            await VerifySourceStillMatchesAsync(source, shaBytes, bufferSize, ct);
 
             var after = new FileInfo(source);
             if (!after.Exists || after.Length != before.Length || after.LastWriteTimeUtc != before.LastWriteTimeUtc)
@@ -95,7 +98,7 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
 
             if (File.Exists(dest))
             {
-                await VerifyExistingAsync(dest, shaHex, ct);
+                await VerifyExistingAsync(dest, shaHex, bufferSize, ct);
                 File.Delete(temp);
             }
             else
@@ -104,7 +107,7 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
                 catch (IOException) when (File.Exists(dest))
                 {
                     // A name appearing concurrently is not proof of byte-identical content.
-                    await VerifyExistingAsync(dest, shaHex, ct);
+                    await VerifyExistingAsync(dest, shaHex, bufferSize, ct);
                     File.Delete(temp);
                 }
             }
@@ -144,17 +147,17 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
             ct: ct);
     }
 
-    private static async Task VerifySourceStillMatchesAsync(string source, ReadOnlyMemory<byte> capturedSha256, CancellationToken ct)
+    private static async Task VerifySourceStillMatchesAsync(string source, ReadOnlyMemory<byte> capturedSha256, int bufferSize, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}");
         await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
-            1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+            bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
         var currentSha256 = await SHA256.HashDataAsync(input, ct);
         if (!CryptographicOperations.FixedTimeEquals(currentSha256, capturedSha256.Span))
             throw new IOException($"Source changed while it was being captured: {source}");
     }
 
-    private static async Task VerifyExistingAsync(string path, string expectedSha256, CancellationToken ct)
+    private static async Task VerifyExistingAsync(string path, string expectedSha256, int bufferSize, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         for (var attempt = 0; ; attempt++)
@@ -163,7 +166,7 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
             try
             {
                 await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                    1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                    bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
                 var actual = Convert.ToHexString(await SHA256.HashDataAsync(input, ct));
                 if (!StringComparer.OrdinalIgnoreCase.Equals(actual, expectedSha256))
                     throw new InvalidDataException($"CAS integrity failure: existing blob does not match SHA-256 {expectedSha256}.");

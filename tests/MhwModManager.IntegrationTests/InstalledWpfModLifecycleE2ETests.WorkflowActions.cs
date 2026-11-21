@@ -85,7 +85,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Tab("Profiles & Compare");
         var parentName = "Verified setup " + run.FirstGame.Id;
         var childName = "Child setup " + run.FirstGame.Id;
+        var incomingName = "Added while workflow was open " + run.FirstGame.Id;
+        ((ValuePattern)(await Id("ProfileName")).GetCurrentPattern(ValuePattern.Pattern)).SetValue(childName);
+        await Tab("File Decisions");
+        await new ProfileRepository(run.OpenCatalog()).SaveCurrentAsync(incomingName,ct);
+        await Tab("Profiles & Compare");
+        Assert.Equal(childName,Value(await Id("ProfileName")));
+        await Choose("ParentProfile", incomingName);
         await Choose("ParentProfile", parentName);
+        passed.Add("Workflow page reloaded a new external profile and preserved its unsaved setup name");
         var nameField = (ValuePattern)(await Id("ProfileName")).GetCurrentPattern(ValuePattern.Pattern);
         nameField.SetValue(childName);
         await Click("Save Pending Setup");

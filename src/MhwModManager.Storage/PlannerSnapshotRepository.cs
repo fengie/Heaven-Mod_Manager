@@ -35,7 +35,13 @@ public sealed class PlannerSnapshotRepository(ManagerDatabase db)
     }
 
     /// <summary>Loads all planner input, optionally restricting mod_files to the supplied mod IDs.</summary>
-    public async Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, CancellationToken ct = default)
+    public Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, CancellationToken ct = default)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return LoadAsync(fileModIds,null,ct);
+    }
+
+    public async Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, ArmorOutfitSelection? selection, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
 
@@ -103,6 +109,16 @@ public sealed class PlannerSnapshotRepository(ManagerDatabase db)
             }
         }
 
+        var armorChoices = new Dictionary<string,string>(PathRules.Comparer);
+        await using (var cmd = c.CreateCommand())
+        {
+            cmd.CommandText = "SELECT model_id,mod_id FROM armor_outfit_choices";
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) armorChoices.Add(reader.GetString(0),reader.GetString(1));
+        }
+        if (selection is { ModId: { } modId }) armorChoices[selection.ModelId] = modId;
+        else if (selection is not null) armorChoices.Remove(selection.ModelId);
+
         await using (var cmd = c.CreateCommand())
         {
             cmd.CommandText = "SELECT namespace,mod_id FROM resource_providers";
@@ -136,6 +152,6 @@ public sealed class PlannerSnapshotRepository(ManagerDatabase db)
                 originals[r.GetString(0)] = r.IsDBNull(1) ? null : r.GetString(1);
         }
 
-        return new(mods, files, rules, exact, resources, manifest, originals);
+        return new(mods, files, rules, exact, resources, manifest, originals) { ArmorOutfitChoices=armorChoices };
     }
 }

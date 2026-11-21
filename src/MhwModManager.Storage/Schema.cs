@@ -130,6 +130,7 @@ CREATE INDEX IF NOT EXISTS ix_journal_status ON operation_journal(operation_id,s
 CREATE TABLE IF NOT EXISTS external_changes(path TEXT PRIMARY KEY COLLATE NOCASE,kind TEXT NOT NULL,observed_sha256 TEXT NULL,detected_at TEXT NOT NULL,acknowledged INTEGER NOT NULL DEFAULT 0);
 CREATE INDEX IF NOT EXISTS ix_external_changes_ack ON external_changes(acknowledged,detected_at);
 CREATE TABLE IF NOT EXISTS armor_catalog(series_id INTEGER NOT NULL,name TEXT NOT NULL,model_id TEXT NOT NULL COLLATE NOCASE,PRIMARY KEY(series_id,model_id));
+CREATE TABLE IF NOT EXISTS armor_outfit_choices(model_id TEXT PRIMARY KEY COLLATE NOCASE, mod_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE);
 CREATE INDEX IF NOT EXISTS ix_armor_model ON armor_catalog(model_id COLLATE NOCASE);
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS diagnostics(id INTEGER PRIMARY KEY AUTOINCREMENT,time TEXT NOT NULL,operation_id TEXT NULL,kind TEXT NOT NULL,elapsed_ms REAL NULL,data_json TEXT NULL);

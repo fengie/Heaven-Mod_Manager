@@ -331,8 +331,8 @@ jobs:
           if ([string]$doc.scenarioA.selectorDisplayText -ne 'Updater E2E Fake Game') {
             throw "Installed-client selector UI acceptance failed: '$($doc.scenarioA.selectorDisplayText)'."
           }
-          if (-not [bool]$doc.scenarioA.switchButtonEnabled) {
-            throw 'Installed-client selector UI acceptance did not retain an enabled Switch button.'
+          if (-not [bool]$doc.scenarioA.gameSelectorEnabled) {
+            throw 'Installed-client selector UI acceptance did not expose an enabled game picker.'
           }
           if (-not [bool]$doc.scenarioA.settingsButtonEnabled) {
             throw 'Installed-client selector UI acceptance did not retain an enabled Settings button.'
@@ -344,7 +344,7 @@ jobs:
             'installed_client_e2e=PASS'
             ('scenarioA=' + $doc.scenarioA.status)
             ('selectorDisplayText=' + [string]$doc.scenarioA.selectorDisplayText)
-            ('switchButtonEnabled=' + [string]$doc.scenarioA.switchButtonEnabled)
+            ('gameSelectorEnabled=' + [string]$doc.scenarioA.gameSelectorEnabled)
             ('settingsButtonEnabled=' + [string]$doc.scenarioA.settingsButtonEnabled)
             ('scenarioB=' + $doc.scenarioB.status)
             ('restoredBuild=' + $doc.scenarioB.restoredBuild)

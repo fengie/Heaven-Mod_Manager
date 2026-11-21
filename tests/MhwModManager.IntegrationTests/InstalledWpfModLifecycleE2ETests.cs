@@ -42,9 +42,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
         var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
         await SelectModsTabAsync(window, TestToken);
-        var button = await WaitForElementAsync(() => FindButton(window, "Auto Populate", enabled: true),
-            UiTimeout, "Auto Populate for the registered game", TestToken);
-        Invoke(button);
+        Assert.Null(FindButton(window,"Auto Populate"));
         await WaitForAsync(() => expected.Keys.All(File.Exists), TimeSpan.FromMinutes(3),
             "all 104 independent packages in the registered game's loader directory", TestToken);
         foreach (var (path, payload) in expected)
@@ -88,6 +86,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             await db.InitializeAsync(TestToken);
             await db.InsertDiscoveredModAsync("old-shelf", "Travel shelf", "Travel shelf", wrapper, 10, TestToken);
             await db.InsertDiscoveredModAsync("saved-blue", "Blue Outfit", "Blue Outfit", first, 42, TestToken);
+            await db.FinishDiscoveryAsync(["old-shelf","saved-blue"],TestToken); // Existing catalog predates automatic intake.
 
             var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
             await SelectModsTabAsync(window, TestToken);
@@ -96,7 +95,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             foreach (var name in new[] { "Blue Outfit", "Gold Outfit" })
             {
                 var row = await WaitForElementAsync(() => FindModToggle(grid, name), UiTimeout, name, TestToken);
-                Assert.Equal(ToggleState.Off, ((TogglePattern)row.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+                if(name=="Blue Outfit")Assert.Equal(ToggleState.Off, ((TogglePattern)row.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
             }
             Assert.Null(FindModToggle(grid, "Travel shelf"));
             await WaitForAsync(() => duplicateNames.Count(name => FindModToggle(grid, name) is not null) == 1,
@@ -111,7 +110,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             ((WindowPattern)dialog.GetCurrentPattern(WindowPattern.Pattern)).Close();
             await invocation.WaitAsync(UiTimeout, TestToken);
             foreach (var (path, bytes) in files) Assert.Equal(bytes, File.ReadAllBytes(path));
-            Assert.Equal(new[] { run.SentinelPath }, Directory.GetFiles(run.FirstGame.LiveModRoot, "*", SearchOption.AllDirectories));
+            Assert.DoesNotContain(Directory.GetFiles(run.FirstGame.LiveModRoot,"*",SearchOption.AllDirectories), path=>Path.GetFileName(path).Equals("blue_P.pak",StringComparison.OrdinalIgnoreCase));
         }
         finally
         {
@@ -176,19 +175,21 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var firstHash = SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive));
         var secondHash = SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive));
         run.CopyToInbox(run.BatchFirstArchive);
+        var firstLive=Path.Combine(run.FirstGame.LiveModRoot,"bulk-one.bin");
+        var secondLive=Path.Combine(run.FirstGame.LiveModRoot,"bulk-two.bin");
+        await WaitForAsync(()=>File.Exists(firstLive),UiTimeout,"first Inbox mod deployed",TestToken);
         var first = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
-        Assert.Equal(ToggleState.Off, first.Current.ToggleState);
         first.Toggle();
+        await WaitForAsync(()=>!File.Exists(firstLive),UiTimeout,"explicit off reached disk",TestToken);
         run.CopyToInbox(run.BatchSecondArchive);
-        var second = (TogglePattern)(await WaitForToggle("BulkTwo")).GetCurrentPattern(TogglePattern.Pattern);
-        Assert.Equal(ToggleState.Off, second.Current.ToggleState);
-        first = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
-        Assert.Equal(ToggleState.On, first.Current.ToggleState);
+        await WaitForToggle("BulkTwo");
+        await WaitForAsync(()=>File.Exists(secondLive),UiTimeout,"second Inbox mod deployed",TestToken);
+        Assert.False(File.Exists(firstLive));
         Assert.Equal(firstHash, SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive)));
         Assert.Equal(secondHash, SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive)));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
-        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-one.bin")));
-        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-two.bin")));
+
+
     }
 
     [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
@@ -205,16 +206,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             UiTimeout, "initial active game selector", TestToken);
         Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
 
-        var moreTools = await WaitForElementAsync(() => Find(window, element =>
-            element.Current.Name == "More tools"), UiTimeout, "Dashboard More tools", TestToken);
-        if (!moreTools.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out var expand) ||
-            expand is not ExpandCollapsePattern panel)
-            throw new InvalidOperationException("More tools does not expose accessible ExpandCollapse.");
-        panel.Expand();
-
-        var inboxButton = await WaitForElementAsync(() => FindButton(window, "Install Mods from Inbox"),
-            UiTimeout, "Install Mods from Inbox button", TestToken);
-        Invoke(inboxButton);
         await WaitForAsync(() => Directory.Exists(run.InstalledModPath) &&
             File.Exists(Path.Combine(run.InstalledModPath, "e2e-payload.bin")),
             UiTimeout, "Inbox never published the approved fixture", TestToken);
@@ -224,25 +215,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             element.Current.ControlType == ControlType.CheckBox &&
             element.Current.Name.Contains("E2E Inbox Fixture", StringComparison.OrdinalIgnoreCase)),
             UiTimeout, "Indexed Inbox mod checkbox", TestToken);
-        var state = (TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern);
-        Assert.Equal(ToggleState.Off, state.Current.ToggleState);
-        Assert.False(File.Exists(run.LiveModPath));
-        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
-
-        state.Toggle();
-        Assert.Equal(ToggleState.On,
-            ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
-
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true),
-            UiTimeout, "Preview Mod Changes", TestToken));
-        await WaitForElementAsync(() => Find(window, element =>
-            element.Current.ControlType == ControlType.Text &&
-            element.Current.Name.Contains("Dry run passed", StringComparison.OrdinalIgnoreCase)),
-            UiTimeout, "successful dry-run result", TestToken);
-        Assert.False(File.Exists(run.LiveModPath));
-
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
-            UiTimeout, "Apply Changes", TestToken));
         await WaitForAsync(() => File.Exists(run.LiveModPath) &&
             File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
             UiTimeout, "Apply did not write the exact expected fixture bytes", TestToken);
@@ -262,15 +234,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var expander = (ExpandCollapsePattern)selector.GetCurrentPattern(ExpandCollapsePattern.Pattern);
         expander.Expand();
         var nextGame = await WaitForElementAsync(() =>
-            Find(selector, element => element.Current.ControlType == ControlType.ListItem &&
-                element.Current.Name.Contains(run.SecondGame.DisplayName, StringComparison.Ordinal)) ??
-            Find(window, element => element.Current.ControlType == ControlType.ListItem &&
-                element.Current.Name.Contains(run.SecondGame.DisplayName, StringComparison.Ordinal)),
-            UiTimeout, "second registered game", TestToken);
-        var selection = (SelectionItemPattern)nextGame.GetCurrentPattern(SelectionItemPattern.Pattern);
-        selection.Select();
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Switch", enabled: true),
-            UiTimeout, "Switch game", TestToken));
+            Find(selector, element => element.Current.ControlType == ControlType.MenuItem &&
+                element.Current.AutomationId == run.SecondGame.Id),
+            UiTimeout, "second registered game by profile ID", TestToken);
+        nextGame.SetFocus();
+        Assert.Equal(run.FirstGame.DisplayName, ReadActiveGame(window));
+        Invoke(nextGame);
         await WaitForAsync(() => ReadActiveGame(window) == run.SecondGame.DisplayName,
             UiTimeout, "game selector never switched to the second fake profile", TestToken);
         Assert.False(app.HasExited);
@@ -317,9 +286,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             element.Current.ControlType == ControlType.CheckBox &&
             element.Current.Name.Contains("E2E Inbox Fixture", StringComparison.OrdinalIgnoreCase)),
             UiTimeout, "newly imported mod in visible WPF list", TestToken);
-        Assert.Equal(ToggleState.Off,
-            ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
-        Assert.False(File.Exists(run.LiveModPath));
+        await WaitForAsync(()=>File.Exists(run.LiveModPath) && File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),UiTimeout,"Inbox payload deployed automatically",TestToken);
         Assert.Equal(run.ModBytes, File.ReadAllBytes(Path.Combine(run.InstalledModPath,
             unreal ? "Quartz/Content/Paks/~mods/e2e.pak" : "e2e-payload.bin")));
         Assert.Equal(originalHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
@@ -362,13 +329,10 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             element.Current.ControlType == ControlType.CheckBox &&
             element.Current.Name.Contains("e2e-game-a-BulkTwo", StringComparison.OrdinalIgnoreCase)),
             UiTimeout, "second bulk-imported mod", TestToken);
-        Assert.Equal(ToggleState.Off, ((TogglePattern)a.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
-        Assert.Equal(ToggleState.Off, ((TogglePattern)b.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
         Assert.Equal(originalA, SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive)));
         Assert.Equal(originalB, SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive)));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
-        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-one.bin")));
-        Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "bulk-two.bin")));
+        await WaitForAsync(()=>File.Exists(Path.Combine(run.FirstGame.LiveModRoot,"bulk-one.bin")) && File.Exists(Path.Combine(run.FirstGame.LiveModRoot,"bulk-two.bin")),UiTimeout,"both selected archives automatically installed",TestToken);
     }
 
     [Theory(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
@@ -400,8 +364,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 // A flat Unreal container identifies no game. These payloads carry the registered game ID.
                 var filename = mixed ? run.FirstGame.Id + "-" + members[member] : members[member];
                 sources.Add(Path.Combine(folder, filename), payload);
-                if (mixed || index == 0)
-                    deployed.Add(Path.Combine(run.FirstGame.LiveModRoot, "~mods", filename), payload);
+                deployed.Add(Path.Combine(run.FirstGame.LiveModRoot, "~mods", filename), payload);
             }
         }
         if (mixed)
@@ -462,7 +425,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             {
                 var catalog = await database.GetModsAsync(TestToken);
                 Assert.Equal(names.Order(StringComparer.Ordinal), catalog.Select(mod => mod.DisplayName).Order(StringComparer.Ordinal));
-                Assert.All(catalog, mod => Assert.False(mod.Enabled));
+
             }
             finally
             {
@@ -485,26 +448,9 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                     new PropertyCondition(AutomationElement.ControlTypeProperty,ControlType.CheckBox),
                     new PropertyCondition(AutomationElement.NameProperty,name)));
             }, UiTimeout, name + " in ordinary Mods", TestToken);
-            var toggle = (TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern);
-            Assert.Equal(ToggleState.Off, toggle.Current.ToggleState);
-            if (mixed || name == names[0]) toggle.Toggle();
+            Assert.True(checkbox.Current.IsEnabled);
         }
         query.SetValue("");
-        Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true),
-            UiTimeout, "preview selected nested packages", TestToken));
-        await WaitForElementAsync(() => Find(window, element => element.Current.ControlType == ControlType.Text &&
-            element.Current.Name.Contains("Dry run passed. Ready", StringComparison.Ordinal) &&
-            element.Current.Name.Contains($"{expected.Length} add", StringComparison.Ordinal) &&
-            element.Current.Name.Contains("0 replace", StringComparison.Ordinal) &&
-            element.Current.Name.Contains("0 remove", StringComparison.Ordinal) &&
-            element.Current.Name.Contains("0 restore", StringComparison.Ordinal)),
-            UiTimeout, "preview exactly the selected package files", TestToken);
-        Assert.Equal(before, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
-            UiTimeout, "apply selected nested packages", TestToken));
         await WaitForAsync(() => expected.All(File.Exists), UiTimeout,
             "complete companion set in the exact fake loader destination", TestToken);
         Assert.Equal(before.Concat(expected).Order(StringComparer.Ordinal),
@@ -687,6 +633,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         throw new TimeoutException("Installed WPF functional timeout: " + operation);
     }
 
+    internal static byte[] FixtureTexture(byte[] payload)
+    {
+        // The launch health gate requires the TEX signature and at least 16 bytes.
+        var texture = new byte[Math.Max(16, payload.Length + 4)];
+        "TEX"u8.CopyTo(texture);
+        payload.CopyTo(texture, 4);
+        return texture;
+    }
+
     private sealed class DisposableWpfRun : IDisposable
     {
         private readonly string root;
@@ -758,6 +713,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 File.Copy(Path.Combine(fullTemp, "mhw-game-launch-probe.exe"), FirstGame.ExecutablePath, overwrite: true);
                 if (FirstGame.SavePath is not null) Directory.CreateDirectory(FirstGame.SavePath);
             }
+            if (FirstGame.SupportsSemanticCoverage) ModBytes = FixtureTexture(ModBytes);
             if (FirstGame.SteamAppId is { } steamId)
             {
                 if (!uint.TryParse(steamId, out _)) throw new InvalidDataException("Invalid Steam app ID.");
@@ -800,7 +756,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             ArchivePath = Path.Combine(input, "E2E Inbox Fixture.zip");
             var pakProfile = FirstGame.AdapterId == "unreal-paks";
             var inMount = pakProfile && Path.GetFileName(FirstGame.ModRootRelativePath).Equals("Paks", StringComparison.OrdinalIgnoreCase)
-                ? Path.Combine("~mods", "e2e.pak") : pakProfile ? "e2e.pak" : "e2e-payload.bin";
+                ? Path.Combine("~mods", "e2e.pak") : pakProfile ? "e2e.pak" : FirstGame.SupportsSemanticCoverage
+                    ? Path.Combine("pl","f_equip","pl001_0000","body","tex","e2e.tex") : "e2e-payload.bin";
             var archiveMember = Path.Combine(FirstGame.ModRootRelativePath, inMount).Replace('\\', '/');
             using (var zip = ZipFile.Open(ArchivePath, ZipArchiveMode.Create))
             {
@@ -903,6 +860,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 (File.GetAttributes(root) & FileAttributes.ReparsePoint) != 0 ||
                 File.ReadAllText(Path.Combine(root, ".owned-e2e-root")) != marker)
                 throw new InvalidOperationException("Refusing to clean an unowned WPF acceptance root.");
+            // The observer process can retain its own pooled connection when an assertion
+            // interrupts a sequence of catalog observations. Release only this fixture's pool.
+            var catalog = OpenCatalog();
+            if (File.Exists(catalog.DatabasePath))
+            {
+                using var connection = catalog.OpenAsync(CancellationToken.None).GetAwaiter().GetResult();
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            }
             Directory.Delete(root, recursive: true);
         }
     }

@@ -55,6 +55,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
         var toggle = await PrimaryToggle();
         Assert.Equal(ToggleState.On, toggle.Current.ToggleState);
+        var externalEdit=new byte[]{42,14,9};
+        File.WriteAllBytes(run.LiveModPath,externalEdit);
         toggle.Toggle();
         await WaitForAsync(() => toggle.Current.ToggleState == ToggleState.Off, UiTimeout, "stage original package off", ct);
         opening = await OpenAddGameAsync();
@@ -65,7 +67,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Assert.Equal(run.FirstGame.Id, registry.GetActive()?.Id);
         toggle = await PrimaryToggle();
         Assert.Equal(ToggleState.Off, toggle.Current.ToggleState);
-        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
+        Assert.Equal(externalEdit, File.ReadAllBytes(run.LiveModPath));
+        File.WriteAllBytes(run.LiveModPath,run.ModBytes);
         passed.Add("Decline Add Game while staged and retain pending choice and deployed bytes");
 
         var folder = Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(run.ManagerHome)!, "Added fixture game"));

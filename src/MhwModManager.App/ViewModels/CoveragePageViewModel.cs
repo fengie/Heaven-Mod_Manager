@@ -26,14 +26,15 @@ public sealed class CoveragePageViewModel
         }
 
         var coverage=await reads.GetOutfitCoverageAsync(ct);
+        var options=await reads.GetArmorOptionsAsync(ct);
         var rows=coverage.Select(x=>new OutfitRow(
             x.Armor,
             x.ModelId,
-            x.AvailableProviders,
+            options[x.ModelId].Count(),
             x.WinningPieces,
-            x.AvailableProviders==0?"Unmodded":string.IsNullOrWhiteSpace(x.WinningPieces)?"Available / off":"Active",
+            !options[x.ModelId].Any()?"Unmodded":string.IsNullOrWhiteSpace(x.WinningPieces)?"Available / off":"Active",
             x.PreviewPath,
-            x.Providers)).ToArray();
+            string.Join(", ",options[x.ModelId].Select(o=>o.DisplayName))) { Options=options[x.ModelId].ToArray() }).ToArray();
         await Application.Current.Dispatcher.InvokeAsync(()=>Rows.ReplaceAll(rows));
         return null;
     }

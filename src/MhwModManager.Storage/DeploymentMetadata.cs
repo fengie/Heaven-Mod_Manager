@@ -17,6 +17,7 @@ public static class DeploymentMetadata
         ["mod_family_members"] = ["family_id", "mod_id", "role", "choice_group"],
         ["conflict_rules"] = ["id", "kind", "scope", "left_mod_id", "right_mod_id", "winner_mod_id", "path_pattern", "reason", "explicit", "created_at"],
         ["profile_rules"] = ["profile_id", "rule_id"],
+        ["armor_outfit_choices"] = ["model_id", "mod_id"],
         ["resource_providers"] = ["namespace", "mod_id"],
         ["family_preferences"] = ["family_id", "choice_group", "selected_mod_id", "updated_at"],
         ["mod_supersession"] = ["older_mod_id", "newer_mod_id", "confidence_score", "reason", "created_at"]

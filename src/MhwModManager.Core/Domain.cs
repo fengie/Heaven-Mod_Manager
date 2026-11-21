@@ -187,7 +187,10 @@ public sealed record PlannerSnapshot(
     IReadOnlyDictionary<string,string> ExactWinners,
     IReadOnlyDictionary<string,string> ResourceProviders,
     IReadOnlyDictionary<string,DeploymentManifestEntry> CurrentManifest,
-    IReadOnlyDictionary<string,string?> Originals);
+    IReadOnlyDictionary<string,string?> Originals)
+{
+    public IReadOnlyDictionary<string,string> ArmorOutfitChoices { get; init; } = new Dictionary<string,string>();
+}
 
 
 public sealed record ModProvenance(

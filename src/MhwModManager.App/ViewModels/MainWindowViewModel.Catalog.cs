@@ -206,7 +206,7 @@ public sealed record CatalogBrowseResultState(
                 false,
                 false,
                 "No catalog mods yet",
-                "Refresh configured providers to load browseable mods. Provider errors and configuration problems are reported separately.");
+                "Configured providers are checked automatically when you browse. Provider errors and configuration problems are reported separately.");
     }
 }
 
@@ -253,13 +253,13 @@ public sealed record CatalogPresentationState(
                     CatalogPresentationKind.CachedOnly,
                     "Cached results ready",
                     staleResultCount > 0
-                        ? $"{staleResultCount} cached result(s) may be stale. Refresh providers to check for newer metadata."
-                        : "Cached results are ready. Refresh providers to check for newer metadata.",
+                        ? $"{staleResultCount} cached result(s) may be stale. Providers are checked automatically on return."
+                        : "Cached results are ready. Providers are checked automatically on return.",
                     false)
                 : new CatalogPresentationState(
                     CatalogPresentationKind.Idle,
                     "Provider status not checked yet",
-                    "Refresh configured providers to load or validate browseable mod metadata.",
+                    "Configured providers are checked automatically when you browse.",
                     false);
         }
 
@@ -299,7 +299,7 @@ public sealed record CatalogPresentationState(
             return new CatalogPresentationState(
                 CatalogPresentationKind.Stale,
                 "Cached results may be stale",
-                $"{staleResultCount} of {resultCount} visible result(s) are older than the refresh window. Refresh providers to update them.",
+                $"{staleResultCount} of {resultCount} visible result(s) are older than the refresh window. Providers are checked automatically on return.",
                 false);
         }
 
@@ -384,7 +384,15 @@ public sealed partial class MainWindowViewModel
     private InstalledCatalogOriginChecker? catalogOriginChecker;
     private CatalogAcquisitionService? catalogAcquisition;
     private IReadOnlyList<IModCatalogProvider>? catalogProviders;
-    private bool catalogLoaded;
+    private DateTimeOffset lastCatalogRefresh;
+    private bool CatalogIsFresh
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return DateTimeOffset.UtcNow-lastCatalogRefresh<TimeSpan.FromMinutes(30);
+        }
+    }
     private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private CancellationTokenSource? catalogQueryCts;
     private bool catalogProviderOperationInProgress;
@@ -502,14 +510,6 @@ public sealed partial class MainWindowViewModel
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
             return HasCatalogQuery ? Visibility.Visible : Visibility.Collapsed;
-        }
-    }
-    public Visibility CatalogRefreshEmptyVisibility
-    {
-        get
-        {
-            using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return HasCatalogQuery ? Visibility.Collapsed : Visibility.Visible;
         }
     }
     public int CatalogStaleItemCount
@@ -730,7 +730,6 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(CatalogResultsVisibility));
         OnPropertyChanged(nameof(CatalogEmptyVisibility));
         OnPropertyChanged(nameof(CatalogClearSearchVisibility));
-        OnPropertyChanged(nameof(CatalogRefreshEmptyVisibility));
         OnPropertyChanged(nameof(CatalogLoadMoreVisibility));
         OnPropertyChanged(nameof(CatalogLoadMoreCachedVisibility));
         NotifyCatalogPresentationState();
@@ -876,7 +875,7 @@ public sealed partial class MainWindowViewModel
     private async Task EnsureCatalogLoadedAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (catalogLoaded)
+        if (CatalogIsFresh)
         {
             await SearchCatalogCacheAsync(ct);
             return;
@@ -888,14 +887,15 @@ public sealed partial class MainWindowViewModel
             await catalogSyncGate.WaitAsync(ct);
             try
             {
-                if (catalogLoaded)
+                if (CatalogIsFresh)
                 {
                     await SearchCatalogCacheAsync(ct);
                     return;
                 }
 
                 await RefreshCatalogCoreAsync(ct);
-                catalogLoaded = true;
+                await CheckCatalogUpdatesCoreAsync(false,ct);
+                lastCatalogRefresh = DateTimeOffset.UtcNow;
             }
             finally
             {
@@ -926,7 +926,7 @@ public sealed partial class MainWindowViewModel
                     try
                     {
                         await RefreshCatalogCoreAsync(ct);
-                        catalogLoaded = true;
+                        lastCatalogRefresh = DateTimeOffset.UtcNow;
                     }
                     finally
                     {
@@ -1622,10 +1622,16 @@ public sealed partial class MainWindowViewModel
             "Checking exact mod origins",
             "Re-checking only recorded provider mod/file identities. Replacement files are never guessed…",
             true,
-            CheckCatalogUpdatesCoreAsync);
+            ct => CheckCatalogUpdatesCoreAsync(ct));
     }
 
-    private async Task CheckCatalogUpdatesCoreAsync(CancellationToken ct)
+    private Task CheckCatalogUpdatesCoreAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return CheckCatalogUpdatesCoreAsync(true,ct);
+    }
+
+    private async Task CheckCatalogUpdatesCoreAsync(bool announce,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         EnsureCatalogRuntime();
@@ -1682,7 +1688,7 @@ public sealed partial class MainWindowViewModel
 
         CatalogOriginStatuses.ReplaceAll(rows);
         OnPropertyChanged(nameof(CatalogOriginAttentionCount));
-        CatalogStatusText = rows.Count == 0
+        if (announce) CatalogStatusText = rows.Count == 0
             ? "No installed catalog origins are recorded yet."
             : $"Checked {rows.Count} exact installed origin(s); {CatalogOriginAttentionCount} need review.";
     }

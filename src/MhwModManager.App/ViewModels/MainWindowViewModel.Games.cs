@@ -108,11 +108,10 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private async Task SwitchGame()
+    private async Task SwitchGame(GameProfile? requested)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var requested = SelectedGame;
-        if (requested is null || requested.Equals(s.Paths.Game)) return;
+        if (requested is null || StringComparer.OrdinalIgnoreCase.Equals(requested.Id, s.Paths.Game.Id)) return;
         if (!ConfirmSwitchWithoutPendingChanges()) return;
         await ((MhwModManager.App.App)Application.Current).SwitchGameInPlaceAsync(requested);
     }

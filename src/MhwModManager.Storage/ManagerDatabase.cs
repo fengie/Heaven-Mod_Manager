@@ -295,6 +295,7 @@ public sealed class ManagerDatabase
         OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=m.id)
         OR EXISTS(SELECT 1 FROM conflict_rules WHERE m.id IN (left_mod_id,right_mod_id,winner_mod_id))
         OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM armor_outfit_choices WHERE mod_id=m.id)
         OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=m.id)
         OR EXISTS(SELECT 1 FROM family_preferences WHERE selected_mod_id=m.id)
         """;
@@ -449,6 +450,7 @@ public sealed class ManagerDatabase
                 OR EXISTS(SELECT 1 FROM mod_provenance WHERE mod_id=mods.id)
                 OR EXISTS(SELECT 1 FROM mod_supersession WHERE mods.id IN (older_mod_id,newer_mod_id))
                 OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM armor_outfit_choices WHERE mod_id=mods.id)
             FROM mods
             """;
         await using var r = await cmd.ExecuteReaderAsync(ct);
@@ -533,7 +535,9 @@ public sealed class ManagerDatabase
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await using var connection = await OpenAsync(ct);
+        await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(ct);
         await using var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
         // A concurrent refresh or selection may already own this row. Discovery only inserts.
         cmd.CommandText = """
             INSERT INTO mods(id,name,display_name,source_path,enabled,priority,imported_at,updated_at)
@@ -547,7 +551,47 @@ public sealed class ManagerDatabase
         cmd.Parameters.AddWithValue("$path", path);
         cmd.Parameters.AddWithValue("$priority", priority);
         cmd.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
-        await cmd.ExecuteNonQueryAsync(ct);
+        if (await cmd.ExecuteNonQueryAsync(ct) == 1)
+        {
+            cmd.CommandText = "INSERT OR IGNORE INTO settings(key,value) VALUES('discovery.pending:' || $id,$id)";
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+    }
+
+    public async Task<HashSet<string>> GetDiscoveryProtectedIdsAsync(CancellationToken ct)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        await using var c=await OpenAsync(ct);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="""
+            SELECT mod_id FROM profile_mods UNION SELECT mod_id FROM mod_family_members
+            UNION SELECT provider_mod_id FROM deployment_manifest WHERE provider_mod_id IS NOT NULL
+            UNION SELECT left_mod_id FROM conflict_rules WHERE left_mod_id IS NOT NULL
+            UNION SELECT right_mod_id FROM conflict_rules WHERE right_mod_id IS NOT NULL
+            UNION SELECT winner_mod_id FROM conflict_rules WHERE winner_mod_id IS NOT NULL
+            """;
+        var ids=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using var reader=await cmd.ExecuteReaderAsync(ct);
+        while(await reader.ReadAsync(ct))ids.Add(reader.GetString(0));
+        return ids;
+    }
+
+    public async Task FinishDiscoveryAsync(IEnumerable<string> ids, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(ct);
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = "DELETE FROM settings WHERE key='discovery.pending:' || $id";
+        var id = cmd.Parameters.Add("$id", SqliteType.Text);
+        foreach (var item in ids)
+        {
+            id.Value = item;
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
     }
 
     public async Task UpsertModAsync(ModDescriptor mod, CancellationToken ct = default)

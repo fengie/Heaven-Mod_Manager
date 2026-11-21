@@ -63,6 +63,7 @@ public partial class ModPartRowViewModel:ObservableObject
 public partial class ModRowViewModel:ObservableObject
 {
     private readonly Action _changed;
+    private readonly Action<string,(bool enabled,int priority)>? userEdited;
     private readonly Dictionary<string,(bool enabled,int priority)> _appliedMembers;
     private readonly Dictionary<string,(bool enabled,int priority)> _stagedMembers;
     private bool _updatingSummary;
@@ -193,7 +194,7 @@ public partial class ModRowViewModel:ObservableObject
     }
 
     public ModRowViewModel(LogicalModFamily family,Action changed,
-        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null)
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null, Action<string,(bool enabled,int priority)>? userEdited = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
@@ -217,7 +218,7 @@ public partial class ModRowViewModel:ObservableObject
             identity=$"Possible Nexus {sourceIdentity.ModId} • unverified source";
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
-        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
+        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;this.userEdited=userEdited;
         if (pending is not null && CanStage)
             foreach (var member in Members)
                 if (pending.TryGetValue(member.Id, out var stage)) _stagedMembers[member.Id] = stage;
@@ -232,6 +233,7 @@ public partial class ModRowViewModel:ObservableObject
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
         if (!CanStage) { SetSummaryFromMembers(); return; }
+        var before = userEdited is null ? null : new Dictionary<string,(bool enabled,int priority)>(_stagedMembers,PathRules.Comparer);
         if(value.HasValue)
         {
             var choices = Members.Where(member=>!string.IsNullOrWhiteSpace(member.ChoiceGroup))
@@ -248,7 +250,7 @@ public partial class ModRowViewModel:ObservableObject
             }
         }
         EnsureRequiredCompositionMembers();
-        SetSummaryFromMembers();_changed();
+        SetSummaryFromMembers();_changed();ReportUserChanges(before);
     }
 
     public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
@@ -272,6 +274,7 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!CanStage || !_stagedMembers.TryGetValue(memberId,out var current)) return;
+        var before = userEdited is null ? null : new Dictionary<string,(bool enabled,int priority)>(_stagedMembers,PathRules.Comparer);
         var member = Members.First(item => StringComparer.OrdinalIgnoreCase.Equals(item.Id,memberId));
         if (enabled && !string.IsNullOrWhiteSpace(member.ChoiceGroup))
             foreach (var peer in Members.Where(item => item.Id != member.Id && item.ChoiceGroup == member.ChoiceGroup))
@@ -279,8 +282,16 @@ public partial class ModRowViewModel:ObservableObject
         _stagedMembers[memberId]=(enabled,current.priority);
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();
-        _changed();
+        _changed();ReportUserChanges(before);
     }
+    private void ReportUserChanges(Dictionary<string,(bool enabled,int priority)>? before)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        if (before is null || userEdited is null) return;
+        foreach(var state in _stagedMembers)
+            if(before[state.Key]!=state.Value) userEdited(state.Key,state.Value);
+    }
+
     public bool ContainsMember(string memberId)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -295,9 +306,13 @@ public partial class ModRowViewModel:ObservableObject
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();_changed();
     }
-    public void CommitApplied(){
+    public void CommitApplied(IReadOnlyDictionary<string,(bool enabled,int priority)> committed)
+    {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        _appliedMembers.Clear();foreach(var item in _stagedMembers)_appliedMembers[item.Key]=item.Value;RaiseStateChanged();}
+        foreach(var member in Members)
+            if(committed.TryGetValue(member.Id,out var state)) _appliedMembers[member.Id]=state;
+        RaiseStateChanged();
+    }
 
     public void DiscardStaged()
     {
@@ -413,7 +428,26 @@ public sealed record ConflictRow(
     }
 }
 
-public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers);
+public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers)
+{
+    public string OptionsLabel
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Available==0 ? "Details" : $"Outfits ({Available})";
+        }
+    }
+    public bool HasPreference
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Options.Any(option => option.IsPreferred);
+        }
+    }
+    public IReadOnlyList<MhwModManager.Storage.ArmorOutfitOption> Options { get; init; } = [];
+}
 public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int ProviderCount,string Providers,string Resolution,string Detail,string PrimaryPath);
 public sealed record ActivityRow(string Id,string State,string Description,string Started);
 public sealed record ModIssueRow(string ModId,string DisplayName,string Kind,int Score,string Reason,string LastSeen,int FailureCount,bool Confirmed)

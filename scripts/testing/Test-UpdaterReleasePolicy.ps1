@@ -160,7 +160,7 @@ $durableRawFixture=[ordered]@{
     healthBuild=425
     healthSource=$current
     selectorDisplayText='Updater E2E Fake Game'
-    switchButtonEnabled=$true
+    gameSelectorEnabled=$true
     settingsButtonEnabled=$true
     journalPhase='Confirmed'
     sentinelSha256=$durableSentinels
@@ -184,6 +184,9 @@ $durableRawFixture=[ordered]@{
 }
 $durableRawJson=$durableRawFixture | ConvertTo-Json -Depth 8
 $durableEvidenceJson=ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $durableRawJson -ExpectedTargetSourceSha $current
+$legacySelectorJson=$durableRawJson.Replace('gameSelectorEnabled','switchButtonEnabled')
+$legacyEvidence=ConvertTo-UpdaterInstalledClientDurableEvidenceJson -Json $legacySelectorJson -ExpectedTargetSourceSha $current
+Assert-Equal $durableEvidenceJson $legacyEvidence 'the old Switch control and direct game picker receipts normalize identically'
 $durableEvidence=ConvertFrom-Json -InputObject $durableEvidenceJson
 Assert-Equal 'mhw-mod-manager/updater-installed-client-e2e-durable/v1' $durableEvidence.schema 'durable updater E2E schema'
 Assert-Equal 425 $durableEvidence.target.build 'durable updater E2E target build'
