@@ -1,4 +1,6 @@
-# v8.8.136 — canonical state and solid archive intake
+# v8.8.136 - immutable release verified
+
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `03b07f33e6435a950594e21340153b2de50d3a48`. Public immutable [updater-main-625](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-625) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e40450d298. Verify the mixed-game intake and extraction results under #791 on the candidate and installed update. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -24,11 +26,11 @@ Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e
 
 ## Verification boundary
 
-v8.8.122 [build 609](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-609) published source `b0305463e62aad3dee52fa247d36a62661fb0748`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44695358157) and [installed updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44696757234) passed. The ordinary updater installed 609 on HEAVEN2. The three registered games showed 734, 179, and 32 Steam-owned rows with searchable item IDs and unchanged catalog and deployment state. v8.8.123 publication, hosted update and rollback, and installed Heaven2 verification are pending.
+Current hosted-Windows closure: v8.8.136 source `03b07f33e6435a950594e21340153b2de50d3a48` passed run `44924132490` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.136-heaven-windows-closure.log`.
 
-For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
+Verified immutable GitHub release: [updater-main-625](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-625), exact source `03b07f33e6435a950594e21340153b2de50d3a48`, ZIP SHA-256 `964ce4feecc8ace01b8e3ef53626126f968e3867ebd195fda16112356a2ec13e` and manifest SHA-256 `324197248ef9e9ecb3ff7bcdfebab363e52520cce507427473fb5ed09623e0fb`. Public release and tag ref independently match the built artifact.
 
-**Not established by hosted proof:** personal physical Heaven2 installed binary/version/health; bounded endurance/recovery distribution; real mixed-game archive UI and p95; provider authorization, independent signing and judiciary strict-mode enforcement. Reuse [Toolbox #1001](https://github.com/fengie/heaven-toolbox/issues/1001#issuecomment-7003951728) for the existing authenticated read-only Heaven2 observation capability request; never bypass host custody or modify personal updater state for the sake of proof.
+The tested source remains `03b07f33e6435a950594e21340153b2de50d3a48` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
