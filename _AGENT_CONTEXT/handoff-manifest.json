@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.135",
+  "currentVersion": "8.8.136",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Build 623 is the published v8.8.134 package from f39b44cd95640ac337fc98325b2d5b8869a920ce.",
+  "immediateParentRevision": "Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e40450d298.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh current Toolbox and Manager main, review ownership and release status, and propagate the full continuity protocol and active Learned Rules to every successor. Verify the v8.8.135 Windows release gate, immutable publication, hosted updater and rollback, and personal Heaven2 startup. Preserve the active personal Manager session and all open provider, runtime, performance and governance acceptance.",
+  "nextAgentObligation": "Refresh current Toolbox and Manager main, review ownership and release status, and propagate the full continuity protocol and active Learned Rules to every successor. Verify the v8.8.136 Windows release gate, immutable publication, hosted updater and rollback, and personal Heaven2 startup. Preserve the active personal Manager session and all open provider, runtime, performance and governance acceptance.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

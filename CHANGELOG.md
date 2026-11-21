@@ -1,3 +1,7 @@
+# v8.8.136 — November 21, 2026
+
+- Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
+
 # v8.8.135 — November 21, 2026
 
 - The Mods list shows verified package components together. Choose one documented variant per option group, or enable a supported add-on with its base. Preview shows the resulting deployment before Apply. [Package family verification](https://github.com/fengie/Heaven-Mod_Manager/issues/954)
