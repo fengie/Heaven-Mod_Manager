@@ -373,18 +373,18 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             }
             MasterDebugLog.Write("STARTUP-UI","stage=ready");
         },rethrowOnFailure:true);
-        _=AutoMetadataLoopAsync(backgroundCts.Token);
+        periodicMetadata=AutoMetadataLoopAsync(backgroundCts.Token);
         StartAutoSorting();
         lastInventoryVisit=Stopwatch.GetTimestamp();
         _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
-        _ = RefreshSelectedPageAsync(SelectedTab,backgroundCts.Token);
+        StartPageVisit(SelectedTab);
     }
 
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
         if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,9));
-        _ = RefreshSelectedPageAsync(value,backgroundCts.Token);
+        StartPageVisit(value);
     }
 
     private async Task RefreshSelectedPageAsync(int tab,CancellationToken ct)
@@ -408,7 +408,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     if (BackgroundMetadataRefreshEnabled && !initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)
                     {
                         initialMetadataRefreshStarted=true;
-                        _ = EnsureInitialMetadataLoadedAsync(ct);
+                        pageMetadata = EnsureInitialMetadataLoadedAsync(ct);
                     }
                     break;
                 case 2:

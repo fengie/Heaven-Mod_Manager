@@ -52,13 +52,18 @@ public partial class MainWindow:Window
         catch
         {
             DataContext = previousViewModel;
-            replacement.Dispose();
+            try { await replacement.StopPageReadsAsync(); }
+            finally { replacement.Dispose(); }
             throw;
         }
 
         // This is after commit; failures during old-session cleanup must not roll back the
         // new active window/database to a disposed previous session.
-        try { previousViewModel.Dispose(); }
+        try
+        {
+            try { await previousViewModel.StopPageReadsAsync(); }
+            finally { previousViewModel.Dispose(); }
+        }
         catch (Exception ex)
         {
             MasterDebugLog.Write("GAME-SWITCH", "Previous game view-model disposal failed after commit.", ex);
@@ -236,10 +241,34 @@ public partial class MainWindow:Window
         if(DataContext is IDisposable disposable)disposable.Dispose();
     }
 
-    private void OnClosing(object? sender,CancelEventArgs e)
+    private bool drainingPageReads;
+
+    private async void OnClosing(object? sender,CancelEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(DataContext is not MainWindowViewModel vm||!vm.CriticalOperation)return;
+        if(DataContext is not MainWindowViewModel vm)return;
+        if(!vm.CriticalOperation)
+        {
+            if(drainingPageReads){e.Cancel=true;return;}
+            if(!vm.PageReadsInProgress)return;
+            e.Cancel=true;
+            drainingPageReads=true;
+            try
+            {
+                var pendingReads = vm.StopPageReadsAsync();
+                await Dispatcher.Yield(DispatcherPriority.Background);
+                await pendingReads;
+            }
+            catch(Exception ex)
+            {
+                MasterDebugLog.Write("SHUTDOWN","Could not finish session reads.",ex);
+                vm.StatusText="Could not finish closing: "+ex.Message;
+                return;
+            }
+            finally { drainingPageReads=false; }
+            Close();
+            return;
+        }
         e.Cancel=true;
         MessageBox.Show(this,"A transactional or startup operation is still running. Closing now would emulate a process crash, so the normal Close action is blocked until it reaches a commit or rollback point.","Operation in progress",MessageBoxButton.OK,MessageBoxImage.Information);
     }

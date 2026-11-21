@@ -60,6 +60,8 @@ public sealed class PageActivationTests
             Assert.Same(restored,vm.SelectedLibraryItem);
             Assert.False((await services.Database.GetModsAsync(ct)).Single(m=>m.SourcePath==first.FullName).Enabled);
             Assert.Equal("Second Fixture",File.ReadAllText(Path.Combine(added.FullName,"fixture.txt")));
+            await vm.StopPageReadsAsync();
+            Assert.False(vm.PageReadsInProgress,"Session database users still active before fixture deletion");
         });
 
     private static async Task WaitUntilAsync(Func<bool> assertion, CancellationToken ct)

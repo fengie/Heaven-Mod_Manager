@@ -567,7 +567,9 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("case 4:", mainViewModel);
         Assert.Contains("case 5:", mainViewModel);
         Assert.Contains("case 6:", mainViewModel);
-        Assert.Contains("RefreshSelectedPageAsync(SelectedTab,backgroundCts.Token)", initialize);
+        Assert.Contains("StartPageVisit(SelectedTab)", initialize);
+        var managedPage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.ManagedPage.cs"));
+        Assert.Contains("RefreshSelectedPageAsync(tab,backgroundCts.Token)", managedPage);
         Assert.Contains("if(SelectedTab==6 && generation==conflictPreviewGeneration)await RefreshOverlaps(ct);", mainViewModel);
     }
 

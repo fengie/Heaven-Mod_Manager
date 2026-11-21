@@ -18,6 +18,43 @@ public sealed partial class MainWindowViewModel
     private bool managedVisitRequested;
     private Task managedPageRead = Task.CompletedTask;
 
+    private Task pageVisits=Task.CompletedTask;
+    private Task pageMetadata=Task.CompletedTask;
+    private Task periodicMetadata=Task.CompletedTask;
+
+    internal bool PageReadsInProgress
+    {
+        get
+        {
+            using var trace=MasterDebugLog.BeginMethod();
+            return !pageVisits.IsCompleted || !managedPageRead.IsCompleted ||
+                !automaticChangeWork.IsCompleted || !pageMetadata.IsCompleted || metadataGate.CurrentCount==0 || localInventoryScan is { IsCompleted:false };
+        }
+    }
+
+    private void StartPageVisit(int tab)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        if(disposed || backgroundCts.IsCancellationRequested) return;
+        var visit=RefreshSelectedPageAsync(tab,backgroundCts.Token);
+        pageVisits=pageVisits.IsCompleted ? visit : Task.WhenAll(pageVisits,visit);
+    }
+
+    internal async Task StopPageReadsAsync()
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        if(disposed) return;
+        backgroundCts.Cancel();
+        // A visit can start a catalog or inventory read before completing.
+        try { await pageVisits; }
+        catch(OperationCanceledException) when(backgroundCts.IsCancellationRequested) { }
+        finally
+        {
+            try { await Task.WhenAll(managedPageRead,pageMetadata,periodicMetadata,automaticChangeWork,localInventoryScan ?? Task.CompletedTask); }
+            catch(OperationCanceledException) when(backgroundCts.IsCancellationRequested) { }
+        }
+    }
+
     private void OnManagedLibraryHint(FileChangeHint hint)
     {
         using var trace = MasterDebugLog.BeginMethod();

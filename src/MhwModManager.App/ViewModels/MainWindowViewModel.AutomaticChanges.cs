@@ -22,6 +22,7 @@ public sealed partial class MainWindowViewModel
         ScheduleAutomaticChanges();
     }
     private bool automaticChangesScheduled;
+    private Task automaticChangeWork=Task.CompletedTask;
 
     private Dictionary<string,(bool enabled,int priority)>? discoveryUserEdits;
 
@@ -69,7 +70,7 @@ public sealed partial class MainWindowViewModel
         if (automaticChangesScheduled || (!userApplyRequested && !discoveryRequested) ||
             busyCts is not null || backgroundCts.IsCancellationRequested || Application.Current is null) return;
         automaticChangesScheduled = true;
-        _ = Application.Current.Dispatcher.InvokeAsync(DrainAutomaticChangesAsync, DispatcherPriority.Background);
+        automaticChangeWork=Application.Current.Dispatcher.InvokeAsync(DrainAutomaticChangesAsync, DispatcherPriority.Background).Task.Unwrap();
     }
 
     private async Task DrainAutomaticChangesAsync()
@@ -87,8 +88,8 @@ public sealed partial class MainWindowViewModel
             {
                 discoveryRequested = false;
                 var pending = await s.Database.GetSettingsByPrefixAsync("discovery.pending:",backgroundCts.Token);
-                if (pending.Count > 0 && busyCts is null && StagedCount == 0)
-                    await RunBusy("deployment.discovered","Checking new mods","Checking ownership, compatibility and game files…",true,async ct =>
+                if (pending.Count > 0 && busyCts is null && StagedCount == 0 && !disposed && !backgroundCts.IsCancellationRequested)
+                    await RunBusy("deployment.discovered","Checking new mods","Checking ownership, compatibility and game files…",false,async ct =>
                     {
                         discoveryUserEdits=new(PathRules.Comparer);
                         try
