@@ -13,8 +13,16 @@ public sealed class GameChoiceMenu : MenuItem
 
     public ICommand? SwitchCommand
     {
-        get => (ICommand?)GetValue(SwitchCommandProperty);
-        set => SetValue(SwitchCommandProperty, value);
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return (ICommand?)GetValue(SwitchCommandProperty);
+        }
+        set
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            SetValue(SwitchCommandProperty, value);
+        }
     }
 
     protected override void PrepareContainerForItemOverride(DependencyObject element, object item)

@@ -45,12 +45,15 @@ MainWindow.xaml |  | Button | Content=Cancel ; Command={Binding CancelBusyComman
 MainWindow.xaml |  | Button | Content=Install Mod ; Command={Binding ImportArchiveCommand}
 MainWindow.xaml |  | Button | Content=Launch Game ; Command={Binding LaunchModdedCommand}
 MainWindow.xaml |  | Button | Content=Settings ; Command={Binding ConfigureGameCommand}
-MainWindow.xaml |  | Button | Content=Switch ; Command={Binding SwitchGameCommand}
 MainWindow.xaml |  | Button | Content=View Log ; Command={Binding OpenMasterLogCommand} ; parent={Binding BusyVisibility}
-MainWindow.xaml |  | ComboBox | ItemsSource={Binding Games} ; SelectedItem={Binding SelectedGame,Mode=TwoWay} ; AutomationProperties.Name=Active game ; AutomationProperties.AutomationId=ActiveGameSelector
+MainWindow.xaml |  | GameChoiceMenu | ItemsSource={Binding Games} ; Header={Binding ActiveGameDisplayName} ; AutomationProperties.Name=Active game ; AutomationProperties.AutomationId=ActiveGameSelector
+MainWindow.xaml |  | GameChoiceMenu.HeaderTemplate |
+MainWindow.xaml |  | GameChoiceMenu.ItemContainerStyle |
+MainWindow.xaml |  | GameChoiceMenu.ItemTemplate |
 MainWindow.xaml |  | KeyBinding | Key=Enter ; Modifiers=Control ; Command={Binding ApplyCommand}
 MainWindow.xaml |  | KeyBinding | Key=F5 ; Command={Binding RefreshAnalysisNowCommand}
 MainWindow.xaml |  | KeyBinding | Key=Z ; Modifiers=Control ; Command={Binding UndoCommand}
+MainWindow.xaml |  | Menu |
 MainWindow.xaml |  | ProgressBar | AutomationProperties.Name=Completed package progress ; parent={Binding BusyVisibility}
 MainWindow.xaml |  | ProgressBar | AutomationProperties.Name=Current package file and byte progress ; parent={Binding BusyVisibility}, {Binding BusyItemProgressVisibility}
 MainWindow.xaml |  | ProgressBar | Visibility={Binding BusyVisibility}

@@ -77,7 +77,7 @@ public sealed class UxHardeningTests
         Assert.Contains("<StackPanel Grid.Column=\"1\" Margin=\"12,0,0,0\" Orientation=\"Horizontal\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
         var modsTab=System.Xml.Linq.XDocument.Parse(xaml).Descendants()
             .Single(element=>element.Name.LocalName=="TabItem"&&(string?)element.Attribute("Header")=="Mods");
-        var modsWrapper=Assert.Single(modsTab.Elements().Where(element=>element.Name.LocalName!="TabItem.Tag"));
+        var modsWrapper=Assert.Single(modsTab.Elements(),element=>element.Name.LocalName!="TabItem.Tag");
         Assert.Equal("Grid",modsWrapper.Name.LocalName);
         Assert.Equal("Stretch",(string?)modsWrapper.Attribute("HorizontalAlignment"));
         Assert.Null(modsWrapper.Attribute("Width"));
