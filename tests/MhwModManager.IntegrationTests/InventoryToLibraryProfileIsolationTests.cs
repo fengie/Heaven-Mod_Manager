@@ -43,4 +43,3 @@ public sealed class InventoryToLibraryProfileIsolationTests
         finally { temp.Delete(true); }
     }
 }
-

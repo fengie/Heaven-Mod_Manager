@@ -19,6 +19,15 @@ public sealed class DeploymentExecutor(
     Action<string, int>? faultInjector = null)
 {
     private const int PreflightParallelism = 4;
+    private long committedFileRevision;
+    public long CommittedFileRevision
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Interlocked.Read(ref committedFileRevision);
+        }
+    }
 
     public string Destination(string key)
     {
@@ -120,6 +129,7 @@ public sealed class DeploymentExecutor(
             // transaction boundary. If the process dies during this transaction SQLite rolls it
             // back and recovery sees StateCommitting, so it restores the filesystem before-image.
             await CommitAfterStateAsync(plan.Id,prepared,afterState,targetModState is not null,metadataChanges,ct);
+            if (prepared.Count > 0) Interlocked.Increment(ref committedFileRevision);
             Inject("after-db-commit",0);
             Inject("before-cleanup",0);
 

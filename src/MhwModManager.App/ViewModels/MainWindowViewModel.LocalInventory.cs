@@ -113,12 +113,14 @@ public sealed partial class MainWindowViewModel
         LibraryView.Refresh();
     }
 
+    private HashSet<(string Id,string Path,string Name)>? catalogInventoryIdentities;
     private Task? localInventoryScan;
     private bool localInventoryChanged;
 
     private void InvalidateLocalInventory()
     {
         using var trace = MasterDebugLog.BeginMethod();
+        if (disposed || localInventoryScan == null || backgroundCts.IsCancellationRequested) return;
         localInventoryChanged = true;
         _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
     }

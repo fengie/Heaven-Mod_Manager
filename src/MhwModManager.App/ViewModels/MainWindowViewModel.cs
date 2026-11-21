@@ -691,7 +691,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 if(latest is not null&&DateTimeOffset.TryParse(latest,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal,out var when))
                     row.SetUpdateBadge($"Update available • {when:yyyy-MM-dd}");
             }
+            var identities = models.Select(m=>(m.Id,m.SourcePath,m.DisplayName)).ToHashSet();
+            var sourcesChanged = catalogInventoryIdentities != null && !catalogInventoryIdentities.SetEquals(identities);
+            catalogInventoryIdentities = identities;
             Mods.ReplaceAll(rows);
+            if (sourcesChanged) InvalidateLocalInventory();
             RebuildLibraryRows();
             RefreshLibraryFilters();
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
@@ -1097,7 +1101,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(!result.Success)
             throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
 
-        if (analysis.plan.Changes.Count > 0) InvalidateLocalInventory();
         var enabledAfter=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
         if(enabledAfter.Length>0)await s.Database.MarkRevalidationAsync(enabledAfter,"Validated by a successful deployment after the current game build was observed.",false,ct);
         await Application.Current.Dispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied();});
@@ -1325,7 +1328,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try{await s.Nexus.RefreshAsync(ct);}
         finally{metadataGate.Release();}
         await ReloadMods(ct);UnmanagedFileCount=SupportsLiveAdoption?await s.Adoption.CountAsync(ct):0;await RefreshAnalysis(ct);
-        InvalidateLocalInventory();
         StatusText=result.Message+" The imported mod stays disabled until you enable it and apply your changes.";
     });
     }
@@ -1558,7 +1560,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         var result=await s.Executor.UndoLastAsync(ct);
         if(!result.Success)throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
-        InvalidateLocalInventory();
         await ReloadMods(ct);await RefreshAnalysis(ct);await RefreshActivity(ct);StatusText=result.Message;
     });
     }
@@ -2032,6 +2033,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 MasterDebugLog.Write("UI-PROGRESS",
                     $"operation={operationName}; elapsedMs={sw.Elapsed.TotalMilliseconds:F0}; phase={BusyDetail}; percent={(BusyProgressIndeterminate ? "unknown" : BusyProgressPercent.ToString("F1",CultureInfo.InvariantCulture))}");
         };
+        var startingFileRevision = s.Executor.CommittedFileRevision;
         ticker.Start();
         try
         {
@@ -2056,6 +2058,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         finally
         {
             ticker.Stop();
+            if (s.Executor.CommittedFileRevision != startingFileRevision) InvalidateLocalInventory();
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
             programUpdateHandoffGate.EndForeground();

@@ -56,7 +56,7 @@ public sealed class InstalledPackageLibraryTests
             Put(root,"DLSS-Nexus-Backups/escape/installation.json",Receipt([runtime,Put(temp.FullName,"other.dll")]));
             var inventory = LocalModInventory.Scan([profile],[steam],[],new Dictionary<string,string[]>{{profile.Id,[previous]}},ct);
             var pair = Assert.Single(inventory,r=>r.Name=="sig.lua");
-            Assert.Equal("Paired loader files · runtime use unconfirmed",pair.FileEvidence);
+            Assert.Equal(InstalledEvidenceKind.LoaderPair,pair.FileEvidence);
             Assert.True(File.Exists(Path.Combine(Directory.GetParent(Path.GetDirectoryName(pair.Location)!)!.FullName,"dsound.dll")));
             var none=new HashSet<string>(PathRules.Comparer);
             var all=LocalModInventory.InstalledPackages(inventory,profile,none,ct);

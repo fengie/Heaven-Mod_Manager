@@ -20,7 +20,7 @@ public static partial class LocalModInventory
             var prefix = previous ? "Previous installation · " : "";
             var files = install.ToArray();
             var manifests = new Dictionary<string, string>(PathRules.Comparer);
-            foreach (var entry in files.Where(e => e.FileEvidence == "Mod manifest in Mods directory"))
+            foreach (var entry in files.Where(e => e.FileEvidence == InstalledEvidenceKind.ModManifest))
             {
                 var title = ReadPackageName(entry.Location);
                 if (title != null) manifests[Path.GetDirectoryName(entry.Location)!] = title;
@@ -37,43 +37,43 @@ public static partial class LocalModInventory
                 IEnumerable<string> members = [path];
                 switch (entry.FileEvidence)
                 {
-                    case "Unreal mod container":
-                    case "Loose Unreal companion set outside standard Paks directory · review":
+                    case InstalledEvidenceKind.UnrealContainer:
+                    case InstalledEvidenceKind.UnrealSource:
                         members = UnrealExtensions.Select(ext => Path.ChangeExtension(path,ext))
                             .Where(file => File.Exists(file) && !HasLinkedAncestor(file)).ToArray();
                         if (!UnrealPakLayout.Complete(members,true)) continue;
                         key = Path.ChangeExtension(relative,null); title = name;
-                        var mounted = entry.FileEvidence == "Unreal mod container" &&
+                        var mounted = entry.FileEvidence == InstalledEvidenceKind.UnrealContainer &&
                             (string.IsNullOrEmpty(game.ModRootRelativePath) ||
                              path.StartsWith(Path.TrimEndingDirectorySeparator(Path.Combine(root,game.ModRootRelativePath)) + Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase));
                         owner = mounted ? "Unreal container" : "Unreal package · source location";
                         break;
-                    case "REFramework script":
+                    case InstalledEvidenceKind.ReframeworkScript:
                         key = relative; title = name; owner = "REFramework script"; break;
-                    case "UE4SS mod entry point":
+                    case InstalledEvidenceKind.Ue4ssEntrypoint:
                         var package = Directory.GetParent(dir)!;
                         key = Path.GetRelativePath(root,package.FullName); title = package.Name; owner = "UE4SS package"; break;
-                    case "DLSS Nexus completed installation receipt":
+                    case InstalledEvidenceKind.DlssReceipt:
                         var runtimeDir = VerifiedDlssRuntime(path,root,ct);
                         if (runtimeDir == null) continue;
                         key = "DLSS-Nexus:" + Path.GetRelativePath(root,runtimeDir); title = "DLSS Nexus";
                         owner = "Installed files present · component hash confirmed · " + Path.GetRelativePath(root,runtimeDir);
                         break;
-                    case "Paired loader files · runtime use unconfirmed":
+                    case InstalledEvidenceKind.LoaderPair:
                         var runtime = Directory.GetParent(dir)!.FullName;
                         key = relative; title = "Bitfix loader"; owner = PathRules.Comparer.Equals(runtime,Path.GetDirectoryName(Path.Combine(root,game.ExecutableRelativePath)))
                             ? "Loader pair · runtime unverified" : "Loader pair · source location";
                         var dll = Path.Combine(runtime,"dsound.dll");
                         if (!File.Exists(dll) || HasLinkedAncestor(dll)) continue;
                         members = [path,dll]; break;
-                    case "Mod manifest in Mods directory":
-                    case "Payload in game Mods directory":
+                    case InstalledEvidenceKind.ModManifest:
+                    case InstalledEvidenceKind.ModPayload:
                         var manifest = dir;
                         while (manifest != null && !manifests.ContainsKey(manifest) && !PathRules.Comparer.Equals(root,manifest))
                             manifest = Path.GetDirectoryName(manifest);
                         if (manifest != null && manifests.TryGetValue(manifest,out var label))
                         { key = Path.GetRelativePath(root,manifest); title = label; owner = "Local mod manifest"; }
-                        else if (entry.FileEvidence == "Payload in game Mods directory" && PathRules.Comparer.Equals(dir,Path.Combine(root,"Mods")))
+                        else if (entry.FileEvidence == InstalledEvidenceKind.ModPayload && PathRules.Comparer.Equals(dir,Path.Combine(root,"Mods")))
                         { key = relative; title = name; owner = "Loose mod payload · runtime unverified"; }
                         else continue;
                         break;
@@ -99,7 +99,7 @@ public static partial class LocalModInventory
     internal static string? ManagedLoaderPairOwner(LocalModLocation entry, IReadOnlyList<ModDescriptor> mods, CancellationToken ct)
     {
         using var trace = MasterDebugLog.BeginMethod();
-        if (entry.FileEvidence != "Paired loader files · runtime use unconfirmed" || entry.InstallationRoot == null) return null;
+        if (entry.FileEvidence != InstalledEvidenceKind.LoaderPair || entry.InstallationRoot == null) return null;
         var script = entry.Location;
         var runtime = Path.GetDirectoryName(Path.GetDirectoryName(script))!;
         var dll = Path.Combine(runtime,"dsound.dll");
