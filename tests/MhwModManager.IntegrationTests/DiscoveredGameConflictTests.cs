@@ -12,6 +12,30 @@ public sealed class DiscoveredGameConflictTests
 
     [Theory]
     [MemberData(nameof(RegisteredGames))]
+    public void SavedRelationshipsKeepTheirOwnPartsWhenIdentifiersShareDisplayTokens(string id)
+    {
+        var game = DiscoveredGameProfiles.Load().Single(profile => profile.Id == id);
+        var familyIds = new[] { "manual:外观", "manual:相机", "manual:camera/fixed", "manual:camera.fixed" };
+        var mods = familyIds.SelectMany((family, index) => new[]
+        {
+            new ModDescriptor($"base-{index}", "Main", "Main", $"source/{index}/base", false, 1,
+                FamilyId: family, FamilyRole: "Main"),
+            new ModDescriptor($"extra-{index}", "Optional", "Optional", $"source/{index}/extra", false, 2,
+                FamilyId: family, FamilyRole: "Optional")
+        }).ToArray();
+
+        var families = LogicalModFamilies.Build(mods, game: game);
+        Assert.Equal(familyIds.Length, families.Count);
+        foreach (var familyId in familyIds)
+        {
+            var expected = mods.Where(mod => mod.FamilyId == familyId).Select(mod => mod.Id).Order();
+            var family = Assert.Single(families, row => row.Members.Any(mod => mod.FamilyId == familyId));
+            Assert.Equal(expected, family.Members.Select(mod => mod.Id).Order());
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(RegisteredGames))]
     public async Task ResolvingAConflictThenEnablingAFamilyAddonChangesOnlyItsDeployedWinner(string id)
     {
         var ct = TestContext.Current.CancellationToken;
