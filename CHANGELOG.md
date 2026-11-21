@@ -1,3 +1,7 @@
+# v8.8.129 — November 20, 2026
+
+- Launch Without Mods restores the active deployment when the game cannot start. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)
+
 # v8.8.128 — November 20, 2026
 
 - Official catalog links now follow the active game’s provider mappings. Advanced Tools no longer shows main-window actions it cannot execute. Bringing in manual Unreal mods skips stock game containers. Relinking a moved game preserves its registered install layout. Review-only mods can coexist with Advanced Tools and visible reindexing. The installer keeps checkbox choices in sync and explains missing required choices. Pressing Enter in Mods selects a matching result. Restore Last Working Setup restores the saved mod toggles and deployed files together. Duplicate cleanup verifies both current source folders before archiving a copy, and Collect Diagnostics finds the installed collector. The Windows acceptance suite uses the discovered profile registry for game-specific checks. [Game coverage](https://github.com/fengie/Heaven-Mod_Manager/issues/939)

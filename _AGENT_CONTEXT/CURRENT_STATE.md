@@ -1,6 +1,6 @@
-# v8.8.128 — canonical state and active game actions
+# v8.8.129 — canonical state and unmodded launch recovery
 
-Build 615 is the published v8.8.127 package from a9bc34e61d362fc2ef0edbb0ba3cbc7d3891129f. Verify the registry-wide service and packaged Windows results in #939. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 617 is the published v8.8.128 package from e637342438a0fec22de09feaf98ea7f26d066c6e. #942 tracks deployment restoration after an unsuccessful unmodded launch. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 

@@ -1,6 +1,6 @@
-# v8.8.128 — canonical state and active game actions
+# v8.8.129 — canonical state and unmodded launch recovery
 
-Build 615 is the published v8.8.127 package from a9bc34e61d362fc2ef0edbb0ba3cbc7d3891129f. Verify the registry-wide service and packaged Windows results in #939. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 617 is the published v8.8.128 package from e637342438a0fec22de09feaf98ea7f26d066c6e. #942 tracks deployment restoration after an unsuccessful unmodded launch. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
