@@ -1,3 +1,4 @@
+using MhwModManager.Core;
 using MhwModManager.App.ViewModels;
 using Xunit;
 
@@ -67,6 +68,60 @@ public sealed class PageActivationTests
             Assert.Equal("Second Fixture",File.ReadAllText(Path.Combine(added.FullName,"fixture.txt")));
             await vm.StopPageReadsAsync();
             Assert.False(vm.PageReadsInProgress,"Session database users still active before fixture deletion");
+        });
+
+    [Fact]
+    public Task ReturningToInstalledFilesFindsNewPackagesEvenWithinOneMinute() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            services.GameRegistry.Upsert(services.Paths.Game);
+            using var vm = new MainWindowViewModel(services);
+            string WritePackage(string name)
+            {
+                var directory = Directory.CreateDirectory(Path.Combine(services.Paths.GameRoot, "Mods", name));
+                var manifest = Path.Combine(directory.FullName, "mod.json");
+                File.WriteAllText(manifest, System.Text.Json.JsonSerializer.Serialize(new { name }));
+                File.WriteAllText(Path.Combine(directory.FullName, "fixture.lua"), "-- Fixture");
+                return manifest;
+            }
+            var first = WritePackage("Initial package");
+            vm.SelectedTab = 9;
+            await WaitUntilAsync(() => vm.VisibleLocalModLocations.Any(row => PathRules.Comparer.Equals(row.Location, first)), ct);
+            vm.SelectedTab = 4;
+            var next = WritePackage("Fresh package");
+            vm.SelectedTab = 9;
+            await WaitUntilAsync(() => vm.VisibleLocalModLocations.Any(row => PathRules.Comparer.Equals(row.Location, next)), ct);
+            Assert.Contains(vm.VisibleLocalModLocations, row => PathRules.Comparer.Equals(row.Location, first));
+            await vm.StopPageReadsAsync();
+        });
+
+    [Fact]
+    public Task VisitsDuringAnInventoryScanCoalesceIntoOneFullRescanIncludingOtherGames() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var otherRoot = Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(services.Paths.GameRoot)!, "other-game"));
+            var other = GameProfile.Generic("other-game", "Other game", otherRoot.FullName, "Other.exe", "Mods");
+            File.WriteAllText(other.ExecutablePath, "fixture");
+            services.GameRegistry.Upsert(other);
+            using var vm = new MainWindowViewModel(services);
+            var package = Directory.CreateDirectory(Path.Combine(other.GameRoot, "Mods", "Late"));
+            var manifest = Path.Combine(package.FullName, "mod.json");
+            var scans = 0;
+            vm.PropertyChanged += (_, change) =>
+            {
+                if (change.PropertyName != nameof(vm.VisibleLocalModLocations) || ++scans != 1) return;
+                // The first result is on screen but its scan task has not yet returned.
+                File.WriteAllText(manifest, "{\"name\":\"Late\"}");
+                File.WriteAllText(Path.Combine(package.FullName, "fixture.lua"), "-- Fixture");
+                vm.SelectedTab = 5;
+                vm.SelectedTab = 9;
+                vm.SelectedTab = 5;
+                vm.SelectedTab = 9;
+            };
+            vm.SelectedTab = 9;
+            await WaitUntilAsync(() => vm.VisibleLocalModLocations.Any(row => PathRules.Comparer.Equals(row.Location, manifest)), ct);
+            Assert.Equal(2, scans);
+            await vm.StopPageReadsAsync();
         });
 
     private static async Task WaitUntilAsync(Func<bool> assertion, CancellationToken ct)

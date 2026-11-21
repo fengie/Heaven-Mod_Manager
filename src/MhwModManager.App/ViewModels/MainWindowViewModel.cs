@@ -376,7 +376,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         periodicMetadata=AutoMetadataLoopAsync(backgroundCts.Token);
         StartAutoSorting();
         lastInventoryVisit=Stopwatch.GetTimestamp();
-        _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
+        if (SelectedTab != 9) _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
         StartPageVisit(SelectedTab);
     }
 
@@ -434,7 +434,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     await EnsureCatalogLoadedAsync(ct);
                     break;
             }
-            if ((tab is 1 or 9) && (lastInventoryVisit==0 || Stopwatch.GetElapsedTime(lastInventoryVisit)>=TimeSpan.FromMinutes(1)))
+            if (tab == 1 && (lastInventoryVisit==0 || Stopwatch.GetElapsedTime(lastInventoryVisit)>=TimeSpan.FromMinutes(1)))
             {
                 lastInventoryVisit=Stopwatch.GetTimestamp();
                 _ = RefreshLocalModInventoryAsync(ct);

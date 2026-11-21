@@ -35,6 +35,12 @@ public sealed partial class MainWindowViewModel
     {
         using var trace=MasterDebugLog.BeginMethod();
         if(disposed || backgroundCts.IsCancellationRequested) return;
+        if (tab == 9)
+        {
+            lastInventoryVisit=System.Diagnostics.Stopwatch.GetTimestamp();
+            _ = RefreshLocalModInventoryAsync(backgroundCts.Token, fullVisit:true);
+            return;
+        }
         var visit=RefreshSelectedPageAsync(tab,backgroundCts.Token);
         pageVisits=pageVisits.IsCompleted ? visit : Task.WhenAll(pageVisits,visit);
     }
