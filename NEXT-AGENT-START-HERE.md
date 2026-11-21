@@ -1,6 +1,6 @@
-# v8.8.131 â€” canonical state and game registration
+# v8.8.132 — canonical state and installed discovery
 
-Build 619 is the published v8.8.130 package from ffc6b2526ec9d5a56712b0c8ad4e1724dd11ddcb. Verify #946 through its packaged Dashboard and native picker, then the Windows release and installed updater. The build 619 updater and rollback passed in run 44862996594. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 620 is the published v8.8.131 package from 8d32d302d959bf9267a7bfa082e4693c0b8c9f32. Verify #949 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 

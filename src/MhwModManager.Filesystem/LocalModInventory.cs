@@ -145,6 +145,19 @@ public static partial class LocalModInventory
         return rows;
     }
 
+    public static IReadOnlyList<LocalModLocation> RefreshCurrentInstallation(IReadOnlyList<LocalModLocation> previous,
+        GameProfile game, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var rows = previous.Where(row => row.RegisteredProfileId != game.Id &&
+            !(PathRules.Comparer.Equals(row.Location,game.GameRoot) && row.Name is
+                "Installation unavailable" or "Installation scan incomplete" or "Inventory scan limit reached")).ToList();
+        if (Directory.Exists(game.GameRoot))
+            ScanGame(game.DisplayName,game.IsMonsterHunterWorld,game.GameRoot,"Registered installation",rows,ct,game.Id);
+        else rows.Add(new(game.DisplayName,"Installation unavailable","Registered installation",game.GameRoot));
+        return rows;
+    }
+
     private static bool KnownGameLayout(string name)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

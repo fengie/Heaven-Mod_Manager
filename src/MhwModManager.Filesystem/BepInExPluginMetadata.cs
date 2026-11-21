@@ -62,8 +62,11 @@ public static class BepInExPluginMetadata
 public static partial class LocalModInventory
 {
     public static IReadOnlyList<ExternalLibraryReference> RegisteredPackageLibrary(IEnumerable<LocalModLocation> inventory,
-        GameProfile profile, IEnumerable<string> managedSources, CancellationToken ct = default) =>
-        RegisteredPackageLibrary(inventory,profile,managedSources,null,null,ct);
+        GameProfile profile, IEnumerable<string> managedSources, CancellationToken ct = default)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return RegisteredPackageLibrary(inventory,profile,managedSources,null,null,ct);
+    }
 
     public static IReadOnlyList<ExternalLibraryReference> RegisteredPackageLibrary(IEnumerable<LocalModLocation> inventory,
         GameProfile profile, IEnumerable<string> managedSources, IReadOnlyDictionary<string,string>? sourceTitles,

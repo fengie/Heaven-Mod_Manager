@@ -114,23 +114,42 @@ public sealed partial class MainWindowViewModel
     }
 
     private Task? localInventoryScan;
+    private bool localInventoryChanged;
+
+    private void InvalidateLocalInventory()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        localInventoryChanged = true;
+        _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
+    }
 
     private Task RefreshLocalModInventoryAsync(CancellationToken ct)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         if (localInventoryScan is { IsCompleted: false }) return localInventoryScan;
-        localInventoryScan = ScanLocalModInventoryAsync(ct);
+        localInventoryScan = ScanUntilCurrentAsync(ct);
         return localInventoryScan;
     }
 
-    private async Task ScanLocalModInventoryAsync(CancellationToken ct)
+    private async Task ScanUntilCurrentAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        do
+        {
+            var currentOnly = localInventoryChanged && !CheckingDiscoveredLibrary;
+            localInventoryChanged = false;
+            await ScanLocalModInventoryAsync(currentOnly,ct);
+        } while (localInventoryChanged && !ct.IsCancellationRequested);
+    }
+
+    private async Task ScanLocalModInventoryAsync(bool currentOnly,CancellationToken ct)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         try
         {
             var (result, packages) = await Task.Run(async () =>
             {
-                var result = s.GameRegistry.ScanLocalMods(ct);
+                var result = currentOnly ? LocalModInventory.RefreshCurrentInstallation(LocalModLocations,s.Paths.Game,ct) : s.GameRegistry.ScanLocalMods(ct);
                 var sources = await s.Database.GetModsAsync(ct);
                 var paths = sources.Select(mod => mod.SourcePath).ToArray();
                 var titles = new Dictionary<string,string>(PathRules.Comparer);
