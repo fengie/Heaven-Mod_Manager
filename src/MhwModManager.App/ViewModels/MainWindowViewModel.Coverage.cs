@@ -20,15 +20,23 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private Task ChooseOutfit(ArmorOutfitOption option) =>
-        ChangeOutfit(new(option.ModelId,option.ModId));
+    private Task ChooseOutfit(ArmorOutfitOption option)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return ChangeOutfit(new(option.ModelId,option.ModId));
+    }
 
     [RelayCommand]
-    private Task ClearOutfitChoice(OutfitRow outfit) =>
-        ChangeOutfit(new(outfit.ModelId,null));
+    private Task ClearOutfitChoice(OutfitRow outfit)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return ChangeOutfit(new(outfit.ModelId,null));
+    }
 
-    private Task ChangeOutfit(ArmorOutfitSelection selection) =>
-        RunBusy("coverage.choose","Changing armor outfit","Checking the selected outfit and its game files…",false,async ct =>
+    private Task ChangeOutfit(ArmorOutfitSelection selection)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return RunBusy("coverage.choose","Changing armor outfit","Checking the selected outfit and its game files…",false,async ct =>
         {
             var armor = SelectedOutfit;
             if (!HasSemanticCoverage || armor?.ModelId != selection.ModelId)
@@ -88,6 +96,7 @@ public sealed partial class MainWindowViewModel
             await LoadOutfits(ct);
             StatusText = selection.ModId is null ? "Armor uses the normal load order." : "Outfit applied.";
         });
+    }
 
     private async Task LoadOutfits(CancellationToken ct)
     {

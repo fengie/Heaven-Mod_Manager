@@ -430,8 +430,22 @@ public sealed record ConflictRow(
 
 public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers)
 {
-    public string OptionsLabel => Available==0 ? "Details" : $"Outfits ({Available})";
-    public bool HasPreference => Options.Any(option => option.IsPreferred);
+    public string OptionsLabel
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Available==0 ? "Details" : $"Outfits ({Available})";
+        }
+    }
+    public bool HasPreference
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Options.Any(option => option.IsPreferred);
+        }
+    }
     public IReadOnlyList<MhwModManager.Storage.ArmorOutfitOption> Options { get; init; } = [];
 }
 public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int ProviderCount,string Providers,string Resolution,string Detail,string PrimaryPath);

@@ -21,9 +21,13 @@ public sealed partial class MainWindowViewModel
     private void OnManagedLibraryHint(FileChangeHint hint)
     {
         using var trace = MasterDebugLog.BeginMethod();
-        bool UnderRoot(string path, string root) => !string.IsNullOrEmpty(root) &&
+        bool UnderRoot(string path, string root)
+        {
+            using var scope = MasterDebugLog.BeginMethod();
+            return !string.IsNullOrEmpty(root) &&
             (PathRules.Comparer.Equals(path,root) ||
              path.StartsWith(Path.TrimEndingDirectorySeparator(root)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase));
+        }
         if (!hint.WatcherOverflowed && !hint.Paths.Any(path =>
             UnderRoot(path,s.Paths.ModsRoot) || UnderRoot(path,s.Paths.LegacyModsRoot))) return;
 

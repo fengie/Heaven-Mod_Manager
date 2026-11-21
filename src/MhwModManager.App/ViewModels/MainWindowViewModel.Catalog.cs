@@ -385,7 +385,14 @@ public sealed partial class MainWindowViewModel
     private CatalogAcquisitionService? catalogAcquisition;
     private IReadOnlyList<IModCatalogProvider>? catalogProviders;
     private DateTimeOffset lastCatalogRefresh;
-    private bool CatalogIsFresh => DateTimeOffset.UtcNow-lastCatalogRefresh<TimeSpan.FromMinutes(30);
+    private bool CatalogIsFresh
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return DateTimeOffset.UtcNow-lastCatalogRefresh<TimeSpan.FromMinutes(30);
+        }
+    }
     private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private CancellationTokenSource? catalogQueryCts;
     private bool catalogProviderOperationInProgress;
@@ -1618,7 +1625,11 @@ public sealed partial class MainWindowViewModel
             ct => CheckCatalogUpdatesCoreAsync(ct));
     }
 
-    private Task CheckCatalogUpdatesCoreAsync(CancellationToken ct) => CheckCatalogUpdatesCoreAsync(true,ct);
+    private Task CheckCatalogUpdatesCoreAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return CheckCatalogUpdatesCoreAsync(true,ct);
+    }
 
     private async Task CheckCatalogUpdatesCoreAsync(bool announce,CancellationToken ct)
     {

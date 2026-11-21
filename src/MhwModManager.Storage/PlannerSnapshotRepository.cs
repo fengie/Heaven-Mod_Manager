@@ -35,8 +35,11 @@ public sealed class PlannerSnapshotRepository(ManagerDatabase db)
     }
 
     /// <summary>Loads all planner input, optionally restricting mod_files to the supplied mod IDs.</summary>
-    public Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, CancellationToken ct = default) =>
-        LoadAsync(fileModIds,null,ct);
+    public Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, CancellationToken ct = default)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return LoadAsync(fileModIds,null,ct);
+    }
 
     public async Task<PlannerSnapshot> LoadAsync(IReadOnlyCollection<string>? fileModIds, ArmorOutfitSelection? selection, CancellationToken ct)
     {

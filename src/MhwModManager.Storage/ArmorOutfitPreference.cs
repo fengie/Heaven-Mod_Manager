@@ -4,9 +4,12 @@ namespace MhwModManager.Storage;
 
 public static class ArmorOutfitPreference
 {
-    public static IReadOnlyList<DeploymentChange> OutsideArmor(DeploymentPlan plan,string modelId) =>
-        plan.Changes.Where(change => !PathRules.TryGetArmorComponent(change.Path,out var model,out _) ||
+    public static IReadOnlyList<DeploymentChange> OutsideArmor(DeploymentPlan plan,string modelId)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return plan.Changes.Where(change => !PathRules.TryGetArmorComponent(change.Path,out var model,out _) ||
             !PathRules.Comparer.Equals(model,modelId)).ToArray();
+    }
 
     public static async Task<IReadOnlyList<MetadataRowChange>> PrepareAsync(ManagerDatabase database,
         ArmorOutfitSelection selection, PlannerSnapshot snapshot, CancellationToken ct)

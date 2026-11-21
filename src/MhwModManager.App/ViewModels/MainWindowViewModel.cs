@@ -76,8 +76,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private bool manualFileScanCompleted;
     public GameProfile? SelectedGame
     {
-        get => GamesPage.Selected;
-        set => GamesPage.Selected=value;
+        get { using var trace = MasterDebugLog.BeginMethod(); return GamesPage.Selected; }
+        set { using var trace = MasterDebugLog.BeginMethod(); GamesPage.Selected=value; }
     }
     [ObservableProperty]private AssetOverlapRow? selectedOverlap;
     [ObservableProperty]private EffectiveDecisionExplanation? selectedExplanation;

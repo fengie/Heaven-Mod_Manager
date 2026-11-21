@@ -103,5 +103,12 @@ public sealed record ArmorOutfitSelection(string ModelId,string? ModId);
 public sealed record ArmorOutfitOption(string ModelId,string ModId,string DisplayName,string Pieces,
     int FileCount,int WinningFiles,bool IsPreferred)
 {
-    public string Summary => $"{Pieces} · {WinningFiles} of {FileCount} files in use" + (IsPreferred ? " · Preferred outfit" : "");
+    public string Summary
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return $"{Pieces} Â· {WinningFiles} of {FileCount} files in use" + (IsPreferred ? " Â· Preferred outfit" : "");
+        }
+    }
 }
