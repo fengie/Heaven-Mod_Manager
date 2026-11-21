@@ -92,6 +92,7 @@ public sealed class PageActivationTests
             vm.SelectedTab = 9;
             await WaitUntilAsync(() => vm.VisibleLocalModLocations.Any(row => PathRules.Comparer.Equals(row.Location, next)), ct);
             Assert.Contains(vm.VisibleLocalModLocations, row => PathRules.Comparer.Equals(row.Location, first));
+            Assert.StartsWith("External reference", Assert.Single(vm.VisibleLocalModLocations, row => PathRules.Comparer.Equals(row.Location, next)).LibraryStatus);
             await vm.StopPageReadsAsync();
         });
 
@@ -121,6 +122,7 @@ public sealed class PageActivationTests
             vm.SelectedTab = 9;
             await WaitUntilAsync(() => vm.VisibleLocalModLocations.Any(row => PathRules.Comparer.Equals(row.Location, manifest)), ct);
             Assert.Equal(2, scans);
+            Assert.Equal("Other game", Assert.Single(vm.VisibleLocalModLocations, row => PathRules.Comparer.Equals(row.Location, manifest)).LibraryStatus);
             await vm.StopPageReadsAsync();
         });
 
