@@ -13,6 +13,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.136 — solid archive imports
 
 - Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
+- A loose Unreal configuration file with no known destination stays disabled for layout review. Other packages in the same Inbox batch can finish indexing. [Mixed-game intake](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
 ## v8.8.135 — package options
 
