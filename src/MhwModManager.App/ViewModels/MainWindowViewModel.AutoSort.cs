@@ -374,6 +374,8 @@ public sealed partial class MainWindowViewModel
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // A drop during Preview, Apply or another foreground operation remains in the durable Inbox.
+        if (value == Visibility.Collapsed && !disposed && SelectedTab==1 && (managedReadDeferred || Volatile.Read(ref shelfDirty)!=0))
+            _ = ReconcileManagedPageAsync(backgroundCts.Token);
         if (value == Visibility.Collapsed && inboxWaitingForForeground && !disposed)
         {
             inboxWaitingForForeground = false;

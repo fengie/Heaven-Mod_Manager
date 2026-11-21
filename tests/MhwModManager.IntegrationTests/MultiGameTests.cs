@@ -52,6 +52,54 @@ public sealed class MultiGameTests : IDisposable
     }
 
     [Fact]
+    public async Task DashboardRetriesDiscoveryAfterCooldownAndPreservesSelectedGameWhenRelinked()
+    {
+        var existing=Directory.CreateDirectory(Path.Combine(root,"initial")).FullName;
+        var initialExe=Path.Combine(existing,"Fixture.exe");
+        File.WriteAllText(initialExe,"fixture");
+        var other=Directory.CreateDirectory(Path.Combine(root,"second")).FullName;
+        var secondExe=Path.Combine(other,"Other.exe");
+        File.WriteAllText(secondExe,"second");
+        var candidates=new List<GameDiscoveryCandidate> {new("First",existing,initialExe,"Steam","9123456")};
+        var calls=0;
+        var registry=new GameProfileRegistry(Path.Combine(root,"retry-state"),()=>
+        {
+            Interlocked.Increment(ref calls);
+            return candidates.ToArray();
+        });
+        var clock=new PageClock();
+        var page=new GamesPageViewModel(registry,clock);
+        page.Refresh();
+        await page.AutomaticDiscoveryTask;
+        page.Selected=Assert.Single(page.Rows);
+        var selectedId=page.Selected.Id;
+        candidates.Add(new("Other",other,secondExe,"Steam","9123457"));
+        page.Refresh();
+        await page.AutomaticDiscoveryTask;
+        Assert.Single(page.Rows);
+        var moved=Directory.CreateDirectory(Path.Combine(root,"moved")).FullName;
+        var movedExe=Path.Combine(moved,"Fixture.exe");
+        File.Move(initialExe,movedExe);
+        registry.RepairFromExecutable(page.Selected,movedExe,activate:false);
+        candidates[0]=new("First",moved,movedExe,"Steam","9123456");
+        clock.Advance(TimeSpan.FromMinutes(3));
+        page.Refresh();
+        page.Refresh();
+        await page.AutomaticDiscoveryTask;
+        Assert.Equal(2,calls);
+        Assert.Equal(2,page.Rows.Count);
+        Assert.Equal(selectedId,page.Selected?.Id);
+        Assert.Equal(moved,page.Selected?.GameRoot);
+    }
+
+    private sealed class PageClock : TimeProvider
+    {
+        private DateTimeOffset time=DateTimeOffset.UnixEpoch;
+        public override DateTimeOffset GetUtcNow()=>time;
+        public void Advance(TimeSpan elapsed)=>time+=elapsed;
+    }
+
+    [Fact]
     public void Discovery_repairs_stale_same_root_profile_without_changing_active_game()
     {
         var game=Path.Combine(root,"repair-game");Directory.CreateDirectory(game);
