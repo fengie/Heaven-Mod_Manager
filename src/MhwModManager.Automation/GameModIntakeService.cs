@@ -516,6 +516,11 @@ public sealed class GameModIntakeService
         if (files.Length == 0)
             return new([], false);
 
+        // A bare config has no game-relative destination. Keeping it as a reviewed source
+        // preserves both its bytes and its identity without mapping it into Content/Paks.
+        if (game.AdapterId == "unreal-paks" && files.All(path => !path.Contains('/')) &&
+            files.Any(path => Path.GetExtension(path).Equals(".ini", StringComparison.OrdinalIgnoreCase)))
+            return new([new(source, true)], true);
         var choices = preview.Candidates.Where(candidate => candidate.RequiresSelection)
             .Select(candidate => Path.GetFullPath(Path.Combine(source, candidate.RelativePath)))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
