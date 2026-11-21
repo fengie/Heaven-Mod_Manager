@@ -9,6 +9,78 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed class AuthoredFamilyCatalogTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NormalPickerKeepsBothDocumentedAlternativesTogetherForTheIdentifiedGame(bool zip)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var temp = Directory.CreateTempSubdirectory("family-picker-");
+        try
+        {
+            var games = DiscoveredGameProfiles.Load().Select(profile=>DiscoveredGameProfiles.Isolate(profile,temp.FullName)).ToArray();
+            var owner = games.First(profile=>profile.AdapterId=="unreal-paks");
+            var manager=Path.Combine(temp.FullName,"Manager");
+            var root=Directory.CreateDirectory(Path.Combine(temp.FullName,owner.Id + " Traveller Outfit")).FullName;
+            foreach(var label in new[]{"WITH_Cape","NO_Cape"})
+            {
+                var folder=Directory.CreateDirectory(Path.Combine(root,label)).FullName;
+                foreach(var extension in new[]{".pak",".utoc",".ucas"})
+                    await File.WriteAllTextAsync(Path.Combine(folder,"outfit"+extension),label,ct);
+            }
+            await File.WriteAllTextAsync(Path.Combine(root,"outfit_readme.txt"),"Includes a cape version and another without it. Choose only one.",ct);
+            var input=root;
+            if(zip)
+            {
+                input=root+".zip";
+                System.IO.Compression.ZipFile.CreateFromDirectory(root,input);
+            }
+            var intake=new GameModIntakeService(manager,Path.Combine(manager,"State"),()=>games);
+            var result=await intake.ImportPathAsync(input,ct);
+            var routed=Assert.Single(result.Items);
+            Assert.Equal(GameModIntakeStatus.Routed,routed.Status);
+            Assert.Equal(owner.Id,routed.GameId);
+            var published=Assert.Single(Directory.EnumerateDirectories(GameModStorage.Resolve(manager,owner).InboxRoot));
+            Assert.Equal(7,Directory.GetFiles(published,"*",SearchOption.AllDirectories).Length);
+            Assert.Equal(1,(await intake.ImportPathAsync(input,ct)).AlreadyPresent);
+        }
+        finally { temp.Delete(true); }
+    }
+
+    [Fact]
+    public async Task NestedChoicesShareTheirExistingShelfOwnershipAcrossRefreshes()
+    {
+        var ct=TestContext.Current.CancellationToken;
+        var temp=Directory.CreateTempSubdirectory("family-nested-");
+        var db=new ManagerDatabase(Path.Combine(temp.FullName,"manager.db"));
+        try
+        {
+            await db.InitializeAsync(ct);
+            var game=DiscoveredGameProfiles.Isolate(DiscoveredGameProfiles.Load().First(p=>p.AdapterId=="unreal-paks"),temp.FullName);
+            var installed=Path.Combine(temp.FullName,"Installed");
+            var shelf=Path.Combine(installed,"Various outfits");
+            var family=Directory.CreateDirectory(Path.Combine(shelf,"Traveller")).FullName;
+            await File.WriteAllTextAsync(Path.Combine(family,"README.txt"),"Choose one option only.",ct);
+            foreach(var label in new[]{"NO_Cape","WITH_Cape"})
+                await File.WriteAllTextAsync(Path.Combine(Directory.CreateDirectory(Path.Combine(family,label)).FullName,"costume.pak"),label,ct);
+            var other=Directory.CreateDirectory(Path.Combine(shelf,"Another outfit")).FullName;
+            await File.WriteAllTextAsync(Path.Combine(other,"other.pak"),"other",ct);
+            await db.UpsertModAsync(new("legacy","Traveller","Traveller",family,false,1),ct);
+            await db.SetShelfEntriesAsync(family,[("legacy","wrapper",null)],ct);
+            var scanner=new ModScanner(db,new BlobStore(Path.Combine(temp.FullName,"blobs"),db),new HashingService(),game);
+            var catalog=new CatalogService(db,scanner,installed,inspectShelf:(_,_)=>new([new(family,true),new(other,false)],true));
+            await catalog.RefreshFoldersAsync(ct);
+            await catalog.RefreshFoldersAsync(ct);
+            Assert.Equal(3,(await db.GetModsAsync(ct)).Count);
+            Assert.Contains((await db.ReadShelfEntriesAsync(ct))[shelf],item=>item.Id=="legacy" && item.Role=="wrapper");
+        }
+        finally
+        {
+            await using(var connection=await db.OpenAsync(CancellationToken.None)) SqliteConnection.ClearPool(connection);
+            temp.Delete(true);
+        }
+    }
+
     [Fact]
     public async Task ActiveLegacyPackagePreviewsItsMainAndOptionalOverlayAndSurvivesChangedSource()
     {

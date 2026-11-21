@@ -192,7 +192,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         foreach (var unit in units)
         {
             if (unit.NeedsReview && !PathRules.Comparer.Equals(unit.SourcePath,shelf) &&
-                await DiscoverFamilyAsync(unit.SourcePath,priority,ct))
+                await DiscoverFamilyAsync(unit.SourcePath,priority,ct,shelf))
             {
                 foreach(var wrapper in byPath[unit.SourcePath].Where(mod=>!mod.Enabled))
                     entries.Add((wrapper.Id,"wrapper",null));

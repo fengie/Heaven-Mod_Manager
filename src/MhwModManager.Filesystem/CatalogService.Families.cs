@@ -15,7 +15,7 @@ public sealed partial class CatalogService
         return "local-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
     }
 
-    private async Task<bool> DiscoverFamilyAsync(string root, int priority, CancellationToken ct)
+    private async Task<bool> DiscoverFamilyAsync(string root, int priority, CancellationToken ct, string? enclosingShelf=null)
     {
         using var trace = MasterDebugLog.BeginMethod();
         var parts = await Task.Run(() => AuthoredPackageFamily.Read(root,scanner.Profile,ct),ct);
@@ -29,6 +29,7 @@ public sealed partial class CatalogService
             ? identity.DisplayName : Path.GetFileName(root));
         cmd.Parameters.AddWithValue("$family",family);
         cmd.Parameters.AddWithValue("$root",root);
+        cmd.Parameters.AddWithValue("$shelf",enclosingShelf ?? root);
         cmd.Parameters.AddWithValue("$title",title);
         cmd.Parameters.AddWithValue("$now",DateTimeOffset.UtcNow.ToString("O"));
         cmd.CommandText="SELECT id,enabled,family_id FROM mods WHERE source_path=$root COLLATE NOCASE";
@@ -49,7 +50,7 @@ public sealed partial class CatalogService
             cmd.Parameters.AddWithValue("$id",original);
             if (protectedOriginal || await cmd.ExecuteScalarAsync(ct) is 1L) return false;
             cmd.CommandText=@"INSERT INTO managed_shelf_entries(mod_id,shelf_path,role)
-                VALUES($id,$root,'wrapper') ON CONFLICT(mod_id) DO UPDATE SET role='wrapper',shelf_path=$root";
+                VALUES($id,$shelf,'wrapper') ON CONFLICT(mod_id) DO UPDATE SET role='wrapper',shelf_path=$shelf,canonical_id=NULL";
             await cmd.ExecuteNonQueryAsync(ct);
             cmd.Parameters.RemoveAt("$id");
         }
