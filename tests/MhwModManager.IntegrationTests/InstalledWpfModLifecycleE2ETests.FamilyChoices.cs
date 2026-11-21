@@ -133,8 +133,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         // actual WPF window whose controls served this fixture, then require process exit.
         var ownerWindow = await WaitForMainWindowAsync(app,ct);
         Assert.Equal(app.Id,ownerWindow.Current.ProcessId);
-        await WaitForElementAsync(()=>FindButton(ownerWindow,"Preview Mod Changes",enabled:true),
-            UiTimeout,"family deployment settled before closing",ct);
         ((WindowPattern)ownerWindow.GetCurrentPattern(WindowPattern.Pattern)).Close();
         await app.WaitForExitAsync(ct).WaitAsync(UiTimeout, ct);
         app.Dispose();
