@@ -62,7 +62,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         {
             await using var connection = await db.OpenAsync(ct);
             await using var command = connection.CreateCommand();
-            command.CommandText = "SELECT package_root,source_directory,files_json FROM authored_component_sources WHERE mod_id=$m";
+            command.CommandText = "SELECT package_root,source_directory,files_json FROM authored_component_sources WHERE mod_id=$m AND verified=1";
             command.Parameters.AddWithValue("$m",mod.Id);
             await using var reader = await command.ExecuteReaderAsync(ct);
             if (!await reader.ReadAsync(ct)) throw new InvalidDataException("Refresh this authored package before applying.");

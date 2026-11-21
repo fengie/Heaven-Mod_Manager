@@ -12,11 +12,17 @@ public sealed class OutfitPresetService
         if (family.Members.Count <= 1) return [];
         if (family.Members.Any(member => !string.IsNullOrWhiteSpace(member.ChoiceGroup)))
         {
-            var selected = family.Members.Where(member => string.IsNullOrWhiteSpace(member.ChoiceGroup) ||
-                member.Enabled || (member.Id == member.PreferredChoiceId &&
-                    !family.Members.Any(other => other.ChoiceGroup == member.ChoiceGroup && other.Enabled)))
-                .Select(member => member.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            return [new(family.Id,"Full",selected,"Enable additive components and keep the selected alternatives.")];
+            var selected = family.Members.Where(member=>member.ChoiceGroup is null).Select(member=>member.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach(var group in family.Members.Where(member=>member.ChoiceGroup is not null).GroupBy(member=>member.ChoiceGroup))
+            {
+                var active = group.Where(member=>member.Enabled).ToArray();
+                var choice = active.Length == 1 ? active[0] : group.FirstOrDefault(member=>member.Id==member.PreferredChoiceId);
+                if (choice is not null) selected.Add(choice.Id);
+            }
+            var defaults = family.Members.Where(member=>member.FamilyRole=="Main" || (member.ChoiceGroup is not null && selected.Contains(member.Id)))
+                .Select(member=>member.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return [new(family.Id,"Default",defaults,"Base and selected alternatives."),
+                new(family.Id,"Full",selected,"Enable additive components and keep the selected alternatives.")];
         }
         var main = family.Members.Where(m => !HasAny(m.DisplayName,"top","waist","leg","cape","skimpy","thong","invisible","open")).Select(m=>m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var full = family.Members.Select(m=>m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);

@@ -107,7 +107,7 @@ CREATE INDEX IF NOT EXISTS ix_rules_pair ON conflict_rules(left_mod_id,right_mod
 CREATE INDEX IF NOT EXISTS ix_rules_path ON conflict_rules(path_pattern COLLATE NOCASE);
 CREATE TABLE IF NOT EXISTS resource_providers(namespace TEXT PRIMARY KEY COLLATE NOCASE,mod_id TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS authored_component_sources(mod_id TEXT PRIMARY KEY REFERENCES mods(id) ON DELETE CASCADE,
-    package_root TEXT NOT NULL, source_directory TEXT NOT NULL, files_json TEXT NULL);
+    package_root TEXT NOT NULL, source_directory TEXT NOT NULL, files_json TEXT NULL, verified INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS mod_families(id TEXT PRIMARY KEY,name TEXT NOT NULL,created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS mod_family_members(family_id TEXT NOT NULL REFERENCES mod_families(id) ON DELETE CASCADE,mod_id TEXT NOT NULL REFERENCES mods(id) ON DELETE CASCADE,role TEXT NOT NULL,choice_group TEXT NULL,PRIMARY KEY(family_id,mod_id));
 CREATE TRIGGER IF NOT EXISTS remember_enabled_family_choice AFTER UPDATE OF enabled ON mods

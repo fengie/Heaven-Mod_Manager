@@ -59,6 +59,14 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray(), ct);
+        var verifiedFamilyRoots = new HashSet<string>(PathRules.Comparer);
+        await using (var connection = await db.OpenAsync(ct))
+        await using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText="SELECT DISTINCT package_root FROM authored_component_sources WHERE verified=1";
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) verifiedFamilyRoots.Add(reader.GetString(0));
+        }
         var savedShelves = inspectShelf is null ? null : await db.ReadShelfEntriesAsync(ct);
         var priority=100000;
         foreach(var dir in directories)
@@ -68,6 +76,15 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             try
             {
                 if (await DiscoverFamilyAsync(dir,priority,ct)) continue;
+                if (verifiedFamilyRoots.Contains(dir))
+                {
+                    await using var connection=await db.OpenAsync(ct);
+                    await using var cmd=connection.CreateCommand();
+                    cmd.CommandText="UPDATE authored_component_sources SET verified=0 WHERE package_root=$dir";
+                    cmd.Parameters.AddWithValue("$dir",dir);
+                    await cmd.ExecuteNonQueryAsync(ct);
+                    continue;
+                }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

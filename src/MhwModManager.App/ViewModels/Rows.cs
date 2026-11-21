@@ -233,14 +233,20 @@ public partial class ModRowViewModel:ObservableObject
         if(_updatingSummary)return;
         if (!CanStage) { SetSummaryFromMembers(); return; }
         if(value.HasValue)
+        {
+            var choices = Members.Where(member=>!string.IsNullOrWhiteSpace(member.ChoiceGroup))
+                .GroupBy(member=>member.ChoiceGroup!,StringComparer.Ordinal)
+                .Select(group =>
+                {
+                    var chosen = group.Where(member=>_stagedMembers[member.Id].enabled).ToArray();
+                    return chosen.Length == 1 ? chosen[0].Id : group.FirstOrDefault(member=>member.Id==member.PreferredChoiceId)?.Id;
+                }).Where(id=>id is not null).ToHashSet(StringComparer.Ordinal);
             foreach(var member in Members)
             {
                 var current = _stagedMembers[member.Id];
-                var enabled = value.Value && (string.IsNullOrWhiteSpace(member.ChoiceGroup) ||
-                    current.enabled || (!Members.Any(other => other.ChoiceGroup == member.ChoiceGroup &&
-                        _stagedMembers[other.Id].enabled) && (member.PreferredChoiceId == member.Id || member.Enabled)));
-                _stagedMembers[member.Id]=(enabled,current.priority);
+                _stagedMembers[member.Id]=(value.Value && (member.ChoiceGroup is null || choices.Contains(member.Id)),current.priority);
             }
+        }
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();_changed();
     }

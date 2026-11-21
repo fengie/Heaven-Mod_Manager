@@ -29,7 +29,7 @@ public static class AuthoredPackageFamily
         {
             var feature = contrast[0]!.Value.Feature;
             if (!(text.Contains("choose one") || text.Contains("only one") ||
-                (text.Contains(feature) && (text.Contains("versions") || text.Contains("options") || text.Contains("without"))))) return [];
+                (text.Contains(feature) && (text.Contains(feature + " version") || text.Contains("options") || text.Contains("without"))))) return [];
             foreach (var dir in dirs)
             {
                 var files = SafeRecursiveTraversal.Snapshot(dir, ct).Files;

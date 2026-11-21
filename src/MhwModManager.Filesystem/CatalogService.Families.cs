@@ -84,7 +84,7 @@ public sealed partial class CatalogService
                 INSERT INTO mod_family_members(family_id,mod_id,role,choice_group) VALUES($family,$id,$role,$choice)
                 ON CONFLICT(family_id,mod_id) DO UPDATE SET role=$role,choice_group=$choice WHERE role IS NOT $role OR choice_group IS NOT $choice;
                 INSERT INTO authored_component_sources(mod_id,package_root,source_directory,files_json) VALUES($id,$root,$dir,$files)
-                ON CONFLICT(mod_id) DO UPDATE SET source_directory=$dir,files_json=$files WHERE source_directory IS NOT $dir OR files_json IS NOT $files;
+                ON CONFLICT(mod_id) DO UPDATE SET source_directory=$dir,files_json=$files,verified=1 WHERE source_directory IS NOT $dir OR files_json IS NOT $files OR verified=0;
                 DELETE FROM managed_shelf_entries WHERE mod_id=$id;
                 """;
             await cmd.ExecuteNonQueryAsync(ct);
@@ -105,6 +105,9 @@ public sealed partial class CatalogService
                 await cmd.ExecuteNonQueryAsync(ct);
                 foreach(var key in new[]{"$rule","$base","$addon"}) cmd.Parameters.RemoveAt(key);
             }
+        cmd.CommandText="UPDATE authored_component_sources SET verified=0 WHERE verified=1 AND package_root=$root AND mod_id NOT IN (SELECT value FROM json_each($current))";
+        cmd.Parameters.AddWithValue("$current", JsonSerializer.Serialize(members.Select(member=>member.Id)));
+        await cmd.ExecuteNonQueryAsync(ct);
         await tx.CommitAsync(ct);
         return true;
     }

@@ -323,12 +323,13 @@ public sealed class ManagerDatabase
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
                (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
-               fm.role,shelf.role IS 'review',family.name,fm.choice_group,fp.selected_mod_id
+               fm.role,(shelf.role IS 'review' OR src.verified=0) IS TRUE,family.name,fm.choice_group,fp.selected_mod_id
         FROM mods m
         LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
         LEFT JOIN mod_supersession s ON s.older_mod_id=m.id
         LEFT JOIN mod_family_members fm ON fm.mod_id=m.id AND fm.family_id=m.family_id
+        LEFT JOIN authored_component_sources src ON src.mod_id=m.id
         LEFT JOIN mod_families family ON family.id=fm.family_id
         LEFT JOIN family_preferences fp ON fp.family_id=fm.family_id AND fp.choice_group=fm.choice_group
         WHERE ($all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
