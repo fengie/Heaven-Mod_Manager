@@ -423,6 +423,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var before = Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray();
         var expected = deployed.Keys.ToArray();
 
+        var familySources = archive ? await SeedPackagedFamiliesAsync(run, TestToken) : null;
         var app = run.Launch();
         var window = await WaitForMainWindowAsync(app, TestToken);
         if (archive) await SelectModsTabAsync(window, TestToken);
@@ -516,6 +517,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             Assert.Equal(source.Value, File.ReadAllBytes(source.Key));
         if (archiveHash is not null)
             Assert.Equal(archiveHash, SHA256.HashData(File.ReadAllBytes(selectedInput)));
+        if (familySources is not null)
+            await ExercisePackagedFamiliesAsync(run, app, window, familySources, TestToken);
     }
 
     [Fact]
