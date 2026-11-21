@@ -4,22 +4,45 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 using MhwModManager.Core;
+using MhwModManager.Storage;
+using System.Text.Json;
 
 namespace MhwModManager.Filesystem;
 
 // Source trees include metadata, documentation and empty folders; deployed-file indexes alone
 // cannot prove that two editable packages are interchangeable.
-public sealed class ExactPackageCopies
+public sealed class ExactPackageCopies(ManagerDatabase? database = null)
 {
     private sealed record Source(string Shape, FileInfo[] Files);
     private readonly record struct Stamp(ulong Volume,ulong Low,ulong High,long Changed,long Length);
-    private readonly Dictionary<string,(Stamp Stamp,byte[] Digest)> cache = new(PathRules.Comparer);
+    private sealed record CachedDigest(Stamp Stamp,byte[] Digest);
+    private readonly Dictionary<string,CachedDigest> cache = new(PathRules.Comparer);
+    private const int CacheLimit = 8192;
+    private const int CharacterLimit = 4 * 1024 * 1024;
+    private const string CacheSetting = "catalog:exact-source-sha256:ntfs-v1";
+    private bool cacheLoaded, cacheChanged;
     public long LastBytesHashed { get; private set; }
 
     public async Task<IReadOnlyList<string[]>> FindAsync(IReadOnlyList<ModDescriptor> mods,CancellationToken ct)
     {
         using var trace = MasterDebugLog.BeginMethod();
         LastBytesHashed = 0;
+        if (database != null && !cacheLoaded)
+        {
+            var saved=await database.GetSettingAsync(CacheSetting,ct);
+            if (saved is {Length: >0 and <= CharacterLimit})
+            {
+                try
+                {
+                    var entries=JsonSerializer.Deserialize<Dictionary<string,CachedDigest?>>(saved);
+                    if (entries is {Count: <= CacheLimit})
+                        foreach(var (path,entry) in entries)
+                            if (entry is {Digest.Length:32} && Path.IsPathFullyQualified(path)) cache[path]=entry;
+                }
+                catch (JsonException) { cacheChanged = true; }
+            }
+            cacheLoaded = true;
+        }
         var paths = mods.Where(m=>Path.IsPathFullyQualified(m.SourcePath)).ToLookup(m=>Path.TrimEndingDirectorySeparator(Path.GetFullPath(m.SourcePath)),PathRules.Comparer);
         var overlaps = new HashSet<string>(PathRules.Comparer);
         foreach (var group in paths)
@@ -52,7 +75,27 @@ public sealed class ExactPackageCopies
             result.AddRange(matches.GroupBy(item=>item.Hash).Where(items=>items.Count()>1)
                 .Select(items=>items.Select(item=>item.Id).ToArray()));
         }
+        if (database != null && cacheChanged)
+        {
+            var saved = JsonSerializer.Serialize(cache);
+            await database.SetSettingAsync(CacheSetting,saved.Length<=CharacterLimit ? saved : "{}",ct);
+            cacheChanged = false;
+        }
         return result;
+    }
+
+    public static async Task<bool> SameContentsAsync(string source,string keeper,CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        try
+        {
+            var left=Inspect(source,ct);
+            var right=Inspect(keeper,ct);
+            if(left==null || right==null || left.Shape!=right.Shape) return false;
+            var fresh=new ExactPackageCopies();
+            return await fresh.ContentAsync(left,ct)==await fresh.ContentAsync(right,ct);
+        }
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException) {return false;}
     }
 
     private static Source? Inspect(string root,CancellationToken ct)
@@ -103,10 +146,12 @@ public sealed class ExactPackageCopies
             {
                 var digest=await SHA256.HashDataAsync(stream,ct);
                 LastBytesHashed+=stream.Length;
-                if (stamp!=null && stamp==ReadStamp(stream))
+                if (stamp!=null && stamp!=ReadStamp(stream)) throw new IOException("Package source changed during hashing.");
+                if (stamp!=null)
                 {
-                    if (cache.Count>=32768) cache.Clear();
-                    cache[file.FullName]=(stamp.Value,digest);
+                    if (cache.Count>=CacheLimit) cache.Clear();
+                    cache[file.FullName]=new(stamp.Value,digest);
+                    cacheChanged=true;
                 }
                 content.AppendData(digest);
             }

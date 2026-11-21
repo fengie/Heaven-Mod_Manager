@@ -297,8 +297,19 @@ public sealed class ManagerDatabase
         OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=m.id)
         OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=m.id)
         OR EXISTS(SELECT 1 FROM family_preferences WHERE selected_mod_id=m.id)
-        OR EXISTS(SELECT 1 FROM mod_supersession WHERE m.id IN (older_mod_id,newer_mod_id))
         """;
+
+    public async Task<HashSet<string>> GetProtectedCopyIdsAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var ids = Volatile.Read(ref pendingModIds).ToHashSet(StringComparer.Ordinal);
+        await using var c=await OpenAsync(ct);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="SELECT m.id FROM mods m WHERE m.enabled OR ("+ProtectedCopySql+")";
+        await using var reader=await cmd.ExecuteReaderAsync(ct);
+        while(await reader.ReadAsync(ct)) ids.Add(reader.GetString(0));
+        return ids;
+    }
 
     public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
     {
@@ -306,7 +317,13 @@ public sealed class ManagerDatabase
         return GetModsAsync(false, ct);
     }
 
-    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
+    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return GetModsAsync(includeShelfSources,includeShelfSources,ct);
+    }
+
+    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, bool includeExactCopies, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var list = new List<ModDescriptor>();
@@ -325,14 +342,19 @@ public sealed class ManagerDatabase
         LEFT JOIN mod_supersession s ON s.older_mod_id=m.id
         LEFT JOIN mod_family_members fm ON fm.mod_id=m.id AND fm.family_id=m.family_id
         WHERE ($all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
-            OR (shelf.role='duplicate' AND NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled)))
-        AND ($all OR m.enabled OR NOT EXISTS(SELECT 1 FROM exact_package_copies d WHERE d.mod_id=m.id)
+            OR (shelf.role='duplicate' AND (
+                NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled)
+                OR m.id IN (SELECT value FROM json_each($pending)) OR (
+        """ + ProtectedCopySql + """
+        ))))
+        AND ($copies OR m.enabled OR NOT EXISTS(SELECT 1 FROM exact_package_copies d WHERE d.mod_id=m.id)
             OR m.id IN (SELECT value FROM json_each($pending)) OR (
         """ + ProtectedCopySql + """
         ))
         ORDER BY m.priority,m.name COLLATE NOCASE
         """;
         cmd.Parameters.AddWithValue("$all", includeShelfSources);
+        cmd.Parameters.AddWithValue("$copies", includeExactCopies);
         cmd.Parameters.AddWithValue("$pending",System.Text.Json.JsonSerializer.Serialize(Volatile.Read(ref pendingModIds)));
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))

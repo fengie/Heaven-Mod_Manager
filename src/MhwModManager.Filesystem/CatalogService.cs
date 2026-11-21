@@ -10,7 +10,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
     Func<string,CancellationToken,IReadOnlyList<string>>? discoverChildren=null,
     Func<string,CancellationToken,ManagedCollectionLayout>? inspectShelf=null)
 {
-    private readonly ExactPackageCopies exactCopies = new();
+    private readonly ExactPackageCopies exactCopies = new(db);
     private readonly SemaphoreSlim duplicateRefresh = new(1,1);
     public long LastDuplicateBytesHashed => exactCopies.LastBytesHashed;
 
@@ -126,7 +126,7 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
             var excluded = shelves.SelectMany(group=>group).Where(entry=>entry.Role is "wrapper" or "review")
                 .Select(entry=>entry.Id).ToHashSet(StringComparer.Ordinal);
             var all = await db.GetModsAsync(true,ct);
-            var eligible = all.Where(mod=>!excluded.Contains(mod.Id)).ToArray();
+            var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
             var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
             await db.ReconcileExactCopiesAsync(groups,ct);
         }
