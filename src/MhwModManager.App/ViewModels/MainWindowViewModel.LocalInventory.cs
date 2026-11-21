@@ -33,6 +33,8 @@ public sealed partial class MainWindowViewModel
             var query = LocalModQuery.Trim();
             return query.Length == 0 ? LocalModLocations : LocalModLocations.Where(row =>
                 row.Game.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.LibraryStatus.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Evidence.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Location.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
@@ -131,7 +133,8 @@ public sealed partial class MainWindowViewModel
                 var result = s.GameRegistry.ScanLocalMods(ct);
                 var sources = await s.Database.GetModsAsync(ct);
                 var paths = sources.Select(mod => mod.SourcePath).ToArray();
-                var represented = await s.Adoption.RepresentedInventoryPathsAsync(result,sources,s.Executor.Destination,ct);
+                var titles = new Dictionary<string,string>(PathRules.Comparer);
+                var represented = await s.Adoption.RepresentedInventoryPathsAsync(result,sources,s.Executor.Destination,ct,titles);
                 var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, ct);
                 var installed = LocalModInventory.InstalledPackages(result,s.Paths.Game,represented,ct);
                 var workshop = LocalModInventory.WorkshopLibrary(result, s.Paths.Game.SteamAppId, paths);
@@ -146,12 +149,12 @@ public sealed partial class MainWindowViewModel
                 {
                     s.Log.Warning(ex, "Could not save the discovered mod library for the next startup.");
                 }
-                var references = library.SelectMany(row => row.Locations).ToHashSet(PathRules.Comparer);
+                var references = library.SelectMany(row => row.Locations.Select(path => (path,row.DisplayName))).ToLookup(item=>item.path,item=>item.DisplayName,PathRules.Comparer);
                 var annotated = result.Select(entry => entry with
                 {
-                    LibraryStatus = represented.Contains(entry.Location) ? "Managed deployment or package" :
+                    LibraryStatus = represented.Contains(entry.Location) ? "Managed deployment or package · " + titles.GetValueOrDefault(entry.Location) :
                         entry.PreviousProfileId == s.Paths.Game.Id ? "Previous installation" :
-                        references.Contains(entry.Location) ? "External reference" :
+                        references.Contains(entry.Location) ? "External reference · " + string.Join(", ",references[entry.Location].Distinct()) :
                         entry.RegisteredProfileId != null && entry.RegisteredProfileId != s.Paths.Game.Id ? "Other game" : "Evidence only"
                 }).ToArray();
                 return (annotated, library);

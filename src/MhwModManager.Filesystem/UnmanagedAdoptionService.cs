@@ -126,18 +126,24 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
     }
 
     public async Task<HashSet<string>> RepresentedInventoryPathsAsync(IReadOnlyList<LocalModLocation> inventory,
-        IReadOnlyList<ModDescriptor> mods, Func<string,string> destination, CancellationToken ct)
+        IReadOnlyList<ModDescriptor> mods, Func<string,string> destination, CancellationToken ct, Dictionary<string,string>? titles = null)
     {
         using var trace = MasterDebugLog.BeginMethod();
         var paths = new HashSet<string>(PathRules.Comparer);
+        var byId = mods.ToDictionary(m => m.Id,StringComparer.OrdinalIgnoreCase);
         await using (var connection = await db.OpenAsync(ct))
         {
             await using var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT path FROM deployment_manifest WHERE provider_mod_id IS NOT NULL";
+            cmd.CommandText = "SELECT path,provider_mod_id FROM deployment_manifest WHERE provider_mod_id IS NOT NULL";
             await using var reader = await cmd.ExecuteReaderAsync(ct);
-            while (await reader.ReadAsync(ct)) paths.Add(destination(reader.GetString(0)));
+            while (await reader.ReadAsync(ct))
+            {
+                var path = destination(reader.GetString(0));
+                paths.Add(path);
+                if (titles != null && byId.TryGetValue(reader.GetString(1),out var mod)) titles[path] = mod.DisplayName;
+            }
         }
-        var sources = mods.Select(mod => Path.TrimEndingDirectorySeparator(mod.SourcePath)).ToHashSet(PathRules.Comparer);
+        var sources = mods.ToLookup(mod => Path.TrimEndingDirectorySeparator(mod.SourcePath),PathRules.Comparer);
         var adopted = await LoadAdoptedAsync(ct);
         foreach (var entry in inventory.Where(e => e.RegisteredProfileId == game.Id || e.PreviousProfileId == game.Id))
         {
@@ -149,6 +155,7 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
             {
                 if (!sources.Contains(dir) || PathRules.Comparer.Equals(dir,game.LiveModRoot)) continue;
                 paths.Add(file);
+                if (titles != null) titles[file] = string.Join(", ",sources[dir].Select(m=>m.DisplayName));
                 break;
             }
             if (paths.Contains(file) || adopted.Count == 0 || entry.RegisteredProfileId != game.Id ||
@@ -156,7 +163,10 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
             var key = ManagedKey(file);
             if (adopted.TryGetValue(key,out var copy) && sources.Contains(copy.SourceFolder) && Directory.Exists(copy.SourceFolder) &&
                 StringComparer.OrdinalIgnoreCase.Equals(copy.Sha256,(await hashing.HashFileAsync(file,true,ct)).Sha256))
+            {
                 paths.Add(file);
+                if (titles != null) titles[file] = string.Join(", ",sources[copy.SourceFolder].Select(m=>m.DisplayName));
+            }
         }
         return paths;
     }
