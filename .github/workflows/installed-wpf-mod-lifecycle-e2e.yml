@@ -128,15 +128,25 @@ jobs:
           & $compiler /nologo /target:winexe "/out:$env:RUNNER_TEMP\mhw-game-launch-probe.exe" (Resolve-Path tests/fixtures/packaged-ui/GameLaunchProbe.cs).Path
           if ($LASTEXITCODE -ne 0) { throw 'Disposable game launch probe failed to compile.' }
           $env:MHW_GAME_UI_EVIDENCE = $evidence
-          $output = @(& $runner '--filter-class' 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests' 2>&1)
-          $exit = $LASTEXITCODE
-          $output | Set-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
-          $output | ForEach-Object { Write-Host $_ }
-          if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
-          $summary = $output -join [Environment]::NewLine
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
           $expectedCases = 14
-          if ($summary -notmatch "succeeded:\s+$expectedCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
-            throw "Expected $expectedCases passing acceptance cases and zero skipped tests."
+          # Run the three package picker / restart cases first. Each case runs once;
+          # the remaining suite retains the full per-game receipt verification below.
+          foreach ($partition in @(
+            @{ args = @('--filter-method',$method); expected = 3; name = 'package picker' },
+            @{ args = @('--filter-class',$class,'--filter-not-method',$method); expected = ($expectedCases-3); name = 'remaining lifecycle' }
+          )) {
+            $filters = $partition.args
+            $output = @(& $runner @filters 2>&1)
+            $exit = $LASTEXITCODE
+            $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
+            $output | ForEach-Object { Write-Host $_ }
+            if ($exit -ne 0) { throw "Installed WPF $($partition.name) failed, exit code $exit." }
+            $summary = $output -join [Environment]::NewLine
+            if ($summary -notmatch "succeeded:\s+$($partition.expected)\b" -or $summary -notmatch 'skipped:\s+0\b') {
+              throw "Expected $($partition.expected) passing $($partition.name) cases and zero skips."
+            }
           }
           $inventory = @(Get-Content -Raw -Encoding UTF8 tests/fixtures/discovered-games/games.json | ConvertFrom-Json)
           $gameReceipts = @(Get-ChildItem -LiteralPath $evidence -Filter 'game-*.json' | ForEach-Object {

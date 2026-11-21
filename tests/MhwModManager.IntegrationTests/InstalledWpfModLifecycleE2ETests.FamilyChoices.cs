@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Automation;
 using MhwModManager.Core;
@@ -8,6 +9,14 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed partial class InstalledWpfModLifecycleE2ETests
 {
+    [DllImport("user32.dll", EntryPoint="PostMessageW", ExactSpelling=true, SetLastError=true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int PostCloseMessage(nint window, uint message, nint wParam, nint lParam);
+
+    [DllImport("user32.dll", ExactSpelling=true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern uint GetWindowThreadProcessId(nint window,out int processId);
+
     private const string ChoiceTitle = "Traveller Outfit";
     private const string AddonTitle = "Expedition Kit";
     private static readonly string[] ChoiceLabels = ["NO_Cape", "WITH_Cape"];
@@ -133,8 +142,25 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         // actual WPF window whose controls served this fixture, then require process exit.
         var ownerWindow = await WaitForMainWindowAsync(app,ct);
         Assert.Equal(app.Id,ownerWindow.Current.ProcessId);
-        ((WindowPattern)ownerWindow.GetCurrentPattern(WindowPattern.Pattern)).Close();
-        await app.WaitForExitAsync(ct).WaitAsync(UiTimeout, ct);
+        await WaitForAsync(()=>ownerWindow.Current.IsEnabled &&
+            Find(ownerWindow,e=>e.Current.Name=="Current operation phase" && !e.Current.IsOffscreen) is null,
+            UiTimeout,"transaction overlay closed before restart",ct);
+        var handle=(nint)ownerWindow.Current.NativeWindowHandle;
+        Assert.NotEqual(0u,GetWindowThreadProcessId(handle,out var pid));
+        Assert.Equal(app.Id,pid);
+        Assert.NotEqual(0,PostCloseMessage(handle,0x0010,0,0)); // WM_CLOSE, equivalent to the title-bar close.
+        try { await app.WaitForExitAsync(ct).WaitAsync(UiTimeout, ct); }
+        catch (TimeoutException)
+        {
+            var windows=AutomationElement.RootElement.FindAll(TreeScope.Children,new PropertyCondition(AutomationElement.ProcessIdProperty,app.Id))
+                .Cast<AutomationElement>().Take(8).Select(element=>element.Current.ClassName + " " + element.Current.Name).ToArray();
+            var diagnostics=Path.Combine(Path.GetDirectoryName(run.LaunchReceipt)!,"diagnostics");
+            var logs=Directory.Exists(diagnostics) ? Directory.EnumerateFiles(diagnostics,"*.log",SearchOption.AllDirectories)
+                .Take(8).SelectMany(file=>File.ReadLines(file).TakeLast(30))
+                .Where(line=>line.Contains("OnExit",StringComparison.OrdinalIgnoreCase) || line.Contains("Dispose",StringComparison.OrdinalIgnoreCase) ||
+                    line.Contains("exception",StringComparison.OrdinalIgnoreCase)).TakeLast(12) : [];
+            throw new TimeoutException($"The owned Manager process {app.Id} did not exit. Windows: {string.Join(" | ",windows)}; shutdown: {string.Join(" | ",logs)}");
+        }
         app.Dispose();
         var reopened = run.Launch();
         window = await WaitForMainWindowAsync(reopened, ct);

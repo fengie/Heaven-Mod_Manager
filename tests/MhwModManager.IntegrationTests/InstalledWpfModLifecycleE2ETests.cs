@@ -476,8 +476,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var query = (ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern);
         foreach (var name in names)
         {
-            query.SetValue(name);
-            var checkbox = await WaitForElementAsync(() => FindModToggle(window, name), UiTimeout, name + " in ordinary Mods", TestToken);
+            var field=await WaitForElementAsync(()=>Find(window,element=>element.Current.AutomationId=="ModSearchBox"),UiTimeout,"current Mods search",TestToken);
+            await TypeNativePathAsync(field,name,app.Id,TestToken);
+            var checkbox = await WaitForElementAsync(() =>
+            {
+                var grid=window.FindFirst(TreeScope.Descendants,new PropertyCondition(AutomationElement.NameProperty,"Mod library"));
+                return grid?.FindFirst(TreeScope.Descendants,new AndCondition(
+                    new PropertyCondition(AutomationElement.ControlTypeProperty,ControlType.CheckBox),
+                    new PropertyCondition(AutomationElement.NameProperty,name)));
+            }, UiTimeout, name + " in ordinary Mods", TestToken);
             var toggle = (TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern);
             Assert.Equal(ToggleState.Off, toggle.Current.ToggleState);
             if (mixed || name == names[0]) toggle.Toggle();
