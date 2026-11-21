@@ -1,6 +1,6 @@
-# v8.8.130 — canonical state and deployment history and discovery refresh
+# v8.8.131 — canonical state and game registration
 
-Build 618 is the published v8.8.129 package from 46688d61ea97761a1bdb31dca88a4b69c0e19d9c. Verify #944 and #945 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 618 is the published v8.8.129 package from 46688d61ea97761a1bdb31dca88a4b69c0e19d9c. Verify #946 through its packaged Dashboard and native picker, then the Windows release and installed updater. Preserve #947 predecessor publication and rollback proof. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 

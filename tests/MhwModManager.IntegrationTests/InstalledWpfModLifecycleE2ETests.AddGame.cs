@@ -82,4 +82,3 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Add a new game through the native executable picker and switch in place while preserving all original registrations and files");
     }
 }
-

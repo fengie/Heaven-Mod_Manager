@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.130</Version>
-    <InformationalVersion>8.8.130-deployment-history</InformationalVersion>
+    <Version>8.8.131</Version>
+    <InformationalVersion>8.8.131-add-game</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
