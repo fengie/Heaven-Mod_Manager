@@ -128,13 +128,29 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var picker = await WaitForElementAsync(() => FindFileDialog(dialog.Current.ProcessId),
                 UiTimeout, action + " file picker", ct);
             var field = await WaitForElementAsync(() => FindPickerField(picker, false), UiTimeout, "file name", ct);
-            ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).SetValue(path);
-            Invoke(await WaitForElementAsync(() => FindButton(picker, submit, enabled: true), UiTimeout, submit, ct));
+            await WaitForElementAsync(() => FindButton(picker, submit, enabled: true), UiTimeout, submit, ct);
+            await TypeNativePathAsync(field, path, dialog.Current.ProcessId, ct);
             await opening.WaitAsync(UiTimeout, ct);
         }
-        async Task StatusContains(string message) => await WaitForElementAsync(() => Find(dialog, e =>
-            e.Current.AutomationId == "Status" && e.Current.Name.Contains(message, StringComparison.Ordinal)),
-            UiTimeout, message, ct);
+        async Task StatusContains(string message)
+        {
+            string latest = "";
+            try
+            {
+                await WaitForAsync(() =>
+                {
+                    latest = Find(dialog, e => e.Current.AutomationId == "Status")?.Current.Name ?? "";
+                    return latest.Contains(message, StringComparison.Ordinal);
+                }, UiTimeout, message, ct);
+            }
+            finally
+            {
+                var evidence = Environment.GetEnvironmentVariable("MHW_GAME_UI_EVIDENCE");
+                if (!string.IsNullOrEmpty(evidence))
+                    File.AppendAllText(Path.Combine(evidence, $"portable-{run.FirstGame.Id}.txt"),
+                        latest + Environment.NewLine);
+            }
+        }
         var recipe = Path.Combine(run.ManagerHome, "portable.mhwrecipe");
         await Pick("Export Current Mod List…", "Save", recipe);
         await StatusContains("Exported the current mod list:");
@@ -186,5 +202,31 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         ((WindowPattern)dialog.GetCurrentPattern(WindowPattern.Pattern)).Close();
         await invoke.WaitAsync(UiTimeout, ct);
         await WaitForAsync(() => main.Current.IsEnabled, UiTimeout, "return to active manager", ct);
+    }
+
+    // Native common dialogs maintain their own selected item and edit buffer. Simulate
+    // typing into the focused edit and accepting it, as the Windows user would.
+    private static async Task TypeNativePathAsync(AutomationElement field, string path, int pid, CancellationToken ct)
+    {
+        field.SetFocus();
+        await WaitForAsync(() => AutomationElement.FocusedElement.Current.ProcessId == pid &&
+            field.Current.HasKeyboardFocus, UiTimeout, "focused native path field", ct);
+        var text = new System.Text.StringBuilder();
+        foreach (var ch in path)
+        {
+            if ("+^%~()[]{}".Contains(ch)) text.Append('{').Append(ch).Append('}');
+            else text.Append(ch);
+        }
+        dynamic keys = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell", throwOnError: true)!)!;
+        try
+        {
+            keys.SendKeys("^a");
+            keys.SendKeys(text.ToString());
+            await WaitForAsync(() => ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value
+                .Equals(path, StringComparison.OrdinalIgnoreCase), UiTimeout, "typed native path", ct);
+            Assert.Equal(pid, AutomationElement.FocusedElement.Current.ProcessId);
+            keys.SendKeys("{ENTER}");
+        }
+        finally { System.Runtime.InteropServices.Marshal.FinalReleaseComObject((object)keys); }
     }
 }
