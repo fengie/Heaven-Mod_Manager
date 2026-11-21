@@ -78,10 +78,9 @@ public sealed class DuplicateCleanupService(
 
         var groups = new List<DuplicateGroup>(); long reclaim = 0;
         var visible = (await db.GetModsAsync(ct)).Select(mod=>mod.Id).ToHashSet(StringComparer.Ordinal);
-        var protectedIds = await db.GetProtectedCopyIdsAsync(ct);
         foreach (var pair in fingerprints.Where(x => x.Value.Count > 1))
         {
-            var ordered = pair.Value.OrderByDescending(m => m.Enabled).ThenByDescending(m=>protectedIds.Contains(m.Id)).ThenByDescending(m=>visible.Contains(m.Id)).ThenByDescending(m => m.NexusUploadedAt).ThenByDescending(m => m.Priority).ToArray();
+            var ordered = pair.Value.OrderByDescending(m => m.Enabled).ThenByDescending(m=>visible.Contains(m.Id)).ThenByDescending(m => m.NexusUploadedAt).ThenByDescending(m => m.Priority).ToArray();
             var keeper = ordered[0];
             var bytes = ordered.Skip(1).Sum(m => sizes.GetValueOrDefault(m.Id));
             reclaim += bytes;
@@ -132,7 +131,6 @@ public sealed class DuplicateCleanupService(
                 candidates.Add(id);
                 keepers.Add(id, group.RecommendedKeeperId);
             }
-        var protectedIds=await db.GetProtectedCopyIdsAsync(ct);
         var moved = 0;
         // Archiving an overlapping source would change a second catalog row's files.
         var sources = mods.Values.Where(m => Directory.Exists(m.SourcePath))
@@ -150,7 +148,7 @@ public sealed class DuplicateCleanupService(
         foreach (var id in candidates)
         {
             ct.ThrowIfCancellationRequested();
-            if (protectedIds.Contains(id) || !mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath) ||
+            if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath) ||
                 overlapping.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath)))) continue;
             if (keepers.TryGetValue(id, out var keeperId) &&
                 (!mods.TryGetValue(keeperId, out var keeper) ||

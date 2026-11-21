@@ -299,18 +299,6 @@ public sealed class ManagerDatabase
         OR EXISTS(SELECT 1 FROM family_preferences WHERE selected_mod_id=m.id)
         """;
 
-    public async Task<HashSet<string>> GetProtectedCopyIdsAsync(CancellationToken ct)
-    {
-        using var trace = MasterDebugLog.BeginMethod();
-        var ids = Volatile.Read(ref pendingModIds).ToHashSet(StringComparer.Ordinal);
-        await using var c=await OpenAsync(ct);
-        await using var cmd=c.CreateCommand();
-        cmd.CommandText="SELECT m.id FROM mods m WHERE m.enabled OR ("+ProtectedCopySql+")";
-        await using var reader=await cmd.ExecuteReaderAsync(ct);
-        while(await reader.ReadAsync(ct)) ids.Add(reader.GetString(0));
-        return ids;
-    }
-
     public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

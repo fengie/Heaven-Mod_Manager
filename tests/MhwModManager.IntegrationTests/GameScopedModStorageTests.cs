@@ -79,7 +79,7 @@ public sealed class GameScopedModStorageTests : IDisposable
         var existingPackage = Directory.CreateDirectory(Path.Combine(storage.LegacyInstalledRoot,"ExistingPackage"));
         var download = Directory.CreateDirectory(Path.Combine(storage.DownloadsRoot,"not-a-mod"));
         foreach (var folder in new[] { newPackage, existingPackage, download })
-            File.WriteAllText(Path.Combine(folder.FullName,"payload.pak"), "fixture payload");
+            File.WriteAllText(Path.Combine(folder.FullName,"payload.pak"), folder.Name + " payload");
         var db=new ManagerDatabase(Path.Combine(tool,"state","manager.db"));
         await db.InitializeAsync(TestToken);
         var scanner=new ModScanner(db,new BlobStore(Path.Combine(tool,"blobs"),db),new HashingService(),game);
