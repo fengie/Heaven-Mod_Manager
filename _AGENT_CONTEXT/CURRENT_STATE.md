@@ -1,6 +1,6 @@
-# v8.8.135 — canonical state and package options
+# v8.8.136 — canonical state and solid archive intake
 
-Build 623 is the published v8.8.134 package from f39b44cd95640ac337fc98325b2d5b8869a920ce. Verify the package family changes under #954 through the Windows release and installed updater. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 624 is the published v8.8.135 package from 1156864d354b10cbbe14d89e7dda97e40450d298. Verify the mixed-game intake and extraction results under #791 on the candidate and installed update. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
 

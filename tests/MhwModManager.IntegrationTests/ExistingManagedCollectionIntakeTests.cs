@@ -205,6 +205,43 @@ public sealed class ExistingManagedCollectionIntakeTests : IAsyncDisposable
         Assert.False(Directory.Exists(game.GameRoot));
     }
 
+    [Fact]
+    public async Task UnplacedUnrealConfigsRemainVisibleForReviewWhileSiblingPackageIndexesNormally()
+    {
+        var game = GameProfile.Generic("quartz", "Quartz", Path.Combine(home, "game"), "game.exe", "Quartz/Content/Paks", "unreal-paks");
+        var storage = GameModStorage.Resolve(Manager, game);
+        foreach (var entry in new[] { "A VRR/Engine.ini", "B NoVRR/Engine.ini", "C Outfit/outfit.pak" })
+        {
+            var path = Path.Combine(storage.InboxRoot, entry);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, entry);
+        }
+        var db = catalogDatabase = new ManagerDatabase(Path.Combine(home, "catalog.db"));
+        await db.InitializeAsync(TestToken);
+        var scanner = new ModScanner(db, new BlobStore(Path.Combine(home, "blobs"), db), new HashingService(), game);
+        var inspector = new ArchiveInspector();
+        var intake = new GameModIntakeService(Manager, Path.Combine(Manager, "State"), () => [game], inspector);
+        var catalog = new CatalogService(db, scanner, storage.InstalledRoot, inspectShelf: (folder, ct) => intake.InspectManagedShelf(folder, game, ct));
+        var inbox = new SmartInboxService(db, inspector, catalog,
+            new NexusMetadataService(db, new PlannerSnapshotRepository(db), Path.Combine(Manager, "State"), game),
+            new AutoCategoryService(db), storage.InboxRoot, storage.InstalledRoot);
+        var result = await inbox.ProcessAsync(null, refreshMetadata: false, TestToken);
+        Assert.Equal(3, result.Imported);
+        Assert.Equal(2, result.Items.Count(item => item.Message.Contains("review", StringComparison.OrdinalIgnoreCase)));
+        await catalog.RefreshFoldersAsync(TestToken);
+        var mods = await db.GetModsAsync(TestToken);
+        Assert.Equal(3, mods.Count);
+        Assert.All(mods, mod => Assert.False(mod.Enabled));
+        foreach (var config in mods.Where(mod => mod.Name.Contains("VRR", StringComparison.Ordinal)))
+        {
+            Assert.True(config.RequiresLayoutReview);
+            Assert.Equal(config.Name + "/Engine.ini", File.ReadAllText(Path.Combine(config.SourcePath, "Engine.ini")));
+            await Assert.ThrowsAsync<InvalidDataException>(() => scanner.CaptureAsync(config, TestToken));
+        }
+        Assert.EndsWith(@"Quartz\Content\Paks\~mods\outfit.pak", Assert.Single(await db.GetModFilesAsync(TestToken)).Path, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0, (await inbox.ProcessAsync(null, refreshMetadata: false, TestToken)).Found);
+        Assert.False(Directory.Exists(game.GameRoot));
+    }
     [Theory]
     [InlineData("sifu", "Sifu/Content/Paks", "fav", "mai favorite", "pakchunk99-MAI-By-serikase", false)]
     [InlineData("stellar-blade", "SB/Content/Paks/~mods", "old apply", "Scanning Invisible Drone-167-1-0-1749821637", "InvisibleDrone_P", true)]

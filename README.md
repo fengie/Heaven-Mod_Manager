@@ -1,14 +1,19 @@
-# v8.8.135 — MHW Manual Mod Manager
+# v8.8.136 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 06:40:31 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 10:26:04 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.135**.
+Current product version: **8.8.136**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.136 — solid archive imports
+
+- Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
+- A loose Unreal configuration file with no known destination stays disabled for layout review. Other packages in the same Inbox batch can finish indexing. [Mixed-game intake](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
 ## v8.8.135 — package options
 
@@ -17,10 +22,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.134 — mod folder imports
 
 - Import a mod folder or archive to list independent packages even when a loose file sits beside them. Manager preserves container companions, keeps documented alternatives together for review, and uses a registered game folder to route its packages. [Folder import verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791)
-
-## v8.8.133 — automatic duplicate handling
-
-- Manager now shows one entry for identical package folders at startup and after intake. It keeps both originals, respects saved and staged choices, and shows a copy again when its contents change. Previously selected intake folders resume when reconnected. [Automatic duplicate handling](https://github.com/fengie/Heaven-Mod_Manager/issues/951)
 
 ## Current plans & progress
 

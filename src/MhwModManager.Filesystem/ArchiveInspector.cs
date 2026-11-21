@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using SharpCompress.Archives;
 using SharpCompress.Common;
+using SharpCompress.Readers;
 using MhwModManager.Core;
 
 namespace MhwModManager.Filesystem;
@@ -150,6 +151,9 @@ public sealed class ArchiveInspector
         var completedFiles=0;
         var lastProgress=Stopwatch.StartNew();
         progress?.Report(new ArchiveExtractionProgress(0,files.Count,0,declaredTotal));
+        // A solid 7z block has one decoder dictionary. Random entry streams restart that
+        // dictionary and decompress all preceding members again for every file.
+        using var solid = archive.Type == ArchiveType.SevenZip && archive.IsSolid ? archive.ExtractAllEntries() : null;
         foreach(var (e,dest) in files)
         {
             ct.ThrowIfCancellationRequested();
@@ -159,38 +163,50 @@ public sealed class ArchiveInspector
             var createdOutput=false;
             try
             {
-                using var source=await e.OpenEntryStreamAsync(ct).ConfigureAwait(false);
-                await using var output=new FileStream(
-                    dest,
-                    FileMode.CreateNew,
-                    FileAccess.Write,
-                    FileShare.None,
-                    128*1024,
-                    FileOptions.Asynchronous|FileOptions.SequentialScan);
-                createdOutput=true;
-                var buffer=ArrayPool<byte>.Shared.Rent(128*1024);
+                if (solid is not null && (!NextSolidFile(solid,ct) ||
+                    !string.Equals(solid.Entry.Key,e.Key,StringComparison.Ordinal) || solid.Entry.Size != e.Size))
+                    throw new InvalidDataException("The solid archive reader did not match the verified entry manifest.");
+                using var source = solid is null ? await e.OpenEntryStreamAsync(ct).ConfigureAwait(false) : solid.OpenEntryStream();
                 try
                 {
-                    while(true)
+                    await using var output=new FileStream(
+                        dest,
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None,
+                        128*1024,
+                        FileOptions.Asynchronous|FileOptions.SequentialScan);
+                    createdOutput=true;
+                    var buffer=ArrayPool<byte>.Shared.Rent(128*1024);
+                    try
                     {
-                        ct.ThrowIfCancellationRequested();
-                        var read=await source.ReadAsync(buffer.AsMemory(0,buffer.Length),ct).ConfigureAwait(false);
-                        if(read==0)break;
-                        if(read>limits.MaxActualOutputBytes-actualTotal)
-                            throw new InvalidDataException("Archive actual-output safety limit exceeded.");
-                        injectFault(ArchiveExtractionFaultPoint.BeforePayloadWrite,dest);
-                        await output.WriteAsync(buffer.AsMemory(0,read),ct).ConfigureAwait(false);
-                        actualTotal+=read;
-                        if(progress is not null && lastProgress.ElapsedMilliseconds>=250)
+                        while(true)
                         {
-                            progress.Report(new ArchiveExtractionProgress(completedFiles,files.Count,actualTotal,declaredTotal));
-                            lastProgress.Restart();
+                            ct.ThrowIfCancellationRequested();
+                            var read=await source.ReadAsync(buffer.AsMemory(0,buffer.Length),ct).ConfigureAwait(false);
+                            if(read==0)break;
+                            if(read>limits.MaxActualOutputBytes-actualTotal)
+                                throw new InvalidDataException("Archive actual-output safety limit exceeded.");
+                            injectFault(ArchiveExtractionFaultPoint.BeforePayloadWrite,dest);
+                            await output.WriteAsync(buffer.AsMemory(0,read),ct).ConfigureAwait(false);
+                            actualTotal+=read;
+                            if(progress is not null && lastProgress.ElapsedMilliseconds>=250)
+                            {
+                                progress.Report(new ArchiveExtractionProgress(completedFiles,files.Count,actualTotal,declaredTotal));
+                                lastProgress.Restart();
+                            }
                         }
                     }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(buffer);
+                    }
                 }
-                finally
+                catch
                 {
-                    ArrayPool<byte>.Shared.Return(buffer);
+                    // EntryStream.Dispose otherwise drains the unfinished decoder after cancellation or a budget failure.
+                    solid?.Cancel();
+                    throw;
                 }
             }
             catch(Exception primaryFailure) when(createdOutput)
@@ -204,6 +220,19 @@ public sealed class ArchiveInspector
                 progress.Report(new ArchiveExtractionProgress(completedFiles,files.Count,actualTotal,declaredTotal));
                 lastProgress.Restart();
             }
+        }
+        if (solid is not null && NextSolidFile(solid,ct))
+            throw new InvalidDataException("The solid archive contains a file outside its verified manifest.");
+    }
+
+    private static bool NextSolidFile(IReader reader,CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!reader.MoveToNextEntry()) return false;
+            if (!reader.Entry.IsDirectory) return true;
         }
     }
 
