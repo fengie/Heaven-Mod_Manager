@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using MhwModManager.Automation;
 using MhwModManager.Filesystem;
 using Xunit;
@@ -51,6 +52,49 @@ public sealed class RegisteredCollectionBoundaryTests
             Assert.Equal(2, repeat.AlreadyPresent);
             Assert.Equal(1, repeat.NeedsReview);
             Assert.All(originals, path => Assert.Equal(Path.GetFileName(path), File.ReadAllText(path)));
+        }
+        finally { temp.Delete(true); }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AGameNamedCollectionInsideMixedInputKeepsItsScopeForEachPhysicalOrArchivedChild(bool zip)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var temp = Directory.CreateTempSubdirectory("nested-game-collections-");
+        try
+        {
+            var games = DiscoveredGameProfiles.Load().Select(game => DiscoveredGameProfiles.Isolate(game, temp.FullName)).ToArray();
+            var manager = Path.Combine(temp.FullName, "Manager");
+            var batch = Directory.CreateDirectory(Path.Combine(temp.FullName, "Batch")).FullName;
+            string[] owners = ["sifu", "wuchang-fallen-feathers"];
+            foreach (var owner in owners)
+            {
+                var collection = Directory.CreateDirectory(Path.Combine(batch, owner, "~mods")).FullName;
+                foreach (var title in new[] { "Cloak", "Mask" })
+                {
+                    var folder = Directory.CreateDirectory(Path.Combine(collection, title));
+                    File.WriteAllText(Path.Combine(folder.FullName, title + ".pak"), owner + title);
+                }
+                File.WriteAllText(Path.Combine(collection, "unclaimed.pak"), "unclaimed");
+            }
+            var input = batch;
+            if (zip)
+            {
+                input = Path.Combine(temp.FullName, "Batch.zip");
+                ZipFile.CreateFromDirectory(batch, input);
+            }
+            var intake = new GameModIntakeService(manager, Path.Combine(manager, "State"), () => games);
+            var result = await intake.ImportPathAsync(input, ct);
+            Assert.Equal(4, result.Routed);
+            Assert.Equal(2, result.NeedsReview);
+            foreach (var owner in owners)
+            {
+                var inbox = GameModStorage.Resolve(manager, games.Single(game => game.Id == owner)).InboxRoot;
+                var installed = Directory.GetFiles(inbox, "*.pak", SearchOption.AllDirectories);
+                Assert.Equal(new[] { owner + "Cloak", owner + "Mask" }, installed.Select(File.ReadAllText).Order().ToArray());
+            }
         }
         finally { temp.Delete(true); }
     }
