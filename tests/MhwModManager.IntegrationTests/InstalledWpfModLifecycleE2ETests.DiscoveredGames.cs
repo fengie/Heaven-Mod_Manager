@@ -325,6 +325,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             await using var connection = await db.OpenAsync(CancellationToken.None);
             Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
         }
+        await ExerciseAddGameAsync(run, window, passed, ct);
     }
 
     private static async Task ExerciseWatchedFolderPickerAsync(DisposableWpfRun run, AutomationElement window,

@@ -72,8 +72,13 @@ public sealed partial class GameProfileRegistry
         using var __mhwTrace=MasterDebugLog.BeginMethod();
         lock(mutationGate)
         {
-            var profile=CreateFromExecutable(executablePath,null,null,null);
-            Upsert(profile);
+            var full = ValidateExecutablePath(executablePath);
+            var profile = Load().FirstOrDefault(game => PathRules.Comparer.Equals(game.ExecutablePath, full));
+            if (profile is null)
+            {
+                profile = CreateGenericProfile(InferGameRoot(full), full, null, null, null);
+                Upsert(profile);
+            }
             // Existing callers still activate by default. In-place switching registers
             // a candidate without changing the active marker before its session commits.
             if(activate)SetActive(profile.Id);
@@ -417,10 +422,16 @@ public sealed partial class GameProfileRegistry
     private GameProfile CreateFromExecutable(string executablePath,string? displayName,string? store,string? steamAppId)
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod();
-        var full=Path.GetFullPath(executablePath);
-        if(!File.Exists(full)||!full.EndsWith(".exe",StringComparison.OrdinalIgnoreCase))throw new FileNotFoundException("Select the game's Windows executable.",full);
-        var root=InferGameRoot(full);
-        return CreateGenericProfile(root,full,displayName,store,steamAppId);
+        var full = ValidateExecutablePath(executablePath);
+        return CreateGenericProfile(InferGameRoot(full), full, displayName, store, steamAppId);
+    }
+
+    private static string ValidateExecutablePath(string executablePath)
+    {
+        var full = Path.GetFullPath(executablePath);
+        if (!File.Exists(full) || !full.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            throw new FileNotFoundException("Select the game's Windows executable.", full);
+        return full;
     }
 
     private GameProfile CreateFromDiscoveredGame(GameDiscoveryCandidate item,string executablePath)
