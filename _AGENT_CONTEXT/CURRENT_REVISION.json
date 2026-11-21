@@ -4,22 +4,22 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.136",
+  "currentVersion": "8.8.137",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.136-publication-pending",
-  "nextMilestone": "Verify mixed-game intake and solid archive extraction under #791, then verify the public update.",
-  "nextRequiredAction": "Verify the released Windows package and installed updater against the mixed-game acceptance evidence.",
-  "verificationAppliesToCommit": "1156864d354b10cbbe14d89e7dda97e40450d298",
-  "lastClosedVerificationCommit": "1156864d354b10cbbe14d89e7dda97e40450d298",
-  "lastClosedVerificationRun": "v8.8.135 build 624 passed Windows Release Gate 44915987909 and installed updater 44916858676.",
-  "verificationScopeNote": "Published release and updater evidence apply to build 624.",
+  "status": "v8.8.137-publication-pending",
+  "nextMilestone": "Verify automatic mod changes, explicit choice handling and page refresh on the packaged Windows client.",
+  "nextRequiredAction": "Check automatic application, Undo, review guards and page return on the combined candidate before release and installed update.",
+  "verificationAppliesToCommit": "03b07f33e6435a950594e21340153b2de50d3a48",
+  "lastClosedVerificationCommit": "03b07f33e6435a950594e21340153b2de50d3a48",
+  "lastClosedVerificationRun": "v8.8.136 build 625 passed Windows Release Gate 44924132490 and installed updater 44925024003.",
+  "verificationScopeNote": "The preserved Windows and installed-client closure logs apply to build 625. The v8.8.137 candidate needs its own verification.",
   "lastClosedVerification": {
-    "sourceSha": "1156864d354b10cbbe14d89e7dda97e40450d298",
-    "updaterBuild": 624,
-    "windowsVerificationRun": 44915987909,
-    "installedClientE2ERun": 44916858676,
-    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44916858676"
+    "sourceSha": "03b07f33e6435a950594e21340153b2de50d3a48",
+    "updaterBuild": 625,
+    "windowsVerificationRun": 44924132490,
+    "installedClientE2ERun": 44925024003,
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.136.log"
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
@@ -33,8 +33,8 @@
     "Artifact attestations and independent signed publisher authority must be verified for the current public repository and release; visibility does not prove an entitlement, signer or installed trust root.",
     "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
     "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
-    "Issue #791: v8.8.118 includes prior mixed-import/archive safety and family-choice repairs; hundreds-mod real mixed-game corpora, large solid RAR/7z, opaque asset-container safety and installed WPF UX p95 remain unverified.",
-    "Issue #793: v8.8.136 requires its own immutable package, hosted updater update and rollback, and installed health proof.",
+    "Issue #791: Build 625 independently verified the 1,002-file solid 7z repair. Hundreds of genuine mods in a single desktop import, large solid RAR and opaque container safety still require separate proof.",
+    "Issue #793: v8.8.137 requires its own immutable package, hosted updater update and rollback, and installed health proof.",
     "Issue #791: real Wuchang loader behavior, nested mixed-game corpora, installed drag/drop, and latency remain unverified."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
@@ -48,17 +48,17 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "1156864d354b10cbbe14d89e7dda97e40450d298",
-    "runId": 44915987909,
-    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44915987909"
+    "sourceSha": "03b07f33e6435a950594e21340153b2de50d3a48",
+    "runId": 44924132490,
+    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.136-heaven-windows-closure.log"
   },
   "publishedRelease": {
-    "tag": "updater-main-624",
-    "version": "8.8.135",
-    "sourceSha": "1156864d354b10cbbe14d89e7dda97e40450d298",
-    "buildNumber": 624,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.135-win-x64.zip",
-    "artifactSha256": "4a5065f6abbf4ab7c4311209caadaf1eb72a382318c192a773303ac58d787392",
-    "manifestSha256": "304667602832bddf2c050cddcff8390adb1ff495c983beb813be91b34ae75226"
+    "tag": "updater-main-625",
+    "version": "8.8.136",
+    "sourceSha": "03b07f33e6435a950594e21340153b2de50d3a48",
+    "buildNumber": 625,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.136-win-x64.zip",
+    "artifactSha256": "964ce4feecc8ace01b8e3ef53626126f968e3867ebd195fda16112356a2ec13e",
+    "manifestSha256": "324197248ef9e9ecb3ff7bcdfebab363e52520cce507427473fb5ed09623e0fb"
   }
 }

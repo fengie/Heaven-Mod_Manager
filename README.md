@@ -1,14 +1,20 @@
-# v8.8.136 — MHW Manual Mod Manager
+# v8.8.137 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 10:26:04 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 12:08:20 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.136**.
+Current product version: **8.8.137**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.137 — automatic mod changes
+
+- Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.
+- In Monster Hunter: World, open Coverage and choose an outfit for an armor set. Manager resolves all affected pieces together, preserves unrelated pieces and records the change for Undo.
+- Opening or returning to a page refreshes its information. Profiles and History pick up changes made while hidden, and Settings and Browse reuse recent measurements and provider results.
 
 ## v8.8.136 — solid archive imports
 
@@ -18,10 +24,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.135 — package options
 
 - The Mods list shows verified package components together. Choose one documented variant per option group, or enable a supported add-on with its base. Preview shows the resulting deployment before Apply. [Package family verification](https://github.com/fengie/Heaven-Mod_Manager/issues/954)
-
-## v8.8.134 — mod folder imports
-
-- Import a mod folder or archive to list independent packages even when a loose file sits beside them. Manager preserves container companions, keeps documented alternatives together for review, and uses a registered game folder to route its packages. [Folder import verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791)
 
 ## Current plans & progress
 
