@@ -29,8 +29,13 @@ internal static class IsolatedWpfSession
                     var paths = new AppPaths(root.FullName,Folder("workspace"),Folder("mods"),Folder("inbox"),Folder("archives"),
                         Folder("state"),Folder("next"),Path.Combine(root.FullName,"session.db"),Folder("blobs"),game.GameRoot,game,DownloadsRoot:Folder("downloads"));
                     var bootstrap = typeof(App.App).GetMethod("LoadGameSessionAsync", BindingFlags.Static | BindingFlags.NonPublic)!;
+                    // Startup diagnostics configure the process-wide writer. Keep its existing
+                    // destination independent of the disposable per-game data and lifetime.
+                    var diagnosticRoot = MasterDebugLog.RootDirectory;
+                    var startup = StartupDiagnosticSession.Start(diagnosticRoot);
+                    Assert.Equal(diagnosticRoot, MasterDebugLog.RootDirectory);
                     services = await (Task<AppServices>)bootstrap.Invoke(null,
-                        [paths, StartupDiagnosticSession.Start(root.FullName), Array.Empty<string>(), null, null, null, null])!;
+                        [paths, startup, Array.Empty<string>(), null, null, null, null])!;
                     // These dispatcher fixtures drive commands directly. A live file watcher
                     // also schedules independent telemetry writes to this session database.
                     services.ChangeHints.Dispose();
