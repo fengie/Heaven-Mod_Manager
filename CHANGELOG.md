@@ -1,3 +1,8 @@
+# v8.8.130 — November 20, 2026
+
+- Repeated Apply preserves the previous Undo. Successive Undos walk deployment history, and a file created outside Manager survives a refused Undo. [Deployment ordering](https://github.com/fengie/Heaven-Mod_Manager/issues/944)
+- When a verified discovery refresh exceeds cache capacity, removed items no longer return on reopening Manager. [Discovery refresh](https://github.com/fengie/Heaven-Mod_Manager/issues/945)
+
 # v8.8.129 — November 20, 2026
 
 - Launch Without Mods restores the files that were actually deployed when the game fails to start or exits. Enabled packages that were still pending stay unapplied. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)

@@ -1,14 +1,19 @@
-# v8.8.129 — MHW Manual Mod Manager
+# v8.8.130 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 20, 2026 · 08:02:21 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 20, 2026 · 10:01:07 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.129**.
+Current product version: **8.8.130**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.130 — deployment history and discovery refresh
+
+- Repeated Apply preserves the previous Undo. Successive Undos walk deployment history, and a file created outside Manager survives a refused Undo. [Deployment ordering](https://github.com/fengie/Heaven-Mod_Manager/issues/944)
+- When a verified discovery refresh exceeds cache capacity, removed items no longer return on reopening Manager. [Discovery refresh](https://github.com/fengie/Heaven-Mod_Manager/issues/945)
 
 ## v8.8.129 — unmodded launch recovery
 
@@ -17,10 +22,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.128 — active-game actions
 
 - Official catalog links now follow the active game’s provider mappings. Advanced Tools no longer shows main-window actions it cannot execute. The Windows acceptance suite uses the discovered profile registry for game-specific checks. [Game coverage](https://github.com/fengie/Heaven-Mod_Manager/issues/939)
-
-## v8.8.127 — Auto Populate existing packages
-
-- Auto Populate indexes existing packages before planning across game profiles. It keeps explicit choices, holds incomplete or misplaced files, and reports shared Unreal export IDs for supported IoStore tables. [Auto Populate acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/937)
 
 ## Current plans & progress
 

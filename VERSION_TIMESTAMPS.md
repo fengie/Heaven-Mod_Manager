@@ -4,6 +4,7 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
+| 8.8.130 | November 20, 2026 · 10:01:07 PM EST | Deployment history and discovery refresh from main 46688d61 |
 | 8.8.129 | November 20, 2026 · 08:02:21 PM EST | Unmodded launch recovery from main e6373424 |
 | 8.8.128 | November 20, 2026 · 05:46:41 PM EST | Active game actions from main a9bc34e6 |
 | 8.8.127 | November 20, 2026 · 04:54:51 PM EST | Auto Populate from main 5c867329 |
