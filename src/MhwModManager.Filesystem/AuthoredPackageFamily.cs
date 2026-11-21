@@ -21,7 +21,10 @@ public static class AuthoredPackageFamily
         var main = Array.FindIndex(labels, label => label!.StartsWith("Main File", StringComparison.OrdinalIgnoreCase));
         var optional = Enumerable.Range(0, dirs.Length).Where(i => labels[i]!.StartsWith("Optional File", StringComparison.OrdinalIgnoreCase)).ToArray();
         var overlay = main >= 0 && optional.Length == dirs.Length - 1;
-        if (!alternatives && !overlay) return [];
+        if (!alternatives && !overlay)
+            return game?.AdapterId=="unreal-paks" && labels.Count(name=>name is {Length:>0} && char.IsAsciiDigit(name[0]))>1
+                ? ParameterFamilyReader.Read(root,ct) : [];
+
         if (dirs.Concat(notes).Any(path => (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)) return [];
         var text = string.Join(" ",notes.Where(p=>Path.GetExtension(p).Equals(".txt",StringComparison.OrdinalIgnoreCase))
             .Select(ReadBoundedNote)).ToLowerInvariant();
