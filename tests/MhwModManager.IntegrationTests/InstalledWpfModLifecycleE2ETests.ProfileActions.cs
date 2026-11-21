@@ -181,14 +181,20 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Filter installed file evidence across both registered game folders");
 
         await SelectTab(game.SupportsSemanticCoverage ? "Outfits" : "Coverage");
-        Invoke(await Button("Refresh coverage"));
         if (game.SupportsSemanticCoverage)
         {
-            await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.DataItem &&
+            var leather = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.DataItem &&
                 Find(item, cell => cell.Current.Name == "Leather") is not null &&
                 Find(item, cell => cell.Current.Name == "pl001_0000") is not null),
                 UiTimeout, "indexed armor name and model ID in the same row", ct);
-            passed.Add("Refresh outfit coverage and verify Leather model pl001_0000");
+            ((SelectionItemPattern)leather.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+            Invoke(await Button("Use outfit " + fixtureMod));
+            await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name.Contains("Preferred outfit",StringComparison.Ordinal)),UiTimeout,"saved Leather outfit",ct);
+            Assert.Equal(run.ModBytes,File.ReadAllBytes(run.LiveModPath));
+            Invoke(await Button("Use normal load order"));
+            await WaitForElementAsync(() => FindButton(window,"Use normal load order",enabled:false),UiTimeout,"cleared Leather preference",ct);
+            passed.Add("Choose and clear the Leather outfit from Coverage and verify installed bytes");
         }
         else
         {
@@ -196,7 +202,9 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 item.Current.Name.StartsWith("Detailed game-specific coverage is not available", StringComparison.Ordinal)),
                 UiTimeout, "unsupported semantic coverage explanation", ct);
             Assert.Null(Find(window, item => item.Current.ControlType == ControlType.DataItem));
-            passed.Add("Refresh generic coverage and verify unsupported semantic rows stay empty");
+            Invoke(await Button("See shared files"));
+            await Button("Why This Mod Wins");
+            passed.Add("Open generic coverage and inspect shared files");
         }
         await ExerciseFilteredLibraryActionsAsync(run, window, passed, ct);
         await ExerciseWorkflowActionsAsync(run, window, passed, ct);

@@ -800,7 +800,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             ArchivePath = Path.Combine(input, "E2E Inbox Fixture.zip");
             var pakProfile = FirstGame.AdapterId == "unreal-paks";
             var inMount = pakProfile && Path.GetFileName(FirstGame.ModRootRelativePath).Equals("Paks", StringComparison.OrdinalIgnoreCase)
-                ? Path.Combine("~mods", "e2e.pak") : pakProfile ? "e2e.pak" : "e2e-payload.bin";
+                ? Path.Combine("~mods", "e2e.pak") : pakProfile ? "e2e.pak" : FirstGame.SupportsSemanticCoverage
+                    ? Path.Combine("pl","f_equip","pl001_0000","body","tex","e2e.tex") : "e2e-payload.bin";
             var archiveMember = Path.Combine(FirstGame.ModRootRelativePath, inMount).Replace('\\', '/');
             using (var zip = ZipFile.Open(ArchivePath, ZipArchiveMode.Create))
             {

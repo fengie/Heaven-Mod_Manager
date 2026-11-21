@@ -610,6 +610,13 @@
                         <StackPanel>
                             <TextBlock Text="{Binding CoverageTitle}" Style="{StaticResource PageTitle}"/>
                             <TextBlock Text="{Binding CoverageSubtitle}" Style="{StaticResource PageSubtitle}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <StackPanel.Style><Style TargetType="StackPanel"><Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSemanticCoverage}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                </Style.Triggers></Style></StackPanel.Style>
+                                <Button Content="View mod options" Command="{Binding SetModViewCommand}" CommandParameter="All"/>
+                                <Button Content="See shared files" Command="{Binding ShowOverlapsCommand}"/>
+                            </StackPanel>
                         </StackPanel>
 
                     </Grid>
