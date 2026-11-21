@@ -633,6 +633,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         throw new TimeoutException("Installed WPF functional timeout: " + operation);
     }
 
+    internal static byte[] FixtureTexture(byte[] payload)
+    {
+        // The launch health gate requires the TEX signature and at least 16 bytes.
+        var texture = new byte[Math.Max(16, payload.Length + 4)];
+        "TEX"u8.CopyTo(texture);
+        payload.CopyTo(texture, 4);
+        return texture;
+    }
+
     private sealed class DisposableWpfRun : IDisposable
     {
         private readonly string root;
@@ -704,6 +713,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 File.Copy(Path.Combine(fullTemp, "mhw-game-launch-probe.exe"), FirstGame.ExecutablePath, overwrite: true);
                 if (FirstGame.SavePath is not null) Directory.CreateDirectory(FirstGame.SavePath);
             }
+            if (FirstGame.SupportsSemanticCoverage) ModBytes = FixtureTexture(ModBytes);
             if (FirstGame.SteamAppId is { } steamId)
             {
                 if (!uint.TryParse(steamId, out _)) throw new InvalidDataException("Invalid Steam app ID.");

@@ -225,6 +225,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var alternateLive = Path.Combine(Path.GetDirectoryName(run.LiveModPath)!, "independent-" + Path.GetFileName(run.LiveModPath));
         var relative = Path.GetRelativePath(run.FirstGame.GameRoot, alternateLive).Replace(Path.DirectorySeparatorChar, '/');
         byte[] payload = [21, 41, 67, 101, 149];
+        if (Path.GetExtension(alternateLive).Equals(".tex", StringComparison.OrdinalIgnoreCase)) payload = FixtureTexture(payload);
         using (var zip = System.IO.Compression.ZipFile.Open(archive, System.IO.Compression.ZipArchiveMode.Create))
         using (var stream = zip.CreateEntry(relative).Open())
             stream.Write(payload);
