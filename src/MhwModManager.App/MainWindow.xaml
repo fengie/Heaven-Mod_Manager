@@ -184,8 +184,6 @@
                                                             AutomationProperties.Name="Add automatic mod sorting folder"/>
                                                     <Button Content="Import Folder Once" Command="{Binding ImportModFolderCommand}" Style="{StaticResource QuietButton}" Margin="0,0,7,5"
                                                             AutomationProperties.Name="Separate and import mods from a selected folder without monitoring it"/>
-                                                    <Button Content="Scan Folders" Command="{Binding ScanAutoSortFoldersCommand}" Style="{StaticResource QuietButton}" Margin="0,0,7,5"
-                                                            AutomationProperties.Name="Scan mod download folders by game"/>
                                                     <Button Content="Remove Selected" Command="{Binding RemoveAutoSortFolderCommand}" Style="{StaticResource QuietButton}" Margin="0,0,0,5"
                                                             AutomationProperties.Name="Stop monitoring selected mod folder without deleting data"/>
                                                 </WrapPanel>
@@ -836,7 +834,6 @@
                             <Button Grid.Column="1" Margin="8,0,0,0" Content="Save Current Setup" Command="{Binding SaveProfileCommand}" Style="{StaticResource PrimaryButton}"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                 <Button Content="Use Selected Profile" Command="{Binding StageProfileCommand}"/>
-                                <Button Content="Refresh" Command="{Binding RefreshProfilesCommand}" Style="{StaticResource QuietButton}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -879,7 +876,6 @@
                             <TextBlock Text="See what the manager changed and create diagnostics only when you need support." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Refresh" Command="{Binding RefreshActivityCommand}" Style="{StaticResource QuietButton}"/>
                             <Button Content="Collect Diagnostics" Command="{Binding CaptureDiagnosticsCommand}"/>
                             <Button Content="View Log" Command="{Binding OpenMasterLogCommand}"
                                     ToolTip="Open local debug log; review private mod paths before sharing."/>
@@ -938,7 +934,6 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Why This Mod Wins" Command="{Binding ExplainSelectedOverlapCommand}" ToolTip="Explain which mod supplies this shared file and why. Technical evidence is included below."/>
-                            <Button Content="Refresh analysis" Command="{Binding RefreshAnalysisNowCommand}" ToolTip="F5"/>
                         </StackPanel>
                     </Grid>
 
@@ -1164,10 +1159,6 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                    <Button Content="Measure storage"
-                                            Command="{Binding RefreshStorageUsageCommand}"
-                                            Style="{StaticResource QuietButton}"
-                                            AutomationProperties.Name="Measure manager storage"/>
                                     <Button Margin="8,0,0,0"
                                             Content="Reclaim disposable storage"
                                             Command="{Binding ReclaimDisposableStorageCommand}"
@@ -1229,7 +1220,6 @@
                                     AutomationProperties.Name="Index all available mods"
                                     ToolTip="Follow every supported provider continuation until all currently enumerable mods are stored in the local catalogue."
                                     Style="{StaticResource QuietButton}"/>
-                            <Button Content="Refresh Providers" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}"/>
                         </StackPanel>
                     </Grid>
 
@@ -1396,11 +1386,6 @@
                                                    TextAlignment="Center"
                                                    TextWrapping="Wrap"/>
                                         <StackPanel Margin="0,14,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <Button Content="Refresh Providers"
-                                                    Command="{Binding RefreshCatalogCommand}"
-                                                    Visibility="{Binding CatalogRefreshEmptyVisibility}"
-                                                    Style="{StaticResource PrimaryButton}"
-                                                    AutomationProperties.Name="Refresh catalog providers"/>
                                             <Button Content="Clear Search"
                                                     Command="{Binding ClearCatalogSearchCommand}"
                                                     Visibility="{Binding CatalogClearSearchVisibility}"

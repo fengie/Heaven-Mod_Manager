@@ -84,8 +84,6 @@ MainWindow.xaml | TabItem:Browse Mods | Button | Content=Load More ; Command={Bi
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=More Cached ; Command={Binding LoadMoreCachedCatalogCommand} ; Visibility={Binding CatalogLoadMoreCachedVisibility} ; AutomationProperties.Name=Show more cached catalog results
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Nexus website ; Command={Binding OpenNexusBrowseCommand} ; AutomationProperties.Name={Binding SelectedGame.DisplayName,StringFormat='Browse {0} mods on Nexus Mods'} ; parent={Binding CatalogProviderWebLinksVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Open Provider Page ; Command={Binding OpenCatalogSourceCommand}
-MainWindow.xaml | TabItem:Browse Mods | Button | Content=Refresh Providers ; Command={Binding RefreshCatalogCommand}
-MainWindow.xaml | TabItem:Browse Mods | Button | Content=Refresh Providers ; Command={Binding RefreshCatalogCommand} ; Visibility={Binding CatalogRefreshEmptyVisibility} ; AutomationProperties.Name=Refresh catalog providers ; parent={Binding CatalogEmptyVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Retry Loading Files ; Command={Binding LoadCatalogFilesCommand} ; Visibility={Binding CatalogFileRetryVisibility} ; AutomationProperties.Name=Retry loading exact provider files ; parent={Binding CatalogFileStateVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Retry Providers ; Command={Binding RefreshCatalogCommand} ; Visibility={Binding CatalogProviderRetryVisibility} ; AutomationProperties.Name=Retry failed catalog providers
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Search ; Command={Binding SearchCatalogCommand}
@@ -134,7 +132,6 @@ MainWindow.xaml | TabItem:Dashboard | Button | Content=Preview Mod Changes ; Com
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Remove Selected ; Command={Binding RemoveAutoSortFolderCommand} ; AutomationProperties.Name=Stop monitoring selected mod folder without deleting data
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Restore Last Working Setup ; Command={Binding RestoreLastGoodCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Review Shared Files ; Command={Binding ShowOverlapsCommand}
-MainWindow.xaml | TabItem:Dashboard | Button | Content=Scan Folders ; Command={Binding ScanAutoSortFoldersCommand} ; AutomationProperties.Name=Scan mod download folders by game
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Separate Existing Mod Collections ; Command={Binding ReanalyzeManagedCollectionsCommand}
 MainWindow.xaml | TabItem:Dashboard | ComboBox | ItemsSource={Binding AutoSortFolders} ; SelectedItem={Binding SelectedAutoSortFolder,Mode=TwoWay} ; AutomationProperties.Name=Monitored mod download folders
 MainWindow.xaml | TabItem:Dashboard | Expander | Header=More tools
@@ -142,7 +139,6 @@ MainWindow.xaml | TabItem:Dashboard | ScrollViewer | Name=DashboardScroll
 MainWindow.xaml | TabItem:History | Button | Content=Collect Diagnostics ; Command={Binding CaptureDiagnosticsCommand}
 MainWindow.xaml | TabItem:History | Button | Content=Create Support Bundle ; Command={Binding ExportSupportCommand}
 MainWindow.xaml | TabItem:History | Button | Content=Performance Report ; Command={Binding ExportPerformanceReportCommand}
-MainWindow.xaml | TabItem:History | Button | Content=Refresh ; Command={Binding RefreshActivityCommand}
 MainWindow.xaml | TabItem:History | Button | Content=View Log ; Command={Binding OpenMasterLogCommand}
 MainWindow.xaml | TabItem:History | DataGrid | ItemsSource={Binding ActivityRows} ; IsReadOnly=True ; AutomationProperties.Name=Recent activity
 MainWindow.xaml | TabItem:History | DataGridTextColumn | Header=ACTION ; Binding={Binding Description}
@@ -188,9 +184,9 @@ MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=MOD
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=STATUS
 MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=CATEGORY ; Binding={Binding Category} ; IsReadOnly=True
 MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=LOAD ORDER ; Binding={Binding Priority} ; IsReadOnly=True
+MainWindow.xaml | TabItem:Mods | KeyBinding | Key=Enter ; Command={Binding SubmitModSearchCommand}
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector |
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector.ExternalStyle |
-MainWindow.xaml | TabItem:Mods | KeyBinding | Key=Enter ; Command={Binding SubmitModSearchCommand}
 MainWindow.xaml | TabItem:Mods | TextBox | Name=ModSearchBox ; Text={Binding SearchText,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name=Search mods
 MainWindow.xaml | TabItem:Mods/DataGridTemplateColumn:ENABLED/DataTemplate: | CheckBox | IsEnabled={Binding CanStage} ; IsChecked={Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name={Binding DisplayName}
 MainWindow.xaml | TabItem:Mods/DataTemplate: | ItemsControl | ItemsSource={Binding GalleryPaths}
@@ -214,7 +210,6 @@ MainWindow.xaml | TabItem:Needs attention/DataTemplate: | Button | Content=Clear
 MainWindow.xaml | TabItem:Needs attention/DataTemplate: | Button | Content=Separate from this group ; AutomationProperties.Name={Binding DisplayName,StringFormat='Separate {0} from incorrect family'} ; Command={Binding DataContext.SeparateConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding Token}
 MainWindow.xaml | TabItem:Needs attention/DataTemplate: | Button | Content=Treat as Main Mod + Add-ons ; Command={Binding DataContext.ChainConflictFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding Token}
 MainWindow.xaml | TabItem:Needs attention/DataTemplate: | Button | Content=Use This Mod ; Command={Binding DataContext.ChooseConflictOptionCommand,RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding Token}
-MainWindow.xaml | TabItem:Profiles | Button | Content=Refresh ; Command={Binding RefreshProfilesCommand}
 MainWindow.xaml | TabItem:Profiles | Button | Content=Save Current Setup ; Command={Binding SaveProfileCommand}
 MainWindow.xaml | TabItem:Profiles | Button | Content=Use Selected Profile ; Command={Binding StageProfileCommand}
 MainWindow.xaml | TabItem:Profiles | DataGrid | ItemsSource={Binding Profiles} ; SelectedItem={Binding SelectedProfile} ; IsReadOnly=True ; AutomationProperties.Name=Saved profiles
@@ -225,7 +220,6 @@ MainWindow.xaml | TabItem:Profiles | TextBox | Text={Binding NewProfileName} ; A
 MainWindow.xaml | TabItem:Settings | Button | Content=Check for updates now ; Command={Binding CheckForProgramUpdatesCommand}
 MainWindow.xaml | TabItem:Settings | Button | Content=Cookie policy ; Command={Binding OpenCookiePolicyCommand} ; AutomationProperties.Name=Open cookie policy
 MainWindow.xaml | TabItem:Settings | Button | Content=Data deletion instructions ; Command={Binding OpenDataDeletionGuideCommand} ; AutomationProperties.Name=Open data deletion instructions
-MainWindow.xaml | TabItem:Settings | Button | Content=Measure storage ; Command={Binding RefreshStorageUsageCommand} ; AutomationProperties.Name=Measure manager storage
 MainWindow.xaml | TabItem:Settings | Button | Content=Open app data folder ; Command={Binding OpenAppDataFolderCommand} ; AutomationProperties.Name=Open manager data folder
 MainWindow.xaml | TabItem:Settings | Button | Content=Privacy policy ; Command={Binding OpenPrivacyPolicyCommand} ; AutomationProperties.Name=Open privacy policy
 MainWindow.xaml | TabItem:Settings | Button | Content=Project & support details ; Command={Binding OpenSupportDetailsCommand} ; AutomationProperties.Name=Open project and support details
@@ -241,7 +235,6 @@ MainWindow.xaml | TabItem:Settings | CheckBox | Content=Remember the last tab I 
 MainWindow.xaml | TabItem:Settings | CheckBox | Content=Use interface animations and transitions ; IsChecked={Binding UiAnimationsEnabled,Mode=TwoWay} ; AutomationProperties.Name=Interface animations
 MainWindow.xaml | TabItem:Settings | ItemsControl | ItemsSource={Binding StorageCategories} ; AutomationProperties.Name=Manager storage categories
 MainWindow.xaml | TabItem:Settings | ScrollViewer |
-MainWindow.xaml | TabItem:Shared Files | Button | Content=Refresh analysis ; Command={Binding RefreshAnalysisNowCommand}
 MainWindow.xaml | TabItem:Shared Files | Button | Content=Why This Mod Wins ; Command={Binding ExplainSelectedOverlapCommand}
 MainWindow.xaml | TabItem:Shared Files | DataGrid | ItemsSource={Binding OverlapRows} ; SelectedItem={Binding SelectedOverlap,Mode=TwoWay} ; IsReadOnly=True ; AutomationProperties.Name=Asset overlaps
 MainWindow.xaml | TabItem:Shared Files | DataGrid | ItemsSource={Binding SelectedExplanation.Providers} ; IsReadOnly=True
