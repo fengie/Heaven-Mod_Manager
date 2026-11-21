@@ -255,8 +255,12 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 await using var reader=await command.ExecuteReaderAsync(ct);
                 while (await reader.ReadAsync(ct)) components.Add(reader.GetString(0));
             }
-            var importedMods=(await db.GetModsAsync(ct)).Where(m=>(m.AuthoredPartLabel is null || !m.RequiresLayoutReview) && (components.Contains(m.Id) || importedPaths.Contains(m.SourcePath))).ToArray();
-            await catalog.EnsureCapturedAsync(importedMods,ct);
+            var importedMods=(await db.GetModsAsync(ct)).Where(m=>components.Contains(m.Id) || importedPaths.Contains(m.SourcePath)).ToArray();
+            var reviewRoots = importedMods.Where(m=>m.RequiresLayoutReview).Select(m=>m.SourcePath).ToHashSet(PathRules.Comparer);
+            for (var i = 0; i < results.Count; i++)
+                if (results[i].Destination is { } path && reviewRoots.Contains(path))
+                    results[i] = results[i] with { Message = "Added to Mods for layout review. No files were staged for deployment." };
+            await catalog.EnsureCapturedAsync(importedMods.Where(mod=>!mod.RequiresLayoutReview),ct);
             if (refreshMetadata)
             {
                 ReportStage(completed, "Refreshing metadata");
