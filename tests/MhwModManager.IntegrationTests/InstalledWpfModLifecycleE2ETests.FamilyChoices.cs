@@ -126,6 +126,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("NO_Cape", false);
         await Expect("WITH_Cape", true);
 
+        await WaitForAsync(() => ChoiceFiles.All(file =>
+            File.Exists(Path.Combine(mount, file)) &&
+            File.ReadAllBytes(Path.Combine(mount, file)).SequenceEqual(original[Path.Combine(run.InstalledRoot, ChoiceTitle, "WITH_Cape", file)])),
+            UiTimeout, "automatic apply committed the selected Cape files before choosing another family", ct);
+
         await OpenFamily(AddonTitle);
         (await Part("Main")).Toggle();
         (await Part("Compass")).Toggle();
