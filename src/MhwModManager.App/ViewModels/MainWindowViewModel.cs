@@ -632,6 +632,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(suppressChanged)return;
+        s.Database.SetPendingModIds(Mods.Where(row=>row.HasStagedChanges).SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key));
         OnPropertyChanged(nameof(EnabledCount));
         OnPropertyChanged(nameof(StagedCount));
         OnPropertyChanged(nameof(StagedEnableCount));
@@ -1645,16 +1646,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("automation.inbox","Installing Mods from Inbox","Checking each package, importing safe mods, and handling obvious duplicates automatically…",true,async ct=>
         {
             var result = await ProcessInboxWithProgressAsync(ct);
-            BusyDetail = "Checking and archiving safe duplicates…";
-            BusyItemProgressVisibility = Visibility.Collapsed;
-            BusyProgressIndeterminate = true;
-            var archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
             BusyDetail = "Refreshing the visible mod list…";
-            await ReloadMods(ct);
+            await ReloadMods(ct,preserveStagedChanges:true);
             BusyDetail = "Recalculating mod conflicts and compatibility…";
             await RefreshAnalysis(ct);
             StatusText = $"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, " +
-                $"{archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
+                $"Exact copies remain in their original folders. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
         });
     }
 

@@ -177,23 +177,18 @@ public sealed partial class MainWindowViewModel
 
         BusyDetail = $"Installing {activeRouted} approved package(s) into {s.Paths.Game.DisplayName}…";
         var inbox = await ProcessInboxWithProgressAsync(ct);
-        var archived = 0;
         if (inbox.Imported > 0)
         {
-            BusyDetail = "Checking safe duplicates in this game's library…";
-            BusyItemProgressVisibility = Visibility.Collapsed;
-            BusyProgressIndeterminate = true;
-            archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
             BusyDetail = "Refreshing visible installed mods…";
-            await ReloadMods(ct);
+            await ReloadMods(ct,preserveStagedChanges:true);
             BusyDetail = "Recomputing compatibility after import…";
             await RefreshAnalysis(ct);
         }
         MasterDebugLog.Write("MOD-INTAKE-UI",
             $"Manual import completed. activeGame={activeId}; activeRouted={activeRouted}; " +
-            $"inboxImported={inbox.Imported}; inboxSkipped={inbox.Skipped}; duplicatesArchived={archived}; queuedOtherGames={queuedForOtherGames}; review={report.NeedsReview}");
+            $"inboxImported={inbox.Imported}; inboxSkipped={inbox.Skipped}; queuedOtherGames={queuedForOtherGames}; review={report.NeedsReview}");
         return $"Installed {inbox.Imported} package(s) into {s.Paths.Game.DisplayName}; " +
-            $"{inbox.Skipped} Inbox package(s) skipped, {archived} safe duplicate(s) archived. " +
+            $"{inbox.Skipped} Inbox package(s) skipped. " +
             $"{queuedForOtherGames} package(s) queued for other registered games.";
     }
 
