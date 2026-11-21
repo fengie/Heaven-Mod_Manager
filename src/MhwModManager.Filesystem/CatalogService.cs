@@ -12,7 +12,14 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
 {
     private readonly ExactPackageCopies exactCopies = new(db);
     private readonly SemaphoreSlim duplicateRefresh = new(1,1);
-    public long LastDuplicateBytesHashed => exactCopies.LastBytesHashed;
+    public long LastDuplicateBytesHashed
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return exactCopies.LastBytesHashed;
+        }
+    }
 
     /// <summary>Remove one transport wrapper while retaining the registered game's deployment root.</summary>
     public void NormalizeStagedArchive(string root)
@@ -148,7 +155,8 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
             byPath = all.ToLookup(mod => mod.SourcePath, StringComparer.OrdinalIgnoreCase);
         }
         var files = (await db.GetModFilesAsync(ct)).ToLookup(file => file.ModId);
-        var enabled = all.Where(mod => mod.Enabled && files.Contains(mod.Id)).ToArray();
+        var enabled = all.Where(mod => mod.Enabled && files.Contains(mod.Id) && Directory.Exists(mod.SourcePath) &&
+            (File.GetAttributes(mod.SourcePath) & FileAttributes.ReparsePoint) == 0).ToArray();
         var entries = new List<(string Id, string Role, string? Canonical)>();
         foreach (var unit in units)
         {
