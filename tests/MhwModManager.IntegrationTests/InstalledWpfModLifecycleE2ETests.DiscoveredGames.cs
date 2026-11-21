@@ -376,10 +376,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             Directory.Move(target.FullName, detached);
             Directory.Move(replacement.FullName, target.FullName);
             await SelectModsTabAsync(window, ct);
-            var mod = await WaitForElementAsync(() => FindModToggle(window, "MHW Reconnect Fixture"),
-                UiTimeout, "returned-folder package in ordinary Mods without a manual scan", ct);
-            Assert.Equal(ToggleState.Off, ((TogglePattern)mod.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
-            Assert.False(File.Exists(Path.Combine(run.FirstGame.LiveModRoot, "pl", "fixture-reconnect.bin")));
+            var installed = Path.Combine(run.FirstGame.LiveModRoot, "pl", "fixture-reconnect.bin");
+            await WaitForAsync(() => FindModToggle(window, "MHW Reconnect Fixture") is { } mod &&
+                ((TogglePattern)mod.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On &&
+                File.Exists(installed) && File.ReadAllBytes(installed).SequenceEqual(run.ModBytes),
+                UiTimeout, "reconnected folder automatically installs the verified game payload", ct);
             Assert.Equal(hash, SHA256.HashData(File.ReadAllBytes(Path.Combine(target.FullName, archiveName))));
             Assert.Equal("owned fixture", File.ReadAllText(Path.Combine(detached, "keep.txt")));
             var dashboard = await WaitForElementAsync(() => Find(window, item =>

@@ -850,6 +850,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 (File.GetAttributes(root) & FileAttributes.ReparsePoint) != 0 ||
                 File.ReadAllText(Path.Combine(root, ".owned-e2e-root")) != marker)
                 throw new InvalidOperationException("Refusing to clean an unowned WPF acceptance root.");
+            // The observer process can retain its own pooled connection when an assertion
+            // interrupts a sequence of catalog observations. Release only this fixture's pool.
+            var catalog = OpenCatalog();
+            if (File.Exists(catalog.DatabasePath))
+            {
+                using var connection = catalog.OpenAsync(CancellationToken.None).GetAwaiter().GetResult();
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            }
             Directory.Delete(root, recursive: true);
         }
     }
