@@ -83,7 +83,6 @@ MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate: | TabItem | H
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate:/TabItem:Outfit options | Button | Content=Use normal load order ; IsEnabled={Binding HasPreference} ; Command={Binding DataContext.ClearOutfitChoiceCommand, RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate:/TabItem:Outfit options | ItemsControl | ItemsSource={Binding Options}
 MainWindow.xaml | TabItem:{Binding CoverageTabLabel}/DataTemplate:/TabItem:Outfit options/DataTemplate: | Button | Content=Use outfit ; Command={Binding DataContext.ChooseOutfitCommand, RelativeSource={RelativeSource AncestorType=Window}} ; CommandParameter={Binding} ; AutomationProperties.Name={Binding DisplayName,StringFormat='Use outfit {0}'}
-MainWindow.xaml | TabItem:Browse Mods | Button | Content=Check Installed Origins ; Command={Binding CheckCatalogUpdatesCommand}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Clear Search ; Command={Binding ClearCatalogSearchCommand} ; Visibility={Binding CatalogClearSearchVisibility} ; AutomationProperties.Name=Clear catalog search ; parent={Binding CatalogEmptyVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=GameBanana website ; Command={Binding OpenGameBananaBrowseCommand} ; AutomationProperties.Name={Binding SelectedGame.DisplayName,StringFormat='Browse {0} mods on GameBanana'} ; parent={Binding CatalogProviderWebLinksVisibility}
 MainWindow.xaml | TabItem:Browse Mods | Button | Content=Index All Available ; Command={Binding IndexAllAvailableModsCommand} ; Visibility={Binding CatalogLoadMoreVisibility} ; AutomationProperties.Name=Index all available mods
@@ -125,16 +124,13 @@ MainWindow.xaml | TabItem:Browse Mods/DataTemplate: | TextBox | Text={Binding Mo
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Add Folder ; Command={Binding AddAutoSortFolderCommand} ; AutomationProperties.Name=Add automatic mod sorting folder
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Add Game ; Command={Binding AddGameCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Advanced Tools & Diagnostics ; Command={Binding OpenWorkflowsCommand}
-MainWindow.xaml | TabItem:Dashboard | Button | Content=Clean Up Duplicate Mods ; Command={Binding SmartCleanupCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Export Mod List ; Command={Binding ExportRecipeCommand}
-MainWindow.xaml | TabItem:Dashboard | Button | Content=Find Installed Games ; Command={Binding ScanInstalledGamesCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Find Mod Causing Startup Crash ; Command={Binding AutoDiagnoseCrashCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Game Settings ; Command={Binding ConfigureGameCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Import Folder Once ; Command={Binding ImportModFolderCommand} ; AutomationProperties.Name=Separate and import mods from a selected folder without monitoring it
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Import ZIP/RAR/7z Folder ; Command={Binding ImportModFolderCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Inspect Existing Mod Layouts ; Command={Binding InspectExistingModCollectionsCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Install a Mod ; Command={Binding ImportArchiveCommand}
-MainWindow.xaml | TabItem:Dashboard | Button | Content=Install Mods from Inbox ; Command={Binding ProcessInboxCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Launch Game ; Command={Binding LaunchModdedCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Launch Without Mods ; Command={Binding LaunchSafeModeCommand}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Open Downloaded Mod Archives ; Command={Binding OpenGameDownloadsFolderCommand}
@@ -185,7 +181,6 @@ MainWindow.xaml | TabItem:Mods | Button | Content={Binding SupersededViewLabel} 
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding UpdatesViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Updates
 MainWindow.xaml | TabItem:Mods | Button | Content=Bring In Manual Mods ; Command={Binding AdoptManualFilesCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Bring In Manual Mods ; Command={Binding AdoptManualFilesCommand}
-MainWindow.xaml | TabItem:Mods | Button | Content=Check Mod Info ; Command={Binding SyncMetadataCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Clear filters ; Command={Binding ClearModFiltersCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Deselect All ; Command={Binding DisableVisibleCommand} ; IsEnabled={Binding HasVisibleMods} ; AutomationProperties.Name=Deselect all visible mods
 MainWindow.xaml | TabItem:Mods | Button | Content=Discard Pending Changes ; Command={Binding DiscardStagedCommand} ; IsEnabled={Binding HasStagedChanges}
