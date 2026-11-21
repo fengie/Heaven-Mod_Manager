@@ -11,7 +11,14 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private static readonly string[] KnownAdditionalLoaderRoots =
         [@"BepInEx\plugins", @"Content\Paks", @"reframework\plugins", @"reframework\autorun"];
 
-    internal GameProfile? Profile => game;
+    internal GameProfile? Profile
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return game;
+        }
+    }
 
     internal bool IsArchiveTargetRoot(string name)
     {
