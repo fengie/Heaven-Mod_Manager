@@ -1763,15 +1763,47 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("game.safe-mode","Safe mode",$"Temporarily removing manager-controlled mods, launching {s.Paths.Game.DisplayName}, then restoring your applied configuration after the game exits…",false,async ct=>
         {
-        if(s.ProcessGuard.GetKnownBlockers().Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is already running.");
-        await s.Backups.CreateAsync("pre-vanilla-launch",ct);
-        var snap=await s.PlannerSnapshots.LoadAsync(ct);
-        var none=snap.Mods.Select(m=>m with{Enabled=false}).ToArray();
-        var offPlan=await Task.Run(()=>s.Planner.Build(snap with{Mods=none}),ct);
-        var off=await s.Executor.ApplyAsync(offPlan,"Enter safe mode",ct:ct);
-        if(!off.Success)throw off.Exception??new InvalidOperationException(off.Message);
-        using var p=ProcessDebug.Start(new ProcessStartInfo(s.Paths.ExecutablePath){WorkingDirectory=s.Paths.GameRoot,UseShellExecute=true}, "game-safe-mode-launch");
-        await p.WaitForExitAsync(ct);
+            if(s.ProcessGuard.GetKnownBlockers().Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is already running.");
+            if (!File.Exists(s.Paths.ExecutablePath))
+                throw new FileNotFoundException("The registered game executable is unavailable.", s.Paths.ExecutablePath);
+            await s.Backups.CreateAsync("pre-vanilla-launch",ct);
+            var snap=await s.PlannerSnapshots.LoadAsync(ct);
+            var none=snap.Mods.Select(m=>m with{Enabled=false}).ToArray();
+            var offPlan=await Task.Run(()=>s.Planner.Build(snap with{Mods=none}),ct);
+            var off=await s.Executor.ApplyAsync(offPlan,"Enter safe mode",ct:ct);
+            if(!off.Success)throw off.Exception??new InvalidOperationException(off.Message);
+
+            Process process;
+            try
+            {
+                process = ProcessDebug.Start(new ProcessStartInfo(s.Paths.ExecutablePath)
+                    { WorkingDirectory = s.Paths.GameRoot, UseShellExecute = true }, "game-safe-mode-launch");
+            }
+            catch (Exception launchError) when (launchError is System.ComponentModel.Win32Exception
+                or IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                try
+                {
+                    await RestoreSafeModeFilesAsync(snap, offPlan, CancellationToken.None);
+                }
+                catch (Exception restoreError)
+                {
+                    throw new AggregateException("The game could not start and the applied setup could not be restored.",
+                        launchError, restoreError);
+                }
+                throw new InvalidOperationException("The game could not start. The applied setup was restored. " +
+                    launchError.Message, launchError);
+            }
+            using (process) await process.WaitForExitAsync(ct);
+            await ValidateSafeModeRestoreAsync(ct);
+            await RestoreSafeModeFilesAsync(snap, offPlan, ct);
+            StatusText="Safe mode ended and the applied mod configuration was restored.";
+        });
+    }
+
+    private async Task ValidateSafeModeRestoreAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var restoreSnap=await s.PlannerSnapshots.LoadAsync(ct);
         var restore=await Task.Run(()=>s.Planner.Build(restoreSnap),ct);
         if(restore.IsBlocked)throw new InvalidOperationException("The previous mod configuration now has a blocking conflict; safe-mode restore stopped without guessing.");
@@ -1779,10 +1811,25 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var restoreDependencyBlockers=await GetDependencyBlockersAsync(restoreState,restore,ct);
         if(restoreDependencyBlockers.Length>0)
             throw new InvalidOperationException("Restore after safe mode blocked by dependency preflight. "+DescribeDependencyBlockers(restoreDependencyBlockers));
-        var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
-        if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);
-            StatusText="Safe mode ended and the applied mod configuration was restored.";
-        });
+    }
+
+    private async Task RestoreSafeModeFilesAsync(PlannerSnapshot before, DeploymentPlan removed, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Reverse just the temporary removals. Other enabled packages may never
+        // have been applied, and their saved choices must survive a failed launch.
+        var changes = removed.Changes.Select(change =>
+        {
+            var previous = before.CurrentManifest[change.Path];
+            return new DeploymentChange(change.Sequence,
+                change.AfterBlobSha256 is null ? ChangeKind.Add : ChangeKind.Replace, change.Path,
+                change.AfterBlobSha256, previous.BlobSha256, null, previous.ProviderModId,
+                change.AfterBlobSha256, previous.RuleId) { RequireAbsent = change.AfterBlobSha256 is null };
+        }).ToArray();
+        var restore = new DeploymentPlan(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, changes, [], []);
+        var restored = await s.Executor.ApplyAsync(restore, "Restore after safe mode",
+            parentOperationId: removed.Id, ct: ct);
+        if (!restored.Success) throw restored.Exception ?? new InvalidOperationException(restored.Message);
     }
 
     [RelayCommand]

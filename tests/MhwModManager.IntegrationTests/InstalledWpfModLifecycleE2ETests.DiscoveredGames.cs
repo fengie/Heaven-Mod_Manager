@@ -255,6 +255,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var dashboard = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.TabItem &&
             e.Current.Name == "Dashboard"), UiTimeout, "Dashboard launch status", ct);
         ((SelectionItemPattern)dashboard.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        await ExerciseWatchedFolderPickerAsync(run, window, passed, ct);
         await Click("Launch Game");
         await WaitForAsync(() => File.Exists(run.LaunchReceipt) && File.ReadAllLines(run.LaunchReceipt).Length == 3,
             UiTimeout, "fixture game launch receipt", ct);
@@ -284,5 +285,93 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         }
         await process.WaitForExitAsync(ct);
         passed.Add("Launch registered fixture and verify process path and startup");
+
+        // A saved enable that has never been applied must survive vanilla play as a
+        // choice, without being silently deployed when the game exits.
+        var db = run.OpenCatalog();
+        try
+        {
+            var waiting = Assert.Single(await db.GetModsAsync(ct), item => item.DisplayName == "Independent Verification");
+            Assert.False(waiting.Enabled);
+            var waitingPath = Path.Combine(Path.GetDirectoryName(run.LiveModPath)!, "independent-" + Path.GetFileName(run.LiveModPath));
+            Assert.False(File.Exists(waitingPath));
+            await db.SetEnabledAndPriorityAsync(new Dictionary<string, (bool, int)> { [waiting.Id] = (true, waiting.Priority) }, ct);
+            File.Delete(run.LaunchReceipt);
+            File.Delete(run.LaunchReceipt + ".done");
+            await Click("Launch Without Mods");
+            try
+            {
+                await WaitForAsync(() => File.Exists(run.LaunchReceipt) && File.ReadAllLines(run.LaunchReceipt).Length == 3,
+                    UiTimeout, "vanilla game launched", ct);
+                Assert.Equal(run.FirstGame.ExecutablePath, File.ReadAllLines(run.LaunchReceipt)[0], ignoreCase: true);
+                Assert.False(File.Exists(run.LiveModPath));
+                Assert.False(File.Exists(waitingPath));
+                Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+            }
+            finally { File.WriteAllText(run.LaunchReceipt + ".done", ""); }
+            await WaitForAsync(() => File.Exists(run.LiveModPath) && File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),
+                UiTimeout, "previously applied payload restored after vanilla exit", ct);
+            await using var readback = await db.OpenAsync(ct);
+            await using var committed = readback.CreateCommand();
+            committed.CommandText = "SELECT COUNT(*) FROM operations WHERE state='Committed' AND description='Restore after safe mode'";
+            await WaitForAsync(() => (long)committed.ExecuteScalar()! == 1, UiTimeout, "vanilla restore committed", ct);
+            Assert.False(File.Exists(waitingPath));
+            Assert.True(Assert.Single(await db.GetModsAsync(ct), item => item.Id == waiting.Id).Enabled);
+            Assert.Equal(archiveHash, SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
+            passed.Add("Launch Without Mods removes the deployed payload for play and restores only the prior deployment");
+        }
+        finally
+        {
+            await using var connection = await db.OpenAsync(CancellationToken.None);
+            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+        }
+    }
+
+    private static async Task ExerciseWatchedFolderPickerAsync(DisposableWpfRun run, AutomationElement window,
+        List<string> passed, CancellationToken ct)
+    {
+        var parent = Path.Combine(Path.GetDirectoryName(run.ManagerHome)!, "watch sources");
+        var target = Directory.CreateDirectory(Path.Combine(parent, "watch-" + Guid.NewGuid().ToString("N")));
+        var keep = Path.Combine(target.FullName, "keep.txt");
+        File.WriteAllText(keep, "owned fixture");
+        var fieldName = "Add automatic mod sorting folder";
+        var add = await WaitForElementAsync(() => FindButton(window, fieldName, enabled: true), UiTimeout, fieldName, ct);
+        var opening = Task.Run(() => Invoke(add), ct);
+        var picker = await WaitForElementAsync(() => FindFileDialog(window.Current.ProcessId, folder: true),
+            UiTimeout, "watched folder picker", ct);
+        var filename = await WaitForElementAsync(() => FindPickerField(picker, true), UiTimeout, "folder name", ct);
+        filename.SetFocus();
+        // A filename edit can show a path while the shell still has Documents selected.
+        // Navigate via the native address bar and select the unique fixture item itself.
+        dynamic keys = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell", throwOnError: true)!)!;
+        try
+        {
+            Assert.Equal(window.Current.ProcessId, AutomationElement.FocusedElement.Current.ProcessId);
+            keys.SendKeys("^l");
+            var address = await WaitForElementAsync(() =>
+            {
+                var focused = AutomationElement.FocusedElement;
+                return focused.Current.ProcessId == window.Current.ProcessId &&
+                    focused.Current.ControlType == ControlType.Edit && !System.Windows.Automation.Automation.Compare(focused, filename)
+                    ? focused : null;
+            }, UiTimeout, "native folder address field", ct);
+            await TypeNativePathAsync(address, parent, window.Current.ProcessId, ct);
+        }
+        finally { System.Runtime.InteropServices.Marshal.FinalReleaseComObject((object)keys); }
+        var choice = await WaitForElementAsync(() => Find(picker, e => e.Current.Name == target.Name &&
+            e.TryGetCurrentPattern(SelectionItemPattern.Pattern, out _)), UiTimeout, "unique watched folder in picker", ct);
+        ((SelectionItemPattern)choice.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        Invoke(await WaitForElementAsync(() => FindButton(picker, "Select Folder", enabled: true),
+            UiTimeout, "confirm selected watched folder", ct));
+        await opening.WaitAsync(UiTimeout, ct);
+        var state = Path.Combine(run.ManagerHome, "State", "mod-intake-folders.json");
+        bool Watching() => File.Exists(state) && (JsonSerializer.Deserialize<string[]>(File.ReadAllText(state)) ?? [])
+            .Contains(target.FullName, StringComparer.OrdinalIgnoreCase);
+        await WaitForAsync(Watching, UiTimeout, "persisted selected watched folder", ct);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Stop monitoring selected mod folder without deleting data",
+            enabled: true), UiTimeout, "remove watched fixture", ct));
+        await WaitForAsync(() => !Watching(), UiTimeout, "remove folder from monitoring", ct);
+        Assert.Equal("owned fixture", File.ReadAllText(keep));
+        passed.Add("Select the watched folder through the native chooser, verify its saved path and remove it without deleting the source");
     }
 }

@@ -164,7 +164,10 @@ public sealed record DeploymentManifestEntry(
 public sealed record DeploymentChange(
     int Sequence, ChangeKind Kind, string Path, string? BeforeBlobSha256,
     string? AfterBlobSha256, string? ProviderBefore, string? ProviderAfter,
-    string? ExpectedLiveSha256, string? RuleId);
+    string? ExpectedLiveSha256, string? RuleId)
+{
+    public bool RequireAbsent { get; init; }
+}
 
 public sealed record DeploymentPlan(
     string Id, DateTimeOffset CreatedUtc, IReadOnlyList<DeploymentChange> Changes,

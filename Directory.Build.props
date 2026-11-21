@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.128</Version>
-    <InformationalVersion>8.8.128-active-game-actions</InformationalVersion>
+    <Version>8.8.129</Version>
+    <InformationalVersion>8.8.129-unmodded-launch-recovery</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
