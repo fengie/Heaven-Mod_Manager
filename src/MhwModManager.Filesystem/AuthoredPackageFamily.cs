@@ -23,8 +23,8 @@ public static class AuthoredPackageFamily
         var overlay = main >= 0 && optional.Length == dirs.Length - 1;
         if (!alternatives && !overlay) return [];
         if (dirs.Concat(notes).Any(path => (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)) return [];
-        var text = string.Join(" ",notes.Where(p => Path.GetExtension(p).Equals(".txt",StringComparison.OrdinalIgnoreCase) &&
-            new FileInfo(p).Length <= 65536).Select(p => Path.GetFileName(p) + "\n" + File.ReadAllText(p))).ToLowerInvariant();
+        var text = string.Join(" ",notes.Where(p=>Path.GetExtension(p).Equals(".txt",StringComparison.OrdinalIgnoreCase))
+            .Select(ReadBoundedNote)).ToLowerInvariant();
         if (alternatives)
         {
             var feature = contrast[0]!.Value.Feature;
@@ -62,6 +62,19 @@ public static class AuthoredPackageFamily
             assigned.UnionWith(paths[i]);
         }
         return dirs.Select((dir, i) => new AuthoredPart(labels[i]!, dir, i == main ? "Main" : "Optional", null)).ToArray();
+    }
+
+    private static string ReadBoundedNote(string path)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        const int limit=65536;
+        using var stream = File.Open(path,FileMode.Open,FileAccess.Read,FileShare.Read);
+        if (stream.Length>limit) return "";
+        var bytes = new byte[(int)stream.Length];
+        stream.ReadExactly(bytes);
+        using var memory = new MemoryStream(bytes);
+        using var reader = new StreamReader(memory,detectEncodingFromByteOrderMarks:true);
+        return Path.GetFileName(path) + "\n" + reader.ReadToEnd();
     }
 
     private static bool IndependentlySelectable(string notes)

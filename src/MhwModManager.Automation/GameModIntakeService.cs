@@ -412,11 +412,13 @@ public sealed class GameModIntakeService
         }
     }
 
-    private bool VerifiedFamily(string folder, string context, IReadOnlyList<GameProfile> games, CancellationToken ct)
+    private bool VerifiedFamily(string folder, string context, IReadOnlyList<GameProfile> games, CancellationToken ct, string[]? paths=null)
     {
         using var trace = MasterDebugLog.BeginMethod();
         if (!Directory.Exists(folder)) return false;
-        var paths = SnapshotFolderFiles(folder,ct).Select(path=>Path.GetRelativePath(folder,path)).ToArray();
+        paths ??= SnapshotFolderFiles(folder,ct).Select(path=>Path.GetRelativePath(folder,path)).ToArray();
+        if (!paths.Any(path=>Path.GetDirectoryName(path) is null or "" &&
+            Path.GetExtension(path).Equals(".txt",StringComparison.OrdinalIgnoreCase))) return false;
         var detection = GameModIntakeClassifier.Classify(games,context,paths,ReadFolderGameHint(folder));
         var game = games.FirstOrDefault(entry=>entry.Id==detection.GameId);
         return game is not null && detection.Kind==GameModIntakeKind.Identified &&
@@ -430,6 +432,12 @@ public sealed class GameModIntakeService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
+        var rootName = Path.GetFileName(Path.TrimEndingDirectorySeparator(root));
+        if (!requireMultipleBoundaries && VerifiedFamily(root,rootName,games,ct,paths))
+        {
+            await ClassifyAndRouteAsync(root,root,true,games,output,receipts,ct,gameContextHint:rootName);
+            return;
+        }
         var discovered = ModBoundaryDiscovery.Discover(paths, Path.GetFileName(root));
         // Reanalyzing an existing tracked package must never copy its whole root as
         // a duplicate when structural evidence no longer proves several child mods.
@@ -443,7 +451,6 @@ public sealed class GameModIntakeService
         // Share one inspection and physical-copy budget across every candidate from
         // this selected collection. Nested archive recursion carries the same instance.
         var collectionBudget = new IntakeBudget(collectionCopyBudget);
-        var rootName = Path.GetFileName(Path.TrimEndingDirectorySeparator(root));
         var selectedScope = games.Any(game =>
             GameProfile.NormalizeId(rootName) == game.Id ||
             GameProfile.NormalizeId(rootName) == GameProfile.NormalizeId(game.DisplayName)) ? rootName : null;
@@ -873,6 +880,12 @@ public sealed class GameModIntakeService
                         expandedBytes += length;
                     }
                     budget.AccountActual(expandedBytes);
+                    var archiveContext=(gameContextHint ?? "")+" "+Path.GetFileName(source);
+                    if (VerifiedFamily(extracted,archiveContext,games,ct))
+                    {
+                        await ClassifyAndRouteAsync(extracted,extracted,true,games,output,receipts,ct,nestedDepth+1,budget,reportSource,archiveContext);
+                        return;
+                    }
                     foreach (var candidate in discovery.Candidates)
                     {
                         ct.ThrowIfCancellationRequested();
