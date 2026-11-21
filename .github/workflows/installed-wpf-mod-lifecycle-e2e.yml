@@ -115,8 +115,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path $packagedScripts | Out-Null
           Copy-Item -Path scripts/diagnostics/Capture-Diagnostics.ps1,scripts/diagnostics/Master-Debug.ps1 -Destination $packagedScripts
 
-      - name: Real UIA import, list, preview, apply, undo and game switch
-        timeout-minutes: 53
+      - name: Verify three package picker and saved-choice cases
+        timeout-minutes: 12
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -130,23 +130,36 @@ jobs:
           $env:MHW_GAME_UI_EVIDENCE = $evidence
           $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
+          $output = @(& $runner '--filter-method' $method 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Set-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Installed WPF picker acceptance failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch 'succeeded:\s+3\b' -or $summary -notmatch 'skipped:\s+0\b') {
+            throw 'Expected three passing picker cases and zero skips.'
+          }
+          "MHW_GAME_UI_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify remaining lifecycle cases and all registered game receipts
+        timeout-minutes: 53
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          $evidence = $env:MHW_GAME_UI_EVIDENCE
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
           $expectedCases = 14
-          # Run the three package picker / restart cases first. Each case runs once;
-          # the remaining suite retains the full per-game receipt verification below.
-          foreach ($partition in @(
-            @{ args = @('--filter-method',$method); expected = 3; name = 'package picker' },
-            @{ args = @('--filter-class',$class,'--filter-not-method',$method); expected = ($expectedCases-3); name = 'remaining lifecycle' }
-          )) {
-            $filters = $partition.args
-            $output = @(& $runner @filters 2>&1)
-            $exit = $LASTEXITCODE
-            $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
-            $output | ForEach-Object { Write-Host $_ }
-            if ($exit -ne 0) { throw "Installed WPF $($partition.name) failed, exit code $exit." }
-            $summary = $output -join [Environment]::NewLine
-            if ($summary -notmatch "succeeded:\s+$($partition.expected)\b" -or $summary -notmatch 'skipped:\s+0\b') {
-              throw "Expected $($partition.expected) passing $($partition.name) cases and zero skips."
-            }
+          $remainingCases = $expectedCases - 3
+          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Installed WPF lifecycle acceptance failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch "succeeded:\s+$remainingCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
+            throw "Expected $remainingCases passing remaining cases and zero skips."
           }
           $inventory = @(Get-Content -Raw -Encoding UTF8 tests/fixtures/discovered-games/games.json | ConvertFrom-Json)
           $gameReceipts = @(Get-ChildItem -LiteralPath $evidence -Filter 'game-*.json' | ForEach-Object {
