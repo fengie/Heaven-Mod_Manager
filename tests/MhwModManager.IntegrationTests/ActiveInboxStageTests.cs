@@ -7,6 +7,41 @@ namespace MhwModManager.IntegrationTests;
 public sealed class ActiveInboxStageTests
 {
     [Fact]
+    public Task Running_apply_commits_captured_state_then_newer_toggle_reaches_disk() =>
+        IsolatedWpfSession.RunAsync(async (services,ct)=>
+        {
+            var folder=Path.Combine(services.Paths.ModsRoot,"Concurrent Outfit");
+            var payload=Path.Combine(folder,services.Paths.Game.ModRootRelativePath,"outfit.bin");
+            Directory.CreateDirectory(Path.GetDirectoryName(payload)!);
+            await File.WriteAllTextAsync(payload,"known outfit",ct);
+            await services.Catalog.RefreshFoldersAsync(ct);
+            var mod=Assert.Single(await services.Database.GetModsAsync(ct));
+            var row=new ModRowViewModel(Assert.Single(LogicalModFamilies.Build([mod])),()=>{});
+            using var vm=new MainWindowViewModel(services){ ConfirmBeforeApply=false };
+            vm.Mods.Add(row);
+            row.StagedEnabled=true;
+            bool intervened=false;
+            vm.Conflicts.CollectionChanged+=(_,_)=>{
+                if(intervened)return;
+                intervened=true;
+                row.StagedEnabled=false; // The command has already built the ON plan.
+            };
+            await vm.ApplyCommand.ExecuteAsync(null);
+            Assert.True(intervened);
+            var target=Path.Combine(services.Paths.Game.LiveModRoot,"outfit.bin");
+            Assert.True(File.Exists(target),vm.StatusText);
+            Assert.Equal("known outfit",File.ReadAllText(target));
+            Assert.True(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+            Assert.True(row.HasStagedChanges);
+            Assert.False(row.StagedEnabled);
+            await vm.ApplyCommand.ExecuteAsync(null);
+            Assert.False(File.Exists(target),vm.StatusText);
+            Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+            Assert.False(row.HasStagedChanges);
+            Assert.Equal("known outfit",File.ReadAllText(payload));
+        });
+
+    [Fact]
     public void Explicit_roundtrip_during_discovery_survives_new_catalog_baseline()
     {
         var one=new ModDescriptor("one","One","One","one",false,10);
