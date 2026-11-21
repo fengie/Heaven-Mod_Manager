@@ -67,8 +67,28 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var search = await WaitForElementAsync(() => Find(window, e =>
                 e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods"), UiTimeout, "Mods search", ct);
             ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).SetValue(name);
-            var box = await WaitForElementAsync(() => Find(window, e =>
-                e.Current.ControlType == ControlType.CheckBox && e.Current.Name == name), UiTimeout, "family " + name, ct);
+            AutomationElement box;
+            try
+            {
+                box = await WaitForElementAsync(() => Find(window, e =>
+                    e.Current.ControlType == ControlType.CheckBox && e.Current.Name == name), UiTimeout, "family " + name, ct);
+            }
+            catch (TimeoutException error)
+            {
+                var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
+                var query = currentSearch?.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+                var queryMatches = query?.Current.Value == name;
+                var grid = Find(window, e => e.Current.ControlType == ControlType.DataGrid && e.Current.Name == "Mod library");
+                var realized = grid?.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)).Count;
+                var catalog = run.OpenCatalog();
+                var mods = await catalog.GetModsAsync(ct);
+                var files = await catalog.GetModFilesAsync(ct);
+                var families = LogicalModFamilies.Build(mods, files, run.FirstGame);
+                var expected = families.SingleOrDefault(family => family.DisplayName == name);
+                throw new TimeoutException($"{error.Message}. Search present={currentSearch is not null}, query matches={queryMatches}, " +
+                    $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
+                    $"catalog families={families.Count}, expected family members={expected?.Members.Count ?? 0}.", error);
+            }
             var row = box;
             while (row is not null && row.Current.ControlType != ControlType.DataItem)
                 row = TreeWalker.RawViewWalker.GetParent(row);
