@@ -306,7 +306,7 @@ ViewModels/MainWindowViewModel.ManagedCollections.cs | InspectExistingModCollect
 ViewModels/MainWindowViewModel.ManagedCollections.cs | ReanalyzeManagedCollections | MessageBox.Show | "Preview existing mod collection separation"
 ViewModels/MainWindowViewModel.ManagedCollections.cs | ReanalyzeManagedCollections | ModIntakeReviewWindow  |
 ViewModels/MainWindowViewModel.Workflows.cs | OpenWorkflows | WorkflowWindow window |
-WorkflowWindow.xaml |  | TabControl | Name=Tabs
+WorkflowWindow.xaml |  | TabControl | Name=Tabs ; SelectionChanged=PageChanged
 WorkflowWindow.xaml |  | TabItem | Header=Compatibility Rules
 WorkflowWindow.xaml |  | TabItem | Header=File Decisions
 WorkflowWindow.xaml |  | TabItem | Header=Launch History
@@ -336,7 +336,6 @@ WorkflowWindow.xaml | TabItem:Compatibility Rules | DataGridTextColumn | Header=
 WorkflowWindow.xaml | TabItem:Compatibility Rules | DataGridTextColumn | Header=Scope ; Binding={Binding Scope, Mode=OneWay}
 WorkflowWindow.xaml | TabItem:Compatibility Rules | TextBox | Name=RulePath ; AutomationProperties.Name=Rule path or scope
 WorkflowWindow.xaml | TabItem:Compatibility Rules | TextBox | Name=RuleReason ; Text=User compatibility decision ; AutomationProperties.Name=Rule reason
-WorkflowWindow.xaml | TabItem:File Decisions | Button | Content=Refresh ; Click=RefreshClick
 WorkflowWindow.xaml | TabItem:File Decisions | DataGrid | Name=Files ; IsReadOnly=True ; SelectionChanged=FileSelected
 WorkflowWindow.xaml | TabItem:File Decisions | DataGridCheckBoxColumn | Header=Needs choice ; Binding={Binding Blocking, Mode=OneWay}
 WorkflowWindow.xaml | TabItem:File Decisions | DataGridTextColumn | Header=Game file ; Binding={Binding Path, Mode=OneWay}

@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using Microsoft.Data.Sqlite;
 using MhwModManager.Automation;
 using MhwModManager.Core;
 using MhwModManager.Storage;
@@ -19,6 +20,10 @@ public partial class WorkflowWindow : Window
     private PlannerSnapshot? snapshot;
     private IReadOnlyList<EffectiveAsset> assets = [];
     private bool busy;
+    private SqliteConnection? changeObserver;
+    private long snapshotVersion=-1;
+    private readonly Dictionary<int,long> pageVersions=[];
+    private bool restoringRule;
     private string folderPrefix = "";
     private string? recipePath;
     private string? vortexHandoffPath;
@@ -34,6 +39,7 @@ public partial class WorkflowWindow : Window
         InitializeComponent();
         Loaded += async (_, _) => await RunAsync(RefreshAsync);
         Closing += OnClosing;
+        Closed += (_,_) => changeObserver?.Dispose();
     }
     private void OnClosing(object? sender, CancelEventArgs e)
     {
@@ -44,45 +50,134 @@ public partial class WorkflowWindow : Window
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (busy) return;
+        var previousStatus=Status.Text;
         busy = true; Tabs.IsEnabled = false; Status.Text = "Working…";
         try { await action(); }
         catch (Exception ex) { MasterDebugLog.Write("WORKFLOW", ex.ToString()); Status.Text = ex.Message; }
-        finally { busy = false; Tabs.IsEnabled = true; }
+        finally { busy = false; Tabs.IsEnabled = true; if(Status.Text=="Working…") Status.Text=previousStatus; }
     }
     private async Task RefreshAsync()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        snapshot = await services.Database.LoadPlannerSnapshotAsync();
-        assets = await Task.Run(() => WorkflowAnalysis.Explore(WorkflowAnalysis.WithState(snapshot, stage), services.Planner));
-        BuildFolders();
-        FilterFiles();
-        var mods = snapshot.Mods.OrderBy(m => m.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();
-        foreach (var box in new[] { LeftMod, RightMod, GraphMod, OldMod, NewMod })
+        pageVersions.Clear();
+        snapshotVersion=-1;
+        await ReadPageAsync();
+    }
+
+    private async void PageChanged(object sender, SelectionChangedEventArgs e)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        if (!IsLoaded || !ReferenceEquals(e.OriginalSource,Tabs)) return;
+        await RunAsync(ReadPageAsync);
+    }
+
+    private async Task ReadPageAsync()
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        changeObserver ??= await services.Database.OpenAsync();
+        using var revision=changeObserver.CreateCommand();
+        revision.CommandText="PRAGMA data_version";
+        var version=Convert.ToInt64(await revision.ExecuteScalarAsync(),System.Globalization.CultureInfo.InvariantCulture);
+        var tab=Tabs.SelectedIndex;
+        if (tab==7) { ShowAdapterDetails(); return; }
+        if (pageVersions.TryGetValue(tab,out var shown) && shown==version) return;
+        if (tab==2)
         {
-            var id = (box.SelectedItem as ModDescriptor)?.Id; box.ItemsSource = mods; box.SelectedItem = mods.FirstOrDefault(m => m.Id == id);
+            await ReadProfilesAsync();
+            ProfileDiff.Clear();
         }
-        RuleRows.ItemsSource = snapshot.Rules;
-        var profiles = await services.Profiles.ListAsync();
-        foreach (var box in new[] { ParentProfile, ProfileA, ProfileB })
+        else if (tab==1)
         {
-            var id = (box.SelectedItem as ProfileSummary)?.Id; box.ItemsSource = profiles; box.SelectedItem = profiles.FirstOrDefault(p => p.Id == id);
+            if (recipePath is not null)
+                RecipeRows.ItemsSource=(await services.Recipe.PreviewAsync(recipePath)).Matches;
+            else if (vortexHandoffPath is not null)
+                RecipeRows.ItemsSource=(await new VortexInteropService(services.Database, services.Paths.Game).PreviewAsync(vortexHandoffPath)).Matches;
         }
-        var trust = new List<object>();
-        foreach (var mod in mods)
+        else
         {
-            var history = await services.Trust.GetAsync(mod.Id);
-            trust.Add(new { Mod = mod.DisplayName, SuccessfulLaunches = history?.SuccessfulLaunches, FailureAssociations = history?.FailedLaunches, Rollbacks = history?.Rollbacks, LastSuccess = history?.LastSuccess, LastFailure = history?.LastFailure });
+            if (snapshot is null || snapshotVersion!=version)
+            {
+                snapshot=await services.Database.LoadPlannerSnapshotAsync();
+                snapshotVersion=version;
+            }
+            var mods=snapshot.Mods.OrderBy(m=>m.DisplayName,StringComparer.OrdinalIgnoreCase).ToArray();
+            switch(tab)
+            {
+                case 0:
+                    var path=(Files.SelectedItem as EffectiveAsset)?.Path;
+                    assets=await Task.Run(()=>WorkflowAnalysis.Explore(WorkflowAnalysis.WithState(snapshot,stage),services.Planner));
+                    BuildFolders();
+                    FilterFiles();
+                    Explanation.Clear();
+                    if (path is not null) Files.SelectedItem=assets.FirstOrDefault(a=>PathRules.Comparer.Equals(a.Path,path));
+                    break;
+                case 3:
+                    SetMods(LeftMod,mods);
+                    SetMods(RightMod,mods);
+                    var selectedRule=(RuleRows.SelectedItem as ConflictRule)?.Id;
+                    restoringRule=true;
+                    try
+                    {
+                        RuleRows.ItemsSource=snapshot.Rules;
+                        RuleRows.SelectedItem=snapshot.Rules.FirstOrDefault(rule=>rule.Id==selectedRule);
+                    }
+                    finally { restoringRule=false; }
+                    break;
+                case 4:
+                    SetMods(GraphMod,mods);
+                    if (GraphCanvas.Children.Count>0)
+                    {
+                        if (GraphMod.SelectedItem is null) GraphCanvas.Children.Clear();
+                        else GraphClick(GraphMod,new RoutedEventArgs());
+                    }
+                    break;
+                case 5:
+                    SetMods(OldMod,mods);
+                    SetMods(NewMod,mods);
+                    reviewedUpdate=null;
+                    UpgradeButton.IsEnabled=false;
+                    UpdateDetails.Clear();
+                    break;
+                case 6:
+                    var trust=new List<object>();
+                    foreach(var mod in mods)
+                    {
+                        var history=await services.Trust.GetAsync(mod.Id);
+                        trust.Add(new { Mod = mod.DisplayName, SuccessfulLaunches = history?.SuccessfulLaunches, FailureAssociations = history?.FailedLaunches, Rollbacks = history?.Rollbacks, LastSuccess = history?.LastSuccess, LastFailure = history?.LastFailure });
+                    }
+                    TrustRows.ItemsSource=trust;
+                    break;
+            }
         }
-        TrustRows.ItemsSource = trust;
+        pageVersions[tab]=version;
+        if (tab==0) Status.Text=$"{assets.Count} indexed game file(s) are available for inspection.";
+    }
+
+    private static void SetMods(ComboBox box, IReadOnlyList<ModDescriptor> mods)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        var id=(box.SelectedItem as ModDescriptor)?.Id;
+        box.ItemsSource=mods;
+        box.SelectedItem=mods.FirstOrDefault(m=>m.Id==id);
+    }
+
+    private async Task ReadProfilesAsync()
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        var profiles=await services.Profiles.ListAsync();
+        foreach(var box in new[] { ParentProfile,ProfileA,ProfileB })
+        {
+            var id=(box.SelectedItem as ProfileSummary)?.Id;
+            box.ItemsSource=profiles;
+            box.SelectedItem=profiles.FirstOrDefault(p=>p.Id==id);
+        }
+    }
+
+    private void ShowAdapterDetails()
+    {
+        using var trace=MasterDebugLog.BeginMethod();
         var adapter = GameAdapters.Resolve(services.Paths.Game); var game = services.Paths.Game;
         AdapterDetails.Text = $"{adapter.DisplayName} ({adapter.Id})\n\nExecutable: {adapter.Executable(game)}\nMod roots: {string.Join(", ", adapter.ModRoots(game))}\nNexus domain: {adapter.NexusDomain(game) ?? "none"}\nSave paths: {string.Join(", ", adapter.SavePaths(game))}\nMHW conflict semantics: {adapter.SupportsMhwConflictSemantics}\n\n" + string.Join("\n", adapter.Validate(game).Select(v => $"{v.Code}: {v.Message}"));
-        reviewedUpdate = null; UpgradeButton.IsEnabled = false;
-        Status.Text = $"{assets.Count} indexed game file(s) are available for inspection. Rule changes affect future plans; live game files change only when you apply mod changes or an update.";
-    }
-    private async void RefreshClick(object sender, RoutedEventArgs e)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(RefreshAsync);
     }
     private void FilterChanged(object sender, TextChangedEventArgs e)
     {
@@ -98,6 +193,7 @@ public partial class WorkflowWindow : Window
     private void BuildFolders()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var selectedPrefix=folderPrefix;
         Folders.Items.Clear(); folderPrefix = "";
         var all = new TreeViewItem { Header = "All files in pending setup", Tag = "", IsExpanded = true }; Folders.Items.Add(all);
         var folders = new Dictionary<string, TreeViewItem>(StringComparer.OrdinalIgnoreCase) { [""] = all };
@@ -110,6 +206,11 @@ public partial class WorkflowWindow : Window
                 if (folders.ContainsKey(path)) continue;
                 var node = new TreeViewItem { Header = segment, Tag = path }; folders[path] = node; parent.Items.Add(node);
             }
+        }
+        if (folders.TryGetValue(selectedPrefix,out var previouslySelected))
+        {
+            folderPrefix=selectedPrefix;
+            previouslySelected.IsSelected=true;
         }
     }
     private void FolderSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -191,6 +292,7 @@ public partial class WorkflowWindow : Window
             var service = new VortexInteropService(services.Database, services.Paths.Game);
             var id = await service.ImportAsProfileAsync(vortexHandoffPath, RecipeName.Text);
             await RefreshAsync();
+            await ReadProfilesAsync();
             ProfileB.SelectedItem = ((IReadOnlyList<ProfileSummary>)ProfileB.ItemsSource)
                 .First(profile => profile.Id == id);
             Status.Text = "Saved the matched Vortex handoff as a profile. Missing or uncertain packages remain disabled; live game files are unchanged until you apply the profile.";
@@ -204,7 +306,7 @@ public partial class WorkflowWindow : Window
             if (recipePath is null) throw new InvalidOperationException("Open a mod list first.");
             await EnsureNewProfileNameAsync(RecipeName.Text);
             var id = await services.Recipe.ImportAsync(recipePath, RecipeName.Text);
-            await RefreshAsync(); ProfileB.SelectedItem = ((IReadOnlyList<ProfileSummary>)ProfileB.ItemsSource).First(p => p.Id == id);
+            await RefreshAsync(); await ReadProfilesAsync(); ProfileB.SelectedItem = ((IReadOnlyList<ProfileSummary>)ProfileB.ItemsSource).First(p => p.Id == id);
             Status.Text = "Saved the matched mods as a profile. Missing or uncertain matches stay disabled. Use Profiles & Compare when you are ready to load it.";
         });
     }
@@ -255,7 +357,7 @@ public partial class WorkflowWindow : Window
     private void RuleSelected(object sender, SelectionChangedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (RuleRows.SelectedItem is not ConflictRule rule || snapshot is null) return;
+        if (restoringRule || RuleRows.SelectedItem is not ConflictRule rule || snapshot is null) return;
         editingRule = rule.Id; RuleReason.Text = rule.Reason; RulePath.Text = rule.PathPattern ?? "";
         RuleKindBox.SelectedIndex = rule.Kind switch { RuleKind.Incompatible => 1, RuleKind.ExactWinner => 2, _ => 0 };
         LeftMod.SelectedItem = snapshot.Mods.FirstOrDefault(m => m.Id == (rule.LeftModId == rule.WinnerModId ? rule.RightModId : rule.LeftModId));

@@ -6,10 +6,10 @@
    <TextBlock Text="Inspect file decisions, compare saved setups, and manage advanced compatibility rules." Style="{StaticResource PageSubtitle}"/>
   </StackPanel>
   <TextBlock x:Name="Status" DockPanel.Dock="Bottom" TextWrapping="Wrap" Margin="0,12,0,0" Text="Loading…"/>
-  <TabControl x:Name="Tabs">
+  <TabControl x:Name="Tabs" SelectionChanged="PageChanged">
    <TabItem Header="File Decisions">
     <Grid Margin="12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="190"/></Grid.RowDefinitions>
-     <DockPanel><Button DockPanel.Dock="Right" Content="Refresh" Click="RefreshClick"/><TextBox x:Name="PathFilter" AutomationProperties.Name="Search file decisions" ToolTip="Search by game file or mod name" TextChanged="FilterChanged"/></DockPanel>
+     <TextBox x:Name="PathFilter" AutomationProperties.Name="Search file decisions" ToolTip="Search by game file or mod name" TextChanged="FilterChanged"/>
      <Grid Grid.Row="1" Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="240"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TreeView Background="{StaticResource Panel}" Foreground="{StaticResource Text}" x:Name="Folders" SelectedItemChanged="FolderSelected" Margin="0,0,10,0"/><DataGrid x:Name="Files" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionChanged="FileSelected" EnableRowVirtualization="True">
       <DataGrid.Columns><DataGridTextColumn Header="Game file" Binding="{Binding Path, Mode=OneWay}" Width="*"/><DataGridTextColumn Header="Mod being used" Binding="{Binding WinnerName, Mode=OneWay}" Width="240"/><DataGridCheckBoxColumn Header="Needs choice" Binding="{Binding Blocking, Mode=OneWay}"/></DataGrid.Columns>
      </DataGrid></Grid>
