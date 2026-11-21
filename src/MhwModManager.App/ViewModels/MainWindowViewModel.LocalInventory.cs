@@ -135,7 +135,10 @@ public sealed partial class MainWindowViewModel
                 var paths = sources.Select(mod => mod.SourcePath).ToArray();
                 var titles = new Dictionary<string,string>(PathRules.Comparer);
                 var represented = await s.Adoption.RepresentedInventoryPathsAsync(result,sources,s.Executor.Destination,ct,titles);
-                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, ct);
+                var sourceTitles = sources.GroupBy(mod=>mod.SourcePath,PathRules.Comparer)
+                    .ToDictionary(group=>group.Key,group=>string.Join(", ",group.Select(mod=>mod.DisplayName)),PathRules.Comparer);
+                var packages = LocalModInventory.RegisteredPackageLibrary(result, s.Paths.Game, paths, sourceTitles, titles, ct);
+                represented.UnionWith(titles.Keys);
                 var installed = LocalModInventory.InstalledPackages(result,s.Paths.Game,represented,ct);
                 var workshop = LocalModInventory.WorkshopLibrary(result, s.Paths.Game.SteamAppId, paths);
                 ct.ThrowIfCancellationRequested();

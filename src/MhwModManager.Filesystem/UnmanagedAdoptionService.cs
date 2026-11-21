@@ -158,6 +158,12 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
                 if (titles != null) titles[file] = string.Join(", ",sources[dir].Select(m=>m.DisplayName));
                 break;
             }
+            if (!paths.Contains(file) && LocalModInventory.ManagedLoaderPairOwner(entry,mods,ct) is { } owner)
+            {
+                paths.Add(file);
+                paths.Add(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(file))!,"dsound.dll"));
+                if (titles != null) titles[file] = owner;
+            }
             if (paths.Contains(file) || adopted.Count == 0 || entry.RegisteredProfileId != game.Id ||
                 !file.StartsWith(Path.TrimEndingDirectorySeparator(game.LiveModRoot)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)) continue;
             var key = ManagedKey(file);

@@ -47,9 +47,11 @@ public sealed class InstalledPackageLibraryTests
             Put(root,"reframework/autorun/Weather.lua");
             var runtime=Put(root,"Project/Binaries/Win64/nvngx_dlssnr.dll");
             var ini=Put(root,"Project/Binaries/Win64/settings.ini","user edit");
-            var hash=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(runtime)));
+            var addon=Put(root,"Project/Binaries/Win64/renodx-dlss.addon64");
+            var hash=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(addon)));
+            using (var large = File.OpenWrite(runtime)) large.SetLength(9*1024*1024);
             string Receipt(string[] dests) => JsonSerializer.Serialize(new{product="DLSS Nexus",status="Complete",files=dests.Select(path=>new{destination=path,installedHash=hash})});
-            Put(root,"DLSS-Nexus-Backups/now/installation.json",Receipt([runtime,ini]));
+            Put(root,"DLSS-Nexus-Backups/now/installation.json",Receipt([runtime,addon,ini]));
             Put(root,"DLSS-Nexus-Backups/stale/installation.json",Receipt([runtime,Path.Combine(root,"absent.dll")]));
             Put(root,"DLSS-Nexus-Backups/escape/installation.json",Receipt([runtime,Put(temp.FullName,"other.dll")]));
             var inventory = LocalModInventory.Scan([profile],[steam],[],new Dictionary<string,string[]>{{profile.Id,[previous]}},ct);
@@ -76,4 +78,35 @@ public sealed class InstalledPackageLibraryTests
         }
         finally {temp.Delete(true);}
     }
+
+    [Fact]
+    public Task CopiedLoaderRequiresBothExactMembersAndRetainsDisabledOwner() => IsolatedWpfSession.RunAsync(async (services,ct) =>
+    {
+        string Pair(string root)
+        {
+            var runtime = Directory.CreateDirectory(Path.Combine(root,"Project","Binaries","Win64")).FullName;
+            var bitfix = Directory.CreateDirectory(Path.Combine(runtime,"bitfix")).FullName;
+            File.WriteAllText(Path.Combine(bitfix,"sig.lua"),"original");
+            var dll = Path.Combine(runtime,"dsound.dll");
+            File.WriteAllText(dll,"matching");
+            return dll;
+        }
+        var live = Pair(Path.Combine(services.Paths.GameRoot,"wrapped"));
+        var source = Path.Combine(services.Paths.ToolRoot,"owned");
+        var owned = Pair(source);
+        var mod = new ModDescriptor("managed","Loader","My loader",source,false,7);
+        await services.Database.UpsertModAsync(mod,ct);
+        var observed = LocalModInventory.Scan([services.Paths.Game],[],[],ct:ct);
+        var titles = new Dictionary<string,string>(PathRules.Comparer);
+        var represented = await services.Adoption.RepresentedInventoryPathsAsync(observed,[mod],services.Executor.Destination,ct,titles);
+        Assert.Contains(live,represented);
+        Assert.Contains("My loader",titles.Values);
+        Assert.Empty(LocalModInventory.InstalledPackages(observed,services.Paths.Game,represented,ct));
+        File.WriteAllText(owned,"changed");
+        represented = await services.Adoption.RepresentedInventoryPathsAsync(observed,[mod],services.Executor.Destination,ct);
+        Assert.DoesNotContain(live,represented);
+        Assert.Equal("Bitfix loader",Assert.Single(LocalModInventory.InstalledPackages(observed,services.Paths.Game,represented,ct)).DisplayName);
+        Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+        Assert.Equal("matching",File.ReadAllText(live));
+    });
 }

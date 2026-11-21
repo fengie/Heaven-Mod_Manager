@@ -96,6 +96,35 @@ public static partial class LocalModInventory
         return rows.OrderBy(row=>row.DisplayName,PathRules.Comparer).ThenBy(row=>row.ItemId,PathRules.Comparer).ToArray();
     }
 
+    internal static string? ManagedLoaderPairOwner(LocalModLocation entry, IReadOnlyList<ModDescriptor> mods, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        if (entry.FileEvidence != "Paired loader files · runtime use unconfirmed" || entry.InstallationRoot == null) return null;
+        var script = entry.Location;
+        var runtime = Path.GetDirectoryName(Path.GetDirectoryName(script))!;
+        var dll = Path.Combine(runtime,"dsound.dll");
+        var scriptHash = LocalFileDigest(script);
+        var dllHash = LocalFileDigest(dll);
+        if (scriptHash == null || dllHash == null) return null;
+        // Catalog roots may start at different levels of a wrapped package. Probe the observed
+        // relative suffixes directly; never enumerate a complete source archive or game tree.
+        var parts = Path.GetRelativePath(entry.InstallationRoot,runtime).Split(Path.DirectorySeparatorChar);
+        foreach (var mod in mods)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!Directory.Exists(mod.SourcePath) || HasLinkedAncestor(mod.SourcePath)) continue;
+            for (int offset = 0; offset <= parts.Length; offset++)
+            {
+                var source = Path.Combine(mod.SourcePath,Path.Join(parts.AsSpan(offset).ToArray()));
+                var candidate = Path.Combine(source,"bitfix","sig.lua");
+                if (!File.Exists(candidate) || !StringComparer.Ordinal.Equals(scriptHash,LocalFileDigest(candidate))) continue;
+                if (StringComparer.Ordinal.Equals(dllHash,LocalFileDigest(Path.Combine(source,"dsound.dll"))))
+                    return mod.DisplayName;
+            }
+        }
+        return null;
+    }
+
     private static string? VerifiedDlssRuntime(string receipt, string root, CancellationToken ct)
     {
         using var trace = MasterDebugLog.BeginMethod();
@@ -127,8 +156,12 @@ public static partial class LocalModInventory
                 var length = new FileInfo(path).Length;
                 if (length == 0) return null;
                 // A library observation never grants execution authority. Limit hashing on each refresh.
-                if (Path.GetExtension(path).Equals(".dll",StringComparison.OrdinalIgnoreCase) &&
-                    length <= 8 * 1024 * 1024 && length <= digestBudget)
+                var name = Path.GetFileName(path);
+                var specific = name.Equals("renodx-dlss.addon64",StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("dlss5-feed.addon64",StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("DLSS5_Feed.fx",StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("nvngx_dlssnr.dll",StringComparison.OrdinalIgnoreCase);
+                if (specific && length <= 8 * 1024 * 1024 && length <= digestBudget)
                 {
                     if (!StringComparer.OrdinalIgnoreCase.Equals(LocalFileDigest(path),expected)) return null;
                     verifiedComponent = true;
