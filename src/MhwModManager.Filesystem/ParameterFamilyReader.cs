@@ -161,7 +161,7 @@ public static class ParameterFamilyReader
         var files = Directory.EnumerateFiles(directory).Take(65).ToArray();
         if (files.Length is 0 or > 64 || files.Any(IsLinked)) return [];
         var pairs = new List<Pair>();
-        foreach (var group in files.GroupBy(file => Path.GetFileNameWithoutExtension(file),PathRules.Comparer))
+        foreach (var group in files.Where(file=>!ManagedCollectionNotes.IsShellMetadata(file)).GroupBy(file => Path.GetFileNameWithoutExtension(file),PathRules.Comparer))
         {
             ct.ThrowIfCancellationRequested();
             var members = group.Select(file => Path.GetFileName(file)).Order(PathRules.Comparer).ToArray();

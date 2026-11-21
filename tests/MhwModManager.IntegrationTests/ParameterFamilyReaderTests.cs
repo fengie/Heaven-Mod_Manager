@@ -38,6 +38,19 @@ public sealed class ParameterFamilyReaderTests : IDisposable
     }
 
     [Fact]
+    public void ShellMetadataInsideOptionsStaysInTheSourceAndOutOfEveryComponent()
+    {
+        Seed();
+        var annotations=Directory.GetDirectories(root.FullName,"*",SearchOption.AllDirectories).Take(7)
+            .Select((dir,i)=>Path.Combine(dir,i==0 ? "Thumbs.db" : "desktop.ini")).ToArray();
+        foreach(var path in annotations) File.WriteAllText(path,"shell metadata");
+        var parts=ParameterFamilyReader.Read(root.FullName,Ct);
+        Assert.Equal(28,parts.Count);
+        Assert.Equal(56,parts.SelectMany(part=>part.Files!).Count());
+        Assert.All(annotations,path=>Assert.Equal("shell metadata",File.ReadAllText(path)));
+    }
+
+    [Fact]
     public void AuthorAndCompleteSourceProveActualSituationAndRoomChoicesWithoutInventingHelpers()
     {
         Seed();

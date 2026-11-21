@@ -336,8 +336,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     }
 
     private static bool IsIgnored(FileInfo f) =>
-        f.Name.Equals("Thumbs.db", StringComparison.OrdinalIgnoreCase) ||
-        f.Name.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase) ||
+        ManagedCollectionNotes.IsShellMetadata(f.Name) ||
         f.Name.Equals("readme.txt", StringComparison.OrdinalIgnoreCase) ||
         f.Name.Equals("README.md", StringComparison.OrdinalIgnoreCase) ||
         f.FullName.Contains(Path.DirectorySeparatorChar + "__MACOSX" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
