@@ -116,6 +116,7 @@ jobs:
           Copy-Item -Path scripts/diagnostics/Capture-Diagnostics.ps1,scripts/diagnostics/Master-Debug.ps1 -Destination $packagedScripts
 
       - name: Verify three package picker and saved-choice cases
+        id: picker
         timeout-minutes: 12
         shell: powershell
         run: |
@@ -127,6 +128,7 @@ jobs:
           $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
           & $compiler /nologo /target:winexe "/out:$env:RUNNER_TEMP\mhw-game-launch-probe.exe" (Resolve-Path tests/fixtures/packaged-ui/GameLaunchProbe.cs).Path
           if ($LASTEXITCODE -ne 0) { throw 'Disposable game launch probe failed to compile.' }
+          "MHW_GAME_UI_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           $env:MHW_GAME_UI_EVIDENCE = $evidence
           $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
@@ -139,9 +141,10 @@ jobs:
           if ($summary -notmatch 'succeeded:\s+3\b' -or $summary -notmatch 'skipped:\s+0\b') {
             throw 'Expected three passing picker cases and zero skips.'
           }
-          "MHW_GAME_UI_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
 
       - name: Verify remaining lifecycle cases and all registered game receipts
+        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' }}
         timeout-minutes: 53
         shell: powershell
         run: |
@@ -180,6 +183,7 @@ jobs:
             throw 'The move-repair receipts do not cover the registered fixture inventory.'
           }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
+          if ('${{ steps.picker.outcome }}' -ne 'success') { throw 'The picker checks failed. Per-game receipts were retained without a passing release proof.' }
           $proof = [ordered]@{
             schemaVersion = 1
             sourceSha = (& git rev-parse HEAD).Trim()

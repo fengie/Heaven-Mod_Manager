@@ -21,6 +21,8 @@ public sealed partial class MainWindowViewModel
     public IReadOnlyList<LocalModLocation> LocalModLocations { get; private set; } = [];
     public string LocalModInventoryStatus { get; private set; } = "Checking registered game folders and Workshop libraries…";
 
+    [ObservableProperty] private LocalModLocation? selectedInstalledFile;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VisibleLocalModLocations))]
     private string localModQuery = "";
@@ -116,6 +118,7 @@ public sealed partial class MainWindowViewModel
     private HashSet<(string Id,string Path,string Name)>? catalogInventoryIdentities;
     private Task? localInventoryScan;
     private bool localInventoryChanged;
+    private bool fullInventoryRequested;
 
     private void InvalidateLocalInventory()
     {
@@ -125,9 +128,12 @@ public sealed partial class MainWindowViewModel
         _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
     }
 
-    private Task RefreshLocalModInventoryAsync(CancellationToken ct)
+    private Task RefreshLocalModInventoryAsync(CancellationToken ct, bool fullVisit = false)
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        // A user may have added a file after the running scan enumerated its directory.
+        // Multiple visits before that scan finishes share a single full follow-up pass.
+        if (fullVisit) fullInventoryRequested = true;
         if (localInventoryScan is { IsCompleted: false }) return localInventoryScan;
         localInventoryScan = ScanUntilCurrentAsync(ct);
         return localInventoryScan;
@@ -138,10 +144,11 @@ public sealed partial class MainWindowViewModel
         using var trace = MasterDebugLog.BeginMethod();
         do
         {
-            var currentOnly = localInventoryChanged && !CheckingDiscoveredLibrary;
+            var currentOnly = localInventoryChanged && !fullInventoryRequested && !CheckingDiscoveredLibrary;
+            fullInventoryRequested = false;
             localInventoryChanged = false;
             await ScanLocalModInventoryAsync(currentOnly,ct);
-        } while (localInventoryChanged && !ct.IsCancellationRequested);
+        } while ((localInventoryChanged || fullInventoryRequested) && !ct.IsCancellationRequested);
     }
 
     private async Task ScanLocalModInventoryAsync(bool currentOnly,CancellationToken ct)

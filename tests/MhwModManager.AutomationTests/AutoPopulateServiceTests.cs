@@ -44,6 +44,7 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.Contains("Shares an Unreal export ID", result.Decisions.Single(decision => decision.ModId == "shared").Reason);
         Assert.Contains("coverage is unavailable", result.Decisions.Single(decision => decision.ModId == "unknown").Reason);
         Assert.Contains("2 selected package(s) share known",result.Summary);
+        Assert.Collection(result.SharedExportIds.Order(StringComparer.Ordinal),id=>Assert.Equal("anchor",id),id=>Assert.Equal("shared",id));
     }
 
     [Theory]

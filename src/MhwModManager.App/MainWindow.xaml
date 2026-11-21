@@ -1,6 +1,7 @@
 <Window x:Class="MhwModManager.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MhwModManager.App"
         xmlns:vm="clr-namespace:MhwModManager.App.ViewModels"
         Title="{Binding WindowTitle}"
         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
@@ -47,21 +48,44 @@
                 <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0D151F" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" Padding="10,7">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="GAME" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,9,0"/>
-                        <ComboBox Width="220" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame,Mode=TwoWay}" TextSearch.TextPath="DisplayName" AutomationProperties.Name="Active game" AutomationProperties.AutomationId="ActiveGameSelector" AutomationProperties.ItemStatus="{Binding SelectedGame.DisplayName}" ToolTip="{Binding SelectedGame.DisplayName}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" AutomationProperties.AutomationId="ActiveGameDisplayName" AutomationProperties.Name="{Binding DisplayName}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <Button Content="Switch" Command="{Binding SwitchGameCommand}" Style="{StaticResource QuietButton}" Margin="5,0,0,0" Padding="10,6"/>
+                        <Menu Background="Transparent" Padding="0">
+                            <local:GameChoiceMenu ItemsSource="{Binding Games}" SwitchCommand="{Binding SwitchGameCommand}"
+                                                  Header="{Binding ActiveGameDisplayName}" ToolTip="Switch game"
+                                                  AutomationProperties.Name="Active game" AutomationProperties.AutomationId="ActiveGameSelector"
+                                                  AutomationProperties.ItemStatus="{Binding ActiveGameDisplayName}">
+                                <local:GameChoiceMenu.HeaderTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource AccentDim}" CornerRadius="6" Padding="8,4">
+                                            <DockPanel Width="200">
+                                                <TextBlock DockPanel.Dock="Right" Text="▾" Foreground="{StaticResource AccentBright}" Margin="6,0,0,0"/>
+                                                <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Text}" AutomationProperties.AutomationId="ActiveGameDisplayName"/>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </local:GameChoiceMenu.HeaderTemplate>
+                                <local:GameChoiceMenu.ItemContainerStyle>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="AutomationProperties.Name" Value="{Binding DisplayName}"/>
+                                        <Setter Property="AutomationProperties.AutomationId" Value="{Binding Id}"/>
+                                        <Setter Property="AutomationProperties.HelpText" Value="{Binding GameRoot}"/>
+                                    </Style>
+                                </local:GameChoiceMenu.ItemContainerStyle>
+                                <local:GameChoiceMenu.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel MaxWidth="520">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding GameRoot}" TextTrimming="CharacterEllipsis" ToolTip="{Binding GameRoot}" FontSize="11"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </local:GameChoiceMenu.ItemTemplate>
+                            </local:GameChoiceMenu>
+                        </Menu>
                         <Button Content="Settings" Command="{Binding ConfigureGameCommand}" Style="{StaticResource QuietButton}" Margin="2,0,0,0" Padding="10,6"/>
                     </StackPanel>
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <Button Content="Install Mod" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,0"/>
-                    <Button Content="Apply Changes" Command="{Binding ApplyCommand}" Margin="0,0,8,0" ToolTip="Safely install your pending mod changes. Ctrl+Enter."/>
                     <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Back up your saves, check the setup, and launch the game with your enabled mods."/>
                 </StackPanel>
             </Grid>
@@ -74,6 +98,15 @@
                     SelectedIndex="{Binding SelectedTab}"
                     SelectionChanged="OnMainTabSelectionChanged">
             <TabItem Header="Dashboard">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=GamePathText, StringFormat='Game folder: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=ModLibraryPathText, StringFormat='Mod library: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=GameDownloadsPathText, StringFormat='Downloads: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <ScrollViewer x:Name="DashboardScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
                     <Grid MaxWidth="1320" HorizontalAlignment="Stretch" Margin="32,30,36,36">
                         <Grid.RowDefinitions>
@@ -101,7 +134,6 @@
                                     <TextBlock Margin="0,9,0,0" MaxWidth="650" Text="{Binding StatusText}" FontSize="16" TextWrapping="Wrap" LineHeight="23"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                                         <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" Padding="20,11"/>
-                                        <Button Content="Apply Pending Changes" Command="{Binding ApplyCommand}" Margin="8,0,0,0" Padding="18,11"/>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -184,8 +216,6 @@
                                                             AutomationProperties.Name="Add automatic mod sorting folder"/>
                                                     <Button Content="Import Folder Once" Command="{Binding ImportModFolderCommand}" Style="{StaticResource QuietButton}" Margin="0,0,7,5"
                                                             AutomationProperties.Name="Separate and import mods from a selected folder without monitoring it"/>
-                                                    <Button Content="Scan Folders" Command="{Binding ScanAutoSortFoldersCommand}" Style="{StaticResource QuietButton}" Margin="0,0,7,5"
-                                                            AutomationProperties.Name="Scan mod download folders by game"/>
                                                     <Button Content="Remove Selected" Command="{Binding RemoveAutoSortFolderCommand}" Style="{StaticResource QuietButton}" Margin="0,0,0,5"
                                                             AutomationProperties.Name="Stop monitoring selected mod folder without deleting data"/>
                                                 </WrapPanel>
@@ -216,7 +246,6 @@
                                             ToolTip="Inspect disabled library packages recursively and preview independent mods before copying them into their registered game libraries."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}"
                                             ToolTip="Read-only evidence for all tracked source packages, including unknown or incomplete nested mod groups."/>
-                                    <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Find Installed Games" Command="{Binding ScanInstalledGamesCommand}"/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Add Game" Command="{Binding AddGameCommand}"
                                             ToolTip="Select a game executable to register it and switch to its mod library."/>
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Game Settings" Command="{Binding ConfigureGameCommand}"/>
@@ -224,9 +253,7 @@
                                     <Button Margin="0,0,0,8" Style="{StaticResource ActionTile}" Content="Open Downloaded Mod Archives" Command="{Binding OpenGameDownloadsFolderCommand}"/>
                                     <Expander Header="More tools" Margin="4,10,4,0" Foreground="{StaticResource Text}">
                                         <StackPanel Margin="0,10,0,0">
-                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Install Mods from Inbox" Command="{Binding ProcessInboxCommand}"/>
                                             <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Find Mod Causing Startup Crash" Command="{Binding AutoDiagnoseCrashCommand}"/>
-                                            <Button Margin="0,0,0,7" HorizontalContentAlignment="Left" Content="Clean Up Duplicate Mods" Command="{Binding SmartCleanupCommand}"/>
                                             <Button Margin="0,0,0,7" HorizontalContentAlignment="Left"
                                     Content="Open Heaven.gg Game Hub" Command="{Binding OpenHeavenGameGuideCommand}"
                                     ToolTip="Opens a read-only public game guide in your browser; never changes local game files."
@@ -243,6 +270,15 @@
             </TabItem>
 
             <TabItem Header="Mods">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedLibraryItem.DisplayName, FallbackValue='Select a mod to see its sources and components.', TargetNullValue='Select a mod to see its sources and components.'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedLibraryItem.SourceSummary, StringFormat='Package sources: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedMod.PartsLabel, StringFormat='Components: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid HorizontalAlignment="Stretch">
                 <Grid Margin="8,6,8,6">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -267,7 +303,6 @@
                                    TextTrimming="CharacterEllipsis"
                                    ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <Button Content="Check Mod Info" Command="{Binding SyncMetadataCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Refresh mod names, artwork, known relationships, and update availability."/>
                             <Button Content="Bring In Manual Mods" Command="{Binding AdoptManualFilesCommand}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Copy unmanaged files from this game profile's configured mod folder into a tracked source package without modifying the live tree."/>
                         </StackPanel>
                     </Grid>
@@ -323,13 +358,11 @@
                                 <Button Content="{Binding SupersededViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Superseded" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show enabled mods whose files have been fully replaced."/>
                             </WrapPanel>
                             <WrapPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8,0,0" KeyboardNavigation.TabNavigation="Continue">
-                                <Button Content="Auto Populate" Command="{Binding AutoPopulateCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="0,0,12,0"
-                                        ToolTip="Import sorted Inbox packages, then enable and apply the largest safe compatible set of mods."/>
                                 <TextBlock Text="BULK · VISIBLE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Button Content="Select All" Command="{Binding EnableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
-                                        ToolTip="Stage enable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Select all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                        ToolTip="Enable mods shown by the current filters." AutomationProperties.Name="Select all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="Deselect All" Command="{Binding DisableVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
-                                        ToolTip="Stage disable for every mod shown by current filters; Apply Changes is separate." AutomationProperties.Name="Deselect all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                        ToolTip="Disable mods shown by the current filters." AutomationProperties.Name="Deselect all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5"
                                         ToolTip="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="Inspect Existing Mod Layouts" Command="{Binding InspectExistingModCollectionsCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="8,0,6,0"
@@ -404,7 +437,7 @@
                                                                     <Button Grid.Column="1" Margin="10,0,0,0" Content="Attach as add-on"
                                                                             Command="{Binding DataContext.ConfirmSuggestedFamilyCommand,RelativeSource={RelativeSource AncestorType=Window}}"
                                                                             CommandParameter="{Binding}"
-                                                                            ToolTip="Confirm a saved parent/add-on override relationship. Game files remain unchanged until Apply Changes."
+                                                                            ToolTip="Confirm a saved parent/add-on override relationship."
                                                                             AutomationProperties.Name="{Binding Title}"/>
                                                                 </Grid>
                                                             </DataTemplate>
@@ -440,8 +473,8 @@
                                                           IsThreeState="False"
                                                           HorizontalAlignment="Center"
                                                           AutomationProperties.Name="{Binding DisplayName}"
-                                                          AutomationProperties.HelpText="Stage this mod to be enabled or disabled. Game files stay unchanged until Apply Mod Changes."
-                                                          ToolTip="Stage this mod to be enabled or disabled. Game files stay unchanged until Apply Mod Changes. A partial state means only some add-ons or components are enabled."/>
+                                                          AutomationProperties.HelpText="Turn this mod on or off. Manager verifies and applies eligible changes automatically."
+                                                          ToolTip="Turn this mod on or off. Manager verifies and applies eligible changes automatically. A partial state means only some add-ons or components are enabled."/>
                                                 <TextBlock Margin="0,3,0,0"
                                                            Text="{Binding PendingStateLabel}"
                                                            Foreground="{StaticResource Warn}"
@@ -593,9 +626,9 @@
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding PlanPreviewText}"/>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="Review and retry" Command="{Binding ApplyCommand}" Visibility="{Binding ReviewRetryVisibility}" ToolTip="Review a held change and retry after resolving its cause."/>
                                 <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="See exactly what would change without editing game files." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Discard all pending enable/disable changes. Installed game files are not changed." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
-                                <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Safely install your pending mod changes. Ctrl+Enter." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Restore the previous applied mod setup. Ctrl+Z." AutomationProperties.Name="Undo Last Applied Change"/>
                             </StackPanel>
                         </Grid>
@@ -612,13 +645,47 @@
                         <StackPanel>
                             <TextBlock Text="{Binding CoverageTitle}" Style="{StaticResource PageTitle}"/>
                             <TextBlock Text="{Binding CoverageSubtitle}" Style="{StaticResource PageSubtitle}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <StackPanel.Style><Style TargetType="StackPanel"><Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSemanticCoverage}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                </Style.Triggers></Style></StackPanel.Style>
+                                <Button Content="View mod options" Command="{Binding SetModViewCommand}" CommandParameter="All"/>
+                                <Button Content="See shared files" Command="{Binding ShowOverlapsCommand}"/>
+                            </StackPanel>
                         </StackPanel>
-                        <Button Grid.Column="1" Content="Refresh coverage" Command="{Binding RefreshOutfitsCommand}" VerticalAlignment="Bottom"/>
+
                     </Grid>
                     <DataGrid Grid.Row="1" Margin="0,20,0,0" ItemsSource="{Binding OutfitRows}" SelectedItem="{Binding SelectedOutfit,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="88" RowDetailsVisibilityMode="VisibleWhenSelected">
                         <DataGrid.RowDetailsTemplate>
                             <DataTemplate>
                                 <Border Margin="126,4,18,12" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
+                                    <TabControl AutomationProperties.Name="Armor details and outfit options" SelectedIndex="{Binding DataContext.OutfitDetailsTab,RelativeSource={RelativeSource AncestorType=Window},Mode=TwoWay}">
+                                        <TabItem Header="Outfit options">
+                                            <StackPanel Margin="12">
+                                                <TextBlock Text="{Binding Armor}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Choosing an outfit enables its package and uses its model, materials and textures for the armor pieces it supplies." TextWrapping="Wrap"/>
+                                                <TextBlock Margin="0,6" Text="No indexed outfits are available for this armor.">
+                                                    <TextBlock.Style><Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers><DataTrigger Binding="{Binding Available}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                                    </Style></TextBlock.Style>
+                                                </TextBlock>
+                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                    <ItemsControl.ItemTemplate><DataTemplate>
+                                                        <DockPanel Margin="0,4">
+                                                            <Button DockPanel.Dock="Right" Content="Use outfit" Command="{Binding DataContext.ChooseOutfitCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding DisplayName,StringFormat='Use outfit {0}'}"/>
+                                                            <StackPanel><TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                                                <TextBlock Text="{Binding Summary}" TextWrapping="Wrap"/>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                    </DataTemplate></ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <Button Content="Use normal load order" HorizontalAlignment="Left" IsEnabled="{Binding HasPreference}"
+                                                        ToolTip="Remove the preference for this armor. Enabled packages stay available."
+                                                        Command="{Binding DataContext.ClearOutfitChoiceCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                            </StackPanel>
+                                        </TabItem>
+                                        <TabItem Header="Details">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="270"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <Border Width="250" Height="160" CornerRadius="7" Background="#090D12" BorderBrush="{StaticResource Border}" BorderThickness="1" ClipToBounds="True" HorizontalAlignment="Left">
@@ -636,6 +703,8 @@
                                             <TextBlock Margin="0,3,0,0" Text="{Binding WinningPieces}" TextWrapping="Wrap" Foreground="{StaticResource Muted}"/>
                                         </StackPanel>
                                     </Grid>
+                                        </TabItem>
+                                    </TabControl>
                                 </Border>
                             </DataTemplate>
                         </DataGrid.RowDetailsTemplate>
@@ -654,7 +723,12 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="ARMOR" Binding="{Binding Armor}" Width="1.8*"/>
                             <DataGridTextColumn Header="MODEL" Binding="{Binding ModelId}" Width="110"/>
-                            <DataGridTextColumn Header="OPTIONS" Binding="{Binding Available}" Width="90"/>
+                            <DataGridTemplateColumn Header="OPTIONS" Width="135">
+                                <DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                    <Button Content="{Binding OptionsLabel}" AutomationProperties.Name="{Binding Armor,StringFormat='View outfits for {0}'}"
+                                            Command="{Binding DataContext.ShowOutfitOptionsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                </DataTemplate></DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="2*"/>
                             <DataGridTextColumn Header="USED PIECES" Binding="{Binding WinningPieces}" Width="1.4*"/>
                             <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="120"/>
@@ -664,6 +738,15 @@
             </TabItem>
 
             <TabItem Header="Needs attention">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedConflict.Scope, FallbackValue='Select a conflict to see its evidence.', TargetNullValue='Select a conflict to see its evidence.', StringFormat='Affected files: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedConflict.Providers, StringFormat='Providers: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedConflict.Evidence, StringFormat='Evidence: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid>
@@ -794,6 +877,15 @@
             </TabItem>
 
             <TabItem Header="Profiles">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedProfile.Name, FallbackValue='Select a saved profile to see its details.', TargetNullValue='Select a saved profile to see its details.', StringFormat='Profile: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedProfile.EnabledMods, StringFormat='Enabled mods: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedProfile.UpdatedAt, StringFormat='Last updated: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <StackPanel>
@@ -807,7 +899,6 @@
                             <Button Grid.Column="1" Margin="8,0,0,0" Content="Save Current Setup" Command="{Binding SaveProfileCommand}" Style="{StaticResource PrimaryButton}"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                 <Button Content="Use Selected Profile" Command="{Binding StageProfileCommand}"/>
-                                <Button Content="Refresh" Command="{Binding RefreshProfilesCommand}" Style="{StaticResource QuietButton}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -841,6 +932,15 @@
             </TabItem>
 
             <TabItem Header="History">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedActivity.Description, FallbackValue='Select an activity to see its support ID.', TargetNullValue='Select an activity to see its support ID.', StringFormat='Action: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedActivity.State, StringFormat='Status: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedActivity.Id, StringFormat='Support ID: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid>
@@ -850,7 +950,6 @@
                             <TextBlock Text="See what the manager changed and create diagnostics only when you need support." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Refresh" Command="{Binding RefreshActivityCommand}" Style="{StaticResource QuietButton}"/>
                             <Button Content="Collect Diagnostics" Command="{Binding CaptureDiagnosticsCommand}"/>
                             <Button Content="View Log" Command="{Binding OpenMasterLogCommand}"
                                     ToolTip="Open local debug log; review private mod paths before sharing."/>
@@ -860,7 +959,7 @@
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1" Margin="0,20,0,10">
-                        <DataGrid ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
+                        <DataGrid SelectedItem="{Binding SelectedActivity,Mode=TwoWay}" ItemsSource="{Binding ActivityRows}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.Name="Recent activity">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="WHEN" Binding="{Binding Started}" Width="190"/>
                                 <DataGridTextColumn Header="STATUS" Binding="{Binding State}" Width="120"/>
@@ -886,6 +985,24 @@
             </TabItem>
 
             <TabItem Header="Shared Files">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedOverlap.PrimaryPath, FallbackValue='Select a shared file to see its path and providers.', TargetNullValue='Select a shared file to see its path and providers.', StringFormat='File: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedOverlap.Providers, StringFormat='Providers: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedOverlap.Detail, StringFormat='Result: {0}'}"/>
+                            <Button Content="Explain selected file" Command="{Binding ExplainSelectedOverlapCommand}" HorizontalAlignment="Left">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedOverlap}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -909,7 +1026,6 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Content="Why This Mod Wins" Command="{Binding ExplainSelectedOverlapCommand}" ToolTip="Explain which mod supplies this shared file and why. Technical evidence is included below."/>
-                            <Button Content="Refresh analysis" Command="{Binding RefreshAnalysisNowCommand}" ToolTip="F5"/>
                         </StackPanel>
                     </Grid>
 
@@ -1014,6 +1130,15 @@
             </TabItem>
 
             <TabItem Header="Settings">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=CurrentProgramBuildText, StringFormat='Installed build: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=ProgramUpdateStatus, StringFormat='Update status: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=StorageStatusText, StringFormat='Storage: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="32,30,36,36" MaxWidth="980" HorizontalAlignment="Left">
                         <StackPanel>
@@ -1135,10 +1260,6 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                    <Button Content="Measure storage"
-                                            Command="{Binding RefreshStorageUsageCommand}"
-                                            Style="{StaticResource QuietButton}"
-                                            AutomationProperties.Name="Measure manager storage"/>
                                     <Button Margin="8,0,0,0"
                                             Content="Reclaim disposable storage"
                                             Command="{Binding ReclaimDisposableStorageCommand}"
@@ -1164,6 +1285,24 @@
 
 
             <TabItem Header="Browse Mods">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedCatalogItem.Provider, FallbackValue='Select a catalog item to see its source and install options.', TargetNullValue='Select a catalog item to see its source and install options.', StringFormat='Catalog provider: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedCatalogItem.Name, StringFormat='Mod: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=CatalogInstallGuidance, StringFormat='Install options: {0}'}"/>
+                            <Button Content="Show provider files" Command="{Binding LoadCatalogFilesCommand}" HorizontalAlignment="Left">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedCatalogItem}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <Grid Margin="24,22,28,24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -1181,7 +1320,6 @@
                             <TextBlock Text="Search cached provider metadata, refresh supported sources, and install only an exact file you choose." Style="{StaticResource PageSubtitle}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <Button Content="Check Installed Origins" Command="{Binding CheckCatalogUpdatesCommand}" Style="{StaticResource QuietButton}"/>
                             <Button Content="More Cached"
                                     Command="{Binding LoadMoreCachedCatalogCommand}"
                                     Visibility="{Binding CatalogLoadMoreCachedVisibility}"
@@ -1200,7 +1338,6 @@
                                     AutomationProperties.Name="Index all available mods"
                                     ToolTip="Follow every supported provider continuation until all currently enumerable mods are stored in the local catalogue."
                                     Style="{StaticResource QuietButton}"/>
-                            <Button Content="Refresh Providers" Command="{Binding RefreshCatalogCommand}" Style="{StaticResource PrimaryButton}"/>
                         </StackPanel>
                     </Grid>
 
@@ -1367,11 +1504,6 @@
                                                    TextAlignment="Center"
                                                    TextWrapping="Wrap"/>
                                         <StackPanel Margin="0,14,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <Button Content="Refresh Providers"
-                                                    Command="{Binding RefreshCatalogCommand}"
-                                                    Visibility="{Binding CatalogRefreshEmptyVisibility}"
-                                                    Style="{StaticResource PrimaryButton}"
-                                                    AutomationProperties.Name="Refresh catalog providers"/>
                                             <Button Content="Clear Search"
                                                     Command="{Binding ClearCatalogSearchCommand}"
                                                     Visibility="{Binding CatalogClearSearchVisibility}"
@@ -1574,13 +1706,22 @@
             </TabItem>
 
             <TabItem Header="Installed files">
+                <TabItem.Tag>
+                    <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedInstalledFile.Evidence, FallbackValue='Select an installed file to see its evidence and location.', TargetNullValue='Select an installed file to see its evidence and location.', StringFormat='Evidence: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedInstalledFile.Location, StringFormat='File location: {0}'}"/>
+                            <TextBox Style="{StaticResource ContextDetailLine}" Text="{Binding Mode=OneWay, Path=SelectedInstalledFile.InstallationRoot, StringFormat='Registered installation: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabItem.Tag>
                 <DockPanel Margin="8">
                     <TextBlock DockPanel.Dock="Top" Text="{Binding LocalModInventoryStatus}" Margin="0,0,0,8"/>
                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                         <Label Target="{Binding ElementName=LocalModSearch}" Content="Search installed files across all games"/>
                         <TextBox x:Name="LocalModSearch" Text="{Binding LocalModQuery, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
-                    <DataGrid ItemsSource="{Binding VisibleLocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                    <DataGrid SelectedItem="{Binding SelectedInstalledFile,Mode=TwoWay}" ItemsSource="{Binding VisibleLocalModLocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Game" Binding="{Binding Game}"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>

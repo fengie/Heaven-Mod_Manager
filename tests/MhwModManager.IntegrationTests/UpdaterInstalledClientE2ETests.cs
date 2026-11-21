@@ -178,7 +178,7 @@ public sealed class UpdaterInstalledClientE2ETests
                 healthBuild = confirmed.Health.BuildNumber,
                 healthSource = confirmed.Health.SourceSha,
                 selectorDisplayText = selectorUi.DisplayText,
-                switchButtonEnabled = selectorUi.SwitchButtonEnabled,
+                gameSelectorEnabled = selectorUi.GameSelectorEnabled,
                 settingsButtonEnabled = selectorUi.SettingsButtonEnabled,
                 journalPhase = confirmed.Journal.Phase.ToString(),
                 sentinelSha256 = successSentinelsAfter
@@ -426,7 +426,7 @@ public sealed class UpdaterInstalledClientE2ETests
                                    current.AutomationId,
                                    ActiveGameSelectorAutomationId,
                                    StringComparison.Ordinal)
-                               || (current.ControlType == ControlType.ComboBox
+                               || ((current.ControlType == ControlType.MenuItem || current.ControlType == ControlType.ComboBox)
                                    && string.Equals(
                                        current.Name,
                                        ActiveGameSelectorAutomationName,
@@ -440,9 +440,10 @@ public sealed class UpdaterInstalledClientE2ETests
                         $"Window UIA: {DescribeRawSubtree(window)}");
 
                 var selectorCurrent = selector.Current;
-                if (selectorCurrent.ControlType != ControlType.ComboBox)
+                var legacyPicker = selectorCurrent.ControlType == ControlType.ComboBox;
+                if (selectorCurrent.ControlType != ControlType.MenuItem && !legacyPicker)
                     throw new InvalidOperationException(
-                        $"Installed selector had control type '{selectorCurrent.ControlType.ProgrammaticName}' instead of ComboBox.");
+                        $"Installed selector had control type '{selectorCurrent.ControlType.ProgrammaticName}' instead of a current or legacy game picker.");
 
                 if (selectorCurrent.IsOffscreen || selectorCurrent.BoundingRectangle.IsEmpty)
                     throw new InvalidOperationException(
@@ -469,10 +470,12 @@ public sealed class UpdaterInstalledClientE2ETests
                         $"expected '{expectedDisplayName}'. Selector UIA: {DescribeRawSubtree(selector)}");
                 }
 
-                var switchButton = FindNamedButton(window, "Switch");
-                if (switchButton is null || !switchButton.Current.IsEnabled)
-                    throw new InvalidOperationException(
-                        "Installed selector acceptance could not find an enabled Switch button.");
+                if (!selectorCurrent.IsEnabled || !selector.TryGetCurrentPattern(ExpandCollapsePattern.Pattern, out _))
+                    throw new InvalidOperationException("The installed game picker cannot be opened.");
+
+                // Older immutable updater targets (including the pinned hosted probe) use two controls.
+                if (legacyPicker && FindNamedButton(window, "Switch")?.Current.IsEnabled != true)
+                    throw new InvalidOperationException("The legacy game picker has no enabled Switch action.");
 
                 var settingsButton = FindNamedButton(window, "Settings");
                 if (settingsButton is null || !settingsButton.Current.IsEnabled)
@@ -485,7 +488,7 @@ public sealed class UpdaterInstalledClientE2ETests
 
                 return new SelectorUiEvidence(
                     confirmedDisplayText,
-                    switchButton.Current.IsEnabled,
+                    selectorCurrent.IsEnabled,
                     settingsButton.Current.IsEnabled);
             }
             catch (Exception ex) when (
@@ -1051,7 +1054,7 @@ public sealed class UpdaterInstalledClientE2ETests
 
     private sealed record SelectorUiEvidence(
         string DisplayText,
-        bool SwitchButtonEnabled,
+        bool GameSelectorEnabled,
         bool SettingsButtonEnabled);
     private sealed record DownloadedRelease(UpdateManifest Manifest, string ArchivePath);
     private sealed record ReleaseAsset(string Name, string ApiUrl, long Size, string? Digest);

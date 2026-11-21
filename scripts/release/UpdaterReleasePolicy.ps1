@@ -305,7 +305,9 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
   $healthSource=& $requiredSha $scenarioA 'healthSource'
   $oldClientExitCode=[int](& $requiredProperty $scenarioA 'oldClientExitCode')
   $selectorDisplayText=[string](& $requiredProperty $scenarioA 'selectorDisplayText')
-  $switchButtonEnabled=[bool](& $requiredProperty $scenarioA 'switchButtonEnabled')
+  # Older immutable targets recorded the separate Switch button as their activation control.
+  $selectorField=if($null -ne $scenarioA.PSObject.Properties['gameSelectorEnabled']){'gameSelectorEnabled'}else{'switchButtonEnabled'}
+  $gameSelectorEnabled=& $requiredProperty $scenarioA $selectorField
   $settingsButtonEnabled=[bool](& $requiredProperty $scenarioA 'settingsButtonEnabled')
   $scenarioAJournalPhase=[string](& $requiredProperty $scenarioA 'journalPhase')
   if($scenarioATargetBuild -ne $targetBuild -or
@@ -314,7 +316,7 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
      -not [string]::Equals($healthSource,$targetSource,[StringComparison]::OrdinalIgnoreCase) -or
      $oldClientExitCode -ne 0 -or
      $selectorDisplayText -ne 'Updater E2E Fake Game' -or
-     -not $switchButtonEnabled -or
+     ($gameSelectorEnabled -isnot [bool] -or -not $gameSelectorEnabled) -or
      -not $settingsButtonEnabled -or
      $scenarioAJournalPhase -ne 'Confirmed'){
     throw 'Updater installed-client E2E update evidence failed durable-attestation validation.'
@@ -361,7 +363,7 @@ function ConvertTo-UpdaterInstalledClientDurableEvidenceJson {
       healthBuild=$healthBuild
       healthSource=$healthSource
       selectorDisplayText='Updater E2E Fake Game'
-      switchButtonEnabled=$true
+      gameSelectorEnabled=$true
       settingsButtonEnabled=$true
       journalPhase='Confirmed'
       sentinelSha256=$scenarioAHashes

@@ -67,13 +67,48 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var search = await WaitForElementAsync(() => Find(window, e =>
                 e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods"), UiTimeout, "Mods search", ct);
             ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).SetValue(name);
-            var box = await WaitForElementAsync(() => Find(window, e =>
-                e.Current.ControlType == ControlType.CheckBox && e.Current.Name == name), UiTimeout, "family " + name, ct);
-            var row = box;
-            while (row is not null && row.Current.ControlType != ControlType.DataItem)
-                row = TreeWalker.RawViewWalker.GetParent(row);
-            Assert.NotNull(row);
-            ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+            try
+            {
+                await WaitForElementAsync(() =>
+                {
+                    var row = Find(window, e => e.Current.ControlType == ControlType.CheckBox && e.Current.Name == name);
+                    while (row is not null && row.Current.ControlType != ControlType.DataItem)
+                        row = TreeWalker.RawViewWalker.GetParent(row);
+                    if (row is null || !row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var pattern)) return null;
+                    var selection = (SelectionItemPattern)pattern;
+                    if (!selection.Current.IsSelected) selection.Select();
+                    return selection.Current.IsSelected ? row : null;
+                }, UiTimeout, "family " + name, ct);
+            }
+            catch (TimeoutException error)
+            {
+                string state;
+                try
+                {
+                    var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
+                    var query = currentSearch?.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+                    var grid = Find(window, e => e.Current.ControlType == ControlType.DataGrid && e.Current.Name == "Mod library");
+                    var realized = grid?.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)).Count;
+                    var windows = AutomationElement.RootElement.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id))
+                        .Cast<AutomationElement>().Take(6).Select(e => e.Current.ClassName + " " + e.Current.Name).ToArray();
+                    var catalog = run.OpenCatalog();
+                    await using var pool = await catalog.OpenAsync(ct);
+                    try
+                    {
+                        var mods = await catalog.GetModsAsync(ct);
+                        var files = await catalog.GetModFilesAsync(ct);
+                        var families = LogicalModFamilies.Build(mods, files, run.FirstGame);
+                        var matching = families.Where(f => f.DisplayName == name).ToArray();
+                        state = $"Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
+                            $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
+                            $"catalog families={families.Count}, matching families={matching.Length}, matching members={matching.Sum(f => f.Members.Count)}, " +
+                            $"owned windows=[{string.Join(" | ", windows)}]";
+                    }
+                    finally { Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool); }
+                }
+                catch (Exception diagnosticFailure) { state = $"Diagnostic read failed ({diagnosticFailure.GetType().Name})"; }
+                throw new TimeoutException($"{error.Message}. {state}.", error);
+            }
         }
         async Task<TogglePattern> Part(string name)
         {
@@ -84,25 +119,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         async Task Expect(string name, bool on) =>
             Assert.Equal(on ? ToggleState.On : ToggleState.Off, (await Part(name)).Current.ToggleState);
 
-        async Task Preview(int add, int replace)
-        {
-            await SelectModsTabAsync(window, ct);
-            Invoke(await WaitForElementAsync(() => FindButton(window, "Preview Mod Changes", enabled: true), UiTimeout, "preview family", ct));
-            await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
-                e.Current.Name.StartsWith("Dry run passed.", StringComparison.Ordinal) &&
-                e.Current.Name.Contains($"{add} add", StringComparison.Ordinal) &&
-                e.Current.Name.Contains($"{replace} replace", StringComparison.Ordinal) &&
-                e.Current.Name.Contains("0 remove", StringComparison.Ordinal) && e.Current.Name.Contains("0 restore", StringComparison.Ordinal)),
-                UiTimeout, "exact selected family plan", ct);
-        }
-        async Task Apply()
-        {
-            Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Changes", enabled: true),
-                UiTimeout, "apply selected family parts", ct));
-            await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
-                e.Current.Name.StartsWith("Applying Mod Changes finished in", StringComparison.Ordinal)),
-                UiTimeout, "family deployment completed", ct);
-        }
         async Task VerifyFiles(string label, bool lantern)
         {
             var expected = ChoiceFiles.ToDictionary(file => Path.Combine(mount, file),
@@ -125,6 +141,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("NO_Cape", false);
         await Expect("WITH_Cape", true);
 
+        await WaitForAsync(() => ChoiceFiles.All(file =>
+            File.Exists(Path.Combine(mount, file)) &&
+            File.ReadAllBytes(Path.Combine(mount, file)).SequenceEqual(original[Path.Combine(run.InstalledRoot, ChoiceTitle, "WITH_Cape", file)])),
+            UiTimeout, "automatic apply committed the selected Cape files before choosing another family", ct);
+
         await OpenFamily(AddonTitle);
         (await Part("Main")).Toggle();
         (await Part("Compass")).Toggle();
@@ -133,9 +154,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("Lantern", true);
         (await Part("Lantern")).Toggle();
         await Expect("Compass", true);
-        await Preview(5, 0);
-        Assert.Equal(baseline, Directory.GetFiles(gameRoot, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
-        await Apply();
         await VerifyFiles("WITH_Cape", false);
 
         // Process.MainWindowHandle can still refer to the startup splash. Close the
@@ -173,14 +191,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("Main", true);
         await Expect("Compass", true);
         await Expect("Lantern", false);
+        await VerifyFiles("NO_Cape", false);
         (await Part("Lantern")).Toggle();
-        await Preview(1, 3);
-        await VerifyFiles("WITH_Cape", false);
-        await Apply();
         await VerifyFiles("NO_Cape", true);
         await SelectModsTabAsync(window, ct);
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true), UiTimeout, "undo family choice", ct));
-        await VerifyFiles("WITH_Cape", false);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true), UiTimeout, "undo last family choice", ct));
+        await VerifyFiles("NO_Cape", false);
         foreach (var source in original) Assert.Equal(source.Value, File.ReadAllBytes(source.Key));
     }
 }

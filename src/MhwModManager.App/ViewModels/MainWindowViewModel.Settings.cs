@@ -52,7 +52,7 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty] private string legalStatusText =
         "Privacy, legal, support, and local-data controls are bundled with this release.";
 
-    private bool storageUsageLoaded;
+    private long lastStorageMeasurement;
 
     public ObservableRangeCollection<StorageCategoryRow> StorageCategories { get; } = [];
 
@@ -207,12 +207,12 @@ public sealed partial class MainWindowViewModel
     private async Task EnsureStorageUsageLoadedAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (storageUsageLoaded) return;
+        if (lastStorageMeasurement!=0 && Stopwatch.GetElapsedTime(lastStorageMeasurement)<TimeSpan.FromMinutes(1)) return;
 
         try
         {
             await RefreshStorageUsageCoreAsync(ct);
-            storageUsageLoaded = true;
+            lastStorageMeasurement = Stopwatch.GetTimestamp();
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -226,22 +226,6 @@ public sealed partial class MainWindowViewModel
                 "Initial storage measurement failed.",
                 ex);
         }
-    }
-
-    [RelayCommand]
-    private async Task RefreshStorageUsage()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunBusy(
-            "storage.measure",
-            "Measuring manager storage",
-            "Reading manager-owned storage roots without changing files…",
-            true,
-            async ct =>
-            {
-                await RefreshStorageUsageCoreAsync(ct);
-                storageUsageLoaded = true;
-            });
     }
 
     [RelayCommand]

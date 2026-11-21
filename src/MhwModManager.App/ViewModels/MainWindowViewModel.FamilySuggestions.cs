@@ -52,7 +52,7 @@ public sealed partial class MainWindowViewModel
                 $"Current overlapping target paths ({sharedPaths.Length}):\n" +
                 string.Join("\n", sharedPaths) + "\n\n" +
                 "IMPORTANT: This creates explicit MOD-WIDE overwrite precedence for these packages, including any new overlapping files imported later. " +
-                "Matching paths alone do not prove compatibility. No game files are changed until Apply Changes.\n\nContinue?",
+                "Manager will check this choice and apply compatible changes.\n\nContinue?",
                 "Review complete family overwrite scope",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning) != MessageBoxResult.Yes)
@@ -116,7 +116,8 @@ public sealed partial class MainWindowViewModel
                 }
 
                 await RefreshAnalysis(ct);
-                StatusText = $"Linked '{childRow.DisplayName}' as an add-on of '{parentRow.DisplayName}'. Apply Changes is still required to change installed game files.";
+                StatusText = $"Linked '{childRow.DisplayName}' as an add-on of '{parentRow.DisplayName}'. Manager will check the resulting file choices.";
+                RequestRuleApply();
                 await s.Timeline.RecordAsync("family.suggestion-confirmed", AutomationSeverity.Info,
                     $"User confirmed a suggested family relationship: {childRow.DisplayName} under {parentRow.DisplayName}.",
                     new { familyId, selection.ParentId, selection.ChildId, selection.Score }, ct);

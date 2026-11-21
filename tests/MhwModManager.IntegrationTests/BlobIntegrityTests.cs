@@ -68,6 +68,31 @@ public sealed class BlobIntegrityTests : IDisposable
         Assert.Empty(Directory.EnumerateFiles(root, "*.mhwmm.tmp"));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4095)]
+    [InlineData(4096)]
+    [InlineData(4097)]
+    [InlineData(1048593)]
+    public async Task Capture_and_existing_blob_verification_preserve_every_buffer_boundary(int length)
+    {
+        Directory.CreateDirectory(root);
+        var bytes=new byte[length];
+        new Random(36).NextBytes(bytes);
+        var source=Path.Combine(root,"fixture.tex");
+        await File.WriteAllBytesAsync(source,bytes,TestToken);
+        var store=new BlobStore(Path.Combine(root,"blobs"),new ManagerDatabase(Path.Combine(root,"fixture.db")));
+        var expected=Convert.ToHexStringLower(SHA256.HashData(bytes));
+        for (var pass=0; pass<2; pass++)
+        {
+            var captured=await store.CaptureWithHashAsync(source,false,TestToken);
+            Assert.Equal(expected,captured.Sha256);
+            Assert.Equal(length,captured.Length);
+        }
+        Assert.Equal(bytes,await File.ReadAllBytesAsync(store.PathFor(expected),TestToken));
+        Assert.Single(Directory.EnumerateFiles(store.Root));
+    }
+
     [Fact]
     public async Task Concurrent_valid_captures_converge_and_restore_the_expected_bytes()
     {

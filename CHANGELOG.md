@@ -1,3 +1,9 @@
+# v8.8.137 — November 21, 2026
+
+- Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.
+- In Monster Hunter: World, open Coverage and choose an outfit for an armor set. Manager resolves all affected pieces together, preserves unrelated pieces and records the change for Undo.
+- Opening or returning to a page refreshes its information. Profiles and History pick up changes made while hidden, and Settings and Browse reuse recent measurements and provider results.
+
 # v8.8.136 — November 21, 2026
 
 - Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)

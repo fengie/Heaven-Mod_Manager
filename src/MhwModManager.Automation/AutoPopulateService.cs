@@ -16,7 +16,10 @@ public sealed record AutoPopulateResult(
     string Summary,
     int PlannerPasses = 0,
     int PlannerFastPathCandidates = 0,
-    double PlannerMilliseconds = 0);
+    double PlannerMilliseconds = 0)
+{
+    public IReadOnlyCollection<string> SharedExportIds { get; init; } = [];
+}
 
 internal sealed record ModDependencyRequirement(
     string Token,
@@ -916,7 +919,7 @@ public sealed class AutoPopulateService(
             summary,
             plannerPasses,
             plannerFastPathCandidates,
-            plannerElapsed.TotalMilliseconds);
+            plannerElapsed.TotalMilliseconds) { SharedExportIds = exports.SharedWith.Keys.ToArray() };
     }
 
     private ClosureResult ResolveClosure(

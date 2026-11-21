@@ -55,7 +55,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         toggle.Toggle();
         await WaitForAsync(() => toggle.Current.ToggleState == ToggleState.Off, UiTimeout, "staged mod disable", ct);
 
+        // A second writer changes the disposable catalog while Profiles is hidden.
+        // Returning to the page must discover the new row without any repair command.
+        var externalProfile = "Imported setup " + game.Id;
+        await new MhwModManager.Storage.ProfileRepository(run.OpenCatalog()).SaveCurrentAsync(externalProfile, ct);
         await SelectTab("Profiles");
+        var revisitedProfiles = await Grid("Saved profiles");
+        await WaitForElementAsync(() => Find(revisitedProfiles, item => item.Current.Name == externalProfile),
+            UiTimeout, "profile saved while page was hidden", ct);
         AutomationElement? SavedRow()
         {
             var current = Find(window, item => item.Current.ControlType == ControlType.DataGrid &&
@@ -69,7 +76,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         }
         var row = await WaitForElementAsync(SavedRow, UiTimeout, "named saved profile", ct);
         ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
-        Invoke(await Button("Refresh"));
+        await SelectTab("History");
+        await SelectTab("Profiles");
         await WaitForAsync(() => SavedRow() is { } saved &&
             ((SelectionItemPattern)saved.GetCurrentPattern(SelectionItemPattern.Pattern)).Current.IsSelected,
             UiTimeout, "refresh preserves selected saved profile", ct);
@@ -81,7 +89,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Refresh and use saved profile to restore enabled selection");
 
         await SelectTab("History");
-        Invoke(await Button("Refresh"));
         var history = await Grid("Recent activity");
         await WaitForElementAsync(() => Find(history, item => item.Current.ControlType == ControlType.DataItem &&
             Find(item, cell => cell.Current.Name.Contains("staged mod-state change", StringComparison.Ordinal)) is not null &&
@@ -150,7 +157,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 UiTimeout, label + " restored", ct);
             passed.Add("Persist and restore " + label);
         }
-        Invoke(await Button("Measure manager storage"));
         await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
             e.Current.Name.StartsWith("Storage totals refreshed", StringComparison.Ordinal)), UiTimeout, "storage measurement", ct);
         passed.Add("Measure manager storage");
@@ -175,14 +181,24 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Filter installed file evidence across both registered game folders");
 
         await SelectTab(game.SupportsSemanticCoverage ? "Outfits" : "Coverage");
-        Invoke(await Button("Refresh coverage"));
         if (game.SupportsSemanticCoverage)
         {
-            await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.DataItem &&
+            var leather = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.DataItem &&
                 Find(item, cell => cell.Current.Name == "Leather") is not null &&
                 Find(item, cell => cell.Current.Name == "pl001_0000") is not null),
                 UiTimeout, "indexed armor name and model ID in the same row", ct);
-            passed.Add("Refresh outfit coverage and verify Leather model pl001_0000");
+            Invoke(await WaitForElementAsync(() => FindButton(leather,"View outfits for Leather",enabled:true),UiTimeout,"Leather options",ct));
+            await SelectTab("Details");
+            await WaitForElementAsync(() => Find(window,item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name=="Winning pieces"),UiTimeout,"armor details",ct);
+            await SelectTab("Outfit options");
+            Invoke(await Button("Use outfit " + fixtureMod));
+            await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name.Contains("Preferred outfit",StringComparison.Ordinal)),UiTimeout,"saved Leather outfit",ct);
+            Assert.Equal(run.ModBytes,File.ReadAllBytes(run.LiveModPath));
+            Invoke(await Button("Use normal load order"));
+            await WaitForAsync(() => FindButton(window,"Use normal load order") is { Current.IsEnabled: false },UiTimeout,"cleared Leather preference",ct);
+            passed.Add("Choose and clear the Leather outfit from Coverage and verify installed bytes");
         }
         else
         {
@@ -190,7 +206,9 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 item.Current.Name.StartsWith("Detailed game-specific coverage is not available", StringComparison.Ordinal)),
                 UiTimeout, "unsupported semantic coverage explanation", ct);
             Assert.Null(Find(window, item => item.Current.ControlType == ControlType.DataItem));
-            passed.Add("Refresh generic coverage and verify unsupported semantic rows stay empty");
+            Invoke(await Button("See shared files"));
+            await Button("Why This Mod Wins");
+            passed.Add("Open generic coverage and inspect shared files");
         }
         await ExerciseFilteredLibraryActionsAsync(run, window, passed, ct);
         await ExerciseWorkflowActionsAsync(run, window, passed, ct);
@@ -207,6 +225,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var alternateLive = Path.Combine(Path.GetDirectoryName(run.LiveModPath)!, "independent-" + Path.GetFileName(run.LiveModPath));
         var relative = Path.GetRelativePath(run.FirstGame.GameRoot, alternateLive).Replace(Path.DirectorySeparatorChar, '/');
         byte[] payload = [21, 41, 67, 101, 149];
+        if (Path.GetExtension(alternateLive).Equals(".tex", StringComparison.OrdinalIgnoreCase)) payload = FixtureTexture(payload);
         using (var zip = System.IO.Compression.ZipFile.Open(archive, System.IO.Compression.ZipArchiveMode.Create))
         using (var stream = zip.CreateEntry(relative).Open())
             stream.Write(payload);
@@ -219,6 +238,10 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         filter.SetValue(alternateName);
         ToggleState? ReadToggle(string name) => FindModToggle(window, name) is { } checkbox
             ? ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState : null;
+        await WaitForAsync(()=>File.Exists(alternateLive) && File.ReadAllBytes(alternateLive).SequenceEqual(payload),UiTimeout,"second package automatically active",ct);
+        var alternate=await WaitForElementAsync(()=>FindModToggle(window,alternateName),UiTimeout,"new package",ct);
+        ((TogglePattern)alternate.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        await WaitForAsync(()=>!File.Exists(alternateLive),UiTimeout,"user disabled second package",ct);
         await WaitForAsync(() => ReadToggle(alternateName) == ToggleState.Off && ReadToggle(primaryName) is null,
             UiTimeout, "only independent disabled package visible", ct);
         async Task<AutomationElement> Button(string label) => await WaitForElementAsync(
@@ -231,7 +254,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var mod = Assert.Single(await db.GetModsAsync(ct), item => item.DisplayName == alternateName);
             await db.ReplaceModFilesAsync(mod.Id, [], ct);
             Assert.DoesNotContain(await db.GetModFilesAsync(ct), row => row.ModId == mod.Id);
-            Invoke(await Button("Refresh 1 visible mod"));
+            Invoke(await Button("Rebuild index for 1 visible mod"));
             var wantHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(payload));
             await WaitForAsync(() => db.GetModFilesAsync(ct).GetAwaiter().GetResult().Any(row =>
                 row.ModId == mod.Id && row.BlobSha256 == wantHash && row.Length == payload.Length &&
@@ -266,15 +289,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Answer("Select all visible mods", "Enable visible mods", "Yes");
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.On,
             UiTimeout, "both packages staged on", ct);
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"confirmed bulk additions reached disk",ct);
         await Answer("Deselect all visible mods", "Disable visible mods", "Yes");
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.Off && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages staged off", ct);
-        await Answer("Discard Pending Changes", "Discard pending changes", "No");
-        Assert.Equal(ToggleState.Off, ReadToggle(primaryName));
-        await Answer("Discard Pending Changes", "Discard pending changes", "Yes");
-        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
-            UiTimeout, "discard restores independently deployed choices", ct);
-        passed.Add("Cancel and confirm bulk selection, deselect both, and cancel and confirm discard");
+        await WaitForAsync(()=>!File.Exists(run.LiveModPath)&&!File.Exists(alternateLive),UiTimeout,"confirmed bulk disable reached disk",ct);
+        Invoke(await Button("Undo Last Applied Change"));
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"Undo restored both installed mods",ct);
+        passed.Add("Cancel and confirm bulk selection, disable both, and undo the applied change");
 
         const string review = "Existing mod layouts — read-only preview";
         var inspect = await Button("Inspect nested mod package layouts without making changes");
@@ -290,8 +312,19 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Assert.Equal(alternateHash, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(archive)));
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
-        Assert.False(File.Exists(alternateLive));
+        Assert.Equal(payload, File.ReadAllBytes(alternateLive));
         passed.Add("Inspect two package layouts, close preview and preserve archives, deployed and unmanaged files");
+
+        // Vanilla-launch verification later distinguishes saved choices from deployed files.
+        // Disable only the alternate through the normal UI after proving Undo restored it.
+        var restored = await WaitForElementAsync(() => FindModToggle(window, alternateName),
+            UiTimeout, "restored alternate mod", ct);
+        var restoredToggle = (TogglePattern)restored.GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, restoredToggle.Current.ToggleState);
+        restoredToggle.Toggle();
+        await WaitForAsync(() => !File.Exists(alternateLive) && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "alternate disabled for vanilla-launch control", ct);
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
     }
 
     private static AutomationElement? FindProcessDialog(int pid, string title)
