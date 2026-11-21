@@ -6,6 +6,25 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var enabled = snapshot.Mods.Where(m => m.Enabled && !m.IsSuperseded).ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
+        foreach (var family in snapshot.Mods.Where(mod=>mod.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)
+            .GroupBy(mod=>mod.FamilyId!))
+        {
+            var main = family.FirstOrDefault(mod=>mod.FamilyRole=="Main");
+            if (main is not null && !enabled.ContainsKey(main.Id) && family.Any(mod=>mod.FamilyRole=="Optional" && enabled.ContainsKey(mod.Id)))
+                return new(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,[],[new ConflictDecision("<family>",
+                    ConflictKind.Incompatible,true,null,"required-package-base",$"Enable the main package '{main.DisplayName}' with its optional overlay.",Confidence.Explicit)],[]);
+            if (family.Any(mod=>mod.RequiresLayoutReview && enabled.ContainsKey(mod.Id)))
+                return new(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,[],[new ConflictDecision("<family>",
+                    ConflictKind.Incompatible,true,null,"changed-package-layout","Review the changed authored package before deployment.",Confidence.Explicit)],[]);
+        }
+        var conflictingChoices = enabled.Values.Where(mod => !string.IsNullOrWhiteSpace(mod.FamilyId) &&
+                !string.IsNullOrWhiteSpace(mod.ChoiceGroup)).GroupBy(mod => (mod.FamilyId, mod.ChoiceGroup))
+            .Where(group => group.Count() > 1).Select(group => new ConflictDecision("<family>",
+                ConflictKind.Incompatible, true, null, "exclusive-family-choice",
+                $"Choose one option in '{group.Key.ChoiceGroup}': {string.Join(", ", group.Select(mod => mod.DisplayName))}.",
+                Confidence.Explicit)).ToArray();
+        if (conflictingChoices.Length != 0)
+            return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [], conflictingChoices, []);
         // PairKey lowercases both IDs on every call. Dense shared namespaces can produce
         // millions of pair observations, so intern the canonical spelling once per mod.
         var pairIds = enabled.Keys.ToDictionary(id => id, id => id.ToLowerInvariant(), StringComparer.OrdinalIgnoreCase);

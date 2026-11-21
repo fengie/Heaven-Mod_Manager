@@ -114,7 +114,7 @@ public static class ModBoundaryDiscovery
             && IsFomodConfiguration(path)))
             return Review(prefix, "Installer options must be selected; never split FOMOD variants.");
 
-        var opposites = directories.Select(directory => (directory, option: ContrastOption(directory)))
+        var opposites = directories.Select(directory => (directory, option: UnrealPakLayout.ContrastOption(directory)))
             .Where(pair => pair.option.HasValue)
             .GroupBy(pair => pair.option!.Value.Feature, StringComparer.OrdinalIgnoreCase)
             .Where(group => group.Select(pair => pair.option!.Value.Enabled).Distinct().Count() == 2)
@@ -549,19 +549,6 @@ public static class ModBoundaryDiscovery
         return name.Equals("docs", StringComparison.OrdinalIgnoreCase)
             || name.Equals("screenshots", StringComparison.OrdinalIgnoreCase)
             || name.Equals("documentation", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static (string Feature, bool Enabled)? ContrastOption(string directory)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var words = directory.ToLowerInvariant().Replace('_', ' ').Replace('-', ' ')
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (words.Length < 2) return null;
-        if (words[0] is "with" or "without" or "no")
-            return (string.Join(' ', words[1..]), words[0] == "with");
-        if (words[^1] is "on" or "off" or "enabled" or "disabled")
-            return (string.Join(' ', words[..^1]), words[^1] is "on" or "enabled");
-        return null;
     }
 
     private static string? ChoiceParameter(string directory)

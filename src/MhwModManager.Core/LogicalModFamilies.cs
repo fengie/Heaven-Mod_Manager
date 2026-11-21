@@ -119,7 +119,9 @@ public static partial class LogicalModFamilies
             .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var representative = ChooseRepresentative(members);
-        var display = CleanDisplayName(representative.DisplayName);
+        var display = representative.RequiresLayoutReview && representative.AuthoredPartLabel is { } part
+            ? representative.FamilyDisplayName + " — " + part
+            : representative.FamilyDisplayName ?? CleanDisplayName(representative.DisplayName);
         if (members.Length > 1 && display.Length == 0) display = CleanDisplayName(representative.Name);
         return new(
             "logical:" + key,
@@ -161,7 +163,7 @@ public static partial class LogicalModFamilies
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!string.IsNullOrWhiteSpace(mod.FamilyId))
-            return "saved:" + NormalizeKey(mod.FamilyId);
+            return "saved:" + mod.FamilyId;
 
         // Source identity is stronger than author-entered file categories. A Nexus page can publish
         // several main files, optional files, patches, or mutually-exclusive variants that still belong

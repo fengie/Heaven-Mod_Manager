@@ -8,7 +8,97 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed class DiscoveredGameConflictTests
 {
+    private static readonly string[] ExpectedSelectedParts = ["addon", "base", "red", "wide"];
+
     public static TheoryData<string> RegisteredGames => new(DiscoveredGameProfiles.Load().Select(p => p.Id));
+
+    [Theory]
+    [MemberData(nameof(RegisteredGames))]
+    public void SavedRelationshipsKeepTheirOwnPartsWhenIdentifiersShareDisplayTokens(string id)
+    {
+        var game = DiscoveredGameProfiles.Load().Single(profile => profile.Id == id);
+        var familyIds = new[] { "manual:外观", "manual:相机", "manual:camera/fixed", "manual:camera.fixed" };
+        var mods = familyIds.SelectMany((family, index) => new[]
+        {
+            new ModDescriptor($"base-{index}", "Main", "Main", $"source/{index}/base", false, 1,
+                FamilyId: family, FamilyRole: "Main"),
+            new ModDescriptor($"extra-{index}", "Optional", "Optional", $"source/{index}/extra", false, 2,
+                FamilyId: family, FamilyRole: "Optional")
+        }).ToArray();
+
+        var families = LogicalModFamilies.Build(mods, game: game);
+        Assert.Equal(familyIds.Length, families.Count);
+        foreach (var familyId in familyIds)
+        {
+            var expected = mods.Where(mod => mod.FamilyId == familyId).Select(mod => mod.Id).Order();
+            var family = Assert.Single(families, row => row.Members.Any(mod => mod.FamilyId == familyId));
+            Assert.Equal(expected, family.Members.Select(mod => mod.Id).Order());
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(RegisteredGames))]
+    public async Task StoredChoiceGroupsStayIndependentFromOptionalPartsAndFromEachOther(string id)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var game = DiscoveredGameProfiles.Load().Single(profile => profile.Id == id);
+        var root = Directory.CreateTempSubdirectory("manager-family-choices-");
+        var db = new ManagerDatabase(Path.Combine(root.FullName, "manager.db"));
+        try
+        {
+            await db.InitializeAsync(ct);
+            string[] ids = ["base", "addon", "blue", "red", "wide", "narrow"];
+            foreach (var key in ids)
+                await db.UpsertModAsync(new(key, key, key, Path.Combine(root.FullName, key), false, 1,
+                    FamilyId: "fixture"), ct);
+
+            // Seed the same saved family tables used by existing libraries, including two separate choice groups.
+            await using (var connection = await db.OpenAsync(ct))
+            await using (var command = connection.CreateCommand())
+            {
+                command.CommandText = """
+                    INSERT INTO mod_families VALUES ('fixture','Field equipment',CURRENT_TIMESTAMP);
+                    INSERT INTO mod_family_members(family_id,mod_id,role,choice_group) VALUES
+                    ('fixture','base','Main',NULL),('fixture','addon','Optional',NULL),
+                    ('fixture','blue','Optional','color'),('fixture','red','Optional','color'),
+                    ('fixture','wide','Optional','camera'),('fixture','narrow','Optional','camera');
+                    """;
+                await command.ExecuteNonQueryAsync(ct);
+            }
+
+            var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(ct);
+            var family = Assert.Single(LogicalModFamilies.Build(snapshot.Mods, game: game));
+            var row = new ModRowViewModel(family, () => { });
+            row.StagedEnabled = true;
+            Assert.Null(row.StagedEnabled); // Additive parts enabled, both explicit choices still open.
+            Assert.All(row.ExpandStage().Where(part => part.Key is not ("base" or "addon")),
+                part => Assert.False(part.Value.enabled));
+            row.StagedEnabled = false;
+            row.SetMemberEnabled("addon", true);
+            row.SetMemberEnabled("blue", true);
+            row.SetMemberEnabled("wide", true);
+            row.SetMemberEnabled("red", true);
+            var active = row.ExpandStage().Where(part => part.Value.enabled).Select(part => part.Key).Order();
+            Assert.Equal(ExpectedSelectedParts, active);
+            Assert.Equal("Field equipment", family.DisplayName);
+
+            var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+            var valid = WorkflowAnalysis.WithState(snapshot, row.ExpandStage());
+            Assert.False(planner.Build(valid).IsBlocked);
+            var invalid = valid with
+            {
+                Mods = valid.Mods.Select(mod => mod.Id == "blue" ? mod with { Enabled = true } : mod).ToArray()
+            };
+            Assert.True(planner.Build(invalid).IsBlocked);
+            Assert.All(await db.GetModsAsync(ct), mod => Assert.False(mod.Enabled));
+        }
+        finally
+        {
+            await using (var connection = await db.OpenAsync(CancellationToken.None))
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            root.Delete(recursive: true);
+        }
+    }
 
     [Theory]
     [MemberData(nameof(RegisteredGames))]

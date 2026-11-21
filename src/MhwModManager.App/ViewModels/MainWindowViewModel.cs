@@ -1009,7 +1009,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         var stage=CaptureStage();
         var current=await s.Database.GetModsAsync(ct);
-        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
+        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
         if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
         var analysis=await BuildAnalysisAsync(stage,ct);
         var changes=analysis.plan.Changes;
@@ -1070,7 +1070,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         var stage=CaptureStage();
         var current=await s.Database.GetModsAsync(ct);
-        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
+        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
 
         var analysis=await BuildAnalysisAsync(stage,ct);

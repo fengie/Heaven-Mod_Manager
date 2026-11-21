@@ -1,3 +1,7 @@
+# v8.8.135 — November 21, 2026
+
+- The Mods list shows verified package components together. Choose one documented variant per option group, or enable a supported add-on with its base. Preview shows the resulting deployment before Apply. [Package family verification](https://github.com/fengie/Heaven-Mod_Manager/issues/954)
+
 # v8.8.134 — November 21, 2026
 
 - Import a mod folder or archive to list independent packages even when a loose file sits beside them. Manager preserves container companions, keeps documented alternatives together for review, and uses a registered game folder to route its packages. [Folder import verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791)
