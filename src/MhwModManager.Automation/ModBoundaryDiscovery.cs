@@ -188,6 +188,16 @@ public static class ModBoundaryDiscovery
             return [new(Display(prefix), ModBoundaryKind.Folder, "One game installation root.")];
         }
 
+        // A declared target game does not establish whether several loose containers
+        // are alternatives or co-required. Preserve the set as one reviewable source.
+        if (directories.Length == 0 && archived.Length == 0)
+        {
+            var containers = otherFiles.Where(file => !PackageManifests.Contains(file)).ToArray();
+            if (containers.Length > 1 && containers.All(UnrealPakLayout.IsMember) &&
+                containers.Select(Path.GetFileNameWithoutExtension).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any())
+                return Review(prefix, "Multiple container stems share one source; review their package choices.", requiresSelection: true);
+        }
+
         if (directFiles.Any(file => PackageManifests.Contains(file)))
         {
             if (archived.Length > 0)

@@ -51,7 +51,7 @@ public sealed class ExactPackageCopies(ManagerDatabase? database = null)
             for (var parent = Path.GetDirectoryName(group.Key); parent != null; parent = Path.GetDirectoryName(parent))
                 if (paths.Contains(parent)) { overlaps.Add(parent); overlaps.Add(group.Key); }
         }
-        var sources = new List<(string Id, Source Source)>();
+        var sources = new List<(string Id, bool RequiresReview, Source Source)>();
         foreach (var group in paths)
         {
             ct.ThrowIfCancellationRequested();
@@ -59,12 +59,12 @@ public sealed class ExactPackageCopies(ManagerDatabase? database = null)
             try
             {
                 var source = Inspect(group.Key, ct);
-                if (source != null) sources.Add((group.First().Id, source));
+                if (source != null) sources.Add((group.First().Id, group.First().RequiresLayoutReview, source));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         var result = new List<string[]>();
-        foreach (var group in sources.GroupBy(item => item.Source.Shape).Where(items => items.Count() > 1))
+        foreach (var group in sources.GroupBy(item => (item.RequiresReview, item.Source.Shape)).Where(items => items.Count() > 1))
         {
             var matches = new List<(string Id, string Hash)>();
             foreach (var item in group)

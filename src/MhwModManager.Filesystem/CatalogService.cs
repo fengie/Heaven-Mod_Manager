@@ -130,9 +130,14 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         try
         {
             var shelves = await db.ReadShelfEntriesAsync(ct);
-            var excluded = shelves.SelectMany(group=>group).Where(entry=>entry.Role is "wrapper" or "review")
-                .Select(entry=>entry.Id).ToHashSet(StringComparer.Ordinal);
             var all = await db.GetModsAsync(true,ct);
+            var sources = all.ToDictionary(mod => mod.Id, mod => mod.SourcePath, StringComparer.Ordinal);
+            // A parent representing loose files overlaps its independently indexed
+            // children. Only whole, independent review sources can be exact peers.
+            var excluded = shelves.SelectMany(group => group.Where(entry => entry.Role == "wrapper" ||
+                    (entry.Role == "review" && group.Skip(1).Any() &&
+                     sources.TryGetValue(entry.Id, out var source) && PathRules.Comparer.Equals(source, group.Key))))
+                .Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal);
             var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
             var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
             await db.ReconcileExactCopiesAsync(groups,ct);
