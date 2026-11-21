@@ -223,7 +223,7 @@ public partial class ModRowViewModel:ObservableObject
                 if (pending.TryGetValue(member.Id, out var stage)) _stagedMembers[member.Id] = stage;
         EnsureRequiredCompositionMembers();
         ThumbnailPath=family.Members.Select(m=>m.PreviewPath).FirstOrDefault(p=>!string.IsNullOrWhiteSpace(p)&&System.IO.File.Exists(p));
-        foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
+        foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,member.AuthoredPartLabel ?? PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
         SetSummaryFromMembers();
     }
 

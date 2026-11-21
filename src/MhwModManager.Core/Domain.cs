@@ -127,6 +127,7 @@ public sealed record ModDescriptor(
     string? PreviewPath = null, bool NeedsRevalidation = false, string? FamilyRole = null)
 {
     public bool RequiresLayoutReview { get; init; }
+    public string? AuthoredPartLabel { get; init; }
     public string? FamilyDisplayName { get; init; }
     public string? ChoiceGroup { get; init; }
     public string? PreferredChoiceId { get; init; }

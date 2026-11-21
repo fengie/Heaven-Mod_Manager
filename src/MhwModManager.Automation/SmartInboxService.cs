@@ -246,7 +246,16 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             await catalog.RefreshFoldersAsync(ct);
             var importedPaths=results.Where(x=>x.Imported&&!string.IsNullOrWhiteSpace(x.Destination)).Select(x=>x.Destination!).ToHashSet(StringComparer.OrdinalIgnoreCase);
             ReportStage(completed, "Capturing imported mods");
-            var importedMods=(await db.GetModsAsync(ct)).Where(m=>importedPaths.Contains(m.SourcePath)).ToArray();
+            var components=new HashSet<string>(StringComparer.Ordinal);
+            await using (var connection=await db.OpenAsync(ct))
+            await using (var command=connection.CreateCommand())
+            {
+                command.CommandText="SELECT mod_id FROM authored_component_sources WHERE verified=1 AND package_root COLLATE NOCASE IN (SELECT value FROM json_each($roots))";
+                command.Parameters.AddWithValue("$roots",System.Text.Json.JsonSerializer.Serialize(importedPaths));
+                await using var reader=await command.ExecuteReaderAsync(ct);
+                while (await reader.ReadAsync(ct)) components.Add(reader.GetString(0));
+            }
+            var importedMods=(await db.GetModsAsync(ct)).Where(m=>components.Contains(m.Id) || importedPaths.Contains(m.SourcePath)).ToArray();
             await catalog.EnsureCapturedAsync(importedMods,ct);
             if (refreshMetadata)
             {

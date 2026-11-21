@@ -84,8 +84,8 @@ public sealed partial class CatalogService
                 ON CONFLICT(id) DO UPDATE SET family_id=$family WHERE mods.family_id IS NOT $family;
                 INSERT INTO mod_family_members(family_id,mod_id,role,choice_group) VALUES($family,$id,$role,$choice)
                 ON CONFLICT(family_id,mod_id) DO UPDATE SET role=$role,choice_group=$choice WHERE role IS NOT $role OR choice_group IS NOT $choice;
-                INSERT INTO authored_component_sources(mod_id,package_root,source_directory,files_json) VALUES($id,$root,$dir,$files)
-                ON CONFLICT(mod_id) DO UPDATE SET source_directory=$dir,files_json=$files,verified=1 WHERE source_directory IS NOT $dir OR files_json IS NOT $files OR verified=0;
+                INSERT INTO authored_component_sources(mod_id,package_root,source_directory,label,files_json) VALUES($id,$root,$dir,$part,$files)
+                ON CONFLICT(mod_id) DO UPDATE SET source_directory=$dir,label=$part,files_json=$files,verified=1 WHERE label IS NOT $part OR source_directory IS NOT $dir OR files_json IS NOT $files OR verified=0;
                 DELETE FROM managed_shelf_entries WHERE mod_id=$id;
                 """;
             await cmd.ExecuteNonQueryAsync(ct);

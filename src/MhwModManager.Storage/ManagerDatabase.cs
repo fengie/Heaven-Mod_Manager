@@ -323,7 +323,7 @@ public sealed class ManagerDatabase
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
                (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
-               fm.role,(shelf.role IS 'review' OR src.verified=0) IS TRUE,family.name,fm.choice_group,fp.selected_mod_id
+               fm.role,(shelf.role IS 'review' OR src.verified=0) IS TRUE,family.name,fm.choice_group,fp.selected_mod_id,src.label
         FROM mods m
         LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
@@ -363,7 +363,8 @@ public sealed class ManagerDatabase
                     RequiresLayoutReview = r.GetBoolean(24),
                     FamilyDisplayName = r.IsDBNull(25) ? null : r.GetString(25),
                     ChoiceGroup = r.IsDBNull(26) ? null : r.GetString(26),
-                    PreferredChoiceId = r.IsDBNull(27) ? null : r.GetString(27)
+                    PreferredChoiceId = r.IsDBNull(27) ? null : r.GetString(27),
+                    AuthoredPartLabel = r.IsDBNull(28) ? null : r.GetString(28)
                 });
         }
         return list;
