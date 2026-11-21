@@ -252,6 +252,8 @@ public sealed class DeploymentExecutor(
             if(Directory.Exists(dest))throw new IOException($"File/directory collision: deployment target is a directory: {ch.Path}");
             if(ch.BeforeBlobSha256 is null&&File.Exists(dest))
             {
+                if (ch.RequireAbsent)
+                    throw new IOException($"Precondition failed: an unmanaged file appeared after planning: {ch.Path}");
                 var original=await blobs.CaptureAsync(dest,ct);
                 prepared=ch with{BeforeBlobSha256=original,ExpectedLiveSha256=original};
             }
