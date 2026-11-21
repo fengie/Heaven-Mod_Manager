@@ -113,7 +113,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await Activity.RefreshAsync(ct);", activityFeature);
         Assert.Contains("PresentationReadRepository", activityPage);
         Assert.Contains("ItemsSource=\"{Binding ActivityRows}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshActivityCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding RefreshActivityCommand}\"", xaml);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await ProfilesPage.RefreshAsync(ct);", profilesFeature);
         Assert.Contains("ProfileRepository", profilesPage);
         Assert.Contains("ItemsSource=\"{Binding Profiles}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshProfilesCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding RefreshProfilesCommand}\"", xaml);
     }
 
     [Fact]
@@ -457,7 +457,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Visibility=\"{Binding CatalogEmptyVisibility}\"", xaml);
         Assert.Contains("Command=\"{Binding RefreshCatalogCommand}\"", xaml);
         Assert.Contains("Command=\"{Binding ClearCatalogSearchCommand}\"", xaml);
-        Assert.Contains("AutomationProperties.Name=\"Refresh catalog providers\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Retry failed catalog providers\"", xaml);
         Assert.Contains("AutomationProperties.Name=\"Clear catalog search\"", xaml);
         Assert.Contains("<Condition Binding=\"{Binding HasCatalogResults}\" Value=\"True\"/>", xaml);
         Assert.Contains("Text=\"{Binding CatalogResultCountLabel}\"", xaml);
@@ -508,8 +508,8 @@ public sealed partial class XamlBindingSafetyTests
         var ensureBody = source[ensureStart..refreshCommandStart];
         Assert.Contains("await catalogSyncGate.WaitAsync(ct);", ensureBody, StringComparison.Ordinal);
         Assert.True(
-            ensureBody.IndexOf("if (catalogLoaded)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
-            "Initial catalog load must re-check catalogLoaded after acquiring the sync gate.");
+            ensureBody.IndexOf("if (CatalogIsFresh)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
+            "Initial catalog load must re-check freshness after acquiring the sync gate.");
 
         var refreshCoreStart = source.IndexOf("private async Task RefreshCatalogCoreAsync", refreshCommandStart, StringComparison.Ordinal);
         Assert.True(refreshCoreStart > refreshCommandStart);
@@ -563,11 +563,11 @@ public sealed partial class XamlBindingSafetyTests
         Assert.DoesNotContain("await RefreshProfiles(ct);", initialize);
         Assert.DoesNotContain("await RefreshActivity(ct);", initialize);
         Assert.Contains("partial void OnSelectedTabChanged(int value)", mainViewModel);
-        Assert.Contains("case 4 when !profilesLoaded:", mainViewModel);
-        Assert.Contains("case 5 when !activityLoaded:", mainViewModel);
-        Assert.Contains("case 6 when !overlapsLoaded:", mainViewModel);
-        Assert.Contains("overlapsLoaded=false;", mainViewModel);
-        Assert.Contains("if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);", mainViewModel);
+        Assert.Contains("case 4:", mainViewModel);
+        Assert.Contains("case 5:", mainViewModel);
+        Assert.Contains("case 6:", mainViewModel);
+        Assert.Contains("RefreshSelectedPageAsync(SelectedTab,backgroundCts.Token)", initialize);
+        Assert.Contains("if(SelectedTab==6 && generation==conflictPreviewGeneration)await RefreshOverlaps(ct);", mainViewModel);
     }
 
     [Fact]
@@ -592,9 +592,9 @@ public sealed partial class XamlBindingSafetyTests
         Assert.DoesNotContain("nexus.RefreshAsync", blockingStartup);
         Assert.DoesNotContain("nexus.RefreshAsync", sessionBootstrap);
         Assert.Contains("startup.intelligence.nexus.deferred", sessionBootstrap);
-        Assert.Contains("if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)", mainViewModel);
-        Assert.Contains("EnsureInitialMetadataLoadedAsync(backgroundCts.Token)", mainViewModel);
-        Assert.Contains("if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);", mainViewModel);
+        Assert.Contains("if (!initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)", mainViewModel);
+        Assert.Contains("EnsureInitialMetadataLoadedAsync(ct)", mainViewModel);
+        Assert.Contains("await RefreshAnalysis(ct);", mainViewModel);
         Assert.Contains("var shouldEnrich=SelectedTab==3;", mainViewModel);
         Assert.Contains("var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;", mainViewModel);
     }
@@ -713,7 +713,7 @@ public sealed partial class XamlBindingSafetyTests
         var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
 
         Assert.Contains("ItemsSource=\"{Binding StorageCategories}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
         Assert.Contains("Command=\"{Binding ReclaimDisposableStorageCommand}\"", xaml);
         Assert.Contains("AutomationProperties.Name=\"Reclaim disposable storage\"", xaml);
         Assert.Contains("It preserves installed Mods, State, archives, catalog scratch, unknown files, live pending update data, nonterminal recovery data, and reparse paths.", xaml);
@@ -729,7 +729,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("\"storage.reclaim-disposable\"", settings);
         Assert.Contains("SafeRecursiveTraversal.Snapshot(root, ct)", settings);
         Assert.DoesNotContain("Directory.Delete(", settings);
-        Assert.Contains("if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);", main);
+        Assert.Contains("await EnsureStorageUsageLoadedAsync(ct);", main);
     }
 
     [Fact]

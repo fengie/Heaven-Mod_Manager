@@ -211,14 +211,6 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    [RelayCommand]
-    private async Task ScanAutoSortFolders()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        EnsureGameIntake();
-        await ScanAutoSortAsync(backgroundCts.Token);
-    }
-
     private void EnsureGameIntake()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();

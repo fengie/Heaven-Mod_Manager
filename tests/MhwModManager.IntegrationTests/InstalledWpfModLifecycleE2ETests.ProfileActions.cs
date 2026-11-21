@@ -55,7 +55,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         toggle.Toggle();
         await WaitForAsync(() => toggle.Current.ToggleState == ToggleState.Off, UiTimeout, "staged mod disable", ct);
 
+        // A second writer changes the disposable catalog while Profiles is hidden.
+        // Returning to the page must discover the new row without any repair command.
+        var externalProfile = "Imported setup " + game.Id;
+        await new MhwModManager.Storage.ProfileRepository(run.OpenCatalog()).SaveCurrentAsync(externalProfile, ct);
         await SelectTab("Profiles");
+        var revisitedProfiles = await Grid("Saved profiles");
+        await WaitForElementAsync(() => Find(revisitedProfiles, item => item.Current.Name == externalProfile),
+            UiTimeout, "profile saved while page was hidden", ct);
         AutomationElement? SavedRow()
         {
             var current = Find(window, item => item.Current.ControlType == ControlType.DataGrid &&
@@ -69,7 +76,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         }
         var row = await WaitForElementAsync(SavedRow, UiTimeout, "named saved profile", ct);
         ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
-        Invoke(await Button("Refresh"));
+        await SelectTab("History");
+        await SelectTab("Profiles");
         await WaitForAsync(() => SavedRow() is { } saved &&
             ((SelectionItemPattern)saved.GetCurrentPattern(SelectionItemPattern.Pattern)).Current.IsSelected,
             UiTimeout, "refresh preserves selected saved profile", ct);
@@ -81,7 +89,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Refresh and use saved profile to restore enabled selection");
 
         await SelectTab("History");
-        Invoke(await Button("Refresh"));
         var history = await Grid("Recent activity");
         await WaitForElementAsync(() => Find(history, item => item.Current.ControlType == ControlType.DataItem &&
             Find(item, cell => cell.Current.Name.Contains("staged mod-state change", StringComparison.Ordinal)) is not null &&
@@ -150,7 +157,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 UiTimeout, label + " restored", ct);
             passed.Add("Persist and restore " + label);
         }
-        Invoke(await Button("Measure manager storage"));
         await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
             e.Current.Name.StartsWith("Storage totals refreshed", StringComparison.Ordinal)), UiTimeout, "storage measurement", ct);
         passed.Add("Measure manager storage");
@@ -231,7 +237,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             var mod = Assert.Single(await db.GetModsAsync(ct), item => item.DisplayName == alternateName);
             await db.ReplaceModFilesAsync(mod.Id, [], ct);
             Assert.DoesNotContain(await db.GetModFilesAsync(ct), row => row.ModId == mod.Id);
-            Invoke(await Button("Refresh 1 visible mod"));
+            Invoke(await Button("Rebuild index for 1 visible mod"));
             var wantHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(payload));
             await WaitForAsync(() => db.GetModFilesAsync(ct).GetAwaiter().GetResult().Any(row =>
                 row.ModId == mod.Id && row.BlobSha256 == wantHash && row.Length == payload.Length &&

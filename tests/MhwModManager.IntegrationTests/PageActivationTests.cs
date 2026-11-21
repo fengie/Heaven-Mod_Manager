@@ -1,0 +1,42 @@
+using MhwModManager.App.ViewModels;
+using Xunit;
+
+namespace MhwModManager.IntegrationTests;
+
+public sealed class PageActivationTests
+{
+    [Fact]
+    public Task ReturningToProfilesAndHistoryPicksUpChangesMadeWhileHidden() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            using var vm = new MainWindowViewModel(services);
+            for (var visit = 1; visit <= 2; visit++)
+            {
+                string name = $"External profile {visit}";
+                await services.Profiles.SaveCurrentAsync(name, ct);
+                vm.SelectedTab = 4;
+                await WaitUntilAsync(() => vm.Profiles.Any(row => row.Name == name), ct);
+
+                await using var connection = await services.Database.OpenAsync(ct);
+                await using var command = connection.CreateCommand();
+                command.CommandText = """
+                    INSERT INTO automation_events(id,time,kind,severity,message)
+                    VALUES ($id,datetime('now'),'fixture','Info',$message)
+                    """;
+                string id = $"page-activation-{visit}";
+                command.Parameters.AddWithValue("$id", id);
+                command.Parameters.AddWithValue("$message", name);
+                await command.ExecuteNonQueryAsync(ct);
+                vm.SelectedTab = 5;
+                await WaitUntilAsync(() => vm.ActivityRows.Any(row => row.Id == id), ct);
+            }
+            Assert.Equal(2, vm.Profiles.Count(row => row.Name.StartsWith("External profile", StringComparison.Ordinal)));
+        });
+
+    private static async Task WaitUntilAsync(Func<bool> assertion, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(8));
+        while (!assertion()) await Task.Delay(20, timeout.Token);
+    }
+}

@@ -158,9 +158,9 @@ public sealed class UxHardeningTests
         var vm=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
 
         Assert.Contains("private bool initialMetadataRefreshCompleted;",vm);
-        Assert.Contains("!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted",vm);
+        Assert.Contains("!initialMetadataRefreshCompleted && !initialMetadataRefreshStarted",vm);
         var start=vm.IndexOf("private async Task EnsureInitialMetadataLoadedAsync",StringComparison.Ordinal);
-        var end=vm.IndexOf("private async Task EnsureConflictPreviewsLoadedAsync",start,StringComparison.Ordinal);
+        var end=vm.IndexOf("private async Task AutoMetadataLoopAsync",start,StringComparison.Ordinal);
         Assert.True(start>=0&&end>start);
         var method=vm[start..end];
         Assert.Contains("if(completed)initialMetadataRefreshCompleted=true;",method);

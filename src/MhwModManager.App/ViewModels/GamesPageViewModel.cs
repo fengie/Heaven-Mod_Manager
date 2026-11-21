@@ -22,7 +22,8 @@ public sealed class GamesPageViewModel
     public void Refresh()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        Rows.ReplaceAll(registry.Load());
+        var registered=registry.Load();
+        if (!Rows.SequenceEqual(registered)) Rows.ReplaceAll(registered);
         if(discoveryAttempted)return;
         discoveryAttempted=true;
         AutomaticDiscoveryTask=DiscoverInstalledGamesAsync();

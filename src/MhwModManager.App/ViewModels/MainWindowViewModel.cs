@@ -23,14 +23,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private CancellationTokenSource? searchCts;
     private readonly CancellationTokenSource backgroundCts=new();
     private readonly SemaphoreSlim metadataGate=new(1,1);
-    private readonly SemaphoreSlim deferredPageGate=new(1,1);
-    private bool profilesLoaded;
-    private bool activityLoaded;
-    private bool overlapsLoaded;
+    private readonly HashSet<int> refreshingPages=[];
+    private long lastInventoryVisit;
     private bool initialMetadataRefreshStarted;
     private bool initialMetadataRefreshCompleted;
     private int conflictPreviewGeneration;
-    private int conflictPreviewLoadedGeneration=-1;
     private bool suppressChanged;
     private bool disposed;
 
@@ -192,7 +189,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return $"Refresh {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+            return $"Rebuild index for {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
         }
     }
     public string VisibleBulkScopeHelp
@@ -369,56 +366,72 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         },rethrowOnFailure:true);
         _=AutoMetadataLoopAsync(backgroundCts.Token);
         StartAutoSorting();
+        lastInventoryVisit=Stopwatch.GetTimestamp();
         _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
+        _ = RefreshSelectedPageAsync(SelectedTab,backgroundCts.Token);
     }
 
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
         if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,9));
-        if(value==9)_=RefreshLocalModInventoryAsync(backgroundCts.Token);
-        if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
-        {
-            initialMetadataRefreshStarted=true;
-            _=EnsureInitialMetadataLoadedAsync(backgroundCts.Token);
-        }
-        if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);
-        if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
-        if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);
-        if(value==8)_=EnsureCatalogLoadedAsync(backgroundCts.Token);
+        _ = RefreshSelectedPageAsync(value,backgroundCts.Token);
     }
 
-    private async Task EnsureDeferredPageLoadedAsync(int tab,CancellationToken ct)
+    private async Task RefreshSelectedPageAsync(int tab,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={tab}");
+        if (!refreshingPages.Add(tab)) return;
         try
         {
-            await deferredPageGate.WaitAsync(ct);
-            try
+            switch(tab)
             {
-                switch(tab)
-                {
-                    case 4 when !profilesLoaded:
-                        await RefreshProfiles(ct);
-                        profilesLoaded=true;
-                        break;
-                    case 5 when !activityLoaded:
-                        await RefreshActivity(ct);
-                        activityLoaded=true;
-                        break;
-                    case 6 when !overlapsLoaded:
-                        await RefreshOverlaps(ct);
-                        overlapsLoaded=true;
-                        break;
-                }
+                case 0:
+                    GamesPage.Refresh();
+                    break;
+                case 1:
+                    RefreshLibraryFilters();
+                    if (!initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)
+                    {
+                        initialMetadataRefreshStarted=true;
+                        _ = EnsureInitialMetadataLoadedAsync(ct);
+                    }
+                    break;
+                case 2:
+                    await LoadOutfits(ct);
+                    break;
+                case 3:
+                    await RefreshIssueSuspects(ct);
+                    await RefreshAnalysis(ct);
+                    break;
+                case 4:
+                    await RefreshProfiles(ct);
+                    break;
+                case 5:
+                    await RefreshActivity(ct);
+                    break;
+                case 6:
+                    await RefreshAnalysis(ct);
+                    break;
+                case 7:
+                    await EnsureStorageUsageLoadedAsync(ct);
+                    break;
+                case 8:
+                    await EnsureCatalogLoadedAsync(ct);
+                    break;
             }
-            finally{deferredPageGate.Release();}
+            if ((tab is 1 or 9) && (lastInventoryVisit==0 || Stopwatch.GetElapsedTime(lastInventoryVisit)>=TimeSpan.FromMinutes(1)))
+            {
+                lastInventoryVisit=Stopwatch.GetTimestamp();
+                _ = RefreshLocalModInventoryAsync(ct);
+            }
         }
         catch(OperationCanceledException) when(ct.IsCancellationRequested){}
         catch(Exception ex)
         {
-            MasterDebugLog.Write("DEFERRED-PAGE",$"Deferred tab load failed. tab={tab}",ex);
+            MasterDebugLog.Write("DEFERRED-PAGE",$"Page refresh failed. tab={tab}",ex);
         }
+        finally { refreshingPages.Remove(tab); }
     }
 
     private async Task EnsureInitialMetadataLoadedAsync(CancellationToken ct)
@@ -434,7 +447,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 try
                 {
                     var result=await s.Nexus.RefreshAsync(false,innerCt);
-                    await ReloadMods(innerCt);
+                    await ReloadMods(innerCt,preserveStagedChanges:true);
                     await RefreshAnalysis(innerCt);
                     completed=true;
                     MasterDebugLog.Write("AUTO-METADATA",$"Demand-loaded metadata refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
@@ -446,30 +459,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             if(completed)initialMetadataRefreshCompleted=true;
             initialMetadataRefreshStarted=false;
-        }
-    }
-
-    private async Task EnsureConflictPreviewsLoadedAsync(CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var generation=conflictPreviewGeneration;
-        if(conflictPreviewLoadedGeneration==generation||Conflicts.Count==0)return;
-        var rows=Conflicts.ToArray();
-        try
-        {
-            var enriched=await EnrichConflictPreviewsAsync(rows,ct);
-            if(ct.IsCancellationRequested||SelectedTab!=3||generation!=conflictPreviewGeneration)return;
-            await Application.Current.Dispatcher.InvokeAsync(()=>
-            {
-                if(SelectedTab!=3||generation!=conflictPreviewGeneration)return;
-                Conflicts.ReplaceAll(enriched);
-                conflictPreviewLoadedGeneration=generation;
-            });
-        }
-        catch(OperationCanceledException) when(ct.IsCancellationRequested){}
-        catch(Exception ex)
-        {
-            MasterDebugLog.Write("CONFLICT-PREVIEWS","Deferred conflict preview loading failed; conflict decisions remain available without artwork.",ex);
         }
     }
 
@@ -912,8 +901,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
         await Application.Current.Dispatcher.InvokeAsync(()=>
         {
+            if (generation!=conflictPreviewGeneration || ct.IsCancellationRequested) return;
             Conflicts.ReplaceAll(displayRows);
-            conflictPreviewLoadedGeneration=shouldEnrich?generation:-1;
             var summaryById=analysis.summaries.ToDictionary(x=>x.LogicalModId,StringComparer.OrdinalIgnoreCase);
             foreach(var row in Mods)if(summaryById.TryGetValue(row.Id,out var summary))row.SetEffective(summary);
             RefreshLibraryFilters();
@@ -926,8 +915,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             OnPropertyChanged(nameof(SupersededViewLabel));
             OnPropertyChanged(nameof(HeaderSummary));
         });
-        overlapsLoaded=false;
-        if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);
+        if(SelectedTab==6 && generation==conflictPreviewGeneration)await RefreshOverlaps(ct);
     }
 
     private async Task<ConflictRow[]> EnrichConflictPreviewsAsync(ConflictRow[] rows,CancellationToken ct)
@@ -2070,7 +2058,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         DisposeAutoSorting();
         backgroundCts.Cancel();
         backgroundCts.Dispose();
-        deferredPageGate.Dispose();
         busyCts?.Cancel();
         busyCts?.Dispose();
         busyCts=null;
