@@ -70,14 +70,21 @@ public sealed partial class GameProfileRegistry
     public void SaveDiscoveredLibrary(GameProfile game, IReadOnlyList<ExternalLibraryReference> rows)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (rows.Count > 16384) return;
         var path = LibrarySnapshotPath(game);
         Directory.CreateDirectory(stateRoot);
-        var snapshot = new LibrarySnapshot(1, game.Id, game.GameRoot, game.SteamAppId,
-            rows.ToArray());
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(snapshot);
-        if (bytes.Length > LibrarySnapshotByteLimit) return;
-        AtomicWrite(path, bytes);
+        if (rows.Count <= 16384)
+        {
+            var snapshot = new LibrarySnapshot(1, game.Id, game.GameRoot, game.SteamAppId, rows.ToArray());
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(snapshot);
+            if (bytes.Length <= LibrarySnapshotByteLimit)
+            {
+                AtomicWrite(path, bytes);
+                return;
+            }
+        }
+
+        // The live scan owns the current result. A cache miss on reopen requests a fresh scan.
+        File.Delete(path);
     }
 
     private string LibrarySnapshotPath(GameProfile game)

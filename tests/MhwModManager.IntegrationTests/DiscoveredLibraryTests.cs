@@ -90,7 +90,7 @@ public sealed class DiscoveredLibraryTests
             Assert.Equal(2, reopened.ReconcileDiscoveredLibrary(game, [plugin], [unavailable]).Count);
             Assert.Empty(reopened.ReconcileDiscoveredLibrary(game, [], []));
             reopened.SaveDiscoveredLibrary(game, Enumerable.Repeat(original, 16385).ToArray());
-            Assert.Equal(original.DisplayName, Assert.Single(reopened.LoadDiscoveredLibrary(game)).DisplayName);
+            Assert.Empty(reopened.LoadDiscoveredLibrary(game));
             reopened.SaveDiscoveredLibrary(game, []);
             Assert.Empty(registry.LoadDiscoveredLibrary(game));
             var file = Assert.Single(root.GetFiles("discovered-library-*.json"));
