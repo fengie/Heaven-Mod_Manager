@@ -69,6 +69,11 @@ public sealed class DiscoveredGameConflictTests
             var snapshot = await new PlannerSnapshotRepository(db).LoadAsync(ct);
             var family = Assert.Single(LogicalModFamilies.Build(snapshot.Mods, game: game));
             var row = new ModRowViewModel(family, () => { });
+            row.StagedEnabled = true;
+            Assert.Null(row.StagedEnabled); // Additive parts enabled, both explicit choices still open.
+            Assert.All(row.ExpandStage().Where(part => part.Key is not ("base" or "addon")),
+                part => Assert.False(part.Value.enabled));
+            row.StagedEnabled = false;
             row.SetMemberEnabled("addon", true);
             row.SetMemberEnabled("blue", true);
             row.SetMemberEnabled("wide", true);
