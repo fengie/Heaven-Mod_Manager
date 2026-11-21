@@ -1,4 +1,6 @@
 using System.Security.Cryptography;
+using System.Text.Json;
+using MhwModManager.Diagnostics;
 using MhwModManager.Core;
 using MhwModManager.Filesystem;
 using MhwModManager.Storage;
@@ -12,6 +14,20 @@ public sealed class StartupPerformanceTests : IDisposable
     private readonly string root=Path.Combine(Path.GetTempPath(),"umm-startup-perf-"+Guid.NewGuid().ToString("N"));
 
     public StartupPerformanceTests()=>Directory.CreateDirectory(root);
+
+    [Fact]
+    public void TerminalStartupReportReplacesTheSnapshotHeldByTheBenchmark()
+    {
+        var session = StartupDiagnosticSession.Start(MasterDebugLog.RootDirectory);
+        using var activeReader = File.Open(session.JsonReportPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        session.Complete(true, "Completed under observation");
+        using var reader = new StreamReader(activeReader);
+        using var initial = JsonDocument.Parse(reader.ReadToEnd());
+        Assert.Equal("RUNNING", initial.RootElement.GetProperty("overall").GetString());
+        using var final = JsonDocument.Parse(File.ReadAllText(session.JsonReportPath));
+        Assert.Equal("PASS", final.RootElement.GetProperty("overall").GetString());
+        Assert.Equal("Completed under observation", final.RootElement.GetProperty("summary").GetString());
+    }
 
     [Fact]
     public async Task Unchanged_game_build_metadata_skips_fingerprint_rewrite()
