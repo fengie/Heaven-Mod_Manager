@@ -37,6 +37,14 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             return (TogglePattern)box.GetCurrentPattern(TogglePattern.Pattern);
         }
 
+        var original = SeedDiscoverySample(run.FirstGame.GameRoot,
+            run.FirstGame.AdapterId == "unreal-paks" ? run.FirstGame.LiveModRoot : null, "Original scope fixture");
+        var other = SeedDiscoverySample(run.SecondGame.GameRoot, null, "Other scope fixture");
+        await VerifyDiscoveryScopeAsync(window, run.FirstGame, original, other,
+            Path.Combine(run.FirstGame.GameRoot, "Mods", "inventory-test", "mod.json"),
+            run.FirstGame.IsMonsterHunterWorld || run.FirstGame.AdapterId == "unreal-paks" ? run.LiveModPath : null, ct);
+        passed.Add("Map the current package, other game and evidence-only file to distinct library statuses");
+
         var opening = await OpenAddGameAsync();
         await Choose(await Dialog(pickerTitle), "Cancel");
         await opening.WaitAsync(UiTimeout, ct);
@@ -61,6 +69,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Decline Add Game while staged and retain pending choice and deployed bytes");
 
         var folder = Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(run.ManagerHome)!, "Added fixture game"));
+        var addedSample = SeedDiscoverySample(folder.FullName, null, "Added scope fixture");
         var executable = Path.Combine(folder.FullName, "AddedFixture.exe");
         File.Copy(run.FirstGame.ExecutablePath, executable);
         opening = await OpenAddGameAsync();
@@ -75,10 +84,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             UiTimeout, "added game committed and displayed in the original window", ct);
         var added = Assert.Single(registry.Load(), game => PathRules.Comparer.Equals(game.ExecutablePath, executable));
         Assert.Equal(before.Length + 1, registry.Load().Count);
-        foreach (var original in before) Assert.Contains(original, registry.Load());
+        foreach (var previous in before) Assert.Contains(previous, registry.Load());
         Assert.Equal(added.Id, registry.GetActive()?.Id);
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
         passed.Add("Add a new game through the native executable picker and switch in place while preserving all original registrations and files");
+        await VerifyDiscoveryScopeAsync(window, added, addedSample, original, null, null, ct);
+        passed.Add("Switch Mods to the newly registered game while Installed files keeps the prior game visible");
     }
 }
