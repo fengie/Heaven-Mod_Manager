@@ -642,7 +642,7 @@
                         <DataGrid.RowDetailsTemplate>
                             <DataTemplate>
                                 <Border Margin="126,4,18,12" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
-                                    <TabControl AutomationProperties.Name="Armor details and outfit options">
+                                    <TabControl AutomationProperties.Name="Armor details and outfit options" SelectedIndex="{Binding DataContext.OutfitDetailsTab,RelativeSource={RelativeSource AncestorType=Window},Mode=TwoWay}">
                                         <TabItem Header="Outfit options">
                                             <StackPanel Margin="12">
                                                 <TextBlock Text="{Binding Armor}" FontWeight="SemiBold"/>
@@ -706,7 +706,12 @@
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="ARMOR" Binding="{Binding Armor}" Width="1.8*"/>
                             <DataGridTextColumn Header="MODEL" Binding="{Binding ModelId}" Width="110"/>
-                            <DataGridTextColumn Header="OPTIONS" Binding="{Binding Available}" Width="90"/>
+                            <DataGridTemplateColumn Header="OPTIONS" Width="135">
+                                <DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                    <Button Content="{Binding OptionsLabel}" AutomationProperties.Name="{Binding Armor,StringFormat='View outfits for {0}'}"
+                                            Command="{Binding DataContext.ShowOutfitOptionsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                </DataTemplate></DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="MODS" Binding="{Binding Providers}" Width="2*"/>
                             <DataGridTextColumn Header="USED PIECES" Binding="{Binding WinningPieces}" Width="1.4*"/>
                             <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="120"/>

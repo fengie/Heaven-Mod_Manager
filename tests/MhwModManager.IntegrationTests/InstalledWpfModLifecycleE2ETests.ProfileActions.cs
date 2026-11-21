@@ -187,13 +187,17 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 Find(item, cell => cell.Current.Name == "Leather") is not null &&
                 Find(item, cell => cell.Current.Name == "pl001_0000") is not null),
                 UiTimeout, "indexed armor name and model ID in the same row", ct);
-            ((SelectionItemPattern)leather.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+            Invoke(await WaitForElementAsync(() => FindButton(leather,"View outfits for Leather",enabled:true),UiTimeout,"Leather options",ct));
+            await SelectTab("Details");
+            await WaitForElementAsync(() => Find(window,item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name=="Winning pieces"),UiTimeout,"armor details",ct);
+            await SelectTab("Outfit options");
             Invoke(await Button("Use outfit " + fixtureMod));
             await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Text &&
                 item.Current.Name.Contains("Preferred outfit",StringComparison.Ordinal)),UiTimeout,"saved Leather outfit",ct);
             Assert.Equal(run.ModBytes,File.ReadAllBytes(run.LiveModPath));
             Invoke(await Button("Use normal load order"));
-            await WaitForElementAsync(() => FindButton(window,"Use normal load order",enabled:false),UiTimeout,"cleared Leather preference",ct);
+            await WaitForAsync(() => FindButton(window,"Use normal load order") is { Current.IsEnabled: false },UiTimeout,"cleared Leather preference",ct);
             passed.Add("Choose and clear the Leather outfit from Coverage and verify installed bytes");
         }
         else

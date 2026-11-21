@@ -1,3 +1,5 @@
+using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MhwModManager.Core;
 using MhwModManager.Storage;
@@ -6,6 +8,16 @@ namespace MhwModManager.App.ViewModels;
 
 public sealed partial class MainWindowViewModel
 {
+
+    [ObservableProperty] private int outfitDetailsTab;
+
+    [RelayCommand]
+    private void ShowOutfitOptions(OutfitRow outfit)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        SelectedOutfit=outfit;
+        OutfitDetailsTab=outfit.Available==0 ? 1 : 0;
+    }
 
     [RelayCommand]
     private Task ChooseOutfit(ArmorOutfitOption option) =>
@@ -50,6 +62,19 @@ public sealed partial class MainWindowViewModel
                 throw new InvalidOperationException(plan.Conflicts.First(c => c.Blocking).Explanation);
             var dependencies = await GetDependencyBlockersAsync(stage,plan,ct);
             if (dependencies.Length > 0) throw new InvalidOperationException(DescribeDependencyBlockers(dependencies));
+            var outside = ArmorOutfitPreference.OutsideArmor(plan,selection.ModelId);
+            if (outside.Count > 0)
+            {
+                var examples = string.Join(Environment.NewLine,outside.Take(6).Select(c => $"{c.Kind}  {c.Path}"));
+                var answer = MessageBox.Show($"This change also affects {outside.Count} files outside {armor.Armor}." +
+                    Environment.NewLine + examples + Environment.NewLine + "Apply these package changes with the outfit?",
+                    "Additional package files",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No);
+                if (answer != MessageBoxResult.Yes)
+                {
+                    StatusText="Outfit choice cancelled.";
+                    return;
+                }
+            }
             if (metadata.Count > 0 || plan.Changes.Count > 0 || staged.Where((m,i) => m.Enabled != snapshot.Mods[i].Enabled).Any())
             {
                 var result = await s.Executor.ApplyWithMetadataAsync(plan,$"Choose outfit for {armor.Armor}",metadata,stage,ct:ct);

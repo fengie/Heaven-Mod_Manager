@@ -50,7 +50,7 @@ public sealed class ContextualPageDetailsTests
         var nav = theme.Descendants(w + "Style").Single(s => (string?)s.Attribute(x + "Key") == "MainNavigationTabs");
         var body = nav.Descendants(w + "DockPanel").Single(d => d.Element(w + "Expander") is not null);
         var lineStyle = theme.Descendants(w + "Style").Single(s => (string?)s.Attribute(x + "Key") == "ContextDetailLine");
-        var tabs = main.Descendants(w + "TabItem").ToArray();
+        var tabs = main.Descendants(w + "TabControl").Single(tab => (string?)tab.Attribute(x + "Name") == "MainTabs").Elements(w + "TabItem").ToArray();
         var withoutDetails = Assert.Single(tabs, t => t.Element(w + "TabItem.Tag") is null);
         Assert.Contains("CoverageTabLabel", (string?)withoutDetails.Attribute("Header"));
         // Use the production presentation and page contents without starting Manager or loading user data.

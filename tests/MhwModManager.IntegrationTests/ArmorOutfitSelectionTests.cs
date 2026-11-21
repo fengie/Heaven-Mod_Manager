@@ -27,6 +27,7 @@ public sealed class ArmorOutfitSelectionTests : IAsyncDisposable
         var snapshots = new PlannerSnapshotRepository(db);
         var planner = new DeploymentPlanner(new ConflictEngine());
         const string target = @"nativePC\pl\f_equip\pl126_0000\body\mod\body.mod3";
+        const string companion = @"nativePC\pl\f_equip\pl128_0000\body\mod\body.mod3";
         const string oldPieceFile = @"nativePC\pl\f_equip\pl126_0000\body\mod\physics.ctc";
         const string other = @"nativePC\pl\f_equip\pl127_0000\body\mod\body.mod3";
         foreach (var id in new[]{"alpha","beta"})
@@ -35,7 +36,7 @@ public sealed class ArmorOutfitSelectionTests : IAsyncDisposable
             await File.WriteAllTextAsync(source,id,ct);
             var hash = await blobs.CaptureAsync(source,ct);
             await db.UpsertModAsync(new(id,id,"Same visible name",source,id=="alpha",10),ct);
-            await db.ReplaceModFilesAsync(id,(id=="alpha" ? new[]{target,other,oldPieceFile} : new[]{target})
+            await db.ReplaceModFilesAsync(id,(id=="alpha" ? new[]{target,other,oldPieceFile} : new[]{target,companion})
                 .Select(path=>new ModFileDescriptor(id,path,hash,null,id.Length,DateTimeOffset.UtcNow,FileClass.Structural)).ToArray(),ct);
         }
         var original = await snapshots.LoadAsync(ct);
@@ -48,6 +49,10 @@ public sealed class ArmorOutfitSelectionTests : IAsyncDisposable
         var enabled = snapshot.Mods.Select(m=>m with { Enabled=true }).ToArray();
         var plan = planner.Build(snapshot with { Mods=enabled });
         Assert.False(plan.IsBlocked);
+        var extra = Assert.Single(ArmorOutfitPreference.OutsideArmor(plan,selection.ModelId));
+        Assert.Equal(companion,extra.Path,ignoreCase:true);
+        Assert.Equal(ChangeKind.Add,extra.Kind);
+        Assert.False(File.Exists(Path.Combine(game,companion)));
         Assert.True((await executor.ApplyWithMetadataAsync(plan,"switch",changes,
             enabled.ToDictionary(m=>m.Id,m=>(true,m.Priority)),ct:ct)).Success);
         Assert.Equal("beta",await File.ReadAllTextAsync(Path.Combine(game,target),ct));
@@ -63,6 +68,7 @@ public sealed class ArmorOutfitSelectionTests : IAsyncDisposable
         Assert.True((await executor.UndoLastAsync(ct)).Success);
         Assert.Equal("alpha",await File.ReadAllTextAsync(Path.Combine(game,target),ct));
         Assert.True(File.Exists(Path.Combine(game,oldPieceFile)));
+        Assert.False(File.Exists(Path.Combine(game,companion)));
         Assert.Empty((await reopened.LoadAsync(ct)).ArmorOutfitChoices);
     }
 }

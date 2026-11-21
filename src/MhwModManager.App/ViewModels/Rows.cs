@@ -415,6 +415,7 @@ public sealed record ConflictRow(
 
 public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers)
 {
+    public string OptionsLabel => Available==0 ? "Details" : $"Outfits ({Available})";
     public bool HasPreference => Options.Any(option => option.IsPreferred);
     public IReadOnlyList<MhwModManager.Storage.ArmorOutfitOption> Options { get; init; } = [];
 }

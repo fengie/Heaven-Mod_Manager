@@ -4,18 +4,21 @@ namespace MhwModManager.Storage;
 
 public static class ArmorOutfitPreference
 {
+    public static IReadOnlyList<DeploymentChange> OutsideArmor(DeploymentPlan plan,string modelId) =>
+        plan.Changes.Where(change => !PathRules.TryGetArmorComponent(change.Path,out var model,out _) ||
+            !PathRules.Comparer.Equals(model,modelId)).ToArray();
+
     public static async Task<IReadOnlyList<MetadataRowChange>> PrepareAsync(ManagerDatabase database,
         ArmorOutfitSelection selection, PlannerSnapshot snapshot, CancellationToken ct)
     {
         using var trace = MasterDebugLog.BeginMethod();
         if (selection.ModId is { } provider)
         {
-            var paths = snapshot.Files.Where(f => f.ModId == provider &&
+            var providesArmor = snapshot.Files.Any(f => f.ModId == provider &&
                 PathRules.TryGetArmorComponent(f.Path,out var model,out _) &&
-                PathRules.Comparer.Equals(model,selection.ModelId)).Select(f => f.Path).ToArray();
-            if (paths.Length == 0)
+                PathRules.Comparer.Equals(model,selection.ModelId));
+            if (!providesArmor)
                 throw new InvalidOperationException("This outfit no longer supplies files for the selected armor.");
-
         }
 
         var rows = await DeploymentMetadata.ReadRowsAsync(database,"armor_outfit_choices",ct);
