@@ -129,7 +129,13 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Apply();
         await VerifyFiles("WITH_Cape", false);
 
-        Assert.True(app.CloseMainWindow());
+        // Process.MainWindowHandle can still refer to the startup splash. Close the
+        // actual WPF window whose controls served this fixture, then require process exit.
+        var ownerWindow = await WaitForMainWindowAsync(app,ct);
+        Assert.Equal(app.Id,ownerWindow.Current.ProcessId);
+        await WaitForElementAsync(()=>FindButton(ownerWindow,"Preview Mod Changes",enabled:true),
+            UiTimeout,"family deployment settled before closing",ct);
+        ((WindowPattern)ownerWindow.GetCurrentPattern(WindowPattern.Pattern)).Close();
         await app.WaitForExitAsync(ct).WaitAsync(UiTimeout, ct);
         app.Dispose();
         var reopened = run.Launch();
