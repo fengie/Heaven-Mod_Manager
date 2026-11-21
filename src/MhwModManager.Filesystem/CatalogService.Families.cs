@@ -15,6 +15,16 @@ public sealed partial class CatalogService
         return "local-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
     }
 
+    private async Task SuspendFamilyAsync(string root,CancellationToken ct)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
+        await using var connection=await db.OpenAsync(ct);
+        await using var cmd=connection.CreateCommand();
+        cmd.CommandText="UPDATE authored_component_sources SET verified=0 WHERE verified=1 AND package_root=$root";
+        cmd.Parameters.AddWithValue("$root",root);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
     private async Task<bool> DiscoverFamilyAsync(string root, int priority, CancellationToken ct, string? enclosingShelf=null)
     {
         using var trace = MasterDebugLog.BeginMethod();

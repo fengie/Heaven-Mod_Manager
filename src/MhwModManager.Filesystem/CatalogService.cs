@@ -67,6 +67,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             await using var reader = await cmd.ExecuteReaderAsync(ct);
             while (await reader.ReadAsync(ct)) verifiedFamilyRoots.Add(reader.GetString(0));
         }
+        var inspectedFamilyRoots = new HashSet<string>(PathRules.Comparer);
         var savedShelves = inspectShelf is null ? null : await db.ReadShelfEntriesAsync(ct);
         var priority=100000;
         foreach(var dir in directories)
@@ -75,14 +76,11 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             existingByPath.TryGetValue(dir, out var tracked);
             try
             {
+                inspectedFamilyRoots.Add(dir);
                 if (await DiscoverFamilyAsync(dir,priority,ct)) continue;
                 if (verifiedFamilyRoots.Contains(dir))
                 {
-                    await using var connection=await db.OpenAsync(ct);
-                    await using var cmd=connection.CreateCommand();
-                    cmd.CommandText="UPDATE authored_component_sources SET verified=0 WHERE verified=1 AND package_root=$dir";
-                    cmd.Parameters.AddWithValue("$dir",dir);
-                    await cmd.ExecuteNonQueryAsync(ct);
+                    await SuspendFamilyAsync(dir,ct);
                     continue;
                 }
             }
@@ -98,7 +96,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
                     var layout = await Task.Run(() => inspectShelf(dir, ct), ct);
                     if (layout.FullyAccounted && layout.Units.Count > 0)
                     {
-                        await ReconcileShelfAsync(dir, layout.Units, tracked ?? [], savedShelves![dir], priority, ct);
+                        await ReconcileShelfAsync(dir, layout.Units, tracked ?? [], savedShelves![dir], priority, verifiedFamilyRoots, inspectedFamilyRoots, ct);
                         priority += layout.Units.Count;
                         continue;
                     }
@@ -147,6 +145,8 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
             if (IsEmptyLocalFolder(dir)) continue;
             await AddLocalFolderAsync(dir, priority++, ct);
         }
+        foreach (var root in verifiedFamilyRoots.Except(inspectedFamilyRoots,PathRules.Comparer))
+            await SuspendFamilyAsync(root,ct);
         if(backfills.Count>0)
         {
             var updated=await db.BackfillArchiveDisplayNameAsync(backfills,ct);
@@ -173,7 +173,7 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
 
     private async Task ReconcileShelfAsync(string shelf, IReadOnlyList<ManagedCollectionUnit> units,
         IReadOnlyList<ModCatalogSourceIdentity> wrappers, IEnumerable<(string Id,string Role,string? Canonical)> previous,
-        int priority, CancellationToken ct)
+        int priority, HashSet<string> verifiedFamilyRoots, HashSet<string> inspectedFamilyRoots, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var all = await db.GetModsAsync(true, ct);
@@ -191,8 +191,15 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
         var entries = new List<(string Id, string Role, string? Canonical)>();
         foreach (var unit in units)
         {
-            if (unit.NeedsReview && !PathRules.Comparer.Equals(unit.SourcePath,shelf) &&
-                await DiscoverFamilyAsync(unit.SourcePath,priority,ct,shelf))
+            var wasFamily = verifiedFamilyRoots.Contains(unit.SourcePath);
+            var foundFamily = false;
+            if ((wasFamily || unit.NeedsReview) && !PathRules.Comparer.Equals(unit.SourcePath,shelf))
+            {
+                inspectedFamilyRoots.Add(unit.SourcePath);
+                foundFamily = await DiscoverFamilyAsync(unit.SourcePath,priority,ct,shelf);
+                if (wasFamily && !foundFamily) await SuspendFamilyAsync(unit.SourcePath,ct);
+            }
+            if (foundFamily || wasFamily)
             {
                 foreach(var wrapper in byPath[unit.SourcePath].Where(mod=>!mod.Enabled))
                     entries.Add((wrapper.Id,"wrapper",null));

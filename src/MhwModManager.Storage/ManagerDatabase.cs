@@ -323,7 +323,7 @@ public sealed class ManagerDatabase
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
                (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
-               fm.role,(shelf.role IS 'review' OR src.verified=0) IS TRUE,family.name,fm.choice_group,fp.selected_mod_id,src.label
+               fm.role,(shelf.role IS 'review' OR src.verified=0 OR (src.mod_id IS NOT NULL AND fm.role='Review')) IS TRUE,family.name,fm.choice_group,fp.selected_mod_id,src.label
         FROM mods m
         LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id

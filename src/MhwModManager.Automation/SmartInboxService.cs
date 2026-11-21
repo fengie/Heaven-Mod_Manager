@@ -255,7 +255,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 await using var reader=await command.ExecuteReaderAsync(ct);
                 while (await reader.ReadAsync(ct)) components.Add(reader.GetString(0));
             }
-            var importedMods=(await db.GetModsAsync(ct)).Where(m=>components.Contains(m.Id) || importedPaths.Contains(m.SourcePath)).ToArray();
+            var importedMods=(await db.GetModsAsync(ct)).Where(m=>(m.AuthoredPartLabel is null || !m.RequiresLayoutReview) && (components.Contains(m.Id) || importedPaths.Contains(m.SourcePath))).ToArray();
             await catalog.EnsureCapturedAsync(importedMods,ct);
             if (refreshMetadata)
             {

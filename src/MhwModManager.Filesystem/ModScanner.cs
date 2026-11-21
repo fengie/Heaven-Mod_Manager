@@ -61,6 +61,8 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, bool managedPackage, bool automatic, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
+        if ((!managedPackage && mod.RequiresLayoutReview) || mod.FamilyRole=="Review")
+            throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
         var role = await db.ShelfRoleAsync(mod.Id, ct);
         if (!managedPackage && role is "review" or "wrapper")
             throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
