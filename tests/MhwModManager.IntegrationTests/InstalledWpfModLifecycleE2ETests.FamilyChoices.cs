@@ -75,19 +75,32 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             }
             catch (TimeoutException error)
             {
-                var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
-                var query = currentSearch?.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
-                var queryMatches = query?.Current.Value == name;
-                var grid = Find(window, e => e.Current.ControlType == ControlType.DataGrid && e.Current.Name == "Mod library");
-                var realized = grid?.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)).Count;
-                var catalog = run.OpenCatalog();
-                var mods = await catalog.GetModsAsync(ct);
-                var files = await catalog.GetModFilesAsync(ct);
-                var families = LogicalModFamilies.Build(mods, files, run.FirstGame);
-                var expected = families.SingleOrDefault(family => family.DisplayName == name);
-                throw new TimeoutException($"{error.Message}. Search present={currentSearch is not null}, query matches={queryMatches}, " +
-                    $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
-                    $"catalog families={families.Count}, expected family members={expected?.Members.Count ?? 0}.", error);
+                string state;
+                try
+                {
+                    var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
+                    var query = currentSearch?.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
+                    var grid = Find(window, e => e.Current.ControlType == ControlType.DataGrid && e.Current.Name == "Mod library");
+                    var realized = grid?.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)).Count;
+                    var windows = AutomationElement.RootElement.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id))
+                        .Cast<AutomationElement>().Take(6).Select(e => e.Current.ClassName + " " + e.Current.Name).ToArray();
+                    var catalog = run.OpenCatalog();
+                    await using var pool = await catalog.OpenAsync(ct);
+                    try
+                    {
+                        var mods = await catalog.GetModsAsync(ct);
+                        var files = await catalog.GetModFilesAsync(ct);
+                        var families = LogicalModFamilies.Build(mods, files, run.FirstGame);
+                        var matching = families.Where(f => f.DisplayName == name).ToArray();
+                        state = $"Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
+                            $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
+                            $"catalog families={families.Count}, matching families={matching.Length}, matching members={matching.Sum(f => f.Members.Count)}, " +
+                            $"owned windows=[{string.Join(" | ", windows)}]";
+                    }
+                    finally { Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool); }
+                }
+                catch (Exception diagnosticFailure) { state = $"Diagnostic read failed ({diagnosticFailure.GetType().Name})"; }
+                throw new TimeoutException($"{error.Message}. {state}.", error);
             }
             var row = box;
             while (row is not null && row.Current.ControlType != ControlType.DataItem)
