@@ -235,7 +235,7 @@ public sealed partial class MainWindowViewModel
         await RunBusy(
             "storage.reclaim-disposable",
             "Reclaiming disposable storage",
-            "Removing only manager-owned updater residue and leased catalog-download scratch that existing safety boundaries prove reclaimable…",
+            "Removing only lease-certified abandoned import scratch, updater residue and catalog download scratch; user Mods and State are preserved…",
             true,
             async ct =>
             {
@@ -243,6 +243,8 @@ public sealed partial class MainWindowViewModel
                 var catalogDownloadRoot = Path.Combine(
                     s.Paths.NextStateRoot,
                     "CatalogDownloads");
+                var importWorkspaceRoot = ImportPublicationWorkspace.LocationFor(s.Paths.ModsRoot);
+                var importBefore = await MeasureOwnedRootAsync(importWorkspaceRoot, ct);
                 var updaterBefore = await MeasureOwnedRootAsync(
                     updaterRoot,
                     ct);
@@ -251,6 +253,7 @@ public sealed partial class MainWindowViewModel
                     ct);
                 UpdateStorageCleanupResult updaterResult;
                 CatalogDownloadCleanupResult catalogResult;
+                ImportWorkspaceCleanupResult importResult;
                 try
                 {
                     updaterResult = await UpdateStorageMaintenance.RunAsync(
@@ -260,6 +263,10 @@ public sealed partial class MainWindowViewModel
                         catalogDownloadRoot,
                         message => MasterDebugLog.Write("STORAGE-UI", message),
                         ct);
+                    importResult = await Task.Run(() => ImportWorkspaceMaintenance.Run(
+                        s.Paths.ModsRoot,
+                        message => MasterDebugLog.Write("STORAGE-UI", message),
+                        ct), ct);
                 }
                 catch (Exception ex) when (
                     ex is IOException
@@ -271,6 +278,7 @@ public sealed partial class MainWindowViewModel
                     throw;
                 }
 
+                var importAfter = await MeasureOwnedRootAsync(importWorkspaceRoot, ct);
                 var updaterAfter = await MeasureOwnedRootAsync(
                     updaterRoot,
                     ct);
@@ -283,19 +291,22 @@ public sealed partial class MainWindowViewModel
                 var catalogReclaimed = Math.Max(
                     0,
                     catalogBefore - catalogAfter);
+                var importReclaimed = Math.Max(0, importBefore - importAfter);
                 var reclaimed = checked(
-                    updaterReclaimed + catalogReclaimed);
+                    updaterReclaimed + catalogReclaimed + importReclaimed);
                 await RefreshStorageUsageCoreAsync(ct);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     StorageStatusText =
                         $"Reclaimed {FormatStorageBytes(reclaimed)} from manager-owned disposable data " +
-                        $"(updater {FormatStorageBytes(updaterReclaimed)}, catalog scratch {FormatStorageBytes(catalogReclaimed)}). " +
+                        $"(updater {FormatStorageBytes(updaterReclaimed)}, catalog scratch {FormatStorageBytes(catalogReclaimed)}, import workspaces {FormatStorageBytes(importReclaimed)}). " +
                         $"Removed {updaterResult.DeletedStagingAttempts} orphan staging attempt(s), " +
                         $"{updaterResult.DeletedTransactions} terminal recovery transaction(s), " +
                         $"{catalogResult.DeletedDownloads} catalog download(s), and " +
-                        $"{catalogResult.DeletedLeases} catalog lease file(s); " +
-                        $"{updaterResult.DeferredEntries + catalogResult.DeferredEntries} entry/entries were preserved or deferred.";
+                        $"{catalogResult.DeletedLeases} catalog lease file(s), " +
+                        $"{importResult.DeletedWorkspaces} abandoned import workspace(s), and " +
+                        $"{importResult.DeletedLeases} import lease file(s); " +
+                        $"{updaterResult.DeferredEntries + catalogResult.DeferredEntries + importResult.DeferredEntries} entry/entries were preserved or deferred.";
                 });
             });
     }
@@ -317,7 +328,7 @@ public sealed partial class MainWindowViewModel
             (
                 "Import Workspaces",
                 ImportPublicationWorkspace.LocationFor(s.Paths.ModsRoot),
-                "Incomplete, catalog-invisible import work from this game's Mods root. Measured for visibility only; never automatically reclaimed by Settings without an independently proven lease/recovery disposition."),
+                "Catalog-invisible import scratch. Reclaim removes only lease-certified exited-owner work after a grace period or within the 512 MiB reclaimable-residue quota. Active, unverifiable, legacy and unleased entries are preserved; installed Mods and State are never reclaimed."),
             (
                 "Manager State (total)",
                 s.Paths.StateRoot,
