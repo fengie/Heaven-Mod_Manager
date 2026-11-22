@@ -72,6 +72,23 @@ public static class ImportPublicationWorkspace
         RejectReparseAncestors(fullModsRoot);
         RejectReparseAncestors(stagingFull);
         Directory.Move(stagingFull, destinationFull);
+        // Publication is the ownership transition: the payload has moved into
+        // durable Mods, so retire its sibling scratch lease here. Smart Inbox
+        // intentionally clears its staging variable after this call.
+        try
+        {
+            ImportWorkspaceMaintenance.ReleaseOwnLease(workspaceRoot, stagingFull);
+        }
+        catch (Exception ex) when (ex is IOException
+                                  or UnauthorizedAccessException
+                                  or InvalidDataException
+                                  or System.Text.Json.JsonException)
+        {
+            MasterDebugLog.Write(
+                "IMPORT-LEASE",
+                "Published import succeeded; scratch lease release was deferred for safe maintenance.",
+                ex);
+        }
     }
 
     public static Exception? RollbackPublished(string modsRoot, string? destination)
