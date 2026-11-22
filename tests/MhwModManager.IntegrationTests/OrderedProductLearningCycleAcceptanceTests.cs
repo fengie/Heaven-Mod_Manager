@@ -143,12 +143,12 @@ public sealed class OrderedProductLearningCycleAcceptanceTests : IDisposable
         var blocked = planner.Build(WorkflowAnalysis.WithState(snapshot, invalid));
         Assert.True(blocked.IsBlocked);
         Assert.Contains(blocked.Conflicts, conflict => conflict.Blocking &&
-            conflict.Reason == "exclusive-family-choice");
+            conflict.ReasonCode == "exclusive-family-choice");
         Assert.False((await executor.ApplyAsync(blocked, "Unresolved outfit alternatives", ct: ct)).Success);
 
         var selected = Stage(main.Id, red.Id, lantern.Id);
         var preview = planner.Build(WorkflowAnalysis.WithState(snapshot, selected));
-        Assert.False(preview.IsBlocked, string.Join(" | ", preview.Conflicts.Select(c => c.Reason)));
+        Assert.False(preview.IsBlocked, string.Join(" | ", preview.Conflicts.Select(c => c.ReasonCode)));
         Assert.Equal(3, preview.Changes.Count);
         Assert.All(preview.Changes, change => Assert.Equal(ChangeKind.Add, change.Kind));
         var baseTarget = Path.Combine(mhw.GameRoot, baseTexture.Replace('/', Path.DirectorySeparatorChar));
