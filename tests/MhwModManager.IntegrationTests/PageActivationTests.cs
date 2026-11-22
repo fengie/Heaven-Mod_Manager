@@ -140,7 +140,21 @@ public sealed class PageActivationTests
     private static async Task WaitUntilAsync(Func<bool> assertion, CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(8));
-        while (!assertion()) await Task.Delay(20, timeout.Token);
+        // This tests eventual page-state correctness, not the isolated UI p95
+        // latency budget. Shared Windows CI can run competing release builds;
+        // an 8-second wall-clock deadline produced false negatives in two
+        // unrelated page-activation cases while the scan still needed to finish.
+        timeout.CancelAfter(TimeSpan.FromSeconds(20));
+        try
+        {
+            while (!assertion()) await Task.Delay(20, timeout.Token);
+        }
+        catch (OperationCanceledException ex) when (!ct.IsCancellationRequested && timeout.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                "Page activation did not reach the expected state within 20 seconds; "
+                + "inspect the registered-game scan and page-visit coalescing.",
+                ex);
+        }
     }
 }
