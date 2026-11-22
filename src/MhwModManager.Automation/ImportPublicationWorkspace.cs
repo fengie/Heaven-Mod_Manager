@@ -41,8 +41,7 @@ public static class ImportPublicationWorkspace
     public static string Allocate(string modsRoot, string kind)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (string.IsNullOrWhiteSpace(kind)) throw new ArgumentException("Import workspace kind is required.", nameof(kind));
-        return Path.Combine(RootFor(modsRoot), $"{kind}-{Guid.NewGuid():N}");
+        return ImportWorkspaceMaintenance.Reserve(modsRoot, kind);
     }
 
     public static void Publish(string modsRoot, string staging, string destination)
@@ -73,6 +72,23 @@ public static class ImportPublicationWorkspace
         RejectReparseAncestors(fullModsRoot);
         RejectReparseAncestors(stagingFull);
         Directory.Move(stagingFull, destinationFull);
+        // Publication is the ownership transition: the payload has moved into
+        // durable Mods, so retire its sibling scratch lease here. Smart Inbox
+        // intentionally clears its staging variable after this call.
+        try
+        {
+            ImportWorkspaceMaintenance.ReleaseOwnLease(workspaceRoot, stagingFull);
+        }
+        catch (Exception ex) when (ex is IOException
+                                  or UnauthorizedAccessException
+                                  or InvalidDataException
+                                  or System.Text.Json.JsonException)
+        {
+            MasterDebugLog.Write(
+                "IMPORT-LEASE",
+                "Published import succeeded; scratch lease release was deferred for safe maintenance.",
+                ex);
+        }
     }
 
     public static Exception? RollbackPublished(string modsRoot, string? destination)
@@ -117,7 +133,11 @@ public static class ImportPublicationWorkspace
                 MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing to delete non-workspace import path: {candidate}");
                 return;
             }
-            if (!Directory.Exists(candidate)) return;
+            if (!Directory.Exists(candidate))
+            {
+                ImportWorkspaceMaintenance.ReleaseOwnLease(workspaceRoot, candidate);
+                return;
+            }
             if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
             {
                 MasterDebugLog.Write("IMPORT-CLEANUP", $"Refusing recursive cleanup of reparse import workspace: {candidate}");
@@ -126,6 +146,7 @@ public static class ImportPublicationWorkspace
             SafeRecursiveTraversal.EnsureNoReparsePoints(candidate);
             RejectReparseAncestors(candidate);
             Directory.Delete(candidate, true);
+            ImportWorkspaceMaintenance.ReleaseOwnLease(workspaceRoot, candidate);
         }
         catch (Exception ex)
         {
@@ -136,7 +157,7 @@ public static class ImportPublicationWorkspace
         }
     }
 
-    private static void RejectReparseAncestors(string path)
+    internal static void RejectReparseAncestors(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         for (DirectoryInfo? directory = new(Path.GetFullPath(path));
