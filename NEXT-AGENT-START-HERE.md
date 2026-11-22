@@ -1,6 +1,6 @@
 # v8.8.137 — canonical state and automatic mod changes
 
-Build 625 is the published v8.8.136 package from 03b07f33e6435a950594e21340153b2de50d3a48. Verify automatic mod changes, explicit choice handling and page refresh on the packaged Windows client. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
@@ -24,9 +24,9 @@ Build 625 is the published v8.8.136 package from 03b07f33e6435a950594e21340153b2
 
 ## Verification boundary
 
-v8.8.136 [build 625](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-625) published source `03b07f33e6435a950594e21340153b2de50d3a48`. Windows Gate 44924132490 passed all 26 checks. Installed-client run 44925024003 confirmed the published update and verified rollback after an injected failure. The preserved logs record the exact source and hashes. [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44924132490) · [Installed-client proof](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44925024003)
+On November 21, 2026, [immutable build 626](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-626) published source `254f25a4e011959a2aa88a14528b8e47dcc5f290`. Its [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44951374688) and [installed-client update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44952489213) passed. [H2’s installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) verifies the signed update from 624, preserved catalog and two outfit workflows on isolated game roots.
 
-On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. The v8.8.137 changes require separate packaged desktop, release and installed acceptance. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
+On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. That earlier run predates build 626. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
 For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 
