@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.138</Version>
-    <InformationalVersion>8.8.138-browse-fts-search</InformationalVersion>
+    <Version>8.8.139</Version>
+    <InformationalVersion>8.8.139-storage-lifecycle-recovery</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

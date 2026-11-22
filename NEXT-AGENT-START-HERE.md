@@ -1,4 +1,4 @@
-# v8.8.138 — canonical state and Browse Mods cached search
+# v8.8.139 — storage lifecycle release candidate
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -6,7 +6,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.138 source candidate:** cached Browse Mods search distinguishes blank browsing from nonblank zero-token input and preserves Unicode61 searchable terms. PR #960 has the regression and required gate evidence; v8.8.137 build 626 remains the last independently verified immutable release until new publication/rollback evidence exists. Keep #558 broader provider and end-user acceptance open.
+- **v8.8.139 source candidate:** storage fixes #904 (same-game content digest reuse), #962 (import reparse ancestor safety), and #963 (certified exited-owner import scratch reclaim) are included. Prior immutable v8.8.138 build 627 was published from source `708b725bd87b2e1f060ee15df28bcb40d758fa54`; its Windows Gate 44986768296 and genuine hosted packaged updater/rollback 44987408825 passed. These newer fixes are NOT in build 627. Verify this versioned release PR against current main, then its Windows publication, actual hosted update/rollback and separate physical H2 acceptance. Preserve #669 and #793 open for endurance/device boundaries, and #912 for in-game visual verification. Keep #558 broader provider and end-user acceptance open.
 
 - The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
 - The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.

@@ -1,8 +1,11 @@
-# v8.8.138 — canonical state and Browse Mods cached search
+# v8.8.139 — storage lifecycle release candidate
 
-Build 626 is the last independently verified immutable v8.8.137 release (source 254f25a4e011959a2aa88a14528b8e47dcc5f290). The v8.8.138 cached-search candidate needs its own native source, package and updater/rollback acceptance after protected main integration. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 627 is the independently verified v8.8.138 immutable release (source 708b725bd87b2e1f060ee15df28bcb40d758fa54; Windows Gate 44986768296 and genuine packaged updater/rollback E2E 44987408825 passed). The new #904/#962/#963 storage code was integrated afterward and requires its own v8.8.139 immutable publication and packaged rollback proof. Personal Heaven2 installed health, in-game armor visuals, and full storage crash/endurance acceptance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
+
+- **v8.8.139 storage source:** #904 adds per-game digest-verified archive reuse under alias titles; #962 rejects reparse ancestors; #963 introduces certified lease-owned import scratch and safe exited-owner reclaim integrated into Settings, with active/unowned data preserved. Native source tests, publisher and H2 acceptance must be checked against exact source/artifact separately.
+
 
 - Browse Mods cached-search input with no FTS5 term returns zero matches instead of a malformed query or full-catalog browse. The Unicode61 L/N/private-use code-point regression is in PR #960. Real provider coverage, UI p95 and physical installation remain separately open under #558.
 
@@ -60,6 +63,6 @@ Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d1832
 - [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks installed verification. Build 603 has hosted and personal installed proof. v8.8.121 installed health and bounded endurance remain open.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in the canonical documentation-only release handoff. No new product binary or version was created.
 
-Next: integrate and publish v8.8.120 through the protected Windows release path. Confirm the new immutable source, ZIP and manifest, then verify the packaged updater and disposable-home startup. Preserve the active personal Manager session and recursively pass on the Core Rules and Learned Rules.
+Next: verify and publish v8.8.139 through the protected Windows release path after exact-head source approval. Confirm immutable artifact source and hashes, real hosted update/rollback, and then independent Heaven2 observation. Do not touch active personal Manager/Mods/State. Confirm the new immutable source, ZIP and manifest, then verify the packaged updater and disposable-home startup. Preserve the active personal Manager session and recursively pass on the Core Rules and Learned Rules.
 
 Auto Populate checks pre-Iceborne armor materials since v8.8.119. See product PR #913 for profile recovery and verification.

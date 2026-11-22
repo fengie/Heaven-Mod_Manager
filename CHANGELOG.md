@@ -1,3 +1,10 @@
+# v8.8.139 — November 22, 2026
+
+- Reuse verified same-game downloaded archives by full SHA-256 and matching extension across source titles, with 16-way concurrency and forged-digest-name regressions. [#904](https://github.com/fengie/Heaven-Mod_Manager/pull/904)
+- Reject symlink/junction ancestry at import publication and cleanup boundaries without touching installed Mods or State. [#962](https://github.com/fengie/Heaven-Mod_Manager/pull/962)
+- Persist certified owner leases outside archive/FOMOD/Smart Inbox extraction workspace; release markers at durable publication/cancellation, and safely reclaim only exited-owner abandoned scratch under a one-hour grace and 512 MiB reclaimable-residue policy. Settings reports actual reclaimed and deferred bytes/entries. [#963](https://github.com/fengie/Heaven-Mod_Manager/pull/963)
+- Unknown/legacy/unleased/reparse work, active owner sessions and all installed files remain protected. Native Windows source gates are distinct from immutable publication, real packaged update and rollback, personal Heaven2 and long-run endurance acceptance. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669) · [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793)
+
 # v8.8.138 — November 21, 2026
 
 - Browse Mods handles local cached searches consisting only of punctuation, symbols or emoji as zero matches, without accidentally listing the whole cache.
