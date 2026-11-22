@@ -30,7 +30,9 @@ public static class ImportPublicationWorkspace
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var workspace = LocationFor(modsRoot);
+        RejectReparseAncestors(workspace);
         Directory.CreateDirectory(workspace);
+        RejectReparseAncestors(workspace);
         if ((File.GetAttributes(workspace) & FileAttributes.ReparsePoint) != 0)
             throw new InvalidDataException($"Import workspace cannot be a symbolic link or reparse point: {workspace}");
         return workspace;
@@ -51,6 +53,8 @@ public static class ImportPublicationWorkspace
         var stagingFull = Path.GetFullPath(staging).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var destinationFull = Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
+        RejectReparseAncestors(fullModsRoot);
+        RejectReparseAncestors(stagingFull);
         if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(stagingFull), workspaceRoot))
             throw new InvalidDataException("Import staging path is not a direct child of the manager-owned import workspace.");
         if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(destinationFull), fullModsRoot))
@@ -66,6 +70,8 @@ public static class ImportPublicationWorkspace
 
         SafeRecursiveTraversal.EnsureNoReparsePoints(stagingFull);
         Directory.CreateDirectory(fullModsRoot);
+        RejectReparseAncestors(fullModsRoot);
+        RejectReparseAncestors(stagingFull);
         Directory.Move(stagingFull, destinationFull);
     }
 
@@ -79,10 +85,12 @@ public static class ImportPublicationWorkspace
             var candidate = Path.GetFullPath(destination).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             if (!StringComparer.OrdinalIgnoreCase.Equals(Path.GetDirectoryName(candidate), fullModsRoot))
                 throw new InvalidDataException($"Refusing to delete non-ModsRoot published path: {candidate}");
+            RejectReparseAncestors(candidate);
             if (!Directory.Exists(candidate)) return null;
             if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
                 throw new InvalidDataException($"Refusing recursive rollback of reparse published path: {candidate}");
             SafeRecursiveTraversal.EnsureNoReparsePoints(candidate);
+            RejectReparseAncestors(candidate);
             Directory.Delete(candidate, true);
             return null;
         }
@@ -116,6 +124,7 @@ public static class ImportPublicationWorkspace
                 return;
             }
             SafeRecursiveTraversal.EnsureNoReparsePoints(candidate);
+            RejectReparseAncestors(candidate);
             Directory.Delete(candidate, true);
         }
         catch (Exception ex)
@@ -124,6 +133,33 @@ public static class ImportPublicationWorkspace
                 "IMPORT-CLEANUP",
                 $"Failed to remove catalog-invisible import workspace '{staging}'. It remains outside ModsRoot and cannot be cataloged.",
                 ex);
+        }
+    }
+
+    private static void RejectReparseAncestors(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        for (DirectoryInfo? directory = new(Path.GetFullPath(path));
+             directory is not null;
+             directory = directory.Parent)
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(directory.FullName);
+            }
+            catch (FileNotFoundException)
+            {
+                continue;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                continue;
+            }
+
+            if ((attributes & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidDataException(
+                    $"Import path has a reparse ancestor: {directory.FullName}");
         }
     }
 }
