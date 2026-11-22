@@ -33,7 +33,7 @@ public static class ImportWorkspaceMaintenance
     public const long DefaultMaxOwnedBytes = 512L * 1024 * 1024;
     public static readonly TimeSpan DefaultMinimumAge = TimeSpan.FromHours(1);
 
-    private static readonly string[] Kinds = ["archive", "fomod-source", "fomod-install"];
+    private static readonly string[] Kinds = ["archive", "fomod-source", "fomod-install", "inbox"];
 
     public static string Reserve(string modsRoot, string kind)
     {
