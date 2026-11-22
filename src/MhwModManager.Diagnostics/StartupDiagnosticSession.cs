@@ -229,7 +229,10 @@ public sealed class StartupDiagnosticSession
             };
             var temp = JsonReportPath + ".tmp";
             File.WriteAllText(temp, JsonSerializer.Serialize(report, JsonOptions), Encoding.UTF8);
-            File.Move(temp, JsonReportPath, true);
+            // Windows can replace a delete-sharing reader's snapshot while it remains open.
+            // Move-with-overwrite can instead deny the terminal update to an observed report.
+            if (File.Exists(JsonReportPath)) File.Replace(temp, JsonReportPath, null);
+            else File.Move(temp, JsonReportPath);
             lastReportPersistTimestamp=nowTicks;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)

@@ -11,11 +11,23 @@ namespace MhwModManager.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     private GameModIntakeService? gameIntake;
-    private readonly List<FileSystemWatcher> intakeWatchers = [];
+    private readonly Dictionary<string, (CancellationTokenSource Lifetime, Task Worker)> intakeWatchers = new(PathRules.Comparer);
     private readonly SemaphoreSlim intakeScanGate = new(1, 1);
     private readonly object intakeScheduleGate = new();
     private CancellationTokenSource? intakeScheduleCts;
     private bool autoSortStarted;
+    private bool scanSourcesRequested;
+    private bool inboxWaitingForForeground;
+
+    private IEnumerable<string> ActiveInboxRoots
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return new[] { s.Paths.InboxRoot, s.Paths.LegacyInboxRoot }
+        .Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+    }
 
     public ObservableRangeCollection<string> AutoSortFolders { get; } = [];
     [ObservableProperty] private string? selectedAutoSortFolder;
@@ -165,23 +177,18 @@ public sealed partial class MainWindowViewModel
 
         BusyDetail = $"Installing {activeRouted} approved package(s) into {s.Paths.Game.DisplayName}…";
         var inbox = await ProcessInboxWithProgressAsync(ct);
-        var archived = 0;
         if (inbox.Imported > 0)
         {
-            BusyDetail = "Checking safe duplicates in this game's library…";
-            BusyItemProgressVisibility = Visibility.Collapsed;
-            BusyProgressIndeterminate = true;
-            archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
             BusyDetail = "Refreshing visible installed mods…";
-            await ReloadMods(ct);
+            await ReloadMods(ct,preserveStagedChanges:true);
             BusyDetail = "Recomputing compatibility after import…";
             await RefreshAnalysis(ct);
         }
         MasterDebugLog.Write("MOD-INTAKE-UI",
             $"Manual import completed. activeGame={activeId}; activeRouted={activeRouted}; " +
-            $"inboxImported={inbox.Imported}; inboxSkipped={inbox.Skipped}; duplicatesArchived={archived}; queuedOtherGames={queuedForOtherGames}; review={report.NeedsReview}");
+            $"inboxImported={inbox.Imported}; inboxSkipped={inbox.Skipped}; queuedOtherGames={queuedForOtherGames}; review={report.NeedsReview}");
         return $"Installed {inbox.Imported} package(s) into {s.Paths.Game.DisplayName}; " +
-            $"{inbox.Skipped} Inbox package(s) skipped, {archived} safe duplicate(s) archived. " +
+            $"{inbox.Skipped} Inbox package(s) skipped. " +
             $"{queuedForOtherGames} package(s) queued for other registered games.";
     }
 
@@ -204,14 +211,6 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    [RelayCommand]
-    private async Task ScanAutoSortFolders()
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        EnsureGameIntake();
-        await ScanAutoSortAsync(backgroundCts.Token);
-    }
-
     private void EnsureGameIntake()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -229,61 +228,107 @@ public sealed partial class MainWindowViewModel
         if (folders.Count == 0)
             AutoSortStatusText = "No folders monitored. Add a source once to auto-sort future downloads.";
         else
-            AutoSortStatusText = $"Monitoring {folders.Count} source folder(s). Unknown/ambiguous packages stay in place for review.";
+            AutoSortStatusText = $"Watching {folders.Count} configured folder(s). Monitoring resumes automatically when an offline folder returns.";
     }
 
     private void RefreshAutoSortWatchers()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        foreach (var watcher in intakeWatchers) watcher.Dispose();
-        intakeWatchers.Clear();
-        foreach (var folder in AutoSortFolders)
+        var inboxRoots = ActiveInboxRoots.ToHashSet(PathRules.Comparer);
+        var configured = AutoSortFolders.Concat(inboxRoots).ToHashSet(PathRules.Comparer);
+        foreach (var folder in intakeWatchers.Keys.Where(folder => !configured.Contains(folder)).ToArray())
         {
-            if (!Directory.Exists(folder)) continue;
-            try
+            _ = StopIntakeWatcherAsync(folder);
+        }
+        foreach (var folder in configured)
+        {
+            if (intakeWatchers.ContainsKey(folder)) continue;
+            var lifetime = CancellationTokenSource.CreateLinkedTokenSource(backgroundCts.Token);
+            var inbox = inboxRoots.Contains(folder);
+            var token = lifetime.Token;
+            var worker = Task.Run(async () =>
             {
-                var watcher = new FileSystemWatcher(folder)
+                try
                 {
-                    IncludeSubdirectories = true,
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName
-                        | NotifyFilters.Size | NotifyFilters.LastWrite,
-                    EnableRaisingEvents = false
-                };
-                watcher.Created += OnAutoSortFilesystemChange;
-                watcher.Changed += OnAutoSortFilesystemChange;
-                watcher.Renamed += OnAutoSortFilesystemChange;
-                watcher.Error += OnAutoSortWatcherError;
-                watcher.EnableRaisingEvents = true;
-                intakeWatchers.Add(watcher);
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
-            {
-                s.Log.Warning(ex, "Could not monitor designated intake folder {Folder}", folder);
-                AutoSortStatusText = "One monitored folder is unavailable. Use Scan Folders after reconnecting it.";
-            }
+                    await WatchIntakeFolderAsync(folder, TimeSpan.FromSeconds(20), name =>
+                    {
+                        if (token.IsCancellationRequested || (inbox && name is not null &&
+                            (name.Equals("Processed", StringComparison.OrdinalIgnoreCase) ||
+                             name.StartsWith("Processed" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))) return;
+                        ScheduleAutoSortScan(scanSources: !inbox);
+                    }, token);
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+            });
+            intakeWatchers.Add(folder, (lifetime, worker));
         }
     }
 
-    private void OnAutoSortFilesystemChange(object sender, FileSystemEventArgs e)
+    private async Task StopIntakeWatcherAsync(string folder)
     {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        ScheduleAutoSortScan();
+        using var trace = MasterDebugLog.BeginMethod();
+        if (!intakeWatchers.Remove(folder, out var watcher)) return;
+        try
+        {
+            watcher.Lifetime.Cancel();
+            await watcher.Worker.ConfigureAwait(false);
+        }
+        finally { watcher.Lifetime.Dispose(); }
     }
 
-    private void OnAutoSortWatcherError(object sender, ErrorEventArgs e)
+    internal static async Task WatchIntakeFolderAsync(string folder, TimeSpan interval, Action<string?> changed, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        s.Log.Warning(e.GetException(), "Mod-intake filesystem watcher requires authoritative rescan.");
-        ScheduleAutoSortScan();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var root = new DirectoryInfo(folder);
+                if (root.Exists)
+                {
+                    GameModIntakeService.RefuseReparseComponents(folder);
+                    var created = root.CreationTimeUtc;
+                    var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    using var watcher = new FileSystemWatcher(folder)
+                    {
+                        IncludeSubdirectories = true,
+                        NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size | NotifyFilters.LastWrite
+                    };
+                    watcher.Created += (_, e) => changed(e.Name);
+                    watcher.Changed += (_, e) => changed(e.Name);
+                    watcher.Renamed += (_, e) => changed(e.Name);
+                    watcher.Error += (_, _) => failed.TrySetResult();
+                    watcher.EnableRaisingEvents = true;
+                    // Subscribe before reconciling files that arrived while the folder was unavailable.
+                    changed(null);
+                    while (!failed.Task.IsCompleted)
+                    {
+                        var delay = Task.Delay(interval, ct);
+                        if (await Task.WhenAny(delay, failed.Task).ConfigureAwait(false) == failed.Task) break;
+                        await delay.ConfigureAwait(false);
+                        root.Refresh();
+                        if (!root.Exists || root.CreationTimeUtc != created ||
+                            (root.Attributes & FileAttributes.ReparsePoint) != 0) break;
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
+            {
+                // A removable or network folder can disappear between the probe and subscription.
+            }
+            await Task.Delay(interval, ct).ConfigureAwait(false);
+        }
     }
 
-    private void ScheduleAutoSortScan()
+    private void ScheduleAutoSortScan(bool scanSources = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (disposed || backgroundCts.IsCancellationRequested || AutoSortFolders.Count == 0) return;
         CancellationTokenSource trigger;
         lock (intakeScheduleGate)
         {
+            if (disposed || backgroundCts.IsCancellationRequested) return;
+            scanSourcesRequested |= scanSources;
             intakeScheduleCts?.Cancel();
             trigger = CancellationTokenSource.CreateLinkedTokenSource(backgroundCts.Token);
             intakeScheduleCts = trigger;
@@ -299,7 +344,21 @@ public sealed partial class MainWindowViewModel
             // FileSystemWatcher fires repeatedly while browsers download archives.
             // Debounce until writers go quiet rather than copying partial packages.
             await Task.Delay(TimeSpan.FromSeconds(4), trigger.Token);
-            await ScanAutoSortAsync(trigger.Token);
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                bool scanSources;
+                lock (intakeScheduleGate)
+                {
+                    if (trigger.IsCancellationRequested || disposed) return;
+                    scanSources = scanSourcesRequested;
+                    scanSourcesRequested = false;
+                }
+                // New file events debounce future work without cancelling a publication already in progress.
+                var ct = backgroundCts.Token;
+                if (scanSources && AutoSortFolders.Count > 0)
+                    await ScanAutoSortAsync(ct);
+                await DrainActiveInboxAsync(ct);
+            }).Task.Unwrap();
         }
         catch (OperationCanceledException) when (trigger.IsCancellationRequested) { }
         catch (Exception ex)
@@ -319,6 +378,47 @@ public sealed partial class MainWindowViewModel
             }
             trigger.Dispose();
         }
+    }
+
+    partial void OnBusyVisibilityChanged(Visibility value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // A drop during Preview, Apply or another foreground operation remains in the durable Inbox.
+        if (value == Visibility.Collapsed && !disposed && SelectedTab==1 && (managedReadDeferred || Volatile.Read(ref shelfDirty)!=0))
+            _ = ReconcileManagedPageAsync(backgroundCts.Token);
+        if (value == Visibility.Collapsed && inboxWaitingForForeground && !disposed)
+        {
+            inboxWaitingForForeground = false;
+            ScheduleAutoSortScan(scanSources: false);
+        }
+    }
+
+    private async Task DrainActiveInboxAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (disposed || ct.IsCancellationRequested) return;
+        if (BusyVisibility == Visibility.Visible)
+        {
+            inboxWaitingForForeground = true;
+            return;
+        }
+        var pending = await Task.Run(s.Inbox.HasPendingPackages, ct);
+        if (!pending || disposed || ct.IsCancellationRequested) return;
+
+        bool started = false;
+        await RunBusy("automation.inbox.auto", "Importing Inbox mods", "Reading packages for the current game…", true, async operationToken =>
+        {
+            started = true;
+            using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(ct, operationToken);
+            var result = await Task.Run(() => s.Inbox.ProcessAsync(null, refreshMetadata: false, lifetime.Token), lifetime.Token);
+            if (result.Imported > 0)
+            {
+                await ReloadMods(lifetime.Token, preserveStagedChanges: true);
+                await RefreshAnalysis(lifetime.Token);
+            }
+            StatusText = $"Inbox: {result.Imported} installed, {result.Skipped} skipped.";
+        });
+        if (!started && BusyVisibility == Visibility.Visible) inboxWaitingForForeground = true;
     }
 
     private async Task ScanAutoSortAsync(CancellationToken ct)
@@ -357,7 +457,6 @@ public sealed partial class MainWindowViewModel
             intakeScheduleCts?.Cancel();
             intakeScheduleCts = null;
         }
-        foreach (var watcher in intakeWatchers) watcher.Dispose();
-        intakeWatchers.Clear();
+        foreach (var folder in intakeWatchers.Keys.ToArray()) _ = StopIntakeWatcherAsync(folder);
     }
 }

@@ -385,7 +385,19 @@
         </Style>
 
         <!-- Navigation -->
-        <Style TargetType="TabControl">
+        <Style x:Key="ContextDetailLine" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2"/>
+            <Style.Triggers>
+                <Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MainNavigationTabs" TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="local:UiMotion.EnableSelectionTransition" Value="True"/>
@@ -413,7 +425,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="KEYBOARD" Style="{StaticResource Eyebrow}"/>
                                                 <TextBlock Margin="0,6,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+F  Search mods"/>
-                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Apply changes"/>
+                                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Enter  Retry pending changes"/>
                                                 <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10" Text="Ctrl+Z  Undo"/>
                                             </StackPanel>
                                         </Border>
@@ -424,7 +436,26 @@
                                 </DockPanel>
                             </Border>
                             <Border Grid.Column="1" Background="{StaticResource Bg}">
-                                <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"/>
+                                <DockPanel>
+                                    <Expander DockPanel.Dock="Bottom" Header="More info" Margin="12,2,12,4"
+                                              AutomationProperties.Name="More info about this page or selection"
+                                              Foreground="{StaticResource Text}">
+                                        <Expander.Style>
+                                            <Style TargetType="Expander">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedItem.Tag, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Expander.Style>
+                                        <ScrollViewer MaxHeight="132" Margin="16,4,0,4" VerticalScrollBarVisibility="Auto">
+                                            <ContentPresenter Content="{Binding DataContext, RelativeSource={RelativeSource TemplatedParent}}"
+                                                              ContentTemplate="{Binding SelectedItem.Tag, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                        </ScrollViewer>
+                                    </Expander>
+                                    <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"/>
+                                </DockPanel>
                             </Border>
                         </Grid>
                     </ControlTemplate>

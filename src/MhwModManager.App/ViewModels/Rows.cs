@@ -40,6 +40,8 @@ public partial class ModPartRowViewModel:ObservableObject
     private static string DescribeRole(ModDescriptor mod)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!string.IsNullOrWhiteSpace(mod.ChoiceGroup)) return "Choose one: " + mod.ChoiceGroup;
+        if (mod.FamilyId?.StartsWith("authored:", StringComparison.Ordinal) == true && mod.FamilyRole is { } role) return role;
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Main"))return "Main (manual)";
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Optional"))return "Optional (manual)";
         if(StringComparer.OrdinalIgnoreCase.Equals(mod.FamilyRole,"Component"))return "Component (manual)";
@@ -61,6 +63,7 @@ public partial class ModPartRowViewModel:ObservableObject
 public partial class ModRowViewModel:ObservableObject
 {
     private readonly Action _changed;
+    private readonly Action<string,(bool enabled,int priority)>? userEdited;
     private readonly Dictionary<string,(bool enabled,int priority)> _appliedMembers;
     private readonly Dictionary<string,(bool enabled,int priority)> _stagedMembers;
     private bool _updatingSummary;
@@ -96,6 +99,14 @@ public partial class ModRowViewModel:ObservableObject
         }
     }
     public ObservableRangeCollection<string> GalleryPaths{get;}=[];
+    public bool CanStage
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return Members.All(member => !member.RequiresLayoutReview);
+        }
+    }
     public int MemberCount=>Members.Count;
     public int ArchivedCount=>ArchivedMembers.Count;
     public bool IsComposite=>MemberCount>1;
@@ -127,6 +138,7 @@ public partial class ModRowViewModel:ObservableObject
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (!CanStage) return "Needs layout review";
             return HasStagedChanges
                 ? StagedEnabledMembers switch
                 {
@@ -181,7 +193,8 @@ public partial class ModRowViewModel:ObservableObject
         OnPropertyChanged(nameof(FamilyHint));
     }
 
-    public ModRowViewModel(LogicalModFamily family,Action changed)
+    public ModRowViewModel(LogicalModFamily family,Action changed,
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? pending = null, Action<string,(bool enabled,int priority)>? userEdited = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
@@ -196,16 +209,22 @@ public partial class ModRowViewModel:ObservableObject
             var suffix=identity[DisplayName.Length..].Trim(' ','-',':','|','_','–','—');
             if(!string.IsNullOrWhiteSpace(suffix))identity=suffix;
         }
+        if (family.Members is [{ RequiresLayoutReview: true }] &&
+            System.IO.Path.GetDirectoryName(SourcePath) is { Length: > 0 } parent)
+            SourceName = System.IO.Path.Combine(System.IO.Path.GetFileName(parent), SourceName);
         // The visible source label already strips receipt hashes; parse only the
         // untouched original package name and present its source ID as a hint.
         if(!IsComposite && NexusArchiveIdentity.TryParse(family.Members[0].Name,out var sourceIdentity))
             identity=$"Possible Nexus {sourceIdentity.ModId} • unverified source";
         IdentityHint=IsComposite?PartsLabel:identity;
         _appliedMembers=family.Members.ToDictionary(x=>x.Id,x=>(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
-        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;
+        _stagedMembers=new(_appliedMembers,StringComparer.OrdinalIgnoreCase);_changed=changed;this.userEdited=userEdited;
+        if (pending is not null && CanStage)
+            foreach (var member in Members)
+                if (pending.TryGetValue(member.Id, out var stage)) _stagedMembers[member.Id] = stage;
         EnsureRequiredCompositionMembers();
         ThumbnailPath=family.Members.Select(m=>m.PreviewPath).FirstOrDefault(p=>!string.IsNullOrWhiteSpace(p)&&System.IO.File.Exists(p));
-        foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
+        foreach(var member in Members)Parts.Add(new ModPartRowViewModel(member,member.AuthoredPartLabel ?? PartName(member.DisplayName),_stagedMembers[member.Id].enabled,OnPartChanged));
         SetSummaryFromMembers();
     }
 
@@ -213,9 +232,31 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(_updatingSummary)return;
-        if(value.HasValue)foreach(var id in _stagedMembers.Keys.ToArray()){var current=_stagedMembers[id];_stagedMembers[id]=(value.Value,current.priority);}
+        if (!CanStage) { SetSummaryFromMembers(); return; }
+        var before = userEdited is null ? null : new Dictionary<string,(bool enabled,int priority)>(_stagedMembers,PathRules.Comparer);
+        if(value.HasValue)
+        {
+            var choices = Members.Where(member=>!string.IsNullOrWhiteSpace(member.ChoiceGroup))
+                .GroupBy(member=>member.ChoiceGroup!,StringComparer.Ordinal)
+                .Select(group =>
+                {
+                    var chosen = group.Where(member=>_stagedMembers[member.Id].enabled).ToArray();
+                    return chosen.Length == 1 ? chosen[0].Id : group.FirstOrDefault(member=>member.Id==member.PreferredChoiceId)?.Id;
+                }).Where(id=>id is not null).ToHashSet(StringComparer.Ordinal);
+            foreach(var member in Members)
+            {
+                var current = _stagedMembers[member.Id];
+                _stagedMembers[member.Id]=(value.Value && (member.ChoiceGroup is null || choices.Contains(member.Id)),current.priority);
+            }
+        }
         EnsureRequiredCompositionMembers();
-        SyncParts();RaiseStateChanged();_changed();
+        SetSummaryFromMembers();_changed();ReportUserChanges(before);
+    }
+
+    public IEnumerable<KeyValuePair<string,(bool enabled,int priority)>> StagedChanges()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return _stagedMembers.Where(pair => _appliedMembers[pair.Key] != pair.Value);
     }
 
     public IReadOnlyDictionary<string,(bool enabled,int priority)> ExpandStage()
@@ -232,8 +273,25 @@ public partial class ModRowViewModel:ObservableObject
     public void SetMemberEnabled(string memberId,bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(memberId,out var current))return;_stagedMembers[memberId]=(enabled,current.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();
+        if (!CanStage || !_stagedMembers.TryGetValue(memberId,out var current)) return;
+        var before = userEdited is null ? null : new Dictionary<string,(bool enabled,int priority)>(_stagedMembers,PathRules.Comparer);
+        var member = Members.First(item => StringComparer.OrdinalIgnoreCase.Equals(item.Id,memberId));
+        if (enabled && !string.IsNullOrWhiteSpace(member.ChoiceGroup))
+            foreach (var peer in Members.Where(item => item.Id != member.Id && item.ChoiceGroup == member.ChoiceGroup))
+                _stagedMembers[peer.Id] = (false, _stagedMembers[peer.Id].priority);
+        _stagedMembers[memberId]=(enabled,current.priority);
+        EnsureRequiredCompositionMembers();
+        SetSummaryFromMembers();
+        _changed();ReportUserChanges(before);
     }
+    private void ReportUserChanges(Dictionary<string,(bool enabled,int priority)>? before)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        if (before is null || userEdited is null) return;
+        foreach(var state in _stagedMembers)
+            if(before[state.Key]!=state.Value) userEdited(state.Key,state.Value);
+    }
+
     public bool ContainsMember(string memberId)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -243,13 +301,18 @@ public partial class ModRowViewModel:ObservableObject
     public void ApplyProfileState(IReadOnlyDictionary<string,(bool enabled,int priority)> state)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!CanStage) return;
         foreach(var member in Members)_stagedMembers[member.Id]=state.TryGetValue(member.Id,out var value)?value:(false,member.Priority);
         EnsureRequiredCompositionMembers();
         SetSummaryFromMembers();_changed();
     }
-    public void CommitApplied(){
+    public void CommitApplied(IReadOnlyDictionary<string,(bool enabled,int priority)> committed)
+    {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        _appliedMembers.Clear();foreach(var item in _stagedMembers)_appliedMembers[item.Key]=item.Value;RaiseStateChanged();}
+        foreach(var member in Members)
+            if(committed.TryGetValue(member.Id,out var state)) _appliedMembers[member.Id]=state;
+        RaiseStateChanged();
+    }
 
     public void DiscardStaged()
     {
@@ -290,7 +353,9 @@ public partial class ModRowViewModel:ObservableObject
 
     private void OnPartChanged(string id,bool enabled){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(!_stagedMembers.TryGetValue(id,out var state))return;_stagedMembers[id]=(enabled,state.priority);EnsureRequiredCompositionMembers();SetSummaryFromMembers();_changed();}
+        if(!CanStage) { SyncParts(); return; }
+        SetMemberEnabled(id,enabled);
+    }
 
     private void EnsureRequiredCompositionMembers()
     {
@@ -363,7 +428,26 @@ public sealed record ConflictRow(
     }
 }
 
-public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers);
+public sealed record OutfitRow(string Armor,string ModelId,int Available,string WinningPieces,string Status,string? PreviewPath,string Providers)
+{
+    public string OptionsLabel
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Available==0 ? "Details" : $"Outfits ({Available})";
+        }
+    }
+    public bool HasPreference
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Options.Any(option => option.IsPreferred);
+        }
+    }
+    public IReadOnlyList<MhwModManager.Storage.ArmorOutfitOption> Options { get; init; } = [];
+}
 public sealed record AssetOverlapRow(string AssetKey,string DisplayName,int ProviderCount,string Providers,string Resolution,string Detail,string PrimaryPath);
 public sealed record ActivityRow(string Id,string State,string Description,string Started);
 public sealed record ModIssueRow(string ModId,string DisplayName,string Kind,int Score,string Reason,string LastSeen,int FailureCount,bool Confirmed)

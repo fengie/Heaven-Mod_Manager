@@ -16,7 +16,10 @@ public sealed record AutoPopulateResult(
     string Summary,
     int PlannerPasses = 0,
     int PlannerFastPathCandidates = 0,
-    double PlannerMilliseconds = 0);
+    double PlannerMilliseconds = 0)
+{
+    public IReadOnlyCollection<string> SharedExportIds { get; init; } = [];
+}
 
 internal sealed record ModDependencyRequirement(
     string Token,
@@ -503,7 +506,9 @@ public sealed class AutoPopulateService(
     DeploymentPlanner planner,
     DependencyDoctorService dependencies,
     string gameRoot,
-    GameProfile game)
+    GameProfile game,
+    MhwModManager.Filesystem.BlobStore? blobs = null,
+    MhwModManager.Filesystem.ModScanner? scanner = null)
 {
     public async Task<AutoPopulateResult> BuildAsync(CancellationToken ct = default)
     {
@@ -516,7 +521,61 @@ public sealed class AutoPopulateService(
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return await BuildAsync(preferredModIds, Array.Empty<string>(), ct);
+    }
+
+    public async Task<AutoPopulateResult> BuildAsync(IReadOnlyCollection<string>? preferredModIds,
+        IReadOnlyCollection<string> excludedModIds, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = await plannerSnapshots.LoadAsync(ct);
+        var preparationErrors = excludedModIds.Distinct(PathRules.Comparer)
+            .ToDictionary(id => id, _ => "Explicitly staged off for this operation.", PathRules.Comparer);
+        var anchors = (preferredModIds ?? snapshot.Mods.Where(mod => mod.Enabled).Select(mod => mod.Id).ToArray()).ToHashSet(PathRules.Comparer);
+        var choices = await plannerSnapshots.LoadExclusiveChoicesAsync(ct);
+        foreach (var group in choices.GroupBy(item => (item.Family,item.Group)))
+        {
+            var anchored = group.Where(item => anchors.Contains(item.Id)).ToArray();
+            if (anchored.Length > 1)
+                throw new InvalidOperationException($"Choose one member of '{group.Key.Group}' before Auto Populate.");
+            var selectedMember = anchored.Length == 1 ? anchored[0].Id : group.First().Selected;
+            foreach (var item in group.Where(item => !PathRules.Comparer.Equals(item.Id,selectedMember)))
+                preparationErrors[item.Id] = $"Requires one explicit selection in '{group.Key.Group}'.";
+        }
+        var indexed = snapshot.Files.Select(file => file.ModId).ToHashSet(PathRules.Comparer);
+        var filesForPlan = snapshot.Files.ToList();
+        var sourceFolders = snapshot.Mods.Where(mod => !string.IsNullOrWhiteSpace(mod.SourcePath))
+            .Select(mod => Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath))).ToHashSet(PathRules.Comparer);
+        var containers = new HashSet<string>(PathRules.Comparer);
+        foreach (var source in sourceFolders)
+            for (var parent = Path.GetDirectoryName(source); parent is not null; parent = Path.GetDirectoryName(parent))
+                if (sourceFolders.Contains(parent)) containers.Add(parent);
+
+        foreach (var mod in snapshot.Mods.Where(mod => !mod.IsSuperseded))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (mod.RequiresLayoutReview) preparationErrors[mod.Id] = "Package layout needs review before activation.";
+            if (preparationErrors.ContainsKey(mod.Id) || indexed.Contains(mod.Id)) continue;
+            if (!string.IsNullOrWhiteSpace(mod.SourcePath) && containers.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath))))
+            {
+                preparationErrors[mod.Id] = "Collection contains independently registered packages; evaluate its children.";
+                continue;
+            }
+            if (scanner is null)
+            {
+                preparationErrors[mod.Id] = "Package has no indexed deployable files.";
+                continue;
+            }
+            try
+            {
+                filesForPlan.AddRange(await scanner.CaptureForAutoPopulateAsync(mod, ct));
+            }
+            catch (Exception ex) when (ex is InvalidDataException or DirectoryNotFoundException or FileNotFoundException or UnauthorizedAccessException)
+            {
+                preparationErrors[mod.Id] = ex.Message;
+            }
+        }
+        snapshot = snapshot with { Files = filesForPlan };
         var mods = snapshot.Mods.Where(m => !m.IsSuperseded).ToArray();
         var modsById = mods.ToDictionary(m => m.Id, PathRules.Comparer);
         var filesByMod = snapshot.Files
@@ -545,14 +604,37 @@ public sealed class AutoPopulateService(
         var preferred = requestedPreferredIds.ToHashSet(PathRules.Comparer);
 
         var requirements = new Dictionary<string,ModRequirementSpec>(PathRules.Comparer);
+        var iceborne = game.IsMonsterHunterWorld && File.Exists(Path.Combine(gameRoot, "chunk", "chunkG0.bin"));
+        var materialHeaders = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         foreach (var mod in mods)
         {
             ct.ThrowIfCancellationRequested();
-            requirements[mod.Id] = await ModRequirementReader.ReadAsync(
+            if (preparationErrors.TryGetValue(mod.Id, out var reason))
+            {
+                requirements[mod.Id] = new(mod.Id, [], [], [], false, [], [reason]);
+                continue;
+            }
+            var files = filesByMod.GetValueOrDefault(mod.Id) ?? [];
+            if (game.AdapterId == "unreal-paks")
+            {
+                var projectMount = UnrealPakLayout.ProjectMount(game.ModRootRelativePath) ?? game.ModRootRelativePath;
+                var mountPrefix = @"root\" + projectMount.Replace('/','\\').TrimEnd('\\') + @"\";
+                var mounted = files.Where(file => file.Path.StartsWith(mountPrefix,StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (mounted.Length > 0 && !UnrealPakLayout.Complete(mounted.Select(file => file.Path)))
+                {
+                    requirements[mod.Id] = new(mod.Id, [], [], [], false, [],
+                        ["Indexed target contains incomplete or unrelated files inside the Unreal Paks directory. Review the package layout."]);
+                    continue;
+                }
+            }
+            var spec = await ModRequirementReader.ReadAsync(
                 mod,
-                filesByMod.GetValueOrDefault(mod.Id) ?? [],
+                files,
                 game.IsMonsterHunterWorld,
                 ct);
+            if (iceborne && FindArmorMaterialIssue(files, materialHeaders, ct) is string issue)
+                spec = spec with { Errors = [.. spec.Errors, issue] };
+            requirements[mod.Id] = spec;
         }
 
         var selected = new HashSet<string>(preferred, PathRules.Comparer);
@@ -644,6 +726,22 @@ public sealed class AutoPopulateService(
             ct.ThrowIfCancellationRequested();
             if (selected.Contains(candidate.Id))
                 continue;
+
+            if (filesByMod.TryGetValue(candidate.Id, out var candidateFiles) && candidateFiles.Count > 0)
+            {
+                var byTarget = candidateFiles.ToDictionary(file => file.Path,PathRules.Comparer);
+                var duplicate = providersByPath[candidateFiles[0].Path].Select(file => file.ModId)
+                    .FirstOrDefault(id => selected.Contains(id) && filesByMod[id].Count == candidateFiles.Count &&
+                        filesByMod[id].All(file => byTarget.TryGetValue(file.Path, out var matching) &&
+                            matching.BlobSha256 == file.BlobSha256 && matching.Length == file.Length));
+                if (duplicate is not null)
+                {
+                    conflictSkips++;
+                    skipped[candidate.Id] = new(candidate.Id,candidate.DisplayName,false,
+                        $"Exact installed copy of '{modsById[duplicate].DisplayName}' at every deployment target.");
+                    continue;
+                }
+            }
 
             var closureResult = ResolveClosure(
                 candidate.Id,
@@ -785,17 +883,32 @@ public sealed class AutoPopulateService(
                         ? "Kept selected as a protected preference; Auto Populate filled around it."
                         : protectedSelection.Contains(m.Id)
                             ? "Enabled because it is required by the protected current selection."
-                            : "Enabled; its complete requirement chain is conflict-free with the protected current selection.")
+                            : "Enabled; the planned deployment and declared requirements permit it.")
                 : skipped.GetValueOrDefault(m.Id) ??
                   new AutoPopulateDecision(m.Id, m.DisplayName, false, "Not selected because it was unnecessary or superseded by the completed safe set."))
             .OrderByDescending(x => x.Enabled)
             .ThenBy(x => x.ModName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+        var exports = game.AdapterId == "unreal-paks" ? IoStoreExportInventory.Read(selected, filesByMod, blobs, ct) : new(new Dictionary<string,string>(), new HashSet<string>());
+        for (var i = 0; i < decisions.Length; i++)
+        {
+            var decision = decisions[i];
+            var reason = decision.Reason;
+            if (exports.SharedWith.TryGetValue(decision.ModId, out var other))
+                reason += $" Shares an Unreal export ID with '{modsById[other].DisplayName}'.";
+            if (exports.Unknown.Contains(decision.ModId))
+                reason += " Internal asset coverage is unavailable for at least one container.";
+            if (reason != decision.Reason) decisions[i] = decision with { Reason = reason };
+        }
         var summary =
-            $"Auto Populate preserved {preferred.Count} selected package(s) and filled the safe set to {selected.Count} of {mods.Length} installed package(s); " +
+            $"Auto Populate preserved {preferred.Count} selected package(s) and selected an install-compatible set of {selected.Count} of {mods.Length} installed package(s); " +
             $"skipped {conflictSkips} for conflicts and {requirementSkips} for unsatisfied requirements; " +
             $"used {plannerPasses} full planner pass(es) with {plannerFastPathCandidates} isolated candidate(s) accepted without a rebuild.";
+
+        if (exports.SharedWith.Count > 0 || exports.Unknown.Count > 0)
+            summary += $" {exports.SharedWith.Count} selected package(s) share known Unreal export IDs. " +
+                $"{exports.Unknown.Count} selected package(s) have a container without a supported export table. In-game precedence is unverified.";
 
         return new(
             state,
@@ -806,7 +919,7 @@ public sealed class AutoPopulateService(
             summary,
             plannerPasses,
             plannerFastPathCandidates,
-            plannerElapsed.TotalMilliseconds);
+            plannerElapsed.TotalMilliseconds) { SharedExportIds = exports.SharedWith.Keys.ToArray() };
     }
 
     private ClosureResult ResolveClosure(
@@ -835,7 +948,7 @@ public sealed class AutoPopulateService(
             if (!requirements.TryGetValue(id, out var spec))
                 return ClosureResult.Fail($"Requirements for '{mod.DisplayName}' could not be read.");
             if (spec.Errors.Count > 0)
-                return ClosureResult.Fail($"'{mod.DisplayName}' has invalid requirements: {string.Join("; ", spec.Errors)}");
+                return ClosureResult.Fail($"'{mod.DisplayName}' cannot be selected: {string.Join("; ", spec.Errors)}");
 
             foreach (var requirement in spec.ModRequirements.Where(x => x.Required))
             {
@@ -903,6 +1016,40 @@ public sealed class AutoPopulateService(
         }
 
         return ClosureResult.Ok(closure);
+    }
+
+    private string? FindArmorMaterialIssue(IReadOnlyList<ModFileDescriptor> files,
+        Dictionary<string, bool> legacyByHash, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        Span<byte> header = stackalloc byte[16];
+        ReadOnlySpan<byte> legacy = [0x4D, 0x52, 0x4C, 0, 11, 0, 0, 0, 0xA9, 0xBC, 0xBB, 0x59, 0, 0, 0, 0];
+        foreach (var file in files)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!file.Path.EndsWith(".mrl3", StringComparison.OrdinalIgnoreCase) ||
+                !PathRules.TryGetArmorComponent(file.Path, out _, out _))
+                continue;
+            if (blobs is null || file.BlobSha256.Length != 64 || !file.BlobSha256.All(Uri.IsHexDigit))
+                return $"Cannot verify the indexed armor material '{file.Path}'. Re-index the package.";
+            if (!legacyByHash.TryGetValue(file.BlobSha256, out var isLegacy))
+            {
+                try
+                {
+                    using var stream = File.OpenRead(blobs.PathFor(file.BlobSha256));
+                    stream.ReadExactly(header);
+                    isLegacy = header.SequenceEqual(legacy);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    return $"Cannot read the indexed armor material '{file.Path}'. Re-index the package.";
+                }
+                legacyByHash.Add(file.BlobSha256, isLegacy);
+            }
+            if (isLegacy)
+                return $"'{file.Path}' uses a pre-Iceborne armor material. Deselect this package, review the deployment preview, then Apply. You can also install an Iceborne-compatible edition.";
+        }
+        return null;
     }
 
     private DeploymentPlan BuildPlan(

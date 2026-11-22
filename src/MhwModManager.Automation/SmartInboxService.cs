@@ -23,6 +23,31 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         return new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot).RecoverAsync(ct);
     }
 
+    private IEnumerable<string> EnumerateInboxEntries()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new[]{inboxRoot,legacyInboxRoot}
+            .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
+            .Select(root=>Path.GetFullPath(root!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .SelectMany(root=>Directory.EnumerateFileSystemEntries(root))
+            .Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x),"Processed"));
+    }
+
+    private static bool IsInboxArchive(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return Path.GetExtension(path).ToLowerInvariant() is ".zip" or ".7z" or ".rar";
+    }
+
+    public bool HasPendingPackages()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return EnumerateInboxEntries().Any(entry =>
+        (File.GetAttributes(entry) & FileAttributes.ReparsePoint) == 0 &&
+        (Directory.Exists(entry) ? Directory.EnumerateFileSystemEntries(entry).Any() : IsInboxArchive(entry)));
+    }
+
     public Task<InboxRunResult> ProcessAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -64,14 +89,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         var journal = new InboxPublicationJournalService(inboxRoot, modsRoot, legacyInboxRoot);
         var blockedSources = await journal.RecoverAsync(ct);
         var workspaceRoot = ImportPublicationWorkspace.RootFor(modsRoot);
-        var entries = new[]{inboxRoot,legacyInboxRoot}
-            .Where(root=>!string.IsNullOrWhiteSpace(root)&&Directory.Exists(root))
-            .Select(root=>Path.GetFullPath(root!))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .SelectMany(root=>Directory.EnumerateFileSystemEntries(root))
-            .Where(x=>!StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileName(x),"Processed"))
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var entries = EnumerateInboxEntries().Order(StringComparer.OrdinalIgnoreCase).ToArray();
         startupDiagnostics?.Info("startup.automation.inbox.entries", $"InboxRoot={inboxRoot}; Entries={entries.Length}");
         UnifiedDebugLog.Write("INBOX", $"Scan InboxRoot={inboxRoot}; Entries={entries.Length}");
         var completed = 0;
@@ -116,6 +134,8 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 }
                 startupDiagnostics?.Info("startup.automation.inbox.item.begin", entry);
                 UnifiedDebugLog.Write("INBOX", $"BEGIN item={entry}");
+                if ((File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0)
+                    throw new InvalidDataException("Inbox links must be reviewed at their source.");
                 var name = ModDisplayNames.StripTransportDigest(Directory.Exists(entry) ? Path.GetFileName(entry) : Path.GetFileNameWithoutExtension(entry));
                 var destination = Unique(Path.Combine(modsRoot, name));
                 if (Directory.Exists(entry))
@@ -129,8 +149,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                 }
                 else
                 {
-                    var ext = Path.GetExtension(entry).ToLowerInvariant();
-                    if (ext is not ".zip" and not ".7z" and not ".rar") { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsupported inbox item; left untouched.")); continue; }
+                    if (!IsInboxArchive(entry)) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsupported inbox item; left untouched.")); continue; }
                     ReportStage(completed, "Inspecting archive", entry);
                     var info = await archive.InspectAsync(entry, ct);
                     if (info.HasSuspiciousPaths) { results.Add(new(entry, null, false, AutomationCategory.Unknown, "Unsafe archive path detected; left untouched.")); continue; }
@@ -143,7 +162,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
                         new ArchiveExtractionLimits(ArchiveInspector.MaxExpandedBytes, ArchiveInspector.MaxExpandedBytes),
                         extractProgress, ct);
                     ReportStage(completed, "Normalizing package", entry);
-                    NormalizeWrapper(staging);
+                    catalog.NormalizeStagedArchive(staging);
                 }
                 if (FomodInstallerService.HasInstaller(staging))
                 {
@@ -227,8 +246,21 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
             await catalog.RefreshFoldersAsync(ct);
             var importedPaths=results.Where(x=>x.Imported&&!string.IsNullOrWhiteSpace(x.Destination)).Select(x=>x.Destination!).ToHashSet(StringComparer.OrdinalIgnoreCase);
             ReportStage(completed, "Capturing imported mods");
-            var importedMods=(await db.GetModsAsync(ct)).Where(m=>importedPaths.Contains(m.SourcePath)).ToArray();
-            await catalog.EnsureCapturedAsync(importedMods,ct);
+            var components=new HashSet<string>(StringComparer.Ordinal);
+            await using (var connection=await db.OpenAsync(ct))
+            await using (var command=connection.CreateCommand())
+            {
+                command.CommandText="SELECT mod_id FROM authored_component_sources WHERE verified=1 AND package_root COLLATE NOCASE IN (SELECT value FROM json_each($roots))";
+                command.Parameters.AddWithValue("$roots",System.Text.Json.JsonSerializer.Serialize(importedPaths));
+                await using var reader=await command.ExecuteReaderAsync(ct);
+                while (await reader.ReadAsync(ct)) components.Add(reader.GetString(0));
+            }
+            var importedMods=(await db.GetModsAsync(ct)).Where(m=>components.Contains(m.Id) || importedPaths.Contains(m.SourcePath)).ToArray();
+            var reviewRoots = importedMods.Where(m=>m.RequiresLayoutReview).Select(m=>m.SourcePath).ToHashSet(PathRules.Comparer);
+            for (var i = 0; i < results.Count; i++)
+                if (results[i].Destination is { } path && reviewRoots.Contains(path))
+                    results[i] = results[i] with { Message = "Added to Mods for layout review. No files were staged for deployment." };
+            await catalog.EnsureCapturedAsync(importedMods.Where(mod=>!mod.RequiresLayoutReview),ct);
             if (refreshMetadata)
             {
                 ReportStage(completed, "Refreshing metadata");
@@ -279,6 +311,8 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = SafeRecursiveTraversal.Snapshot(source, ct);
+        if (snapshot.Files.Count == 0)
+            throw new InvalidDataException("Inbox folder has no files to import.");
         Directory.CreateDirectory(destination);
         foreach (var dir in snapshot.Directories) Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, dir)));
         var copied = 0;
@@ -307,9 +341,6 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
         }
     }
 
-    private static void NormalizeWrapper(string root) {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dirs=Directory.GetDirectories(root); var files=Directory.GetFiles(root); if(files.Length==0&&dirs.Length==1){var child=dirs[0];foreach(var entry in Directory.GetFileSystemEntries(child)){var dest=Path.Combine(root,Path.GetFileName(entry));if(Directory.Exists(entry))Directory.Move(entry,dest);else File.Move(entry,dest);}Directory.Delete(child,true);} }
     private static string Unique(string path){
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(!Directory.Exists(path)&&!File.Exists(path))return path;for(var i=2;;i++){var p=path+" ("+i.ToString(CultureInfo.InvariantCulture)+")";if(!Directory.Exists(p)&&!File.Exists(p))return p;}}

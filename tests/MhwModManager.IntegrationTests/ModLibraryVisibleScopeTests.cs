@@ -34,7 +34,7 @@ public sealed class ModLibraryVisibleScopeTests
             block,
             StringComparison.Ordinal);
         Assert.Contains(
-            "visible.Length",
+            ".Where(mod=>!mod.RequiresLayoutReview)",
             block,
             StringComparison.Ordinal);
     }

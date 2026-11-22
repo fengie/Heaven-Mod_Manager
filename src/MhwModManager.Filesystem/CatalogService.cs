@@ -5,11 +5,72 @@ using MhwModManager.Storage;
 
 namespace MhwModManager.Filesystem;
 
-public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null)
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001", Justification="The asynchronous gate never allocates a wait handle and lives for the catalog session.")]
+public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner,string modsRoot,string? legacyModsRoot=null,
+    Func<string,CancellationToken,IReadOnlyList<string>>? discoverChildren=null,
+    Func<string,CancellationToken,ManagedCollectionLayout>? inspectShelf=null)
 {
+    private readonly ExactPackageCopies exactCopies = new(db);
+    private readonly SemaphoreSlim folderRefresh = new(1,1);
+    private HashSet<string>? reconciledTopLevelFolders;
+
+    public bool TopLevelFoldersChanged()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var previous = Volatile.Read(ref reconciledTopLevelFolders);
+        if (previous is null) return true;
+        var folders = new HashSet<string>(PathRules.Comparer);
+        foreach (var root in ManagedRoots())
+            folders.UnionWith(Directory.EnumerateDirectories(root));
+        return !previous.SetEquals(folders);
+    }
+
+    private IEnumerable<string> ManagedRoots()
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return new[]{modsRoot,legacyModsRoot}
+            .Where(path=>!string.IsNullOrWhiteSpace(path)&&Directory.Exists(path))
+            .Select(path=>Path.GetFullPath(path!))
+            .Distinct(PathRules.Comparer);
+    }
+    public long LastDuplicateBytesHashed
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return exactCopies.LastBytesHashed;
+        }
+    }
+
+    /// <summary>Remove one transport wrapper while retaining the registered game's deployment root.</summary>
+    public void NormalizeStagedArchive(string root)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var folder = new DirectoryInfo(root);
+        var children = folder.GetFileSystemInfos();
+        if (children.Length != 1 || children[0] is not DirectoryInfo child || scanner.IsArchiveTargetRoot(child.Name))
+            return;
+
+        foreach (var entry in child.GetFileSystemInfos())
+        {
+            var destination = Path.Combine(root, entry.Name);
+            if (entry is DirectoryInfo directory) directory.MoveTo(destination);
+            else ((FileInfo)entry).MoveTo(destination);
+        }
+        child.Delete();
+    }
+
     public async Task RefreshFoldersAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await folderRefresh.WaitAsync(ct);
+        try { await ReconcileFoldersAsync(ct); }
+        finally { folderRefresh.Release(); }
+    }
+
+    private async Task ReconcileFoldersAsync(CancellationToken ct)
+    {
+        using var trace=MasterDebugLog.BeginMethod();
         Directory.CreateDirectory(modsRoot);
         var current=await db.GetModCatalogSourceIdentitiesAsync(ct);
         var existingByPath=current.GroupBy(m=>m.SourcePath,StringComparer.OrdinalIgnoreCase)
@@ -17,22 +78,103 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
         var backfills=new List<ModArchiveDisplayBackfill>();
         // Existing MHW and generic source paths stay authoritative: a migration that moves them
         // would invalidate persisted mod IDs, explicit overrides and rollback references.
-        var roots=new[]{modsRoot,legacyModsRoot}
-            .Where(path=>!string.IsNullOrWhiteSpace(path)&&Directory.Exists(path))
-            .Select(path=>Path.GetFullPath(path!))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var directories = await Task.Run(() => roots
-            .SelectMany(root=>Directory.EnumerateDirectories(root))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray(), ct);
+        var roots = ManagedRoots().ToArray();
+        // Collect ordinary single-mount packages on the existing worker. Calling into
+        // the UI dispatcher once per package makes even a negative family lookup costly.
+        var directories = await Task.Run(() =>
+        {
+            var entries=new Dictionary<string,bool?>(PathRules.Comparer);
+            foreach(var root in roots)
+                foreach(var folder in new DirectoryInfo(root).EnumerateDirectories())
+                {
+                    ct.ThrowIfCancellationRequested();
+                    try
+                    {
+                        if ((folder.Attributes & FileAttributes.ReparsePoint)!=0) { entries[folder.FullName]=null; continue; }
+                        entries[folder.FullName]=folder.EnumerateDirectories().Skip(1).Any() &&
+                            folder.EnumerateFiles().Take(17).Any(file=>file.Extension.Equals(".txt",StringComparison.OrdinalIgnoreCase) ||
+                                file.Extension.Equals(".md",StringComparison.OrdinalIgnoreCase));
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        entries[folder.FullName]=null;
+                    }
+                }
+            return entries.OrderBy(pair=>pair.Key,PathRules.Comparer).ToArray();
+        }, ct);
+        var verifiedFamilyRoots = new HashSet<string>(PathRules.Comparer);
+        await using (var connection = await db.OpenAsync(ct))
+        await using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText="SELECT DISTINCT package_root FROM authored_component_sources";
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) verifiedFamilyRoots.Add(reader.GetString(0));
+        }
+        var inspectedFamilyRoots = new HashSet<string>(PathRules.Comparer);
+        var savedShelves = inspectShelf is null ? null : await db.ReadShelfEntriesAsync(ct);
         var priority=100000;
-        foreach(var dir in directories)
+        foreach(var (dir,mayHaveFamily) in directories)
         {
             ct.ThrowIfCancellationRequested();
+            existingByPath.TryGetValue(dir, out var tracked);
+            try
+            {
+                inspectedFamilyRoots.Add(dir);
+                if (mayHaveFamily is null) continue;
+                if (mayHaveFamily.Value && await DiscoverFamilyAsync(dir,priority,ct)) continue;
+                if (verifiedFamilyRoots.Contains(dir))
+                {
+                    await SuspendFamilyAsync(dir,ct);
+                    continue;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                MasterDebugLog.Write("CATALOG","Incomplete source inspection; preserving saved entries.",ex);
+                continue;
+            }
+            if (inspectShelf is not null && (tracked is null || tracked.All(row => row.CanInspectCollection && !row.HasSavedReferences)))
+            {
+                try
+                {
+                    var layout = await Task.Run(() => inspectShelf(dir, ct), ct);
+                    if (layout.FullyAccounted && layout.Units.Count > 0)
+                    {
+                        await ReconcileShelfAsync(dir, layout.Units, tracked ?? [], savedShelves![dir], priority, verifiedFamilyRoots, inspectedFamilyRoots, ct);
+                        priority += layout.Units.Count;
+                        continue;
+                    }
+                    if (savedShelves!.Contains(dir)) await db.SetShelfEntriesAsync(dir, [], ct);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    MasterDebugLog.Write("CATALOG", "Keeping the previous catalog view after incomplete inspection.", ex);
+                    if (tracked is not null || savedShelves!.Contains(dir)) continue;
+                }
+            }
+            else if (savedShelves?.Contains(dir) == true && tracked is not null)
+                await db.SetShelfEntriesAsync(dir, [], ct);
+            if (discoverChildren is not null && (tracked is null || tracked.All(row => row.CanInspectCollection)))
+            {
+                IReadOnlyList<string> children = [];
+                try
+                {
+                    children = await Task.Run(() => discoverChildren(dir, ct), ct);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    MasterDebugLog.Write("CATALOG", "Collection could not be inspected; keeping original catalog source.", ex);
+                }
+                foreach (var child in children)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (!existingByPath.ContainsKey(child))
+                        await AddLocalFolderAsync(child, priority++, ct);
+                }
+                if (children.Count > 0 && tracked is null) continue;
+            }
             var name=Path.GetFileName(dir);
-            if(existingByPath.TryGetValue(dir,out var tracked))
+            if(tracked is not null)
             {
                 if(NexusArchiveIdentity.TryParse(name,out var identity))
                 {
@@ -44,25 +186,122 @@ public sealed class CatalogService(ManagerDatabase db,ModScanner scanner,string 
                 }
                 continue;
             }
-            var id="local-"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dir.ToLowerInvariant())).AsSpan(0,12)).ToLowerInvariant();
-            var parsed=NexusArchiveIdentity.TryParse(name,out var newIdentity);
-            // Filenames are untrusted: do not promote guessed IDs into verified source identity.
-            var display=ModDisplayNames.StripTransportDigest(parsed?newIdentity.DisplayName:name);
-            await db.UpsertModAsync(new(id,name,display,dir,false,priority++),ct);
+            if (IsEmptyLocalFolder(dir)) continue;
+            await AddLocalFolderAsync(dir, priority++, ct);
         }
+        foreach (var root in verifiedFamilyRoots.Except(inspectedFamilyRoots,PathRules.Comparer))
+            await SuspendFamilyAsync(root,ct);
         if(backfills.Count>0)
         {
             var updated=await db.BackfillArchiveDisplayNameAsync(backfills,ct);
             MasterDebugLog.Write("CATALOG", $"Repaired filename-derived display titles for {updated} existing mod(s).");
         }
+        var shelves = await db.ReadShelfEntriesAsync(ct);
+        var all = await db.GetModsAsync(true,ct);
+        var sources = all.ToDictionary(mod => mod.Id, mod => mod.SourcePath, StringComparer.Ordinal);
+        // A parent representing loose files overlaps its independently indexed
+        // children. Only whole, independent review sources can be exact peers.
+        var excluded = shelves.SelectMany(group => group.Where(entry => entry.Role == "wrapper" ||
+                (entry.Role == "review" && group.Skip(1).Any() &&
+                 sources.TryGetValue(entry.Id, out var source) && PathRules.Comparer.Equals(source, group.Key))))
+            .Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal);
+        var eligible = all.Where(mod=>!mod.IsSuperseded && !excluded.Contains(mod.Id)).ToArray();
+        var groups = await Task.Run(()=>exactCopies.FindAsync(eligible,ct),ct);
+        await db.ReconcileExactCopiesAsync(groups,ct);
+        Volatile.Write(ref reconciledTopLevelFolders, directories.Select(entry=>entry.Key).ToHashSet(PathRules.Comparer));
+    }
+
+    private async Task ReconcileShelfAsync(string shelf, IReadOnlyList<ManagedCollectionUnit> units,
+        IReadOnlyList<ModCatalogSourceIdentity> wrappers, IEnumerable<(string Id,string Role,string? Canonical)> previous,
+        int priority, HashSet<string> verifiedFamilyRoots, HashSet<string> inspectedFamilyRoots, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var all = await db.GetModsAsync(true, ct);
+        var byPath = all.ToLookup(mod => mod.SourcePath, StringComparer.OrdinalIgnoreCase);
+        foreach (var unit in units.Where(unit => !byPath.Contains(unit.SourcePath)))
+            await AddLocalFolderAsync(unit.SourcePath, priority++, ct);
+        if (units.Any(unit => !byPath.Contains(unit.SourcePath)))
+        {
+            all = await db.GetModsAsync(true, ct);
+            byPath = all.ToLookup(mod => mod.SourcePath, StringComparer.OrdinalIgnoreCase);
+        }
+        var files = (await db.GetModFilesAsync(ct)).ToLookup(file => file.ModId);
+        var enabled = all.Where(mod => mod.Enabled && files.Contains(mod.Id) && Directory.Exists(mod.SourcePath) &&
+            (File.GetAttributes(mod.SourcePath) & FileAttributes.ReparsePoint) == 0).ToArray();
+        var entries = new List<(string Id, string Role, string? Canonical)>();
+        foreach (var unit in units)
+        {
+            var wasFamily = verifiedFamilyRoots.Contains(unit.SourcePath);
+            var foundFamily = false;
+            if ((wasFamily || unit.NeedsReview) && !PathRules.Comparer.Equals(unit.SourcePath,shelf))
+            {
+                inspectedFamilyRoots.Add(unit.SourcePath);
+                foundFamily = await DiscoverFamilyAsync(unit.SourcePath,priority,ct,shelf);
+                if (wasFamily && !foundFamily) await SuspendFamilyAsync(unit.SourcePath,ct);
+            }
+            if (foundFamily || wasFamily)
+            {
+                foreach(var wrapper in byPath[unit.SourcePath].Where(mod=>!mod.Enabled))
+                    entries.Add((wrapper.Id,"wrapper",null));
+                continue;
+            }
+            foreach (var mod in byPath[unit.SourcePath])
+            {
+                if (mod.Enabled) continue;
+                if (unit.NeedsReview)
+                {
+                    entries.Add((mod.Id, "review", null));
+                    continue;
+                }
+                var indexed = files[mod.Id].ToArray();
+                if (indexed.Length == 0 || !await Task.Run(() => scanner.ShelfIndexMatchesSource(mod, indexed, ct), ct))
+                    indexed = (await scanner.CaptureShelfPackageAsync(mod, ct)).ToArray();
+                var keys = indexed.ToDictionary(file => file.Path, file => file.BlobSha256, PathRules.Comparer);
+                var canonical = enabled.FirstOrDefault(active =>
+                    files[active.Id].Count() == keys.Count && files[active.Id].All(file =>
+                        keys.TryGetValue(file.Path, out var digest) && digest == file.BlobSha256));
+                entries.Add((mod.Id, canonical is null ? "package" : "duplicate", canonical?.Id));
+            }
+        }
+        // When the shelf itself owns unresolved loose files it already has a visible
+        // review role. Reuse its original identity and keep its deployment toggle guarded.
+        if (!units.Any(unit => StringComparer.OrdinalIgnoreCase.Equals(unit.SourcePath, shelf)))
+            entries.AddRange(wrappers.Select(wrapper => (wrapper.Id, "wrapper", (string?)null)));
+        if (!previous.ToHashSet().SetEquals(entries))
+            await db.SetShelfEntriesAsync(shelf, entries, ct);
+    }
+
+    private Task AddLocalFolderAsync(string dir, int priority, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var name = Path.GetFileName(dir);
+        var id = LocalId(dir);
+        var display = ModDisplayNames.StripTransportDigest(NexusArchiveIdentity.TryParse(name, out var identity) ? identity.DisplayName : name);
+        return db.InsertDiscoveredModAsync(id, name, display, dir, priority, ct);
     }
 
     public async Task EnsureCapturedAsync(IEnumerable<ModDescriptor> mods,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var pending = mods.ToArray();
+        // Keep saved rows intact and reject empty sources before capturing any mod in this batch.
+        foreach (var mod in pending)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (IsEmptyLocalFolder(mod.SourcePath))
+                throw new InvalidDataException($"'{mod.DisplayName}' has an empty source folder. Deselect it or restore its package files, then try again.");
+        }
+
         // Intentionally serialize mods while each mod performs bounded file parallelism.
         // Nested parallelism would saturate the SSD and hurt UI responsiveness.
-        foreach(var m in mods){ct.ThrowIfCancellationRequested();await scanner.CaptureAsync(m,ct);}
+        foreach(var m in pending){ct.ThrowIfCancellationRequested();await scanner.CaptureAsync(m,ct);}
     }
 
+    private static bool IsEmptyLocalFolder(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var folder = new DirectoryInfo(path);
+        return folder.Exists && (folder.Attributes & FileAttributes.ReparsePoint) == 0 &&
+            !folder.EnumerateFileSystemInfos().Any();
+    }
 }

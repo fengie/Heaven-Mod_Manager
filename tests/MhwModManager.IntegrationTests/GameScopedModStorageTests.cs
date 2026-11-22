@@ -75,9 +75,11 @@ public sealed class GameScopedModStorageTests : IDisposable
     {
         var game=GameProfile.Generic("nie-r","NieR",Path.Combine(tool,"NierGame"),"NieRAutomata.exe","");
         var storage=GameModStorage.Resolve(tool,game);
-        Directory.CreateDirectory(Path.Combine(storage.InstalledRoot,"NewPackage"));
-        Directory.CreateDirectory(Path.Combine(storage.LegacyInstalledRoot,"ExistingPackage"));
-        Directory.CreateDirectory(Path.Combine(storage.DownloadsRoot,"not-a-mod"));
+        var newPackage = Directory.CreateDirectory(Path.Combine(storage.InstalledRoot,"NewPackage"));
+        var existingPackage = Directory.CreateDirectory(Path.Combine(storage.LegacyInstalledRoot,"ExistingPackage"));
+        var download = Directory.CreateDirectory(Path.Combine(storage.DownloadsRoot,"not-a-mod"));
+        foreach (var folder in new[] { newPackage, existingPackage, download })
+            File.WriteAllText(Path.Combine(folder.FullName,"payload.pak"), folder.Name + " payload");
         var db=new ManagerDatabase(Path.Combine(tool,"state","manager.db"));
         await db.InitializeAsync(TestToken);
         var scanner=new ModScanner(db,new BlobStore(Path.Combine(tool,"blobs"),db),new HashingService(),game);

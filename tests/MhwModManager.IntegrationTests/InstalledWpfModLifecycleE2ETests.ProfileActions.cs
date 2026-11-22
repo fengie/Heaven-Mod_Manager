@@ -1,0 +1,344 @@
+using System.Windows.Automation;
+using System.Text.Json;
+using MhwModManager.Core;
+using Xunit;
+
+namespace MhwModManager.IntegrationTests;
+
+public sealed partial class InstalledWpfModLifecycleE2ETests
+{
+    private static void SeedProfileInventoryEvidence(DisposableWpfRun run)
+    {
+        foreach (var fixture in new[] { run.FirstGame, run.SecondGame })
+        {
+            var folder = Directory.CreateDirectory(Path.Combine(fixture.GameRoot, "Mods", "inventory-test"));
+            File.WriteAllText(Path.Combine(folder.FullName, "mod.json"), "{}");
+        }
+    }
+
+    private static async Task ExerciseProfileActionsAsync(GameProfile game, DisposableWpfRun run, AutomationElement window,
+        List<string> passed, CancellationToken ct)
+    {
+        async Task SelectTab(string name)
+        {
+            var tab = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.TabItem &&
+                item.Current.Name == name), UiTimeout, name + " tab", ct);
+            ((SelectionItemPattern)tab.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        }
+
+        async Task<AutomationElement> Button(string name) => await WaitForElementAsync(
+            () => FindButton(window, name, enabled: true), UiTimeout, name, ct);
+
+        async Task<AutomationElement> Grid(string name) => await WaitForElementAsync(() => Find(window, item =>
+            item.Current.ControlType == ControlType.DataGrid && item.Current.Name == name), UiTimeout, name, ct);
+
+        const string fixtureMod = "E2E Inbox Fixture";
+        var profile = "Verified setup " + game.Id;
+        await SelectTab("Profiles");
+        var field = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Edit &&
+            item.Current.Name == "New profile name"), UiTimeout, "new profile name field", ct);
+        field.SetFocus();
+        ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).SetValue(profile);
+        var save = await Button("Save Current Setup");
+        save.SetFocus(); // The name binding commits when the edit field loses focus.
+        Invoke(save);
+
+        var profiles = await Grid("Saved profiles");
+        await WaitForElementAsync(() => Find(profiles, item => item.Current.Name == profile), UiTimeout,
+            "saved profile " + game.Id, ct);
+        passed.Add("Save active mod setup as a named profile");
+
+        await SelectModsTabAsync(window, ct);
+        var mod = await WaitForElementAsync(() => FindModToggle(window, fixtureMod), UiTimeout, "applied mod", ct);
+        var toggle = (TogglePattern)mod.GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, toggle.Current.ToggleState);
+        toggle.Toggle();
+        await WaitForAsync(() => toggle.Current.ToggleState == ToggleState.Off, UiTimeout, "staged mod disable", ct);
+
+        // A second writer changes the disposable catalog while Profiles is hidden.
+        // Returning to the page must discover the new row without any repair command.
+        var externalProfile = "Imported setup " + game.Id;
+        await new MhwModManager.Storage.ProfileRepository(run.OpenCatalog()).SaveCurrentAsync(externalProfile, ct);
+        await SelectTab("Profiles");
+        var revisitedProfiles = await Grid("Saved profiles");
+        await WaitForElementAsync(() => Find(revisitedProfiles, item => item.Current.Name == externalProfile),
+            UiTimeout, "profile saved while page was hidden", ct);
+        AutomationElement? SavedRow()
+        {
+            var current = Find(window, item => item.Current.ControlType == ControlType.DataGrid &&
+                item.Current.Name == "Saved profiles");
+            if (current is null) return null;
+            return current.FindFirst(TreeScope.Descendants, new AndCondition(
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem),
+                new PropertyCondition(AutomationElement.NameProperty, profile))) ??
+                Find(current, item => item.Current.ControlType == ControlType.DataItem &&
+                    Find(item, cell => cell.Current.Name == profile) is not null);
+        }
+        var row = await WaitForElementAsync(SavedRow, UiTimeout, "named saved profile", ct);
+        ((SelectionItemPattern)row.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        await SelectTab("History");
+        await SelectTab("Profiles");
+        await WaitForAsync(() => SavedRow() is { } saved &&
+            ((SelectionItemPattern)saved.GetCurrentPattern(SelectionItemPattern.Pattern)).Current.IsSelected,
+            UiTimeout, "refresh preserves selected saved profile", ct);
+        Invoke(await Button("Use Selected Profile"));
+        await SelectModsTabAsync(window, ct);
+        await WaitForAsync(() => FindModToggle(window, fixtureMod) is { } current &&
+            ((TogglePattern)current.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On,
+            UiTimeout, "saved profile restores the staged enabled choice", ct);
+        passed.Add("Refresh and use saved profile to restore enabled selection");
+
+        await SelectTab("History");
+        var history = await Grid("Recent activity");
+        await WaitForElementAsync(() => Find(history, item => item.Current.ControlType == ControlType.DataItem &&
+            Find(item, cell => cell.Current.Name.Contains("staged mod-state change", StringComparison.Ordinal)) is not null &&
+            Find(item, cell => cell.Current.Name == "Committed") is not null), UiTimeout, "committed deployment in history", ct);
+        passed.Add("Refresh History and verify the committed deployment");
+        Invoke(await Button("Create Support Bundle"));
+        var supportDir = Path.Combine(run.ManagerHome, "Support Bundles");
+        await WaitForAsync(() =>
+        {
+            if (!Directory.Exists(supportDir)) return false;
+            var zip = Directory.GetFiles(supportDir, "*.zip").SingleOrDefault();
+            if (zip is null) return false;
+            try
+            {
+                using var bundle = System.IO.Compression.ZipFile.OpenRead(zip);
+                var manifest = bundle.GetEntry("manifest-summary.json");
+                if (manifest is null) return false;
+                using var stream = manifest.Open();
+                using var summary = JsonDocument.Parse(stream);
+                return summary.RootElement.ToString().Contains(Path.GetFileName(run.LiveModPath), StringComparison.OrdinalIgnoreCase)
+                    && bundle.GetEntry("settings-redacted.json") is not null;
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException) { return false; }
+        }, UiTimeout, "support bundle contains this game's deployed file and redacted settings", ct);
+        passed.Add("Create support bundle with this profile's manifest");
+        Invoke(await Button("Collect Diagnostics"));
+        var captures = Path.Combine(run.ManagerHome, "diagnostics");
+        await WaitForAsync(() =>
+        {
+            if (!Directory.Exists(captures)) return false;
+            var meta = Directory.EnumerateFiles(captures, "capture.json", SearchOption.AllDirectories).SingleOrDefault();
+            if (meta is null || !File.Exists(Path.Combine(Path.GetDirectoryName(meta)!, "process.json"))) return false;
+            try
+            {
+                using var json = JsonDocument.Parse(File.ReadAllText(meta));
+                return json.RootElement.GetProperty("processId").GetInt32() == window.Current.ProcessId;
+            }
+            catch (Exception ex) when (ex is IOException or JsonException) { return false; }
+        }, UiTimeout, "packaged diagnostics script captured this Manager process", ct);
+        passed.Add("Collect diagnostics for the running Manager process");
+
+
+        await SelectTab("Settings");
+        var packageDirectory = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR")!;
+        Assert.False(MhwModManager.Updater.UpdateClientService.CanSelfUpdate(packageDirectory));
+        foreach (var (label, key) in new[] { ("Interface animations", "uiAnimationsEnabled"),
+            ("Remember last tab", "rememberLastTab"), ("Confirm before apply", "confirmBeforeApply"),
+            ("Confirm before discard", "confirmBeforeDiscardStaged"), ("Background metadata refresh", "backgroundMetadataRefreshEnabled"),
+            ("Automatic program updates", "autoUpdateEnabled") })
+        {
+            var box = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.CheckBox &&
+                item.Current.Name == label), UiTimeout, label, ct);
+            var pattern = (TogglePattern)box.GetCurrentPattern(TogglePattern.Pattern);
+            bool Saved()
+            {
+                using var settings = JsonDocument.Parse(File.ReadAllBytes(run.SettingsPath));
+                return settings.RootElement.GetProperty(key).GetBoolean();
+            }
+            var before = Saved();
+            Assert.Equal(before, pattern.Current.ToggleState == ToggleState.On);
+            pattern.Toggle();
+            await WaitForAsync(() => Saved() != before && (pattern.Current.ToggleState == ToggleState.On) != before,
+                UiTimeout, label + " persisted", ct);
+            pattern.Toggle();
+            await WaitForAsync(() => Saved() == before && (pattern.Current.ToggleState == ToggleState.On) == before,
+                UiTimeout, label + " restored", ct);
+            passed.Add("Persist and restore " + label);
+        }
+        await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Text &&
+            e.Current.Name.StartsWith("Storage totals refreshed", StringComparison.Ordinal)), UiTimeout, "storage measurement", ct);
+        passed.Add("Measure manager storage");
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
+
+        await SelectTab("Installed files");
+        var filter = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Edit &&
+            item.Current.AutomationId == "LocalModSearch"), UiTimeout, "installed file inventory filter", ct);
+        var inventoryQuery = (ValuePattern)filter.GetCurrentPattern(ValuePattern.Pattern);
+        var inventory = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.DataGrid &&
+            Find(item, header => header.Current.ControlType == ControlType.HeaderItem && header.Current.Name == "Evidence") is not null),
+            UiTimeout, "installed files evidence grid", ct);
+        var firstEvidence = Path.Combine(run.FirstGame.GameRoot, "Mods", "inventory-test", "mod.json");
+        var secondEvidence = Path.Combine(run.SecondGame.GameRoot, "Mods", "inventory-test", "mod.json");
+        foreach (var (expected, excluded) in new[] { (firstEvidence, secondEvidence), (secondEvidence, firstEvidence) })
+        {
+            inventoryQuery.SetValue(expected);
+            await WaitForAsync(() => Find(inventory, cell => cell.Current.Name == expected) is not null &&
+                Find(inventory, cell => cell.Current.Name == excluded) is null, UiTimeout, "inventory path filtering", ct);
+        }
+        inventoryQuery.SetValue("");
+        passed.Add("Filter installed file evidence across both registered game folders");
+
+        await SelectTab(game.SupportsSemanticCoverage ? "Outfits" : "Coverage");
+        if (game.SupportsSemanticCoverage)
+        {
+            var leather = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.DataItem &&
+                Find(item, cell => cell.Current.Name == "Leather") is not null &&
+                Find(item, cell => cell.Current.Name == "pl001_0000") is not null),
+                UiTimeout, "indexed armor name and model ID in the same row", ct);
+            Invoke(await WaitForElementAsync(() => FindButton(leather,"View outfits for Leather",enabled:true),UiTimeout,"Leather options",ct));
+            await SelectTab("Details");
+            await WaitForElementAsync(() => Find(window,item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name=="Winning pieces"),UiTimeout,"armor details",ct);
+            await SelectTab("Outfit options");
+            Invoke(await Button("Use outfit " + fixtureMod));
+            await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name.Contains("Preferred outfit",StringComparison.Ordinal)),UiTimeout,"saved Leather outfit",ct);
+            Assert.Equal(run.ModBytes,File.ReadAllBytes(run.LiveModPath));
+            Invoke(await Button("Use normal load order"));
+            await WaitForAsync(() => FindButton(window,"Use normal load order") is { Current.IsEnabled: false },UiTimeout,"cleared Leather preference",ct);
+            passed.Add("Choose and clear the Leather outfit from Coverage and verify installed bytes");
+        }
+        else
+        {
+            await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.Text &&
+                item.Current.Name.StartsWith("Detailed game-specific coverage is not available", StringComparison.Ordinal)),
+                UiTimeout, "unsupported semantic coverage explanation", ct);
+            Assert.Null(Find(window, item => item.Current.ControlType == ControlType.DataItem));
+            Invoke(await Button("See shared files"));
+            await Button("Why This Mod Wins");
+            passed.Add("Open generic coverage and inspect shared files");
+        }
+        await ExerciseFilteredLibraryActionsAsync(run, window, passed, ct);
+        await ExerciseWorkflowActionsAsync(run, window, passed, ct);
+    }
+
+    private static async Task ExerciseFilteredLibraryActionsAsync(DisposableWpfRun run, AutomationElement window,
+        List<string> passed, CancellationToken ct)
+    {
+        await SelectModsTabAsync(window, ct);
+        const string primaryName = "E2E Inbox Fixture";
+        const string alternateName = "Independent Verification";
+        var originalArchiveHash = System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(run.ArchivePath));
+        var archive = Path.Combine(Path.GetDirectoryName(run.ArchivePath)!, alternateName + ".zip");
+        var alternateLive = Path.Combine(Path.GetDirectoryName(run.LiveModPath)!, "independent-" + Path.GetFileName(run.LiveModPath));
+        var relative = Path.GetRelativePath(run.FirstGame.GameRoot, alternateLive).Replace(Path.DirectorySeparatorChar, '/');
+        byte[] payload = [21, 41, 67, 101, 149];
+        if (Path.GetExtension(alternateLive).Equals(".tex", StringComparison.OrdinalIgnoreCase)) payload = FixtureTexture(payload);
+        using (var zip = System.IO.Compression.ZipFile.Open(archive, System.IO.Compression.ZipArchiveMode.Create))
+        using (var stream = zip.CreateEntry(relative).Open())
+            stream.Write(payload);
+        var alternateHash = System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(archive));
+        run.CopyToInbox(archive);
+
+        var search = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Edit &&
+            e.Current.Name == "Search mods"), UiTimeout, "filter for independent package", ct);
+        var filter = (ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern);
+        filter.SetValue(alternateName);
+        ToggleState? ReadToggle(string name) => FindModToggle(window, name) is { } checkbox
+            ? ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState : null;
+        await WaitForAsync(()=>File.Exists(alternateLive) && File.ReadAllBytes(alternateLive).SequenceEqual(payload),UiTimeout,"second package automatically active",ct);
+        var alternate=await WaitForElementAsync(()=>FindModToggle(window,alternateName),UiTimeout,"new package",ct);
+        ((TogglePattern)alternate.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        await WaitForAsync(()=>!File.Exists(alternateLive),UiTimeout,"user disabled second package",ct);
+        await WaitForAsync(() => ReadToggle(alternateName) == ToggleState.Off && ReadToggle(primaryName) is null,
+            UiTimeout, "only independent disabled package visible", ct);
+        async Task<AutomationElement> Button(string label) => await WaitForElementAsync(
+            () => FindButton(window, label, enabled: true), UiTimeout, label, ct);
+
+        // Simulate a missing catalog index for the disposable disabled package without touching either source.
+        var db = run.OpenCatalog();
+        try
+        {
+            var mod = Assert.Single(await db.GetModsAsync(ct), item => item.DisplayName == alternateName);
+            await db.ReplaceModFilesAsync(mod.Id, [], ct);
+            Assert.DoesNotContain(await db.GetModFilesAsync(ct), row => row.ModId == mod.Id);
+            Invoke(await Button("Rebuild index for 1 visible mod"));
+            var wantHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(payload));
+            await WaitForAsync(() => db.GetModFilesAsync(ct).GetAwaiter().GetResult().Any(row =>
+                row.ModId == mod.Id && row.BlobSha256 == wantHash && row.Length == payload.Length &&
+                Path.GetFileName(row.Path) == Path.GetFileName(alternateLive)),
+                UiTimeout, "filtered reindex restores exact missing catalog payload", ct);
+        }
+        finally
+        {
+            await using var connection = await db.OpenAsync(CancellationToken.None);
+            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+        }
+        Assert.False(File.Exists(alternateLive));
+        passed.Add("Refresh one filtered package and rebuild its missing content index from original bytes");
+
+        int pid = window.Current.ProcessId;
+        async Task Answer(string action, string caption, string choice)
+        {
+            var button = await Button(action);
+            var invocation = Task.Run(() => Invoke(button), ct);
+            var dialog = await WaitForElementAsync(() => FindProcessDialog(pid, caption), UiTimeout, caption, ct);
+            var answer = await WaitForElementAsync(() => FindButton(dialog, choice, enabled: true),
+                UiTimeout, caption + " " + choice, ct);
+            Invoke(answer);
+            await invocation.WaitAsync(UiTimeout, ct);
+            await WaitForAsync(() => FindProcessDialog(pid, caption) is null, UiTimeout, "dismiss " + caption, ct);
+        }
+        filter.SetValue("");
+        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "both packages with independent choices", ct);
+        await Answer("Select all visible mods", "Enable visible mods", "No");
+        Assert.Equal(ToggleState.Off, ReadToggle(alternateName));
+        await Answer("Select all visible mods", "Enable visible mods", "Yes");
+        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.On,
+            UiTimeout, "both packages staged on", ct);
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"confirmed bulk additions reached disk",ct);
+        await Answer("Deselect all visible mods", "Disable visible mods", "Yes");
+        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.Off && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "both packages staged off", ct);
+        await WaitForAsync(()=>!File.Exists(run.LiveModPath)&&!File.Exists(alternateLive),UiTimeout,"confirmed bulk disable reached disk",ct);
+        Invoke(await Button("Undo Last Applied Change"));
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"Undo restored both installed mods",ct);
+        passed.Add("Cancel and confirm bulk selection, disable both, and undo the applied change");
+
+        const string review = "Existing mod layouts — read-only preview";
+        var inspect = await Button("Inspect nested mod package layouts without making changes");
+        var inspectInvocation = Task.Run(() => Invoke(inspect), ct);
+        var preview = await WaitForElementAsync(() => FindProcessDialog(pid, review), UiTimeout, review, ct);
+        await WaitForElementAsync(() => Find(preview, item => item.Current.ControlType == ControlType.Text &&
+            item.Current.Name.StartsWith("Inspected 2 of 2 managed packages", StringComparison.Ordinal)),
+            UiTimeout, "two readable package layouts", ct);
+        Invoke(await WaitForElementAsync(() => FindButton(preview, "Close preview", enabled: true), UiTimeout, "Close preview", ct));
+        await inspectInvocation.WaitAsync(UiTimeout, ct);
+        await WaitForAsync(() => FindProcessDialog(pid, review) is null, UiTimeout, "read-only preview closed", ct);
+        Assert.Equal(originalArchiveHash, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(run.ArchivePath)));
+        Assert.Equal(alternateHash, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(archive)));
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+        Assert.Equal(payload, File.ReadAllBytes(alternateLive));
+        passed.Add("Inspect two package layouts, close preview and preserve archives, deployed and unmanaged files");
+
+        // Vanilla-launch verification later distinguishes saved choices from deployed files.
+        // Disable only the alternate through the normal UI after proving Undo restored it.
+        var restored = await WaitForElementAsync(() => FindModToggle(window, alternateName),
+            UiTimeout, "restored alternate mod", ct);
+        var restoredToggle = (TogglePattern)restored.GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, restoredToggle.Current.ToggleState);
+        restoredToggle.Toggle();
+        await WaitForAsync(() => !File.Exists(alternateLive) && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "alternate disabled for vanilla-launch control", ct);
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
+    }
+
+    private static AutomationElement? FindProcessDialog(int pid, string title)
+    {
+        var owned = AutomationElement.RootElement.FindAll(TreeScope.Children,
+            new PropertyCondition(AutomationElement.ProcessIdProperty, pid));
+        foreach (AutomationElement root in owned)
+        {
+            if (root.Current.Name == title) return root;
+            var child = root.FindFirst(TreeScope.Descendants, new AndCondition(
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Window),
+                new PropertyCondition(AutomationElement.NameProperty, title)));
+            if (child is not null) return child;
+        }
+        return null;
+    }
+}

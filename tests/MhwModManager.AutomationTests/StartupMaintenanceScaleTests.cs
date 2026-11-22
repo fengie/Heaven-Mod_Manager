@@ -70,6 +70,7 @@ public sealed class StartupMaintenanceScaleTests : IDisposable
             var id = $"retire-{i}";
             var folder = Path.Combine(root, id);
             Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(Path.Combine(folder, "shared.tex"), "same", Token);
             await db.UpsertModAsync(new(id, id, id, folder, false, i), Token);
             await db.ReplaceModFilesAsync(id,
                 [new ModFileDescriptor(id, @"nativePC\shared.tex", "same-sha", null,

@@ -31,3 +31,13 @@ function Read-StartupUiPhaseMs {
     }
     return $value
 }
+
+# StartupDiagnosticSession atomically replaces the report after each phase.
+function Read-StartupReportText([string]$Path) {
+    $share = [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, $share)
+    try {
+        $reader = [IO.StreamReader]::new($stream, [Text.Encoding]::UTF8, $true)
+        try { $reader.ReadToEnd() } finally { $reader.Dispose() }
+    } finally { $stream.Dispose() }
+}

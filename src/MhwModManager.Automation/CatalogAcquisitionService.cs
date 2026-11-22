@@ -118,7 +118,7 @@ public sealed class CatalogAcquisitionService
             ct).ConfigureAwait(false);
         try
         {
-            await DownloadBoundedAsync(resolution.DownloadUri, tempArchive, ct).ConfigureAwait(false);
+            await DownloadBoundedAsync(resolution.DownloadUri, tempArchive, file.SizeBytes, ct).ConfigureAwait(false);
             var archiveHash = await hashing.HashFileAsync(tempArchive, authoritative: true, ct).ConfigureAwait(false);
             var imported = await importer.ImportAsync(tempArchive, ct).ConfigureAwait(false);
 
@@ -202,6 +202,7 @@ public sealed class CatalogAcquisitionService
     private async Task DownloadBoundedAsync(
         Uri uri,
         string destination,
+        long? expectedSize,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"host={uri.Host}");
@@ -230,6 +231,9 @@ public sealed class CatalogAcquisitionService
             throw new InvalidDataException(
                 $"Catalog download declared an unsupported size of {declared} bytes.");
         }
+        if (expectedSize is > MaxDownloadBytes)
+            throw new InvalidDataException("The selected catalog file exceeds the download budget.");
+        var byteLimit = expectedSize is > 0 ? expectedSize.Value : MaxDownloadBytes;
 
         Directory.CreateDirectory(downloadRoot);
         RejectReparsePoint(downloadRoot);
@@ -252,11 +256,16 @@ public sealed class CatalogAcquisitionService
             if (total > MaxDownloadBytes - read)
                 throw new InvalidDataException("Catalog download exceeded the 1 GiB safety budget.");
             total += read;
+            if (total > byteLimit)
+                throw new InvalidDataException("The download is larger than the selected catalog file.");
             await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
         }
 
         if (total == 0)
             throw new InvalidDataException("Catalog download returned an empty archive.");
+        if ((expectedSize is > 0 && total != expectedSize)
+            || (response.Content.Headers.ContentLength is long contentLength && total != contentLength))
+            throw new InvalidDataException("Downloaded byte count does not match the selected file or HTTP content length.");
 
         await output.FlushAsync(ct).ConfigureAwait(false);
         output.Flush(flushToDisk: true);

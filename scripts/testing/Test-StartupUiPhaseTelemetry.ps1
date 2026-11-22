@@ -43,6 +43,20 @@ try {
     ) -Encoding UTF8
     Assert-Rejects { Read-StartupUiPhaseMs -LogPath $log -Phase 'reload-mods' } 'wrong tag'
     Assert-Rejects { Read-StartupUiPhaseMs -LogPath $log -Phase 'conflict-analysis' } 'malformed numeric evidence'
+    $current = Join-Path $folder 'startup.json'
+    $next = Join-Path $folder 'startup.json.tmp'
+    $old = Join-Path $folder 'previous.json'
+    [IO.File]::WriteAllText($current, '{"overall":"RUNNING"}')
+    [IO.File]::WriteAllText($next, '{"overall":"PASS"}')
+    Read-StartupReportText $current | ForEach-Object {
+        # This pipeline stage runs while the report reader is still open.
+        [IO.File]::Replace($next, $current, $old)
+        if (($_ | ConvertFrom-Json).overall -ne 'RUNNING') { throw 'The active reader lost its original snapshot.' }
+    }
+    if (((Read-StartupReportText $current) | ConvertFrom-Json).overall -ne 'PASS') {
+        throw 'The terminal report was not visible to the next poll.'
+    }
+    Write-Host 'PASS: the startup report can be replaced during an active Windows reader.'
     Write-Host 'PASS: startup UI phase timings reject missing, spoofed, and malformed evidence.'
 }
 finally {

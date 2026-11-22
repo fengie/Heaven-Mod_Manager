@@ -48,6 +48,42 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
     }
 
     [Fact]
+    public async Task SolidSevenZipPreservesEachMemberAcrossDecoderBoundaries()
+    {
+        var input = await Materialize("7Zip.solid.7z", 58959);
+        var output = Path.Combine(home, "verified-bytes");
+        await new ArchiveInspector().ExtractSafelyAsync(input, output, home, TestToken);
+        // Independently extracted with 7-Zip from the pinned upstream archive.
+        var hashes = new Dictionary<string, string>
+        {
+            [@"exe\test.exe"] = "8557928804F57ECC340B3BB38B095A3607474EC8DEB0076F316FCFE02B562106",
+            [@"jpg\test.jpg"] = "B251C7501FB0F55DD4A92FEABE0A6F5733BC40A02679498155FAE9B30138FC53",
+            ["\u0442\u0435\u0441\u0442.txt"] = "4D581D93D369F6E1C9B295FF38D82DABD577F927DFAF0C35818C015C85E322D9"
+        };
+        Assert.Equal(hashes.Count,Directory.GetFiles(output,"*",SearchOption.AllDirectories).Length);
+        foreach (var (relative, hash) in hashes)
+        {
+            var bytes = await File.ReadAllBytesAsync(Path.Combine(output,relative),TestToken);
+            Assert.Equal(hash,Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)));
+        }
+    }
+
+    [Fact]
+    public async Task SolidSevenZipStopsAtActualBudgetAndCleansOnlyItsPartialFile()
+    {
+        var input = await Materialize("7Zip.solid.7z",58959);
+        var original = await File.ReadAllBytesAsync(input,TestToken);
+        var output = Directory.CreateDirectory(Path.Combine(home,"limited")).FullName;
+        var sentinel = Path.Combine(output,"keep.txt");
+        await File.WriteAllTextAsync(sentinel,"owned",TestToken);
+        await Assert.ThrowsAsync<InvalidDataException>(() => new ArchiveInspector().ExtractSafelyAsync(
+            input,output,home,new ArchiveExtractionLimits(1024*1024,1),TestToken));
+        Assert.Equal(sentinel,Assert.Single(Directory.GetFiles(output,"*",SearchOption.AllDirectories)));
+        Assert.Equal("owned",await File.ReadAllTextAsync(sentinel,TestToken));
+        Assert.Equal(original,await File.ReadAllBytesAsync(input,TestToken));
+    }
+
+    [Fact]
     public async Task Malformed_real_rar_fixture_must_not_publish_output()
     {
         const string fixture = "Rar.malformed_512byte.rar";

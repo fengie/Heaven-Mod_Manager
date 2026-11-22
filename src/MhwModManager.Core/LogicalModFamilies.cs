@@ -71,7 +71,7 @@ public static partial class LogicalModFamilies
         foreach (var evidence in familyEvidence)
             MasterDebugLog.Write("FAMILY", $"GENERIC pair={evidence.LeftModId}<->{evidence.RightModId}; score={evidence.Score}; evidence={evidence.Summary}");
 
-        var keyed = mods.Where(m=>!m.IsSuperseded).Select(m => (mod: m, key: FamilyKey(m, inferred))).ToArray();
+        var keyed = mods.Where(m=>!m.IsSuperseded).Select(m => (mod: m, key: m.RequiresLayoutReview ? "review:" + m.Id : FamilyKey(m, inferred))).ToArray();
         var families = new List<LogicalModFamily>();
         foreach (var group in keyed.GroupBy(x => x.key, StringComparer.OrdinalIgnoreCase))
         {
@@ -119,7 +119,9 @@ public static partial class LogicalModFamilies
             .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var representative = ChooseRepresentative(members);
-        var display = CleanDisplayName(representative.DisplayName);
+        var display = representative.RequiresLayoutReview && representative.AuthoredPartLabel is { } part
+            ? representative.FamilyDisplayName + " — " + part
+            : representative.FamilyDisplayName ?? CleanDisplayName(representative.DisplayName);
         if (members.Length > 1 && display.Length == 0) display = CleanDisplayName(representative.Name);
         return new(
             "logical:" + key,
@@ -161,7 +163,7 @@ public static partial class LogicalModFamilies
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!string.IsNullOrWhiteSpace(mod.FamilyId))
-            return "saved:" + NormalizeKey(mod.FamilyId);
+            return "saved:" + mod.FamilyId;
 
         // Source identity is stronger than author-entered file categories. A Nexus page can publish
         // several main files, optional files, patches, or mutually-exclusive variants that still belong

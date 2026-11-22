@@ -6,7 +6,34 @@ on:
     branches: [main]
     paths:
       - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.cs'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.*.cs'
+      - 'tests/MhwModManager.IntegrationTests/DiscoveredGameProfiles.cs'
+      - 'tests/fixtures/discovered-games/**'
+      - 'tests/fixtures/packaged-ui/**'
+      - 'scripts/diagnostics/**'
+      - 'src/MhwModManager.App/**'
+      - 'src/MhwModManager.Core/GameProfiles.cs'
+      - 'src/MhwModManager.Filesystem/GameProfileRegistry*.cs'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfAcceptanceContractTests.cs'
       - 'src/MhwModManager.App/MainWindow.xaml'
+      - 'src/MhwModManager.App/MainWindow.xaml.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.AutoSort.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs'
+      - 'src/MhwModManager.Automation/GameModIntakeService.cs'
+      - 'src/MhwModManager.Automation/GameModIntakeClassifier.cs'
+      - 'src/MhwModManager.Automation/ModBoundaryDiscovery.cs'
+      - 'src/MhwModManager.Automation/SmartInboxService.cs'
+      - 'src/MhwModManager.Automation/ArchiveImportService.cs'
+      - 'src/MhwModManager.Core/UnrealPakLayout.cs'
+      - 'src/MhwModManager.Filesystem/ModScanner.cs'
+      - 'src/MhwModManager.Filesystem/BepInExPluginMetadata.cs'
+      - 'tests/MhwModManager.IntegrationTests/BepInExPluginLibraryTests.cs'
+      - 'src/MhwModManager.Filesystem/LocalModInventory.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.cs'
+      - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.LocalInventory.cs'
+      - 'src/MhwModManager.Filesystem/CatalogService.cs'
+      - 'src/MhwModManager.Storage/ManagerDatabase.cs'
+      - 'src/MhwModManager.App/App.xaml.cs'
       - '.github/workflows/installed-wpf-mod-lifecycle-e2e.yml'
   workflow_dispatch:
 
@@ -21,7 +48,7 @@ jobs:
   installed-wpf:
     name: Actual packaged WPF app with fake game profiles
     runs-on: windows-2025
-    timeout-minutes: 45
+    timeout-minutes: 65
     env:
       MHW_RUN_INSTALLED_WPF_E2E: '1'
     steps:
@@ -84,7 +111,13 @@ jobs:
             throw 'Published candidate WinExe is missing.'
           }
 
-      - name: Real UIA import, list, preview, apply, undo and game switch
+          $packagedScripts = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'scripts/diagnostics'
+          New-Item -ItemType Directory -Force -Path $packagedScripts | Out-Null
+          Copy-Item -Path scripts/diagnostics/Capture-Diagnostics.ps1,scripts/diagnostics/Master-Debug.ps1 -Destination $packagedScripts
+
+      - name: Verify three package picker and saved-choice cases
+        id: picker
+        timeout-minutes: 12
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -92,26 +125,78 @@ jobs:
           if (!(Test-Path -LiteralPath $runner)) { throw 'xUnit runner is missing.' }
           $evidence = Join-Path $env:GITHUB_WORKSPACE 'BuildLogs\installed-wpf-acceptance'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          $output = @(& $runner '--filter-class' 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests' 2>&1)
+          $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+          & $compiler /nologo /target:winexe "/out:$env:RUNNER_TEMP\mhw-game-launch-probe.exe" (Resolve-Path tests/fixtures/packaged-ui/GameLaunchProbe.cs).Path
+          if ($LASTEXITCODE -ne 0) { throw 'Disposable game launch probe failed to compile.' }
+          "MHW_GAME_UI_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $env:MHW_GAME_UI_EVIDENCE = $evidence
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
+          $output = @(& $runner '--filter-method' $method 2>&1)
           $exit = $LASTEXITCODE
           $output | Set-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
-          if ($exit -ne 0) { throw "Installed WPF acceptance failed, exit code $exit." }
+          if ($exit -ne 0) { throw "Installed WPF picker acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
-          if ($summary -notmatch 'succeeded:\s+4' -or $summary -notmatch 'skipped:\s+0') {
-            throw 'Four executed passing UI tests and zero skipped tests required.'
+          if ($summary -notmatch 'succeeded:\s+3\b' -or $summary -notmatch 'skipped:\s+0\b') {
+            throw 'Expected three passing picker cases and zero skips.'
+          }
+
+
+      - name: Verify remaining lifecycle cases and all registered game receipts
+        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' }}
+        timeout-minutes: 53
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          $evidence = $env:MHW_GAME_UI_EVIDENCE
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
+          $expectedCases = 14
+          $remainingCases = $expectedCases - 3
+          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Installed WPF lifecycle acceptance failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch "succeeded:\s+$remainingCases\b" -or $summary -notmatch 'skipped:\s+0\b') {
+            throw "Expected $remainingCases passing remaining cases and zero skips."
+          }
+          $inventory = @(Get-Content -Raw -Encoding UTF8 tests/fixtures/discovered-games/games.json | ConvertFrom-Json)
+          $gameReceipts = @(Get-ChildItem -LiteralPath $evidence -Filter 'game-*.json' | ForEach-Object {
+            Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          })
+          $expectedIds = @($inventory | ForEach-Object { $_.id } | Sort-Object)
+          $observedIds = @($gameReceipts | ForEach-Object { $_.Id } | Sort-Object)
+          if ($expectedIds.Count -eq 0 -or $observedIds.Count -ne $expectedIds.Count -or
+              (Compare-Object $expectedIds $observedIds) -or @($gameReceipts | Where-Object { $_.error }).Count) {
+            throw 'The installed UI receipts do not cover every registered fixture profile.'
+          }
+          $repairedIds = @(Get-ChildItem -LiteralPath $evidence -Filter 'repair-*.json' | ForEach-Object {
+            $row = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($row.error) { throw $row.error }
+            $row.Id
+          } | Sort-Object)
+          if ($repairedIds.Count -ne $expectedIds.Count -or (Compare-Object $expectedIds $repairedIds)) {
+            throw 'The move-repair receipts do not cover the registered fixture inventory.'
           }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
+          if ('${{ steps.picker.outcome }}' -ne 'success') { throw 'The picker checks failed. Per-game receipts were retained without a passing release proof.' }
           $proof = [ordered]@{
             schemaVersion = 1
             sourceSha = (& git rev-parse HEAD).Trim()
             hostedDisposable = $true
             exeSha256 = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
-            succeeded = 4
+            verifiedGameProfiles = $observedIds
+            succeeded = $expectedCases
             failed = 0
             skipped = 0
           }
-          $proof | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $evidence 'proof.json') -Encoding UTF8
+          $proofJson = $proof | ConvertTo-Json -Depth 4
+          $proofJson | Set-Content -LiteralPath (Join-Path $evidence 'proof.json') -Encoding UTF8
+          Write-Host $proofJson
 
       - name: Retain bounded evidence when artifact quota allows
         if: always()

@@ -124,7 +124,14 @@ public sealed record ModDescriptor(
     NexusFileCategory NexusCategory = NexusFileCategory.Unknown, string? NexusVersion = null,
     DateTimeOffset? NexusUploadedAt = null, bool IsSuperseded = false, string? SupersededByModId = null,
     int ProvenanceScore = 0, ProvenanceSource ProvenanceSource = ProvenanceSource.Unknown,
-    string? PreviewPath = null, bool NeedsRevalidation = false, string? FamilyRole = null);
+    string? PreviewPath = null, bool NeedsRevalidation = false, string? FamilyRole = null)
+{
+    public bool RequiresLayoutReview { get; init; }
+    public string? AuthoredPartLabel { get; init; }
+    public string? FamilyDisplayName { get; init; }
+    public string? ChoiceGroup { get; init; }
+    public string? PreferredChoiceId { get; init; }
+}
 
 public sealed record ModFileDescriptor(
     string ModId, string Path, string BlobSha256, string? FastHash, long Length,
@@ -161,7 +168,10 @@ public sealed record DeploymentManifestEntry(
 public sealed record DeploymentChange(
     int Sequence, ChangeKind Kind, string Path, string? BeforeBlobSha256,
     string? AfterBlobSha256, string? ProviderBefore, string? ProviderAfter,
-    string? ExpectedLiveSha256, string? RuleId);
+    string? ExpectedLiveSha256, string? RuleId)
+{
+    public bool RequireAbsent { get; init; }
+}
 
 public sealed record DeploymentPlan(
     string Id, DateTimeOffset CreatedUtc, IReadOnlyList<DeploymentChange> Changes,
@@ -177,7 +187,10 @@ public sealed record PlannerSnapshot(
     IReadOnlyDictionary<string,string> ExactWinners,
     IReadOnlyDictionary<string,string> ResourceProviders,
     IReadOnlyDictionary<string,DeploymentManifestEntry> CurrentManifest,
-    IReadOnlyDictionary<string,string?> Originals);
+    IReadOnlyDictionary<string,string?> Originals)
+{
+    public IReadOnlyDictionary<string,string> ArmorOutfitChoices { get; init; } = new Dictionary<string,string>();
+}
 
 
 public sealed record ModProvenance(

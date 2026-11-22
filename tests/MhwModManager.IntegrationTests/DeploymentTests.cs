@@ -32,6 +32,22 @@ public sealed class DeploymentTests : IDisposable
     }
 
     [Fact]
+    public async Task ARecoveryExpectingAnAbsentFileLeavesANewUnmanagedFileUntouched()
+    {
+        var (game, db, hashing, blobs) = await CreateAsync("expected-absence");
+        var file = Path.Combine(game, "nativePC", "same.tex");
+        var hash = await BlobAsync(blobs, "mod", "MOD");
+        await File.WriteAllTextAsync(file, "new user file", TestToken);
+        var change = new DeploymentChange(1, ChangeKind.Add, @"nativePC\same.tex", null, hash,
+            null, "mod", null, null) { RequireAbsent = true };
+        var plan = new DeploymentPlan("restore", DateTimeOffset.UtcNow, [change], [], []);
+        var executor = new DeploymentExecutor(db, blobs, hashing, game);
+        await Assert.ThrowsAsync<IOException>(() => executor.ApplyAsync(plan, "Restore after safe mode", ct: TestToken));
+        Assert.Equal("new user file", await File.ReadAllTextAsync(file, TestToken));
+        Assert.Empty((await new PlannerSnapshotRepository(db).LoadAsync(TestToken)).CurrentManifest);
+    }
+
+    [Fact]
     public async Task First_takeover_restore_and_undo_preserve_ownership_semantics()
     {
         var (game, db, hashing, blobs) = await CreateAsync("ownership");

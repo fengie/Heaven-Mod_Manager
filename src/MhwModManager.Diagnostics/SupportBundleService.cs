@@ -146,7 +146,8 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
     private async Task CopySanitizedStructuredLogAsync(string source,string destination,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        using var input=new StreamReader(source);
+        using var log = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var input=new StreamReader(log);
         using var output=new StreamWriter(destination,false);
         while(await input.ReadLineAsync(ct) is { } line)
         {

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using MhwModManager.App.ViewModels;
 using Xunit;
 
@@ -6,6 +7,46 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed partial class XamlBindingSafetyTests
 {
+    [Fact]
+    public void MainNavigationCommandsAreScopedToTheWindowThatOwnsThem()
+    {
+        var app = Path.Combine(FindRepositoryRoot(),"src","MhwModManager.App");
+        Assert.Contains("x:Key=\"MainNavigationTabs\" TargetType=\"TabControl\"", File.ReadAllText(Path.Combine(app,"App.xaml")));
+        Assert.Contains("Style=\"{StaticResource MainNavigationTabs}\"", File.ReadAllText(Path.Combine(app,"MainWindow.xaml")));
+        Assert.DoesNotContain("MainNavigationTabs",File.ReadAllText(Path.Combine(app,"WorkflowWindow.xaml")));
+    }
+
+    [Fact]
+    public void LibraryViewRefreshCannotOverlapGridRowEdits()
+    {
+        var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));
+        XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var library = Assert.Single(document.Descendants(wpf + "DataGrid"),
+            element => (string?)element.Attribute("ItemsSource") == "{Binding LibraryView}");
+        Assert.Equal("True", (string?)library.Attribute("IsReadOnly"));
+        Assert.Equal("False", (string?)library.Attribute("CanUserAddRows"));
+        var controls = library.Descendants(wpf + "CheckBox")
+            .Select(box => (string?)box.Attribute("IsChecked")).ToArray();
+        Assert.Contains("{Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}", controls);
+        Assert.Contains("{Binding Enabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}", controls);
+    }
+
+    [Fact]
+    public void EnterInCatalogQueryUsesTheSearchButtonCommand()
+    {
+        var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "MhwModManager.App", "MainWindow.xaml"));
+        XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var query = Assert.Single(document.Descendants(wpf + "TextBox"),
+            element => (string?)element.Attribute("AutomationProperties.Name") == "Search provider catalog");
+        var button = Assert.Single(query.Parent!.Elements(wpf + "Button"),
+            element => (string?)element.Attribute("Content") == "Search");
+        var enter = Assert.Single(query.Elements(wpf + "TextBox.InputBindings").Elements(wpf + "KeyBinding"),
+            element => (string?)element.Attribute("Key") == "Enter");
+        Assert.Null(enter.Attribute("Modifiers"));
+        Assert.Equal("{Binding SearchCatalogCommand}", (string?)button.Attribute("Command"));
+        Assert.Equal((string?)button.Attribute("Command"), (string?)enter.Attribute("Command"));
+    }
+
     [Fact]
     public void InlineRunBindingsAreExplicitlyOneWay()
     {
@@ -31,8 +72,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("OpenNexusBrowseCommand", xaml);
         Assert.Contains("OpenGameBananaBrowseCommand", xaml);
         Assert.Contains("CatalogProviderWebLinksVisibility", xaml);
-        Assert.Contains("https://www.nexusmods.com/monsterhunterworld/mods", viewModel);
-        Assert.Contains("https://gamebanana.com/games/9081", viewModel);
+        Assert.Contains("s.Paths.Game.NexusBrowseUri", viewModel);
+        Assert.Contains("s.Paths.Game.GameBananaBrowseUri", viewModel);
         Assert.Contains("OpenExternalUri(", viewModel);
     }
 
@@ -72,7 +113,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await Activity.RefreshAsync(ct);", activityFeature);
         Assert.Contains("PresentationReadRepository", activityPage);
         Assert.Contains("ItemsSource=\"{Binding ActivityRows}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshActivityCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding RefreshActivityCommand}\"", xaml);
     }
 
     [Fact]
@@ -89,7 +130,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await Coverage.RefreshAsync(HasSemanticCoverage,ct);", coverageFeature);
         Assert.Contains("PresentationReadRepository", coveragePage);
         Assert.Contains("ItemsSource=\"{Binding OutfitRows}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshOutfitsCommand}\"", xaml);
+        Assert.Contains("DataContext.ChooseOutfitCommand", xaml);
+        Assert.Contains("DataContext.ClearOutfitChoiceCommand", xaml);
     }
 
     [Fact]
@@ -106,7 +148,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await ProfilesPage.RefreshAsync(ct);", profilesFeature);
         Assert.Contains("ProfileRepository", profilesPage);
         Assert.Contains("ItemsSource=\"{Binding Profiles}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshProfilesCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding RefreshProfilesCommand}\"", xaml);
     }
 
     [Fact]
@@ -122,7 +164,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Games=GamesPage.Rows;", mainViewModel);
         Assert.Contains("GamesPage.Refresh();", mainViewModel);
         Assert.Contains("GameProfileRegistry", gamesPage);
-        Assert.Contains("Rows.ReplaceAll(registry.Load());", gamesPage);
+        Assert.Contains("Rows.ReplaceAll(registered);", gamesPage);
         Assert.Contains("GamesPage.Refresh();", gamesFeature);
         Assert.True(Regex.IsMatch(gamesFeature, @"private async Task ScanInstalledGames\(\)\s*\{\s*using var __mhwTrace = MasterDebugLog\.BeginMethod\(\);", RegexOptions.CultureInvariant));
         // The game selector must now use an in-process session transition. Persistence
@@ -136,9 +178,9 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("await replacement.InitializeAsync();", window);
         Assert.Contains("DataContext = previousViewModel;", window);
         Assert.Contains("ItemsSource=\"{Binding Games}\"", xaml);
-        Assert.Contains("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
-        Assert.Contains("Command=\"{Binding SwitchGameCommand}\"", xaml);
-        Assert.Contains("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
+        Assert.DoesNotContain("SelectedItem=\"{Binding SelectedGame,Mode=TwoWay}\"", xaml);
+        Assert.Contains("SwitchCommand=\"{Binding SwitchGameCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding ScanInstalledGamesCommand}\"", xaml);
     }
 
     [Fact]
@@ -171,13 +213,13 @@ public sealed partial class XamlBindingSafetyTests
 
         Assert.Contains("AutomationProperties.Name=\"Active game\"", xaml);
         Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameSelector\"", xaml);
-        Assert.Contains("AutomationProperties.ItemStatus=\"{Binding SelectedGame.DisplayName}\"", xaml);
-        Assert.Contains("TextSearch.TextPath=\"DisplayName\"", xaml);
-        Assert.Contains("<ComboBox.ItemTemplate>", xaml);
+        Assert.Contains("AutomationProperties.ItemStatus=\"{Binding ActiveGameDisplayName}\"", xaml);
+        Assert.Contains("Header=\"{Binding ActiveGameDisplayName}\"", xaml);
+        Assert.Contains("<local:GameChoiceMenu.ItemTemplate>", xaml);
         Assert.Contains("Text=\"{Binding DisplayName}\"", xaml);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
         Assert.Contains("AutomationProperties.AutomationId=\"ActiveGameDisplayName\"", xaml);
-        Assert.Contains("AutomationProperties.Name=\"{Binding DisplayName}\"", xaml);
+        Assert.Contains("Property=\"AutomationProperties.Name\" Value=\"{Binding DisplayName}\"", xaml);
         Assert.DoesNotContain("DisplayMemberPath=\"DisplayName\"", xaml);
     }
 
@@ -416,7 +458,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Visibility=\"{Binding CatalogEmptyVisibility}\"", xaml);
         Assert.Contains("Command=\"{Binding RefreshCatalogCommand}\"", xaml);
         Assert.Contains("Command=\"{Binding ClearCatalogSearchCommand}\"", xaml);
-        Assert.Contains("AutomationProperties.Name=\"Refresh catalog providers\"", xaml);
+        Assert.Contains("AutomationProperties.Name=\"Retry failed catalog providers\"", xaml);
         Assert.Contains("AutomationProperties.Name=\"Clear catalog search\"", xaml);
         Assert.Contains("<Condition Binding=\"{Binding HasCatalogResults}\" Value=\"True\"/>", xaml);
         Assert.Contains("Text=\"{Binding CatalogResultCountLabel}\"", xaml);
@@ -467,8 +509,8 @@ public sealed partial class XamlBindingSafetyTests
         var ensureBody = source[ensureStart..refreshCommandStart];
         Assert.Contains("await catalogSyncGate.WaitAsync(ct);", ensureBody, StringComparison.Ordinal);
         Assert.True(
-            ensureBody.IndexOf("if (catalogLoaded)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
-            "Initial catalog load must re-check catalogLoaded after acquiring the sync gate.");
+            ensureBody.IndexOf("if (CatalogIsFresh)", ensureBody.IndexOf("WaitAsync", StringComparison.Ordinal), StringComparison.Ordinal) >= 0,
+            "Initial catalog load must re-check freshness after acquiring the sync gate.");
 
         var refreshCoreStart = source.IndexOf("private async Task RefreshCatalogCoreAsync", refreshCommandStart, StringComparison.Ordinal);
         Assert.True(refreshCoreStart > refreshCommandStart);
@@ -522,11 +564,13 @@ public sealed partial class XamlBindingSafetyTests
         Assert.DoesNotContain("await RefreshProfiles(ct);", initialize);
         Assert.DoesNotContain("await RefreshActivity(ct);", initialize);
         Assert.Contains("partial void OnSelectedTabChanged(int value)", mainViewModel);
-        Assert.Contains("case 4 when !profilesLoaded:", mainViewModel);
-        Assert.Contains("case 5 when !activityLoaded:", mainViewModel);
-        Assert.Contains("case 6 when !overlapsLoaded:", mainViewModel);
-        Assert.Contains("overlapsLoaded=false;", mainViewModel);
-        Assert.Contains("if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);", mainViewModel);
+        Assert.Contains("case 4:", mainViewModel);
+        Assert.Contains("case 5:", mainViewModel);
+        Assert.Contains("case 6:", mainViewModel);
+        Assert.Contains("StartPageVisit(SelectedTab)", initialize);
+        var managedPage = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.ManagedPage.cs"));
+        Assert.Contains("RefreshSelectedPageAsync(tab,backgroundCts.Token)", managedPage);
+        Assert.Contains("if(SelectedTab==6 && generation==conflictPreviewGeneration)await RefreshOverlaps(ct);", mainViewModel);
     }
 
     [Fact]
@@ -551,9 +595,9 @@ public sealed partial class XamlBindingSafetyTests
         Assert.DoesNotContain("nexus.RefreshAsync", blockingStartup);
         Assert.DoesNotContain("nexus.RefreshAsync", sessionBootstrap);
         Assert.Contains("startup.intelligence.nexus.deferred", sessionBootstrap);
-        Assert.Contains("if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)", mainViewModel);
-        Assert.Contains("EnsureInitialMetadataLoadedAsync(backgroundCts.Token)", mainViewModel);
-        Assert.Contains("if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);", mainViewModel);
+        Assert.Contains("if (BackgroundMetadataRefreshEnabled && !initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)", mainViewModel);
+        Assert.Contains("EnsureInitialMetadataLoadedAsync(ct)", mainViewModel);
+        Assert.Contains("await RefreshAnalysis(ct);", mainViewModel);
         Assert.Contains("var shouldEnrich=SelectedTab==3;", mainViewModel);
         Assert.Contains("var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;", mainViewModel);
     }
@@ -614,7 +658,7 @@ public sealed partial class XamlBindingSafetyTests
 
         Assert.Contains("Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"See exactly what would change without editing game files.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
         Assert.Contains("Content=\"Discard Pending Changes\" Command=\"{Binding DiscardStagedCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"Discard all pending enable/disable changes. Installed game files are not changed.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
-        Assert.Contains("Content=\"Apply Mod Changes\" Command=\"{Binding ApplyCommand}\" Style=\"{StaticResource PrimaryButton}\" MinHeight=\"32\" Padding=\"10,5\" Margin=\"2,0\" ToolTip=\"Safely install your pending mod changes. Ctrl+Enter.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
+        Assert.Contains("Content=\"Review and retry\" Command=\"{Binding ApplyCommand}\" Visibility=\"{Binding ReviewRetryVisibility}\"", xaml);
         Assert.DoesNotContain("Style=\"{StaticResource ActionTile}\" Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" IsEnabled=\"{Binding HasStagedChanges}\"", xaml);
         Assert.Contains("public bool HasStagedChanges", main);
         Assert.Contains("return StagedCount>0;", main);
@@ -634,7 +678,8 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("Content=\"Select All\" Command=\"{Binding EnableVisibleCommand}\"", xaml);
         Assert.Contains("Content=\"Deselect All\" Command=\"{Binding DisableVisibleCommand}\"", xaml);
         Assert.Contains("HasVisibleMods", xaml);
-        Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().ToArray();", main);
+        Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray();", main);
+        Assert.Contains("IsEnabled=\"{Binding CanStage}\"", xaml);
         Assert.Contains("if(targets.Length>1&&MessageBox.Show(", main);
         Assert.Contains("public string PendingStateLabel", rows);
         Assert.Contains("OnPropertyChanged(nameof(PendingStateLabel));", rows);
@@ -671,7 +716,7 @@ public sealed partial class XamlBindingSafetyTests
         var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
 
         Assert.Contains("ItemsSource=\"{Binding StorageCategories}\"", xaml);
-        Assert.Contains("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
+        Assert.DoesNotContain("Command=\"{Binding RefreshStorageUsageCommand}\"", xaml);
         Assert.Contains("Command=\"{Binding ReclaimDisposableStorageCommand}\"", xaml);
         Assert.Contains("AutomationProperties.Name=\"Reclaim disposable storage\"", xaml);
         Assert.Contains("It preserves installed Mods, State, archives, catalog scratch, unknown files, live pending update data, nonterminal recovery data, and reparse paths.", xaml);
@@ -687,7 +732,7 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("\"storage.reclaim-disposable\"", settings);
         Assert.Contains("SafeRecursiveTraversal.Snapshot(root, ct)", settings);
         Assert.DoesNotContain("Directory.Delete(", settings);
-        Assert.Contains("if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);", main);
+        Assert.Contains("await EnsureStorageUsageLoadedAsync(ct);", main);
     }
 
     [Fact]

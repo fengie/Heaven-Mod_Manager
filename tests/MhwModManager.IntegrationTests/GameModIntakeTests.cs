@@ -365,7 +365,8 @@ public sealed class GameModIntakeTests : IDisposable
         var vm = File.ReadAllText(Path.Combine(root.FullName, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.AutoSort.cs"));
         Assert.Contains("AddAutoSortFolderCommand", xaml);
         Assert.Contains("RemoveAutoSortFolderCommand", xaml);
-        Assert.Contains("ScanAutoSortFoldersCommand", xaml);
+        Assert.DoesNotContain("ScanAutoSortFoldersCommand", xaml);
+        Assert.Contains("ScheduleAutoSortScan();", vm);
         Assert.Contains("StartAutoSorting", vm);
     }
 

@@ -1,7 +1,103 @@
+# v8.8.138 — November 21, 2026
+
+- Browse Mods handles local cached searches consisting only of punctuation, symbols or emoji as zero matches, without accidentally listing the whole cache.
+- Mixed text and punctuation remain searchable. FTS5 token filtering preserves supplementary Unicode letters, Unicode numbers and private-use identifiers, with bounded game-specific page queries. [Refs #558](https://github.com/fengie/Heaven-Mod_Manager/issues/558)
+
+# v8.8.137 — November 21, 2026
+
+- Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.
+- In Monster Hunter: World, open Coverage and choose an outfit for an armor set. Manager resolves all affected pieces together, preserves unrelated pieces and records the change for Undo.
+- Opening or returning to a page refreshes its information. Profiles and History pick up changes made while hidden, and Settings and Browse reuse recent measurements and provider results.
+
+# v8.8.136 — November 21, 2026
+
+- Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
+- A loose Unreal configuration file with no known destination stays disabled for layout review. Other packages in the same Inbox batch can finish indexing. [Mixed-game intake](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
+
+# v8.8.135 — November 21, 2026
+
+- The Mods list shows verified package components together. Choose one documented variant per option group, or enable a supported add-on with its base. Preview shows the resulting deployment before Apply. [Package family verification](https://github.com/fengie/Heaven-Mod_Manager/issues/954)
+
+# v8.8.134 — November 21, 2026
+
+- Import a mod folder or archive to list independent packages even when a loose file sits beside them. Manager preserves container companions, keeps documented alternatives together for review, and uses a registered game folder to route its packages. [Folder import verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791)
+
+# v8.8.133 — November 21, 2026
+
+- Manager now shows one entry for identical package folders at startup and after intake. It keeps both originals, respects saved and staged choices, and shows a copy again when its contents change. Previously selected intake folders resume when reconnected. [Automatic duplicate handling](https://github.com/fengie/Heaven-Mod_Manager/issues/951)
+
+# v8.8.132 — November 21, 2026
+
+- Installed Files now identifies the Mods entry that accounts for a discovery. The active game's library automatically lists verified packages and loader components, keeps external files read-only and distinguishes previous installations. [Installed discovery](https://github.com/fengie/Heaven-Mod_Manager/issues/949)
+
+# v8.8.131 — November 20, 2026
+
+- Use **Add Game** beside **Find Installed Games** on the Dashboard to select a game executable and switch to its mod library. Choosing an already registered executable reuses its existing profile. [Game registration](https://github.com/fengie/Heaven-Mod_Manager/issues/946)
+
+# v8.8.130 — November 20, 2026
+
+- Repeated Apply preserves the previous Undo. Successive Undos walk deployment history, and a file created outside Manager survives a refused Undo. [Deployment ordering](https://github.com/fengie/Heaven-Mod_Manager/issues/944)
+- When a verified discovery refresh exceeds cache capacity, removed items no longer return on reopening Manager. [Discovery refresh](https://github.com/fengie/Heaven-Mod_Manager/issues/945)
+
+# v8.8.129 — November 20, 2026
+
+- Launch Without Mods restores the files that were actually deployed when the game fails to start or exits. Enabled packages that were still pending stay unapplied. [Launch recovery](https://github.com/fengie/Heaven-Mod_Manager/issues/942)
+
+# v8.8.128 — November 20, 2026
+
+- Official catalog links now follow the active game’s provider mappings. Advanced Tools no longer shows main-window actions it cannot execute. Bringing in manual Unreal mods skips stock game containers. Relinking a moved game preserves its registered install layout. Review-only mods can coexist with Advanced Tools and visible reindexing. The installer keeps checkbox choices in sync and explains missing required choices. Pressing Enter in Mods selects a matching result. Restore Last Working Setup restores the saved mod toggles and deployed files together. Duplicate cleanup verifies both current source folders before archiving a copy, and Collect Diagnostics finds the installed collector. The Windows acceptance suite uses the discovered profile registry for game-specific checks. [Game coverage](https://github.com/fengie/Heaven-Mod_Manager/issues/939)
+
+# v8.8.127 — November 20, 2026
+
+- Auto Populate indexes existing packages before planning across game profiles. It keeps explicit choices, holds incomplete or misplaced files, and reports shared Unreal export IDs for supported IoStore tables. [Auto Populate acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/937)
+
+# v8.8.126 — November 20, 2026
+
+- The Mods list separates nested Unreal packages on startup and Inbox arrival. Exact copies of enabled packages share a visible entry, and unresolved options appear as named review entries. [Collection acceptance](https://github.com/fengie/Heaven-Mod_Manager/issues/935)
+
+# v8.8.125 — November 20, 2026
+
+- The Mods list restores previously discovered entries on open, reads verified Workshop titles from local package metadata, and automatically catalogs new active-game Inbox arrivals. You can search by title or Workshop ID. [Discovery report](https://github.com/fengie/Heaven-Mod_Manager/issues/933)
+
+# v8.8.124 — November 20, 2026
+
+- Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
+
+# v8.8.123 — November 20, 2026
+
+- The Mods list now shows verified BepInEx plugins and ReShade installations in the registered game. Search by plugin name, ID or source path. Exact DLL copies already in a saved package appear once, including disabled packages that have never been indexed. Different DLLs can share a plugin ID and remain distinct. [#930](https://github.com/fengie/Heaven-Mod_Manager/pull/930)
+
+# v8.8.122 — November 20, 2026
+
+- The Mods list now includes Steam Workshop items with a matching local Steam install record and item directory for the registered game. Search by item ID or source path. Steam manages these items. Manager bulk enable, reindex and deployment continue to operate on Manager-owned packages. [#928](https://github.com/fengie/Heaven-Mod_Manager/pull/928)
+
+# v8.8.121 — November 20, 2026
+
+- The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
+- The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
+- Independently selectable Unreal packages in existing library folders now appear as disabled catalog entries. Existing choices and original sources are preserved. Collections with unresolved variants or companion files still require review. [#926](https://github.com/fengie/Heaven-Mod_Manager/pull/926)
+- The real-library source test found both active and older installs, removed 507 stock-file review entries, and retained the expected Workshop and loader evidence. [Inventory change](https://github.com/fengie/Heaven-Mod_Manager/pull/925)
+
+# v8.8.120 — November 19, 2026
+
+- Empty local folders no longer create catalog entries. Existing rows keep their saved state and show an actionable error if their selected source folder is empty. [#919](https://github.com/fengie/Heaven-Mod_Manager/pull/919)
+- Nested, project-qualified Unreal packages can be identified independently. Ordinary loose PAK groups use the game's mod subdirectory on supported profiles. Explicit mirrored destinations stay intact, and incomplete or ambiguous packages require review. [#920](https://github.com/fengie/Heaven-Mod_Manager/pull/920)
+- For an older, already-enabled Unreal package, filter the library to the intended mod and use **Refresh visible mod** to reindex it. Review **Preview Mod Changes**, then use **Apply** when the staged changes and destination match your intent.
+- v8.8.120 [build 603](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-603) was published from source `8ab5e050ef78bad07099fff470808c0a3af86c28`. Its [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44672735615) and [hosted updater and rollback test](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44675183365) passed. The shipped updater also installed build 603 on Heaven2 and a separate startup exited cleanly.
+
+# v8.8.119 — November 19, 2026
+
+- Auto Populate skips known pre-Iceborne armor materials on Iceborne installations. Already-selected outfits get a recovery message before the stage changes. [#913](https://github.com/fengie/Heaven-Mod_Manager/pull/913)
+
+- **Browse Mods recovery:** [PR #903](https://github.com/fengie/Heaven-Mod_Manager/pull/903) makes expired provider reviews and network failures visible, adds official Nexus/GameBanana site links when live cache is empty, preserves provider-failure state during local-only searches, and recognizes validated 2026 hyphenated Nexus archive naming as unverified provenance. Provider access remains fail-closed: Nexus public-app registration and current GameBanana terms have **not** been established (#786/#558).
+- **Family/grouping and conflict correctness:** [PR #902](https://github.com/fengie/Heaven-Mod_Manager/pull/902) distinguishes genuine MHW armor-slot conflicts from independently namespaced resources. [PR #903](https://github.com/fengie/Heaven-Mod_Manager/pull/903) increases review-only sidecar suggestions while rejecting pick-one Alt/Choose variants. [PR #905](https://github.com/fengie/Heaven-Mod_Manager/pull/905) adds confirmed separation of falsely grouped sources and a strict canonical-shape guard preserving similarly worded user-authored explicit conflict rules. No live game files or existing source archives are changed by the separation action.
+- **Indexed local discovery:** [PR #898](https://github.com/fengie/Heaven-Mod_Manager/pull/898) adds bounded local catalog continuation beyond 1,000 results, and [PR #900](https://github.com/fengie/Heaven-Mod_Manager/pull/900) makes pagination deterministic for ties. Scale/UI p95 on personal Heaven2 and real provider entitlement remain separately unverified.
+- v8.8.119 [build 600](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-600) binds source `7144ab22389305fc90eb4efc3bd06055209c87da`. The [Windows Release Gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44646768083) and [hosted packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44650262798) passed for that source.
+
 # v8.8.118 — November 19, 2026
 
 - **Updater recovery safety:** [PR #895](https://github.com/fengie/Heaven-Mod_Manager/pull/895) prevents cleanup from deleting terminal updater recovery transactions or staging when pending state cannot be validated. The extended integration test guards both classes; all four exact-head feature/security/ownership checks passed. Merged source main `c3d32904`.
-- **Release pending:** candidate from main `109ee761b57e59b6293c6d16a1861882e243ef3b`; new immutable v8.8.118 ZIP/tag/manifest and hosted packaged update/rollback require fresh verification. Historical v8.8.117 updater-main-586, Windows Gate 44475835455 and real hosted update/rollback 44477647687 PASS. Personal Heaven2, #669/#793/#791/#735/#786/#350 and governance/security acceptance remain OPEN.
+- **Verified immutable release:** v8.8.118 [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) and [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS** (build 60→588, injected rollback, four preserved sentinels). ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`; manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. PR #899 merged source-bound evidence. Later main source #898/#900/#902/#903 requires a new release; physical Heaven2, #669/#793/#791/#735/#786/#350 and governance/security acceptance remain **OPEN**.
 
 # v8.8.117 — November 19, 2026
 

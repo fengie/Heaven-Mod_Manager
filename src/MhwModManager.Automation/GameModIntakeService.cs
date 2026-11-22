@@ -364,10 +364,10 @@ public sealed class GameModIntakeService
                 .Select(entry => entry.Key).ToArray();
         }
 
-        var boundaries = ModBoundaryDiscovery.Discover(files);
-        if (boundaries.Candidates.Count != 1 ||
-            boundaries.Candidates[0].Kind != ModBoundaryKind.Folder ||
-            boundaries.Candidates[0].RelativePath != ".")
+        var boundaries = ModBoundaryDiscovery.Discover(files, isDirectory ? Path.GetFileName(source) : Path.GetFileNameWithoutExtension(source));
+        if (!(isDirectory && AuthoredPackageFamily.Read(source,game,ct).Count > 1) &&
+            (boundaries.Candidates.Count != 1 || boundaries.Candidates[0].Kind != ModBoundaryKind.Folder ||
+             boundaries.Candidates[0].RelativePath != "."))
             throw new InvalidDataException(
                 "Manual game assignment requires one independent package. Split or review nested mods and installer options separately.");
 
@@ -412,6 +412,19 @@ public sealed class GameModIntakeService
         }
     }
 
+    private bool VerifiedFamily(string folder, string context, IReadOnlyList<GameProfile> games, CancellationToken ct, string[]? paths=null)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        if (!Directory.Exists(folder)) return false;
+        paths ??= SnapshotFolderFiles(folder,ct).Select(path=>Path.GetRelativePath(folder,path)).ToArray();
+        if (!paths.Any(path=>Path.GetDirectoryName(path) is null or "" &&
+            Path.GetExtension(path).Equals(".txt",StringComparison.OrdinalIgnoreCase))) return false;
+        var detection = GameModIntakeClassifier.Classify(games,context,paths,ReadFolderGameHint(folder));
+        var game = games.FirstOrDefault(entry=>entry.Id==detection.GameId);
+        return game is not null && detection.Kind==GameModIntakeKind.Identified &&
+            AuthoredPackageFamily.Read(folder,game,ct).Count>1;
+    }
+
     private async Task ScanSourceAsync(
         string root, IReadOnlyList<GameProfile> games, List<GameModIntakeItem> output,
         HashSet<string> receipts, CancellationToken ct, bool requireMultipleBoundaries = false,
@@ -419,7 +432,13 @@ public sealed class GameModIntakeService
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var paths = SnapshotFolderFiles(root, ct).Select(path => Path.GetRelativePath(root, path)).ToArray();
-        var discovered = ModBoundaryDiscovery.Discover(paths);
+        var rootName = Path.GetFileName(Path.TrimEndingDirectorySeparator(root));
+        if (!requireMultipleBoundaries && VerifiedFamily(root,rootName,games,ct,paths))
+        {
+            await ClassifyAndRouteAsync(root,root,true,games,output,receipts,ct,gameContextHint:rootName);
+            return;
+        }
+        var discovered = ModBoundaryDiscovery.Discover(paths, Path.GetFileName(root));
         // Reanalyzing an existing tracked package must never copy its whole root as
         // a duplicate when structural evidence no longer proves several child mods.
         if (requireMultipleBoundaries &&
@@ -432,6 +451,9 @@ public sealed class GameModIntakeService
         // Share one inspection and physical-copy budget across every candidate from
         // this selected collection. Nested archive recursion carries the same instance.
         var collectionBudget = new IntakeBudget(collectionCopyBudget);
+        var selectedScope = games.Any(game =>
+            GameProfile.NormalizeId(rootName) == game.Id ||
+            GameProfile.NormalizeId(rootName) == GameProfile.NormalizeId(game.DisplayName)) ? rootName : null;
         var candidateIndex = 0;
         foreach (var candidate in discovered.Candidates)
         {
@@ -441,6 +463,12 @@ public sealed class GameModIntakeService
             progressCandidate?.Invoke(++candidateIndex, discovered.Candidates.Count, entry);
             if (candidate.Kind == ModBoundaryKind.Review)
             {
+                var hint = rootName + " " + Path.GetRelativePath(root,entry);
+                if (candidate.RequiresSelection && VerifiedFamily(entry,hint,games,ct))
+                {
+                    await ClassifyAndRouteAsync(root,entry,true,games,output,receipts,ct,0,collectionBudget,gameContextHint:hint);
+                    continue;
+                }
                 output.Add(new(entry, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
                 continue;
             }
@@ -448,13 +476,13 @@ public sealed class GameModIntakeService
             {
                 if (candidate.Kind == ModBoundaryKind.FileSet)
                     await RouteFileSetAsync(root, candidate, games, output, receipts,
-                        0, collectionBudget, entry, ct).ConfigureAwait(false);
+                        0, collectionBudget, entry, ct, selectedScope).ConfigureAwait(false);
                 else
                 {
                     RefuseReparseComponents(entry);
                     await ClassifyAndRouteAsync(root, entry,
                         candidate.Kind == ModBoundaryKind.Folder,
-                        games, output, receipts, ct, 0, collectionBudget).ConfigureAwait(false);
+                        games, output, receipts, ct, 0, collectionBudget, gameContextHint: selectedScope).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
@@ -475,7 +503,136 @@ public sealed class GameModIntakeService
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var source = ValidateManagedCollectionSource(sourcePath, game);
         return ModBoundaryDiscovery.Discover(SnapshotFolderFiles(source, ct)
-            .Select(file => Path.GetRelativePath(source, file)));
+            .Select(file => Path.GetRelativePath(source, file)), Path.GetFileName(source));
+    }
+
+    public ManagedCollectionLayout InspectManagedShelf(string source, GameProfile game, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var preview = PreviewManagedCollection(source, game, ct);
+        if (preview.Candidates is [{ RelativePath: ".", RequiresSelection: true }])
+            return new([new(source, true)], true);
+        var files = (preview.FileInventory ?? []).Where(path => !ManagedCollectionNotes.IsNote(path)).ToArray();
+        if (files.Length == 0)
+            return new([], false);
+
+        // A bare config has no game-relative destination. Keeping it as a reviewed source
+        // preserves both its bytes and its identity without mapping it into Content/Paks.
+        if (game.AdapterId == "unreal-paks" && files.All(path => !path.Contains('/')) &&
+            files.Any(path => Path.GetExtension(path).Equals(".ini", StringComparison.OrdinalIgnoreCase)))
+            return new([new(source, true)], true);
+        var choices = preview.Candidates.Where(candidate => candidate.RequiresSelection)
+            .Select(candidate => Path.GetFullPath(Path.Combine(source, candidate.RelativePath)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return PartitionShelf(source, files, choices, ct);
+    }
+
+    private static ManagedCollectionLayout PartitionShelf(string source, string[] files, HashSet<string> choices, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        while (files.Length > 0 && files.All(path => path.Contains('/')))
+        {
+            var prefix = files[0][..(files[0].IndexOf('/') + 1)];
+            if (!files.All(path => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))) break;
+            // Never unwrap a shared loader, installer, manifest or project-qualified root.
+            var enclosing = ModBoundaryDiscovery.Discover(files).Candidates;
+            if (enclosing.Count < 2 || enclosing.Any(c => c.RelativePath == ".")) return new([], false);
+            source = Path.Combine(source, prefix.TrimEnd('/'));
+            files = files.Select(path => path[prefix.Length..]).ToArray();
+        }
+        if (files.Any(path => !path.Contains('/')))
+        {
+            var discovery = ModBoundaryDiscovery.Discover(files, Path.GetFileName(source));
+            if (!discovery.Candidates.Any(c => c.Kind == ModBoundaryKind.Review && c.RelativePath == ".") ||
+                !discovery.Candidates.Any(c => c.Kind == ModBoundaryKind.Folder && c.RelativePath != "."))
+                return new([], false);
+            var nested = PartitionShelf(source, files.Where(path => path.Contains('/')).ToArray(), choices, ct);
+            return nested.FullyAccounted
+                ? new([.. nested.Units, new(source, true)], true)
+                : new([], false);
+        }
+        var branches = files.GroupBy(path => path[..path.IndexOf('/')], StringComparer.OrdinalIgnoreCase).ToArray();
+        var boundaries = ModBoundaryDiscovery.Discover(files);
+        if (branches.Length < 2 || boundaries.Candidates.All(candidate => candidate.RelativePath == "."))
+            return new([], false);
+        var units = new List<ManagedCollectionUnit>();
+        foreach (var branch in branches)
+        {
+            ct.ThrowIfCancellationRequested();
+            var relative = branch.Select(path => path[(branch.Key.Length + 1)..]).ToArray();
+            var branchPath = Path.Combine(source, branch.Key);
+            var containers = relative.Where(UnrealPakLayout.IsMember).ToArray();
+            // A project source tree may accompany a finished package. Its editor files
+            // are attributable only when the same subtree contains a project descriptor.
+            var clean = relative.All(UnrealPakLayout.IsMember) || UnrealPakLayout.HasBundledEditorProject(relative);
+            var protectedChoice = choices.Contains(branchPath) || boundaries.Candidates.Any(c => c.Kind == ModBoundaryKind.Review &&
+                c.RelativePath.Equals(branch.Key, StringComparison.OrdinalIgnoreCase) &&
+                c.RequiresSelection);
+            if (clean && !protectedChoice && UnrealPakLayout.Complete(containers, singleStem: true))
+            {
+                var parent = Path.GetDirectoryName(containers[0]) ?? "";
+                if (parent.EndsWith("~mods", StringComparison.OrdinalIgnoreCase) &&
+                    Path.GetFileName(parent).Equals("~mods", StringComparison.OrdinalIgnoreCase))
+                    parent = Path.GetDirectoryName(parent) ?? "";
+                units.Add(new(Path.GetFullPath(Path.Combine(branchPath, parent)), false));
+            }
+            else
+            {
+                // Only descend through proven independent siblings. Reused output names
+                // are commonly alternate versions that must stay together for review.
+                var distinctOutputs = containers.Select(Path.GetFileName).Distinct(StringComparer.OrdinalIgnoreCase).Count() == containers.Length;
+                var children = !protectedChoice && clean && containers.Length > 1 && distinctOutputs &&
+                    relative.All(path => path.Contains('/')) ? PartitionShelf(branchPath, relative, choices, ct) : new([], false);
+                if (children.FullyAccounted) units.AddRange(children.Units);
+                else units.Add(new(branchPath, true));
+            }
+        }
+        return units.Any(unit => !unit.NeedsReview) ? new(units, true) : new([], false);
+    }
+
+    /// <summary>Return physical, independently selectable Unreal packages in the registered library.
+    /// Discovery reads filenames only. Capturing the bytes belongs to selection and Preview.</summary>
+    public IReadOnlyList<string> SelectableManagedFolders(string source, GameProfile game, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (game.AdapterId != "unreal-paks") return [];
+        var preview = PreviewManagedCollection(source, game, ct);
+        var inventory = preview.FileInventory ?? [];
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var members = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in inventory)
+        {
+            ct.ThrowIfCancellationRequested();
+            var dir = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+            if (!members.TryGetValue(dir, out var group)) members[dir] = group = [];
+            group.Add(file);
+            // Ancestor counts ensure a package with unrelated sidecars never becomes selectable.
+            while (dir.Length > 0)
+            {
+                counts[dir] = counts.GetValueOrDefault(dir) + 1;
+                var separator = dir.LastIndexOf('/');
+                if (separator < 0) break;
+                dir = dir[..separator];
+            }
+        }
+        var boundaries = preview.Candidates;
+        // An unattributed PAK at the shelf root remains unselected. Re-evaluate only
+        // its nested siblings with the same manifest, variant and package checks.
+        var loose = inventory.Where(file => !file.Contains('/')).ToArray();
+        if (boundaries.All(candidate => candidate.Kind == ModBoundaryKind.Review) &&
+            loose.Length > 0 && loose.All(UnrealPakLayout.IsMember))
+            boundaries = ModBoundaryDiscovery.Discover(inventory.Where(file => file.Contains('/'))).Candidates;
+        var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var candidate in boundaries.Where(c => c.Kind == ModBoundaryKind.Folder))
+        {
+            var leaf = candidate.RelativePath.Replace('\\', '/');
+            if (!members.TryGetValue(leaf, out var files) || !UnrealPakLayout.Complete(files, singleStem: true)) continue;
+            var name = leaf.EndsWith("/~mods", StringComparison.OrdinalIgnoreCase) ? leaf[..^6] : leaf;
+            if (name == "." || name.Equals("~mods", StringComparison.OrdinalIgnoreCase) ||
+                !counts.TryGetValue(name, out var total) || total != files.Count) continue;
+            selected.Add(Path.GetFullPath(Path.Combine(source, name)));
+        }
+        return selected.Order(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
     /// <summary>
@@ -568,7 +725,7 @@ public sealed class GameModIntakeService
     private async Task RouteFileSetAsync(
         string sourceDirectory, ModBoundaryCandidate candidate, IReadOnlyList<GameProfile> games,
         List<GameModIntakeItem> output, HashSet<string> receipts,
-        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct)
+        int nestedDepth, IntakeBudget budget, string provenance, CancellationToken ct, string? gameContextHint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (candidate.Kind != ModBoundaryKind.FileSet || candidate.Files is not { Count: > 0 })
@@ -624,7 +781,7 @@ public sealed class GameModIntakeService
                 }
             }
             await ClassifyAndRouteAsync(sourceDirectory, package, true, games, output,
-                receipts, ct, nestedDepth, budget, provenance).ConfigureAwait(false);
+                receipts, ct, nestedDepth, budget, provenance, gameContextHint).ConfigureAwait(false);
         }
         finally
         {
@@ -674,11 +831,12 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Unsafe archive paths require manual review.");
             budget.Account(info);
             var discovery = ModBoundaryDiscovery.Discover(info.Entries
-                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
+                .Where(entry => !entry.IsDirectory).Select(entry => entry.Key), Path.GetFileNameWithoutExtension(source));
             // No extraction is necessary when every candidate requires review.
             // Preserve each incomplete group as a separate evidence-bearing row.
             if (discovery.Candidates.Count > 0 &&
-                discovery.Candidates.All(candidate => candidate.Kind == ModBoundaryKind.Review))
+                discovery.Candidates.All(candidate => candidate.Kind == ModBoundaryKind.Review) &&
+                !(discovery.Candidates.Any(candidate=>candidate.RequiresSelection) && info.Entries.Any(entry=>entry.Key.EndsWith(".txt",StringComparison.OrdinalIgnoreCase))))
             {
                 foreach (var candidate in discovery.Candidates)
                 {
@@ -714,11 +872,12 @@ public sealed class GameModIntakeService
                 {
                     if (budget.RemainingActualBytes <= 0)
                         throw new InvalidDataException("Nested mod-pack output exhausted its cumulative byte budget.");
-                    await archive.ExtractSafelyAsync(source, scratch, trustedRoot,
+                    var extracted = Path.Combine(scratch,SafePackageName(Path.GetFileNameWithoutExtension(source)));
+                    await archive.ExtractSafelyAsync(source, extracted, trustedRoot,
                         new ArchiveExtractionLimits(MaxArchiveBytes, budget.RemainingActualBytes), ct)
                         .ConfigureAwait(false);
                     long expandedBytes = 0;
-                    foreach (var file in SnapshotFolderFiles(scratch, ct))
+                    foreach (var file in SnapshotFolderFiles(extracted, ct))
                     {
                         var length = new FileInfo(file).Length;
                         if (length > budget.RemainingActualBytes - expandedBytes)
@@ -726,29 +885,41 @@ public sealed class GameModIntakeService
                         expandedBytes += length;
                     }
                     budget.AccountActual(expandedBytes);
+                    var archiveContext=(gameContextHint ?? "")+" "+Path.GetFileName(source);
+                    if (VerifiedFamily(extracted,archiveContext,games,ct))
+                    {
+                        await ClassifyAndRouteAsync(extracted,extracted,true,games,output,receipts,ct,nestedDepth+1,budget,reportSource,archiveContext);
+                        return;
+                    }
                     foreach (var candidate in discovery.Candidates)
                     {
                         ct.ThrowIfCancellationRequested();
-                        var child = candidate.RelativePath == "." ? scratch
-                            : Path.Combine(scratch, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+                        var child = candidate.RelativePath == "." ? extracted
+                            : Path.Combine(extracted, candidate.RelativePath.Replace('/', Path.DirectorySeparatorChar));
                         var childProvenance = reportSource + "!/" + candidate.RelativePath;
                         var childGameContextHint = discovery.Candidates.Count == 1
                             && candidate.Kind == ModBoundaryKind.Folder
-                            ? gameContextHint ?? Path.GetFileName(source) : null;
+                            ? gameContextHint ?? Path.GetFileName(source) : gameContextHint;
                         if (candidate.Kind == ModBoundaryKind.Review)
                         {
+                            var hint = (gameContextHint ?? Path.GetFileName(source)) + " " + candidate.RelativePath;
+                            if (candidate.RequiresSelection && VerifiedFamily(child,hint,games,ct))
+                            {
+                                await ClassifyAndRouteAsync(extracted,child,true,games,output,receipts,ct,nestedDepth+1,budget,childProvenance,hint);
+                                continue;
+                            }
                             output.Add(new(childProvenance, null, GameModIntakeStatus.NeedsReview, candidate.Evidence));
                             continue;
                         }
                         try
                         {
                             if (candidate.Kind == ModBoundaryKind.FileSet)
-                                await RouteFileSetAsync(scratch, candidate, games, output, receipts,
-                                    nestedDepth + 1, budget, childProvenance, ct).ConfigureAwait(false);
+                                await RouteFileSetAsync(extracted, candidate, games, output, receipts,
+                                    nestedDepth + 1, budget, childProvenance, ct, childGameContextHint).ConfigureAwait(false);
                             else
                             {
                                 RefuseReparseComponents(child);
-                                await ClassifyAndRouteAsync(sourceRoot, child,
+                                await ClassifyAndRouteAsync(extracted, child,
                                     candidate.Kind == ModBoundaryKind.Folder,
                                     games, output, receipts, ct, nestedDepth + 1, budget, childProvenance,
                                     childGameContextHint).ConfigureAwait(false);
@@ -1183,7 +1354,7 @@ public sealed class GameModIntakeService
             || canonical.StartsWith(canonicalRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void RefuseReparseComponents(string path)
+    public static void RefuseReparseComponents(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var full = Path.GetFullPath(path);

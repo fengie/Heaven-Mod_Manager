@@ -16,7 +16,11 @@ internal enum ManagerDatabaseMigrationCheckpoint
 /// Connection-per-operation SQLite facade. WAL is intentionally used without SQLite shared-cache;
 /// shared-cache changes locking semantics and works against the WAL concurrency model.
 /// </summary>
-public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl);
+public sealed record ModCatalogSourceIdentity(string Id, string Name, string SourcePath, string? NexusModId, string? SourceUrl)
+{
+    public bool CanInspectCollection { get; init; }
+    public bool HasSavedReferences { get; init; }
+}
 public sealed record ModArchiveDisplayBackfill(string Id, string Name, string SourcePath, string DisplayName);
 
 public sealed class ManagerDatabase
@@ -238,25 +242,112 @@ public sealed class ManagerDatabase
         await tx.CommitAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
+    private string[] pendingModIds = [];
+    public void SetPendingModIds(IEnumerable<string> ids)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        Volatile.Write(ref pendingModIds,ids.ToArray());
+    }
+
+    public async Task ReconcileExactCopiesAsync(IReadOnlyList<string[]> groups,CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        await using var connection=await OpenAsync(ct);
+        using var tx=connection.BeginTransaction(deferred:false);
+        using var command=connection.CreateCommand();
+        command.Transaction=tx;
+        command.CommandText="SELECT mod_id,keeper_id FROM exact_package_copies";
+        var previous=new Dictionary<string,string>(StringComparer.Ordinal);
+        await using(var reader=await command.ExecuteReaderAsync(ct))
+            while(await reader.ReadAsync(ct)) previous.Add(reader.GetString(0),reader.GetString(1));
+        var oldKeepers=previous.Values.ToHashSet(StringComparer.Ordinal);
+        var pending=Volatile.Read(ref pendingModIds).ToHashSet(StringComparer.Ordinal);
+        command.CommandText="SELECT m.id,m.enabled,m.priority,("+ProtectedCopySql+") FROM mods m";
+        var states=new Dictionary<string,(bool Enabled,int Priority,bool Protected)>(StringComparer.Ordinal);
+        await using(var reader=await command.ExecuteReaderAsync(ct))
+            while(await reader.ReadAsync(ct))
+                states[reader.GetString(0)]=(reader.GetBoolean(1),reader.GetInt32(2),reader.GetBoolean(3)||pending.Contains(reader.GetString(0)));
+        var copies=new Dictionary<string,string>(StringComparer.Ordinal);
+        foreach(var group in groups)
+        {
+            var ordered=group.Where(states.ContainsKey).OrderByDescending(id=>states[id].Enabled)
+                .ThenByDescending(id=>states[id].Protected).ThenByDescending(oldKeepers.Contains)
+                .ThenBy(id=>states[id].Priority).ThenBy(id=>id,StringComparer.Ordinal).ToArray();
+            foreach(var id in ordered.Skip(1))
+                if(!states[id].Enabled && !states[id].Protected) copies[id]=ordered[0];
+        }
+        foreach(var id in previous.Keys.Except(copies.Keys))
+        {
+            command.Parameters.Clear();command.CommandText="DELETE FROM exact_package_copies WHERE mod_id=$id";
+            command.Parameters.AddWithValue("$id",id);await command.ExecuteNonQueryAsync(ct);
+        }
+        foreach(var (id,keeper) in copies.Where(pair=>previous.GetValueOrDefault(pair.Key)!=pair.Value))
+        {
+            command.Parameters.Clear();command.CommandText="INSERT INTO exact_package_copies(mod_id,keeper_id) VALUES($id,$keeper) ON CONFLICT(mod_id) DO UPDATE SET keeper_id=excluded.keeper_id";
+            command.Parameters.AddWithValue("$id",id);command.Parameters.AddWithValue("$keeper",keeper);await command.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+    }
+
+    private const string ProtectedCopySql = """
+        m.family_id IS NOT NULL
+        OR EXISTS(SELECT 1 FROM profile_mods WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM conflict_rules WHERE m.id IN (left_mod_id,right_mod_id,winner_mod_id))
+        OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM armor_outfit_choices WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=m.id)
+        OR EXISTS(SELECT 1 FROM family_preferences WHERE selected_mod_id=m.id)
+        """;
+
+    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return GetModsAsync(false, ct);
+    }
+
+    public Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return GetModsAsync(includeShelfSources,includeShelfSources,ct);
+    }
+
+    public async Task<IReadOnlyList<ModDescriptor>> GetModsAsync(bool includeShelfSources, bool includeExactCopies, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var list = new List<ModDescriptor>();
         await using var c = await OpenAsync(ct);
         await using var cmd = c.CreateCommand();
         cmd.CommandText = """
-        SELECT m.id,m.name,m.display_name,m.source_path,m.enabled,m.priority,m.family_id,m.category,m.source_url,m.nexus_mod_id,m.nexus_file_id,
+        SELECT m.id,m.name,m.display_name,m.source_path,m.enabled,m.priority,m.family_id,CASE WHEN shelf.role='review' THEN 'Needs layout review' ELSE m.category END,m.source_url,m.nexus_mod_id,m.nexus_file_id,
                p.nexus_mod_uuid,p.nexus_version_id,p.nexus_previous_version_id,p.nexus_category,p.nexus_version,p.uploaded_at,
                CASE WHEN s.older_mod_id IS NULL THEN 0 ELSE 1 END,s.newer_mod_id,p.confidence_score,p.provenance_source,
                (SELECT value FROM settings WHERE key='preview:'||m.id),
-               COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0),
-               fm.role
+               (shelf.role IS 'review' OR COALESCE((SELECT required FROM mod_revalidation rv WHERE rv.mod_id=m.id),0)),
+               fm.role,(shelf.role IS 'review' OR src.verified=0 OR (src.mod_id IS NOT NULL AND fm.role='Review')) IS TRUE,family.name,fm.choice_group,fp.selected_mod_id,src.label
         FROM mods m
+        LEFT JOIN managed_shelf_entries shelf ON shelf.mod_id=m.id
         LEFT JOIN mod_provenance p ON p.mod_id=m.id
         LEFT JOIN mod_supersession s ON s.older_mod_id=m.id
         LEFT JOIN mod_family_members fm ON fm.mod_id=m.id AND fm.family_id=m.family_id
+        LEFT JOIN authored_component_sources src ON src.mod_id=m.id
+        LEFT JOIN mod_families family ON family.id=fm.family_id
+        LEFT JOIN family_preferences fp ON fp.family_id=fm.family_id AND fp.choice_group=fm.choice_group
+        WHERE ($all OR m.enabled OR shelf.role IS NULL OR shelf.role IN ('package','review')
+            OR (shelf.role='duplicate' AND (
+                NOT EXISTS(SELECT 1 FROM mods canonical WHERE canonical.id=shelf.canonical_id AND canonical.enabled)
+                OR m.id IN (SELECT value FROM json_each($pending)) OR (
+        """ + ProtectedCopySql + """
+        ))))
+        AND ($copies OR m.enabled OR NOT EXISTS(SELECT 1 FROM exact_package_copies d WHERE d.mod_id=m.id)
+            OR m.id IN (SELECT value FROM json_each($pending)) OR (
+        """ + ProtectedCopySql + """
+        ))
         ORDER BY m.priority,m.name COLLATE NOCASE
         """;
+        cmd.Parameters.AddWithValue("$all", includeShelfSources);
+        cmd.Parameters.AddWithValue("$copies", includeExactCopies);
+        cmd.Parameters.AddWithValue("$pending",System.Text.Json.JsonSerializer.Serialize(Volatile.Read(ref pendingModIds)));
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))
         {
@@ -269,9 +360,62 @@ public sealed class ManagerDatabase
                 r.IsDBNull(15) ? null : r.GetString(15), r.IsDBNull(16) ? null : DateTimeOffset.Parse(r.GetString(16), CultureInfo.InvariantCulture),
                 r.GetInt64(17) != 0, r.IsDBNull(18) ? null : r.GetString(18), r.IsDBNull(19) ? 0 : r.GetInt32(19),
                 r.IsDBNull(20) ? ProvenanceSource.Unknown : Enum.Parse<ProvenanceSource>(r.GetString(20), true),
-                r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)));
+                r.IsDBNull(21) ? null : r.GetString(21), r.GetInt64(22) != 0, r.IsDBNull(23) ? null : r.GetString(23)) {
+                    RequiresLayoutReview = r.GetBoolean(24),
+                    FamilyDisplayName = r.IsDBNull(25) ? null : r.GetString(25),
+                    ChoiceGroup = r.IsDBNull(26) ? null : r.GetString(26),
+                    PreferredChoiceId = r.IsDBNull(27) ? null : r.GetString(27),
+                    AuthoredPartLabel = r.IsDBNull(28) ? null : r.GetString(28)
+                });
         }
         return list;
+    }
+
+    public async Task<string?> ShelfRoleAsync(string id, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT role FROM managed_shelf_entries WHERE mod_id=$id";
+        command.Parameters.AddWithValue("$id", id);
+        return await command.ExecuteScalarAsync(ct) as string;
+    }
+
+    public async Task<ILookup<string,(string Id,string Role,string? Canonical)>> ReadShelfEntriesAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT shelf_path,mod_id,role,canonical_id FROM managed_shelf_entries";
+        var rows = new List<(string Shelf,string Id,string Role,string? Canonical)>();
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+            rows.Add((reader.GetString(0),reader.GetString(1),reader.GetString(2),reader.IsDBNull(3) ? null : reader.GetString(3)));
+        return rows.ToLookup(row => row.Shelf, row => (row.Id,row.Role,row.Canonical), StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task SetShelfEntriesAsync(string shelf, IReadOnlyList<(string Id,string Role,string? Canonical)> entries, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        using var transaction = connection.BeginTransaction();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "DELETE FROM managed_shelf_entries WHERE shelf_path=$shelf";
+        command.Parameters.AddWithValue("$shelf", shelf);
+        await command.ExecuteNonQueryAsync(ct);
+        command.CommandText = "INSERT INTO managed_shelf_entries(mod_id,shelf_path,role,canonical_id) VALUES($id,$shelf,$role,$canonical)";
+        var id = command.Parameters.Add("$id", SqliteType.Text);
+        var role = command.Parameters.Add("$role", SqliteType.Text);
+        var canonical = command.Parameters.Add("$canonical", SqliteType.Text);
+        foreach (var entry in entries)
+        {
+            id.Value = entry.Id;
+            role.Value = entry.Role;
+            canonical.Value = (object?)entry.Canonical ?? DBNull.Value;
+            await command.ExecuteNonQueryAsync(ct);
+        }
+        transaction.Commit();
     }
 
     public async Task<IReadOnlySet<string>> GetModSourcePathsAsync(CancellationToken ct = default)
@@ -296,12 +440,24 @@ public sealed class ManagerDatabase
         var list = new List<ModCatalogSourceIdentity>();
         await using var c = await OpenAsync(ct);
         await using var cmd = c.CreateCommand();
-        cmd.CommandText = "SELECT id,name,source_path,nexus_mod_id,source_url FROM mods";
+        cmd.CommandText = """
+            SELECT id,name,source_path,nexus_mod_id,source_url,enabled=0 AND NOT EXISTS(SELECT 1 FROM mod_files WHERE mod_id=mods.id),
+                family_id IS NOT NULL OR source_url IS NOT NULL OR nexus_mod_id IS NOT NULL
+                OR EXISTS(SELECT 1 FROM deployment_manifest WHERE provider_mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM profile_mods WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM conflict_rules WHERE mods.id IN (left_mod_id,right_mod_id,winner_mod_id))
+                OR EXISTS(SELECT 1 FROM mod_family_members WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM mod_provenance WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM mod_supersession WHERE mods.id IN (older_mod_id,newer_mod_id))
+                OR EXISTS(SELECT 1 FROM resource_providers WHERE mod_id=mods.id)
+                OR EXISTS(SELECT 1 FROM armor_outfit_choices WHERE mod_id=mods.id)
+            FROM mods
+            """;
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct))
             list.Add(new(r.GetString(0), r.GetString(1), r.GetString(2),
                 r.IsDBNull(3) ? null : r.GetString(3),
-                r.IsDBNull(4) ? null : r.GetString(4)));
+                r.IsDBNull(4) ? null : r.GetString(4)) { CanInspectCollection = r.GetBoolean(5), HasSavedReferences = r.GetBoolean(6) });
         return list;
     }
 
@@ -370,6 +526,69 @@ public sealed class ManagerDatabase
             pPriority.Value = v.priority;
             pUpdated.Value = now;
             pId.Value = id;
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+    }
+
+    public async Task InsertDiscoveredModAsync(string id, string name, string display, string path, int priority, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(ct);
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        // A concurrent refresh or selection may already own this row. Discovery only inserts.
+        cmd.CommandText = """
+            INSERT INTO mods(id,name,display_name,source_path,enabled,priority,imported_at,updated_at)
+            VALUES($id,$name,$display,$path,0,$priority,$now,$now)
+            ON CONFLICT(id) DO NOTHING
+            ON CONFLICT(source_path COLLATE NOCASE) DO NOTHING
+            """;
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$name", name);
+        cmd.Parameters.AddWithValue("$display", display);
+        cmd.Parameters.AddWithValue("$path", path);
+        cmd.Parameters.AddWithValue("$priority", priority);
+        cmd.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
+        if (await cmd.ExecuteNonQueryAsync(ct) == 1)
+        {
+            cmd.CommandText = "INSERT OR IGNORE INTO settings(key,value) VALUES('discovery.pending:' || $id,$id)";
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+        await tx.CommitAsync(ct);
+    }
+
+    public async Task<HashSet<string>> GetDiscoveryProtectedIdsAsync(CancellationToken ct)
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        await using var c=await OpenAsync(ct);
+        await using var cmd=c.CreateCommand();
+        cmd.CommandText="""
+            SELECT mod_id FROM profile_mods UNION SELECT mod_id FROM mod_family_members
+            UNION SELECT provider_mod_id FROM deployment_manifest WHERE provider_mod_id IS NOT NULL
+            UNION SELECT left_mod_id FROM conflict_rules WHERE left_mod_id IS NOT NULL
+            UNION SELECT right_mod_id FROM conflict_rules WHERE right_mod_id IS NOT NULL
+            UNION SELECT winner_mod_id FROM conflict_rules WHERE winner_mod_id IS NOT NULL
+            """;
+        var ids=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using var reader=await cmd.ExecuteReaderAsync(ct);
+        while(await reader.ReadAsync(ct))ids.Add(reader.GetString(0));
+        return ids;
+    }
+
+    public async Task FinishDiscoveryAsync(IEnumerable<string> ids, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        await using var connection = await OpenAsync(ct);
+        await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(ct);
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = "DELETE FROM settings WHERE key='discovery.pending:' || $id";
+        var id = cmd.Parameters.Add("$id", SqliteType.Text);
+        foreach (var item in ids)
+        {
+            id.Value = item;
             await cmd.ExecuteNonQueryAsync(ct);
         }
         await tx.CommitAsync(ct);
@@ -519,6 +738,9 @@ public sealed class ManagerDatabase
             previousFamily = value is DBNull ? null : (string)value;
         }
 
+        if (previousFamily?.StartsWith("authored:", StringComparison.Ordinal)==true)
+            throw new InvalidOperationException("This component belongs to one authored source. Choose its options in Mods.");
+
         // Historical manually chained overlays have no persisted ownership foreign key.
         // Match their exact generated shape, including precedence and canonical reason;
         // broad prefix/suffix matches can erase unrelated user-authored overwrite rules.
@@ -657,6 +879,8 @@ public sealed class ManagerDatabase
                 priorRole[reader.GetString(0)]=reader.IsDBNull(2)?null:reader.GetString(2);
             }
         }
+        if (priorFamily.Values.Any(id=>id?.StartsWith("authored:",StringComparison.Ordinal)==true))
+            throw new InvalidOperationException("A source-defined component cannot be reassigned to a different package. Choose its options in Mods.");
         if(!priorFamily.TryGetValue(mainModId,out var existingFamily))throw new InvalidOperationException($"Main mod '{mainModId}' no longer exists.");
         var familyId=!string.IsNullOrWhiteSpace(existingFamily)&&existingFamily.StartsWith("manual:",StringComparison.OrdinalIgnoreCase)
             ?existingFamily

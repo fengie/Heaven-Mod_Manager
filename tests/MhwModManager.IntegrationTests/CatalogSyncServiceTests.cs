@@ -382,7 +382,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
         return new CatalogRepository(db);
     }
 
-    private static CatalogMod CreateMod(string providerId, string providerModId)
+    internal static CatalogMod CreateMod(string providerId, string providerModId)
     {
         var canonicalId = CatalogMod.BuildCanonicalId(providerId, providerModId);
         return new CatalogMod(
@@ -428,7 +428,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
         public void SetUtcNow(DateTimeOffset next) => value = next;
     }
 
-    private sealed class FakeProvider : IModCatalogProvider, IPagedModCatalogProvider
+    internal sealed class FakeProvider : IModCatalogProvider, IPagedModCatalogProvider
     {
         public string ProviderId => "fixture";
         public string DisplayName => "Fixture Catalog";
@@ -445,6 +445,8 @@ public sealed class CatalogSyncServiceTests : IDisposable
             [CreateMod("fixture", "mod-1")];
 
         public Exception? SearchException { get; set; }
+        public Exception? FileException { get; set; }
+        public CatalogAcquisitionResolution? Acquisition { get; set; }
 
         public Func<string?, CatalogBrowsePage>? BrowsePageFactory { get; set; }
 
@@ -523,6 +525,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             FileHydrationCalls++;
+            if (FileException is not null) return Task.FromException<IReadOnlyList<CatalogModFile>>(FileException);
             return Task.FromResult<IReadOnlyList<CatalogModFile>>(
                 HydratedFiles
                     .Select(file => file with { ProviderModId = providerModId })
@@ -532,7 +535,7 @@ public sealed class CatalogSyncServiceTests : IDisposable
         public Task<CatalogAcquisitionResolution> ResolveAcquisitionAsync(
             CatalogAcquisitionRequest request,
             CancellationToken ct = default) =>
-            Task.FromResult(new CatalogAcquisitionResolution(
+            Task.FromResult(Acquisition ?? new CatalogAcquisitionResolution(
                 CatalogAcquisitionKind.Assisted,
                 null,
                 new Uri(request.Mod.SourceUrl),

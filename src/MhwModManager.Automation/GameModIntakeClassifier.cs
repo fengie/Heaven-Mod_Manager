@@ -43,6 +43,17 @@ public static class GameModIntakeClassifier
         var payloadPaths = relativePaths.Where(IsDeployablePayloadEvidencePath).ToArray();
         var hasNativePcSignature = payloadPaths.Any(HasNativePcSegment);
         var hasStellarBladeSignature = payloadPaths.Any(HasStellarBladeSignature);
+        var mounts = payloadPaths.Where(UnrealPakLayout.IsMember)
+            .Select(UnrealPakLayout.ProjectMount).OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var mountedGames = games.Where(game => mounts.Contains(
+            UnrealPakLayout.ProjectMount(game.ModRootRelativePath ?? ""), StringComparer.OrdinalIgnoreCase)).ToArray();
+        if (mounts.Length > 1 || mountedGames.Length > 1 ||
+            (mountedGames.Length > 0 && (hasNativePcSignature ||
+                (hasStellarBladeSignature && !IsStellarBladeProfile(mountedGames[0])))))
+            return new(GameModIntakeKind.Ambiguous, null, "Conflicting project loader identities.",
+                mountedGames.Select(game => game.Id).ToArray());
+
         if (hasNativePcSignature && hasStellarBladeSignature)
             return new(GameModIntakeKind.Ambiguous,null,
                 "Package mixes distinct MHW and Stellar Blade layouts; split or review.",[]);
@@ -63,6 +74,9 @@ public static class GameModIntakeClassifier
                 return new(GameModIntakeKind.Unknown, null, "Package game metadata is not unique among registered games.", []);
 
             var declared = explicitMatches[0];
+            if (mounts.Length > 0 && !hasStellarBladeSignature && !mountedGames.Contains(declared))
+                return new(GameModIntakeKind.Ambiguous, null,
+                    "Declared game conflicts with the project Paks layout.", [declared.Id]);
             // A manifest can be mislabeled. Contradictory strong file signatures must
             // require review instead of overriding the contents or the declaration.
             if (hasNativePcSignature && !declared.IsMonsterHunterWorld)
@@ -98,6 +112,9 @@ public static class GameModIntakeClassifier
             return new(GameModIntakeKind.Unknown,null,
                 "Package has a Stellar Blade layout, but Stellar Blade is not registered.",[]);
 
+        if (mounts.Length > 0 && mountedGames.Length == 0 && !hasStellarBladeSignature)
+            return new(GameModIntakeKind.Unknown, null, "The project Paks layout does not match a registered game.", []);
+
         var normalizedName = GameProfile.NormalizeId(sourceName);
         var normalizedEntries = payloadPaths.Select(GameProfile.NormalizeId).ToArray();
         var scores = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -124,7 +141,7 @@ public static class GameModIntakeClassifier
             var nativePc = game.IsMonsterHunterWorld && hasNativePcSignature;
             var stellarBlade = IsStellarBladeProfile(game) && hasStellarBladeSignature;
 
-            var score = nativePc || stellarBlade ? 95 : 0;
+            var score = nativePc || stellarBlade || mountedGames.Contains(game) ? 95 : 0;
             if (matchedName || matchedEntries) score = Math.Max(score, 85);
             if (score > 0) scores.Add(game.Id, score);
         }

@@ -19,6 +19,15 @@ public sealed class DeploymentExecutor(
     Action<string, int>? faultInjector = null)
 {
     private const int PreflightParallelism = 4;
+    private long committedFileRevision;
+    public long CommittedFileRevision
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return Interlocked.Read(ref committedFileRevision);
+        }
+    }
 
     public string Destination(string key)
     {
@@ -53,6 +62,14 @@ public sealed class DeploymentExecutor(
 
         await using var deploymentLease=await AcquireDeploymentLeaseAsync(ct);
         await RecoverIncompleteCoreAsync(ct);
+        return await ApplyUnderLeaseAsync(plan, description, metadataChanges, targetModState, parentOperationId, ct);
+    }
+
+    private async Task<OperationResult> ApplyUnderLeaseAsync(
+        DeploymentPlan plan, string description, IReadOnlyList<MetadataRowChange> metadataChanges,
+        IReadOnlyDictionary<string,(bool enabled,int priority)>? targetModState, string? parentOperationId, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod($"plan={plan.Id}");
         var beforeState=await ReadModStateAsync(ct);
         var afterState=targetModState is null
             ? beforeState
@@ -112,6 +129,7 @@ public sealed class DeploymentExecutor(
             // transaction boundary. If the process dies during this transaction SQLite rolls it
             // back and recovery sees StateCommitting, so it restores the filesystem before-image.
             await CommitAfterStateAsync(plan.Id,prepared,afterState,targetModState is not null,metadataChanges,ct);
+            if (prepared.Count > 0) Interlocked.Increment(ref committedFileRevision);
             Inject("after-db-commit",0);
             Inject("before-cleanup",0);
 
@@ -146,12 +164,29 @@ public sealed class DeploymentExecutor(
     public async Task<OperationResult> UndoLastAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod("undo-last");
+        // Choose and reverse the history entry under one lease, including recovery.
+        await using var deploymentLease = await AcquireDeploymentLeaseAsync(ct);
+        await RecoverIncompleteCoreAsync(ct);
         string? id=null;
         string? beforeJson=null;
         await using(var c=await db.OpenAsync(ct))
         {
             await using var cmd=c.CreateCommand();
-            cmd.CommandText="SELECT id,state_before_json FROM operations WHERE state='Committed' AND description NOT LIKE 'Undo %' AND description NOT IN ('Enter safe mode','Restore after safe mode') ORDER BY committed_at DESC LIMIT 1";
+            cmd.CommandText = """
+                SELECT op.id, op.state_before_json FROM operations op
+                WHERE op.state = 'Committed' AND op.description NOT LIKE 'Undo %'
+                  AND op.description NOT IN ('Enter safe mode', 'Restore after safe mode')
+                  AND op.id NOT IN (
+                    SELECT parent_operation_id FROM operations
+                    WHERE state = 'Committed' AND description = 'Undo ' || parent_operation_id)
+                  AND (EXISTS (SELECT 1 FROM operation_journal j WHERE j.operation_id = op.id)
+                    OR EXISTS (SELECT 1 FROM operation_metadata m WHERE m.operation_id = op.id)
+                    OR (op.state_before_json IS NOT op.state_after_json AND EXISTS (
+                      SELECT 1 FROM json_each(op.state_after_json) target
+                      JOIN json_each(op.state_before_json) original ON original.key = target.key COLLATE NOCASE
+                      WHERE original.value <> target.value)))
+                ORDER BY op.committed_at DESC, op.rowid DESC LIMIT 1
+                """;
             await using var r=await cmd.ExecuteReaderAsync(ct);
             if(await r.ReadAsync(ct)){id=r.GetString(0);beforeJson=r.IsDBNull(1)?null:r.GetString(1);}
         }
@@ -175,13 +210,22 @@ public sealed class DeploymentExecutor(
             if(row.before is null)kind=ChangeKind.Remove;
             else if(row.pb is null)kind=ChangeKind.RestoreOriginal;
             else kind=row.after is null?ChangeKind.Add:ChangeKind.Replace;
-            inverse.Add(new(++seq,kind,row.path,row.after,row.before,row.pa,row.pb,row.after,null));
+            inverse.Add(new DeploymentChange(++seq,kind,row.path,row.after,row.before,row.pa,row.pb,row.after,null)
+                { RequireAbsent = row.after is null });
         }
         var state=beforeJson is null?null:DeserializeState(beforeJson);
         var plan=new DeploymentPlan(Guid.NewGuid().ToString("N"),DateTimeOffset.UtcNow,inverse,[],[$"Undo committed operation {id}"]);
         await using var metadataConnection=await db.OpenAsync(ct);
         var inverseMetadata=DeploymentMetadata.Invert(await DeploymentMetadata.LoadAsync(metadataConnection,null,id,ct));
-        return await ApplyWithMetadataAsync(plan,$"Undo {id}",inverseMetadata,state,id,ct);
+        try
+        {
+            return await ApplyUnderLeaseAsync(plan,$"Undo {id}",inverseMetadata,state,id,ct);
+        }
+        catch (IOException ex)
+        {
+            // A path that was removed may have been recreated before undo preparation.
+            return new(false,ex.Message,plan.Id,ex,FailureCategory.UserActionRequired);
+        }
     }
 
     public async Task RecoverIncompleteAsync(CancellationToken ct=default)
@@ -252,6 +296,8 @@ public sealed class DeploymentExecutor(
             if(Directory.Exists(dest))throw new IOException($"File/directory collision: deployment target is a directory: {ch.Path}");
             if(ch.BeforeBlobSha256 is null&&File.Exists(dest))
             {
+                if (ch.RequireAbsent)
+                    throw new IOException($"Precondition failed: an unmanaged file appeared after planning: {ch.Path}");
                 var original=await blobs.CaptureAsync(dest,ct);
                 prepared=ch with{BeforeBlobSha256=original,ExpectedLiveSha256=original};
             }

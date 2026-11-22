@@ -4,7 +4,27 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
-| 8.8.118 | November 19, 2026 · 2:25:38 AM EST | release metadata from main 109ee761 and PR #895; new immutable publication and hosted updater pending |
+| 8.8.138 | November 21, 2026 · 11:39:13 PM EST | Browse Mods Unicode-safe cached search, candidate PR #960; immutable release pending |
+| 8.8.137 | November 21, 2026 · 12:08:20 PM EST | Automatic mod changes from main 03b07f33 |
+| 8.8.136 | November 21, 2026 · 10:26:04 AM EST | Solid archive intake from main 1156864d |
+| 8.8.135 | November 21, 2026 · 06:40:31 AM EST | Package options from main f39b44cd |
+| 8.8.134 | November 21, 2026 · 04:08:28 AM EST | Folder package boundaries from main e58fa67b |
+| 8.8.133 | November 21, 2026 · 02:27:23 AM EST | Automatic duplicate handling from main 01adad7a |
+| 8.8.132 | November 21, 2026 · 12:45:06 AM EST | Installed mod discovery from main 8d32d302 |
+| 8.8.131 | November 20, 2026 · 10:23:15 PM EST | Manual game registration and existing library reuse |
+| 8.8.130 | November 20, 2026 · 10:01:07 PM EST | Deployment history and discovery refresh from main 46688d61 |
+| 8.8.129 | November 20, 2026 · 08:02:21 PM EST | Unmodded launch recovery from main e6373424 |
+| 8.8.128 | November 20, 2026 · 05:46:41 PM EST | Active game actions from main a9bc34e6 |
+| 8.8.127 | November 20, 2026 · 04:54:51 PM EST | Auto Populate from main 5c867329 |
+| 8.8.126 | November 20, 2026 · 03:54:30 PM EST | Managed collections from main 70588748 |
+| 8.8.125 | November 20, 2026 · 12:12:18 PM EST | Discovered Mods list from main fc99e482 |
+| 8.8.124 | November 20, 2026 · 3:37:17 AM EST | mixed-game archive import candidate from main ccb8df44 |
+| 8.8.123 | November 20, 2026 · 2:47:01 AM EST | metadata prepared from integrated main a04a499c (#930) |
+| 8.8.122 | November 20, 2026 · 2:19:05 AM EST | metadata prepared from integrated main e20d575e (#928) |
+| 8.8.121 | November 20, 2026 · 1:01:35 AM EST | metadata prepared from integrated main 81b09514 (#925 and #926) |
+| 8.8.120 | November 19, 2026 · 10:51:58 PM EST | metadata prepared from integrated main cda9bc05 (#919 and #920) |
+| 8.8.119 | November 19, 2026 · 2:13:03 PM EST | immutable updater-main-600 from source 7144ab22, Windows Gate 44646768083 and hosted update/rollback 44650262798 passed; timestamp records metadata preparation |
+| 8.8.118 | November 19, 2026 · 2:25:38 AM EST | version-metadata timestamp; immutable updater-main-588 published at 2:56:25 AM EST from source b6e1e151; Windows Gate 44481505844 and real hosted update/rollback 44483604969 PASS; physical Heaven2 unverified |
 | 8.8.117 | November 19, 2026 · 1:38:14 AM EST | immutable updater-main-586 source 69a317ea; Windows Gate 44475835455 and hosted packaged update/rollback 44477647687 PASS; Heaven2 unverified |
 | 8.8.116 | November 19, 2026 · 12:36:14 AM EST | published immutable updater-main-583 source 407ae3fb; Windows Gate 44468041048 and real hosted packaged update/rollback 44469075908 PASS; personal Heaven2 unverified |
 | 8.8.115 | November 18, 2026 · 11:13:52 PM EST | published immutable updater-main-579, source caa8fd1f, Windows Gate 44455718899 and hosted real update/rollback run 44456946318 PASS; personal Heaven2 unverified |

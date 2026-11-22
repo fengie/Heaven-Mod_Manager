@@ -54,7 +54,7 @@ public sealed class DuplicateArchiveRecoveryTests : IDisposable
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => interrupted.ArchiveSafeAsync(Token));
         Assert.False(Directory.Exists(source));
-        Assert.Equal("keep-me", await File.ReadAllTextAsync(Path.Combine(keeper, "sentinel.txt"), Token));
+        Assert.Equal("preserve-source", await File.ReadAllTextAsync(Path.Combine(keeper, "sentinel.txt"), Token));
         Assert.Single(await db.GetModsAsync(Token));
         Assert.Single(Directory.GetFiles(archive, ".duplicate-archive-*.pending.json"));
 
@@ -109,7 +109,7 @@ public sealed class DuplicateArchiveRecoveryTests : IDisposable
         Directory.CreateDirectory(source);
         Directory.CreateDirectory(keeper);
         await File.WriteAllTextAsync(Path.Combine(source, "sentinel.txt"), "preserve-source", Token);
-        await File.WriteAllTextAsync(Path.Combine(keeper, "sentinel.txt"), "keep-me", Token);
+        await File.WriteAllTextAsync(Path.Combine(keeper, "sentinel.txt"), "preserve-source", Token);
         await db.UpsertModAsync(new("old", "Older", "Older", source, false, 1), Token);
         await db.UpsertModAsync(new("new", "Newer", "Newer", keeper, false, 2), Token);
         await db.ReplaceModFilesAsync("old",

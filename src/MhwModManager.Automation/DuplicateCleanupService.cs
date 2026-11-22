@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MhwModManager.Core;
 using MhwModManager.Storage;
+using MhwModManager.Filesystem;
 
 namespace MhwModManager.Automation;
 
@@ -22,7 +23,7 @@ public sealed class DuplicateCleanupService(
     public async Task<DuplicateAnalysis> AnalyzeAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var mods = await db.GetModsAsync(ct);
+        var mods = await db.GetModsAsync(includeShelfSources:false,includeExactCopies:true,ct);
         var activeIds = mods.Where(mod => !mod.IsSuperseded)
             .Select(mod => mod.Id).ToHashSet(StringComparer.Ordinal);
         var fingerprintsByMod = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -76,9 +77,10 @@ public sealed class DuplicateCleanupService(
         }
 
         var groups = new List<DuplicateGroup>(); long reclaim = 0;
+        var visible = (await db.GetModsAsync(ct)).Select(mod=>mod.Id).ToHashSet(StringComparer.Ordinal);
         foreach (var pair in fingerprints.Where(x => x.Value.Count > 1))
         {
-            var ordered = pair.Value.OrderByDescending(m => m.Enabled).ThenByDescending(m => m.NexusUploadedAt).ThenByDescending(m => m.Priority).ToArray();
+            var ordered = pair.Value.OrderByDescending(m => m.Enabled).ThenByDescending(m=>visible.Contains(m.Id)).ThenByDescending(m => m.NexusUploadedAt).ThenByDescending(m => m.Priority).ToArray();
             var keeper = ordered[0];
             var bytes = ordered.Skip(1).Sum(m => sizes.GetValueOrDefault(m.Id));
             reclaim += bytes;
@@ -120,14 +122,37 @@ public sealed class DuplicateCleanupService(
         await journal.RecoverAsync(ct);
         var analysis = await AnalyzeAsync(ct);
         Directory.CreateDirectory(archiveRoot);
-        var mods = (await db.GetModsAsync(ct)).ToDictionary(x => x.Id, StringComparer.Ordinal);
+        var mods = (await db.GetModsAsync(includeShelfSources:false,includeExactCopies:true,ct)).ToDictionary(x => x.Id, StringComparer.Ordinal);
         var candidates = new HashSet<string>(analysis.SupersededModIds, StringComparer.Ordinal);
-        foreach (var group in analysis.ExactDuplicates) foreach (var id in group.ModIds.Where(x => !StringComparer.Ordinal.Equals(x, group.RecommendedKeeperId))) candidates.Add(id);
+        var keepers = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var group in analysis.ExactDuplicates)
+            foreach (var id in group.ModIds.Where(id => id != group.RecommendedKeeperId))
+            {
+                candidates.Add(id);
+                keepers.Add(id, group.RecommendedKeeperId);
+            }
         var moved = 0;
+        // Archiving an overlapping source would change a second catalog row's files.
+        var sources = mods.Values.Where(m => Directory.Exists(m.SourcePath))
+            .Select(m => Path.TrimEndingDirectorySeparator(Path.GetFullPath(m.SourcePath)))
+            .GroupBy(source => source, StringComparer.OrdinalIgnoreCase).ToArray();
+        var overlapping = sources.Where(group => group.Count() > 1).Select(group => group.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var uniqueSources = sources.Select(group => group.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var source in uniqueSources)
+            for (var parent = Path.GetDirectoryName(source); parent is not null; parent = Path.GetDirectoryName(parent))
+                if (uniqueSources.Contains(parent))
+                {
+                    overlapping.Add(source);
+                    overlapping.Add(parent);
+                }
         foreach (var id in candidates)
         {
             ct.ThrowIfCancellationRequested();
-            if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath)) continue;
+            if (!mods.TryGetValue(id, out var mod) || mod.Enabled || !Directory.Exists(mod.SourcePath) ||
+                overlapping.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(mod.SourcePath)))) continue;
+            if (keepers.TryGetValue(id, out var keeperId) &&
+                (!mods.TryGetValue(keeperId, out var keeper) ||
+                 !await ExactPackageCopies.SameContentsAsync(mod.SourcePath, keeper.SourcePath, ct))) continue;
             var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var dest = Unique(Path.Combine(archiveRoot, stamp + "-" + Path.GetFileName(mod.SourcePath)));
             // Persist and flush intent before moving any mod bytes. If the process

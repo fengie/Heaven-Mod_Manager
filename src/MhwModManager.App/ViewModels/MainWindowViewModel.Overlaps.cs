@@ -61,7 +61,7 @@ public sealed partial class MainWindowViewModel
                     ?"The manager stopped because this file needs your choice."
                     :explanation.AppliedMatchesPlan
                         ?"The game is already using the mod selected by the current plan."
-                        :"Your pending setup differs from the files currently installed. Apply Mod Changes to make them match.";
+                        :"Your pending setup differs from the files currently installed. Check Needs attention for any unresolved choices.";
         });
     }
 }

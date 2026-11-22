@@ -86,11 +86,12 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
     private async Task<List<Candidate>> FindCandidatesAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"game={game.Id}");
-        var live=game.LiveModRoot;if(!Directory.Exists(live))return [];
+        var live=game.LiveModRoot;
+        if(string.IsNullOrWhiteSpace(game.ModRootRelativePath)||!Directory.Exists(live))return [];
         var snapshot=await plannerSnapshots.LoadAsync(ct);
         var managed=snapshot.CurrentManifest.Keys.Select(PathRules.Normalize).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var adopted=await LoadAdoptedAsync(ct);
-        var files=await Task.Run(()=>SafeRecursiveTraversal.Snapshot(live,ct).Files
+        var files=await Task.Run(()=>FindModFiles(live,ct)
             .Select(f=>(File:f,Key:ManagedKey(f))).Where(x=>!managed.Contains(x.Key)).ToArray(),ct);
         var result=new List<Candidate>();
         foreach(var item in files)
@@ -100,6 +101,80 @@ public sealed class UnmanagedAdoptionService(ManagerDatabase db,PlannerSnapshotR
             result.Add(new(item.File,item.Key,current.Sha256));
         }
         return result;
+    }
+
+    private IEnumerable<string> FindModFiles(string live, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!game.AdapterId.Equals("unreal-paks", StringComparison.OrdinalIgnoreCase) ||
+            !Path.GetFileName(live.TrimEnd(Path.DirectorySeparatorChar)).Equals("Paks", StringComparison.OrdinalIgnoreCase))
+            return SafeRecursiveTraversal.Snapshot(live, ct).Files;
+
+        // The shared Paks folder also contains the shipped game. Only inspect the loader's
+        // dedicated mod directories, retaining complete packages and their own companions.
+        SafeRecursiveTraversal.EnsureRootIsNotReparse(live);
+        var files = new List<string>();
+        foreach (var directory in new[] { "~mods", "LogicMods" })
+        {
+            var root = Path.Combine(live, directory);
+            if (!Directory.Exists(root)) continue;
+            var members = SafeRecursiveTraversal.Snapshot(root, ct).Files.Where(UnrealPakLayout.IsMember);
+            foreach (var package in members.GroupBy(path => Path.ChangeExtension(path, null), StringComparer.OrdinalIgnoreCase))
+                if (UnrealPakLayout.Complete(package)) files.AddRange(package);
+        }
+        return files;
+    }
+
+    public async Task<HashSet<string>> RepresentedInventoryPathsAsync(IReadOnlyList<LocalModLocation> inventory,
+        IReadOnlyList<ModDescriptor> mods, Func<string,string> destination, CancellationToken ct, Dictionary<string,string>? titles = null)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        var paths = new HashSet<string>(PathRules.Comparer);
+        var byId = mods.ToDictionary(m => m.Id,StringComparer.OrdinalIgnoreCase);
+        await using (var connection = await db.OpenAsync(ct))
+        {
+            await using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT path,provider_mod_id FROM deployment_manifest WHERE provider_mod_id IS NOT NULL";
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                var path = destination(reader.GetString(0));
+                paths.Add(path);
+                if (titles != null && byId.TryGetValue(reader.GetString(1),out var mod)) titles[path] = mod.DisplayName;
+            }
+        }
+        var sources = mods.ToLookup(mod => Path.TrimEndingDirectorySeparator(mod.SourcePath),PathRules.Comparer);
+        var adopted = await LoadAdoptedAsync(ct);
+        foreach (var entry in inventory.Where(e => e.RegisteredProfileId == game.Id || e.PreviousProfileId == game.Id))
+        {
+            ct.ThrowIfCancellationRequested();
+            var file = entry.Location;
+            if (paths.Contains(file)) continue;
+            for (var dir = Path.GetDirectoryName(file); dir != null && !PathRules.Comparer.Equals(dir,entry.InstallationRoot);
+                 dir = Path.GetDirectoryName(dir))
+            {
+                if (!sources.Contains(dir) || PathRules.Comparer.Equals(dir,game.LiveModRoot)) continue;
+                paths.Add(file);
+                if (titles != null) titles[file] = string.Join(", ",sources[dir].Select(m=>m.DisplayName));
+                break;
+            }
+            if (!paths.Contains(file) && LocalModInventory.ManagedLoaderPairOwner(entry,mods,ct) is { } owner)
+            {
+                paths.Add(file);
+                paths.Add(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(file))!,"dsound.dll"));
+                if (titles != null) titles[file] = owner;
+            }
+            if (paths.Contains(file) || adopted.Count == 0 || entry.RegisteredProfileId != game.Id ||
+                !file.StartsWith(Path.TrimEndingDirectorySeparator(game.LiveModRoot)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)) continue;
+            var key = ManagedKey(file);
+            if (adopted.TryGetValue(key,out var copy) && sources.Contains(copy.SourceFolder) && Directory.Exists(copy.SourceFolder) &&
+                StringComparer.OrdinalIgnoreCase.Equals(copy.Sha256,(await hashing.HashFileAsync(file,true,ct)).Sha256))
+            {
+                paths.Add(file);
+                if (titles != null) titles[file] = string.Join(", ",sources[copy.SourceFolder].Select(m=>m.DisplayName));
+            }
+        }
+        return paths;
     }
 
     private async Task<Dictionary<string,AdoptedRecord>> LoadAdoptedAsync(CancellationToken ct)

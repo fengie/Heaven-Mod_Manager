@@ -32,7 +32,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         try
         {
             await archive.ExtractSafelyAsync(archivePath, staging, workspaceRoot, ct);
-            await Task.Run(() => NormalizeSingleWrapper(staging), ct);
+            await Task.Run(() => catalog.NormalizeStagedArchive(staging), ct);
             ImportPublicationWorkspace.Publish(modsRoot, staging, destination);
             await catalog.RefreshFoldersAsync(ct);
             return new(destination, Path.GetFileName(destination));
@@ -57,7 +57,7 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
         try
         {
             await archive.ExtractSafelyAsync(archivePath, staging, workspaceRoot, ct);
-            await Task.Run(() => NormalizeSingleWrapper(staging), ct);
+            await Task.Run(() => catalog.NormalizeStagedArchive(staging), ct);
             if (!FomodInstallerService.HasInstaller(staging))
                 throw new InvalidDataException("Archive does not contain exactly one supported FOMOD installer.");
             return new(staging, destination, Path.GetFileName(destination), new FomodInstallerService(staging));
@@ -108,22 +108,5 @@ public sealed class ArchiveImportService(ArchiveInspector archive, CatalogServic
             var candidate = $"{path} ({i})";
             if (!Directory.Exists(candidate)) return candidate;
         }
-    }
-
-    private static void NormalizeSingleWrapper(string root)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var dirs = Directory.GetDirectories(root);
-        var files = Directory.GetFiles(root);
-        if (files.Length != 0 || dirs.Length != 1) return;
-
-        var child = dirs[0];
-        foreach (var entry in Directory.GetFileSystemEntries(child))
-        {
-            var destination = Path.Combine(root, Path.GetFileName(entry));
-            if (Directory.Exists(entry)) Directory.Move(entry, destination);
-            else File.Move(entry, destination);
-        }
-        Directory.Delete(child, true);
     }
 }

@@ -100,6 +100,37 @@ public sealed class SmartInboxProgressTests : IDisposable
         Assert.Equal(2048, final.TotalBytes);
     }
 
+    [Fact]
+    public async Task ActiveInboxReadinessIgnoresProcessedAndEmptyFoldersAndIndexesAnOrdinaryDropOnce()
+    {
+        var inbox = Path.Combine(root, "Inbox");
+        var mods = Path.Combine(root, "Installed");
+        Directory.CreateDirectory(mods);
+        var processed = Directory.CreateDirectory(Path.Combine(inbox, "Processed")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(processed, "previous.zip"), "previous", TestToken);
+        var empty = Directory.CreateDirectory(Path.Combine(inbox, "empty")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(inbox, "downloading.tmp"), "partial", TestToken);
+        var db = await CreateDatabaseAsync();
+        var service = CreateService(db, inbox, mods);
+        Assert.False(service.HasPendingPackages());
+
+        var submitted = Path.Combine(inbox, "Example.zip");
+        using (var zip = ZipFile.Open(submitted, ZipArchiveMode.Create))
+        using (var output = zip.CreateEntry("nativePC/example.bin").Open())
+            output.WriteByte(42);
+        var original = await File.ReadAllBytesAsync(submitted, TestToken);
+        Assert.True(service.HasPendingPackages());
+        var result = await service.ProcessAsync(null, refreshMetadata: false, TestToken);
+        Assert.Equal(1, result.Imported);
+        var mod = Assert.Single(await db.GetModsAsync(TestToken));
+        Assert.False(mod.Enabled);
+        Assert.True(Directory.Exists(empty));
+        var retained = Assert.Single(Directory.GetFiles(processed, "*Example.zip", SearchOption.AllDirectories));
+        Assert.Equal(original, await File.ReadAllBytesAsync(retained, TestToken));
+        Assert.False(service.HasPendingPackages());
+        Assert.Equal(0, (await service.ProcessAsync(null, refreshMetadata: false, TestToken)).Imported);
+    }
+
     private async Task<ManagerDatabase> CreateDatabaseAsync()
     {
         var db = new ManagerDatabase(Path.Combine(root, "state", "manager.db"));

@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using MhwModManager.Core;
 using MhwModManager.Storage;
 using MhwModManager.Diagnostics;
+using MhwModManager.Filesystem;
 using MhwModManager.Automation;
 using MhwModManager.Updater;
 
@@ -23,15 +24,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private CancellationTokenSource? searchCts;
     private readonly CancellationTokenSource backgroundCts=new();
     private readonly SemaphoreSlim metadataGate=new(1,1);
-    private readonly SemaphoreSlim deferredPageGate=new(1,1);
-    private bool profilesLoaded;
-    private bool activityLoaded;
-    private bool overlapsLoaded;
+    private readonly HashSet<int> refreshingPages=[];
+    private long lastInventoryVisit;
     private bool initialMetadataRefreshStarted;
     private bool initialMetadataRefreshCompleted;
     private int conflictPreviewGeneration;
-    private int conflictPreviewLoadedGeneration=-1;
     private bool suppressChanged;
+    [ObservableProperty] private Visibility reviewRetryVisibility=Visibility.Collapsed;
     private bool disposed;
 
     public ObservableRangeCollection<ModRowViewModel> Mods{get;}=[];
@@ -68,13 +67,18 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private int selectedTab;
     [ObservableProperty]private string newProfileName="";
     [ObservableProperty]private ProfileSummary? selectedProfile;
+    [ObservableProperty]private ActivityRow? selectedActivity;
     [ObservableProperty]private ConflictRow? selectedConflict;
     [ObservableProperty]private ModRowViewModel? selectedMod;
     [ObservableProperty]private OutfitRow? selectedOutfit;
     [ObservableProperty]private bool criticalOperation;
     [ObservableProperty]private int unmanagedFileCount;
     [ObservableProperty]private bool manualFileScanCompleted;
-    [ObservableProperty]private GameProfile? selectedGame;
+    public GameProfile? SelectedGame
+    {
+        get { using var trace = MasterDebugLog.BeginMethod(); return GamesPage.Selected; }
+        set { using var trace = MasterDebugLog.BeginMethod(); GamesPage.Selected=value; }
+    }
     [ObservableProperty]private AssetOverlapRow? selectedOverlap;
     [ObservableProperty]private EffectiveDecisionExplanation? selectedExplanation;
     [ObservableProperty]private string explainWhyStatus="Select a shared file, then choose Why This Mod Wins to see the reason.";
@@ -89,6 +93,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
     public bool SupportsLiveAdoption=>s.Paths.Game.IsMonsterHunterWorld||!string.IsNullOrWhiteSpace(s.Paths.Game.ModRootRelativePath);
     public bool HasSemanticCoverage=>s.Paths.Game.SupportsSemanticCoverage;
+    public string ActiveGameDisplayName
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return s.Paths.Game.DisplayName;
+        }
+    }
     public string WindowTitle=>$"Universal Mod Manager — {s.Paths.Game.DisplayName}";
     public string GameSupportText
     {
@@ -120,13 +132,20 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
     public string ModLibraryPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Installed mods: {s.Paths.ModsRoot}"; } }
     public string GameDownloadsPathText { get { using var __mhwTrace=MasterDebugLog.BeginMethod(); return $"Downloaded archives: {s.Paths.DownloadsRoot}"; } }
-    public int InstalledCount=>Mods.Count;
+    public int InstalledCount
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return libraryRows.Count;
+        }
+    }
     public string InstalledCountLabel
     {
         get
         {
             using var __mhwTrace=MasterDebugLog.BeginMethod();
-            return $"{InstalledCount} {(InstalledCount==1?"mod":"mods")}";
+            return CheckingDiscoveredLibrary && InstalledCount == 0 ? "Checking for mods…" : $"{InstalledCount} {(InstalledCount==1?"mod":"mods")}";
         }
     }
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
@@ -177,7 +196,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return $"Refresh {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
+            return $"Rebuild index for {VisibleModCount} visible {(VisibleModCount==1?"mod":"mods")}";
         }
     }
     public string VisibleBulkScopeHelp
@@ -218,7 +237,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return StagedCount==0?"No pending changes":$"{StagedCount} pending • {StagedEnableCount} turning on • {StagedDisableCount} turning off";
         }
     }
-    public string AllViewLabel=>$"All ({Mods.Count})";
+    public string AllViewLabel
+    {
+        get
+        {
+            using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+            return $"All ({InstalledCount})";
+        }
+    }
     public string EnabledViewLabel=>$"Enabled ({EnabledCount})";
     public string StagedViewLabel
     {
@@ -265,7 +291,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         confirmBeforeApply=settings.ConfirmBeforeApply;
         confirmBeforeDiscardStaged=settings.ConfirmBeforeDiscardStaged;
         backgroundMetadataRefreshEnabled=settings.BackgroundMetadataRefreshEnabled;
-        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,8):0;
+        selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,9):0;
         UiMotion.AnimationsEnabled=uiAnimationsEnabled;
         CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0
             ? $"v{s.BuildIdentity.ProductVersion} · build {s.BuildIdentity.BuildNumber} · {s.BuildIdentity.ShortSha}"
@@ -282,6 +308,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         ProfilesPage=new ProfilesPageViewModel(s.Profiles);
         Profiles=ProfilesPage.Rows;
         GamesPage=new GamesPageViewModel(s.GameRegistry);
+        GamesPage.PropertyChanged+=(_,args)=>{if(args.PropertyName==nameof(GamesPage.Selected)) OnPropertyChanged(nameof(SelectedGame));};
         Games=GamesPage.Rows;
         var detailedDiagnostics=MasterDebugLog.DetailedDiagnosticsEnabled;
         if(detailedDiagnostics)
@@ -301,6 +328,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         };
         ModsView=CollectionViewSource.GetDefaultView(Mods);
         ModsView.Filter=FilterMod;
+        LibraryView=CollectionViewSource.GetDefaultView(libraryRows);
+        LibraryView.Filter=FilterLibraryItem;
+        s.ChangeHints.HintsAvailable+=OnManagedLibraryHint;
         GamesPage.Refresh();
         SelectedGame=Games.FirstOrDefault(x=>x.Id.Equals(s.Paths.Game.Id,StringComparison.OrdinalIgnoreCase));
     }
@@ -317,6 +347,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("startup.ui","Loading library","Reading installed mod records…",false,async ct=>
         {
+            await RestoreDiscoveredLibraryAsync(ct);
             MasterDebugLog.Write("STARTUP-UI","stage=reload-mods");
             var reloadStarted = Stopwatch.GetTimestamp();
             try { await ReloadMods(ct); }
@@ -342,56 +373,79 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             }
             MasterDebugLog.Write("STARTUP-UI","stage=ready");
         },rethrowOnFailure:true);
-        _=AutoMetadataLoopAsync(backgroundCts.Token);
+        periodicMetadata=AutoMetadataLoopAsync(backgroundCts.Token);
         StartAutoSorting();
+        lastInventoryVisit=Stopwatch.GetTimestamp();
+        if (SelectedTab != 9) _ = RefreshLocalModInventoryAsync(backgroundCts.Token);
+        StartPageVisit(SelectedTab);
     }
 
     partial void OnSelectedTabChanged(int value)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={value}");
-        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,8));
-        if(value==1&&!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted&&BusyVisibility!=Visibility.Visible)
-        {
-            initialMetadataRefreshStarted=true;
-            _=EnsureInitialMetadataLoadedAsync(backgroundCts.Token);
-        }
-        if(value==3)_=EnsureConflictPreviewsLoadedAsync(backgroundCts.Token);
-        if(value is 4 or 5 or 6)_=EnsureDeferredPageLoadedAsync(value,backgroundCts.Token);
-        if(value==7)_=EnsureStorageUsageLoadedAsync(backgroundCts.Token);
-        if(value==8)_=EnsureCatalogLoadedAsync(backgroundCts.Token);
+        if(RememberLastTab)s.Settings.Update(settings=>settings.LastSelectedTab=Math.Clamp(value,0,9));
+        StartPageVisit(value);
     }
 
-    private async Task EnsureDeferredPageLoadedAsync(int tab,CancellationToken ct)
+    private async Task RefreshSelectedPageAsync(int tab,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"tab={tab}");
+        if (!refreshingPages.Add(tab))
+        {
+            if (tab==1) managedVisitRequested=true;
+            return;
+        }
         try
         {
-            await deferredPageGate.WaitAsync(ct);
-            try
+            switch(tab)
             {
-                switch(tab)
-                {
-                    case 4 when !profilesLoaded:
-                        await RefreshProfiles(ct);
-                        profilesLoaded=true;
-                        break;
-                    case 5 when !activityLoaded:
-                        await RefreshActivity(ct);
-                        activityLoaded=true;
-                        break;
-                    case 6 when !overlapsLoaded:
-                        await RefreshOverlaps(ct);
-                        overlapsLoaded=true;
-                        break;
-                }
+                case 0:
+                    GamesPage.Refresh();
+                    break;
+                case 1:
+                    await ReconcileManagedPageAsync(ct);
+                    if (disposed || SelectedTab!=1) return;
+                    if (BackgroundMetadataRefreshEnabled && !initialMetadataRefreshCompleted && !initialMetadataRefreshStarted && BusyVisibility!=Visibility.Visible)
+                    {
+                        initialMetadataRefreshStarted=true;
+                        pageMetadata = EnsureInitialMetadataLoadedAsync(ct);
+                    }
+                    break;
+                case 2:
+                    await LoadOutfits(ct);
+                    break;
+                case 3:
+                    await RefreshIssueSuspects(ct);
+                    await RefreshAnalysis(ct);
+                    break;
+                case 4:
+                    await RefreshProfiles(ct);
+                    break;
+                case 5:
+                    await RefreshActivity(ct);
+                    break;
+                case 6:
+                    await RefreshAnalysis(ct);
+                    break;
+                case 7:
+                    await EnsureStorageUsageLoadedAsync(ct);
+                    break;
+                case 8:
+                    await EnsureCatalogLoadedAsync(ct);
+                    break;
             }
-            finally{deferredPageGate.Release();}
+            if (tab == 1 && (lastInventoryVisit==0 || Stopwatch.GetElapsedTime(lastInventoryVisit)>=TimeSpan.FromMinutes(1)))
+            {
+                lastInventoryVisit=Stopwatch.GetTimestamp();
+                _ = RefreshLocalModInventoryAsync(ct);
+            }
         }
         catch(OperationCanceledException) when(ct.IsCancellationRequested){}
         catch(Exception ex)
         {
-            MasterDebugLog.Write("DEFERRED-PAGE",$"Deferred tab load failed. tab={tab}",ex);
+            MasterDebugLog.Write("DEFERRED-PAGE",$"Page refresh failed. tab={tab}",ex);
         }
+        finally { refreshingPages.Remove(tab); }
     }
 
     private async Task EnsureInitialMetadataLoadedAsync(CancellationToken ct)
@@ -407,7 +461,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 try
                 {
                     var result=await s.Nexus.RefreshAsync(false,innerCt);
-                    await ReloadMods(innerCt);
+                    await ReloadMods(innerCt,preserveStagedChanges:true);
                     await RefreshAnalysis(innerCt);
                     completed=true;
                     MasterDebugLog.Write("AUTO-METADATA",$"Demand-loaded metadata refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
@@ -419,30 +473,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             if(completed)initialMetadataRefreshCompleted=true;
             initialMetadataRefreshStarted=false;
-        }
-    }
-
-    private async Task EnsureConflictPreviewsLoadedAsync(CancellationToken ct)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var generation=conflictPreviewGeneration;
-        if(conflictPreviewLoadedGeneration==generation||Conflicts.Count==0)return;
-        var rows=Conflicts.ToArray();
-        try
-        {
-            var enriched=await EnrichConflictPreviewsAsync(rows,ct);
-            if(ct.IsCancellationRequested||SelectedTab!=3||generation!=conflictPreviewGeneration)return;
-            await Application.Current.Dispatcher.InvokeAsync(()=>
-            {
-                if(SelectedTab!=3||generation!=conflictPreviewGeneration)return;
-                Conflicts.ReplaceAll(enriched);
-                conflictPreviewLoadedGeneration=generation;
-            });
-        }
-        catch(OperationCanceledException) when(ct.IsCancellationRequested){}
-        catch(Exception ex)
-        {
-            MasterDebugLog.Write("CONFLICT-PREVIEWS","Deferred conflict preview loading failed; conflict decisions remain available without artwork.",ex);
         }
     }
 
@@ -475,7 +505,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     {
                         var result=await s.Nexus.RefreshAsync(false,ct);
                         if(!result.LiveSyncRan)continue;
-                        await ReloadMods(ct);
+                        await ReloadMods(ct,preserveStagedChanges:true);
                         await RefreshAnalysis(ct);
                         MasterDebugLog.Write("AUTO-METADATA",$"Periodic refresh: nexus={result.ApiRecords}; apiVisuals={result.VisualsRefreshed}; localVisuals={result.LocalVisuals}; declaredVisuals={result.DeclaredVisuals}; publicVisuals={result.PublicVisuals}; updates={result.UpdatesAvailable}");
                     }
@@ -498,6 +528,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     }
     partial void OnSelectedModChanged(ModRowViewModel? value)
     {
+        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
+        OnPropertyChanged(nameof(SelectedLibraryItem));
         if(value is null)return;
         _=LoadModVisualsAsync(value);
     }
@@ -508,7 +540,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try
         {
             var paths=await s.Visuals.GetGalleryAsync(row.Members,16);
-            await Application.Current.Dispatcher.InvokeAsync(()=>row.SetVisuals(paths));
+            await viewDispatcher.InvokeAsync(()=>row.SetVisuals(paths));
         }
         catch(IOException ex){MasterDebugLog.Write("VISUALS",$"Gallery scan failed logicalMod={row.Id}",ex);}
         catch(UnauthorizedAccessException ex){MasterDebugLog.Write("VISUALS",$"Gallery scan denied logicalMod={row.Id}",ex);}
@@ -519,7 +551,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         MasterDebugLog.Write("UI-FILTER",$"Mod smart view changed to {value}");
-        ModsView.Refresh();
+        RefreshLibraryFilters();
         NotifyVisibleModState();
     }
 
@@ -531,15 +563,29 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         _=DebounceSearchAsync(cts.Token);
     }
 
+    [RelayCommand]
+    private void SubmitModSearch()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        searchCts?.Cancel();
+        RefreshLibraryFilters();
+        NotifyVisibleModState();
+        if (!string.IsNullOrWhiteSpace(SearchText) &&
+            (SelectedLibraryItem is null || !LibraryView.Contains(SelectedLibraryItem)))
+            SelectedLibraryItem = LibraryView.Cast<object>().FirstOrDefault();
+    }
+
     private async Task DebounceSearchAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
         {
             await Task.Delay(160,ct);
+            ct.ThrowIfCancellationRequested();
             await Application.Current.Dispatcher.InvokeAsync(()=>
             {
-                ModsView.Refresh();
+                if (ct.IsCancellationRequested) return;
+                RefreshLibraryFilters();
                 NotifyVisibleModState();
             });
         }
@@ -577,6 +623,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         OnPropertyChanged(nameof(VisibleModCount));
+        OnPropertyChanged(nameof(VisibleLibraryCount));
         OnPropertyChanged(nameof(HasVisibleMods));
         OnPropertyChanged(nameof(EnableVisibleLabel));
         OnPropertyChanged(nameof(DisableVisibleLabel));
@@ -588,6 +635,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(suppressChanged)return;
+        if(StagedCount==0)ReviewRetryVisibility=Visibility.Collapsed;
+        s.Database.SetPendingModIds(Mods.Where(row=>row.HasStagedChanges).SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key));
         OnPropertyChanged(nameof(EnabledCount));
         OnPropertyChanged(nameof(StagedCount));
         OnPropertyChanged(nameof(StagedEnableCount));
@@ -606,12 +655,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(RevalidateViewLabel));
         OnPropertyChanged(nameof(SupersededViewLabel));
         OnPropertyChanged(nameof(HeaderSummary));
-        if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))ModsView.Refresh();
+        if(!StringComparer.OrdinalIgnoreCase.Equals(ModViewMode,"All")||!string.IsNullOrWhiteSpace(SearchText))RefreshLibraryFilters();
         NotifyVisibleModState();
-        FooterText=StagedCount==0?"No pending changes":$"{StagedCount} pending change(s) — game files stay unchanged until you apply them";
+        FooterText=StagedCount==0?"No pending changes":$"{StagedCount} change(s) awaiting verification";
     }
 
-    private async Task ReloadMods(CancellationToken ct)
+    private async Task ReloadMods(CancellationToken ct, bool preserveStagedChanges = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var loaded=await Task.Run(async ()=>
@@ -625,9 +674,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return (models,files,updateSettings,logical,suggestions);
         },ct);
         var (models,files,updateSettings,logical,suggestions)=loaded;
-        await Application.Current.Dispatcher.InvokeAsync(()=>
+        await viewDispatcher.InvokeAsync(()=>
         {
-            var rows=logical.Select(m=>new ModRowViewModel(m,Changed)).ToArray();
+            var pending = preserveStagedChanges
+                ? Mods.Where(row => row.HasStagedChanges).SelectMany(row => row.StagedChanges())
+                    .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+                : null;
+            if (pending is not null && discoveryUserEdits is not null)
+                foreach(var edit in discoveryUserEdits) pending[edit.Key]=edit.Value;
+            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending,RecordUserChoice)).ToArray();
             var rowsByMember=rows.SelectMany(row=>row.Members.Select(member=>(member.Id,row)))
                 .ToDictionary(x=>x.Id,x=>x.row,StringComparer.OrdinalIgnoreCase);
             foreach(var group in suggestions.GroupBy(s=>s.ChildModId,StringComparer.OrdinalIgnoreCase))
@@ -643,11 +698,23 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 if(latest is not null&&DateTimeOffset.TryParse(latest,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal,out var when))
                     row.SetUpdateBadge($"Update available • {when:yyyy-MM-dd}");
             }
+            var identities = models.Select(m=>(m.Id,m.SourcePath,m.DisplayName)).ToHashSet();
+            var sourcesChanged = catalogInventoryIdentities != null && !catalogInventoryIdentities.SetEquals(identities);
+            catalogInventoryIdentities = identities;
+            var selected=SelectedLibraryItem;
+            observedCatalog=models;
             Mods.ReplaceAll(rows);
-            ModsView.Refresh();
+            if (sourcesChanged) InvalidateLocalInventory();
+            RebuildLibraryRows();
+            RefreshLibraryFilters();
+            if (preserveStagedChanges && selected is ModRowViewModel previous && rowsByMember.TryGetValue(previous.Members[0].Id,out var replacement) && LibraryView.Contains(replacement))
+                SelectedLibraryItem=replacement;
+            else if (preserveStagedChanges && selected is ExternalLibraryReference external && LibraryView.Contains(external))
+                SelectedLibraryItem=external;
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
             Changed();
         });
+        RequestDiscoveryCheck();
         await RefreshIssueSuspects(ct);
     }
 
@@ -856,13 +923,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var analysis=await BuildAnalysisAsync(stage,ct);
         var shouldEnrich=SelectedTab==3;
         var displayRows=shouldEnrich?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
-        await Application.Current.Dispatcher.InvokeAsync(()=>
+        await viewDispatcher.InvokeAsync(()=>
         {
+            if (generation!=conflictPreviewGeneration || ct.IsCancellationRequested) return;
             Conflicts.ReplaceAll(displayRows);
-            conflictPreviewLoadedGeneration=shouldEnrich?generation:-1;
             var summaryById=analysis.summaries.ToDictionary(x=>x.LogicalModId,StringComparer.OrdinalIgnoreCase);
             foreach(var row in Mods)if(summaryById.TryGetValue(row.Id,out var summary))row.SetEffective(summary);
-            ModsView.Refresh();
+            RefreshLibraryFilters();
             OnPropertyChanged(nameof(FullyEffectiveCount));
             OnPropertyChanged(nameof(ComposedCount));
             OnPropertyChanged(nameof(RevalidationCount));
@@ -872,8 +939,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             OnPropertyChanged(nameof(SupersededViewLabel));
             OnPropertyChanged(nameof(HeaderSummary));
         });
-        overlapsLoaded=false;
-        if(SelectedTab==6)await EnsureDeferredPageLoadedAsync(6,ct);
+        if(SelectedTab==6 && generation==conflictPreviewGeneration)await RefreshOverlaps(ct);
     }
 
     private async Task<ConflictRow[]> EnrichConflictPreviewsAsync(ConflictRow[] rows,CancellationToken ct)
@@ -955,7 +1021,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         var stage=CaptureStage();
         var current=await s.Database.GetModsAsync(ct);
-        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
+        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
         if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
         var analysis=await BuildAnalysisAsync(stage,ct);
         var changes=analysis.plan.Changes;
@@ -991,14 +1057,22 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task RefreshAnalysisNow()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var inventory = RefreshLocalModInventoryAsync(backgroundCts.Token);
         await RunBusy("analysis.refresh","Refreshing Mod Status","Checking which mods and files will be used and whether anything needs your attention…",true,RefreshAnalysis);
+        await inventory;
     }
 
     [RelayCommand]
-    private async Task Apply()
+    private Task Apply()
+    {
+        using var __mhwTrace=MasterDebugLog.BeginMethod();
+        return ApplyStagedChangesAsync(confirm:true);
+    }
+
+    private async Task ApplyStagedChangesAsync(bool confirm)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(ConfirmBeforeApply&&StagedCount>0&&MessageBox.Show(
+        if(confirm&&ConfirmBeforeApply&&StagedCount>0&&MessageBox.Show(
             $"Apply {StagedCount} pending mod change(s) to {s.Paths.Game.DisplayName}?",
             "Apply mod changes",
             MessageBoxButton.YesNo,
@@ -1007,19 +1081,26 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText="Apply cancelled. No game files were changed.";
             return;
         }
+        ReviewRetryVisibility=Visibility.Collapsed;
         await RunBusy("deployment.apply","Applying Mod Changes","Checking the setup, creating recovery information, and safely updating the game files…",false,async ct=>
     {
         var blockers=s.ProcessGuard.GetKnownBlockers();
-        if(blockers.Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is running. Close it before deployment.");
+        if(blockers.Count>0)
+        {
+            retryExplicitOnActivation=true;
+            throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is running. Close it before deployment.");
+        }
 
         var stage=CaptureStage();
+        var explicitIds=Mods.SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key).ToArray();
+        if(explicitIds.Length>0)await s.Database.FinishDiscoveryAsync(explicitIds,ct);
         var current=await s.Database.GetModsAsync(ct);
-        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&!m.Enabled).Select(m=>m with{Enabled=true}).ToArray();
+        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
 
         var analysis=await BuildAnalysisAsync(stage,ct);
         var displayRows=analysis.plan.IsBlocked?await EnrichConflictPreviewsAsync(analysis.rows,ct):analysis.rows;
-        await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
+        await viewDispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
         if(analysis.plan.IsBlocked)
         {
             SelectedTab=3;
@@ -1038,22 +1119,40 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return;
         }
 
+        if (!confirm && analysis.plan.Changes.Any(change =>
+            change.Kind==ChangeKind.Add && File.Exists(s.Executor.Destination(change.Path))))
+        {
+            StatusText="An existing game file would be replaced. Review the pending changes before continuing.";
+            return;
+        }
+        if (analysis.plan.Changes.Count == 0 && explicitIds.Length == 0)
+        {
+            rulesNeedApply=false;
+            StatusText="Game files already match your choices.";
+            return;
+        }
         var audits=analysis.plan.Conflicts.Where(d=>d.Inferred&&d.ResolverScore>0)
             .Select(d=>new ResolverAudit(d.Path,d.WinnerModId,d.ResolverScore,d.ReasonCode,d.Explanation,d.Evidence??string.Empty)).ToArray();
         if(audits.Length>0)await s.Database.RecordResolverAuditAsync(audits,ct);
 
-        var result=await s.Executor.ApplyAsync(analysis.plan,$"Apply {StagedCount} staged mod-state change(s)",stage,ct:ct);
+        var verifiedPlan=confirm ? analysis.plan : analysis.plan with
+        {
+            Changes=analysis.plan.Changes.Select(change=>change.Kind==ChangeKind.Add ? change with {RequireAbsent=true} : change).ToArray()
+        };
+        var result=await s.Executor.ApplyAsync(verifiedPlan,$"Apply {StagedCount} staged mod-state change(s)",stage,ct:ct);
         if(!result.Success)
             throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
 
+        rulesNeedApply=false;
         var enabledAfter=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
         if(enabledAfter.Length>0)await s.Database.MarkRevalidationAsync(enabledAfter,"Validated by a successful deployment after the current game build was observed.",false,ct);
-        await Application.Current.Dispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied();});
+        await viewDispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied(stage);});
         StatusText=result.Message;
         await RefreshAnalysis(ct);
         await RefreshActivity(ct);
         Changed();
     });
+        if(StagedCount>0 || rulesNeedApply)ReviewRetryVisibility=Visibility.Visible;
     }
 
     [RelayCommand]
@@ -1121,9 +1220,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     .SelectMany(row => row.ExpandStage().Where(x => x.Value.enabled).Select(x => x.Key))
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var service = new AutoPopulateService(
-                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game);
+                    s.PlannerSnapshots, s.Planner, s.Dependencies, s.Paths.GameRoot, s.Paths.Game, s.Blobs, s.Scanner);
+                var excluded = Mods.SelectMany(row => row.StagedChanges()).Where(change => !change.Value.enabled)
+                    .Select(change => change.Key).ToArray();
                 result = await RunAutoPopulateBuildAsync(
-                    innerCt => service.BuildAsync(preferredModIds, innerCt),
+                    innerCt => service.BuildAsync(preferredModIds, excluded, innerCt),
                     ct);
                 var stage = result.State.ToDictionary(
                     x => x.Key,
@@ -1149,6 +1250,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                         result.PlannerPasses,
                         result.PlannerFastPathCandidates,
                         result.PlannerMilliseconds,
+                        Decisions = result.Decisions,
                         NewlyImported = inboxResult.Imported
                     },
                     ct);
@@ -1157,7 +1259,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         if (!completed || result is null) return;
         if (StagedCount > 0)
+        {
             await Apply();
+            StatusText += " " + result.Summary;
+        }
         else
             StatusText = result.Summary + " No changes were necessary; the current setup is already applied.";
     }
@@ -1192,14 +1297,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void StageVisible(bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var targets=ModsView.Cast<ModRowViewModel>().ToArray();
+        var targets=ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray();
         if(targets.Length==0)
         {
-            StatusText="No visible mods match the current search and filters.";
+            StatusText="No visible mods can be staged.";
             return;
         }
         if(targets.Length>1&&MessageBox.Show(
-            $"{(enabled?"Enable":"Disable")} {targets.Length} currently visible mods? This only stages the changes; game files stay unchanged until you choose Apply Mod Changes.",
+            $"{(enabled?"Enable":"Disable")} {targets.Length} currently visible mods? Manager will verify and apply eligible changes to game files.",
             $"{(enabled?"Enable":"Disable")} visible mods",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question)!=MessageBoxResult.Yes)
@@ -1210,8 +1315,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         suppressChanged=true;
         try{foreach(var m in targets)m.StagedEnabled=enabled;}
-        finally{suppressChanged=false;Changed();}
-        StatusText=$"Staged {(enabled?"enable":"disable")} for {targets.Length} visible {(targets.Length==1?"mod":"mods")}. Apply Mod Changes when you are ready.";
+        finally{suppressChanged=false;Changed();OnModChoiceChanged();}
+        StatusText=$"Selected {(enabled?"enable":"disable")} for {targets.Length} visible {(targets.Length==1?"mod":"mods")}.";
     }
 
     [RelayCommand]
@@ -1223,10 +1328,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var visible=ModsView.Cast<ModRowViewModel>().ToArray();
         var target=visible
             .SelectMany(x=>x.Members)
+            .Where(mod=>!mod.RequiresLayoutReview)
             .DistinctBy(x=>x.Id,StringComparer.OrdinalIgnoreCase)
             .ToArray();
         await s.Catalog.EnsureCapturedAsync(target,ct);
-        StatusText=$"Re-indexed {visible.Length} visible {(visible.Length==1?"mod":"mods")} across {target.Length} source {(target.Length==1?"package":"packages")}.";
+        var held=visible.Count(row=>!row.CanStage);
+        StatusText=$"Re-indexed {target.Length} source package(s). {held} visible row(s) require layout review.";
     });
     }
 
@@ -1305,15 +1412,24 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void CaptureDiagnostics()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var script=Path.Combine(s.Paths.ToolRoot,"scripts","Capture-Diagnostics.ps1");
+        var script=Path.Combine(AppContext.BaseDirectory, "scripts", "diagnostics", "Capture-Diagnostics.ps1");
         if(!File.Exists(script)){StatusText="Capture-Diagnostics.ps1 is not present in this installation.";return;}
         try
         {
-            using var diagnosticProcess = ProcessDebug.Start(new ProcessStartInfo("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\" -ProcessId {Environment.ProcessId}")
+            var capture = Path.Combine(s.Paths.ToolRoot, "diagnostics",
+                $"capture-{DateTime.UtcNow:yyyyMMdd-HHmmssfff}-pid{Environment.ProcessId}");
+            var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory,
+                "WindowsPowerShell", "v1.0", "powershell.exe"))
             {
-                WorkingDirectory=s.Paths.ToolRoot,UseShellExecute=true
-            }, "capture-diagnostics");
-            StatusText="Diagnostic capture started in a separate PowerShell window. Keep the manager running while it records the freeze/load.";
+                WorkingDirectory = s.Paths.ToolRoot,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            foreach (var arg in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script,
+                "-ProcessId", Environment.ProcessId.ToString(CultureInfo.InvariantCulture), "-OutputDirectory", capture })
+                start.ArgumentList.Add(arg);
+            using var diagnosticProcess = ProcessDebug.Start(start, "capture-diagnostics");
+            StatusText=$"Diagnostic capture started. Keep the manager running while it records. Output: {capture}";
         }
         catch(Exception ex){StatusText="Could not start diagnostic capture: "+ex.Message;}
     }
@@ -1396,9 +1512,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 {
                     foreach(var row in Mods)row.ApplyProfileState(state);
                 }
-                finally{suppressChanged=false;Changed();}
+                finally{suppressChanged=false;Changed();OnModChoiceChanged();}
             });
-            StatusText=$"Profile '{SelectedProfile.Name}' is ready to use. Game files stay unchanged until you apply the changes.";
+            StatusText=$"Profile '{SelectedProfile.Name}' selected.";
         });
     }
 
@@ -1427,7 +1543,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             _=>"Game crash"
         };
         var rows=suspects.Select(x=>new ModIssueRow(x.ModId,x.DisplayName,IssueKindLabel(x.Kind),x.Score,x.Reason,x.LastSeen.LocalDateTime.ToString("g",CultureInfo.CurrentCulture),x.FailureCount,x.Confirmed)).ToArray();
-        await Application.Current.Dispatcher.InvokeAsync(()=>
+        await viewDispatcher.InvokeAsync(()=>
         {
             IssueSuspects.ReplaceAll(rows);
             var byMember=suspects.GroupBy(x=>x.ModId,StringComparer.OrdinalIgnoreCase).ToDictionary(g=>g.Key,g=>g.OrderByDescending(x=>x.Confirmed).ThenByDescending(x=>x.Score).First(),StringComparer.OrdinalIgnoreCase);
@@ -1441,7 +1557,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     mod.SetIssue(top.Confirmed?$"⚠ ISOLATED • {IssueKindLabel(top.Kind)}":$"⚠ {top.Score}% • {IssueKindLabel(top.Kind)}",top.Score,top.Reason);
                 }
             }
-            ModsView.Refresh();
+            RefreshLibraryFilters();
             OnPropertyChanged(nameof(IssueCount));
             OnPropertyChanged(nameof(IssuesViewLabel));
             NotifyVisibleModState();
@@ -1573,16 +1689,12 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("automation.inbox","Installing Mods from Inbox","Checking each package, importing safe mods, and handling obvious duplicates automatically…",true,async ct=>
         {
             var result = await ProcessInboxWithProgressAsync(ct);
-            BusyDetail = "Checking and archiving safe duplicates…";
-            BusyItemProgressVisibility = Visibility.Collapsed;
-            BusyProgressIndeterminate = true;
-            var archived = await Task.Run(() => s.Duplicates.ArchiveSafeAsync(ct), ct);
             BusyDetail = "Refreshing the visible mod list…";
-            await ReloadMods(ct);
+            await ReloadMods(ct,preserveStagedChanges:true);
             BusyDetail = "Recalculating mod conflicts and compatibility…";
             await RefreshAnalysis(ct);
             StatusText = $"Inbox finished: {result.Imported} installed, {result.Skipped} skipped, " +
-                $"{archived} older or duplicate package(s) archived. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
+                $"Exact copies remain in their original folders. You can add ZIP/RAR/7z files or folders to '{s.Paths.InboxRoot}'.";
         });
     }
 
@@ -1593,9 +1705,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await RunBusy("automation.restore-lkg","Restoring Last Working Setup","Restoring the most recent setup that successfully started the game…",false,async ct=>
         {
         var known=await s.LastGood.LoadAsync(ct)??throw new InvalidOperationException("No last-known-good launch exists yet.");
-        var stage=known.Mods.ToDictionary(x=>x.Key,x=>(x.Value.Enabled,x.Value.Priority),StringComparer.OrdinalIgnoreCase);
         var snap=await s.PlannerSnapshots.LoadAsync(ct);
-        var staged=snap.Mods.Select(m=>stage.TryGetValue(m.Id,out var v)?m with{Enabled=v.Enabled,Priority=v.Priority}:m with{Enabled=false}).ToArray();
+        var stage=LastKnownGoodService.RestoreState(known,snap.Mods);
+        var staged=snap.Mods.Select(m=>m with{Enabled=stage[m.Id].Enabled,Priority=stage[m.Id].Priority}).ToArray();
         var plan=await Task.Run(()=>s.Planner.Build(snap with{Mods=staged}),ct);
         if(plan.IsBlocked)throw new InvalidOperationException("The saved setup now has a blocking conflict under the current files; nothing was changed.");
         var dependencyBlockers=await GetDependencyBlockersAsync(stage,plan,ct);
@@ -1703,15 +1815,47 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("game.safe-mode","Safe mode",$"Temporarily removing manager-controlled mods, launching {s.Paths.Game.DisplayName}, then restoring your applied configuration after the game exits…",false,async ct=>
         {
-        if(s.ProcessGuard.GetKnownBlockers().Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is already running.");
-        await s.Backups.CreateAsync("pre-vanilla-launch",ct);
-        var snap=await s.PlannerSnapshots.LoadAsync(ct);
-        var none=snap.Mods.Select(m=>m with{Enabled=false}).ToArray();
-        var offPlan=await Task.Run(()=>s.Planner.Build(snap with{Mods=none}),ct);
-        var off=await s.Executor.ApplyAsync(offPlan,"Enter safe mode",ct:ct);
-        if(!off.Success)throw off.Exception??new InvalidOperationException(off.Message);
-        using var p=ProcessDebug.Start(new ProcessStartInfo(s.Paths.ExecutablePath){WorkingDirectory=s.Paths.GameRoot,UseShellExecute=true}, "game-safe-mode-launch");
-        await p.WaitForExitAsync(ct);
+            if(s.ProcessGuard.GetKnownBlockers().Count>0)throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is already running.");
+            if (!File.Exists(s.Paths.ExecutablePath))
+                throw new FileNotFoundException("The registered game executable is unavailable.", s.Paths.ExecutablePath);
+            await s.Backups.CreateAsync("pre-vanilla-launch",ct);
+            var snap=await s.PlannerSnapshots.LoadAsync(ct);
+            var none=snap.Mods.Select(m=>m with{Enabled=false}).ToArray();
+            var offPlan=await Task.Run(()=>s.Planner.Build(snap with{Mods=none}),ct);
+            var off=await s.Executor.ApplyAsync(offPlan,"Enter safe mode",ct:ct);
+            if(!off.Success)throw off.Exception??new InvalidOperationException(off.Message);
+
+            Process process;
+            try
+            {
+                process = ProcessDebug.Start(new ProcessStartInfo(s.Paths.ExecutablePath)
+                    { WorkingDirectory = s.Paths.GameRoot, UseShellExecute = true }, "game-safe-mode-launch");
+            }
+            catch (Exception launchError) when (launchError is System.ComponentModel.Win32Exception
+                or IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                try
+                {
+                    await RestoreSafeModeFilesAsync(snap, offPlan, CancellationToken.None);
+                }
+                catch (Exception restoreError)
+                {
+                    throw new AggregateException("The game could not start and the applied setup could not be restored.",
+                        launchError, restoreError);
+                }
+                throw new InvalidOperationException("The game could not start. The applied setup was restored. " +
+                    launchError.Message, launchError);
+            }
+            using (process) await process.WaitForExitAsync(ct);
+            await ValidateSafeModeRestoreAsync(ct);
+            await RestoreSafeModeFilesAsync(snap, offPlan, ct);
+            StatusText="Safe mode ended and the applied mod configuration was restored.";
+        });
+    }
+
+    private async Task ValidateSafeModeRestoreAsync(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var restoreSnap=await s.PlannerSnapshots.LoadAsync(ct);
         var restore=await Task.Run(()=>s.Planner.Build(restoreSnap),ct);
         if(restore.IsBlocked)throw new InvalidOperationException("The previous mod configuration now has a blocking conflict; safe-mode restore stopped without guessing.");
@@ -1719,10 +1863,25 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var restoreDependencyBlockers=await GetDependencyBlockersAsync(restoreState,restore,ct);
         if(restoreDependencyBlockers.Length>0)
             throw new InvalidOperationException("Restore after safe mode blocked by dependency preflight. "+DescribeDependencyBlockers(restoreDependencyBlockers));
-        var back=await s.Executor.ApplyAsync(restore,"Restore after safe mode",ct:ct);
-        if(!back.Success)throw back.Exception??new InvalidOperationException(back.Message);
-            StatusText="Safe mode ended and the applied mod configuration was restored.";
-        });
+    }
+
+    private async Task RestoreSafeModeFilesAsync(PlannerSnapshot before, DeploymentPlan removed, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Reverse just the temporary removals. Other enabled packages may never
+        // have been applied, and their saved choices must survive a failed launch.
+        var changes = removed.Changes.Select(change =>
+        {
+            var previous = before.CurrentManifest[change.Path];
+            return new DeploymentChange(change.Sequence,
+                change.AfterBlobSha256 is null ? ChangeKind.Add : ChangeKind.Replace, change.Path,
+                change.AfterBlobSha256, previous.BlobSha256, null, previous.ProviderModId,
+                change.AfterBlobSha256, previous.RuleId) { RequireAbsent = change.AfterBlobSha256 is null };
+        }).ToArray();
+        var restore = new DeploymentPlan(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, changes, [], []);
+        var restored = await s.Executor.ApplyAsync(restore, "Restore after safe mode",
+            parentOperationId: removed.Id, ct: ct);
+        if (!restored.Success) throw restored.Exception ?? new InvalidOperationException(restored.Message);
     }
 
     [RelayCommand]
@@ -1742,7 +1901,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         await RefreshAnalysis(CancellationToken.None);
         var chosen=conflict.Options.First(o=>StringComparer.OrdinalIgnoreCase.Equals(o.Token,winnerToken));
-        StatusText=$"'{chosen.DisplayName}' will be used for this conflict. The alternatives will be turned off when you apply the pending changes.";
+        StatusText=$"Selected '{chosen.DisplayName}' for this conflict.";
+        OnModChoiceChanged();
         await s.Timeline.RecordAsync("choice.conflict",AutomationSeverity.Info,$"User chose {chosen.DisplayName} for {conflict.Scope}.",new{conflict.BundleKey,chosen.Token,chosen.DisplayName},CancellationToken.None);
     }
 
@@ -1789,6 +1949,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
             await RefreshAnalysis(ct);
             StatusText=$"Saved '{mainOption.DisplayName}' as the main mod with {childIds.Length} add-on package(s). The manager will remember this relationship for future conflict checks.";
+            RequestRuleApply();
             await s.Timeline.RecordAsync("family.manual-chain",AutomationSeverity.Info,$"User chained conflicting packages under {mainOption.DisplayName}.",new{conflict.BundleKey,familyId,mainMemberId,mainIds,childGroups},ct);
         });
     }
@@ -1853,7 +2014,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
                 await RefreshAnalysis(ct);
                 StatusText = $"Separated '{option.DisplayName}' from its logical family. Review any remaining actual file conflicts before applying changes.";
-                await s.Timeline.RecordAsync("family.manual-separate", AutomationSeverity.Info,
+                RequestRuleApply();
+            await s.Timeline.RecordAsync("family.manual-separate", AutomationSeverity.Info,
                     $"User separated incorrectly grouped source package '{option.DisplayName}'.",
                     new { conflict.BundleKey, memberId }, ct);
             });
@@ -1914,6 +2076,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 MasterDebugLog.Write("UI-PROGRESS",
                     $"operation={operationName}; elapsedMs={sw.Elapsed.TotalMilliseconds:F0}; phase={BusyDetail}; percent={(BusyProgressIndeterminate ? "unknown" : BusyProgressPercent.ToString("F1",CultureInfo.InvariantCulture))}");
         };
+        var startingFileRevision = s.Executor.CommittedFileRevision;
         ticker.Start();
         try
         {
@@ -1938,9 +2101,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         finally
         {
             ticker.Stop();
+            if (s.Executor.CommittedFileRevision != startingFileRevision) InvalidateLocalInventory();
             BusyVisibility=Visibility.Collapsed;CancelVisibility=Visibility.Collapsed;CriticalOperation=false;
             busyCts?.Dispose();busyCts=null;OnPropertyChanged(nameof(HeaderSummary));
             programUpdateHandoffGate.EndForeground();
+            ScheduleAutomaticChanges();
         }
     }
 
@@ -1949,10 +2114,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(disposed)return;
         disposed=true;
+        s.ChangeHints.HintsAvailable-=OnManagedLibraryHint;
         DisposeAutoSorting();
         backgroundCts.Cancel();
         backgroundCts.Dispose();
-        deferredPageGate.Dispose();
         busyCts?.Cancel();
         busyCts?.Dispose();
         busyCts=null;

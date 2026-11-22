@@ -141,8 +141,8 @@ public sealed class AutoPopulateDispatcherRegressionTests
         Assert.Contains("Command=\"{Binding EnableVisibleCommand}\"", modPage, StringComparison.Ordinal);
         Assert.Contains("Content=\"Deselect All\"", modPage, StringComparison.Ordinal);
         Assert.Contains("Command=\"{Binding DisableVisibleCommand}\"", modPage, StringComparison.Ordinal);
-        Assert.Contains("Content=\"Auto Populate\"", modPage, StringComparison.Ordinal);
-        Assert.Contains("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("Content=\"Auto Populate\"", modPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
     }
 
 }

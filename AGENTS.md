@@ -20,7 +20,19 @@ Before any task-specific reasoning, answering, planning, dispatch, or action, ev
 6. Read `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` in full at startup, then use the MHW context index/router to retrieve only task-relevant `LEARNED_RULES.md`, `BUG_PRECEDENTS.md`, architecture, verification, policy, and other project context.
 7. Immediately before integration or destructive mutation, refresh MHW canonical state and ownership again and preserve unique concurrent work.
 
+Use the Toolbox commit verified in step 1 when looking up prior work. With `$Toolbox` set to that checkout, `$ToolboxSourceSha` to the full verified main commit, and `$Task` to the current question, run the existing reader during research:
+
+```powershell
+node (Join-Path $Toolbox 'tools/agent-control/research-preflight.mjs') --root $Toolbox --scope fengie/Heaven-Mod_Manager --source-sha $ToolboxSourceSha --task $Task
+```
+
+Check the returned `sourceSha`, then verify relevant candidates against their cited evidence and the current Manager implementation or test. If the reader reports a revision mismatch, reconcile the checkout with the verified revision before using a receipt. For older Manager work, search the local history at the Manager commit verified in step 4 (`$ManagerSourceSha`), for example `git grep -n -i -e 'first-chance' $ManagerSourceSha -- _AGENT_CONTEXT`. Use the resulting rule, precedent or evidence file to locate its implementation and regression test. The shared reader indexes committed Toolbox findings scoped or shared with Manager. Local evidence, earlier Git revisions and issue receipts have separate coverage. Compare reuse with the smallest change and record the outcome on the existing task.
+
 When a MHW-specific rule and a generic Toolbox default differ, the more specific current MHW project rule applies unless it conflicts with higher-priority instructions or the user's current direction. A stale local cache of Toolbox is never authoritative over current Toolbox `main`.
+
+## Resuming release work
+
+Reconcile a handoff against the [published releases](https://github.com/fengie/Heaven-Mod_Manager/releases) before scheduling release or updater work. Open the intended immutable updater tag, verify its source commit and asset digests, then find the Windows Release Gate and Updater Installed Client E2E runs for that exact commit under [Actions](https://github.com/fengie/Heaven-Mod_Manager/actions). Check the relevant product issue for a physical installation receipt identifying the same build and source. Reuse completed checks and carry forward only the open acceptance. The handoff and CURRENT_REVISION capture evidence as of their recorded source. A newer main commit or an older pending instruction alone cannot establish what was released or installed.
 
 ## Execution contract
 

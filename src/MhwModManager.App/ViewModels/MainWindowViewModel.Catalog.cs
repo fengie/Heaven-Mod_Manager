@@ -206,7 +206,7 @@ public sealed record CatalogBrowseResultState(
                 false,
                 false,
                 "No catalog mods yet",
-                "Refresh configured providers to load browseable mods. Provider errors and configuration problems are reported separately.");
+                "Configured providers are checked automatically when you browse. Provider errors and configuration problems are reported separately.");
     }
 }
 
@@ -253,13 +253,13 @@ public sealed record CatalogPresentationState(
                     CatalogPresentationKind.CachedOnly,
                     "Cached results ready",
                     staleResultCount > 0
-                        ? $"{staleResultCount} cached result(s) may be stale. Refresh providers to check for newer metadata."
-                        : "Cached results are ready. Refresh providers to check for newer metadata.",
+                        ? $"{staleResultCount} cached result(s) may be stale. Providers are checked automatically on return."
+                        : "Cached results are ready. Providers are checked automatically on return.",
                     false)
                 : new CatalogPresentationState(
                     CatalogPresentationKind.Idle,
                     "Provider status not checked yet",
-                    "Refresh configured providers to load or validate browseable mod metadata.",
+                    "Configured providers are checked automatically when you browse.",
                     false);
         }
 
@@ -299,7 +299,7 @@ public sealed record CatalogPresentationState(
             return new CatalogPresentationState(
                 CatalogPresentationKind.Stale,
                 "Cached results may be stale",
-                $"{staleResultCount} of {resultCount} visible result(s) are older than the refresh window. Refresh providers to update them.",
+                $"{staleResultCount} of {resultCount} visible result(s) are older than the refresh window. Providers are checked automatically on return.",
                 false);
         }
 
@@ -376,6 +376,7 @@ public sealed partial class MainWindowViewModel
     private const int CatalogProviderRefreshLimit = 100;
     private const int CatalogVisibleResultLimit = 1000;
 
+    private readonly System.Windows.Threading.Dispatcher catalogDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
     private HttpClient? catalogHttp;
     private CatalogRepository? catalogRepository;
     private CatalogSyncService? catalogSync;
@@ -383,7 +384,15 @@ public sealed partial class MainWindowViewModel
     private InstalledCatalogOriginChecker? catalogOriginChecker;
     private CatalogAcquisitionService? catalogAcquisition;
     private IReadOnlyList<IModCatalogProvider>? catalogProviders;
-    private bool catalogLoaded;
+    private DateTimeOffset lastCatalogRefresh;
+    private bool CatalogIsFresh
+    {
+        get
+        {
+            using var trace = MasterDebugLog.BeginMethod();
+            return DateTimeOffset.UtcNow-lastCatalogRefresh<TimeSpan.FromMinutes(30);
+        }
+    }
     private readonly SemaphoreSlim catalogSyncGate = new(1, 1);
     private CancellationTokenSource? catalogQueryCts;
     private bool catalogProviderOperationInProgress;
@@ -503,14 +512,6 @@ public sealed partial class MainWindowViewModel
             return HasCatalogQuery ? Visibility.Visible : Visibility.Collapsed;
         }
     }
-    public Visibility CatalogRefreshEmptyVisibility
-    {
-        get
-        {
-            using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return HasCatalogQuery ? Visibility.Collapsed : Visibility.Visible;
-        }
-    }
     public int CatalogStaleItemCount
     {
         get
@@ -559,12 +560,20 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public bool CanBrowseNexus
+    {
+        get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return s.Paths.Game.NexusBrowseUri is not null; }
+    }
+    public bool CanBrowseGameBanana
+    {
+        get { using var __mhwTrace = MasterDebugLog.BeginMethod(); return s.Paths.Game.GameBananaBrowseUri is not null; }
+    }
     public Visibility CatalogProviderWebLinksVisibility
     {
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return s.Paths.Game.IsMonsterHunterWorld ? Visibility.Visible : Visibility.Collapsed;
+            return CanBrowseNexus || CanBrowseGameBanana ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -721,7 +730,6 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(CatalogResultsVisibility));
         OnPropertyChanged(nameof(CatalogEmptyVisibility));
         OnPropertyChanged(nameof(CatalogClearSearchVisibility));
-        OnPropertyChanged(nameof(CatalogRefreshEmptyVisibility));
         OnPropertyChanged(nameof(CatalogLoadMoreVisibility));
         OnPropertyChanged(nameof(CatalogLoadMoreCachedVisibility));
         NotifyCatalogPresentationState();
@@ -799,12 +807,20 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    internal MainWindowViewModel(AppServices services, HttpClient http, IReadOnlyList<IModCatalogProvider>? providers = null)
+        : this(services)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        catalogHttp = http;
+        catalogProviders = providers;
+    }
+
     private void EnsureCatalogRuntime()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (catalogRepository is not null) return;
 
-        catalogHttp = new HttpClient
+        catalogHttp ??= new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(30)
         };
@@ -821,11 +837,19 @@ public sealed partial class MainWindowViewModel
             Path.Combine(s.Paths.NextStateRoot, "CatalogDownloads"),
             savedArchiveRoot: s.Paths.DownloadsRoot);
 
+        catalogProviders ??= CreateConfiguredCatalogProviders(catalogHttp);
+        OnPropertyChanged(nameof(CatalogCoverageSummary));
+    }
+
+    private List<IModCatalogProvider> CreateConfiguredCatalogProviders(HttpClient http)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (s.StartupArguments.Contains("--offline-catalog", StringComparer.OrdinalIgnoreCase)) return [];
         var providers = new List<IModCatalogProvider>();
         if (s.Paths.Game.IsMonsterHunterWorld)
         {
-            providers.Add(new NexusV3CatalogProvider(new NexusV3Transport(catalogHttp)));
-            providers.Add(new GameBananaCatalogProvider(new GameBananaTransport(catalogHttp)));
+            providers.Add(new NexusV3CatalogProvider(new NexusV3Transport(http)));
+            providers.Add(new GameBananaCatalogProvider(new GameBananaTransport(http)));
 
             var curseForgeApiKey = Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_API_KEY");
             var curseForgeGameIdText = Environment.GetEnvironmentVariable("MOD_MANAGER_CURSEFORGE_GAME_ID");
@@ -838,21 +862,20 @@ public sealed partial class MainWindowViewModel
                 && curseForgeGameId > 0)
             {
                 providers.Add(new CurseForgeCatalogProvider(
-                    new CurseForgeTransport(catalogHttp, curseForgeApiKey),
+                    new CurseForgeTransport(http, curseForgeApiKey),
                     [new CurseForgeCatalogGameSource(
                         s.Paths.Game.Id,
                         s.Paths.Game.DisplayName,
                         curseForgeGameId)]));
             }
         }
-        catalogProviders = providers;
-        OnPropertyChanged(nameof(CatalogCoverageSummary));
+        return providers;
     }
 
     private async Task EnsureCatalogLoadedAsync(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (catalogLoaded)
+        if (CatalogIsFresh)
         {
             await SearchCatalogCacheAsync(ct);
             return;
@@ -864,14 +887,15 @@ public sealed partial class MainWindowViewModel
             await catalogSyncGate.WaitAsync(ct);
             try
             {
-                if (catalogLoaded)
+                if (CatalogIsFresh)
                 {
                     await SearchCatalogCacheAsync(ct);
                     return;
                 }
 
                 await RefreshCatalogCoreAsync(ct);
-                catalogLoaded = true;
+                await CheckCatalogUpdatesCoreAsync(false,ct);
+                lastCatalogRefresh = DateTimeOffset.UtcNow;
             }
             finally
             {
@@ -902,7 +926,7 @@ public sealed partial class MainWindowViewModel
                     try
                     {
                         await RefreshCatalogCoreAsync(ct);
-                        catalogLoaded = true;
+                        lastCatalogRefresh = DateTimeOffset.UtcNow;
                     }
                     finally
                     {
@@ -1129,7 +1153,7 @@ public sealed partial class MainWindowViewModel
                         .ToArray();
                     var restart = false;
                     var obsolete = false;
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await catalogDispatcher.InvokeAsync(() =>
                     {
                         if (!string.Equals(query, CatalogQuery, StringComparison.Ordinal) ||
                             !string.Equals(gameId, s.Paths.Game.Id, StringComparison.OrdinalIgnoreCase))
@@ -1433,7 +1457,7 @@ public sealed partial class MainWindowViewModel
             .Select(row => new CatalogModRow(row.Mod, row.IsStale(now)))
             .ToArray();
         var selected = SelectedCatalogItem;
-        await Application.Current.Dispatcher.InvokeAsync(() =>
+        await catalogDispatcher.InvokeAsync(() =>
         {
             catalogHasMoreCachedMatches = hasMoreCachedMatches;
             CatalogItems.ReplaceAll(projected);
@@ -1598,10 +1622,16 @@ public sealed partial class MainWindowViewModel
             "Checking exact mod origins",
             "Re-checking only recorded provider mod/file identities. Replacement files are never guessed…",
             true,
-            CheckCatalogUpdatesCoreAsync);
+            ct => CheckCatalogUpdatesCoreAsync(ct));
     }
 
-    private async Task CheckCatalogUpdatesCoreAsync(CancellationToken ct)
+    private Task CheckCatalogUpdatesCoreAsync(CancellationToken ct)
+    {
+        using var trace = MasterDebugLog.BeginMethod();
+        return CheckCatalogUpdatesCoreAsync(true,ct);
+    }
+
+    private async Task CheckCatalogUpdatesCoreAsync(bool announce,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         EnsureCatalogRuntime();
@@ -1658,25 +1688,23 @@ public sealed partial class MainWindowViewModel
 
         CatalogOriginStatuses.ReplaceAll(rows);
         OnPropertyChanged(nameof(CatalogOriginAttentionCount));
-        CatalogStatusText = rows.Count == 0
+        if (announce) CatalogStatusText = rows.Count == 0
             ? "No installed catalog origins are recorded yet."
             : $"Checked {rows.Count} exact installed origin(s); {CatalogOriginAttentionCount} need review.";
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanBrowseNexus))]
     private void OpenNexusBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!s.Paths.Game.IsMonsterHunterWorld) return;
-        OpenExternalUri(new Uri("https://www.nexusmods.com/monsterhunterworld/mods"));
+        if (s.Paths.Game.NexusBrowseUri is { } uri) OpenExternalUri(uri);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanBrowseGameBanana))]
     private void OpenGameBananaBrowse()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (!s.Paths.Game.IsMonsterHunterWorld) return;
-        OpenExternalUri(new Uri("https://gamebanana.com/games/9081"));
+        if (s.Paths.Game.GameBananaBrowseUri is { } uri) OpenExternalUri(uri);
     }
 
     private IModCatalogProvider? FindCatalogProvider(string providerId)

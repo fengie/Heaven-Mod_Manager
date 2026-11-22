@@ -1,8 +1,8 @@
-# v8.8.118 — MHW Manual Mod Manager
+# v8.8.138 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 19, 2026 · 2:25:38 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 11:39:13 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.118**.
+Current product version: **8.8.138**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
@@ -10,20 +10,21 @@ Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
 
-## v8.8.118 — corrupt pending-state recovery safety
+## v8.8.138 — reliable cached mod search
 
-- [PR #895](https://github.com/fengie/Heaven-Mod_Manager/pull/895) makes updater cleanup preserve staging and terminal recovery transactions when pending state is malformed or unreadable. A new regression verifies both survive; all four exact-head Windows feature/security/admission checks passed. Source merged on main at `c3d32904`.
-- **Release pending:** v8.8.118 candidate includes source main `109ee761b57e59b6293c6d16a1861882e243ef3b`. The new immutable tag/ZIP/manifest and hosted packaged update/rollback remain **UNVERIFIED** until exact-source publication. Prior v8.8.117 and its hosted updater are independently verified. Personal Heaven2 and #669 broader lifecycle acceptance are open.
+- Browse Mods no longer sends punctuation-only or emoji-only input to SQLite FTS5, while a blank query still shows cached results.
+- Mixed text and punctuation preserve searchable terms, including supplementary Unicode letters and number symbols. Local paging and provider permissions are unchanged. [Scope: #558](https://github.com/fengie/Heaven-Mod_Manager/issues/558)
 
-## v8.8.117 — safe terminal updater transaction retention
+## v8.8.137 — automatic mod changes
 
-- [PR #893](https://github.com/fengie/Heaven-Mod_Manager/pull/893) prevents age-based and generation-cap cleanup from deleting terminal updater transactions with active or unverified prepared owner leases. Both new integration regressions failed before the fix and passed afterward; all four exact-head PR checks succeeded.
-- **Verified historical release:** immutable [v8.8.117 updater-main-586](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-586), source `69a317ea4c7c18fed5ed5d18323a3d1af8925618`; Windows Gate [44475835455](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44475835455) and real hosted packaged updater/rollback [44477647687](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44477647687) PASSED. Exact E2E receipt merged via PR #896. Personal Heaven2 and whole #669 remain open.
+- Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.
+- In Monster Hunter: World, open Coverage and choose an outfit for an armor set. Manager resolves all affected pieces together, preserves unrelated pieces and records the change for Undo.
+- Opening or returning to a page refreshes its information. Profiles and History pick up changes made while hidden, and Settings and Browse reuse recent measurements and provider results.
 
-## v8.8.116 — safe finalized catalog download retention
+## v8.8.136 — solid archive imports
 
-- [#889](https://github.com/fengie/Heaven-Mod_Manager/pull/889) protects newly created finalized download leases from premature age-based cleanup when filesystem timestamps are old. Native Windows regression, startup performance, source and CI checks passed; owner/byte-quota safety is unchanged.
-- **Verified immutable release:** [v8.8.116 updater-main-583](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-583), exact source `407ae3fb6ee39b62a1451b03f3439da283ca4cc3`, ZIP SHA-256 `d3981187f5ae2f428c3fe5aaf7a2e6017a67b4b74b3187c68a35ec7d44268c39`, manifest SHA-256 `2bb7c3efc23607ab203ed754be554530400e05a36e8a23f7eab0f279c83a2ee6`. Windows Release Gate [44468041048](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44468041048) PASS. Hosted real packaged update 60→583 and injected rollback [44469075908](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44469075908) PASS with four preserved user-data sentinel hashes; allowlisted receipt merged via [PR #891](https://github.com/fengie/Heaven-Mod_Manager/pull/891). Personal Heaven2 installation and whole #669 acceptance remain unverified.
+- Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
+- A loose Unreal configuration file with no known destination stays disabled for layout review. Other packages in the same Inbox batch can finish indexing. [Mixed-game intake](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
 ## Current plans & progress
 

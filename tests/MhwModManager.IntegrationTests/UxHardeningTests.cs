@@ -17,8 +17,8 @@ public sealed class UxHardeningTests
         Assert.Contains("Modifiers=\"Control\" Command=\"{Binding ApplyCommand}\"",xaml);
         Assert.Contains("Content=\"Launch Game\"",xaml);
         Assert.Contains("Content=\"Install Mod\"",xaml);
-        Assert.Contains("Content=\"Auto Populate\"",xaml);
-        Assert.Contains("Command=\"{Binding AutoPopulateCommand}\"",xaml);
+        Assert.DoesNotContain("Content=\"Auto Populate\"",xaml);
+        Assert.DoesNotContain("Command=\"{Binding AutoPopulateCommand}\"",xaml);
         Assert.Contains("Header=\"More tools\"",xaml);
         Assert.DoesNotContain("JUST PLAY",xaml);
         Assert.DoesNotContain("Text=\"SMART VIEWS\"",xaml);
@@ -77,7 +77,7 @@ public sealed class UxHardeningTests
         Assert.Contains("<StackPanel Grid.Column=\"1\" Margin=\"12,0,0,0\" Orientation=\"Horizontal\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
         var modsTab=System.Xml.Linq.XDocument.Parse(xaml).Descendants()
             .Single(element=>element.Name.LocalName=="TabItem"&&(string?)element.Attribute("Header")=="Mods");
-        var modsWrapper=Assert.Single(modsTab.Elements());
+        var modsWrapper=Assert.Single(modsTab.Elements(),element=>element.Name.LocalName!="TabItem.Tag");
         Assert.Equal("Grid",modsWrapper.Name.LocalName);
         Assert.Equal("Stretch",(string?)modsWrapper.Attribute("HorizontalAlignment"));
         Assert.Null(modsWrapper.Attribute("Width"));
@@ -90,7 +90,7 @@ public sealed class UxHardeningTests
         var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
         var vm=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
 
-        Assert.Contains("public int InstalledCount=>Mods.Count;",vm);
+        Assert.Contains("return libraryRows.Count;",vm);
         Assert.Contains("<DataTrigger Binding=\"{Binding InstalledCount}\" Value=\"0\"><Setter Property=\"Visibility\" Value=\"Visible\"/></DataTrigger>",xaml);
 
         var changedStart=vm.IndexOf("private void Changed()",StringComparison.Ordinal);
@@ -158,9 +158,9 @@ public sealed class UxHardeningTests
         var vm=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","ViewModels","MainWindowViewModel.cs"));
 
         Assert.Contains("private bool initialMetadataRefreshCompleted;",vm);
-        Assert.Contains("!initialMetadataRefreshCompleted&&!initialMetadataRefreshStarted",vm);
+        Assert.Contains("!initialMetadataRefreshCompleted && !initialMetadataRefreshStarted",vm);
         var start=vm.IndexOf("private async Task EnsureInitialMetadataLoadedAsync",StringComparison.Ordinal);
-        var end=vm.IndexOf("private async Task EnsureConflictPreviewsLoadedAsync",start,StringComparison.Ordinal);
+        var end=vm.IndexOf("private async Task AutoMetadataLoopAsync",start,StringComparison.Ordinal);
         Assert.True(start>=0&&end>start);
         var method=vm[start..end];
         Assert.Contains("if(completed)initialMetadataRefreshCompleted=true;",method);
