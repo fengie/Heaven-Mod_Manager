@@ -46,7 +46,8 @@ public sealed class ImportWorkspaceStorageVisibilityTests
         Assert.Contains("ImportPublicationWorkspace.LocationFor(s.Paths.ModsRoot)", source,
             StringComparison.Ordinal);
         Assert.Contains("\"Import Workspaces\"", source, StringComparison.Ordinal);
-        Assert.Contains("never automatically reclaimed", source, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("lease-certified exited-owner work", source, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("ImportWorkspaceMaintenance.Run(", source, StringComparison.Ordinal);
         Assert.DoesNotContain("ImportPublicationWorkspace.Cleanup(", source, StringComparison.Ordinal);
     }
 
