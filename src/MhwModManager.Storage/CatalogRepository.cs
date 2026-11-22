@@ -929,7 +929,7 @@ public sealed class CatalogRepository(ManagerDatabase db)
         // Enumerate full Unicode scalar values: UTF-16 surrogate halves are
         // not letters, but FTS5 unicode61 indexes supplementary-plane L/N/Co.
         var searchable = tokens.Where(token => token.EnumerateRunes().Any(rune =>
-            Rune.IsLetterOrDigit(rune) ||
+            Rune.IsLetter(rune) || Rune.IsNumber(rune) ||
             Rune.GetUnicodeCategory(rune) == UnicodeCategory.PrivateUse)).ToArray();
         if (searchable.Length == 0) return string.Empty;
         return string.Join(" AND ", searchable.Select(token => $"\"{token.Replace("\"", "\"\"", StringComparison.Ordinal)}\""));

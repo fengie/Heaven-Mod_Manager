@@ -248,7 +248,9 @@ public sealed class CatalogRepositoryTests : IDisposable
     [Theory]
     [InlineData("\U00020000")]
     [InlineData("\U000F0000")]
-    public async Task Supplementary_unicode_fts_terms_keep_their_valid_searchable_identity(string term)
+    [InlineData("Ⅳ")]
+    [InlineData("①")]
+    public async Task Unicode61_letter_number_and_private_use_terms_keep_their_searchable_identity(string term)
     {
         var repository = await CreateRepositoryAsync("supplementary-fts-" + Guid.NewGuid().ToString("N"));
         await repository.UpsertAsync(
