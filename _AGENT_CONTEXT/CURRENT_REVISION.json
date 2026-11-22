@@ -7,19 +7,20 @@
   "currentVersion": "8.8.137",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.137-publication-pending",
-  "nextMilestone": "Verify automatic mod changes, explicit choice handling and page refresh on the packaged Windows client.",
-  "nextRequiredAction": "Check automatic application, Undo, review guards and page return on the combined candidate before release and installed update.",
-  "verificationAppliesToCommit": "03b07f33e6435a950594e21340153b2de50d3a48",
-  "lastClosedVerificationCommit": "03b07f33e6435a950594e21340153b2de50d3a48",
-  "lastClosedVerificationRun": "v8.8.136 build 625 passed Windows Release Gate 44924132490 and installed updater 44925024003.",
-  "verificationScopeNote": "The preserved Windows and installed-client closure logs apply to build 625. The v8.8.137 candidate needs its own verification.",
+  "status": "v8.8.137-immutable-release-published",
+  "nextMilestone": "Select remaining product acceptance from current issues after checking the recorded release and installation.",
+  "nextRequiredAction": "On resume, follow AGENTS.md#resuming-release-work and verify the intended immutable release against its exact source before scheduling work.",
+  "verificationAppliesToCommit": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
+  "lastClosedVerificationCommit": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
+  "lastClosedVerificationRun": "v8.8.137 build 626 passed Windows Release Gate 44951374688 and installed updater 44952489213.",
+  "verificationScopeNote": "November 21, 2026 snapshot for build 626. H2 confirmed its installation and two isolated outfit workflows. Later builds require their own receipts.",
   "lastClosedVerification": {
-    "sourceSha": "03b07f33e6435a950594e21340153b2de50d3a48",
-    "updaterBuild": 625,
-    "windowsVerificationRun": 44924132490,
-    "installedClientE2ERun": 44925024003,
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/updater-installed-client-e2e-v8.8.136.log"
+    "sourceSha": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
+    "updaterBuild": 626,
+    "windowsVerificationRun": 44951374688,
+    "installedClientE2ERun": 44952489213,
+    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44952489213",
+    "physicalInstallationEvidence": "https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396"
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
@@ -34,7 +35,6 @@
     "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
     "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
     "Issue #791: Build 625 independently verified the 1,002-file solid 7z repair. Hundreds of genuine mods in a single desktop import, large solid RAR and opaque container safety still require separate proof.",
-    "Issue #793: v8.8.137 requires its own immutable package, hosted updater update and rollback, and installed health proof.",
     "Issue #791: real Wuchang loader behavior, nested mixed-game corpora, installed drag/drop, and latency remain unverified."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
@@ -48,17 +48,17 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "03b07f33e6435a950594e21340153b2de50d3a48",
-    "runId": 44924132490,
-    "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.136-heaven-windows-closure.log"
+    "sourceSha": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
+    "runId": 44951374688,
+    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44951374688"
   },
   "publishedRelease": {
-    "tag": "updater-main-625",
-    "version": "8.8.136",
-    "sourceSha": "03b07f33e6435a950594e21340153b2de50d3a48",
-    "buildNumber": 625,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.136-win-x64.zip",
-    "artifactSha256": "964ce4feecc8ace01b8e3ef53626126f968e3867ebd195fda16112356a2ec13e",
-    "manifestSha256": "324197248ef9e9ecb3ff7bcdfebab363e52520cce507427473fb5ed09623e0fb"
+    "tag": "updater-main-626",
+    "version": "8.8.137",
+    "sourceSha": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
+    "buildNumber": 626,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.137-win-x64.zip",
+    "artifactSha256": "dde6be060d355a43419c81fe13328f52ed4a2b06801cca451e23644772195c99",
+    "manifestSha256": "0f9ba7dcf16e0ac4c7065db55a543a56be70b4e56a7eae195b652213ad5b87e9"
   }
 }

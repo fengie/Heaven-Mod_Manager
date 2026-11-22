@@ -30,6 +30,10 @@ Check the returned `sourceSha`, then verify relevant candidates against their ci
 
 When a MHW-specific rule and a generic Toolbox default differ, the more specific current MHW project rule applies unless it conflicts with higher-priority instructions or the user's current direction. A stale local cache of Toolbox is never authoritative over current Toolbox `main`.
 
+## Resuming release work
+
+Reconcile a handoff against the [published releases](https://github.com/fengie/Heaven-Mod_Manager/releases) before scheduling release or updater work. Open the intended immutable updater tag, verify its source commit and asset digests, then find the Windows Release Gate and Updater Installed Client E2E runs for that exact commit under [Actions](https://github.com/fengie/Heaven-Mod_Manager/actions). Check the relevant product issue for a physical installation receipt identifying the same build and source. Reuse completed checks and carry forward only the open acceptance. The handoff and CURRENT_REVISION capture evidence as of their recorded source. A newer main commit or an older pending instruction alone cannot establish what was released or installed.
+
 ## Execution contract
 
 Default flow remains **inspect → understand → choose the smallest coherent task → implement → test → verify → integrate → document → hand off**.
