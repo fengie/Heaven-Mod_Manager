@@ -108,8 +108,8 @@ public static class ImportWorkspaceMaintenance
         long maxOwnedBytes, Action<string>? log, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (minimumAge < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(minimumAge));
-        if (maxOwnedBytes < 0) throw new ArgumentOutOfRangeException(nameof(maxOwnedBytes));
+        ArgumentOutOfRangeException.ThrowIfLessThan(minimumAge, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxOwnedBytes);
 
         var root = Path.TrimEndingDirectorySeparator(
             Path.GetFullPath(ImportPublicationWorkspace.LocationFor(modsRoot)));
@@ -240,6 +240,7 @@ public static class ImportWorkspaceMaintenance
     private static bool IsOwnedStagingName(string stagingName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (string.IsNullOrWhiteSpace(stagingName)) return false;
         return Kinds.Any(kind =>
         {
             var prefix = kind + "-";
