@@ -143,7 +143,8 @@ public sealed class OrderedProductLearningCycleAcceptanceTests : IDisposable
         var blocked = planner.Build(WorkflowAnalysis.WithState(snapshot, invalid));
         Assert.True(blocked.IsBlocked);
         Assert.Contains(blocked.Conflicts, conflict => conflict.Blocking &&
-            conflict.ReasonCode == "exclusive-family-choice");
+            conflict.Kind == ConflictKind.ModFamilyOption &&
+            conflict.ReasonCode == "family-internal-choice");
         Assert.False((await executor.ApplyAsync(blocked, "Unresolved outfit alternatives", ct: ct)).Success);
 
         var selected = Stage(main.Id, red.Id, lantern.Id);
@@ -164,6 +165,18 @@ public sealed class OrderedProductLearningCycleAcceptanceTests : IDisposable
         Assert.Equal(redBytes, await File.ReadAllBytesAsync(outfitTarget, ct));
         Assert.Equal(lanternBytes, await File.ReadAllBytesAsync(lanternTarget, ct));
         Assert.False(File.Exists(quartzTarget));
+        var committed = await new PlannerSnapshotRepository(mhwDb).LoadAsync(ct);
+        Assert.Equal(3, committed.CurrentManifest.Count);
+        Assert.Equal(sentinel, await File.ReadAllBytesAsync(foreign, ct));
+
+        // Reuse the verified Toolbox ordered-state method kf-6d7b89b2c9d6:
+        // a repeated no-op must not consume the one useful undo point.
+        var repeatedPlan = planner.Build(committed);
+        Assert.False(repeatedPlan.IsBlocked);
+        Assert.Empty(repeatedPlan.Changes);
+        var revisionBeforeNoop = executor.CommittedFileRevision;
+        Assert.True((await executor.ApplyAsync(repeatedPlan, "Repeat without changes", ct: ct)).Success);
+        Assert.Equal(revisionBeforeNoop, executor.CommittedFileRevision);
         Assert.Equal(3, (await new PlannerSnapshotRepository(mhwDb).LoadAsync(ct)).CurrentManifest.Count);
         Assert.Equal(sentinel, await File.ReadAllBytesAsync(foreign, ct));
 
