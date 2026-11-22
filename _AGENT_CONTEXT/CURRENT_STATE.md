@@ -1,8 +1,10 @@
-# v8.8.137 — canonical state and automatic mod changes
+# v8.8.138 — canonical state and Browse Mods cached search
 
-Build 625 is the published v8.8.136 package from 03b07f33e6435a950594e21340153b2de50d3a48. Verify automatic mod changes, explicit choice handling and page refresh on the packaged Windows client. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Build 626 is the last independently verified immutable v8.8.137 release (source 254f25a4e011959a2aa88a14528b8e47dcc5f290). The v8.8.138 cached-search candidate needs its own native source, package and updater/rollback acceptance after protected main integration. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
+
+- Browse Mods cached-search input with no FTS5 term returns zero matches instead of a malformed query or full-catalog browse. The Unicode61 L/N/private-use code-point regression is in PR #960. Real provider coverage, UI p95 and physical installation remain separately open under #558.
 
 - Bulk inbox processing and explicit archive import keep the registered game folder when unpacking mods. In a 120-package mixed collection, all 1,440 payloads indexed at their expected game paths. [Acceptance test](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7034527877)
 

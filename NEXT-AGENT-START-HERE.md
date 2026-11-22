@@ -1,10 +1,12 @@
-# v8.8.137 — canonical state and automatic mod changes
+# v8.8.138 — canonical state and Browse Mods cached search
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
+
+- **v8.8.138 source candidate:** cached Browse Mods search distinguishes blank browsing from nonblank zero-token input and preserves Unicode61 searchable terms. PR #960 has the regression and required gate evidence; v8.8.137 build 626 remains the last independently verified immutable release until new publication/rollback evidence exists. Keep #558 broader provider and end-user acceptance open.
 
 - The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
 - The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.

@@ -1,14 +1,19 @@
-# v8.8.137 — MHW Manual Mod Manager
+# v8.8.138 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 12:08:20 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 21, 2026 · 11:39:13 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.137**.
+Current product version: **8.8.138**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.138 — reliable cached mod search
+
+- Browse Mods no longer sends punctuation-only or emoji-only input to SQLite FTS5, while a blank query still shows cached results.
+- Mixed text and punctuation preserve searchable terms, including supplementary Unicode letters and number symbols. Local paging and provider permissions are unchanged. [Scope: #558](https://github.com/fengie/Heaven-Mod_Manager/issues/558)
 
 ## v8.8.137 — automatic mod changes
 
@@ -20,10 +25,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
 - A loose Unreal configuration file with no known destination stays disabled for layout review. Other packages in the same Inbox batch can finish indexing. [Mixed-game intake](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
-
-## v8.8.135 — package options
-
-- The Mods list shows verified package components together. Choose one documented variant per option group, or enable a supported add-on with its base. Preview shows the resulting deployment before Apply. [Package family verification](https://github.com/fengie/Heaven-Mod_Manager/issues/954)
 
 ## Current plans & progress
 

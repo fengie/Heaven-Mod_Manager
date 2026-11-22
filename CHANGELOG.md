@@ -1,3 +1,8 @@
+# v8.8.138 — November 21, 2026
+
+- Browse Mods handles local cached searches consisting only of punctuation, symbols or emoji as zero matches, without accidentally listing the whole cache.
+- Mixed text and punctuation remain searchable. FTS5 token filtering preserves supplementary Unicode letters, Unicode numbers and private-use identifiers, with bounded game-specific page queries. [Refs #558](https://github.com/fengie/Heaven-Mod_Manager/issues/558)
+
 # v8.8.137 — November 21, 2026
 
 - Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.

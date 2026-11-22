@@ -189,6 +189,88 @@ public sealed class CatalogRepositoryTests : IDisposable
         Assert.Empty(results);
     }
 
+    [Theory]
+    [InlineData("!!!")]
+    [InlineData("...")]
+    [InlineData("\"")]
+    [InlineData("🔥")]
+    [InlineData(" \t!@#$% ")]
+    public async Task Non_searchable_punctuation_and_symbol_queries_have_zero_results_without_opening_full_catalog(
+        string query)
+    {
+        var repository = await CreateRepositoryAsync("punctuation-" + Guid.NewGuid().ToString("N"));
+        await repository.UpsertAsync(
+            CreateCached(
+                canonicalId: "nexus:punctuation-fixture",
+                name: "Crimson Dragon Blade",
+                summary: "Known real cached result",
+                description: "Should only appear for actual searchable terms.",
+                expiresAt: null),
+            TestToken);
+
+        Assert.Empty(await repository.SearchAsync(
+            query, gameId: "monsterhunterworld", ct: TestToken));
+        Assert.Empty(await repository.SearchPageAsync(
+            query, gameId: "monsterhunterworld", offset: 0, ct: TestToken));
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            query, "monsterhunterworld", visibleLimit: 0, ct: TestToken));
+        // Whitespace is deliberately a browse request; punctuation-only is not.
+        Assert.Single(await repository.SearchAsync(
+            "  ", gameId: "monsterhunterworld", ct: TestToken));
+    }
+
+    [Theory]
+    [InlineData("dragon !!!")]
+    [InlineData("dragon ...")]
+    [InlineData("dragon 🔥")]
+    public async Task Searchable_term_remains_findable_when_query_contains_punctuation_only_tokens(
+        string query)
+    {
+        var repository = await CreateRepositoryAsync("mixed-punctuation-" + Guid.NewGuid().ToString("N"));
+        await repository.UpsertAsync(
+            CreateCached(
+                canonicalId: "nexus:mixed-punctuation-fixture",
+                name: "Crimson Dragon Blade",
+                summary: "Cached mod",
+                description: "Find by dragon despite stray punctuation.",
+                expiresAt: null),
+            TestToken);
+
+        var page = await repository.SearchAsync(
+            query, gameId: "monsterhunterworld", ct: TestToken);
+        Assert.Equal("nexus:mixed-punctuation-fixture", Assert.Single(page).Mod.CanonicalId);
+        Assert.True(await repository.HasAdditionalMatchesAsync(
+            query, "monsterhunterworld", visibleLimit: 0, ct: TestToken));
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            query, "monsterhunterworld", visibleLimit: 1, ct: TestToken));
+    }
+
+    [Theory]
+    [InlineData("\U00020000")]
+    [InlineData("\U000F0000")]
+    [InlineData("Ⅳ")]
+    [InlineData("①")]
+    public async Task Unicode61_letter_number_and_private_use_terms_keep_their_searchable_identity(string term)
+    {
+        var repository = await CreateRepositoryAsync("supplementary-fts-" + Guid.NewGuid().ToString("N"));
+        await repository.UpsertAsync(
+            CreateCached(
+                canonicalId: "nexus:supplementary-unicode-fixture",
+                name: "Unique " + term + " Outfit",
+                summary: "Unicode term search fixture.",
+                description: "Preserve FTS5 unicode61 token identity.",
+                expiresAt: null),
+            TestToken);
+
+        var found = await repository.SearchAsync(
+            term, gameId: "monsterhunterworld", ct: TestToken);
+        Assert.Equal("nexus:supplementary-unicode-fixture", Assert.Single(found).Mod.CanonicalId);
+        Assert.True(await repository.HasAdditionalMatchesAsync(
+            term, "monsterhunterworld", visibleLimit: 0, ct: TestToken));
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            term, "monsterhunterworld", visibleLimit: 1, ct: TestToken));
+    }
+
     [Fact]
     public async Task Fts_search_covers_title_author_summary_tags_category_and_description()
     {
