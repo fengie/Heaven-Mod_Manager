@@ -1,4 +1,4 @@
-# v8.8.139 — storage lifecycle release candidate
+# v8.8.139 — canonical state and storage lifecycle release candidate
 
 Build 627 is the independently verified v8.8.138 immutable release (source 708b725bd87b2e1f060ee15df28bcb40d758fa54; Windows Gate 44986768296 and genuine packaged updater/rollback E2E 44987408825 passed). The new #904/#962/#963 storage code was integrated afterward and requires its own v8.8.139 immutable publication and packaged rollback proof. Personal Heaven2 installed health, in-game armor visuals, and full storage crash/endurance acceptance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -48,7 +48,7 @@ Build 627 is the independently verified v8.8.138 immutable release (source 708b7
 
 ## Verification boundary
 
-v8.8.136 [build 625](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-625) published source `03b07f33e6435a950594e21340153b2de50d3a48`. Windows Gate 44924132490 passed all 26 checks. Installed-client run 44925024003 confirmed the published update and verified rollback after an injected failure. The preserved logs record the exact source and hashes. [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44924132490) · [Installed-client proof](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44925024003)
+Current published [v8.8.138 build 627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627) source `708b725bd87b2e1f060ee15df28bcb40d758fa54` passed [Windows Gate 44986768296](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44986768296) and [genuine hosted packaged updater/rollback 44987408825](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44987408825). New v8.8.139 storage source and personal Heaven2 installation still require separate acceptance.
 
 On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. The v8.8.137 changes require separate packaged desktop, release and installed acceptance. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
