@@ -1,4 +1,6 @@
-# v8.8.138 — canonical state and Browse Mods cached search
+# v8.8.138 - immutable release verified
+
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `708b725bd87b2e1f060ee15df28bcb40d758fa54`. Public immutable [updater-main-627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -26,13 +28,11 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-On November 21, 2026, [immutable build 626](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-626) published source `254f25a4e011959a2aa88a14528b8e47dcc5f290`. Its [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44951374688) and [installed-client update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44952489213) passed. [H2’s installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) verifies the signed update from 624, preserved catalog and two outfit workflows on isolated game roots.
+Current hosted-Windows closure: v8.8.138 source `708b725bd87b2e1f060ee15df28bcb40d758fa54` passed run `44986768296` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.138-heaven-windows-closure.log`.
 
-On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. That earlier run predates build 626. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
+Verified immutable GitHub release: [updater-main-627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627), exact source `708b725bd87b2e1f060ee15df28bcb40d758fa54`, ZIP SHA-256 `f884d1daf3fbc5351d0c9fd20dbecf95a2649c03c0f4e8ca7ed9e0abdd6a6f36` and manifest SHA-256 `714b4f02616df353f60a7c9872f7e5a094abffb9daceba648b70a02acfb25159`. Public release and tag ref independently match the built artifact.
 
-For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
-
-**Not established by hosted proof:** personal physical Heaven2 installed binary/version/health; bounded endurance/recovery distribution; real mixed-game archive UI and p95; provider authorization, independent signing and judiciary strict-mode enforcement. Reuse [Toolbox #1001](https://github.com/fengie/heaven-toolbox/issues/1001#issuecomment-7003951728) for the existing authenticated read-only Heaven2 observation capability request; never bypass host custody or modify personal updater state for the sake of proof.
+The tested source remains `708b725bd87b2e1f060ee15df28bcb40d758fa54` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
