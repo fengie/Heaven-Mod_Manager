@@ -49,4 +49,85 @@ public sealed class ImportWorkspaceStorageVisibilityTests
         Assert.Contains("never automatically reclaimed", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("ImportPublicationWorkspace.Cleanup(", source, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Import_workspace_refuses_a_reparse_ancestor_without_creating_external_scratch()
+    {
+        var root = Directory.CreateTempSubdirectory("mhwmm-import-parent-link-");
+        try
+        {
+            var external = Path.Combine(root.FullName, "external");
+            Directory.CreateDirectory(external);
+            var sentinel = Path.Combine(external, "keep.txt");
+            File.WriteAllText(sentinel, "KEEP");
+            var alias = Path.Combine(root.FullName, "alias");
+            try
+            {
+                Directory.CreateSymbolicLink(alias, external);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException
+                                       or IOException
+                                       or PlatformNotSupportedException)
+            {
+                return;
+            }
+
+            var modsRoot = Path.Combine(alias, "Installed");
+            Assert.Throws<InvalidDataException>(() => ImportPublicationWorkspace.RootFor(modsRoot));
+            Assert.True(File.Exists(sentinel));
+            Assert.False(Directory.Exists(Path.Combine(external, ".Installed.import-work")));
+        }
+        finally
+        {
+            try { root.Delete(recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
+
+    [Fact]
+    public void Import_publication_and_rollback_refuse_a_reparse_mods_root()
+    {
+        var root = Directory.CreateTempSubdirectory("mhwmm-import-destination-link-");
+        try
+        {
+            var external = Path.Combine(root.FullName, "external");
+            var userPackage = Path.Combine(external, "user-package");
+            Directory.CreateDirectory(userPackage);
+            var sentinel = Path.Combine(userPackage, "keep.txt");
+            File.WriteAllText(sentinel, "KEEP");
+            var modsRoot = Path.Combine(root.FullName, "Installed");
+            try
+            {
+                Directory.CreateSymbolicLink(modsRoot, external);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException
+                                       or IOException
+                                       or PlatformNotSupportedException)
+            {
+                return;
+            }
+
+            var workspace = ImportPublicationWorkspace.RootFor(modsRoot);
+            var staging = Path.Combine(workspace, "archive-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(staging);
+            File.WriteAllText(Path.Combine(staging, "mod.txt"), "MOD");
+
+            Assert.Throws<InvalidDataException>(() =>
+                ImportPublicationWorkspace.Publish(modsRoot, staging, Path.Combine(modsRoot, "new-package")));
+            Assert.True(Directory.Exists(staging));
+            Assert.False(Directory.Exists(Path.Combine(external, "new-package")));
+
+            var rollbackFailure = ImportPublicationWorkspace.RollbackPublished(
+                modsRoot, Path.Combine(modsRoot, "user-package"));
+            Assert.NotNull(rollbackFailure);
+            Assert.True(File.Exists(sentinel));
+        }
+        finally
+        {
+            try { root.Delete(recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
 }
