@@ -27,6 +27,24 @@ public sealed class ImportWorkspaceLeaseRecoveryTests
     }
 
     [Fact]
+    public void Successful_inbox_publication_does_not_leave_a_lease_when_caller_clears_staging()
+    {
+        using var temp = new TemporaryWorkspace();
+        var staging = ImportPublicationWorkspace.Allocate(temp.ModsRoot, "inbox");
+        var leasePath = staging + ImportWorkspaceMaintenance.LeaseSuffix;
+        Directory.CreateDirectory(staging);
+        File.WriteAllText(Path.Combine(staging, "payload.txt"), "INBOX");
+
+        var destination = Path.Combine(temp.ModsRoot, "inbox-package");
+        ImportPublicationWorkspace.Publish(temp.ModsRoot, staging, destination);
+
+        // Smart Inbox clears its staging variable immediately after Publish.
+        Assert.False(Directory.Exists(staging));
+        Assert.False(File.Exists(leasePath));
+        Assert.Equal("INBOX", File.ReadAllText(Path.Combine(destination, "payload.txt")));
+    }
+
+    [Fact]
     public void Dead_owner_work_is_reclaimed_after_grace_period_but_unleased_work_is_preserved()
     {
         using var temp = new TemporaryWorkspace();
