@@ -189,6 +189,13 @@ public sealed class CatalogRepository(ManagerDatabase db)
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
         var boundedLimit = Math.Clamp(limit, 1, MaxSearchResults);
         var ftsQuery = BuildFtsQuery(query);
+        // A nonblank query containing only FTS separators has no search terms.
+        // Never let it fall through to the unfiltered local catalog browse.
+        if (ftsQuery is { Length: 0 })
+        {
+            ct.ThrowIfCancellationRequested();
+            return Array.Empty<CachedCatalogMod>();
+        }
 
         await using var c = await db.OpenAsync(ct);
         await using var cmd = c.CreateCommand();
@@ -272,6 +279,11 @@ public sealed class CatalogRepository(ManagerDatabase db)
         ArgumentOutOfRangeException.ThrowIfNegative(visibleLimit);
 
         var ftsQuery = BuildFtsQuery(query);
+        if (ftsQuery is { Length: 0 })
+        {
+            ct.ThrowIfCancellationRequested();
+            return false;
+        }
         await using var connection = await db.OpenAsync(ct);
         await using var command = connection.CreateCommand();
         command.CommandText = ftsQuery is null
@@ -910,8 +922,14 @@ public sealed class CatalogRepository(ManagerDatabase db)
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(query)) return null;
         var tokens = query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (tokens.Length == 0) return null;
-        return string.Join(" AND ", tokens.Select(token => $"\"{token.Replace("\"", "\"\"", StringComparison.Ordinal)}\""));
+        // SQLite FTS5's default unicode61 tokenizer treats punctuation/symbols
+        // as separators. Exclude strings that cannot produce a searchable term,
+        // while retaining the tokenizer's private-use character category.
+        var searchable = tokens.Where(token => token.Any(ch =>
+            char.IsLetterOrDigit(ch) ||
+            CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.PrivateUse)).ToArray();
+        if (searchable.Length == 0) return string.Empty;
+        return string.Join(" AND ", searchable.Select(token => $"\"{token.Replace("\"", "\"\"", StringComparison.Ordinal)}\""));
     }
 
     private static T Deserialize<T>(string json)
