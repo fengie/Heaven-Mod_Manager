@@ -230,7 +230,11 @@ public sealed class ImportWorkspaceLeaseRecoveryTests
         {
             if (!worker.HasExited)
             {
-                try { worker.Kill(entireProcessTree: true); }
+                try
+                {
+                    worker.Kill(entireProcessTree: true);
+                    worker.WaitForExit(5000);
+                }
                 catch (InvalidOperationException) { }
             }
         }
