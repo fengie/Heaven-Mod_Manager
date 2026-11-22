@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using MhwModManager.Core;
@@ -925,9 +926,11 @@ public sealed class CatalogRepository(ManagerDatabase db)
         // SQLite FTS5's default unicode61 tokenizer treats punctuation/symbols
         // as separators. Exclude strings that cannot produce a searchable term,
         // while retaining the tokenizer's private-use character category.
-        var searchable = tokens.Where(token => token.Any(ch =>
-            char.IsLetterOrDigit(ch) ||
-            CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.PrivateUse)).ToArray();
+        // Enumerate full Unicode scalar values: UTF-16 surrogate halves are
+        // not letters, but FTS5 unicode61 indexes supplementary-plane L/N/Co.
+        var searchable = tokens.Where(token => token.EnumerateRunes().Any(rune =>
+            Rune.IsLetterOrDigit(rune) ||
+            Rune.GetUnicodeCategory(rune) == UnicodeCategory.PrivateUse)).ToArray();
         if (searchable.Length == 0) return string.Empty;
         return string.Join(" AND ", searchable.Select(token => $"\"{token.Replace("\"", "\"\"", StringComparison.Ordinal)}\""));
     }

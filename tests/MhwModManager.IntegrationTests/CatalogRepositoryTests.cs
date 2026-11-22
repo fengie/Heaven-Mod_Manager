@@ -245,6 +245,30 @@ public sealed class CatalogRepositoryTests : IDisposable
             query, "monsterhunterworld", visibleLimit: 1, ct: TestToken));
     }
 
+    [Theory]
+    [InlineData("\U00020000")]
+    [InlineData("\U000F0000")]
+    public async Task Supplementary_unicode_fts_terms_keep_their_valid_searchable_identity(string term)
+    {
+        var repository = await CreateRepositoryAsync("supplementary-fts-" + Guid.NewGuid().ToString("N"));
+        await repository.UpsertAsync(
+            CreateCached(
+                canonicalId: "nexus:supplementary-unicode-fixture",
+                name: "Unique " + term + " Outfit",
+                summary: "Unicode term search fixture.",
+                description: "Preserve FTS5 unicode61 token identity.",
+                expiresAt: null),
+            TestToken);
+
+        var found = await repository.SearchAsync(
+            term, gameId: "monsterhunterworld", ct: TestToken);
+        Assert.Equal("nexus:supplementary-unicode-fixture", Assert.Single(found).Mod.CanonicalId);
+        Assert.True(await repository.HasAdditionalMatchesAsync(
+            term, "monsterhunterworld", visibleLimit: 0, ct: TestToken));
+        Assert.False(await repository.HasAdditionalMatchesAsync(
+            term, "monsterhunterworld", visibleLimit: 1, ct: TestToken));
+    }
+
     [Fact]
     public async Task Fts_search_covers_title_author_summary_tags_category_and_description()
     {
