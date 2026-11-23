@@ -1,4 +1,6 @@
-# v8.8.139 — storage lifecycle release candidate
+# v8.8.139 - source verified, publication unverified
+
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `b7a7cd5107e43084b5b69acb8e82dfff1233793d` (Windows Gate 45163164569); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -26,11 +28,11 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.138 build 627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627), source `708b725bd87b2e1f060ee15df28bcb40d758fa54`: [Windows Gate 44986768296](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44986768296) and [actual packaged updater/rollback E2E 44987408825](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44987408825) both passed. These are hosted release checks, not physical Heaven2 adoption. The earlier [H2 build-626 installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) and isolated 1,002-file archive readback remain historical proof only.
+Current hosted-Windows closure: v8.8.139 source `b7a7cd5107e43084b5b69acb8e82dfff1233793d` passed run `45163164569` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.139-heaven-windows-closure.log`.
 
-For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
+Public release status: **NOT VERIFIED** for source `b7a7cd5107e43084b5b69acb8e82dfff1233793d`. Successful build or another source's same-version release is not proof of publication.
 
-**Not established by hosted proof:** personal physical Heaven2 installed binary/version/health; bounded endurance/recovery distribution; real mixed-game archive UI and p95; provider authorization, independent signing and judiciary strict-mode enforcement. Reuse [Toolbox #1001](https://github.com/fengie/heaven-toolbox/issues/1001#issuecomment-7003951728) for the existing authenticated read-only Heaven2 observation capability request; never bypass host custody or modify personal updater state for the sake of proof.
+The tested source remains `b7a7cd5107e43084b5b69acb8e82dfff1233793d` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
