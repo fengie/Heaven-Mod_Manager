@@ -451,6 +451,18 @@ public sealed partial class GameProfileRegistry
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var exe=Path.GetRelativePath(root,executablePath).Replace('/','\\');var name=string.IsNullOrWhiteSpace(displayName)?Path.GetFileNameWithoutExtension(executablePath):displayName.Trim();
         var baseId=GameProfile.NormalizeId(name);var ids=Load().Select(x=>x.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);var id=baseId;var suffix=2;while(ids.Contains(id))id=$"{baseId}-{suffix++}";
+        // A verified engine identity selects the staging-only Crimson adapter.
+        // The installer may use Steam, Epic or another store; title/Steam ID alone
+        // never authorizes a loader or archive rewrite.
+        if (exe.Equals(@"bin64\CrimsonDesert.exe", StringComparison.OrdinalIgnoreCase)
+            && CrimsonDesertGameAdapter.HasGameLayout(root))
+        {
+            var crimsonId = "crimson-desert";
+            var candidate = crimsonId;
+            var next = 2;
+            while (ids.Contains(candidate)) candidate = $"{crimsonId}-{next++}";
+            return GameProfile.CrimsonDesert(root, store) with { Id = candidate };
+        }
         var layout=InferLayout(root);
         return GameProfile.Generic(id,name,root,exe,layout.ModRoot,layout.Adapter,steamAppId,null,store);
     }
@@ -481,6 +493,12 @@ public sealed partial class GameProfileRegistry
     {
         var parent=Directory.GetParent(executable)?.FullName??throw new InvalidOperationException("The selected executable has no parent directory.");
         var dir=new DirectoryInfo(parent);
+        // Crimson Desert ships its executable directly below bin64. Using
+        // bin64 as GameRoot would hide the real meta/PAZ files and saves.
+        if (dir.Name.Equals("bin64", StringComparison.OrdinalIgnoreCase)
+            && Path.GetFileName(executable).Equals("CrimsonDesert.exe", StringComparison.OrdinalIgnoreCase)
+            && dir.Parent is not null)
+            return dir.Parent.FullName;
         if(dir.Name.Equals("Win64",StringComparison.OrdinalIgnoreCase)&&dir.Parent?.Name.Equals("Binaries",StringComparison.OrdinalIgnoreCase)==true&&dir.Parent.Parent is not null)
             return dir.Parent.Parent.FullName;
         if(dir.Name.Equals("Win32",StringComparison.OrdinalIgnoreCase)&&dir.Parent?.Name.Equals("Binaries",StringComparison.OrdinalIgnoreCase)==true&&dir.Parent.Parent is not null)
