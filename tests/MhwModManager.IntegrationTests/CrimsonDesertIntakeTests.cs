@@ -215,6 +215,9 @@ public sealed class CrimsonDesertIntakeTests
 
         public void Dispose()
         {
+            // The real SQLite provider pools native file handles on Windows;
+            // release fixture-owned handles before deleting the disposable root.
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
             if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
         }
     }
