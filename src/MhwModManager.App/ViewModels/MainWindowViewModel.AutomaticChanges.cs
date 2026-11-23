@@ -64,9 +64,19 @@ public sealed partial class MainWindowViewModel
         ScheduleAutomaticChanges();
     }
 
-    private void PreserveDeniedUserApply(string operationName)
+    private void PreserveDeniedAutomaticChange(string operationName)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (operationName == "deployment.discovered")
+        {
+            // DrainAutomaticChangesAsync consumed discoveryRequested before
+            // RunBusy could acquire the foreground gate. The catalog still
+            // contains the pending discovery IDs; retry on the next real
+            // window activation instead of repeatedly dispatching while busy.
+            retryDiscoveryOnActivation = true;
+            StatusText = "New mods are waiting for the current operation to finish. They will be checked when the window is activated.";
+            return;
+        }
         if (operationName != "deployment.apply" || (StagedCount == 0 && !rulesNeedApply)) return;
         // The dispatcher may have consumed userApplyRequested before RunBusy
         // discovers that an updater handoff or foreground task owns the gate.
