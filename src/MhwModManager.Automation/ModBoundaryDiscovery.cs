@@ -56,7 +56,7 @@ public static class ModBoundaryDiscovery
     private static readonly HashSet<string> PackageManifests = new(StringComparer.OrdinalIgnoreCase)
     {
         "mod-intake.json", "mod.json", "manifest.json", "meta.json",
-        "manifest.toml", "thunderstore.toml"
+        "manifest.toml", "thunderstore.toml", "modinfo.json", "dmm_pack.json"
     };
 
     public static ModBoundaryResult Discover(IEnumerable<string> relativeFilePaths, string? sourceName = null)
