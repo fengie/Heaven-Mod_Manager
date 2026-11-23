@@ -26,6 +26,8 @@ public sealed record CatalogImportOutcome(
 public sealed class CatalogAcquisitionService
 {
     private const long MaxDownloadBytes = 1024L * 1024L * 1024L;
+    // Preserve the same free-space headroom used by the application updater.
+    private const long DownloadFreeSpaceHeadroomBytes = 256L * 1024L * 1024L;
     private const int BufferSize = 128 * 1024;
 
     private readonly HttpClient http;
@@ -36,6 +38,7 @@ public sealed class CatalogAcquisitionService
     private readonly string downloadRoot;
     private readonly string? savedArchiveRoot;
     private readonly TimeProvider timeProvider;
+    private readonly Func<string, long> availableSpaceProvider;
 
     public CatalogAcquisitionService(
         HttpClient http,
@@ -45,7 +48,8 @@ public sealed class CatalogAcquisitionService
         HashingService hashing,
         string downloadRoot,
         TimeProvider? timeProvider = null,
-        string? savedArchiveRoot = null)
+        string? savedArchiveRoot = null,
+        Func<string, long>? availableSpaceProvider = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(http);
@@ -63,6 +67,7 @@ public sealed class CatalogAcquisitionService
         this.downloadRoot = Path.GetFullPath(downloadRoot);
         this.savedArchiveRoot = string.IsNullOrWhiteSpace(savedArchiveRoot)?null:Path.GetFullPath(savedArchiveRoot);
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.availableSpaceProvider = availableSpaceProvider ?? ReadAvailableFreeSpace;
     }
 
     public async Task<CatalogImportOutcome> AcquireAsync(
@@ -235,6 +240,24 @@ public sealed class CatalogAcquisitionService
             throw new InvalidDataException("The selected catalog file exceeds the download budget.");
         var byteLimit = expectedSize is > 0 ? expectedSize.Value : MaxDownloadBytes;
 
+        // Refuse a known-size download before writing its payload when the
+        // actual target volume cannot hold the archive plus safety headroom.
+        // A provider estimate is only a fallback when HTTP omits Content-Length;
+        // unknown-size responses retain the existing bounded streaming limit.
+        var knownArchiveBytes = response.Content.Headers.ContentLength
+            ?? (expectedSize is > 0 ? expectedSize : null);
+        if (knownArchiveBytes is > 0)
+        {
+            var availableBytes = availableSpaceProvider(downloadRoot);
+            var requiredBytes = checked(knownArchiveBytes.Value + DownloadFreeSpaceHeadroomBytes);
+            if (availableBytes < requiredBytes)
+                throw new IOException(
+                    "Not enough free disk space to stage the catalog archive safely. "
+                    + $"Available={availableBytes} bytes; required={requiredBytes} bytes "
+                    + $"(archive={knownArchiveBytes.Value}, headroom={DownloadFreeSpaceHeadroomBytes}). "
+                    + "Free space or use Settings > Storage before retrying.");
+        }
+
         Directory.CreateDirectory(downloadRoot);
         RejectReparsePoint(downloadRoot);
 
@@ -269,6 +292,15 @@ public sealed class CatalogAcquisitionService
 
         await output.FlushAsync(ct).ConfigureAwait(false);
         output.Flush(flushToDisk: true);
+    }
+
+    private static long ReadAvailableFreeSpace(string path)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var volume = Path.GetPathRoot(Path.GetFullPath(path));
+        if (string.IsNullOrWhiteSpace(volume))
+            throw new IOException("Cannot resolve the catalog download storage volume.");
+        return new DriveInfo(volume).AvailableFreeSpace;
     }
 
     private string AllocateDownloadPath(string fileName)
