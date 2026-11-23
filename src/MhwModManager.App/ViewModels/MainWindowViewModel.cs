@@ -2050,6 +2050,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod($"operation={operationName}; title={title}; cancellable={cancellable}");
         if(!programUpdateHandoffGate.TryBeginForeground())
         {
+            PreserveDeniedUserApply(operationName);
             MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; updater handoff or another foreground operation owns the gate");
             if(rethrowOnFailure)throw new InvalidOperationException($"Startup operation {operationName} could not acquire the foreground gate.");
             return;
@@ -2057,6 +2058,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(BusyVisibility==Visibility.Visible)
         {
             programUpdateHandoffGate.EndForeground();
+            PreserveDeniedUserApply(operationName);
             MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; another operation is already busy");
             if(rethrowOnFailure)throw new InvalidOperationException($"Startup operation {operationName} was blocked by an existing foreground operation.");
             return;
