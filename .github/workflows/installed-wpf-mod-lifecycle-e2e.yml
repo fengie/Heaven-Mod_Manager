@@ -143,8 +143,27 @@ jobs:
           }
 
 
+      - name: Verify Bright Memory's second-package disable before the full profile matrix
+        id: bright_memory
+        timeout-minutes: 7
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\\tests\\MhwModManager.IntegrationTests\\bin\\Release\\net10.0-windows10.0.19041.0\\MhwModManager.IntegrationTests.exe'
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
+          $output = @(& $runner '--filter-method' $method 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Add-Content -LiteralPath (Join-Path $env:MHW_GAME_UI_EVIDENCE 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Focused Bright Memory WPF regression failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch 'succeeded:\\s+1\\b' -or $summary -notmatch 'skipped:\\s+0\\b') {
+            throw 'Focused Bright Memory WPF regression did not execute exactly one passing case.'
+          }
+
       - name: Verify remaining lifecycle cases and all registered game receipts
-        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' }}
+        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' && steps.bright_memory.outcome == 'success' }}
         timeout-minutes: 53
         shell: powershell
         run: |
@@ -155,7 +174,8 @@ jobs:
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
           $expectedCases = 14
           $remainingCases = $expectedCases - 3
-          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method 2>&1)
+          $focused = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
+          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method '--filter-not-method' $focused 2>&1)
           $exit = $LASTEXITCODE
           $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
