@@ -283,6 +283,14 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     public async Task EnsureCapturedAsync(IEnumerable<ModDescriptor> mods,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Crimson Desert DMM / native archive sources are staged for review
+        // only. There is no version-verified game deploy backend, so indexing
+        // must not call the live-file scanner or turn import into a failed batch.
+        if (CrimsonDesertGameAdapter.Matches(scanner.Profile))
+        {
+            ct.ThrowIfCancellationRequested();
+            return;
+        }
         var pending = mods.ToArray();
         // Keep saved rows intact and reject empty sources before capturing any mod in this batch.
         foreach (var mod in pending)
