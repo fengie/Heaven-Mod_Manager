@@ -60,6 +60,9 @@ public sealed class CrimsonDesertIntakeTests
 
         Assert.Equal(fixture.GameRoot, game.GameRoot, StringComparer.OrdinalIgnoreCase);
         Assert.NotEqual("crimson-desert", game.AdapterId);
+        // A partially updated/unverified Crimson install must never regain
+        // generic live-write privileges because its registry files vanished.
+        Assert.Equal("crimson-desert", GameAdapters.Resolve(game).Id);
     }
 
     [Fact]
