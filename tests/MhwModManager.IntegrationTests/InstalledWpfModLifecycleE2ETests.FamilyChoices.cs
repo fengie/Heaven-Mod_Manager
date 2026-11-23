@@ -92,7 +92,19 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             }
             catch (TimeoutException error)
             {
-                string state;
+                // The secondary catalog/UI inventory is best-effort: if it
+                // fails (for example a transient unavailable automation
+                // element), retain independent UI observations instead.
+                static string Safe(Func<string> observation)
+                {
+                    try { return observation(); }
+                    catch (Exception ex) { return "unavailable(" + ex.GetType().Name + ")"; }
+                }
+                var state = "expected=" + name +
+                    "; input=" + Safe(() => ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).Current.Value) +
+                    "; windowEnabled=" + Safe(() => window.Current.IsEnabled.ToString()) +
+                    "; overlayVisible=" + Safe(() => (Find(window, node => node.Current.Name == "Current operation phase" &&
+                        !node.Current.IsOffscreen) is not null).ToString());
                 try
                 {
                     var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
@@ -120,7 +132,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                         var files = await catalog.GetModFilesAsync(ct);
                         var families = LogicalModFamilies.Build(mods, files, run.FirstGame);
                         var matching = families.Where(f => f.DisplayName == name).ToArray();
-                        state = $"Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
+                        state += $"; Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
                             $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
                             $"catalog families={families.Count}, matching families={matching.Length}, matching members={matching.Sum(f => f.Members.Count)}, " +
                             $"rows=[{string.Join(" | ", realizedNames)}], selectable={selectable}, " +
@@ -128,7 +140,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                     }
                     finally { Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool); }
                 }
-                catch (Exception diagnosticFailure) { state = $"Diagnostic read failed ({diagnosticFailure.GetType().Name})"; }
+                catch (Exception diagnosticFailure) { state += $"; Extended diagnostics unavailable ({diagnosticFailure.GetType().Name})"; }
                 throw new TimeoutException($"{error.Message}. {state}.", error);
             }
         }
