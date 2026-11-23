@@ -64,6 +64,17 @@ public sealed partial class MainWindowViewModel
         ScheduleAutomaticChanges();
     }
 
+    private void PreserveDeniedUserApply(string operationName)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (operationName != "deployment.apply" || (StagedCount == 0 && !rulesNeedApply)) return;
+        // The dispatcher may have consumed userApplyRequested before RunBusy
+        // discovers that an updater handoff or foreground task owns the gate.
+        // Do not silently discard this explicit choice or spin on a busy gate.
+        retryExplicitOnActivation = true;
+        StatusText = "Your mod changes are still pending. Reopen Mods or Apply after the current operation finishes.";
+    }
+
     private void ScheduleAutomaticChanges()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
