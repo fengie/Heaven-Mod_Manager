@@ -181,7 +181,7 @@ jobs:
           $expectedCases = 15
           $remainingCases = $expectedCases - 4
           $focused = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
-          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method '--filter-not-method' $focused 2>&1)
+          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method $focused 2>&1)
           $exit = $LASTEXITCODE
           $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
