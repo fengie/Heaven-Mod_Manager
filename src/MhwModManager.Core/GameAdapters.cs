@@ -117,12 +117,69 @@ public sealed class MonsterHunterWorldAdapter : FolderGameAdapter
     }
 }
 
+/// <summary>
+/// Recognizes known Crimson Desert on-disk layout without claiming binary
+/// compatibility. Live PAZ/PAMT/PAPGT and ASI deployment is not supported.
+/// </summary>
+public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
+{
+    public override string Id { get; } = "crimson-desert";
+    public override string DisplayName { get; } = "Crimson Desert";
+
+    public static bool HasGameLayout(string root)
+    {
+        if (string.IsNullOrWhiteSpace(root)) return false;
+        return File.Exists(Path.Combine(root, "bin64", "CrimsonDesert.exe"))
+            && File.Exists(Path.Combine(root, "meta", "0.papgt"))
+            && File.Exists(Path.Combine(root, "meta", "0.paver"));
+    }
+
+    public override IReadOnlyList<GameProfile> Discover(IEnumerable<string> candidateRoots)
+    {
+        ArgumentNullException.ThrowIfNull(candidateRoots);
+        return candidateRoots.Where(HasGameLayout)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(root => GameProfile.CrimsonDesert(root))
+            .ToArray();
+    }
+
+    public override string Category(string managedPath)
+    {
+        var normalized = managedPath.Replace('\\', '/');
+        if (normalized.EndsWith(".field.json", StringComparison.OrdinalIgnoreCase))
+            return "Crimson Desert field-patch manifest";
+        if (normalized.EndsWith(".asi", StringComparison.OrdinalIgnoreCase)
+            || normalized.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            return "Native executable plugin - review required";
+        if (normalized.EndsWith(".paz", StringComparison.OrdinalIgnoreCase)
+            || normalized.EndsWith(".pamt", StringComparison.OrdinalIgnoreCase)
+            || normalized.EndsWith(".papgt", StringComparison.OrdinalIgnoreCase))
+            return "Pearl Abyss archive - protected";
+        return base.Category(managedPath);
+    }
+
+    public override IReadOnlyList<AdapterValidation> Validate(GameProfile game)
+    {
+        var issues = base.Validate(game).ToList();
+        if (!HasGameLayout(game.GameRoot))
+            issues.Add(new("crimson-layout-unverified",
+                "The Crimson Desert executable and game archive registry were not found together.", true));
+        if (!string.IsNullOrWhiteSpace(game.ModRootRelativePath))
+            issues.Add(new("crimson-loader-unverified",
+                "An arbitrary mod root does not establish a compatible Crimson Desert loader.", true));
+        issues.Add(new("crimson-deployment-unverified",
+            "Crimson Desert imports are staging-only. No build-verified overlay or ASI backend is installed.", true));
+        return issues;
+    }
+}
+
 public static class GameAdapters
 {
     private static readonly Dictionary<string, IGameAdapter> Registered = new(StringComparer.OrdinalIgnoreCase)
     {
         ["generic-folder"] = new FolderGameAdapter(),
-        ["mhw"] = new MonsterHunterWorldAdapter()
+        ["mhw"] = new MonsterHunterWorldAdapter(),
+        ["crimson-desert"] = new CrimsonDesertGameAdapter()
     };
 
     private static readonly object Gate = new();
