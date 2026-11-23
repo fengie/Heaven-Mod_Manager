@@ -1,4 +1,4 @@
-# v8.8.138 — canonical state and Browse Mods cached search
+# v8.8.139 — storage lifecycle release candidate
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -6,7 +6,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.138 source candidate:** cached Browse Mods search distinguishes blank browsing from nonblank zero-token input and preserves Unicode61 searchable terms. PR #960 has the regression and required gate evidence; v8.8.137 build 626 remains the last independently verified immutable release until new publication/rollback evidence exists. Keep #558 broader provider and end-user acceptance open.
+- **v8.8.139 source:** #904 verified same-game archive reuse, #962 reparse containment, #963 lease-backed import recovery. Immutable v8.8.138 build 627 (`708b725b`) passed Windows 44986768296 and real packaged E2E 44987408825 but excludes these fixes. Verify v8.8.139 release/rollback; keep physical H2, #669, #793 and #912 acceptance open.
 
 - The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
 - The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
@@ -26,9 +26,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-On November 21, 2026, [immutable build 626](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-626) published source `254f25a4e011959a2aa88a14528b8e47dcc5f290`. Its [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44951374688) and [installed-client update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44952489213) passed. [H2’s installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) verifies the signed update from 624, preserved catalog and two outfit workflows on isolated game roots.
-
-On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. That earlier run predates build 626. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
+Published [v8.8.138 build 627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627), source `708b725bd87b2e1f060ee15df28bcb40d758fa54`: [Windows Gate 44986768296](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44986768296) and [actual packaged updater/rollback E2E 44987408825](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44987408825) both passed. These are hosted release checks, not physical Heaven2 adoption. The earlier [H2 build-626 installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) and isolated 1,002-file archive readback remain historical proof only.
 
 For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 

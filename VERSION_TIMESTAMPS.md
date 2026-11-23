@@ -4,7 +4,8 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
-| 8.8.138 | November 21, 2026 · 11:39:13 PM EST | Browse Mods Unicode-safe cached search, candidate PR #960; immutable release pending |
+| 8.8.139 | November 22, 2026 · 3:55:13 PM EST | Storage lifecycle release candidate with #904, #962, #963; immutable publication pending |
+| 8.8.138 | November 21, 2026 · 11:39:13 PM EST | Metadata created for Browse Mods Unicode-safe cached search; immutable updater-main-627 published from 708b725b (release timestamp recorded independently) |
 | 8.8.137 | November 21, 2026 · 12:08:20 PM EST | Automatic mod changes from main 03b07f33 |
 | 8.8.136 | November 21, 2026 · 10:26:04 AM EST | Solid archive intake from main 1156864d |
 | 8.8.135 | November 21, 2026 · 06:40:31 AM EST | Package options from main f39b44cd |

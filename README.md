@@ -1,14 +1,21 @@
-# v8.8.138 — MHW Manual Mod Manager
+# v8.8.139 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 21, 2026 · 11:39:13 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 22, 2026 · 3:55:13 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.138**.
+Current product version: **8.8.139**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.139 — bounded import recovery and verified archive reuse
+
+- Archive downloads reuse identical SHA-256 content within the same game's Downloads folder even across changed source titles; a 16-way concurrent-acquisition regression preserves originals and rejects false digest filenames. [#904](https://github.com/fengie/Heaven-Mod_Manager/pull/904)
+- Import publication rejects reparse-point ancestors before moving or deleting staging and owned paths. [#962](https://github.com/fengie/Heaven-Mod_Manager/pull/962)
+- Archive, FOMOD and Smart Inbox scratch carry process-start-certified lease markers before extraction. Settings can reclaim only exited-owner abandoned scratch after a grace period or when its reclaimable bytes exceed 512 MiB; live/unknown/unleased/reparse state and durable Mods/State remain untouched. [#963](https://github.com/fengie/Heaven-Mod_Manager/pull/963)
+- Source checks and installed release acceptance are separate. Preserve original user content and recovery state; do not infer physical Heaven2 adoption.
 
 ## v8.8.138 — reliable cached mod search
 
@@ -20,11 +27,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.
 - In Monster Hunter: World, open Coverage and choose an outfit for an armor set. Manager resolves all affected pieces together, preserves unrelated pieces and records the change for Undo.
 - Opening or returning to a page refreshes its information. Profiles and History pick up changes made while hidden, and Settings and Browse reuse recent measurements and provider results.
-
-## v8.8.136 — solid archive imports
-
-- Large solid 7z mod packs now decode each compressed block once. A real 1,002-file archive extracted in 4.118 seconds and every output matched an independent extraction. [Archive verification](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064841093)
-- A loose Unreal configuration file with no known destination stays disabled for layout review. Other packages in the same Inbox batch can finish indexing. [Mixed-game intake](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
 ## Current plans & progress
 

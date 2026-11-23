@@ -4,23 +4,22 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.138",
+  "currentVersion": "8.8.139",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.138-publication-pending",
-  "nextMilestone": "Ship the Unicode-safe Browse Mods cached-search correction on immutable v8.8.138; preserve source and installed acceptance boundaries.",
-  "nextRequiredAction": "Verify final PR #960 exact-head Windows CI and protected main integration. Publish immutable v8.8.138 via the existing release path, verify hosted updater/rollback and independently establish installed acceptance; keep broader #558 open.",
-  "verificationAppliesToCommit": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
-  "lastClosedVerificationCommit": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
-  "lastClosedVerificationRun": "v8.8.137 build 626 passed Windows Release Gate 44951374688 and installed updater 44952489213.",
-  "verificationScopeNote": "November 21, 2026 snapshot for v8.8.137 build 626. Candidate v8.8.138 requires independent exact-source CI, immutable publication and installed verification.",
+  "status": "v8.8.139-publication-pending",
+  "nextMilestone": "Publish verified #904/#962/#963 storage lifecycle changes in immutable v8.8.139, prove hosted updater/rollback, and preserve H2/crash-endurance acceptance boundaries.",
+  "nextRequiredAction": "On current protected main, verify exact versioned PR source, native Windows release, immutable v8.8.139 artifact digests, actual packaged update-and-rollback job, then independently observe personal H2 installed source/health. Keep #669/#793/#912 open where acceptance remains unverified.",
+  "verificationAppliesToCommit": "708b725bd87b2e1f060ee15df28bcb40d758fa54",
+  "lastClosedVerificationCommit": "708b725bd87b2e1f060ee15df28bcb40d758fa54",
+  "lastClosedVerificationRun": "v8.8.138 build 627 Windows Release Gate 44986768296 and actual hosted packaged updater/rollback run 44987408825 passed.",
+  "verificationScopeNote": "November 22, 2026. Last positively packaged and rollback-tested release is v8.8.138 build 627 from 708b725b; v8.8.139 source and H2 acceptance require independent receipts.",
   "lastClosedVerification": {
-    "sourceSha": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
-    "updaterBuild": 626,
-    "windowsVerificationRun": 44951374688,
-    "installedClientE2ERun": 44952489213,
-    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44952489213",
-    "physicalInstallationEvidence": "https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396"
+    "sourceSha": "708b725bd87b2e1f060ee15df28bcb40d758fa54",
+    "updaterBuild": 627,
+    "windowsVerificationRun": 44986768296,
+    "installedClientE2ERun": 44987408825,
+    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44987408825"
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
@@ -35,7 +34,8 @@
     "GitHub Actions artifact storage quota was exhausted during v8.8.79 updater E2E artifact upload; repository-persisted E2E closure evidence remains the required durable fallback.",
     "The 37 pre-existing non-main branch tips have been semantically classified in the branch-drain extraction ledger; physical ref retirement still requires a fresh exact-tip/open-PR/live-owner check, and any moved or owned ref must be reclassified instead of deleted.",
     "Issue #791: Build 625 independently verified the 1,002-file solid 7z repair. Hundreds of genuine mods in a single desktop import, large solid RAR and opaque container safety still require separate proof.",
-    "Issue #791: real Wuchang loader behavior, nested mixed-game corpora, installed drag/drop, and latency remain unverified."
+    "Issue #791: real Wuchang loader behavior, nested mixed-game corpora, installed drag/drop, and latency remain unverified.",
+    "#669 source import-owned scratch reclaim now recognizes archive, FOMOD and Smart Inbox with verified process start; unknown and legacy scratch remains protected, and real crash/retention/H2 endurance remains separately unverified. #904/#962/#963 await v8.8.139 installer acceptance."
   ],
   "historicalState": "_AGENT_CONTEXT/HISTORY/current-revision-v8.8.40.json",
   "continuation": "_AGENT_CONTEXT/NEXT_STEPS.md",
@@ -48,17 +48,17 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
-    "runId": 44951374688,
-    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44951374688"
+    "sourceSha": "708b725bd87b2e1f060ee15df28bcb40d758fa54",
+    "runId": 44986768296,
+    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44986768296"
   },
   "publishedRelease": {
-    "tag": "updater-main-626",
-    "version": "8.8.137",
-    "sourceSha": "254f25a4e011959a2aa88a14528b8e47dcc5f290",
-    "buildNumber": 626,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.137-win-x64.zip",
-    "artifactSha256": "dde6be060d355a43419c81fe13328f52ed4a2b06801cca451e23644772195c99",
-    "manifestSha256": "0f9ba7dcf16e0ac4c7065db55a543a56be70b4e56a7eae195b652213ad5b87e9"
+    "tag": "updater-main-627",
+    "version": "8.8.138",
+    "sourceSha": "708b725bd87b2e1f060ee15df28bcb40d758fa54",
+    "buildNumber": 627,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.138-win-x64.zip",
+    "artifactSha256": "f884d1daf3fbc5351d0c9fd20dbecf95a2649c03c0f4e8ca7ed9e0abdd6a6f36",
+    "manifestSha256": "714b4f02616df353f60a7c9872f7e5a094abffb9daceba648b70a02acfb25159"
   }
 }
