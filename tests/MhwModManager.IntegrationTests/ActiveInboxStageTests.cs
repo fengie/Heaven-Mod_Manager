@@ -100,6 +100,51 @@ public sealed class ActiveInboxStageTests
         });
 
     [Fact]
+    public Task Foreground_handoff_denial_preserves_discovered_inbox_for_later_activation() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var source=Path.Combine(services.Paths.ModsRoot,"Deferred Discovery",
+                services.Paths.Game.ModRootRelativePath,"new.bin");
+            Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+            await File.WriteAllTextAsync(source,"discovered bytes",ct);
+            await services.Catalog.RefreshFoldersAsync(ct);
+            var pending=await services.Database.GetSettingsByPrefixAsync("discovery.pending:",ct);
+            Assert.Single(pending);
+            using var vm=new MainWindowViewModel(services) { ConfirmBeforeApply=false };
+            var gateField=typeof(MainWindowViewModel).GetField("programUpdateHandoffGate",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var gate=Assert.IsType<UpdateHandoffGate>(gateField!.GetValue(vm));
+            var request=typeof(MainWindowViewModel).GetMethod("RequestDiscoveryCheck",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var drain=typeof(MainWindowViewModel).GetMethod("DrainAutomaticChangesAsync",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var deferred=typeof(MainWindowViewModel).GetField("retryDiscoveryOnActivation",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var queued=typeof(MainWindowViewModel).GetField("discoveryRequested",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var target=Path.Combine(services.Paths.Game.LiveModRoot,"new.bin");
+
+            Assert.True(gate.TryArmHandoff());
+            try
+            {
+                request!.Invoke(vm,null);
+                await (Task)drain!.Invoke(vm,null)!;
+                Assert.True(Assert.IsType<bool>(deferred!.GetValue(vm)),
+                    "A refused discovery check must remain scheduled for safe activation.");
+                Assert.Single(await services.Database.GetSettingsByPrefixAsync("discovery.pending:",ct));
+                Assert.False(File.Exists(target),"Updater ownership must prevent a concurrent discovery write.");
+            }
+            finally { gate.DisarmHandoff(); }
+
+            vm.ResumeDeferredDiscovery();
+            Assert.True(Assert.IsType<bool>(queued!.GetValue(vm)));
+            await (Task)drain!.Invoke(vm,null)!;
+            Assert.Equal("discovered bytes",await File.ReadAllTextAsync(target,ct));
+            Assert.Empty(await services.Database.GetSettingsByPrefixAsync("discovery.pending:",ct));
+            Assert.Equal("discovered bytes",await File.ReadAllTextAsync(source,ct));
+        });
+
+    [Fact]
     public void Explicit_roundtrip_during_discovery_survives_new_catalog_baseline()
     {
         var one=new ModDescriptor("one","One","One","one",false,10);
