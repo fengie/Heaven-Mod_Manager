@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.139",
+  "currentVersion": "8.8.140",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Verified v8.8.138 updater-main-627 from 708b725bd87b2e1f060ee15df28bcb40d758fa54 passed native Windows Gate 44986768296 and real hosted updater/rollback 44987408825. Later source #904/#962/#963 is not in build 627 and requires new v8.8.139 release.",
+  "immediateParentRevision": "Verified v8.8.139 updater-main-635 from 4de235c1 passed Windows Gate 45153233938 and hosted updater/rollback 45154773464. Merged #969 source main@b7a7cd51 needs v8.8.140 publication and installed-client acceptance.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh current Toolbox/Manager main, owner/CI and v8.8.139 release PR; require exact source native gate, immutable publication and real packaged update/rollback before claiming shipped. Independently verify H2 installation, in-game Iceborne armor and long-run storage recovery; preserve #669/#793/#912 open until proven. Every successor inherits full Continuity Protocol and active Learned Rules and explicitly propagates them to the next.",
+  "nextAgentObligation": "Refresh Toolbox/Manager main and v8.8.140 release PR; verify exact source native gate, immutable publication and real packaged update/rollback. Separately verify H2 installation, in-game Iceborne armor and storage endurance; keep #669/#793/#912 open. Every successor must propagate full continuity protocol and learned rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

@@ -1,4 +1,4 @@
-# v8.8.139 — storage lifecycle release candidate
+# v8.8.140 — catalog download capacity release candidate
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -6,7 +6,9 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.139 source:** #904 verified same-game archive reuse, #962 reparse containment, #963 lease-backed import recovery. Immutable v8.8.138 build 627 (`708b725b`) passed Windows 44986768296 and real packaged E2E 44987408825 but excludes these fixes. Verify v8.8.139 release/rollback; keep physical H2, #669, #793 and #912 acceptance open.
+- **v8.8.140:** [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969) merged `b7a7cd51`; gates 45161454045/45161454063/45161454455 PASS. Known-size catalog downloads check destination-volume free bytes plus 256 MiB before writing. v8.8.140 release/rollback and personal H2 remain pending.
+
+- **v8.8.139 published history:** #904 verified same-game archive reuse, #962 reparse containment, #963 lease-backed import recovery, and #967 pending-intent recovery. Immutable updater-main-635 from `4de235c1` passed Windows Release Gate 45153233938 and real hosted update/rollback 45154773464. This does not establish personal Heaven2 acceptance; keep #669, #793 and #912 open.
 
 - The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
 - The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
@@ -26,7 +28,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.138 build 627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627), source `708b725bd87b2e1f060ee15df28bcb40d758fa54`: [Windows Gate 44986768296](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44986768296) and [actual packaged updater/rollback E2E 44987408825](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44987408825) both passed. These are hosted release checks, not physical Heaven2 adoption. The earlier [H2 build-626 installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) and isolated 1,002-file archive readback remain historical proof only.
+Published [v8.8.139 build 635](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-635), source `4de235c1b632c37f34f4a851a98da369c6a3c136`: [Windows Gate 45153233938](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45153233938) and [actual packaged updater/rollback E2E 45154773464](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45154773464) both passed. These are hosted release checks, not physical Heaven2 adoption. The earlier [H2 build-626 installed receipt](https://github.com/fengie/Heaven-Mod_Manager/issues/946#issuecomment-7066456396) and isolated 1,002-file archive readback remain historical proof only.
 
 For earlier source-bound release evidence, see [CHANGELOG.md](CHANGELOG.md) and [PR #899](https://github.com/fengie/Heaven-Mod_Manager/pull/899).
 

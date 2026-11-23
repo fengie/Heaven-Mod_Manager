@@ -1,3 +1,8 @@
+# v8.8.140 — November 23, 2026
+
+- Fail known-size catalog archive downloads early when the actual staging volume cannot fit the HTTP/provider-declared archive plus 256 MiB free-space headroom, before writing payload bytes. Preserve the 1 GiB streaming bound, lease cleanup and user Mods/State. [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969)
+- Isolated low-disk acquisition regression, exact-head Windows Feature 45161454045, Startup Performance 45161454063 and AutoUpdate 45161454455 passed for merged source `b7a7cd51`. An immutable v8.8.140 release, real packaged updater/rollback and physical Heaven2 adoption are independent unverified requirements. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669) · [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793)
+
 # v8.8.139 — November 22, 2026
 
 - Reuse verified same-game downloaded archives by full SHA-256 and matching extension across source titles, with 16-way concurrency and forged-digest-name regressions. [#904](https://github.com/fengie/Heaven-Mod_Manager/pull/904)

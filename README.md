@@ -1,14 +1,19 @@
-# v8.8.139 — MHW Manual Mod Manager
+# v8.8.140 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 22, 2026 · 3:55:13 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 23, 2026 · 6:14:33 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.139**.
+Current product version: **8.8.140**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.140 — catalog download disk-space preflight
+
+- Before writing a direct catalog archive, check actual staging-volume free space against known payload bytes plus 256 MiB headroom. Insufficient space fails early with a storage error; existing Mods/State and unknown files remain protected. [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969)
+- Native Windows Feature, startup-performance and AutoUpdate gates passed. A new immutable release, hosted updater/rollback and personal Heaven2 health are separate acceptance requirements.
 
 ## v8.8.139 — bounded import recovery and verified archive reuse
 
@@ -21,12 +26,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - Browse Mods no longer sends punctuation-only or emoji-only input to SQLite FTS5, while a blank query still shows cached results.
 - Mixed text and punctuation preserve searchable terms, including supplementary Unicode letters and number symbols. Local paging and provider permissions are unchanged. [Scope: #558](https://github.com/fengie/Heaven-Mod_Manager/issues/558)
-
-## v8.8.137 — automatic mod changes
-
-- Manager applies eligible mod changes automatically. Packages that need a destination or an exclusive choice remain available for review. Undo uses the existing deployment history.
-- In Monster Hunter: World, open Coverage and choose an outfit for an armor set. Manager resolves all affected pieces together, preserves unrelated pieces and records the change for Undo.
-- Opening or returning to a page refreshes its information. Profiles and History pick up changes made while hidden, and Settings and Browse reuse recent measurements and provider results.
 
 ## Current plans & progress
 
