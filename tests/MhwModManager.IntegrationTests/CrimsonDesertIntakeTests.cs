@@ -197,6 +197,58 @@ public sealed class CrimsonDesertIntakeTests
             && result.Candidates[0].Kind == ModBoundaryKind.Folder && !result.NeedsReview);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Unnamed_authentic_field_json_shapes_route_to_crimson_staging_only(bool intentsShape)
+    {
+        using var fixture = new CrimsonFixture();
+        var archive = Path.Combine(fixture.Root, "anonymous.zip");
+        using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+        {
+            var entry = zip.CreateEntry("mod.field.json");
+            using var writer = new StreamWriter(entry.Open());
+            writer.Write(intentsShape
+                ? """{"format":3,"format_minor":1,"modinfo":{"title":"Synthetic"},"targets":[{"file":"iteminfo.pabgb","intents":[{"key":13810,"field":"discardable","op":"set","new":0}]}]}"""
+                : """{"format":3,"format_minor":1,"name":"Synthetic","targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"id_42","field":"max_count","value":1}]}]}""");
+        }
+        var game = GameProfile.CrimsonDesert(fixture.GameRoot);
+        var intake = new GameModIntakeService(Path.Combine(fixture.Root, "manager"),
+            Path.Combine(fixture.Root, "manager-state"), () => [game]);
+
+        var report = await intake.ImportPathAsync(archive, Ct);
+
+        Assert.Equal(1, report.Routed);
+        Assert.Equal(0, report.NeedsReview);
+        Assert.True(File.Exists(archive));
+        Assert.True(File.Exists(Path.Combine(fixture.GameRoot, "meta", "0.papgt")));
+        Assert.False(Directory.Exists(Path.Combine(fixture.GameRoot, "mods")));
+    }
+
+    [Fact]
+    public async Task Named_crimson_archive_with_invalid_field_manifest_requires_review_not_silent_staging()
+    {
+        using var fixture = new CrimsonFixture();
+        var archive = Path.Combine(fixture.Root, "Crimson Desert Broken.zip");
+        using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+        {
+            var entry = zip.CreateEntry("mod.field.json");
+            using var writer = new StreamWriter(entry.Open());
+            writer.Write("""{"format":4,"targets":[{"kind":"table","table":"ItemInfo","ops":[]}]}""");
+        }
+        var game = GameProfile.CrimsonDesert(fixture.GameRoot);
+        var intake = new GameModIntakeService(Path.Combine(fixture.Root, "manager"),
+            Path.Combine(fixture.Root, "manager-state"), () => [game]);
+
+        var report = await intake.ImportPathAsync(archive, Ct);
+
+        Assert.Equal(0, report.Routed);
+        Assert.Equal(1, report.NeedsReview);
+        Assert.Contains("Field-JSON", Assert.Single(report.Items).Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(archive));
+        Assert.False(Directory.Exists(Path.Combine(fixture.Root, "manager", "Mods by Game", game.Id, "Inbox")));
+    }
+
     private sealed class CrimsonFixture : IDisposable
     {
         public string Root { get; } = Path.Combine(Path.GetTempPath(), "umm-crimson-" + Guid.NewGuid().ToString("N"));
