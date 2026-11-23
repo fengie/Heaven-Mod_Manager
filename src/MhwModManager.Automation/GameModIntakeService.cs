@@ -1258,6 +1258,24 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Folder declares conflicting target games; manual review required.");
             declared = hint;
         }
+        // Field-JSON is a game-specific authoring manifest, not a loadable
+        // game file. Inspect top-level files only; copied docs/examples never
+        // establish game identity. All declarations must agree.
+        var inspectedFields = 0;
+        foreach (var fieldPath in Directory.EnumerateFiles(folder, "*.field.json", SearchOption.TopDirectoryOnly))
+        {
+            if (++inspectedFields > CrimsonDesertFieldManifestInspector.MaxTargets)
+                throw new InvalidDataException("Too many Field-JSON manifests in one package; review the collection.");
+            RefuseReparseComponents(fieldPath);
+            if (new FileInfo(fieldPath).Length > MaxThirdPartyManifestBytes)
+                throw new InvalidDataException("Field-JSON manifest exceeds the 256 KiB inspection budget.");
+            using var fieldInput = File.OpenRead(fieldPath);
+            var hint = ReadBoundedManifestGame(fieldInput, MaxThirdPartyManifestBytes, isFieldJson: true);
+            if (declared is not null && !GameProfile.NormalizeId(hint).Equals(
+                    GameProfile.NormalizeId(declared), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Folder declares conflicting target games; manual review required.");
+            declared = hint;
+        }
         return declared;
     }
 
@@ -1277,8 +1295,18 @@ public sealed class GameModIntakeService
         foreach (var entry in zip.Entries)
         {
             var filename = Path.GetFileName(entry.FullName.Replace('\\', '/'));
-            if (filename is null || !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
-                .Contains(filename, StringComparer.OrdinalIgnoreCase)) continue;
+            var isFieldJson = filename?.EndsWith(".field.json", StringComparison.OrdinalIgnoreCase) == true;
+            if (filename is null || (!isFieldJson &&
+                !new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
+                    .Contains(filename, StringComparer.OrdinalIgnoreCase))) continue;
+            // A bundled documentation sample is not the actual package. Only
+            // a payload manifest may identify Crimson Desert automatically.
+            var entryPath = entry.FullName.Replace('\\', '/');
+            if (isFieldJson && entryPath.Split('/').Any(part =>
+                    part.Equals("docs", StringComparison.OrdinalIgnoreCase)
+                    || part.Equals("examples", StringComparison.OrdinalIgnoreCase)
+                    || part.Equals("screenshots", StringComparison.OrdinalIgnoreCase)))
+                continue;
             var appOwned = filename.Equals("mod-intake.json", StringComparison.OrdinalIgnoreCase);
             var maxBytes = appOwned ? MaxGameManifestBytes : MaxThirdPartyManifestBytes;
             if (entry.Length < 0 || entry.CompressedLength < 0 ||
@@ -1290,7 +1318,7 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Archive game metadata exceeds the cumulative 4 MiB inspection limit; manual review required.");
             inspectedMetadataBytes += entry.Length;
             using var input = entry.Open();
-            var hint = ReadBoundedManifestGame(input, maxBytes);
+            var hint = ReadBoundedManifestGame(input, maxBytes, isFieldJson);
             if (string.IsNullOrWhiteSpace(hint)) continue;
             if (declared is not null &&
                 !GameProfile.NormalizeId(hint).Equals(GameProfile.NormalizeId(declared),
@@ -1301,7 +1329,7 @@ public sealed class GameModIntakeService
         return declared;
     }
 
-    private static string? ReadBoundedManifestGame(Stream input, int maxBytes)
+    private static string? ReadBoundedManifestGame(Stream input, int maxBytes, bool isFieldJson = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // Advertised sizes in untrusted compressed headers are not an actual-output limit.
@@ -1311,7 +1339,17 @@ public sealed class GameModIntakeService
         var length = reader.ReadBlock(buffer, 0, buffer.Length);
         if (length > maxBytes)
             throw new InvalidDataException("Game metadata exceeds its bounded decoded-content inspection limit; manual review required.");
-        return TryReadJsonGame(new string(buffer, 0, length));
+        var text = new string(buffer, 0, length);
+        if (isFieldJson)
+        {
+            var inspection = CrimsonDesertFieldManifestInspector.Inspect(text);
+            if (!inspection.IsValid)
+                throw new InvalidDataException("Field-JSON manifest requires review: " + inspection.Reason);
+            // Recognized source format authorizes only a game-scoped Inbox
+            // classification. The Crimson deploy planner still forbids writes.
+            return "crimson-desert";
+        }
+        return TryReadJsonGame(text);
     }
 
     private static string? TryReadJsonGame(string text)
