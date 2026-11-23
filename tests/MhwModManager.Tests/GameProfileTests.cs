@@ -72,7 +72,7 @@ public sealed class GameProfileTests
     public void Inferred_game_root_without_verified_loader_cannot_plan_a_live_write()
     {
         var game = GameProfile.Generic("unknown", "Unknown Game", Path.GetTempPath(),
-            "Unknown.exe", "", adapterId: "generic-root");
+            "Unknown.exe", "", adapterId: "inferred-unverified-root");
         var mod = new ModDescriptor("unknown-mod", "Unknown mod", "Unknown mod", "src", true, 0);
         var file = new ModFileDescriptor(mod.Id, @"root\settings.bin", new string('a', 64),
             null, 24, DateTimeOffset.UnixEpoch, FileClass.GameData);
@@ -91,9 +91,9 @@ public sealed class GameProfileTests
     public void Unregistered_adapter_name_does_not_grant_direct_file_deployment()
     {
         var game = GameProfile.Generic("unknown", "Unknown Game", Path.GetTempPath(),
-            "Unknown.exe", "Mods", adapterId: "unregistered-custom-adapter");
+            "Unknown.exe", "", adapterId: "unregistered-custom-adapter");
         var mod = new ModDescriptor("unknown-mod", "Unknown mod", "Unknown mod", "src", true, 0);
-        var file = new ModFileDescriptor(mod.Id, @"root\Mods\settings.bin", new string('a', 64),
+        var file = new ModFileDescriptor(mod.Id, @"root\settings.bin", new string('a', 64),
             null, 24, DateTimeOffset.UnixEpoch, FileClass.GameData);
         var snapshot = new PlannerSnapshot([mod], [file], [],
             new Dictionary<string,string>(), new Dictionary<string,string>(),
@@ -104,6 +104,25 @@ public sealed class GameProfileTests
         Assert.True(plan.IsBlocked);
         Assert.Empty(plan.Changes);
         Assert.Contains(plan.Conflicts, x => x.ReasonCode == "adapter-deployment-unverified" && x.Blocking);
+    }
+
+    [Theory]
+    [InlineData("generic-root", "")]
+    [InlineData("generic-files", "Mods")]
+    public void Existing_explicit_root_and_custom_mount_profiles_remain_deployable(string adapter, string modRoot)
+    {
+        var game = GameProfile.Generic("existing", "Existing", Path.GetTempPath(),
+            "Existing.exe", modRoot, adapterId: adapter);
+        var mod = new ModDescriptor("m", "M", "M", "src", true, 0);
+        var managed = string.IsNullOrEmpty(modRoot) ? @"root\asset.bin" : @"root\Mods\asset.bin";
+        var file = new ModFileDescriptor(mod.Id, managed, new string('c', 64),
+            null, 10, DateTimeOffset.UnixEpoch, FileClass.GameData);
+        var snapshot = new PlannerSnapshot([mod], [file], [],
+            new Dictionary<string,string>(), new Dictionary<string,string>(),
+            new Dictionary<string,DeploymentManifestEntry>(), new Dictionary<string,string?>());
+        var plan = new DeploymentPlanner(new ConflictEngine(game), game).Build(snapshot);
+        Assert.False(plan.IsBlocked);
+        Assert.Single(plan.Changes);
     }
 
     [Theory]

@@ -486,7 +486,7 @@ public sealed partial class GameProfileRegistry
         if(Directory.Exists(Path.Combine(root,"reframework")))return("reframework","reframework");
         // Data is normally a base-game asset directory, not proof of an installable mod root.
         // Keep manually configured Data profiles intact, but do not infer them for new games.
-        return("generic-root",string.Empty);
+        return("inferred-unverified-root",string.Empty);
     }
 
     private static string InferGameRoot(string executable)

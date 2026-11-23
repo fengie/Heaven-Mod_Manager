@@ -96,10 +96,18 @@ public class FolderGameAdapter : IGameAdapter, IGameDirectFileDeploymentPolicy
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
-        if (game.AdapterId.Equals("generic-root", StringComparison.OrdinalIgnoreCase)
-            && string.IsNullOrWhiteSpace(game.ModRootRelativePath))
+        if (game.AdapterId.Equals("inferred-unverified-root", StringComparison.OrdinalIgnoreCase))
             return new(false, "unverified-game-root-target",
-                "A game with no verified loader or mod root can be imported for review, but automatic writes to the game root are disabled.");
+                "This game was discovered without a verified mod root; import staging is allowed, but direct game-root writes require explicit configuration.");
+        // Preserve existing user-configured/legacy generic-root profiles and custom
+        // adapters with a recorded nonempty target path. No inferred unknown
+        // executable can grant write authority to the whole game directory.
+        if (string.IsNullOrWhiteSpace(game.ModRootRelativePath)
+            && !game.AdapterId.Equals("generic-root", StringComparison.OrdinalIgnoreCase)
+            && !game.AdapterId.Equals("generic-folder", StringComparison.OrdinalIgnoreCase)
+            && !game.AdapterId.Equals("mhw", StringComparison.OrdinalIgnoreCase))
+            return new(false, "adapter-deployment-unverified",
+                "An unknown game adapter with no configured mod root cannot authorize direct file deployment.");
         return new(true, "direct-folder-deployment",
             "A configured folder-based deployment uses the existing journal, conflict review and Undo.");
     }
@@ -114,10 +122,9 @@ public class FolderGameAdapter : IGameAdapter, IGameDirectFileDeploymentPolicy
         if (!string.IsNullOrEmpty(game.ModRootRelativePath) && !PathRules.IsSafeArchiveRelativePath(game.ModRootRelativePath))
             issues.Add(new("unsafe-mod-root", "Mod root must be relative to the game root.", true));
 
-        if (game.AdapterId.Equals("generic-root", StringComparison.OrdinalIgnoreCase)
-            && string.IsNullOrWhiteSpace(game.ModRootRelativePath))
+        if (game.AdapterId.Equals("inferred-unverified-root", StringComparison.OrdinalIgnoreCase))
             issues.Add(new("unverified-game-root-target",
-                "No verified mod root is configured; import staging is allowed but direct game-root deployment is blocked.", true));
+                "Newly discovered game has no confirmed mod root; select a supported loader or explicit directory before deployment.", true));
         if (issues.Count == 0 && !File.Exists(game.ExecutablePath))
             issues.Add(new("missing-executable", "The configured game executable was not found.", true));
         return issues;
@@ -240,15 +247,6 @@ public static class GameAdapters
         ["crimson-desert"] = new CrimsonDesertGameAdapter()
     };
 
-    // Backward-compatible IDs issued by GameProfileRegistry.InferLayout,
-    // plus explicitly configured generic-folder profiles. Other unknown IDs
-    // may be classified but cannot silently become writable game backends.
-    private static readonly HashSet<string> KnownFolderLayoutIds = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "generic-folder", "generic-root", "mods-folder", "unreal-paks",
-        "bepinex", "reframework", "ue4ss", "melonloader"
-    };
-
     private static readonly object Gate = new();
 
     public static void Register(IGameAdapter adapter)
@@ -282,10 +280,6 @@ public static class GameAdapters
         if (game is null)
             return new(true, "legacy-mhw-context", "Legacy MHW context uses existing transactional deployment.");
         var adapter = Resolve(game);
-        if (adapter.Id.Equals("generic-folder", StringComparison.OrdinalIgnoreCase)
-            && !KnownFolderLayoutIds.Contains(game.AdapterId))
-            return new(false, "adapter-deployment-unverified",
-                "An unknown game adapter ID cannot authorize direct writes to a game directory.");
         return adapter is IGameDirectFileDeploymentPolicy policy
             ? policy.EvaluateDirectFileDeployment(game)
             : new(false, "adapter-deployment-unverified",

@@ -19,7 +19,7 @@ public sealed class GameDeploymentAdmissionIntegrationTests
             var file = Path.Combine(source, "payload.bin");
             await File.WriteAllTextAsync(file, "fixture", ct);
             var game = GameProfile.Generic("unknown", "Unknown", gameRoot, "Unknown.exe",
-                "", adapterId: "generic-root");
+                "", adapterId: "inferred-unverified-root");
             var db = new ManagerDatabase(Path.Combine(home.FullName, "db", "manager.db"));
             await db.InitializeAsync(ct);
             var mod = new ModDescriptor("unknown-mod", "Unknown", "Unknown", source, false, 0);

@@ -25,9 +25,9 @@ An adapter answers **three independent questions**: which game owns a package, w
 The optional `IGameDirectFileDeploymentPolicy` interface provides `EvaluateDirectFileDeployment(GameProfile)`, returning an `Allowed`, stable `Code` and human-readable `Reason`. `IGameAdapter` remains unchanged for source compatibility. The shared `GameAdapters.DirectFileAdmission(profile)` is consumed by `CatalogService.EnsureCapturedAsync`, `ModScanner.CaptureAsync` and `DeploymentPlanner.Build`. All three must agree on the same game profile, including legacy profiles. A registered custom adapter without this optional policy must remain staging-only.
 
 - Built-in MHW and configured folder-loader profiles keep their existing transactional direct-file behavior.
-- Automatic discovery with adapter ID `generic-root` and **no** mod root stages only. A guessed executable folder is not an authorized install destination.
+- New automatic discovery with adapter ID `inferred-unverified-root` and **no** mod root stages only. A guessed executable folder is not an authorized install destination. Existing `generic-root` profiles remain compatible pending an opt-in migration; do not silently revoke installed mods.
 - Crimson Desert is staging-only regardless of `meta` presence, DLC, loader directory name, or a cached/preindexed package. Only a separately accepted, build-bound runtime backend can change that.
-- The explicit `generic-folder` profile remains compatible with existing manually configured workflows; it is not a claim that arbitrary binary layouts are safe.
+- Existing `generic-folder`, `generic-root`, and custom adapter IDs with an explicitly configured nonempty mod root retain legacy direct-file behavior; custom IDs with *no* configured target are held. Runtime/source compatibility does not establish safety of an unknown mod's executable contents.
 - A blocked game remains visible in the library and review UI. Nothing is silently copied into its live game folder, and no ad hoc alternative executor should bypass admission.
 - A future non-file backend (VFS/runtime mount) must declare a **different** capability and be verified against its own version/loader lifecycle. Do not change `Allowed` to true merely because a third-party author says a format exists.
 
