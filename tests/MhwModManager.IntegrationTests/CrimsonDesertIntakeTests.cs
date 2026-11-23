@@ -100,6 +100,27 @@ public sealed class CrimsonDesertIntakeTests
     }
 
     [Fact]
+    public async Task Crimson_staged_package_can_be_cataloged_without_attempting_live_file_capture()
+    {
+        using var fixture = new CrimsonFixture();
+        var game = GameProfile.CrimsonDesert(fixture.GameRoot);
+        var db = new MhwModManager.Storage.ManagerDatabase(
+            Path.Combine(fixture.Root, "state", "manager.db"));
+        await db.InitializeAsync(Ct);
+        var blobs = new BlobStore(Path.Combine(fixture.Root, "blobs"), db);
+        var scanner = new ModScanner(db, blobs, new HashingService(), game);
+        var catalog = new CatalogService(db, scanner, Path.Combine(fixture.Root, "mods"));
+        var source = Directory.CreateDirectory(Path.Combine(fixture.Root, "source")).FullName;
+        File.WriteAllText(Path.Combine(source, "changes.field.json"), """{"format":3,"format_minor":1}""");
+        var mod = new ModDescriptor("fixture", "Data-only patch", "Data-only patch", source, false, 0);
+
+        await catalog.EnsureCapturedAsync([mod], Ct);
+
+        Assert.True(File.Exists(Path.Combine(source, "changes.field.json")));
+        Assert.True(File.Exists(Path.Combine(fixture.GameRoot, "meta", "0.papgt")));
+    }
+
+    [Fact]
     public void Legacy_generic_crimson_profile_cannot_bypass_deployment_hold()
     {
         using var fixture = new CrimsonFixture();
