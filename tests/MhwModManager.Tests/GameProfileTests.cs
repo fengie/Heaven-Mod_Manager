@@ -67,4 +67,50 @@ public sealed class GameProfileTests
     {
         Assert.Throws<ArgumentException>(()=>GameProfile.Generic("bad","Bad",Path.GetTempPath(),"Bad.exe",modRoot));
     }
+
+    [Fact]
+    public void Inferred_game_root_without_verified_loader_cannot_plan_a_live_write()
+    {
+        var game = GameProfile.Generic("unknown", "Unknown Game", Path.GetTempPath(),
+            "Unknown.exe", "", adapterId: "generic-root");
+        var mod = new ModDescriptor("unknown-mod", "Unknown mod", "Unknown mod", "src", true, 0);
+        var file = new ModFileDescriptor(mod.Id, @"root\settings.bin", new string('a', 64),
+            null, 24, DateTimeOffset.UnixEpoch, FileClass.GameData);
+        var snapshot = new PlannerSnapshot([mod], [file], [],
+            new Dictionary<string,string>(), new Dictionary<string,string>(),
+            new Dictionary<string,DeploymentManifestEntry>(), new Dictionary<string,string?>());
+
+        var plan = new DeploymentPlanner(new ConflictEngine(game), game).Build(snapshot);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Empty(plan.Changes);
+        Assert.Contains(plan.Conflicts, x => x.ReasonCode == "unverified-game-root-target" && x.Blocking);
+    }
+
+    [Theory]
+    [InlineData("mhw", "nativePC")]
+    [InlineData("unreal-paks", @"SB\Content\Paks\~mods")]
+    [InlineData("bepinex", @"BepInEx\plugins")]
+    [InlineData("mods-folder", "Mods")]
+    public void Verified_existing_game_roots_preserve_direct_deployment_planning(string adapter, string modRoot)
+    {
+        var game = adapter == "mhw"
+            ? GameProfile.MonsterHunterWorld(Path.GetTempPath())
+            : GameProfile.Generic("other", "Other Game", Path.GetTempPath(),
+                "Other.exe", modRoot, adapterId: adapter);
+        var path = adapter == "mhw" ? @"nativePC\mod\a.bin"
+            : @"root\" + modRoot + @"\a.bin";
+        var mod = new ModDescriptor("a", "A", "A", "src", true, 0);
+        var file = new ModFileDescriptor(mod.Id, path, new string('b', 64),
+            null, 24, DateTimeOffset.UnixEpoch, FileClass.GameData);
+        var snapshot = new PlannerSnapshot([mod], [file], [],
+            new Dictionary<string,string>(), new Dictionary<string,string>(),
+            new Dictionary<string,DeploymentManifestEntry>(), new Dictionary<string,string?>());
+
+        var plan = new DeploymentPlanner(new ConflictEngine(game), game).Build(snapshot);
+
+        Assert.False(plan.IsBlocked);
+        Assert.Single(plan.Changes);
+    }
+
 }
