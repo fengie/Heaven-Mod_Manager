@@ -8,6 +8,44 @@ namespace MhwModManager.IntegrationTests;
 public sealed class GameDeploymentAdmissionIntegrationTests
 {
     [Fact]
+    public void Fresh_unknown_executable_stages_only_while_legacy_explicit_game_root_is_preserved()
+    {
+        var home = Directory.CreateTempSubdirectory("umm-root-admission-");
+        try
+        {
+            var root = Path.Combine(home.FullName, "game");
+            Directory.CreateDirectory(root);
+            var exe = Path.Combine(root, "UnknownGame.exe");
+            File.WriteAllBytes(exe, [0x4d, 0x5a]);
+            var registry = new GameProfileRegistry(Path.Combine(home.FullName, "state"));
+
+            var fresh = registry.AddGenericFromExecutable(exe, activate: false);
+            Assert.Equal("inferred-unverified-root", fresh.AdapterId);
+            Assert.Equal(string.Empty, fresh.ModRootRelativePath);
+            var admission = GameAdapters.DirectFileAdmission(fresh);
+            Assert.False(admission.Allowed);
+            Assert.Equal("unverified-game-root-target", admission.Code);
+            Assert.Contains(GameAdapters.Resolve(fresh).Validate(fresh), x => x.Blocking
+                && x.Code == "unverified-game-root-target");
+
+            var configured = fresh with { ModRootRelativePath = "Mods" };
+            Assert.True(GameAdapters.DirectFileAdmission(configured).Allowed);
+            Assert.DoesNotContain(GameAdapters.Resolve(configured).Validate(configured),
+                x => x.Code == "unverified-game-root-target");
+
+            var legacy = GameProfile.Generic("old-unknown", "Old Unknown", root,
+                "UnknownGame.exe", string.Empty, adapterId: "generic-root");
+            var legacyAdmission = GameAdapters.DirectFileAdmission(legacy);
+            Assert.True(legacyAdmission.Allowed);
+            Assert.True(File.Exists(exe));
+        }
+        finally
+        {
+            home.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Unknown_discovered_game_can_keep_staged_sources_but_cannot_capture_live_files()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -32,7 +70,7 @@ public sealed class GameDeploymentAdmissionIntegrationTests
             var rejected = await Assert.ThrowsAsync<InvalidDataException>(
                 () => scanner.CaptureAsync(mod, ct));
 
-            Assert.Contains("verified loader", rejected.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("mod root", rejected.Message, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("fixture", await File.ReadAllTextAsync(file, ct));
             Assert.False(Directory.Exists(gameRoot));
         }

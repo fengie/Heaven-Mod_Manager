@@ -96,7 +96,8 @@ public class FolderGameAdapter : IGameAdapter, IGameDirectFileDeploymentPolicy
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(game);
-        if (game.AdapterId.Equals("inferred-unverified-root", StringComparison.OrdinalIgnoreCase))
+        if (game.AdapterId.Equals("inferred-unverified-root", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(game.ModRootRelativePath))
             return new(false, "unverified-game-root-target",
                 "This game was discovered without a verified mod root; import staging is allowed, but direct game-root writes require explicit configuration.");
         // Preserve existing user-configured/legacy generic-root profiles and custom
@@ -122,7 +123,8 @@ public class FolderGameAdapter : IGameAdapter, IGameDirectFileDeploymentPolicy
         if (!string.IsNullOrEmpty(game.ModRootRelativePath) && !PathRules.IsSafeArchiveRelativePath(game.ModRootRelativePath))
             issues.Add(new("unsafe-mod-root", "Mod root must be relative to the game root.", true));
 
-        if (game.AdapterId.Equals("inferred-unverified-root", StringComparison.OrdinalIgnoreCase))
+        if (game.AdapterId.Equals("inferred-unverified-root", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(game.ModRootRelativePath))
             issues.Add(new("unverified-game-root-target",
                 "Newly discovered game has no confirmed mod root; select a supported loader or explicit directory before deployment.", true));
         if (issues.Count == 0 && !File.Exists(game.ExecutablePath))
