@@ -1,4 +1,6 @@
-# v8.8.139 — canonical state and storage lifecycle release candidate
+# v8.8.139 - immutable release verified
+
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `4de235c1b632c37f34f4a851a98da369c6a3c136`. Public immutable [updater-main-635](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-635) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Build 627 is the independently verified v8.8.138 immutable release (source 708b725bd87b2e1f060ee15df28bcb40d758fa54; Windows Gate 44986768296 and genuine packaged updater/rollback E2E 44987408825 passed). The new #904/#962/#963 storage code was integrated afterward and requires its own v8.8.139 immutable publication and packaged rollback proof. Personal Heaven2 installed health, in-game armor visuals, and full storage crash/endurance acceptance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -48,13 +50,11 @@ Build 627 is the independently verified v8.8.138 immutable release (source 708b7
 
 ## Verification boundary
 
-Current published [v8.8.138 build 627](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-627) source `708b725bd87b2e1f060ee15df28bcb40d758fa54` passed [Windows Gate 44986768296](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44986768296) and [genuine hosted packaged updater/rollback 44987408825](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44987408825). New v8.8.139 storage source and personal Heaven2 installation still require separate acceptance.
+Current hosted-Windows closure: v8.8.139 source `4de235c1b632c37f34f4a851a98da369c6a3c136` passed run `45153233938` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.139-heaven-windows-closure.log`.
 
-On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. The v8.8.137 changes require separate packaged desktop, release and installed acceptance. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
+Verified immutable GitHub release: [updater-main-635](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-635), exact source `4de235c1b632c37f34f4a851a98da369c6a3c136`, ZIP SHA-256 `c2ffdc360c0522783ab8320ecc44b39ae2759dde0e68abae785f4f1df8153194` and manifest SHA-256 `bbf519dcbfcf24fe35f1706bb90e7f65360597485cd931ad6043303a5820b7f7`. Public release and tag ref independently match the built artifact.
 
-**v8.8.118 immutable release and real hosted update/rollback VERIFIED:** [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) **PASS**, [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS**; ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`, manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. This is disposable hosted Windows evidence, **not** personal Heaven2 installed acceptance.
-
-Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d18323a3d1af8925618` Windows Gate 44475835455 PASS, real hosted packaged update/rollback 44477647687 PASS, ZIP SHA-256 `4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0`, manifest `8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4`; receipt merged PR #896. This does not prove source additions after this immutable release, user-device health, real corpora or p95.
+The tested source remains `4de235c1b632c37f34f4a851a98da369c6a3c136` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
