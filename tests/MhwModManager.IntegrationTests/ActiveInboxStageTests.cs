@@ -74,7 +74,7 @@ public sealed class ActiveInboxStageTests
                 choice!.Invoke(vm,null);
                 var drain=typeof(MainWindowViewModel).GetMethod("DrainAutomaticChangesAsync",
                     BindingFlags.Instance | BindingFlags.NonPublic);
-                await Assert.IsType<Task>(drain!.Invoke(vm,null));
+                await (Task)drain!.Invoke(vm,null)!;
                 Assert.True(row.HasStagedChanges);
                 Assert.False(row.StagedEnabled);
                 Assert.True(File.Exists(target),"An armed updater gate must not mutate game files.");
