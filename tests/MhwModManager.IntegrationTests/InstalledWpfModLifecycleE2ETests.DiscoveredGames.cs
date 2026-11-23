@@ -19,10 +19,20 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
     public Task EveryDiscoveredGameCanRelinkItsMovedExecutable() =>
         VerifyAllGamesAsync("repair", ExerciseRepairAsync);
 
+    // Run the previously failing adapter/profile first on disposable hosted Windows,
+    // without weakening the separately required exhaustive every-profile acceptance.
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public Task BrightMemoryInfiniteSecondPackageDisableRegression() =>
+        VerifyAllGamesAsync("focused", ExerciseGameWindowAsync, onlyGameId: "bright-memory-infinite");
+
     private static async Task VerifyAllGamesAsync(string scenario,
-        Func<GameProfile, List<string>, CancellationToken, Task> exercise)
+        Func<GameProfile, List<string>, CancellationToken, Task> exercise,
+        string? onlyGameId = null)
     {
-        var games = DiscoveredGameProfiles.Load();
+        IReadOnlyList<GameProfile> games = DiscoveredGameProfiles.Load();
+        if (onlyGameId is not null)
+            games = games.Where(game => StringComparer.Ordinal.Equals(game.Id, onlyGameId)).ToArray();
         Assert.NotEmpty(games);
         var failures = new List<string>();
         var failedOperations = new HashSet<(string LastSuccess, string Error)>();
