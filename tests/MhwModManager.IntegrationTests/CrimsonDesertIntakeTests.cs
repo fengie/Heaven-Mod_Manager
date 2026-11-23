@@ -100,6 +100,25 @@ public sealed class CrimsonDesertIntakeTests
     }
 
     [Fact]
+    public void Legacy_generic_crimson_profile_cannot_bypass_deployment_hold()
+    {
+        using var fixture = new CrimsonFixture();
+        var legacy = GameProfile.Generic("old-import", "Crimson Desert",
+            fixture.GameRoot, @"bin64\CrimsonDesert.exe", "", adapterId: "generic-folder");
+        Assert.Equal("crimson-desert", GameAdapters.Resolve(legacy).Id);
+        var mod = new ModDescriptor("legacy", "Old Patch", "Old Patch", "source", true, 0);
+        var files = new[] { new ModFileDescriptor("legacy", @"root\meta\0.papgt",
+            new string('b', 64), null, 1, DateTimeOffset.UnixEpoch, FileClass.GameData) };
+        var snapshot = new PlannerSnapshot([mod], files, [],
+            new Dictionary<string, string>(), new Dictionary<string, string>(),
+            new Dictionary<string, DeploymentManifestEntry>(), new Dictionary<string, string?>());
+        var plan = new DeploymentPlanner(new ConflictEngine(legacy), legacy).Build(snapshot);
+        Assert.True(plan.IsBlocked);
+        Assert.Empty(plan.Changes);
+        Assert.Contains(plan.Conflicts, c => c.ReasonCode == "crimson-deployment-unverified");
+    }
+
+    [Fact]
     public async Task Large_explicitly_named_collection_routes_independent_mods_without_touching_sources_or_game()
     {
         using var fixture = new CrimsonFixture();
