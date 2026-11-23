@@ -61,6 +61,11 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, bool managedPackage, bool automatic, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
+        // Staging is allowed; generic folder semantics must never convert
+        // Crimson's compiled archive, field patch or ASI loader into live writes.
+        if (game?.AdapterId.Equals("crimson-desert", StringComparison.OrdinalIgnoreCase) == true)
+            throw new InvalidDataException(
+                "Crimson Desert packages are staging-only until a build-verified overlay/ASI backend is integrated.");
         if ((!managedPackage && mod.RequiresLayoutReview) || mod.FamilyRole=="Review")
             throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
         var role = await db.ShelfRoleAsync(mod.Id, ct);
