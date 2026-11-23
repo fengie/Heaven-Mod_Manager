@@ -235,6 +235,16 @@ public sealed class GameModIntakeService
                     if (independentArchiveFolder && topEntries.Length > 0 && topEntries.All(path =>
                             File.Exists(path) && IsSupportedArchive(path)))
                     {
+                        // An explicitly selected folder named for exactly one
+                        // registered game is a bounded game context for its
+                        // independent archive children. Do not infer from
+                        // active-game state or arbitrary ancestor directories.
+                        var folderName = Path.GetFileName(Path.TrimEndingDirectorySeparator(full));
+                        var normalizedFolder = GameProfile.NormalizeId(folderName);
+                        var matched = games.Where(game => normalizedFolder.Equals(game.Id, StringComparison.OrdinalIgnoreCase)
+                            || normalizedFolder.Equals(GameProfile.NormalizeId(game.DisplayName),
+                                StringComparison.OrdinalIgnoreCase)).ToArray();
+                        var exactGameContext = matched.Length == 1 ? folderName : null;
                         for (var archiveIndex = 0; archiveIndex < topEntries.Length; archiveIndex++)
                         {
                             ct.ThrowIfCancellationRequested();
@@ -245,7 +255,7 @@ public sealed class GameModIntakeService
                             {
                                 RefuseReparseComponents(archivePath);
                                 await ClassifyAndRouteAsync(full, archivePath, false,
-                                    games, items, receipts, ct,
+                                    games, items, receipts, ct, gameContextHint: exactGameContext,
                                     copyProgress: (copied, length) => progress?.Report(new(
                                         index, inputs.Length, archivePath,
                                         $"Copying {copied / 1048576d:F1} / {length / 1048576d:F1} MiB")))
