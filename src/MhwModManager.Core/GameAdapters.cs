@@ -4,6 +4,16 @@ public sealed record AdapterValidation(string Code, string Message, bool Blockin
 public sealed record SemanticAsset(string Namespace, string Component);
 public sealed record AdapterDependency(string Name, string RelativePath, string Reason);
 
+// Evaluates permission to make direct game-file changes. Format recognition,
+// installed-game discovery and import staging never grant this permission.
+public sealed record GameDirectFileAdmission(bool Allowed, string Code, string Reason);
+
+/// <summary>Optional capability contract; third-party adapters must explicitly opt in.</summary>
+public interface IGameDirectFileDeploymentPolicy
+{
+    GameDirectFileAdmission EvaluateDirectFileDeployment(GameProfile game);
+}
+
 /// <summary>Adapters describe game knowledge. They never write live files or bypass the deployment journal.</summary>
 public interface IGameAdapter
 {
@@ -21,7 +31,7 @@ public interface IGameAdapter
     IReadOnlyList<AdapterValidation> Validate(GameProfile game);
 }
 
-public class FolderGameAdapter : IGameAdapter
+public class FolderGameAdapter : IGameAdapter, IGameDirectFileDeploymentPolicy
 {
     public virtual string Id { get; } = "generic-folder";
     public virtual string DisplayName { get; } = "Generic folder";
@@ -78,6 +88,22 @@ public class FolderGameAdapter : IGameAdapter
         return [];
     }
 
+    /// <summary>
+    /// Existing identified folder-loader games retain ordinary transactional deployment.
+    /// A newly inferred game root without a loader is staging-only until configured.
+    /// </summary>
+    public virtual GameDirectFileAdmission EvaluateDirectFileDeployment(GameProfile game)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(game);
+        if (game.AdapterId.Equals("generic-root", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(game.ModRootRelativePath))
+            return new(false, "unverified-game-root-target",
+                "A game with no verified loader or mod root can be imported for review, but automatic writes to the game root are disabled.");
+        return new(true, "direct-folder-deployment",
+            "A configured folder-based deployment uses the existing journal, conflict review and Undo.");
+    }
+
     public virtual IReadOnlyList<AdapterValidation> Validate(GameProfile game)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -88,6 +114,10 @@ public class FolderGameAdapter : IGameAdapter
         if (!string.IsNullOrEmpty(game.ModRootRelativePath) && !PathRules.IsSafeArchiveRelativePath(game.ModRootRelativePath))
             issues.Add(new("unsafe-mod-root", "Mod root must be relative to the game root.", true));
 
+        if (game.AdapterId.Equals("generic-root", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(game.ModRootRelativePath))
+            issues.Add(new("unverified-game-root-target",
+                "No verified mod root is configured; import staging is allowed but direct game-root deployment is blocked.", true));
         if (issues.Count == 0 && !File.Exists(game.ExecutablePath))
             issues.Add(new("missing-executable", "The configured game executable was not found.", true));
         return issues;
@@ -125,6 +155,14 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
 {
     public override string Id { get; } = "crimson-desert";
     public override string DisplayName { get; } = "Crimson Desert";
+
+    public override GameDirectFileAdmission EvaluateDirectFileDeployment(GameProfile game)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(game);
+        return new(false, "crimson-deployment-unverified",
+            "Crimson Desert packages may be staged for review, but no build-verified overlay backend exists. Live game file deployment is blocked.");
+    }
 
     /// <summary>
     /// Legacy generic profiles pointing to a verified Crimson Desert layout
@@ -202,6 +240,15 @@ public static class GameAdapters
         ["crimson-desert"] = new CrimsonDesertGameAdapter()
     };
 
+    // Backward-compatible IDs issued by GameProfileRegistry.InferLayout,
+    // plus explicitly configured generic-folder profiles. Other unknown IDs
+    // may be classified but cannot silently become writable game backends.
+    private static readonly HashSet<string> KnownFolderLayoutIds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "generic-folder", "generic-root", "mods-folder", "unreal-paks",
+        "bepinex", "reframework", "ue4ss", "melonloader"
+    };
+
     private static readonly object Gate = new();
 
     public static void Register(IGameAdapter adapter)
@@ -222,5 +269,26 @@ public static class GameAdapters
         lock (Gate)
             return CrimsonDesertGameAdapter.Matches(game) ? Registered["crimson-desert"]
                 : Registered.GetValueOrDefault(game?.AdapterId ?? "mhw", Registered["generic-folder"]);
+    }
+
+    /// <summary>
+    /// Common admission point used by catalog capture, scanner and planner.
+    /// Null preserves legacy MHW-only call sites; custom adapters without an
+    /// explicit direct-file policy default to staging-only.
+    /// </summary>
+    public static GameDirectFileAdmission DirectFileAdmission(GameProfile? game)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (game is null)
+            return new(true, "legacy-mhw-context", "Legacy MHW context uses existing transactional deployment.");
+        var adapter = Resolve(game);
+        if (adapter.Id.Equals("generic-folder", StringComparison.OrdinalIgnoreCase)
+            && !KnownFolderLayoutIds.Contains(game.AdapterId))
+            return new(false, "adapter-deployment-unverified",
+                "An unknown game adapter ID cannot authorize direct writes to a game directory.");
+        return adapter is IGameDirectFileDeploymentPolicy policy
+            ? policy.EvaluateDirectFileDeployment(game)
+            : new(false, "adapter-deployment-unverified",
+                "This game adapter has not declared a verified direct-file deployment capability.");
     }
 }

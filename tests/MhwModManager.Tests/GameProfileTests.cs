@@ -87,6 +87,25 @@ public sealed class GameProfileTests
         Assert.Contains(plan.Conflicts, x => x.ReasonCode == "unverified-game-root-target" && x.Blocking);
     }
 
+    [Fact]
+    public void Unregistered_adapter_name_does_not_grant_direct_file_deployment()
+    {
+        var game = GameProfile.Generic("unknown", "Unknown Game", Path.GetTempPath(),
+            "Unknown.exe", "Mods", adapterId: "unregistered-custom-adapter");
+        var mod = new ModDescriptor("unknown-mod", "Unknown mod", "Unknown mod", "src", true, 0);
+        var file = new ModFileDescriptor(mod.Id, @"root\Mods\settings.bin", new string('a', 64),
+            null, 24, DateTimeOffset.UnixEpoch, FileClass.GameData);
+        var snapshot = new PlannerSnapshot([mod], [file], [],
+            new Dictionary<string,string>(), new Dictionary<string,string>(),
+            new Dictionary<string,DeploymentManifestEntry>(), new Dictionary<string,string?>());
+
+        var plan = new DeploymentPlanner(new ConflictEngine(game), game).Build(snapshot);
+
+        Assert.True(plan.IsBlocked);
+        Assert.Empty(plan.Changes);
+        Assert.Contains(plan.Conflicts, x => x.ReasonCode == "adapter-deployment-unverified" && x.Blocking);
+    }
+
     [Theory]
     [InlineData("mhw", "nativePC")]
     [InlineData("unreal-paks", @"SB\Content\Paks\~mods")]

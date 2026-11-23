@@ -203,12 +203,37 @@ public static class CrimsonDesertFieldManifestInspector
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(inspections);
         var seen = new Dictionary<string, CrimsonDesertFieldClaim>(StringComparer.OrdinalIgnoreCase);
+        var recordWide = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var recordFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var collisions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var inspection in inspections)
         {
             if (!inspection.IsValid) continue;
             foreach (var claim in inspection.Claims)
             {
+                // A record-wide edit (delete/new/clone/list mutation) may
+                // overlap any field edit of that same record. Index record
+                // identity once; don't quadratically compare sibling fields.
+                if (claim.Kind.Equals("table", StringComparison.OrdinalIgnoreCase))
+                {
+                    var split = claim.TargetKey.LastIndexOf(':');
+                    if (split > "table:".Length)
+                    {
+                        var recordKey = claim.TargetKey[..split];
+                        if (claim.IsSimpleSet)
+                        {
+                            if (recordWide.Contains(recordKey))
+                                collisions.Add(claim.TargetKey);
+                            recordFields.Add(recordKey);
+                        }
+                        else
+                        {
+                            if (recordFields.Contains(recordKey))
+                                collisions.Add(claim.TargetKey);
+                            recordWide.Add(recordKey);
+                        }
+                    }
+                }
                 if (seen.TryGetValue(claim.TargetKey, out var earlier) &&
                     (!claim.IsSimpleSet || !earlier.IsSimpleSet ||
                      !claim.ValueFingerprint.Equals(earlier.ValueFingerprint, StringComparison.OrdinalIgnoreCase)))

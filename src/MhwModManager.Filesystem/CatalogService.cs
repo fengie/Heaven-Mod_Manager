@@ -283,10 +283,9 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     public async Task EnsureCapturedAsync(IEnumerable<ModDescriptor> mods,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        // Crimson Desert DMM / native archive sources are staged for review
-        // only. There is no version-verified game deploy backend, so indexing
-        // must not call the live-file scanner or turn import into a failed batch.
-        if (CrimsonDesertGameAdapter.Matches(scanner.Profile))
+        // A staging-only adapter must keep mod sources visible for review, but
+        // cannot accidentally enable direct live-file capture during indexing.
+        if (!GameAdapters.DirectFileAdmission(scanner.Profile).Allowed)
         {
             ct.ThrowIfCancellationRequested();
             return;

@@ -5,15 +5,13 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     public DeploymentPlan Build(PlannerSnapshot snapshot)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        // A previously indexed package must not bypass scanner admission.
-        // Crimson Desert native archive registries require a versioned backend,
-        // and a generic "root" path never proves safe game compatibility.
-        if (CrimsonDesertGameAdapter.Matches(game))
+        // Import, cached file inventories and saved rules never grant
+        // direct-game-write permission. Keep this guard parallel to ModScanner.
+        var admission = GameAdapters.DirectFileAdmission(game);
+        if (!admission.Allowed)
             return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [],
                 [new ConflictDecision("<game>", ConflictKind.Incompatible, true, null,
-                    "crimson-deployment-unverified",
-                    "Crimson Desert packages may be staged for review, but no build-verified overlay backend exists. Live game file deployment is blocked.",
-                    Confidence.Explicit)], []);
+                    admission.Code, admission.Reason, Confidence.Explicit)], []);
         var enabled = snapshot.Mods.Where(m => m.Enabled && !m.IsSuperseded).ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
         foreach (var family in snapshot.Mods.Where(mod=>mod.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)
             .GroupBy(mod=>mod.FamilyId!))
