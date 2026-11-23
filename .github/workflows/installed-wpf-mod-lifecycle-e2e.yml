@@ -178,8 +178,8 @@ jobs:
           $evidence = $env:MHW_GAME_UI_EVIDENCE
           $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
-          $expectedCases = 14
-          $remainingCases = $expectedCases - 3
+          $expectedCases = 15
+          $remainingCases = $expectedCases - 4
           $focused = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
           $output = @(& $runner '--filter-class' $class '--filter-not-method' $method '--filter-not-method' $focused 2>&1)
           $exit = $LASTEXITCODE
