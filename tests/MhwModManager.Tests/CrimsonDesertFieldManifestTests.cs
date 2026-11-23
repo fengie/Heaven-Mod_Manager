@@ -103,4 +103,34 @@ public sealed class CrimsonDesertFieldManifestTests
         Assert.False(Assert.Single(inspected.Claims).IsSimpleSet);
         Assert.Single(CrimsonDesertFieldManifestInspector.FindClaimCollisions([inspected, inspected]));
     }
+
+    [Fact]
+    public void Record_wide_operation_must_conflict_with_a_field_edit_on_the_same_record()
+    {
+        var remove = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"id_10","op":"delete_record"}]}]}""");
+        var edit = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"id_10","field":"buy_price","value":5}]}]}""");
+
+        Assert.True(remove.IsValid, remove.Reason);
+        Assert.True(edit.IsValid, edit.Reason);
+        Assert.Contains(CrimsonDesertFieldManifestInspector.FindClaimCollisions([remove, edit]),
+            x => x.StartsWith("table:iteminfo:id_10:", StringComparison.Ordinal));
+        Assert.Contains(CrimsonDesertFieldManifestInspector.FindClaimCollisions([edit, remove]),
+            x => x.StartsWith("table:iteminfo:id_10:", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Record_wide_operation_must_not_conflict_with_an_unrelated_record_or_table()
+    {
+        var remove = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"id_10","op":"delete_record"}]}]}""");
+        var unrelated = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"id_11","field":"buy_price","value":5}]},{"kind":"table","table":"Skill","ops":[{"key":"id_10","field":"buy_price","value":7}]}]}""");
+
+        Assert.True(remove.IsValid, remove.Reason);
+        Assert.True(unrelated.IsValid, unrelated.Reason);
+        Assert.Empty(CrimsonDesertFieldManifestInspector.FindClaimCollisions([remove, unrelated]));
+    }
+
 }
