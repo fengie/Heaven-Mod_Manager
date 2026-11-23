@@ -503,6 +503,7 @@ public static class ModBoundaryDiscovery
 
     private static bool IsPackageManifest(string file)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         // DMM v3/v3.1 files may be named "anything.field.json" and may
         // reference companion DDS/WEM files. Never split that authored set.
         return PackageManifests.Contains(file)
@@ -512,6 +513,7 @@ public static class ModBoundaryDiscovery
 
     private static bool IsPearlAbyssArchiveSet(string[] relativePaths)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var payload = relativePaths.Where(path => !IsSupplementary(path)).ToArray();
         if (payload.Length < 2 || payload.Length > 128) return false;
         if (payload.Any(path => !path.EndsWith(".paz", StringComparison.OrdinalIgnoreCase)

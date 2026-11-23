@@ -133,6 +133,7 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
     /// </summary>
     public static bool Matches(GameProfile? game)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (game is null) return false;
         if (game.AdapterId.Equals("crimson-desert", StringComparison.OrdinalIgnoreCase)) return true;
         // A missing/broken meta registry during an interrupted game update
@@ -143,6 +144,7 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
 
     public static bool HasGameLayout(string root)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(root)) return false;
         return File.Exists(Path.Combine(root, "bin64", "CrimsonDesert.exe"))
             && File.Exists(Path.Combine(root, "meta", "0.papgt"))
@@ -151,6 +153,7 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
 
     public override IReadOnlyList<GameProfile> Discover(IEnumerable<string> candidateRoots)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(candidateRoots);
         return candidateRoots.Where(HasGameLayout)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -160,6 +163,7 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
 
     public override string Category(string managedPath)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var normalized = managedPath.Replace('\\', '/');
         if (normalized.EndsWith(".field.json", StringComparison.OrdinalIgnoreCase))
             return "Crimson Desert field-patch manifest";
@@ -175,6 +179,7 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
 
     public override IReadOnlyList<AdapterValidation> Validate(GameProfile game)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var issues = base.Validate(game).ToList();
         if (!HasGameLayout(game.GameRoot))
             issues.Add(new("crimson-layout-unverified",

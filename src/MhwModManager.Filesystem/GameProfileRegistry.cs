@@ -491,6 +491,7 @@ public sealed partial class GameProfileRegistry
 
     private static string InferGameRoot(string executable)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var parent=Directory.GetParent(executable)?.FullName??throw new InvalidOperationException("The selected executable has no parent directory.");
         var dir=new DirectoryInfo(parent);
         // Crimson Desert ships its executable directly below bin64. Using

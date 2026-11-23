@@ -99,11 +99,14 @@ public sealed record GameProfile(
     /// Crimson Desert profiles are staging-only until a build-verified loader exists.
     /// The game files and save locations must never be guessed as mod targets.
     /// </summary>
-    public static GameProfile CrimsonDesert(string root, string? store = null) =>
-        new("crimson-desert", "Crimson Desert", Path.GetFullPath(root),
+    public static GameProfile CrimsonDesert(string root, string? store = null)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return new("crimson-desert", "Crimson Desert", Path.GetFullPath(root),
             @"bin64\CrimsonDesert.exe", "CrimsonDesert", "crimson-desert", "",
             GameSupportTier.AdapterEnhanced, "crimsondesert", null, false,
             "3321460", store);
+    }
 
     public static GameProfile Generic(
         string id,
