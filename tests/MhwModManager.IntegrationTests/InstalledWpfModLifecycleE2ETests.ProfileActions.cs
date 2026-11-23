@@ -239,11 +239,33 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         ToggleState? ReadToggle(string name) => FindModToggle(window, name) is { } checkbox
             ? ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState : null;
         await WaitForAsync(()=>File.Exists(alternateLive) && File.ReadAllBytes(alternateLive).SequenceEqual(payload),UiTimeout,"second package automatically active",ct);
+        // Disk publication can finish before the asynchronous discovery/reload paints
+        // its enabled checkbox. An unconditional Toggle() on an Off row would turn
+        // the package ON rather than testing the requested user disable.
+        await WaitForAsync(() => FindModToggle(window,alternateName) is { } checkbox &&
+            checkbox.Current.IsEnabled &&
+            ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On,
+            UiTimeout, "new package enabled in Mods before user disable", ct);
         var alternate=await WaitForElementAsync(()=>FindModToggle(window,alternateName),UiTimeout,"new package",ct);
-        ((TogglePattern)alternate.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
-        await WaitForAsync(()=>!File.Exists(alternateLive),UiTimeout,"user disabled second package",ct);
+        var toggle=(TogglePattern)alternate.GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On,toggle.Current.ToggleState);
+        toggle.Toggle();
+        try
+        {
+            // Check both WPF choice and deployed bytes; neither alone is success.
+            await WaitForAsync(()=>ReadToggle(alternateName)==ToggleState.Off && !File.Exists(alternateLive),
+                UiTimeout,"user disabled second package",ct);
+        }
+        catch (TimeoutException ex)
+        {
+            // Only fixture-owned boolean/state evidence; no personal paths or files.
+            var visible=ReadToggle(alternateName)?.ToString() ?? "not-visible";
+            throw new TimeoutException(
+                $"Second-package disable did not converge: ui={visible}; live-file-present={File.Exists(alternateLive)}.",ex);
+        }
         await WaitForAsync(() => ReadToggle(alternateName) == ToggleState.Off && ReadToggle(primaryName) is null,
             UiTimeout, "only independent disabled package visible", ct);
+        passed.Add("Wait for active package checkbox and verify user disable persists in UI and game files");
         async Task<AutomationElement> Button(string label) => await WaitForElementAsync(
             () => FindButton(window, label, enabled: true), UiTimeout, label, ct);
 

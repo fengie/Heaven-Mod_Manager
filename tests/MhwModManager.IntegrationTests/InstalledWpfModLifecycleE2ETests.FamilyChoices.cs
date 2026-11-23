@@ -64,9 +64,19 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         async Task OpenFamily(string name)
         {
             await SelectModsTabAsync(window, ct);
+            // File publication can precede completion of the transaction and
+            // WPF row refresh. Do not drive an input/selection through the
+            // operation overlay: wait until the app is interactable, then
+            // exercise the real auto-filter without an Enter-key workaround.
+            await WaitForAsync(() => window.Current.IsEnabled &&
+                Find(window, e => e.Current.Name == "Current operation phase" &&
+                    !e.Current.IsOffscreen) is null,
+                UiTimeout, "WPF ready before opening family " + name, ct);
             var search = await WaitForElementAsync(() => Find(window, e =>
                 e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods"), UiTimeout, "Mods search", ct);
             ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).SetValue(name);
+            await WaitForAsync(() => ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).Current.Value == name,
+                UiTimeout, "WPF search accepted family " + name, ct);
             try
             {
                 await WaitForElementAsync(() =>
@@ -82,13 +92,36 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             }
             catch (TimeoutException error)
             {
-                string state;
+                // The secondary catalog/UI inventory is best-effort: if it
+                // fails (for example a transient unavailable automation
+                // element), retain independent UI observations instead.
+                static string Safe(Func<string> observation)
+                {
+                    try { return observation(); }
+                    catch (Exception ex) { return "unavailable(" + ex.GetType().Name + ")"; }
+                }
+                var state = "expected=" + name +
+                    "; input=" + Safe(() => ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).Current.Value) +
+                    "; windowEnabled=" + Safe(() => window.Current.IsEnabled.ToString()) +
+                    "; overlayVisible=" + Safe(() => (Find(window, node => node.Current.Name == "Current operation phase" &&
+                        !node.Current.IsOffscreen) is not null).ToString());
                 try
                 {
                     var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
                     var query = currentSearch?.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
                     var grid = Find(window, e => e.Current.ControlType == ControlType.DataGrid && e.Current.Name == "Mod library");
-                    var realized = grid?.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)).Count;
+                    var dataRows = grid?.FindAll(TreeScope.Children,
+                        new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem))
+                        .Cast<AutomationElement>().Take(8).ToArray() ?? [];
+                    var realized = dataRows.Length;
+                    var realizedNames = dataRows.Select(row => row.Current.Name).ToArray();
+                    var selectable = dataRows.Count(row =>
+                        row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out _));
+                    var checkboxes = grid?.FindAll(TreeScope.Descendants,
+                        new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.CheckBox))
+                        .Cast<AutomationElement>().Take(12)
+                        .Select(box => box.Current.Name + (box.Current.IsOffscreen ? " (offscreen)" : ""))
+                        .ToArray() ?? [];
                     var windows = AutomationElement.RootElement.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id))
                         .Cast<AutomationElement>().Take(6).Select(e => e.Current.ClassName + " " + e.Current.Name).ToArray();
                     var catalog = run.OpenCatalog();
@@ -99,14 +132,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                         var files = await catalog.GetModFilesAsync(ct);
                         var families = LogicalModFamilies.Build(mods, files, run.FirstGame);
                         var matching = families.Where(f => f.DisplayName == name).ToArray();
-                        state = $"Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
+                        state += $"; Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
                             $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
                             $"catalog families={families.Count}, matching families={matching.Length}, matching members={matching.Sum(f => f.Members.Count)}, " +
-                            $"owned windows=[{string.Join(" | ", windows)}]";
+                            $"rows=[{string.Join(" | ", realizedNames)}], selectable={selectable}, " +
+                            $"checkboxes=[{string.Join(" | ", checkboxes)}], owned windows=[{string.Join(" | ", windows)}]";
                     }
                     finally { Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool); }
                 }
-                catch (Exception diagnosticFailure) { state = $"Diagnostic read failed ({diagnosticFailure.GetType().Name})"; }
+                catch (Exception diagnosticFailure) { state += $"; Extended diagnostics unavailable ({diagnosticFailure.GetType().Name})"; }
                 throw new TimeoutException($"{error.Message}. {state}.", error);
             }
         }

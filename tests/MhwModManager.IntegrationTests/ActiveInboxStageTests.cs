@@ -1,4 +1,6 @@
+using System.Reflection;
 using MhwModManager.App.ViewModels;
+using MhwModManager.Updater;
 using MhwModManager.Core;
 using Xunit;
 
@@ -39,6 +41,107 @@ public sealed class ActiveInboxStageTests
             Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
             Assert.False(row.HasStagedChanges);
             Assert.Equal("known outfit",File.ReadAllText(payload));
+        });
+
+    [Fact]
+    public Task Foreground_handoff_denial_preserves_explicit_disabled_choice_for_later_activation() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var folder=Path.Combine(services.Paths.ModsRoot,"Deferred Disabling");
+            var payload=Path.Combine(folder,services.Paths.Game.ModRootRelativePath,"deferred.bin");
+            Directory.CreateDirectory(Path.GetDirectoryName(payload)!);
+            await File.WriteAllTextAsync(payload,"immutable source payload",ct);
+            await services.Catalog.RefreshFoldersAsync(ct);
+            var mod=Assert.Single(await services.Database.GetModsAsync(ct));
+            using var vm=new MainWindowViewModel(services){ ConfirmBeforeApply=false };
+            var row=new ModRowViewModel(Assert.Single(LogicalModFamilies.Build([mod])),()=>{});
+            vm.Mods.Add(row);
+            row.StagedEnabled=true;
+            await vm.ApplyCommand.ExecuteAsync(null);
+            var target=Path.Combine(services.Paths.Game.LiveModRoot,"deferred.bin");
+            Assert.True(File.Exists(target),vm.StatusText);
+            Assert.True(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+
+            var gateField=typeof(MainWindowViewModel).GetField("programUpdateHandoffGate",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            var gate=Assert.IsType<UpdateHandoffGate>(gateField!.GetValue(vm));
+            Assert.True(gate.TryArmHandoff());
+            row.StagedEnabled=false;
+            try
+            {
+                var choice=typeof(MainWindowViewModel).GetMethod("OnModChoiceChanged",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                choice!.Invoke(vm,null);
+                var drain=typeof(MainWindowViewModel).GetMethod("DrainAutomaticChangesAsync",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                await (Task)drain!.Invoke(vm,null)!;
+                Assert.True(row.HasStagedChanges);
+                Assert.False(row.StagedEnabled);
+                Assert.True(File.Exists(target),"An armed updater gate must not mutate game files.");
+                Assert.True(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+                var retry=typeof(MainWindowViewModel).GetField("retryExplicitOnActivation",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.True(Assert.IsType<bool>(retry!.GetValue(vm)),
+                    "The automatic dispatcher must not discard a rejected user disable.");
+                Assert.Contains("pending",vm.StatusText,StringComparison.OrdinalIgnoreCase);
+            }
+            finally { gate.DisarmHandoff(); }
+
+            // Re-activation requeues the original user choice rather than re-toggling it.
+            vm.ResumeDeferredDiscovery();
+            var deferred=typeof(MainWindowViewModel).GetField("userApplyRequested",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.True(Assert.IsType<bool>(deferred!.GetValue(vm)));
+            await vm.ApplyCommand.ExecuteAsync(null);
+            Assert.False(File.Exists(target),vm.StatusText);
+            Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+            Assert.False(row.HasStagedChanges);
+            Assert.Equal("immutable source payload",File.ReadAllText(payload));
+        });
+
+    [Fact]
+    public Task Foreground_handoff_denial_preserves_discovered_inbox_for_later_activation() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var source=Path.Combine(services.Paths.ModsRoot,"Deferred Discovery",
+                services.Paths.Game.ModRootRelativePath,"new.bin");
+            Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+            await File.WriteAllTextAsync(source,"discovered bytes",ct);
+            await services.Catalog.RefreshFoldersAsync(ct);
+            var pending=await services.Database.GetSettingsByPrefixAsync("discovery.pending:",ct);
+            Assert.Single(pending);
+            using var vm=new MainWindowViewModel(services) { ConfirmBeforeApply=false };
+            var gateField=typeof(MainWindowViewModel).GetField("programUpdateHandoffGate",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var gate=Assert.IsType<UpdateHandoffGate>(gateField!.GetValue(vm));
+            var request=typeof(MainWindowViewModel).GetMethod("RequestDiscoveryCheck",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var drain=typeof(MainWindowViewModel).GetMethod("DrainAutomaticChangesAsync",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var deferred=typeof(MainWindowViewModel).GetField("retryDiscoveryOnActivation",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var queued=typeof(MainWindowViewModel).GetField("discoveryRequested",
+                BindingFlags.Instance|BindingFlags.NonPublic);
+            var target=Path.Combine(services.Paths.Game.LiveModRoot,"new.bin");
+
+            Assert.True(gate.TryArmHandoff());
+            try
+            {
+                request!.Invoke(vm,null);
+                await (Task)drain!.Invoke(vm,null)!;
+                Assert.True(Assert.IsType<bool>(deferred!.GetValue(vm)),
+                    "A refused discovery check must remain scheduled for safe activation.");
+                Assert.Single(await services.Database.GetSettingsByPrefixAsync("discovery.pending:",ct));
+                Assert.False(File.Exists(target),"Updater ownership must prevent a concurrent discovery write.");
+            }
+            finally { gate.DisarmHandoff(); }
+
+            vm.ResumeDeferredDiscovery();
+            Assert.True(Assert.IsType<bool>(queued!.GetValue(vm)));
+            await (Task)drain!.Invoke(vm,null)!;
+            Assert.Equal("discovered bytes",await File.ReadAllTextAsync(target,ct));
+            Assert.Empty(await services.Database.GetSettingsByPrefixAsync("discovery.pending:",ct));
+            Assert.Equal("discovered bytes",await File.ReadAllTextAsync(source,ct));
         });
 
     [Fact]
