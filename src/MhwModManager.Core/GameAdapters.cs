@@ -135,8 +135,10 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
     {
         if (game is null) return false;
         if (game.AdapterId.Equals("crimson-desert", StringComparison.OrdinalIgnoreCase)) return true;
-        return game.ExecutableRelativePath.Equals(@"bin64\CrimsonDesert.exe", StringComparison.OrdinalIgnoreCase)
-            && HasGameLayout(game.GameRoot);
+        // A missing/broken meta registry during an interrupted game update
+        // must not turn a known Crimson executable back into a writable generic
+        // profile. HasGameLayout is for readiness, not for withdrawing protection.
+        return game.ExecutableRelativePath.Equals(@"bin64\CrimsonDesert.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool HasGameLayout(string root)
