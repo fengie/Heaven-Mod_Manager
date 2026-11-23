@@ -8,7 +8,7 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
         // A previously indexed package must not bypass scanner admission.
         // Crimson Desert native archive registries require a versioned backend,
         // and a generic "root" path never proves safe game compatibility.
-        if (game?.AdapterId.Equals("crimson-desert", StringComparison.OrdinalIgnoreCase) == true)
+        if (CrimsonDesertGameAdapter.Matches(game))
             return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [],
                 [new ConflictDecision("<game>", ConflictKind.Incompatible, true, null,
                     "crimson-deployment-unverified",
