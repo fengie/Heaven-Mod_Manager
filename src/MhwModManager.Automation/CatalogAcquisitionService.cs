@@ -296,6 +296,7 @@ public sealed class CatalogAcquisitionService
 
     private static long ReadAvailableFreeSpace(string path)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         var volume = Path.GetPathRoot(Path.GetFullPath(path));
         if (string.IsNullOrWhiteSpace(volume))
             throw new IOException("Cannot resolve the catalog download storage volume.");
