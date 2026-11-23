@@ -131,6 +131,29 @@ public sealed class CrimsonDesertIntakeTests
         Assert.False(Directory.Exists(Path.Combine(fixture.GameRoot, "mods")));
     }
 
+    [Fact]
+    public void Dmm_field_manifest_with_assets_remains_one_coherent_mod()
+    {
+        var result = ModBoundaryDiscovery.Discover(
+            ["sword.field.json", "icons/sword.dds", "voice/sword.wem"], "Sword Pack");
+        Assert.False(result.NeedsReview);
+        var candidate = Assert.Single(result.Candidates);
+        Assert.Equal(ModBoundaryKind.Folder, candidate.Kind);
+        Assert.Equal(".", candidate.RelativePath);
+    }
+
+    [Theory]
+    [InlineData(true, new[] { "0.pamt", "0.paz", "1.paz" })]
+    [InlineData(false, new[] { "0.paz", "1.paz" })]
+    [InlineData(false, new[] { "0.pamt", "0.paz", "meta/0.papgt" })]
+    public void Pearl_abyss_archive_sets_require_an_index_and_preserve_registry_safety(
+        bool expectedStaging, string[] files)
+    {
+        var result = ModBoundaryDiscovery.Discover(files, "Crimson Archive");
+        Assert.Equal(expectedStaging, result.Candidates.Count == 1
+            && result.Candidates[0].Kind == ModBoundaryKind.Folder && !result.NeedsReview);
+    }
+
     private sealed class CrimsonFixture : IDisposable
     {
         public string Root { get; } = Path.Combine(Path.GetTempPath(), "umm-crimson-" + Guid.NewGuid().ToString("N"));
