@@ -1294,7 +1294,8 @@ public sealed class GameModIntakeService
             if (new FileInfo(jsonPath).Length > MaxThirdPartyManifestBytes)
                 throw new InvalidDataException("JSON source exceeds the bounded 256 KiB manifest budget.");
             using var jsonInput = File.OpenRead(jsonPath);
-            var hint = ReadBoundedManifestGame(jsonInput, MaxThirdPartyManifestBytes, inspectV3Json: true);
+            var hint = ReadBoundedManifestGame(jsonInput, MaxThirdPartyManifestBytes,
+                inspectV3Json: true, allowMetadataGameHint: false);
             if (string.IsNullOrWhiteSpace(hint)) continue;
             if (declared is not null && !GameProfile.NormalizeId(hint).Equals(
                     GameProfile.NormalizeId(declared), StringComparison.OrdinalIgnoreCase))
@@ -1341,7 +1342,10 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Archive game metadata exceeds the cumulative 4 MiB inspection limit; manual review required.");
             inspectedMetadataBytes += entry.Length;
             using var input = entry.Open();
-            var hint = ReadBoundedManifestGame(input, maxBytes, isFieldJson, inspectV3Json: !isFieldJson);
+            var recognizedManifest = new[] { "mod-intake.json", "mod.json", "manifest.json", "meta.json" }
+                .Contains(filename, StringComparer.OrdinalIgnoreCase);
+            var hint = ReadBoundedManifestGame(input, maxBytes, isFieldJson,
+                inspectV3Json: !isFieldJson, allowMetadataGameHint: recognizedManifest);
             if (string.IsNullOrWhiteSpace(hint)) continue;
             if (declared is not null &&
                 !GameProfile.NormalizeId(hint).Equals(GameProfile.NormalizeId(declared),
@@ -1352,7 +1356,8 @@ public sealed class GameModIntakeService
         return declared;
     }
 
-    private static string? ReadBoundedManifestGame(Stream input, int maxBytes, bool isFieldJson = false, bool inspectV3Json = false)
+    private static string? ReadBoundedManifestGame(Stream input, int maxBytes,
+        bool isFieldJson = false, bool inspectV3Json = false, bool allowMetadataGameHint = true)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // Advertised sizes in untrusted compressed headers are not an actual-output limit.
@@ -1401,7 +1406,10 @@ public sealed class GameModIntakeService
             }
             catch (JsonException) { } // An unrelated malformed config is not Crimson identity.
         }
-        return TryReadJsonGame(text);
+        // Only the established recognized game-manifest filenames may provide
+        // arbitrary gameId/game fields. Settings.json and unrelated payload
+        // configs are not authoritative for cross-game staging.
+        return allowMetadataGameHint ? TryReadJsonGame(text) : null;
     }
 
     private static string? TryReadJsonGame(string text)
