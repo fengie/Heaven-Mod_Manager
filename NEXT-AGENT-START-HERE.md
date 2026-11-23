@@ -6,7 +6,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.140 source:** [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969) merged on main@b7a7cd51, with native Windows Feature 45161454045, Startup Performance 45161454063 and AutoUpdate 45161454455 PASS. Before catalog archive bytes are written, known-size downloads check actual staging-volume free space plus 256 MiB headroom. Immutable v8.8.140 publication, hosted rollback and personal Heaven2 acceptance remain pending.
+- **v8.8.140:** [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969) merged `b7a7cd51`; gates 45161454045/45161454063/45161454455 PASS. Known-size catalog downloads check destination-volume free bytes plus 256 MiB before writing. v8.8.140 release/rollback and personal H2 remain pending.
 
 - **v8.8.139 published history:** #904 verified same-game archive reuse, #962 reparse containment, #963 lease-backed import recovery, and #967 pending-intent recovery. Immutable updater-main-635 from `4de235c1` passed Windows Release Gate 45153233938 and real hosted update/rollback 45154773464. This does not establish personal Heaven2 acceptance; keep #669, #793 and #912 open.
 
