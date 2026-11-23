@@ -206,6 +206,47 @@ public sealed class CatalogActionsTests
             Assert.Equal(1, transport.Requests);
         });
 
+    [Fact]
+    public Task Catalog_download_preflight_refuses_known_payload_before_staging_when_disk_space_is_insufficient() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var game = services.Paths.Game;
+            var mod = Item(game, "Capacity guard");
+            using var buffer = new MemoryStream();
+            using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                using var entry = zip.CreateEntry("Mods/fixture.bin").Open();
+                entry.Write([1, 2, 3]);
+            }
+
+            var archive = buffer.ToArray();
+            var file = new CatalogModFile("fixture", mod.ProviderModId, "capacity-file",
+                "Capacity guard archive", "chosen.zip", CatalogFileCategory.Main, "1", archive.Length);
+            var provider = new CatalogSyncServiceTests.FakeProvider
+            {
+                Acquisition = new(CatalogAcquisitionKind.Direct,
+                    new Uri("https://fixture.example.test/chosen.zip"), null, null, "fixture")
+            };
+            var transport = new ArchiveTransport(archive, incorrectHeader: false);
+            using var http = new HttpClient(transport);
+            var origins = new InstalledCatalogOriginRepository(services.Database);
+            var stagingRoot = Path.Combine(services.Paths.NextStateRoot, "DownloadTemp");
+            var importer = new CatalogAcquisitionService(
+                http, services.Importer, origins, services.Database, services.Hashing,
+                stagingRoot, savedArchiveRoot: services.Paths.DownloadsRoot,
+                availableSpaceProvider: _ => 0);
+
+            var error = await Assert.ThrowsAsync<IOException>(
+                () => importer.AcquireAsync(provider, game, mod, file, ct));
+
+            Assert.Contains("Not enough free disk space", error.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(1, transport.Requests);
+            Assert.Empty(await services.Database.GetModsAsync(ct));
+            Assert.Empty(await origins.GetAllAsync(ct));
+            Assert.Empty(Directory.GetFiles(stagingRoot, "catalog-*"));
+            Assert.Empty(Directory.GetFiles(services.Paths.DownloadsRoot, "*", SearchOption.AllDirectories));
+        });
+
     private sealed class ArchiveTransport(byte[] bytes, bool incorrectHeader) : HttpMessageHandler
     {
         public int Requests { get; private set; }
