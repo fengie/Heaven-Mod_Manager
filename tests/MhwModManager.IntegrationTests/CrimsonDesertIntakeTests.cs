@@ -311,6 +311,34 @@ public sealed class CrimsonDesertIntakeTests
         Assert.True(File.Exists(archive));
     }
 
+    [Fact]
+    public async Task Ordinary_config_json_must_not_masquerade_as_authoritative_game_manifest()
+    {
+        using var fixture = new CrimsonFixture();
+        var archive = Path.Combine(fixture.Root, "anonymous.zip");
+        using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+        {
+            var config = zip.CreateEntry("settings.json");
+            using var writer = new StreamWriter(config.Open());
+            writer.Write("""{"game":"monsterhunterworld","settings":{"enabled":true}}""");
+        }
+        var games = new[]
+        {
+            GameProfile.MonsterHunterWorld(Path.Combine(fixture.Root, "MHW")),
+            GameProfile.CrimsonDesert(fixture.GameRoot)
+        };
+        var intake = new GameModIntakeService(Path.Combine(fixture.Root, "manager"),
+            Path.Combine(fixture.Root, "manager-state"), () => games);
+
+        var report = await intake.ImportPathAsync(archive, Ct);
+
+        Assert.Equal(0, report.Routed);
+        Assert.Equal(1, report.NeedsReview);
+        Assert.False(Directory.Exists(Path.Combine(fixture.Root, "manager", "Mods by Game",
+            "monster-hunter-world", "Inbox")));
+        Assert.True(File.Exists(archive));
+    }
+
     private sealed class CrimsonFixture : IDisposable
     {
         public string Root { get; } = Path.Combine(Path.GetTempPath(), "umm-crimson-" + Guid.NewGuid().ToString("N"));
