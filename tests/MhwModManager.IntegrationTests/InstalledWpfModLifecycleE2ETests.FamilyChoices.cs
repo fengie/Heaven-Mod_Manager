@@ -88,7 +88,18 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                     var currentSearch = Find(window, e => e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods");
                     var query = currentSearch?.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
                     var grid = Find(window, e => e.Current.ControlType == ControlType.DataGrid && e.Current.Name == "Mod library");
-                    var realized = grid?.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)).Count;
+                    var dataRows = grid?.FindAll(TreeScope.Children,
+                        new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem))
+                        .Cast<AutomationElement>().Take(8).ToArray() ?? [];
+                    var realized = dataRows.Length;
+                    var realizedNames = dataRows.Select(row => row.Current.Name).ToArray();
+                    var selectable = dataRows.Count(row =>
+                        row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out _));
+                    var checkboxes = grid?.FindAll(TreeScope.Descendants,
+                        new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.CheckBox))
+                        .Cast<AutomationElement>().Take(12)
+                        .Select(box => box.Current.Name + (box.Current.IsOffscreen ? " (offscreen)" : ""))
+                        .ToArray() ?? [];
                     var windows = AutomationElement.RootElement.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ProcessIdProperty, app.Id))
                         .Cast<AutomationElement>().Take(6).Select(e => e.Current.ClassName + " " + e.Current.Name).ToArray();
                     var catalog = run.OpenCatalog();
@@ -102,7 +113,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                         state = $"Search present={currentSearch is not null}, query matches={query?.Current.Value == name}, " +
                             $"window enabled={window.Current.IsEnabled}, library present={grid is not null}, realized rows={realized}, " +
                             $"catalog families={families.Count}, matching families={matching.Length}, matching members={matching.Sum(f => f.Members.Count)}, " +
-                            $"owned windows=[{string.Join(" | ", windows)}]";
+                            $"rows=[{string.Join(" | ", realizedNames)}], selectable={selectable}, " +
+                            $"checkboxes=[{string.Join(" | ", checkboxes)}], owned windows=[{string.Join(" | ", windows)}]";
                     }
                     finally { Microsoft.Data.Sqlite.SqliteConnection.ClearPool(pool); }
                 }
