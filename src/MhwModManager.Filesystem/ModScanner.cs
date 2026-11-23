@@ -63,7 +63,7 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
         // Staging is allowed; generic folder semantics must never convert
         // Crimson's compiled archive, field patch or ASI loader into live writes.
-        if (game?.AdapterId.Equals("crimson-desert", StringComparison.OrdinalIgnoreCase) == true)
+        if (CrimsonDesertGameAdapter.Matches(game))
             throw new InvalidDataException(
                 "Crimson Desert packages are staging-only until a build-verified overlay/ASI backend is integrated.");
         if ((!managedPackage && mod.RequiresLayoutReview) || mod.FamilyRole=="Review")
