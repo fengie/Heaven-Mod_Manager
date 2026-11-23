@@ -115,9 +115,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $packagedScripts | Out-Null
           Copy-Item -Path scripts/diagnostics/Capture-Diagnostics.ps1,scripts/diagnostics/Master-Debug.ps1 -Destination $packagedScripts
 
-      - name: Verify three package picker and saved-choice cases
-        id: picker
-        timeout-minutes: 12
+      - name: Prepare disposable WPF UI evidence and game-launch probe
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -129,12 +127,39 @@ jobs:
           & $compiler /nologo /target:winexe "/out:$env:RUNNER_TEMP\mhw-game-launch-probe.exe" (Resolve-Path tests/fixtures/packaged-ui/GameLaunchProbe.cs).Path
           if ($LASTEXITCODE -ne 0) { throw 'Disposable game launch probe failed to compile.' }
           "MHW_GAME_UI_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          $env:MHW_GAME_UI_EVIDENCE = $evidence
+
+      - name: Verify Bright Memory's second-package disable before the full profile matrix
+        id: bright_memory
+        timeout-minutes: 7
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
+          $output = @(& $runner '--filter-method' $method 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Add-Content -LiteralPath (Join-Path $env:MHW_GAME_UI_EVIDENCE 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Focused Bright Memory WPF regression failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch 'succeeded:\s+1\b' -or $summary -notmatch 'skipped:\s+0\b') {
+            throw 'Focused Bright Memory WPF regression did not execute exactly one passing case.'
+          }
+
+      - name: Verify three package picker and saved-choice cases
+        id: picker
+        timeout-minutes: 12
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          $evidence = $env:MHW_GAME_UI_EVIDENCE
           $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
           $output = @(& $runner '--filter-method' $method 2>&1)
           $exit = $LASTEXITCODE
-          $output | Set-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
+          $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF picker acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
@@ -144,7 +169,7 @@ jobs:
 
 
       - name: Verify remaining lifecycle cases and all registered game receipts
-        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' }}
+        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' && steps.bright_memory.outcome == 'success' && steps.picker.outcome == 'success' }}
         timeout-minutes: 53
         shell: powershell
         run: |
@@ -153,9 +178,10 @@ jobs:
           $evidence = $env:MHW_GAME_UI_EVIDENCE
           $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
-          $expectedCases = 14
-          $remainingCases = $expectedCases - 3
-          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method 2>&1)
+          $expectedCases = 15
+          $remainingCases = $expectedCases - 4
+          $focused = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
+          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method $focused 2>&1)
           $exit = $LASTEXITCODE
           $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
