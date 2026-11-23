@@ -126,6 +126,19 @@ public sealed class CrimsonDesertGameAdapter : FolderGameAdapter
     public override string Id { get; } = "crimson-desert";
     public override string DisplayName { get; } = "Crimson Desert";
 
+    /// <summary>
+    /// Legacy generic profiles pointing to a verified Crimson Desert layout
+    /// receive the same conservative game protection as newly registered ones.
+    /// A guessed title or executable name by itself is insufficient evidence.
+    /// </summary>
+    public static bool Matches(GameProfile? game)
+    {
+        if (game is null) return false;
+        if (game.AdapterId.Equals("crimson-desert", StringComparison.OrdinalIgnoreCase)) return true;
+        return game.ExecutableRelativePath.Equals(@"bin64\CrimsonDesert.exe", StringComparison.OrdinalIgnoreCase)
+            && HasGameLayout(game.GameRoot);
+    }
+
     public static bool HasGameLayout(string root)
     {
         if (string.IsNullOrWhiteSpace(root)) return false;
@@ -200,6 +213,7 @@ public static class GameAdapters
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         lock (Gate)
-            return Registered.GetValueOrDefault(game?.AdapterId ?? "mhw", Registered["generic-folder"]);
+            return CrimsonDesertGameAdapter.Matches(game) ? Registered["crimson-desert"]
+                : Registered.GetValueOrDefault(game?.AdapterId ?? "mhw", Registered["generic-folder"]);
     }
 }
