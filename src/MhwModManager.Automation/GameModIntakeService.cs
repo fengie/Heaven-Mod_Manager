@@ -1271,6 +1271,8 @@ public sealed class GameModIntakeService
                 throw new InvalidDataException("Field-JSON manifest exceeds the 256 KiB inspection budget.");
             using var fieldInput = File.OpenRead(fieldPath);
             var hint = ReadBoundedManifestGame(fieldInput, MaxThirdPartyManifestBytes, isFieldJson: true);
+            if (string.IsNullOrWhiteSpace(hint))
+                throw new InvalidDataException("Field-JSON did not identify a supported game; manual review required.");
             if (declared is not null && !GameProfile.NormalizeId(hint).Equals(
                     GameProfile.NormalizeId(declared), StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Folder declares conflicting target games; manual review required.");
