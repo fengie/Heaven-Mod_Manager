@@ -64,9 +64,19 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         async Task OpenFamily(string name)
         {
             await SelectModsTabAsync(window, ct);
+            // File publication can precede completion of the transaction and
+            // WPF row refresh. Do not drive an input/selection through the
+            // operation overlay: wait until the app is interactable, then
+            // exercise the real auto-filter without an Enter-key workaround.
+            await WaitForAsync(() => window.Current.IsEnabled &&
+                Find(window, e => e.Current.Name == "Current operation phase" &&
+                    !e.Current.IsOffscreen) is null,
+                UiTimeout, "WPF ready before opening family " + name, ct);
             var search = await WaitForElementAsync(() => Find(window, e =>
                 e.Current.ControlType == ControlType.Edit && e.Current.Name == "Search mods"), UiTimeout, "Mods search", ct);
             ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).SetValue(name);
+            await WaitForAsync(() => ((ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern)).Current.Value == name,
+                UiTimeout, "WPF search accepted family " + name, ct);
             try
             {
                 await WaitForElementAsync(() =>
