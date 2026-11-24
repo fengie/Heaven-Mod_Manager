@@ -223,7 +223,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
     // Native common dialogs maintain their own selected item and edit buffer. Simulate
     // typing into the focused edit and accepting it, as the Windows user would.
-    private static async Task TypeNativePathAsync(AutomationElement field, string path, int pid, CancellationToken ct)
+    private static async Task TypeNativePathAsync(AutomationElement field, string path, int pid, CancellationToken ct, bool submit = true)
     {
         field.SetFocus();
         await WaitForAsync(() => AutomationElement.FocusedElement.Current.ProcessId == pid &&
@@ -242,7 +242,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             await WaitForAsync(() => ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value
                 .Equals(path, StringComparison.OrdinalIgnoreCase), UiTimeout, "typed native path", ct);
             Assert.Equal(pid, AutomationElement.FocusedElement.Current.ProcessId);
-            keys.SendKeys("{ENTER}");
+            if (submit) keys.SendKeys("{ENTER}");
         }
         finally { System.Runtime.InteropServices.Marshal.FinalReleaseComObject((object)keys); }
     }
