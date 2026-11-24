@@ -4,7 +4,8 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
-| 8.8.142 | November 24, 2026 · 6:59:16 AM EST | Metadata prepared from integrated catalog capacity fix #975, main b773fc36; immutable release and installed acceptance pending |
+| 8.8.143 | November 24, 2026 · 8:12:00 AM EST | Metadata prepared from integrated catalogue cancellation fix #978, main 76e23fd4; immutable publication and packaged acceptance pending |
+| 8.8.142 | November 24, 2026 · 6:59:16 AM EST | Metadata timestamp; immutable updater-main-641 published November 24, 2026 at 7:42:50 AM EST from 6fcbc3ec; Windows Gate 45394597944 and real hosted update/rollback 45396245072 PASS; physical H2 separately unverified |
 | 8.8.141 | November 23, 2026 · 8:05:23 PM EST | Metadata timestamp; immutable updater-main-639 published November 24, 2026 at 5:49:15 AM EST from ec0c3fb8; Windows Gate 45376714698 and hosted update/rollback 45378447034 PASS; H2 separately unverified |
 | 8.8.140 | November 23, 2026 · 6:14:33 AM EST | Metadata prepared for catalog low-disk preflight #969; immutable updater-main-637 published November 23, 2026 from 3899c7cb (hosted rollback and H2 separately verified only when independently attested) |
 | 8.8.139 | November 22, 2026 · 3:55:13 PM EST | Metadata prepared for storage lifecycle #904/#962/#963 and #967; immutable updater-main-635 published November 23, 2026 from 4de235c1, with Windows Gate 45153233938 and real hosted updater/rollback 45154773464 PASS |

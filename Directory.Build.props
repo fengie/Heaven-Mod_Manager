@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.142</Version>
-    <InformationalVersion>8.8.142-catalog-stream-capacity</InformationalVersion>
+    <Version>8.8.143</Version>
+    <InformationalVersion>8.8.143-catalog-cancellation</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

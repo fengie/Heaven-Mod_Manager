@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.142",
+  "currentVersion": "8.8.143",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.141 updater-main-639, exact ec0c3fb8, Windows Gate 45376714698 and real hosted updater/rollback 45378447034 PASS. #975 integrated at b773fc36 with exact native Feature/Startup/AutoUpdate green.",
+  "immediateParentRevision": "Immutable v8.8.142 updater-main-641, exact 6fcbc3ecb683bb597728f8cf0b9a8190d7695d55, Windows Gate 45394597944 and real hosted updater/rollback 45396245072 PASS. #978 integrated at 76e23fd4bd12dd0dae81074f4566f20d3ce1674b with exact native Feature/Startup/AutoUpdate green.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Reconcile canonical main, integrate exact versioned v8.8.142 metadata, verify immutable publication and real packaged updater/rollback. Keep personal H2, Crimson loader and broad storage/endurance separate. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
+  "nextAgentObligation": "Reconcile canonical main, integrate exact versioned v8.8.143 metadata, verify immutable publication and genuine packaged updater/rollback. Preserve provider access holds, personal H2 and real-corpus/endurance boundaries. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

@@ -1,6 +1,6 @@
-# v8.8.142 - immutable release verified
+# v8.8.143 — catalogue cancellation release pending
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`. Public immutable [updater-main-641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b` after #978. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -8,7 +8,9 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.142 source:** [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975) integrated at `b773fc36`; unknown-length downloads retain 256 MiB headroom per bounded write, 1 GiB cap and lease cleanup. native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed. Publish immutable release and verify real packaged rollback before claiming shipped.
+- **v8.8.143 source:** [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978) integrated at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`; cancellation now propagates through failure health probes and diagnostic persistence. Native Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed. Real provider authorization, installed H2 health and v8.8.143 publication remain separate.
+
+- **v8.8.142 source:** [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975) integrated at `b773fc36`; unknown-length downloads retain 256 MiB headroom per bounded write, 1 GiB cap and lease cleanup. native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed. Published in immutable build 641 with real hosted rollback PASS.
 
 - **v8.8.141:** #973 Crimson staging/managed-file reconciliation shipped in build 639; no verified live PAZ/ASI/loader writes.
 
@@ -31,16 +33,14 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.142 source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55` passed run `45394597944` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.142-heaven-windows-closure.log`.
+Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified.
 
-Verified immutable GitHub release: [updater-main-641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, ZIP SHA-256 `ffccab56ae819140d48a746b118acdb82209b4239a364509537d74f0635b0a8f` and manifest SHA-256 `44d12584b0f40382b9fd5425a0bea18b865b8a10010823c369b274c89268d4fc`. Public release and tag ref independently match the built artifact.
-
-The tested source remains `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+Current v8.8.143 release metadata follows integrated #978 source `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. Exact-main Windows release verification, immutable publication and actual packaged update/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
 
 ## Unresolved risk and acceptance
 
 - **Unresolved risk:** [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) retains genuine hundreds-mod Sifu/Stellar Blade/MHW corpus, large solid RAR/7z, nested mixed-game, installed WPF Explorer drag/drop/progress/cancel and p50/p95 acceptance. Small genuine RAR4/RAR5/7z format regressions merged via #850 and passed [main Windows Release Gate 44047541323](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44047541323); they do not prove these larger workloads.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 639 hosted success is not current personal proof.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 641 hosted success is not current personal proof.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) source-level release continuity repair [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) is integrated at `main@687607cfa3466bd2f55f29f0a333cceaf4c4b4ec` after all five exact-head gates passed. Bounded source/receipt and next-step sync now reject stale candidate preambles; keep root README/CHANGELOG publication-neutrality for the next serialized version, and distinguish packaged release from physical installation.
 
 Preserve security, privacy, publisher ownership, rollback and source-bound verification. Every successor must recursively propagate the continuity protocol and active Learned Rules to the next agent again. Do not break the chain.

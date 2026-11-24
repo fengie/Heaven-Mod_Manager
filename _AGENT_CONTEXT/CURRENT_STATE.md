@@ -1,10 +1,10 @@
-# v8.8.142 - immutable release verified
+# v8.8.143 — canonical state and catalogue cancellation
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`. Public immutable [updater-main-641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
-
-PR #975 integrates the unknown-length catalog capacity repair at main@b773fc36; source checks passed. The versioned v8.8.142 release still requires its own immutable Windows gate and actual packaged updater/rollback. Published [v8.8.141 build 639](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-639), source `ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785`: [Windows Gate 45376714698](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45376714698) and [real packaged update/rollback 45378447034](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45378447034) passed. Personal Heaven2 health and Crimson runtime remain separately unverified. Personal Heaven2 health, in-game armor visuals, mixed-corpus UI p95 and storage endurance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978) integrated at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`; cancellation now propagates through failure health probes and diagnostic persistence. Native Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed. Real provider authorization, installed H2 health and v8.8.143 publication remain separate. Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
 
 ## Integrated implementation
+
+- **v8.8.143 — #978:** propagate caller cancellation through provider failure diagnostics and best-effort failure persistence, while preserving isolated provider-local timeout behavior and existing compliance holds.
 
 - **v8.8.142 source — #975:** bounded 128 KiB coalescing, pre-write 256 MiB staging-volume headroom checks, original 1 GiB archive limit and lease cleanup. Red-to-green three-case native integration proof, native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed. Point-in-time capacity observations are not volume reservations.
 
@@ -56,19 +56,17 @@ PR #975 integrates the unknown-length catalog capacity repair at main@b773fc36; 
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.142 source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55` passed run `45394597944` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.142-heaven-windows-closure.log`.
+Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified.
 
-Verified immutable GitHub release: [updater-main-641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, ZIP SHA-256 `ffccab56ae819140d48a746b118acdb82209b4239a364509537d74f0635b0a8f` and manifest SHA-256 `44d12584b0f40382b9fd5425a0bea18b865b8a10010823c369b274c89268d4fc`. Public release and tag ref independently match the built artifact.
-
-The tested source remains `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+Current v8.8.143 release metadata follows integrated #978 source `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. Exact-main Windows release verification, immutable publication and actual packaged update/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
 
 ## Remaining acceptance and risks
 
 - [#836](https://github.com/fengie/Heaven-Mod_Manager/pull/836) is integrated at main 8ed0a73 and passed exact native checks. Its synthetic tests run in CI; replay/topology benchmark wall times are unmeasured unless separately dispatched, and physical mod corpus remains untested.
 - [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791): actual large RAR/7z and nested Sifu/Stellar Blade mod collections, WPF drag/drop/progress/cancel, unknown layouts and physically installed acceptance remain unverified.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks installed verification. Build 603 has hosted and personal installed proof. v8.8.121 installed health and bounded endurance remain open.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 641 hosted acceptance is verified, not personal health.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in the canonical documentation-only release handoff. No new product binary or version was created.
 
-Next: verify and publish v8.8.141 through the protected Windows release path after exact-head source approval. Confirm immutable artifact source and hashes, real hosted update/rollback, and then independent Heaven2 observation. Do not touch active personal Manager/Mods/State. Confirm the new immutable source, ZIP and manifest, then verify the packaged updater and disposable-home startup. Preserve the active personal Manager session and recursively pass on the Core Rules and Learned Rules.
+Next: integrate synchronized v8.8.143 metadata, verify exact-main Windows release, immutable package and real hosted rollback. Obtain independent physical Heaven2 identity/health when the owned application is running; preserve personal Mods/State and recursive continuity.
 
 Auto Populate checks pre-Iceborne armor materials since v8.8.119. See product PR #913 for profile recovery and verification.
