@@ -35,6 +35,12 @@ try {
         error = 'Source update poll interval must be a JSON integer.'
       },
       @{
+        name = 'controller'
+        invalid = @('missing', 'null', 'false', '""', '"other/controller"', '"HEAVEN-TOOLBOX/repo-autoupdate"', '{}', '[]', '["heaven-toolbox/repo-autoupdate"]')
+        valid = @('"heaven-toolbox/repo-autoupdate"')
+        error = 'Source update controller mismatch.'
+      },
+      @{
         name = 'poll_interval_minutes'
         invalid = @('0', '61')
         valid = @()
@@ -56,7 +62,7 @@ try {
         $failure = $null
         $output = $null
         try { $output = & $validator } catch { $failure = $_.Exception.Message }
-        if ($literal -in $field.valid) {
+        if ($literal -cin $field.valid) {
           if ($failure -or $output -cne 'HEAVEN_AUTOUPDATE_POLICY_OK') {
             throw "$($field.name)=$literal should pass. Observed '$failure'"
           }

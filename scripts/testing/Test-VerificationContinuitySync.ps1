@@ -185,6 +185,22 @@ Overall: **PASS** - 26 passed / 0 failed
         throw 'Sync regression: bounded current-release next steps are stale or lost.'
     }
 
+    # A tiny synthetic handoff cannot detect growth at the real startup budget.
+    # Replay the actual tracked handoff with the fixture's version and a full
+    # publication receipt, preserving its unrelated sections and recursive rules.
+    $realHandoff=Get-Content -LiteralPath (Join-Path $Root 'NEXT-AGENT-START-HERE.md') -Raw -Encoding UTF8
+    $realFixture=[regex]::Replace($realHandoff,'(?m)\A# v[^\r\n]*','# v9.9.9 real handoff budget fixture')
+    if($realFixture -eq $realHandoff){throw 'Sync regression: real handoff title was not recognized.'}
+    $realPath=Join-Path $fixture 'NEXT-AGENT-START-HERE.md'
+    [IO.File]::WriteAllText($realPath,$realFixture,(New-Object Text.UTF8Encoding($false)))
+    & $sync -Root $fixture -SourceSha $source -RunId $run -EvidencePath $evidenceRelative -ManifestPath $manifestPath -ReleaseJsonPath $releasePath -TagRefJsonPath $tagPath
+    $realBytes=(Get-Item -LiteralPath $realPath).Length
+    if($realBytes -gt 7000){throw "Sync regression: generated real handoff is $realBytes UTF-8 bytes; limit is 7000."}
+    $projected=Get-Content -LiteralPath $realPath -Raw -Encoding UTF8
+    if($projected -notmatch [regex]::Escape($source) -or $projected -notmatch [regex]::Escape($run) -or $projected -notmatch 'updater-main-900' -or $projected -notmatch '## Unresolved risk' -or $projected -notmatch 'Mandatory recursive continuity'){
+        throw 'Sync regression: compact real handoff lost exact evidence, risk or successor continuity.'
+    }
+
     $paths=@('_AGENT_CONTEXT\CURRENT_REVISION.json','_AGENT_CONTEXT\CURRENT_STATE.md','NEXT-AGENT-START-HERE.md','_AGENT_CONTEXT\NEXT_STEPS.md')
     $beforeIdempotent=@{}
     foreach($rel in $paths){$beforeIdempotent[$rel]=[IO.File]::ReadAllBytes((Join-Path $fixture $rel))}

@@ -25,7 +25,28 @@ jobs:
       - name: Check out exact source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Bind exact update-policy source (Windows)
+        if: github.event.repository.private == true
+        shell: powershell
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $actual = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $actual -cne $env:EXPECTED_SHA -or $actual -cnotmatch '^[a-f0-9]{40}$') { throw 'SOURCE_REVISION_MISMATCH' }
+          "HEAVEN_AUTOUPDATE_SOURCE_VERIFIED $actual"
+      - name: Bind exact update-policy source (Linux)
+        if: github.event.repository.private == false
+        shell: pwsh
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $actual = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $actual -cne $env:EXPECTED_SHA -or $actual -cnotmatch '^[a-f0-9]{40}$') { throw 'SOURCE_REVISION_MISMATCH' }
+          "HEAVEN_AUTOUPDATE_SOURCE_VERIFIED $actual"
       - name: Enforce automatic update contract (Windows)
         if: github.event.repository.private == true
         shell: powershell

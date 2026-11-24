@@ -77,6 +77,52 @@ public sealed class UpdateInstallLocationReceiptTests : IDisposable
         Assert.False(File.Exists(Locator));
     }
 
+    [Fact]
+    public async Task Identical_valid_locator_is_not_rewritten()
+    {
+        var install = Path.Combine(root, "valid");
+        var identity = await PackageAsync(install);
+        Assert.True(await UpdateInstallLocationReceipt.TryRecordAsync(install, Local, identity, TestToken));
+        var before = await File.ReadAllBytesAsync(Locator, TestToken);
+        File.SetLastWriteTimeUtc(Locator, DateTime.UtcNow.AddDays(-2));
+        var timestamp = File.GetLastWriteTimeUtc(Locator);
+
+        Assert.True(await UpdateInstallLocationReceipt.TryRecordAsync(install, Local, identity, TestToken));
+        Assert.Equal(timestamp, File.GetLastWriteTimeUtc(Locator));
+        Assert.Equal(before, await File.ReadAllBytesAsync(Locator, TestToken));
+    }
+
+    [Fact]
+    public async Task Cancelled_relocation_preserves_last_valid_locator()
+    {
+        var first = Path.Combine(root, "first");
+        var identity = await PackageAsync(first);
+        Assert.True(await UpdateInstallLocationReceipt.TryRecordAsync(first, Local, identity, TestToken));
+        var before = await File.ReadAllBytesAsync(Locator, TestToken);
+        var second = Path.Combine(root, "second");
+        var moved = await PackageAsync(second);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            UpdateInstallLocationReceipt.TryRecordAsync(second, Local, moved, cancellation.Token));
+        Assert.Equal(before, await File.ReadAllBytesAsync(Locator, TestToken));
+    }
+
+    [Fact]
+    public async Task Windows_device_path_cannot_replace_drive_letter_locator()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var install = Path.Combine(root, "valid");
+        var identity = await PackageAsync(install);
+        Assert.True(await UpdateInstallLocationReceipt.TryRecordAsync(install, Local, identity, TestToken));
+        var before = await File.ReadAllBytesAsync(Locator, TestToken);
+
+        Assert.False(await UpdateInstallLocationReceipt.TryRecordAsync(
+            @"\\?\\" + install, Local, identity, TestToken));
+        Assert.Equal(before, await File.ReadAllBytesAsync(Locator, TestToken));
+    }
+
     private async Task<UpdateBuildIdentity> PackageAsync(string install)
     {
         Directory.CreateDirectory(Local);

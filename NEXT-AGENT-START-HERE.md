@@ -10,13 +10,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 - **v8.8.143 source:** [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978) integrated at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`; cancellation now propagates through failure health probes and diagnostic persistence. Native Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed. Real provider authorization, installed H2 health and v8.8.143 publication remain separate.
 
-- **v8.8.142 source:** [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975) integrated at `b773fc36`; unknown-length downloads retain 256 MiB headroom per bounded write, 1 GiB cap and lease cleanup. native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed. Published in immutable build 641 with real hosted rollback PASS.
-
-- **v8.8.141:** #973 Crimson staging/managed-file reconciliation shipped in build 639; no verified live PAZ/ASI/loader writes.
-
-- **v8.8.140:** [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969) merged `b7a7cd51`; gates 45161454045/45161454063/45161454455 PASS. Known-size catalog downloads check destination-volume free bytes plus 256 MiB before writing. immutable v8.8.140 updater-main-637 was published from 3899c7cb; its hosted rollback and personal H2 still need source-bound acceptance.
-
-- **v8.8.139 published history:** #904 verified same-game archive reuse, #962 reparse containment, #963 lease-backed import recovery, and #967 pending-intent recovery. Immutable updater-main-635 from `4de235c1` passed Windows Release Gate 45153233938 and real hosted update/rollback 45154773464. This does not establish personal Heaven2 acceptance; keep #669, #793 and #912 open.
+- Earlier releases and detailed evidence: see [_AGENT_CONTEXT/CURRENT_STATE.md](_AGENT_CONTEXT/CURRENT_STATE.md), [_AGENT_CONTEXT/PROJECT_PLAN.md](_AGENT_CONTEXT/PROJECT_PLAN.md), and [CHANGELOG.md](CHANGELOG.md). Build 641 (v8.8.142) passed hosted update/rollback; build 639 (v8.8.141) shipped Crimson staging only, with no verified live PAZ/ASI/loader writes. Historical evidence remains in Git and the linked records.
 
 - The **Installed files** tab lists read-only mod evidence from registered games, previous installations, Steam Workshop, and discoverable standalone game folders. Filter the list by game, location, or evidence.
 - The inventory identifies backed Workshop records, known external loader footprints, and Unreal mod containers. Local file evidence does not establish that the game loads a mod. Verify uncertain entries before making changes.
