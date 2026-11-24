@@ -1,14 +1,20 @@
-# v8.8.141 — MHW Manual Mod Manager
+# v8.8.142 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 23, 2026 · 8:05:23 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 24, 2026 · 6:59:16 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.141**.
+Current product version: **8.8.142**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.142 — bounded unknown-length catalog downloads
+
+- Guard unknown-length catalog archive downloads with actual staging-volume free-space checks before each bounded write, retaining 256 MiB headroom and the existing 1 GiB archive limit. Coalesce short network reads into 128 KiB chunks without unbounded buffering. [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975)
+- Cover initial and mid-stream low-space refusal, legitimate fragmented-stream acquisition, exact retained bytes, and owner-lease cleanup. Existing known-size preflight and user data protection remain unchanged. These are point-in-time capacity checks, not atomic volume reservations. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669)
+- native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed; 26/26 repository verification checks, 1,451 integration passes, zero failures, 15 skips; zero trace gaps or uncovered call sites. Immutable publication, hosted packaged update/rollback and personal Heaven2 acceptance remain separate.
 
 ## v8.8.141 — game-safe bulk intake and external-modification protection
 
@@ -22,13 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - Before writing a direct catalog archive, check actual staging-volume free space against known payload bytes plus 256 MiB headroom. Insufficient space fails early with a storage error; existing Mods/State and unknown files remain protected. [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969)
 - Native Windows Feature, startup-performance and AutoUpdate gates passed. A new immutable release, hosted updater/rollback and personal Heaven2 health are separate acceptance requirements.
-
-## v8.8.139 — bounded import recovery and verified archive reuse
-
-- Archive downloads reuse identical SHA-256 content within the same game's Downloads folder even across changed source titles; a 16-way concurrent-acquisition regression preserves originals and rejects false digest filenames. [#904](https://github.com/fengie/Heaven-Mod_Manager/pull/904)
-- Import publication rejects reparse-point ancestors before moving or deleting staging and owned paths. [#962](https://github.com/fengie/Heaven-Mod_Manager/pull/962)
-- Archive, FOMOD and Smart Inbox scratch carry process-start-certified lease markers before extraction. Settings can reclaim only exited-owner abandoned scratch after a grace period or when its reclaimable bytes exceed 512 MiB; live/unknown/unleased/reparse state and durable Mods/State remain untouched. [#963](https://github.com/fengie/Heaven-Mod_Manager/pull/963)
-- Source checks and installed release acceptance are separate. Preserve original user content and recovery state; do not infer physical Heaven2 adoption.
 
 ## Current plans & progress
 
