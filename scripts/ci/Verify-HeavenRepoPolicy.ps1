@@ -9,6 +9,7 @@ $kind = ([string]$p.kind).Trim()
 if ($kind -notin @('source','product','release-channel','mirror')) { throw "Unsupported repository kind: $kind" }
 if ($p.source_update.required -isnot [bool] -or $p.source_update.required -ne $true) { throw 'Automatic main source consumption must be required.' }
 if ([string]$p.source_update.strategy -ne 'ff-only') { throw 'Source update strategy must be ff-only.' }
+if ($p.source_update.controller -isnot [string] -or $p.source_update.controller -cne 'heaven-toolbox/repo-autoupdate') { throw 'Source update controller mismatch.' }
 $interval = $p.source_update.poll_interval_minutes
 if ($interval -isnot [int] -and $interval -isnot [long]) { throw 'Source update poll interval must be a JSON integer.' }
 if ($interval -lt 1 -or $interval -gt 60) { throw 'Source update poll interval must be 1-60 minutes.' }
