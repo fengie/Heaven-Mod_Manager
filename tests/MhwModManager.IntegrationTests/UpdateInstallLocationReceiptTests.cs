@@ -52,6 +52,13 @@ public sealed class UpdateInstallLocationReceiptTests : IDisposable
             "{}", TestToken);
         Assert.False(await UpdateInstallLocationReceipt.TryRecordAsync(install, Local, identity, TestToken));
 
+        var project = Path.Combine(root, "project");
+        var development = Path.Combine(project, "release", "fixture");
+        var developmentIdentity = await PackageAsync(development);
+        await File.WriteAllTextAsync(Path.Combine(project, "Build.bat"), "fixture", TestToken);
+        Assert.False(await UpdateInstallLocationReceipt.TryRecordAsync(
+            development, Local, developmentIdentity, TestToken));
+
         var staging = Path.Combine(Updater, "staging", "fixture", "payload");
         var staged = await PackageAsync(staging);
         Assert.False(await UpdateInstallLocationReceipt.TryRecordAsync(staging, Local, staged, TestToken));
