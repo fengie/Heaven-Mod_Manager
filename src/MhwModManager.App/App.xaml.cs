@@ -128,6 +128,16 @@ public sealed partial class App:Application, IDisposable
             }
             try
             {
+                // Preserve a local installation discovery hint before transaction retention.
+                // Failure to record it must not prevent normal startup or updating.
+                await Task.Run(()=>UpdateInstallLocationStore.RecordCurrentAsync(CancellationToken.None));
+            }
+            catch(Exception ex)
+            {
+                logger.Warning(ex,"Program updater installation location could not be recorded.");
+            }
+            try
+            {
                 await Task.Run(()=>UpdateStorageMaintenance.RunAsync(
                     message=>logger.Information("Program updater: {UpdaterMessage}",message),
                     CancellationToken.None));
