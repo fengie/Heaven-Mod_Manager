@@ -280,7 +280,8 @@ public sealed class CatalogActionsTests
                 http, services.Importer, origins, services.Database, services.Hashing,
                 stagingRoot, savedArchiveRoot: services.Paths.DownloadsRoot,
                 availableSpaceProvider: _ => ++queries <= allowedWrites || allowedWrites < 0
-                    ? long.MaxValue : 0);
+                    ? 256L * 1024 * 1024 + 128 * 1024
+                    : 256L * 1024 * 1024);
 
             if (allowedWrites < 0)
             {
@@ -288,8 +289,10 @@ public sealed class CatalogActionsTests
                 Assert.Equal(CatalogImportOutcomeKind.Imported, outcome.Kind);
                 Assert.True(queries >= 2);
                 Assert.Single(await services.Database.GetModsAsync(ct));
-                Assert.Single(await origins.GetAllAsync(ct));
-                Assert.Single(Directory.GetFiles(services.Paths.DownloadsRoot, "*", SearchOption.AllDirectories));
+                var origin = Assert.Single(await origins.GetAllAsync(ct));
+                Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(archive)), origin.ArchiveSha256, ignoreCase: true);
+                var saved = Assert.Single(Directory.GetFiles(services.Paths.DownloadsRoot, "*", SearchOption.AllDirectories));
+                Assert.Equal(archive, await File.ReadAllBytesAsync(saved, ct));
             }
             else
             {

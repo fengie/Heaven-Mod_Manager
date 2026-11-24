@@ -243,7 +243,7 @@ public sealed class CatalogAcquisitionService
         // Refuse a known-size download before writing its payload when the
         // actual target volume cannot hold the archive plus safety headroom.
         // A provider estimate is only a fallback when HTTP omits Content-Length;
-        // unknown-size responses retain the existing bounded streaming limit.
+        // unknown-size responses check available headroom before each payload write.
         var knownArchiveBytes = response.Content.Headers.ContentLength
             ?? (expectedSize is > 0 ? expectedSize : null);
         if (knownArchiveBytes is > 0)
@@ -267,7 +267,9 @@ public sealed class CatalogAcquisitionService
             FileMode.CreateNew,
             FileAccess.Write,
             FileShare.None,
-            BufferSize,
+            // For an unknown length, avoid pending managed-buffer bytes that the
+            // next free-space sample would not yet account for. Keep the input buffer.
+            knownArchiveBytes is null ? 1 : BufferSize,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 
         var buffer = new byte[BufferSize];
@@ -281,6 +283,19 @@ public sealed class CatalogAcquisitionService
             total += read;
             if (total > byteLimit)
                 throw new InvalidDataException("The download is larger than the selected catalog file.");
+            if (knownArchiveBytes is null)
+            {
+                // This is a point-in-time capacity guard, not a reservation against
+                // unrelated processes allocating space concurrently.
+                var availableBytes = availableSpaceProvider(downloadRoot);
+                var requiredBytes = checked((long)read + DownloadFreeSpaceHeadroomBytes);
+                if (availableBytes < requiredBytes)
+                    throw new IOException(
+                        "Not enough free disk space to stage the catalog archive safely. "
+                        + $"Available={availableBytes} bytes; required={requiredBytes} bytes "
+                        + $"(next chunk={read}, headroom={DownloadFreeSpaceHeadroomBytes}). "
+                        + "Free space or use Settings > Storage before retrying.");
+            }
             await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
         }
 
