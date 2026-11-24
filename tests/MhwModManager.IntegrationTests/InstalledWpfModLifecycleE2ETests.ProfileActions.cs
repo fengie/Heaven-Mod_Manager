@@ -352,8 +352,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             await invocation.WaitAsync(UiTimeout, ct);
             await WaitForAsync(() => FindProcessDialog(pid, caption) is null, UiTimeout, "dismiss " + caption, ct);
         }
-        filter.SetValue("");
-        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
+        var clearSearch = await WaitForElementAsync(() => !Busy() ? CurrentSearch() : null,
+            UiTimeout, "idle native search before clearing independent package filter", ct);
+        ((ValuePattern)clearSearch.GetCurrentPattern(ValuePattern.Pattern)).SetValue("");
+        await WaitForAsync(() => CurrentSearch() is { } field &&
+            ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value == "" &&
+            !Busy() && ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages with independent choices", ct);
         await Answer("Select all visible mods", "Enable visible mods", "No");
         Assert.Equal(ToggleState.Off, ReadToggle(alternateName));
