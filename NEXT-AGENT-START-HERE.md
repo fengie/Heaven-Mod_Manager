@@ -1,6 +1,6 @@
-# v8.8.143 — catalogue cancellation release pending
+# v8.8.143 - source verified, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b` after #978. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `715748521d4ce80e3f2d8b9f76fd22ca06c6408e` (Windows Gate 45485754767); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -33,9 +33,11 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified.
+Current hosted-Windows closure: v8.8.143 source `715748521d4ce80e3f2d8b9f76fd22ca06c6408e` passed run `45485754767` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.143-heaven-windows-closure.log`.
 
-Current v8.8.143 release metadata follows integrated #978 source `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. Exact-main Windows release verification, immutable publication and actual packaged update/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
+Public release status: **NOT VERIFIED** for source `715748521d4ce80e3f2d8b9f76fd22ca06c6408e`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `715748521d4ce80e3f2d8b9f76fd22ca06c6408e` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
