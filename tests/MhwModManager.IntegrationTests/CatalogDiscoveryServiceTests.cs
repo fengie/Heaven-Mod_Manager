@@ -87,6 +87,88 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         Assert.Equal(0, second.SearchCalls);
     }
 
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Caller_cancellation_during_failure_health_probe_is_not_a_normal_refresh_result(
+        int cancelAtHealthCall)
+    {
+        var repository = await CreateRepositoryAsync("cancel-health-" + cancelAtHealthCall);
+        var service = new CatalogDiscoveryService(new CatalogSyncService(repository));
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-cancel-health"));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var provider = new FakeProvider("alpha")
+        {
+            SearchException = new HttpRequestException("offline")
+        };
+        provider.OnHealth = () =>
+        {
+            if (provider.HealthCalls == cancelAtHealthCall)
+                cts.Cancel();
+        };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.RefreshAsync(
+                [provider],
+                new CatalogBrowseRequest(game),
+                new CatalogSyncOptions(TimeSpan.FromMinutes(10), HydrateFiles: false),
+                cts.Token));
+
+        Assert.Equal(1, provider.SearchCalls);
+        Assert.Equal(cancelAtHealthCall, provider.HealthCalls);
+    }
+
+    [Fact]
+    public async Task Caller_cancellation_during_sync_failure_diagnostic_reaches_direct_sync_caller()
+    {
+        var repository = await CreateRepositoryAsync("cancel-direct-health");
+        var service = new CatalogSyncService(repository);
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-cancel-direct-health"));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        var provider = new FakeProvider("alpha")
+        {
+            SearchException = new HttpRequestException("offline"),
+            OnHealth = () => cts.Cancel()
+        };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.SyncAsync(
+                provider,
+                new CatalogBrowseRequest(game),
+                new CatalogSyncOptions(TimeSpan.FromMinutes(10), HydrateFiles: false),
+                cts.Token));
+
+        Assert.Equal(1, provider.HealthCalls);
+    }
+
+
+    [Fact]
+    public async Task Provider_health_timeout_does_not_cancel_uncancelled_refresh()
+    {
+        var repository = await CreateRepositoryAsync("provider-health-timeout");
+        var service = new CatalogDiscoveryService(new CatalogSyncService(repository));
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-health-timeout"));
+        var first = new FakeProvider("alpha")
+        {
+            SearchException = new HttpRequestException("offline"),
+            OnHealth = () => throw new TaskCanceledException("provider-local health timeout")
+        };
+        var second = new FakeProvider("beta");
+
+        var result = await service.RefreshAsync(
+            [first, second],
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(10), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(1, result.SuccessfulProviders);
+        Assert.Equal(1, result.FailedProviders);
+        Assert.Equal(CatalogSyncFailureKind.Offline, result.Providers[0].FailureKind);
+        Assert.Null(result.Providers[0].Health);
+        Assert.Equal(1, second.SearchCalls);
+    }
+
     private async Task<CatalogRepository> CreateRepositoryAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name, "manager.db"));
@@ -105,6 +187,8 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         public Exception? SearchException { get; set; }
         public Action? OnSearch { get; set; }
         public int SearchCalls { get; private set; }
+        public Action? OnHealth { get; set; }
+        public int HealthCalls { get; private set; }
         public CatalogProviderHealth Health { get; set; } =
             new(providerId, CatalogProviderState.Connected, "connected");
 
@@ -156,7 +240,12 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         public Task<CatalogAcquisitionResolution> ResolveAcquisitionAsync(CatalogAcquisitionRequest request, CancellationToken ct = default) =>
             throw new NotSupportedException();
 
-        public Task<CatalogProviderHealth> GetHealthAsync(CancellationToken ct = default) =>
-            Task.FromResult(Health);
+        public Task<CatalogProviderHealth> GetHealthAsync(CancellationToken ct = default)
+        {
+            HealthCalls++;
+            OnHealth?.Invoke();
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(Health);
+        }
     }
 }

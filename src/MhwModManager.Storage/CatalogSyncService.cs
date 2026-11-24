@@ -241,13 +241,15 @@ public sealed class CatalogSyncService
         }
         catch (Exception ex) when (!(ex is OperationCanceledException && ct.IsCancellationRequested))
         {
-            var health = await TryGetHealthAsync(provider, CancellationToken.None).ConfigureAwait(false);
+            var health = await TryGetHealthAsync(provider, ct).ConfigureAwait(false);
             await TryPersistFailureAsync(
                 provider.ProviderId,
                 scopeKey,
                 attemptedAt,
                 ClassifyFailure(ex, health),
-                health).ConfigureAwait(false);
+                health,
+                ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
             throw;
         }
     }
@@ -301,17 +303,22 @@ public sealed class CatalogSyncService
         return result;
     }
 
-    private static async Task<CatalogProviderHealth?> TryGetHealthAsync(
+    internal static async Task<CatalogProviderHealth?> TryGetHealthAsync(
         IModCatalogProvider provider,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ct.ThrowIfCancellationRequested();
         try
         {
-            return await provider.GetHealthAsync(ct).ConfigureAwait(false);
+            var health = await provider.GetHealthAsync(ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            return health;
         }
         catch
         {
+            // Provider-local diagnostics failures are optional; caller cancellation is not.
+            ct.ThrowIfCancellationRequested();
             return null;
         }
     }
@@ -321,7 +328,8 @@ public sealed class CatalogSyncService
         string scopeKey,
         DateTimeOffset attemptedAt,
         CatalogSyncFailureKind failureKind,
-        CatalogProviderHealth? health)
+        CatalogProviderHealth? health,
+        CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         try
@@ -330,11 +338,11 @@ public sealed class CatalogSyncService
                 providerId,
                 scopeKey,
                 health,
-                CancellationToken.None).ConfigureAwait(false);
+                ct).ConfigureAwait(false);
             var previous = await repository.GetSyncStateAsync(
                 providerId,
                 scopeKey,
-                CancellationToken.None).ConfigureAwait(false);
+                ct).ConfigureAwait(false);
             await repository.UpsertSyncStateAsync(
                 new CatalogSyncState(
                     providerId,
@@ -343,11 +351,12 @@ public sealed class CatalogSyncService
                     previous?.LastSuccessAt,
                     attemptedAt,
                     failureKind),
-                CancellationToken.None).ConfigureAwait(false);
+                ct).ConfigureAwait(false);
         }
         catch
         {
-            // Failure telemetry must never replace the provider exception that caused the sync failure.
+            // Diagnostic failures must not replace the provider error, except caller cancellation.
+            ct.ThrowIfCancellationRequested();
         }
     }
 
