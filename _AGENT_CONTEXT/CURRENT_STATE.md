@@ -1,4 +1,6 @@
-# v8.8.142 — canonical state and bounded catalog streaming capacity
+# v8.8.142 - immutable release verified
+
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`. Public immutable [updater-main-641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 PR #975 integrates the unknown-length catalog capacity repair at main@b773fc36; source checks passed. The versioned v8.8.142 release still requires its own immutable Windows gate and actual packaged updater/rollback. Published [v8.8.141 build 639](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-639), source `ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785`: [Windows Gate 45376714698](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45376714698) and [real packaged update/rollback 45378447034](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45378447034) passed. Personal Heaven2 health and Crimson runtime remain separately unverified. Personal Heaven2 health, in-game armor visuals, mixed-corpus UI p95 and storage endurance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -54,13 +56,11 @@ PR #975 integrates the unknown-length catalog capacity repair at main@b773fc36; 
 
 ## Verification boundary
 
-Published [v8.8.141 build 639](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-639), source `ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785`: [Windows Gate 45376714698](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45376714698) and [real packaged update/rollback 45378447034](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45378447034) passed. Personal Heaven2 health and Crimson runtime remain separately unverified. v8.8.142 immutable release and real packaged acceptance remain pending.
+Current hosted-Windows closure: v8.8.142 source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55` passed run `45394597944` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.142-heaven-windows-closure.log`.
 
-On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. The v8.8.137 changes require separate packaged desktop, release and installed acceptance. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
+Verified immutable GitHub release: [updater-main-641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, ZIP SHA-256 `ffccab56ae819140d48a746b118acdb82209b4239a364509537d74f0635b0a8f` and manifest SHA-256 `44d12584b0f40382b9fd5425a0bea18b865b8a10010823c369b274c89268d4fc`. Public release and tag ref independently match the built artifact.
 
-**v8.8.118 immutable release and real hosted update/rollback VERIFIED:** [updater-main-588](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-588), source `b6e1e151b43323218041b80204dee070002c297b`; [Windows Gate 44481505844](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44481505844) **PASS**, [real packaged update/rollback 44483604969](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44483604969) **PASS**; ZIP SHA-256 `82c39ba29bf93c1b6bad1f8cd8e10030cbb01dbaf102bf6a079357f7bdb60006`, manifest SHA-256 `6305a99aa5048be224ac8a0abb6e02cf69aff8037feeb9bf217569203df48942`. This is disposable hosted Windows evidence, **not** personal Heaven2 installed acceptance.
-
-Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d18323a3d1af8925618` Windows Gate 44475835455 PASS, real hosted packaged update/rollback 44477647687 PASS, ZIP SHA-256 `4d0b78ed92d494083bc44921ecfda43f08130cb7a6ea5149290400f5b8aceeb0`, manifest `8d3185bfedf91fbab62f311bb67baa895e2e9ed178dee71e770c506fca70c5b4`; receipt merged PR #896. This does not prove source additions after this immutable release, user-device health, real corpora or p95.
+The tested source remains `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
