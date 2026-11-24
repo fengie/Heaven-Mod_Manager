@@ -29,6 +29,22 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         return (dialog, invoke);
     }
 
+    // UIA may disable a tab between reading IsEnabled and Select while WPF
+    // refreshes the workflow. Retry only this idempotent selection attempt;
+    // the caller reacquires the tab and still requires selected state before
+    // continuing. A persistently disabled tab remains a bounded test failure.
+    internal static bool TrySelectWorkflowTab(Func<bool> selectAndVerify)
+    {
+        try
+        {
+            return selectAndVerify();
+        }
+        catch (ElementNotEnabledException)
+        {
+            return false;
+        }
+    }
+
     private static async Task ExerciseWorkflowActionsAsync(DisposableWpfRun run, AutomationElement main,
         List<string> passed, CancellationToken ct)
     {
@@ -47,8 +63,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                     e.Current.Name == name && e.Current.IsEnabled);
                 if (tab is null || !tab.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var found) ||
                     found is not SelectionItemPattern selection) return false;
-                if (!selection.Current.IsSelected) selection.Select();
-                return selection.Current.IsSelected;
+                return TrySelectWorkflowTab(() =>
+                {
+                    if (!selection.Current.IsSelected) selection.Select();
+                    return selection.Current.IsSelected;
+                });
             }, UiTimeout, "workflow tab " + name, ct);
         }
         async Task Click(string label) => Invoke(await WaitForElementAsync(() => FindButton(dialog, label, enabled: true),

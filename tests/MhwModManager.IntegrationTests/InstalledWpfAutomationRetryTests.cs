@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Windows.Automation;
 using MhwModManager.IntegrationTests;
 using Xunit;
 
@@ -39,6 +40,37 @@ public sealed class InstalledWpfAutomationRetryTests
             new IOException("The game file changed externally")
         })
             Assert.False(InstalledWpfModLifecycleE2ETests.IsTransientAutomationQueryFailure(failure));
+    }
+
+    [Fact]
+    public void Workflow_tab_disabled_during_selection_requires_fresh_successful_attempt()
+    {
+        var attempts = 0;
+        bool SelectAndVerify()
+        {
+            attempts++;
+            if (attempts == 1)
+                throw new ElementNotEnabledException("Tab disabled during selection");
+            return attempts == 3;
+        }
+
+        Assert.False(InstalledWpfModLifecycleE2ETests.TrySelectWorkflowTab(SelectAndVerify));
+        Assert.False(InstalledWpfModLifecycleE2ETests.TrySelectWorkflowTab(SelectAndVerify));
+        Assert.True(InstalledWpfModLifecycleE2ETests.TrySelectWorkflowTab(SelectAndVerify));
+        Assert.Equal(3, attempts);
+    }
+
+    [Fact]
+    public void Workflow_tab_selection_does_not_hide_unrelated_failures()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            InstalledWpfModLifecycleE2ETests.TrySelectWorkflowTab(() =>
+                throw new InvalidOperationException("Unexpected selection failure")));
+        Assert.Throws<OperationCanceledException>(() =>
+            InstalledWpfModLifecycleE2ETests.TrySelectWorkflowTab(() =>
+                throw new OperationCanceledException()));
+        Assert.False(InstalledWpfModLifecycleE2ETests.IsTransientAutomationQueryFailure(
+            new ElementNotEnabledException("Unrelated disabled control")));
     }
 
     [Fact]
