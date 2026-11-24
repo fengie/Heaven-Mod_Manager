@@ -1,14 +1,19 @@
-# v8.8.142 — MHW Manual Mod Manager
+# v8.8.143 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 24, 2026 · 6:59:16 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 24, 2026 · 8:12:00 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.142**.
+Current product version: **8.8.143**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.143 — catalogue refresh cancellation
+
+- Preserve user cancellation when Browse Mods provider failure diagnostics or failure-state persistence are in progress. Reuse cancellation-aware provider health checks; stop cancelled refreshes instead of reporting ordinary provider errors. Non-cancelled provider-local timeouts remain isolated and other providers continue. [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978)
+- Three native red-first regressions plus a non-cancelled timeout control passed; exact-head Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed (26/26 verification sections, 1,455 integration passes, 15 skips, 0 failures; 17/17 focused catalogue tests). Provider permissions and expired-review holds are unchanged. Immutable publication and installed-client acceptance remain separate.
 
 ## v8.8.142 — bounded unknown-length catalog downloads
 
@@ -23,11 +28,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - The existing transactional planner and journal now detect unauthorized changes to any manager-owned game file before unrelated writes, including same-size/timestamp-restored edits. Protected sources remain unchanged; the owner must resolve external modifications explicitly.
 - Hosted WPF automation now reacquires changing tabs after refresh, retries only observed transient UIA provider errors, and retains full failure evidence. Real RAR fixture fetches are pinned to immutable source digests with bounded retries, not substituted by synthetic archives.
 - Native exact-source feature, startup and hosted WPF acceptance, immutable publication, actual packaged updater/rollback and personal Heaven2/gameplay health are distinct release boundaries. **Crimson live-game deployment is not yet supported.**
-
-## v8.8.140 — catalog download disk-space preflight
-
-- Before writing a direct catalog archive, check actual staging-volume free space against known payload bytes plus 256 MiB headroom. Insufficient space fails early with a storage error; existing Mods/State and unknown files remain protected. [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969)
-- Native Windows Feature, startup-performance and AutoUpdate gates passed. A new immutable release, hosted updater/rollback and personal Heaven2 health are separate acceptance requirements.
 
 ## Current plans & progress
 

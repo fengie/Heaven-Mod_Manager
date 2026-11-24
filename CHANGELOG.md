@@ -1,3 +1,8 @@
+# v8.8.143 — November 24, 2026
+
+- Preserve user cancellation when Browse Mods provider failure diagnostics or failure-state persistence are in progress. Reuse cancellation-aware provider health checks; stop cancelled refreshes instead of reporting ordinary provider errors. Non-cancelled provider-local timeouts remain isolated and other providers continue. [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978)
+- Three native red-first regressions plus a non-cancelled timeout control passed; exact-head Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed (26/26 verification sections, 1,455 integration passes, 15 skips, 0 failures; 17/17 focused catalogue tests). Provider permissions and expired-review holds are unchanged. Immutable publication and installed-client acceptance remain separate.
+
 # v8.8.142 — November 24, 2026
 
 - Guard unknown-length catalog archive downloads with actual staging-volume free-space checks before each bounded write, retaining 256 MiB headroom and the existing 1 GiB archive limit. Coalesce short network reads into 128 KiB chunks without unbounded buffering. [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975)
