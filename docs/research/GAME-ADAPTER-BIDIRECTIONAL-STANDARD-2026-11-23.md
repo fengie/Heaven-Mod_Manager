@@ -55,3 +55,22 @@ The user's goal is an unstructured inbox that safely becomes a useful, recoverab
 Crimson v3/V3.1 parsing currently inspects *declarative* table/asset/localization claims; it is **not** a PAZ/PAMT compiler. The DMM 5.1 [author guide](https://www.nexusmods.com/crimsondesert/articles/65) documents arbitrary JSON/JSONC names, table operations and DLC metadata. The [DMM mod guide](https://www.nexusmods.com/crimsondesert/articles/64) describes runtime ASI overlays on 2.04+ and rejects raw numbered PAZ/PAMT mod archives. No compatible installed runtime, actual game version, or ownership of external loader binaries was verified for this product. Do not rewrite `meta/0.papgt`, game archives, saves, launchers or unrelated mod manager state.
 
 **Do not build another generic backend or new orchestrator now.** Preserve the narrow shared admission seam and test matrices; only add new adapters, loader integrations and semantic resolvers after proving their existing owner and game-version contract. See #972, #791 and #946 for remaining bulk corpus, installed WPF and real-game acceptance.
+
+## 2026-11-23: external ownership and DMM semantic hardening
+
+Existing DeploymentExecutor preconditions already verified the hashes of paths to be changed, and recovery refused unexpected external changes. Two gaps remained: an unrelated operation could preserve a stale ownership claim on a different manager-owned file, and an old deployment plan with a known before blob but no explicit `ExpectedLiveSha256` could skip the hash precondition.
+
+The candidate executor fix scans *untouched currently owned paths* against `deployment_manifest` using authoritative SHA-256 under the existing game-root lease. It rejects missing files, reparse traversal, and same-length/timestamp-restored external modifications. Both the planned paths and untouched owned paths are validated **before** the new operation journal is written, avoiding unnecessary recovery state for preflight failures. Each touched path is still reverified immediately before mutation. This must preserve original content and explicitly prompt review; it does not recapture external edits as a new trusted baseline.
+
+Hashing has a real cost: the authoritative hasher reads a file twice to detect in-flight mutation, and the executor uses at most four concurrent preflight workers. Cost is O(total currently owned file bytes) per deployment. Hosted performance and E2E evidence must establish the impact before claiming the check is fast on a very large mod library. Optimize only with a durable, validated cache or an explicit safe recovery action; never silently replace content digests with timestamp-only trust.
+
+DMM V3 research: the author guide says `entry` takes precedence over numeric `key` and a `match` selector can affect any number of records. A nested field path such as `cooltime.a` overlaps a parent `cooltime` write. Relative/list operations and broad selectors are advisory effects, not independent simple assignments. Multi-target objects require `targets[].file`, while a `targets[].target` field can be ignored by DMM; reject that ambiguous syntax at intake.
+
+These semantics are inspected only for source classification and preview. They do not compile the game's `.paz/.pamt` files, authorize loader execution, prove 2.05.01 compatibility, or install anything into the user's Crimson Desert directory.
+
+Primary sources:
+- https://www.nexusmods.com/crimsondesert/articles/65
+- https://github.com/Nexus-Mods/Vortex/wiki/MODDINGWIKI-Users-General-Deployment-Methods
+- https://github.com/Nexus-Mods/Vortex/blob/master/docs/mod-management/EXTERNAL-CHANGES.md
+
+Acceptance is tracked by issue #972 and PR #973; candidate source and its native test results must be verified on the exact final commit.

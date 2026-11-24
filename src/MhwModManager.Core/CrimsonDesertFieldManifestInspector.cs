@@ -24,6 +24,12 @@ public static class CrimsonDesertFieldManifestInspector
     public const int MaxUtf8Bytes = 256 * 1024;
     public const int MaxTargets = 256;
     public const int MaxClaims = 4096;
+    private static readonly HashSet<string> KnownOperations = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "set", "add", "scale", "list_append", "list_extend", "list_union",
+        "list_set", "list_remove", "list_merge", "array_append",
+        "clone_record", "new_record", "delete_record"
+    };
 
     public static CrimsonDesertFieldInspection Inspect(string json)
     {
@@ -49,7 +55,14 @@ public static class CrimsonDesertFieldManifestInspector
             var targets = new List<JsonElement>();
             if (root.TryGetProperty("targets", out var targetArray) &&
                 targetArray.ValueKind == JsonValueKind.Array)
+            {
+                // DMM multi-target entries use "file". A nested "target" is
+                // silently skipped by DMM, so fail review rather than claim success.
+                if (targetArray.EnumerateArray().Any(item => item.ValueKind == JsonValueKind.Object
+                    && item.TryGetProperty("target", out _)))
+                    return new(false, "DMM multi-target entries require file, not target.", []);
                 targets.AddRange(targetArray.EnumerateArray());
+            }
             else if (root.TryGetProperty("target", out var singular) &&
                      singular.ValueKind == JsonValueKind.String)
                 targets.Add(root);
@@ -96,34 +109,72 @@ public static class CrimsonDesertFieldManifestInspector
                     {
                         if (operation.ValueKind != JsonValueKind.Object)
                             return new(false, "Field-JSON operation is not an object.", []);
-                        var opName = operation.TryGetProperty("op", out var opElement) &&
-                            opElement.ValueKind == JsonValueKind.String ? opElement.GetString() : "set";
-                        if (opName is null || !new[] { "set", "array_append", "clone_record", "new_record", "delete_record" }
-                            .Contains(opName, StringComparer.OrdinalIgnoreCase))
+                        var opName = operation.TryGetProperty("op", out var opElement)
+                            ? (opElement.ValueKind == JsonValueKind.String ? opElement.GetString() : null)
+                            : "set";
+                        if (opName is null || !KnownOperations.Contains(opName))
                             return new(false, "Field-JSON contains an unrecognized operation.", []);
-                        string? row = null;
-                        if (operation.TryGetProperty("key", out var key) &&
+
+                        var createsRecord = opName.Equals("clone_record", StringComparison.OrdinalIgnoreCase)
+                            || opName.Equals("new_record", StringComparison.OrdinalIgnoreCase);
+                        if (createsRecord && (!operation.TryGetProperty("new_key", out var created)
+                            || created.ValueKind is not (JsonValueKind.String or JsonValueKind.Number)))
+                            return new(false, "Field-JSON record creation needs a new_key.", []);
+                        if (opName.Equals("clone_record", StringComparison.OrdinalIgnoreCase)
+                            && (!operation.TryGetProperty("source_key", out var source)
+                                || source.ValueKind is not (JsonValueKind.String or JsonValueKind.Number)))
+                            return new(false, "Field-JSON clone needs a source_key.", []);
+                        if (opName.Equals("new_record", StringComparison.OrdinalIgnoreCase)
+                            && !operation.TryGetProperty("template", out _))
+                            return new(false, "Field-JSON new record needs a template.", []);
+
+                        // DMM resolves entry first, key second; using numeric key
+                        // when entry is present causes false independent records after
+                        // a game update re-keys the same author-named record.
+                        string? row = createsRecord ? operation.GetProperty("new_key").ToString() : null;
+                        if (row is null && operation.TryGetProperty("entry", out var entry) &&
+                            entry.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(entry.GetString()))
+                            row = entry.GetString();
+                        if (row is null && operation.TryGetProperty("key", out var key) &&
                             key.ValueKind is JsonValueKind.String or JsonValueKind.Number)
                             row = key.ToString();
-                        else if (operation.TryGetProperty("entry", out var entry) &&
-                            entry.ValueKind == JsonValueKind.String)
-                            row = entry.GetString();
-                        if (string.IsNullOrWhiteSpace(row) || row.Length > 256)
-                            return new(false, "Field-JSON operation needs a bounded record key.", []);
+                        if (row is null && operation.TryGetProperty("match", out var match) &&
+                            match.ValueKind == JsonValueKind.Object && match.EnumerateObject().Any())
+                            row = "*"; // selector can span any number of unknown records
+                        if (string.IsNullOrWhiteSpace(row) || row.Length > 256 ||
+                            (row != "*" && row.Contains(':')))
+                            return new(false, "Field-JSON operation needs a bounded record key, entry or match.", []);
 
-                        var isSimpleSet = opName.Equals("set", StringComparison.OrdinalIgnoreCase);
+                        var isSimpleSet = opName.Equals("set", StringComparison.OrdinalIgnoreCase) && row != "*";
+                        var needsField = !createsRecord && !opName.Equals("delete_record", StringComparison.OrdinalIgnoreCase);
                         var fieldName = operation.TryGetProperty("field", out var field) &&
                             field.ValueKind == JsonValueKind.String ? field.GetString() : null;
-                        if (isSimpleSet && (string.IsNullOrWhiteSpace(fieldName) || fieldName.Length > 256))
-                            return new(false, "Field-JSON set operation needs a bounded field name.", []);
-                        if (!operation.TryGetProperty("value", out var newValue) &&
-                            !operation.TryGetProperty("new", out newValue) && isSimpleSet)
-                            return new(false, "Field-JSON set operation needs a value.", []);
-                        // Non-set operations are recognized for intake, but never
-                        // asserted to compose without the actual native writer.
+                        if (needsField && (string.IsNullOrWhiteSpace(fieldName) ||
+                            fieldName.Length > 256 || fieldName.Contains(':')))
+                            return new(false, "Field-JSON field operation needs a bounded field name.", []);
+                        var hasValue = operation.TryGetProperty("value", out var newValue)
+                            || operation.TryGetProperty("new", out newValue);
+                        if ((opName.Equals("set", StringComparison.OrdinalIgnoreCase)
+                                || opName.Equals("add", StringComparison.OrdinalIgnoreCase)
+                                || opName.StartsWith("list_", StringComparison.OrdinalIgnoreCase)
+                                    && !opName.Equals("list_remove", StringComparison.OrdinalIgnoreCase)
+                                || opName.Equals("array_append", StringComparison.OrdinalIgnoreCase))
+                            && !hasValue)
+                            return new(false, "Field-JSON field operation needs a new value.", []);
+                        if (opName.Equals("scale", StringComparison.OrdinalIgnoreCase)
+                            && (!operation.TryGetProperty("factor", out var factor)
+                                || factor.ValueKind != JsonValueKind.Number))
+                            return new(false, "Field-JSON scale needs a numeric factor.", []);
+                        if (opName.Equals("list_remove", StringComparison.OrdinalIgnoreCase)
+                            && !operation.TryGetProperty("where", out _))
+                            return new(false, "Field-JSON list_remove needs a where selector.", []);
+
+                        // Non-set and table-wide match operations remain advisory;
+                        // never claim the runtime will compose them without resolving
+                        // native table data and loader version.
                         var targetKey = "table:" + tableKey + ":" + row.ToLowerInvariant() +
                             ":" + (isSimpleSet ? fieldName!.ToLowerInvariant() : "*");
-                        if (!uniqueKeys.Add(targetKey))
+                        if (!uniqueKeys.Add(targetKey) && isSimpleSet)
                             return new(false, "Field-JSON changes the same record/field more than once; review order.", []);
                         var valueJson = isSimpleSet ? newValue.GetRawText() : operation.GetRawText();
                         var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(valueJson)));
@@ -205,6 +256,9 @@ public static class CrimsonDesertFieldManifestInspector
         var seen = new Dictionary<string, CrimsonDesertFieldClaim>(StringComparer.OrdinalIgnoreCase);
         var recordWide = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var recordFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var tableWildcard = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var tableObserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var nestedFieldPrefixes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var collisions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var inspection in inspections)
         {
@@ -220,10 +274,36 @@ public static class CrimsonDesertFieldManifestInspector
                     if (split > "table:".Length)
                     {
                         var recordKey = claim.TargetKey[..split];
+                        var tableBoundary = recordKey.LastIndexOf(':');
+                        if (tableBoundary > "table:".Length)
+                        {
+                            var tableKey = recordKey[..tableBoundary];
+                            if (recordKey.EndsWith(":*", StringComparison.Ordinal))
+                            {
+                                if (tableObserved.Contains(tableKey))
+                                    collisions.Add(claim.TargetKey);
+                                tableWildcard.Add(tableKey);
+                            }
+                            else if (tableWildcard.Contains(tableKey))
+                                collisions.Add(claim.TargetKey);
+                            tableObserved.Add(tableKey);
+                        }
                         if (claim.IsSimpleSet)
                         {
-                            if (recordWide.Contains(recordKey))
+                            if (recordWide.Contains(recordKey) ||
+                                nestedFieldPrefixes.Contains(claim.TargetKey))
                                 collisions.Add(claim.TargetKey);
+                            // Prefixes catch a whole-field overwrite against a
+                            // nested field in either order (cooltime vs cooltime.a).
+                            var field = claim.TargetKey[(split + 1)..];
+                            for (var i = 1; i < field.Length; i++)
+                            {
+                                if (field[i] is not ('.' or '[')) continue;
+                                var ancestor = recordKey + ":" + field[..i];
+                                if (seen.ContainsKey(ancestor))
+                                    collisions.Add(claim.TargetKey);
+                                nestedFieldPrefixes.Add(ancestor);
+                            }
                             recordFields.Add(recordKey);
                         }
                         else
