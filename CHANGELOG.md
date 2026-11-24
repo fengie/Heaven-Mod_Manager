@@ -1,3 +1,9 @@
+# v8.8.142 — November 24, 2026
+
+- Guard unknown-length catalog archive downloads with actual staging-volume free-space checks before each bounded write, retaining 256 MiB headroom and the existing 1 GiB archive limit. Coalesce short network reads into 128 KiB chunks without unbounded buffering. [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975)
+- Cover initial and mid-stream low-space refusal, legitimate fragmented-stream acquisition, exact retained bytes, and owner-lease cleanup. Existing known-size preflight and user data protection remain unchanged. These are point-in-time capacity checks, not atomic volume reservations. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669)
+- native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed; 26/26 repository verification checks, 1,451 integration passes, zero failures, 15 skips; zero trace gaps or uncovered call sites. Immutable publication, hosted packaged update/rollback and personal Heaven2 acceptance remain separate.
+
 # v8.8.141 — November 23, 2026
 
 - Add Crimson Desert game-specific staged bulk intake, DMM V3/V3.1 JSON/JSONC import classification and conservative virtual/table-field conflict inspection. Preserve source archives, safe game roots and locked version-specific live PAZ/PAMT/ASI deployment until actual loader/game proof. [#972](https://github.com/fengie/Heaven-Mod_Manager/issues/972) · [PR #973](https://github.com/fengie/Heaven-Mod_Manager/pull/973)

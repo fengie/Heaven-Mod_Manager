@@ -4,22 +4,22 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.141",
+  "currentVersion": "8.8.142",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.141-release-acceptance-pending",
-  "nextMilestone": "Integrate PR #973 safe Crimson staging and cross-game deployment admission as v8.8.141; verify exact Windows release, publish immutable updater, prove packaged rollback; physical loader/H2 remains separate.",
-  "nextRequiredAction": "Verify exact-head PR #973 Feature/Startup/WPF/AutoUpdate, merge with guarded owner/ruleset, run current-main Windows release gate, publish immutable v8.8.141 package and source-bound update/rollback receipts; separately verify installed Heaven2 and Crimson game build/loader.",
-  "verificationAppliesToCommit": "4de235c1b632c37f34f4a851a98da369c6a3c136",
-  "lastClosedVerificationCommit": "4de235c1b632c37f34f4a851a98da369c6a3c136",
-  "lastClosedVerificationRun": "v8.8.139 build 635 Windows Release Gate 45153233938 and real hosted updater/rollback 45154773464 passed.",
-  "verificationScopeNote": "November 23, 2026. Immutable v8.8.140 updater-main-637 was published from 3899c7cb; most recent positively hosted updater/rollback evidence retained here is v8.8.139 build 635. v8.8.141 and H2/Crimson gameplay need exact versioned receipts.",
+  "status": "v8.8.142-release-acceptance-pending",
+  "nextMilestone": "Publish immutable v8.8.142 from integrated catalog stream-capacity repair #975; independently verify Windows release, actual packaged update/rollback and personal H2 boundaries.",
+  "nextRequiredAction": "Integrate exact tested versioned metadata; run current-main Windows Release Gate and actual packaged update/rollback. Check H2 via authenticated read-only status; keep broad #669 and Crimson gameplay holds.",
+  "verificationAppliesToCommit": "ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785",
+  "lastClosedVerificationCommit": "ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785",
+  "lastClosedVerificationRun": "v8.8.141 build 639 source ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785 Windows Release Gate 45376714698 and real packaged update/rollback 45378447034 passed.",
+  "verificationScopeNote": "November 24, 2026. v8.8.141 immutable build 639 and genuine hosted rollback verified. v8.8.142 source #975 integrated at b773fc36; versioned release and personal H2/Crimson remain separate.",
   "lastClosedVerification": {
-    "sourceSha": "4de235c1b632c37f34f4a851a98da369c6a3c136",
-    "updaterBuild": 635,
-    "windowsVerificationRun": 45153233938,
-    "installedClientE2ERun": 45154773464,
-    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45154773464"
+    "sourceSha": "ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785",
+    "updaterBuild": 639,
+    "windowsVerificationRun": 45376714698,
+    "installedClientE2ERun": 45378447034,
+    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45378447034"
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
@@ -50,17 +50,17 @@
   "activePullRequest": null,
   "activeIssue": null,
   "lastClosedWindowsVerification": {
-    "sourceSha": "4de235c1b632c37f34f4a851a98da369c6a3c136",
-    "runId": 45153233938,
-    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45153233938"
+    "sourceSha": "ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785",
+    "runId": 45376714698,
+    "evidence": "https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45376714698"
   },
   "publishedRelease": {
-    "tag": "updater-main-635",
-    "version": "8.8.139",
-    "sourceSha": "4de235c1b632c37f34f4a851a98da369c6a3c136",
-    "buildNumber": 635,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.139-win-x64.zip",
-    "artifactSha256": "c2ffdc360c0522783ab8320ecc44b39ae2759dde0e68abae785f4f1df8153194",
-    "manifestSha256": "bbf519dcbfcf24fe35f1706bb90e7f65360597485cd931ad6043303a5820b7f7"
+    "tag": "updater-main-639",
+    "version": "8.8.141",
+    "sourceSha": "ec0c3fb86da137e4e3a927bc8cc94ff3ab9f5785",
+    "buildNumber": 639,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.141-win-x64.zip",
+    "artifactSha256": "76b3c22022bc7683e08e84585dc292b6c447337385ead021ea81345859a11316",
+    "manifestSha256": "468b694e99af492bccb649f2c4f8245eb812670189406ae35a29b332ee4bd544"
   }
 }
