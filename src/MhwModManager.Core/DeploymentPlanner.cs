@@ -5,6 +5,13 @@ public sealed class DeploymentPlanner(ConflictEngine conflictEngine, GameProfile
     public DeploymentPlan Build(PlannerSnapshot snapshot)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Import, cached file inventories and saved rules never grant
+        // direct-game-write permission. Keep this guard parallel to ModScanner.
+        var admission = GameAdapters.DirectFileAdmission(game);
+        if (!admission.Allowed)
+            return new(Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow, [],
+                [new ConflictDecision("<game>", ConflictKind.Incompatible, true, null,
+                    admission.Code, admission.Reason, Confidence.Explicit)], []);
         var enabled = snapshot.Mods.Where(m => m.Enabled && !m.IsSuperseded).ToDictionary(m => m.Id, StringComparer.OrdinalIgnoreCase);
         foreach (var family in snapshot.Mods.Where(mod=>mod.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)
             .GroupBy(mod=>mod.FamilyId!))

@@ -61,6 +61,12 @@ public sealed class ModScanner(ManagerDatabase db, BlobStore blobs, HashingServi
     private async Task<IReadOnlyList<ModFileDescriptor>> CaptureAsync(ModDescriptor mod, bool managedPackage, bool automatic, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"modId={mod.Id}; source={mod.SourcePath}");
+        // The same capability decision governs both capture and deployment
+        // planning. An unknown or staging-only game must never gain a generic
+        // game-root write path through an already indexed package.
+        var admission = GameAdapters.DirectFileAdmission(game);
+        if (!admission.Allowed)
+            throw new InvalidDataException(admission.Reason);
         if ((!managedPackage && mod.RequiresLayoutReview) || mod.FamilyRole=="Review")
             throw new InvalidDataException($"Review the package layout of '{mod.DisplayName}' before applying.");
         var role = await db.ShelfRoleAsync(mod.Id, ct);

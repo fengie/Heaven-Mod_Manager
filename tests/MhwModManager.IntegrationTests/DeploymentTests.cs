@@ -228,6 +228,95 @@ public sealed class DeploymentTests : IDisposable
         Assert.Equal("b", manifest.ProviderModId);
     }
 
+
+    [Fact]
+    public async Task External_edit_of_an_untouched_owned_file_blocks_unrelated_deployment()
+    {
+        var (game, db, hashing, blobs) = await CreateAsync("external-owned-drift");
+        var executor = new DeploymentExecutor(db, blobs, hashing, game);
+        const string ownedPath = @"nativePC\owned.tex";
+        const string otherPath = @"nativePC\other.tex";
+        var ownedLive = Path.Combine(game, "nativePC", "owned.tex");
+        var otherLive = Path.Combine(game, "nativePC", "other.tex");
+        var owned = await BlobAsync(blobs, "owned", "MANAGED");
+        var other = await BlobAsync(blobs, "other", "OTHER");
+
+        var initial = new DeploymentPlan("owned-first-" + Guid.NewGuid().ToString("N"),
+            DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, ownedPath, null, owned, null, "mod-a", null, null)],
+            [], []);
+        Assert.True((await executor.ApplyAsync(initial, "initial managed file", ct: TestToken)).Success);
+        Assert.Equal("MANAGED", await File.ReadAllTextAsync(ownedLive, TestToken));
+        var originalTimestamp = File.GetLastWriteTimeUtc(ownedLive);
+        await File.WriteAllTextAsync(ownedLive, "OUTSIDE", TestToken); // same length
+        File.SetLastWriteTimeUtc(ownedLive, originalTimestamp); // timestamp spoof
+
+        var second = new DeploymentPlan("unrelated-second-" + Guid.NewGuid().ToString("N"),
+            DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, otherPath, null, other, null, "mod-b", null, null)],
+            [], []);
+        var result = await executor.ApplyAsync(second, "unrelated update", ct: TestToken);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, result.FilesChanged);
+        Assert.Equal("OUTSIDE", await File.ReadAllTextAsync(ownedLive, TestToken));
+        Assert.False(File.Exists(otherLive));
+        var manifest = (await new PlannerSnapshotRepository(db).LoadAsync(TestToken)).CurrentManifest;
+        Assert.Single(manifest);
+        Assert.Contains(ownedPath, manifest.Keys);
+    }
+
+    [Fact]
+    public async Task Missing_expected_live_hash_cannot_overwrite_an_externally_changed_known_before_image()
+    {
+        var (game, db, hashing, blobs) = await CreateAsync("missing-live-hash");
+        var executor = new DeploymentExecutor(db, blobs, hashing, game);
+        const string path = @"nativePC\managed.tex";
+        var live = Path.Combine(game, "nativePC", "managed.tex");
+        var before = await BlobAsync(blobs, "before", "MANAGED");
+        var after = await BlobAsync(blobs, "after", "NEW-MOD");
+
+        var add = new DeploymentPlan("known-before-" + Guid.NewGuid().ToString("N"),
+            DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, path, null, before, null, "mod-a", null, null)],
+            [], []);
+        Assert.True((await executor.ApplyAsync(add, "take ownership", ct: TestToken)).Success);
+        await File.WriteAllTextAsync(live, "OUTSIDE", TestToken);
+
+        // Simulate an older/restored plan whose before image is known but the
+        // explicit ExpectedLiveSha256 field is missing.
+        var replace = new DeploymentPlan("missing-expected-" + Guid.NewGuid().ToString("N"),
+            DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Replace, path, before, after, "mod-a", "mod-b", null, null)],
+            [], []);
+        var result = await executor.ApplyAsync(replace, "stale known-before", ct: TestToken);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, result.FilesChanged);
+        Assert.Equal("OUTSIDE", await File.ReadAllTextAsync(live, TestToken));
+        var manifest = (await new PlannerSnapshotRepository(db).LoadAsync(TestToken)).CurrentManifest;
+        Assert.Equal("mod-a", manifest[path].ProviderModId);
+    }
+
+    [Fact]
+    public async Task Unmodified_owned_files_allow_independent_additions()
+    {
+        var (game, db, hashing, blobs) = await CreateAsync("owned-no-drift");
+        var executor = new DeploymentExecutor(db, blobs, hashing, game);
+        var first = await BlobAsync(blobs, "first", "MANAGED");
+        var second = await BlobAsync(blobs, "second", "SECOND");
+        var p1 = new DeploymentPlan("first-" + Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, @"nativePC\a.tex", null, first, null, "a", null, null)], [], []);
+        var p2 = new DeploymentPlan("second-" + Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow,
+            [new(1, ChangeKind.Add, @"nativePC\b.tex", null, second, null, "b", null, null)], [], []);
+        Assert.True((await executor.ApplyAsync(p1, "first", ct: TestToken)).Success);
+        Assert.True((await executor.ApplyAsync(p2, "second", ct: TestToken)).Success);
+        var state = (await new PlannerSnapshotRepository(db).LoadAsync(TestToken)).CurrentManifest;
+        Assert.Equal(2, state.Count);
+        Assert.Equal("SECOND", await File.ReadAllTextAsync(
+            Path.Combine(game, "nativePC", "b.tex"), TestToken));
+    }
+
     [Fact]
     public void Archive_path_normalization_rejects_traversal() =>
         Assert.Throws<ArgumentException>(() => PathRules.Normalize(@"nativePC\..\evil.dll"));

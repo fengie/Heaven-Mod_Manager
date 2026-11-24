@@ -2,7 +2,7 @@
 
 `IGameAdapter` in Core describes discovery, executable location, mod roots, save locations, Nexus domain, asset semantics, categories, dependency requirements, and validation. Adapters do not deploy files. The planner, CAS, write-ahead journal, recovery, and rollback remain shared.
 
-Built-ins are `FolderGameAdapter` and `MonsterHunterWorldAdapter`. Unknown IDs fall back to conservative generic semantics. `ConflictEngine` and `DeploymentPlanner` resolve semantic capabilities through `GameAdapters.Resolve`; the workflow screen displays adapter information and validation. The existing game profile registry still owns configured game paths and workspace isolation.
+Built-ins are `FolderGameAdapter`, `MonsterHunterWorldAdapter` and staging-only `CrimsonDesertGameAdapter`. Unknown IDs fall back to generic classification, which is **not** proof of a writable mod root. `ConflictEngine` and `DeploymentPlanner` resolve semantic capabilities through `GameAdapters.Resolve`; the workflow screen displays adapter information and validation. The existing game profile registry still owns configured game paths and workspace isolation.
 
 To add a compiled adapter:
 
@@ -17,6 +17,23 @@ Registration rejects duplicate IDs. Registration is explicit host code; there is
 Discovery receives candidate install roots from the host; adapters should not scan an entire drive or write into a game directory. Dependency checks should return evidence instead of installing anything. Save paths are optional and should remain empty when unknown.
 
 This is the first SDK contract, not a promise of complete Stellar Blade/Wilds semantic adapters. External discovery/category/dependency hooks are exposed for host integration; existing game-specific automation services remain intact.
+
+## Direct-file deployment capability (candidate #972)
+
+An adapter answers **three independent questions**: which game owns a package, what its files mean, and whether direct writes are actually supported. Importing, detecting an executable, or recognizing a `.paz` file must never imply the third.
+
+The optional `IGameDirectFileDeploymentPolicy` interface provides `EvaluateDirectFileDeployment(GameProfile)`, returning an `Allowed`, stable `Code` and human-readable `Reason`. `IGameAdapter` remains unchanged for source compatibility. The shared `GameAdapters.DirectFileAdmission(profile)` is consumed by `CatalogService.EnsureCapturedAsync`, `ModScanner.CaptureAsync` and `DeploymentPlanner.Build`. All three must agree on the same game profile, including legacy profiles. A registered custom adapter without this optional policy must remain staging-only.
+
+- Built-in MHW and configured folder-loader profiles keep their existing transactional direct-file behavior.
+- New automatic discovery with adapter ID `inferred-unverified-root` and **no** mod root stages only. A guessed executable folder is not an authorized install destination. Existing `generic-root` profiles remain compatible pending an opt-in migration; do not silently revoke installed mods.
+- Crimson Desert is staging-only regardless of `meta` presence, DLC, loader directory name, or a cached/preindexed package. Only a separately accepted, build-bound runtime backend can change that.
+- Existing `generic-folder`, `generic-root`, and custom adapter IDs with an explicitly configured nonempty mod root retain legacy direct-file behavior; custom IDs with *no* configured target are held. Runtime/source compatibility does not establish safety of an unknown mod's executable contents.
+- A blocked game remains visible in the library and review UI. Nothing is silently copied into its live game folder, and no ad hoc alternative executor should bypass admission.
+- A future non-file backend (VFS/runtime mount) must declare a **different** capability and be verified against its own version/loader lifecycle. Do not change `Allowed` to true merely because a third-party author says a format exists.
+
+A reusable capability does **not** imply interchangeable binary patch semantics. Continue to use MHW-specific structural analysis only for MHW; Unreal container companions stay atomic; BepInEx/ASI code and bootstrap conflicts require human review; Crimson declarative field impacts are advisory until compiled by a verified loader.
+
+Cross-game matrix, two-way design feedback and acceptance gaps: [2026-11-23 comparative standard](research/GAME-ADAPTER-BIDIRECTIONAL-STANDARD-2026-11-23.md).
 
 ## Optional Heaven.gg game research links
 

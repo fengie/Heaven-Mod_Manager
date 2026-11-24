@@ -1,8 +1,10 @@
-# v8.8.140 — canonical state and catalog download capacity release candidate
+# v8.8.141 — canonical state and Crimson staging/deployment protection
 
-Build 635 is the verified v8.8.139 immutable release (source 4de235c1b632c37f34f4a851a98da369c6a3c136; Windows Gate 45153233938 and genuine hosted update/rollback 45154773464 PASS). The later #969 low-space catalog acquisition fix merged on main@b7a7cd51 and needs its own v8.8.140 publication/rollback acceptance. Personal Heaven2 installed health, in-game armor visuals and storage endurance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
+Immutable v8.8.140 updater-main-637 was published November 23, 2026 from main@3899c7cb, with hosted update/rollback and physical H2 health independently verified only when matching receipts are inspected. The last positively recorded hosted rollback in this context remains v8.8.139 build 635. PR #973 introduces v8.8.141 Crimson stage-only intake and cross-game deployment protection; real Crimson VFS/ASI loader and game-file writes remain unverified. Personal Heaven2 installed health, in-game armor visuals and storage endurance remain distinct. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 ## Integrated implementation
+
+- **v8.8.141 source — #973:** game-scoped Crimson Desert staging, DMM V3/V3.1 read-only semantic preview, single game-root direct-file admission policy, protection against external edits to manager-owned files, and hosted WPF/provider test retries. Preserve legacy MHW/Unreal/BepInEx/configured generic game behavior. Exact versioned release/rollback and personal H2/Crimson runtime must be separately verified.
 
 - **v8.8.140 catalog acquisition preflight source:** #969 checks actual free space for known archive bytes plus 256 MiB before HTTP payload writes. Windows Feature 45161454045, Startup Performance 45161454063 and AutoUpdate 45161454455 passed. Immutable new release, hosted rollback and physical H2 remain unverified.
 
@@ -50,7 +52,7 @@ Build 635 is the verified v8.8.139 immutable release (source 4de235c1b632c37f34f
 
 ## Verification boundary
 
-Current published [v8.8.139 build 635](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-635) source `4de235c1b632c37f34f4a851a98da369c6a3c136` passed [Windows Gate 45153233938](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45153233938) and [genuine hosted packaged updater/rollback 45154773464](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45154773464). New v8.8.140 low-space source and personal Heaven2 installation require separate acceptance.
+Current published [v8.8.139 build 635](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-635) source `4de235c1b632c37f34f4a851a98da369c6a3c136` passed [Windows Gate 45153233938](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45153233938) and [genuine hosted packaged updater/rollback 45154773464](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45154773464). v8.8.141 release/WPF acceptance and personal Heaven2/Crimson runtime require separate source-bound proof. Published v8.8.140 updater-main-637 is historical and does not establish v8.8.141 adoption.
 
 On the released assemblies H2 extracted all 1,002 members of the original solid 7z in 4.915 seconds. Every member matched independent extraction. The 34-folder batch recognized its 19 earlier routes on replay. H2 used disposable state and recorded its personal Manager on 624 at that point. The v8.8.137 changes require separate packaged desktop, release and installed acceptance. [Real-package results](https://github.com/fengie/Heaven-Mod_Manager/issues/791#issuecomment-7064853305)
 
@@ -65,6 +67,6 @@ Prior immutable **v8.8.117 updater-main-586** source `69a317ea4c7c18fed5ed5d1832
 - [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks installed verification. Build 603 has hosted and personal installed proof. v8.8.121 installed health and bounded endurance remain open.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in the canonical documentation-only release handoff. No new product binary or version was created.
 
-Next: verify and publish v8.8.140 through the protected Windows release path after exact-head source approval. Confirm immutable artifact source and hashes, real hosted update/rollback, and then independent Heaven2 observation. Do not touch active personal Manager/Mods/State. Confirm the new immutable source, ZIP and manifest, then verify the packaged updater and disposable-home startup. Preserve the active personal Manager session and recursively pass on the Core Rules and Learned Rules.
+Next: verify and publish v8.8.141 through the protected Windows release path after exact-head source approval. Confirm immutable artifact source and hashes, real hosted update/rollback, and then independent Heaven2 observation. Do not touch active personal Manager/Mods/State. Confirm the new immutable source, ZIP and manifest, then verify the packaged updater and disposable-home startup. Preserve the active personal Manager session and recursively pass on the Core Rules and Learned Rules.
 
 Auto Populate checks pre-Iceborne armor materials since v8.8.119. See product PR #913 for profile recovery and verification.

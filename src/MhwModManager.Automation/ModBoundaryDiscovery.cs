@@ -56,7 +56,7 @@ public static class ModBoundaryDiscovery
     private static readonly HashSet<string> PackageManifests = new(StringComparer.OrdinalIgnoreCase)
     {
         "mod-intake.json", "mod.json", "manifest.json", "meta.json",
-        "manifest.toml", "thunderstore.toml"
+        "manifest.toml", "thunderstore.toml", "modinfo.json", "dmm_pack.json"
     };
 
     public static ModBoundaryResult Discover(IEnumerable<string> relativeFilePaths, string? sourceName = null)
@@ -110,6 +110,13 @@ public static class ModBoundaryDiscovery
         }
         var directories = children.Keys.Order(StringComparer.OrdinalIgnoreCase).ToArray();
 
+        // A PAZ/PAMT set is one transport unit only with its own matching
+        // archive index. Keep its exact bytes together for staging; this is NOT
+        // permission to rewrite vanilla archives or meta/0.papgt.
+        if (IsPearlAbyssArchiveSet(relative))
+            return [new(Display(prefix), ModBoundaryKind.Folder,
+                "One PAZ/PAMT archive set; live loader compatibility requires review.")];
+
         if (relative.Any(path => path.StartsWith("fomod/", StringComparison.OrdinalIgnoreCase)
             && IsFomodConfiguration(path)))
             return Review(prefix, "Installer options must be selected; never split FOMOD variants.");
@@ -149,7 +156,7 @@ public static class ModBoundaryDiscovery
         if (mounts.Length > 0)
         {
             var payload = relative.Where(path => !IsSupplementary(path) || UnrealPakLayout.IsMember(path))
-                .Where(path => !PackageManifests.Contains(path)).ToArray();
+                .Where(path => !IsPackageManifest(path)).ToArray();
             if (mounts.Length != 1 || payload.Any(path =>
                     !path.StartsWith(mounts[0] + "/", StringComparison.OrdinalIgnoreCase)) ||
                 !UnrealPakLayout.Complete(payload))
@@ -192,13 +199,13 @@ public static class ModBoundaryDiscovery
         // are alternatives or co-required. Preserve the set as one reviewable source.
         if (directories.Length == 0 && archived.Length == 0)
         {
-            var containers = otherFiles.Where(file => !PackageManifests.Contains(file)).ToArray();
+            var containers = otherFiles.Where(file => !IsPackageManifest(file)).ToArray();
             if (containers.Length > 1 && containers.All(UnrealPakLayout.IsMember) &&
                 containers.Select(Path.GetFileNameWithoutExtension).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any())
                 return Review(prefix, "Multiple container stems share one source; review their package choices.", requiresSelection: true);
         }
 
-        if (directFiles.Any(file => PackageManifests.Contains(file)))
+        if (directFiles.Any(file => IsPackageManifest(file)))
         {
             if (archived.Length > 0)
                 return Review(prefix, "Package manifest with nested archives needs review.");
@@ -335,7 +342,7 @@ public static class ModBoundaryDiscovery
                 roots.Add(string.Join("/", segments.Take(segments.Length - 1)));
                 if (roots.Count >= minimumCount) return true;
             }
-            if (segments.Length > 1 && PackageManifests.Contains(segments[^1]))
+            if (segments.Length > 1 && IsPackageManifest(segments[^1]))
             {
                 roots.Add(string.Join("/", segments.Take(segments.Length - 1)));
                 if (roots.Count >= minimumCount) return true;
@@ -372,7 +379,7 @@ public static class ModBoundaryDiscovery
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         // A root manifest declares one authored package, even in a folder called Collection.
-        if (relativePaths.Any(PackageManifests.Contains)) return null;
+        if (relativePaths.Any(IsPackageManifest)) return null;
         var mounts = relativePaths.Where(UnrealPakLayout.IsMember)
             .Select(UnrealPakLayout.ProjectMount).OfType<string>()
             .Distinct(StringComparer.OrdinalIgnoreCase).Take(2).ToArray();
@@ -494,6 +501,35 @@ public static class ModBoundaryDiscovery
         return prefix.Length == 0 ? child : prefix + "/" + child;
     }
 
+    private static bool IsPackageManifest(string file)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // DMM v3/v3.1 files may be named "anything.field.json" and may
+        // reference companion DDS/WEM files. Never split that authored set.
+        return PackageManifests.Contains(file)
+            || (!file.Contains('/') && !file.Contains('\\')
+                && file.EndsWith(".field.json", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsPearlAbyssArchiveSet(string[] relativePaths)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var payload = relativePaths.Where(path => !IsSupplementary(path)).ToArray();
+        if (payload.Length < 2 || payload.Length > 128) return false;
+        if (payload.Any(path => !path.EndsWith(".paz", StringComparison.OrdinalIgnoreCase)
+            && !path.EndsWith(".pamt", StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        var indices = payload.Where(path => path.EndsWith(".pamt", StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (indices.Length != 1 || !Path.GetFileName(indices[0]).Equals("0.pamt", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var parent = indices[0].Contains('/') ? indices[0][..indices[0].LastIndexOf('/')] : "";
+        var archives = payload.Where(path => path.EndsWith(".paz", StringComparison.OrdinalIgnoreCase)).ToArray();
+        return archives.Any(path => Path.GetFileName(path).Equals("0.paz", StringComparison.OrdinalIgnoreCase))
+            && archives.All(path => (path.Contains('/') ? path[..path.LastIndexOf('/')] : "")
+                .Equals(parent, StringComparison.OrdinalIgnoreCase));
+    }
+
     private static bool IsArchive(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -534,7 +570,7 @@ public static class ModBoundaryDiscovery
             path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
         {
             var child = path[prefix.Length..];
-            if (PackageManifests.Contains(child) ||
+            if (IsPackageManifest(child) ||
                 child.StartsWith("SB/Content/Paks/", StringComparison.OrdinalIgnoreCase) ||
                 (UnrealPakLayout.IsMember(child) && UnrealPakLayout.ProjectMount(child) is not null)) return true;
             var slash = child.IndexOf('/');

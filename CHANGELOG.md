@@ -1,3 +1,11 @@
+# v8.8.141 — November 23, 2026
+
+- Add Crimson Desert game-specific staged bulk intake, DMM V3/V3.1 JSON/JSONC import classification and conservative virtual/table-field conflict inspection. Preserve source archives, safe game roots and locked version-specific live PAZ/PAMT/ASI deployment until actual loader/game proof. [#972](https://github.com/fengie/Heaven-Mod_Manager/issues/972) · [PR #973](https://github.com/fengie/Heaven-Mod_Manager/pull/973)
+- Unify game direct-file admission across catalog, scanner and planner. Preserve 37 previously supported game profiles and existing configured mod roots; newly inferred unknown game installs do not automatically grant writable root access.
+- Protect all previously manager-owned files against external modifications before beginning a different deployment, even if a changed file has the same size and timestamp; preserve existing journal/rollback and source custody.
+- Harden hosted WPF Advanced Tools UIA tab rebind and targeted provider retry with complete failure receipts. Use immutable pinned SHA-256 real RAR/7z test fixture fingerprints and bounded acquisition retries without lowering archive-decoder test coverage.
+- Verification and publication are source-bound; release gating, immutable updater ZIP/manifest and hosted update/rollback are required before this version is called shipped. Physical Heaven2/Crimson loader acceptance is not established.
+
 # v8.8.140 — November 23, 2026
 
 - Fail known-size catalog archive downloads early when the actual staging volume cannot fit the HTTP/provider-declared archive plus 256 MiB free-space headroom, before writing payload bytes. Preserve the 1 GiB streaming bound, lease cleanup and user Mods/State. [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969)

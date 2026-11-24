@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.140</Version>
-    <InformationalVersion>8.8.140-catalog-download-capacity</InformationalVersion>
+    <Version>8.8.141</Version>
+    <InformationalVersion>8.8.141-crimson-staging-and-deployment-safety</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

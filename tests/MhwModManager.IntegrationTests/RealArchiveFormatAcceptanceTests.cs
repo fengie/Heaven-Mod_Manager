@@ -1,3 +1,5 @@
+using System.Net;
+using System.Security.Cryptography;
 using MhwModManager.Filesystem;
 using Xunit;
 
@@ -207,38 +209,218 @@ public sealed class RealArchiveFormatAcceptanceTests : IDisposable
         MaxResponseContentBufferSize = 128 * 1024
     };
 
+    // Digest pins calculated from the GitHub blobs at the immutable upstream
+    // commit below. No archive bytes are redistributed in this repository.
+    private static readonly PinnedFixtureCorpus SharedFixtures = new(FixtureClient,
+        new(StringComparer.Ordinal)
+        {
+            ["Rar4.rar"] = (59998, "9D9C261E50D3A84AB11A3701C7A736057FC970E59CA365885A41F60270C1875E"),
+            ["Rar5.solid.rar"] = (60046, "3043D68C5A81F46ADCBB5393632D243944EAD44EB383A677AC82E68AFDDE27CF"),
+            ["7Zip.nonsolid.7z"] = (58982, "221DB581CB21336219963ACB1CD9F9F9760BD7AE1DEC112E3C0C68EB1791354D"),
+            ["7Zip.solid.7z"] = (58959, "3C336BF14BEF2DC998B548A304C0C07C9C9DA899F90E426A965A5F322E232B53"),
+            ["Rar.malformed_512byte.rar"] = (512, "7D915245989596F6CD080151FA350B54F0551797C26681639FBD856D6CC16088")
+        });
+
     private async Task<string> Materialize(string name, int expectedLength)
     {
-        // An explicit local fixture corpus works offline. Otherwise fetch only
-        // public upstream fixture bytes pinned to the tested SharpCompress tag,
-        // and check fixed fixture lengths before any parsing.
-        var localFixtures = Environment.GetEnvironmentVariable("MHW_REAL_ARCHIVE_FIXTURES_ROOT");
-        byte[] bytes;
-        if (!string.IsNullOrWhiteSpace(localFixtures))
-        {
-            bytes = await File.ReadAllBytesAsync(Path.Combine(localFixtures, name), TestToken);
-        }
-        else
-        {
-            var url = "https://raw.githubusercontent.com/adamhathcock/sharpcompress/c083c6efd843a844b0c8f7878787360e815be781/" +
-                "tests/TestArchives/Archives/" + Uri.EscapeDataString(name);
-            try
-            {
-                bytes = await FixtureClient.GetByteArrayAsync(url, TestToken);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new InvalidOperationException(
-                    "Real archive acceptance needs the pinned public SharpCompress fixture or " +
-                    "MHW_REAL_ARCHIVE_FIXTURES_ROOT pointing to an independently verified offline corpus.", ex);
-            }
-        }
-        Assert.Equal(expectedLength, bytes.Length);
+        var bytes = await SharedFixtures.ReadAsync(name, expectedLength,
+            Environment.GetEnvironmentVariable("MHW_REAL_ARCHIVE_FIXTURES_ROOT"), TestToken);
 
         Directory.CreateDirectory(home);
         var destination = Path.Combine(home, name);
         await File.WriteAllBytesAsync(destination, bytes, TestToken);
         return destination;
+    }
+
+    // One verified successful download per unique fixture per test process.
+    // A caller's cancellation does not poison the shared cache. Explicit local
+    // corpora are validated independently and never fall back to the network.
+    private sealed class PinnedFixtureCorpus(
+        HttpClient client, Dictionary<string, (int Length, string Sha256)> pins) : IDisposable
+    {
+        private const string Upstream = "https://raw.githubusercontent.com/adamhathcock/sharpcompress/" +
+            "c083c6efd843a844b0c8f7878787360e815be781/tests/TestArchives/Archives/";
+        private const int MaxAttempts = 3;
+        private readonly SemaphoreSlim gate = new(1, 1);
+        private readonly Dictionary<string, byte[]> verified = new(StringComparer.Ordinal);
+
+        public async Task<byte[]> ReadAsync(string name, int expectedLength, string? localRoot,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!pins.TryGetValue(name, out var pin) || pin.Length != expectedLength)
+                throw new InvalidDataException($"No matching immutable archive fixture pin for {name}.");
+
+            if (!string.IsNullOrWhiteSpace(localRoot))
+            {
+                var bytes = await File.ReadAllBytesAsync(Path.Combine(localRoot, name), cancellationToken);
+                Validate(name, bytes, pin);
+                return bytes;
+            }
+
+            await gate.WaitAsync(cancellationToken);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (verified.TryGetValue(name, out var cached))
+                    return cached.ToArray();
+
+                for (var attempt = 1; ; attempt++)
+                {
+                    byte[] bytes;
+                    try
+                    {
+                        bytes = await client.GetByteArrayAsync(Upstream + Uri.EscapeDataString(name),
+                            cancellationToken);
+                    }
+                    catch (HttpRequestException ex) when (attempt < MaxAttempts && IsTransient(ex.StatusCode))
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt), cancellationToken);
+                        continue;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        throw new InvalidOperationException(
+                            $"Real archive acceptance needs verified fixture {name}. " +
+                            "Provide MHW_REAL_ARCHIVE_FIXTURES_ROOT for offline verification.", ex);
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Validate(name, bytes, pin);
+                    verified.Add(name, bytes);
+                    return bytes.ToArray();
+                }
+            }
+            finally
+            {
+                gate.Release();
+            }
+        }
+
+        private static bool IsTransient(HttpStatusCode? status) => status is
+            HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or
+            HttpStatusCode.InternalServerError or HttpStatusCode.BadGateway or
+            HttpStatusCode.ServiceUnavailable or HttpStatusCode.GatewayTimeout;
+
+        private static void Validate(string name, byte[] bytes, (int Length, string Sha256) pin)
+        {
+            if (bytes.Length != pin.Length ||
+                !string.Equals(Convert.ToHexString(SHA256.HashData(bytes)), pin.Sha256, StringComparison.Ordinal))
+                throw new InvalidDataException($"Archive fixture {name} does not match the pinned length and SHA-256.");
+        }
+
+        public void Dispose()
+        {
+            gate.Dispose();
+            GC.SuppressFinalize(this);
+        }
+    }
+
+    // Deterministic acquisition regressions use a synthetic three-byte pin;
+    // all existing real archive extraction assertions above remain unchanged.
+    private const string SampleName = "sample.rar";
+    private static PinnedFixtureCorpus CreateTestCorpus(HttpClient client) => new(client,
+        new(StringComparer.Ordinal)
+        {
+            [SampleName] = (3, "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD")
+        });
+
+    private sealed class FixtureResponseHandler(Func<int, HttpResponseMessage> response) : HttpMessageHandler
+    {
+        public int Requests { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            cancellationToken.ThrowIfCancellationRequested();
+            return response(++Requests);
+        }
+    }
+
+    private static HttpResponseMessage SuccessfulFixture(string body) =>
+        new(HttpStatusCode.OK) { Content = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(body)) };
+
+    [Fact]
+    public async Task Fixture_acquisition_retries_transient_failure_and_shares_only_verified_bytes()
+    {
+        using var handler = new FixtureResponseHandler(request => request <= 2
+            ? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) : SuccessfulFixture("abc"));
+        using var client = new HttpClient(handler, disposeHandler: false);
+        using var corpus = CreateTestCorpus(client);
+
+        var results = await Task.WhenAll(
+            corpus.ReadAsync(SampleName, 3, null, TestToken),
+            corpus.ReadAsync(SampleName, 3, null, TestToken),
+            corpus.ReadAsync(SampleName, 3, null, TestToken));
+        Assert.Equal(3, handler.Requests);
+        results[0][0] = 0;
+        Assert.Equal("abc"u8.ToArray(), results[1]);
+        Assert.Equal("abc"u8.ToArray(), results[2]);
+        Assert.Equal("abc"u8.ToArray(), await corpus.ReadAsync(SampleName, 3, null, TestToken));
+        Assert.Equal(3, handler.Requests);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound, 1)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, 3)]
+    public async Task Fixture_acquisition_fails_closed_after_bounded_retries(HttpStatusCode status, int attempts)
+    {
+        using var handler = new FixtureResponseHandler(_ => new HttpResponseMessage(status));
+        using var client = new HttpClient(handler, disposeHandler: false);
+        using var corpus = CreateTestCorpus(client);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => corpus.ReadAsync(SampleName, 3, null, TestToken));
+        Assert.Equal(status, Assert.IsType<HttpRequestException>(error.InnerException).StatusCode);
+        Assert.Equal(attempts, handler.Requests);
+    }
+
+    [Theory]
+    [InlineData("abd")]
+    [InlineData("ab")]
+    public async Task Fixture_acquisition_never_caches_an_incorrect_hash_or_length(string wrong)
+    {
+        using var handler = new FixtureResponseHandler(request => SuccessfulFixture(request == 1 ? wrong : "abc"));
+        using var client = new HttpClient(handler, disposeHandler: false);
+        using var corpus = CreateTestCorpus(client);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => corpus.ReadAsync(SampleName, 3, null, TestToken));
+        Assert.Equal("abc"u8.ToArray(), await corpus.ReadAsync(SampleName, 3, null, TestToken));
+        Assert.Equal(2, handler.Requests);
+    }
+
+    [Fact]
+    public async Task Explicit_offline_corpus_must_match_the_pin_and_never_downloads()
+    {
+        using var handler = new FixtureResponseHandler(_ => SuccessfulFixture("abc"));
+        using var client = new HttpClient(handler, disposeHandler: false);
+        using var corpus = CreateTestCorpus(client);
+        Directory.CreateDirectory(home);
+
+        await Assert.ThrowsAsync<FileNotFoundException>(() => corpus.ReadAsync(SampleName, 3, home, TestToken));
+        var local = Path.Combine(home, SampleName);
+        await File.WriteAllBytesAsync(local, "abd"u8.ToArray(), TestToken);
+        await Assert.ThrowsAsync<InvalidDataException>(() => corpus.ReadAsync(SampleName, 3, home, TestToken));
+        await File.WriteAllBytesAsync(local, "abc"u8.ToArray(), TestToken);
+        Assert.Equal("abc"u8.ToArray(), await corpus.ReadAsync(SampleName, 3, home, TestToken));
+        Assert.Equal(0, handler.Requests);
+    }
+
+    [Fact]
+    public async Task Cancelled_fixture_acquisition_does_not_poison_subsequent_reads()
+    {
+        using var handler = new FixtureResponseHandler(_ => SuccessfulFixture("abc"));
+        using var client = new HttpClient(handler, disposeHandler: false);
+        using var corpus = CreateTestCorpus(client);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestToken);
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => corpus.ReadAsync(SampleName, 3, null, cts.Token));
+        Assert.Equal(0, handler.Requests);
+        Assert.Equal("abc"u8.ToArray(), await corpus.ReadAsync(SampleName, 3, null, TestToken));
+        Assert.Equal(1, handler.Requests);
     }
 
     public void Dispose()

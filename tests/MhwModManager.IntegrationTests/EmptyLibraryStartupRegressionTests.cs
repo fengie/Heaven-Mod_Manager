@@ -40,8 +40,11 @@ public sealed class EmptyLibraryStartupRegressionTests : IDisposable
         var game=CreateGame("nier-data",dataFolder:true,modsFolder:false);
         var profile=DiscoverSingleGame(game,"nier-data-state");
 
-        Assert.Equal("generic-root",profile.AdapterId);
+        Assert.Equal("inferred-unverified-root",profile.AdapterId);
         Assert.Equal(string.Empty,profile.ModRootRelativePath);
+        var admission = GameAdapters.DirectFileAdmission(profile);
+        Assert.False(admission.Allowed);
+        Assert.Equal("unverified-game-root-target", admission.Code);
     }
 
     [Fact]

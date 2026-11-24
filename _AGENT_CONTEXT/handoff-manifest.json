@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.140",
+  "currentVersion": "8.8.141",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Verified v8.8.139 updater-main-635 from 4de235c1 passed Windows Gate 45153233938 and hosted updater/rollback 45154773464. Merged #969 source main@b7a7cd51 needs v8.8.140 publication and installed-client acceptance.",
+  "immediateParentRevision": "Immutable v8.8.140 updater-main-637 published from 3899c7cb; v8.8.141 Crimson staging/cross-game protection is owned by #973 and pending exact-main release and hosted rollback.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Refresh Toolbox/Manager main and v8.8.140 release PR; verify exact source native gate, immutable publication and real packaged update/rollback. Separately verify H2 installation, in-game Iceborne armor and storage endurance; keep #669/#793/#912 open. Every successor must propagate full continuity protocol and learned rules.",
+  "nextAgentObligation": "Refresh canonical main and PR #973, verify exact-head hosted Windows Feature/Startup/WPF gates, preserve legacy generic game compatibility, then close v8.8.141 immutable publication and real updater/rollback before claiming shipped. H2/Crimson ASI loader and hundreds-mod p95 remain separately unverified. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

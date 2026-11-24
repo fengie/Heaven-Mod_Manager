@@ -283,6 +283,13 @@ public sealed partial class CatalogService(ManagerDatabase db,ModScanner scanner
     public async Task EnsureCapturedAsync(IEnumerable<ModDescriptor> mods,CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // A staging-only adapter must keep mod sources visible for review, but
+        // cannot accidentally enable direct live-file capture during indexing.
+        if (!GameAdapters.DirectFileAdmission(scanner.Profile).Allowed)
+        {
+            ct.ThrowIfCancellationRequested();
+            return;
+        }
         var pending = mods.ToArray();
         // Keep saved rows intact and reject empty sources before capturing any mod in this batch.
         foreach (var mod in pending)

@@ -232,36 +232,85 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var alternateHash = System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(archive));
         run.CopyToInbox(archive);
 
-        var search = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Edit &&
-            e.Current.Name == "Search mods"), UiTimeout, "filter for independent package", ct);
-        var filter = (ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern);
-        filter.SetValue(alternateName);
-        ToggleState? ReadToggle(string name) => FindModToggle(window, name) is { } checkbox
+        // File publication and the first visible checkbox can precede the end
+        // of automatic discovery/rebinding. The blocking overlay prevents real
+        // users from acting during that interval; do not bypass it with UIA Toggle.
+        bool Busy()
+        {
+            var phase=window.FindFirst(TreeScope.Descendants,new AndCondition(
+                new PropertyCondition(AutomationElement.NameProperty,"Current operation phase"),
+                new PropertyCondition(AutomationElement.ControlTypeProperty,ControlType.Text)));
+            return phase is not null && !phase.Current.IsOffscreen;
+        }
+        AutomationElement? CurrentSearch()=>window.FindFirst(TreeScope.Descendants,new AndCondition(
+            new PropertyCondition(AutomationElement.AutomationIdProperty,"ModSearchBox"),
+            new PropertyCondition(AutomationElement.ControlTypeProperty,ControlType.Edit)));
+        AutomationElement? Package(string name)
+        {
+            var grid=window.FindFirst(TreeScope.Descendants,new AndCondition(
+                new PropertyCondition(AutomationElement.NameProperty,"Mod library"),
+                new PropertyCondition(AutomationElement.ControlTypeProperty,ControlType.DataGrid)));
+            return grid?.FindFirst(TreeScope.Descendants,new AndCondition(
+                new PropertyCondition(AutomationElement.NameProperty,name),
+                new PropertyCondition(AutomationElement.ControlTypeProperty,ControlType.CheckBox)));
+        }
+        ToggleState? ReadToggle(string name)=>Package(name) is { } checkbox && !checkbox.Current.IsOffscreen
             ? ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState : null;
-        await WaitForAsync(()=>File.Exists(alternateLive) && File.ReadAllBytes(alternateLive).SequenceEqual(payload),UiTimeout,"second package automatically active",ct);
-        // Disk publication can finish before the asynchronous discovery/reload paints
-        // its enabled checkbox. An unconditional Toggle() on an Off row would turn
-        // the package ON rather than testing the requested user disable.
-        await WaitForAsync(() => FindModToggle(window,alternateName) is { } checkbox &&
-            checkbox.Current.IsEnabled &&
-            ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On,
-            UiTimeout, "new package enabled in Mods before user disable", ct);
-        var alternate=await WaitForElementAsync(()=>FindModToggle(window,alternateName),UiTimeout,"new package",ct);
-        var toggle=(TogglePattern)alternate.GetCurrentPattern(TogglePattern.Pattern);
-        Assert.Equal(ToggleState.On,toggle.Current.ToggleState);
-        toggle.Toggle();
+        await WaitForAsync(()=>File.Exists(alternateLive) && File.ReadAllBytes(alternateLive).SequenceEqual(payload),
+            UiTimeout,"second package automatically active",ct);
+        var search=await WaitForElementAsync(()=>!Busy()?CurrentSearch():null,
+            UiTimeout,"idle native search for independent package",ct);
+        await TypeNativePathAsync(search,alternateName,window.Current.ProcessId,ct,submit:false);
+        bool ExactSearch()=>CurrentSearch() is { } field &&
+            ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value==alternateName;
+        var alternate=await WaitForElementAsync(()=>
+        {
+            if(Busy()||!ExactSearch()||Package(alternateName) is not { } checkbox||
+                !checkbox.Current.IsEnabled||checkbox.Current.IsOffscreen||!checkbox.Current.IsKeyboardFocusable||
+                ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState!=ToggleState.On)return null;
+            return checkbox;
+        },UiTimeout,"new package enabled in an idle current Mods library",ct);
+        alternate.SetFocus();
+        bool FocusedOnCurrentPackage()
+        {
+            if(Busy()||!ExactSearch()||Package(alternateName) is not { } current||
+                !current.Current.IsEnabled||current.Current.IsOffscreen)return false;
+            var focused=AutomationElement.FocusedElement;
+            return focused.Current.ProcessId==window.Current.ProcessId &&
+                focused.GetRuntimeId().SequenceEqual(current.GetRuntimeId()) &&
+                ((TogglePattern)current.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState==ToggleState.On;
+        }
+        await WaitForAsync(FocusedOnCurrentPackage,UiTimeout,"focused current enabled independent package",ct);
+        // One native Space activation, never a retry/double toggle of uncertain effect.
+        dynamic keys=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell",throwOnError:true)!)!;
         try
         {
-            // Check both WPF choice and deployed bytes; neither alone is success.
+            Assert.True(FocusedOnCurrentPackage(),"Current independent package changed before native input.");
+            keys.SendKeys(" ");
+        }
+        finally { System.Runtime.InteropServices.Marshal.FinalReleaseComObject((object)keys); }
+        try
+        {
             await WaitForAsync(()=>ReadToggle(alternateName)==ToggleState.Off && !File.Exists(alternateLive),
                 UiTimeout,"user disabled second package",ct);
         }
         catch (TimeoutException ex)
         {
-            // Only fixture-owned boolean/state evidence; no personal paths or files.
             var visible=ReadToggle(alternateName)?.ToString() ?? "not-visible";
+            var catalog=run.OpenCatalog();
+            string persisted;
+            try
+            {
+                var row=(await catalog.GetModsAsync(ct)).SingleOrDefault(mod=>mod.DisplayName==alternateName);
+                persisted=row?.Enabled.ToString()??"missing";
+            }
+            finally
+            {
+                await using var connection=await catalog.OpenAsync(CancellationToken.None);
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            }
             throw new TimeoutException(
-                $"Second-package disable did not converge: ui={visible}; live-file-present={File.Exists(alternateLive)}.",ex);
+                $"Second-package native disable did not converge: ui={visible}; live-file-present={File.Exists(alternateLive)}; catalog-enabled={persisted}; busy={Busy()}; search-matched={ExactSearch()}.",ex);
         }
         await WaitForAsync(() => ReadToggle(alternateName) == ToggleState.Off && ReadToggle(primaryName) is null,
             UiTimeout, "only independent disabled package visible", ct);
@@ -303,8 +352,12 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             await invocation.WaitAsync(UiTimeout, ct);
             await WaitForAsync(() => FindProcessDialog(pid, caption) is null, UiTimeout, "dismiss " + caption, ct);
         }
-        filter.SetValue("");
-        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
+        var clearSearch = await WaitForElementAsync(() => !Busy() ? CurrentSearch() : null,
+            UiTimeout, "idle native search before clearing independent package filter", ct);
+        ((ValuePattern)clearSearch.GetCurrentPattern(ValuePattern.Pattern)).SetValue("");
+        await WaitForAsync(() => CurrentSearch() is { } field &&
+            ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value == "" &&
+            !Busy() && ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages with independent choices", ct);
         await Answer("Select all visible mods", "Enable visible mods", "No");
         Assert.Equal(ToggleState.Off, ReadToggle(alternateName));

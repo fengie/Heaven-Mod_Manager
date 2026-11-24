@@ -26,6 +26,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
     public Task BrightMemoryInfiniteSecondPackageDisableRegression() =>
         VerifyAllGamesAsync("focused", ExerciseGameWindowAsync, onlyGameId: "bright-memory-infinite");
 
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public Task SwordAndFairy7SecondPackageDisableRegression() =>
+        VerifyAllGamesAsync("focused", ExerciseGameWindowAsync, onlyGameId: "sword-and-fairy-7");
+
     private static async Task VerifyAllGamesAsync(string scenario,
         Func<GameProfile, List<string>, CancellationToken, Task> exercise,
         string? onlyGameId = null)
@@ -46,6 +51,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             TestToken.ThrowIfCancellationRequested();
             var passed = new List<string>();
             string? error = null;
+            string? exceptionDetail = null;
             try
             {
                 await exercise(game, passed, TestToken);
@@ -53,12 +59,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             catch (Exception ex) when (!TestToken.IsCancellationRequested)
             {
                 error = ex.Message;
+                // Preserve the type and call site for hosted diagnostics; do
+                // not reduce product failures to an untraceable message string.
+                exceptionDetail = ex.ToString();
                 failures.Add($"{game.Id} after {passed.LastOrDefault() ?? "startup"}: {error}");
             }
             var evidence = Environment.GetEnvironmentVariable("MHW_GAME_UI_EVIDENCE");
             if (!string.IsNullOrEmpty(evidence))
                 File.WriteAllText(Path.Combine(evidence, $"{scenario}-{game.Id}.json"),
-                    JsonSerializer.Serialize(new { game.Id, game.AdapterId, passed, error }));
+                    JsonSerializer.Serialize(new { game.Id, game.AdapterId, passed, error, exceptionDetail }));
             if (error is not null && !failedOperations.Add((passed.LastOrDefault() ?? "startup", error)))
             {
                 failures.Add("The same operation failed twice. Remaining profiles require a corrected candidate.");
@@ -203,13 +212,63 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes), UiTimeout,"Inbox data automatically installed under this game",ct);
         passed.Add("Discover Inbox archive in Mods");
 
-        var search = await WaitForElementAsync(() => Find(window, e => e.Current.ControlType == ControlType.Edit &&
-            e.Current.Name == "Search mods"), UiTimeout, "Search mods", ct);
-        var query = (ValuePattern)search.GetCurrentPattern(ValuePattern.Pattern);
-        query.SetValue("absent_fixture_74812");
-        await WaitForAsync(() => FindModToggle(window, name) is null, UiTimeout, "filter excludes package", ct);
-        query.SetValue("Inbox Fixture");
-        toggle = await WaitForElementAsync(() => FindModToggle(window, name), UiTimeout, "filter returns package", ct);
+        // Use the current native field for each edit; a UIA pattern obtained
+        // before a library refresh is not proof that a later input reached WPF.
+        AutomationElement? CurrentSearch() => window.FindFirst(TreeScope.Descendants,
+            new AndCondition(new PropertyCondition(AutomationElement.AutomationIdProperty, "ModSearchBox"),
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit)));
+
+        AutomationElement? CurrentPackage()
+        {
+            var grid = window.FindFirst(TreeScope.Descendants,
+                new AndCondition(new PropertyCondition(AutomationElement.NameProperty, "Mod library"),
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataGrid)));
+            return grid?.FindFirst(TreeScope.Descendants,
+                new AndCondition(new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.CheckBox),
+                    new PropertyCondition(AutomationElement.NameProperty, name)));
+        }
+
+        bool SearchEquals(string expected)
+        {
+            var field = CurrentSearch();
+            return field is not null && field.TryGetCurrentPattern(ValuePattern.Pattern, out var pattern)
+                && pattern is ValuePattern value && StringComparer.Ordinal.Equals(value.Current.Value, expected);
+        }
+
+        bool EmptyViewVisible()
+        {
+            var empty = window.FindFirst(TreeScope.Descendants,
+                new AndCondition(new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text),
+                    new PropertyCondition(AutomationElement.NameProperty, "No mods match this view")));
+            return empty is not null && !empty.Current.IsOffscreen;
+        }
+
+        async Task TypeSearchAsync(string text)
+        {
+            var field = await WaitForElementAsync(CurrentSearch, UiTimeout, "current Mods search field", ct);
+            // Do not press Enter: this scenario tests live debounced filtering,
+            // not the explicit SubmitModSearch command.
+            await TypeNativePathAsync(field, text, app.Id, ct, submit: false);
+            await WaitForAsync(() => SearchEquals(text), UiTimeout, "current search contains typed text", ct);
+        }
+
+        const string absent = "absent_fixture_74812";
+        await TypeSearchAsync(absent);
+        // An unavailable or virtualized checkbox is not enough to establish
+        // exclusion. Require the actual empty-library overlay as positive proof.
+        await WaitForAsync(() => SearchEquals(absent) && EmptyViewVisible() && CurrentPackage() is null,
+            UiTimeout, "filter excludes package and shows empty library", ct);
+        passed.Add("Search excludes package with visible empty state");
+
+        const string present = "Inbox Fixture";
+        await TypeSearchAsync(present);
+        toggle = await WaitForElementAsync(() =>
+        {
+            if (!SearchEquals(present) || EmptyViewVisible()) return null;
+            var package = CurrentPackage();
+            return package is not null && !package.Current.IsOffscreen ? package : null;
+        }, UiTimeout, "filter returns package in current library", ct);
+        Assert.True(toggle.Current.IsEnabled);
         passed.Add("Filter mod list");
 
         async Task Filter(string label, bool visible)

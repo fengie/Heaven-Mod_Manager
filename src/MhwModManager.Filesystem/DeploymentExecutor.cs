@@ -83,14 +83,18 @@ public sealed class DeploymentExecutor(
 
         try
         {
+            // Refuse to create any recovery journal when the entire deployment
+            // is already known to be unsafe. No live bytes have changed yet.
+            await VerifyAllPreconditionsAsync(prepared,ct);
+            await VerifyUntouchedManagedFilesAsync(prepared,ct);
+            VerifyNoKnownFileLocks(prepared);
+
             await WritePreparedJournalAsync(plan.Id,description,parentOperationId,beforeState,afterState,prepared,ct);
             journalDurable=true;
             Inject("after-journal",0);
 
-            // Validate the entire plan before the first mutation. Each file is then revalidated
-            // immediately before its own write to close the TOCTOU window as much as practical.
-            await VerifyAllPreconditionsAsync(prepared,ct);
-            VerifyNoKnownFileLocks(prepared);
+            // Revalidate each touched path immediately before mutation to
+            // narrow the window after the preflight and durable journal.
             await SetOperationStateAsync(plan.Id,OperationState.Applying,ct);
             Inject("before-first-mutation",0);
 
@@ -144,7 +148,17 @@ public sealed class DeploymentExecutor(
         {
             var ex=EnrichWithLockOwner(original,activePath);
             if(!journalDurable)
-                return new(false,"Deployment failed before any live-file transaction began.",plan.Id,ex,Classify(ex),false,filesChanged);
+            {
+                // A conflicting external owner is a review decision, not an
+                // opaque I/O failure. No journal or game-file change was made.
+                var externalDrift = ex is IOException &&
+                    ex.Message.StartsWith("Externally changed managed file", StringComparison.OrdinalIgnoreCase);
+                return new(false,
+                    externalDrift
+                        ? "Deployment blocked: an owned game file changed outside the manager. Review the file before retrying."
+                        : "Deployment failed before any live-file transaction began.",
+                    plan.Id, ex, externalDrift ? FailureCategory.UserActionRequired : Classify(ex), false, filesChanged);
+            }
 
             try
             {
@@ -313,6 +327,56 @@ public sealed class DeploymentExecutor(
             async(ch,token)=>await VerifyPreconditionAsync(ch,Destination(ch.Path),token));
     }
 
+    /// <summary>
+    /// Read-only external-change reconciliation. A previous manager deployment
+    /// can be modified by another tool even when the next plan touches a
+    /// different path. Scan only already owned, untouched files under the
+    /// exclusive game-root lease; cap concurrent hash I/O for UI responsiveness.
+    /// Never recapture an external edit as a new trusted baseline.
+    /// </summary>
+    private async Task VerifyUntouchedManagedFilesAsync(
+        IReadOnlyList<DeploymentChange> changes, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var touched = changes.Select(c => c.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var owned = new List<(string Path, string Expected)>();
+
+        await using (var connection = await db.OpenAsync(ct))
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT path, COALESCE(NULLIF(expected_live_sha256,''),blob_sha256)
+                FROM deployment_manifest
+                """;
+            await using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                ct.ThrowIfCancellationRequested();
+                var path = reader.GetString(0);
+                if (touched.Contains(path)) continue;
+                var expected = reader.IsDBNull(1) ? null : reader.GetString(1);
+                if (string.IsNullOrWhiteSpace(expected))
+                    throw new IOException($"Cannot verify the existing owned file '{path}' without a trusted content hash.");
+                owned.Add((path, expected));
+            }
+        }
+
+        await Parallel.ForEachAsync(owned,
+            new ParallelOptions { MaxDegreeOfParallelism = PreflightParallelism, CancellationToken = ct },
+            async (entry, token) =>
+            {
+                var destination = Destination(entry.Path);
+                EnsureNoReparseTraversal(destination);
+                if (Directory.Exists(destination) || !File.Exists(destination))
+                    throw new IOException(
+                        $"Externally changed managed file '{entry.Path}' is missing or was replaced by a directory. Review ownership before deployment.");
+                var live = await hashing.HashFileAsync(destination, true, token);
+                if (!StringComparer.OrdinalIgnoreCase.Equals(live.Sha256, entry.Expected))
+                    throw new IOException(
+                        $"Externally changed managed file '{entry.Path}' no longer matches the recorded deployment. Review ownership before deployment.");
+            });
+    }
+
     private void VerifyNoKnownFileLocks(List<DeploymentChange> changes)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -338,11 +402,15 @@ public sealed class DeploymentExecutor(
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         EnsureNoReparseTraversal(dest);
         if(Directory.Exists(dest))throw new IOException($"Precondition failed: target became a directory: {ch.Path}");
-        if(ch.ExpectedLiveSha256 is not null)
+        // Plans restored from older histories may know the before image while
+        // lacking a separate ExpectedLiveSha256. Never treat that omission as
+        // permission to overwrite an externally modified managed file.
+        var expected = ch.ExpectedLiveSha256 ?? ch.BeforeBlobSha256;
+        if(expected is not null)
         {
             if(!File.Exists(dest))throw new IOException($"Precondition failed: managed file disappeared: {ch.Path}");
             var live=await hashing.HashFileAsync(dest,true,ct);
-            if(!StringComparer.OrdinalIgnoreCase.Equals(live.Sha256,ch.ExpectedLiveSha256))
+            if(!StringComparer.OrdinalIgnoreCase.Equals(live.Sha256,expected))
                 throw new IOException($"Precondition failed: live file changed since planning: {ch.Path}");
         }
         else if(ch.BeforeBlobSha256 is null&&File.Exists(dest))
