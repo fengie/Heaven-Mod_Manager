@@ -93,7 +93,7 @@ public sealed class CatalogDiscoveryService
             }
             catch (Exception ex)
             {
-                var health = await TryGetHealthAsync(provider).ConfigureAwait(false);
+                var health = await CatalogSyncService.TryGetHealthAsync(provider, ct).ConfigureAwait(false);
                 outcomes.Add(new CatalogProviderSyncOutcome(
                     provider.ProviderId,
                     provider.DisplayName,
@@ -104,6 +104,7 @@ public sealed class CatalogDiscoveryService
             }
         }
 
+        ct.ThrowIfCancellationRequested();
         return new CatalogDiscoveryResult(outcomes);
     }
 
@@ -120,20 +121,6 @@ public sealed class CatalogDiscoveryService
                 throw new ArgumentException(
                     $"Catalog provider collection contains duplicate provider id '{provider.ProviderId}'.",
                     nameof(providers));
-        }
-    }
-
-    private static async Task<CatalogProviderHealth?> TryGetHealthAsync(
-        IModCatalogProvider provider)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        try
-        {
-            return await provider.GetHealthAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-        catch
-        {
-            return null;
         }
     }
 

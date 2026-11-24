@@ -142,6 +142,33 @@ public sealed class CatalogDiscoveryServiceTests : IDisposable
         Assert.Equal(1, provider.HealthCalls);
     }
 
+
+    [Fact]
+    public async Task Provider_health_timeout_does_not_cancel_uncancelled_refresh()
+    {
+        var repository = await CreateRepositoryAsync("provider-health-timeout");
+        var service = new CatalogDiscoveryService(new CatalogSyncService(repository));
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-health-timeout"));
+        var first = new FakeProvider("alpha")
+        {
+            SearchException = new HttpRequestException("offline"),
+            OnHealth = () => throw new TaskCanceledException("provider-local health timeout")
+        };
+        var second = new FakeProvider("beta");
+
+        var result = await service.RefreshAsync(
+            [first, second],
+            new CatalogBrowseRequest(game),
+            new CatalogSyncOptions(TimeSpan.FromMinutes(10), HydrateFiles: false),
+            TestToken);
+
+        Assert.Equal(1, result.SuccessfulProviders);
+        Assert.Equal(1, result.FailedProviders);
+        Assert.Equal(CatalogSyncFailureKind.Offline, result.Providers[0].FailureKind);
+        Assert.Null(result.Providers[0].Health);
+        Assert.Equal(1, second.SearchCalls);
+    }
+
     private async Task<CatalogRepository> CreateRepositoryAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name, "manager.db"));
