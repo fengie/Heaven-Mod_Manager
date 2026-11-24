@@ -44,7 +44,9 @@ public sealed class InstalledWpfAutomationRetryTests
     [Fact]
     public void Com_unavailable_elements_can_be_retried_while_hosted_ui_rebinds()
     {
-        Assert.True(InstalledWpfModLifecycleE2ETests.IsTransientAutomationQueryFailure(
-            new COMException("UI Automation provider unavailable")));
+        var providerFailure = Marshal.GetExceptionForHR(unchecked((int)0x80004005))
+            ?? throw new InvalidOperationException("Expected a COM provider failure for the test.");
+        Assert.IsType<COMException>(providerFailure);
+        Assert.True(InstalledWpfModLifecycleE2ETests.IsTransientAutomationQueryFailure(providerFailure));
     }
 }
