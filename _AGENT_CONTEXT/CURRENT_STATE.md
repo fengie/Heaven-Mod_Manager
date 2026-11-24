@@ -1,6 +1,6 @@
-# v8.8.143 — canonical state and catalogue cancellation
+# v8.8.143 - source verified, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978) integrated at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`; cancellation now propagates through failure health probes and diagnostic persistence. Native Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed. Real provider authorization, installed H2 health and v8.8.143 publication remain separate. Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `c60e5bc2e4d852f5ecffd51257be547fc169732a` (Windows Gate 45511294129); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -56,9 +56,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `76e23fd4bd12dd0dae81074f45
 
 ## Verification boundary
 
-Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified.
+Current hosted-Windows closure: v8.8.143 source `c60e5bc2e4d852f5ecffd51257be547fc169732a` passed run `45511294129` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.143-heaven-windows-closure.log`.
 
-Current v8.8.143 release metadata follows integrated #978 source `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. Exact-main Windows release verification, immutable publication and actual packaged update/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
+Public release status: **NOT VERIFIED** for source `c60e5bc2e4d852f5ecffd51257be547fc169732a`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `c60e5bc2e4d852f5ecffd51257be547fc169732a` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
