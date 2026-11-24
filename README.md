@@ -1,14 +1,22 @@
-# v8.8.140 — MHW Manual Mod Manager
+# v8.8.141 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 23, 2026 · 6:14:33 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 23, 2026 · 8:05:23 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.140**.
+Current product version: **8.8.141**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.141 — game-safe bulk intake and external-modification protection
+
+- Crimson Desert is recognized by its verified install layout and supports staging mixed archived/loose third-party mod packages, DMM V3/V3.1 JSON/JSONC structure and read-only table/asset conflict previews. No unverified PAZ/PAMT registry rewrite, ASI execution or third-party loader installation. [PR #973](https://github.com/fengie/Heaven-Mod_Manager/pull/973) · [#972](https://github.com/fengie/Heaven-Mod_Manager/issues/972)
+- Shared deployment admission separates import evidence from permission to write live files. Existing MHW, Unreal, BepInEx and historical configured generic games retain compatibility; new unknown executable-only games remain staging-only until a verified mod target is selected.
+- The existing transactional planner and journal now detect unauthorized changes to any manager-owned game file before unrelated writes, including same-size/timestamp-restored edits. Protected sources remain unchanged; the owner must resolve external modifications explicitly.
+- Hosted WPF automation now reacquires changing tabs after refresh, retries only observed transient UIA provider errors, and retains full failure evidence. Real RAR fixture fetches are pinned to immutable source digests with bounded retries, not substituted by synthetic archives.
+- Native exact-source feature, startup and hosted WPF acceptance, immutable publication, actual packaged updater/rollback and personal Heaven2/gameplay health are distinct release boundaries. **Crimson live-game deployment is not yet supported.**
 
 ## v8.8.140 — catalog download disk-space preflight
 
@@ -21,11 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Import publication rejects reparse-point ancestors before moving or deleting staging and owned paths. [#962](https://github.com/fengie/Heaven-Mod_Manager/pull/962)
 - Archive, FOMOD and Smart Inbox scratch carry process-start-certified lease markers before extraction. Settings can reclaim only exited-owner abandoned scratch after a grace period or when its reclaimable bytes exceed 512 MiB; live/unknown/unleased/reparse state and durable Mods/State remain untouched. [#963](https://github.com/fengie/Heaven-Mod_Manager/pull/963)
 - Source checks and installed release acceptance are separate. Preserve original user content and recovery state; do not infer physical Heaven2 adoption.
-
-## v8.8.138 — reliable cached mod search
-
-- Browse Mods no longer sends punctuation-only or emoji-only input to SQLite FTS5, while a blank query still shows cached results.
-- Mixed text and punctuation preserve searchable terms, including supplementary Unicode letters and number symbols. Local paging and provider permissions are unchanged. [Scope: #558](https://github.com/fengie/Heaven-Mod_Manager/issues/558)
 
 ## Current plans & progress
 

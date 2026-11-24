@@ -55,6 +55,7 @@ These entries recover unique work that had been archived during the 2026-09-30 b
 
 | ID | Priority | Status | Source | Goal |
 | --- | --- | --- | --- | --- |
+| CRIMSON-972 | P0 | ACTIVE | issue #972; PR #973; v8.8.141 source | Standardize safely staged Crimson Desert bulk intake and DMM effects, preserve old game profiles, make the deployment journal detect external file changes, verify native/hosted 37-game acceptance, then publish source-bound immutable updater; real 2.05.01+ loader/physical H2 remains separately blocked. Owner: Mod Manager PR #973 / release publisher. |
 | SECURITY-554 | P0 | DONE | issue #554; PR #555 | Close permitted-crawler path/redirect containment gaps before any real HTML provider adapter is enabled. |
 | BROWSE-556 | P1 | DONE | issue #556; PR #567; hosted Windows `36978710736`; installed-client E2E `36979261045` | v8.8.68 packaged ComboBox peer-value selector, Switch/Settings, update, and rollback acceptance passed; issue closed. |
 | BROWSE-557 | P1 | DONE | issue #557; PR #561 | Deliver artwork-backed rich Browse Mods results and details. |

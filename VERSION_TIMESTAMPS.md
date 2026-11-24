@@ -4,7 +4,8 @@ This is the non-destructive historical timestamp ledger for MHW Manual Mod Manag
 
 | Version | Timestamp | Provenance |
 | --- | --- | --- |
-| 8.8.140 | November 23, 2026 · 6:14:33 AM EST | Metadata prepared for catalog low-disk preflight #969; immutable publication pending |
+| 8.8.141 | November 23, 2026 · 8:05:23 PM EST | Metadata prepared for staged Crimson Desert intake and cross-game deployment safety #973; exact release/source and installed acceptance pending |
+| 8.8.140 | November 23, 2026 · 6:14:33 AM EST | Metadata prepared for catalog low-disk preflight #969; immutable updater-main-637 published November 23, 2026 from 3899c7cb (hosted rollback and H2 separately verified only when independently attested) |
 | 8.8.139 | November 22, 2026 · 3:55:13 PM EST | Metadata prepared for storage lifecycle #904/#962/#963 and #967; immutable updater-main-635 published November 23, 2026 from 4de235c1, with Windows Gate 45153233938 and real hosted updater/rollback 45154773464 PASS |
 | 8.8.138 | November 21, 2026 · 11:39:13 PM EST | Metadata created for Browse Mods Unicode-safe cached search; immutable updater-main-627 published from 708b725b (release timestamp recorded independently) |
 | 8.8.137 | November 21, 2026 · 12:08:20 PM EST | Automatic mod changes from main 03b07f33 |

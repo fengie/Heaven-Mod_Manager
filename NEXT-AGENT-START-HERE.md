@@ -1,4 +1,4 @@
-# v8.8.140 — catalog download capacity release candidate
+# v8.8.141 — Crimson staging and managed-file reconciliation
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -6,7 +6,9 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.140:** [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969) merged `b7a7cd51`; gates 45161454045/45161454063/45161454455 PASS. Known-size catalog downloads check destination-volume free bytes plus 256 MiB before writing. v8.8.140 release/rollback and personal H2 remain pending.
+- **v8.8.141 source/integration work:** [#973](https://github.com/fengie/Heaven-Mod_Manager/pull/973) adds stage-only Crimson DMM intake, shared explicit game-root deployment admission, pre-journal protection against external edits to any owned live file, and hosted UI Automation/provider fixture resiliency. Real PAZ/ASI/game loader writes remain blocked. Verify exact-head WPF/Feature/Startup/AutoUpdate, guarded main integration, new immutable release and hosted updater/rollback; physical Heaven2 and game 2.05.01+ loader runtime remain unverified. [Research #972](https://github.com/fengie/Heaven-Mod_Manager/issues/972)
+
+- **v8.8.140:** [#969](https://github.com/fengie/Heaven-Mod_Manager/pull/969) merged `b7a7cd51`; gates 45161454045/45161454063/45161454455 PASS. Known-size catalog downloads check destination-volume free bytes plus 256 MiB before writing. immutable v8.8.140 updater-main-637 was published from 3899c7cb; its hosted rollback and personal H2 still need source-bound acceptance.
 
 - **v8.8.139 published history:** #904 verified same-game archive reuse, #962 reparse containment, #963 lease-backed import recovery, and #967 pending-intent recovery. Immutable updater-main-635 from `4de235c1` passed Windows Release Gate 45153233938 and real hosted update/rollback 45154773464. This does not establish personal Heaven2 acceptance; keep #669, #793 and #912 open.
 
