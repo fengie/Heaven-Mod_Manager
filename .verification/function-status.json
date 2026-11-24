@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.142",
-  "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
+  "verifiedAtUtc": "2026-11-24T13:16:47.5499974+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -13032,21 +13032,14 @@
     },
     {
       "id": "src/MhwModManager.Storage/CatalogDiscoveryService.cs::CatalogDiscoveryService::method:RefreshAsync(IEnumerable\u003CIModCatalogProvider\u003E,CatalogBrowseRequest,CatalogSyncOptions?,CancellationToken)",
-      "fingerprint": "8f304b1aa9bc1621d9dcde86ea9105cc5c1cc737a0555107668f48ae63df790e",
+      "fingerprint": "3dd8ab50fee119d7da11d44f5b05fbafa0f7d73a3a10532bdf9f4668a0ba9ad5",
       "verified": true,
-      "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
+      "verifiedAtUtc": "2026-11-24T13:16:47.5499974+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
       "id": "src/MhwModManager.Storage/CatalogDiscoveryService.cs::CatalogDiscoveryService::method:ValidateProviders(IReadOnlyList\u003CIModCatalogProvider\u003E)",
       "fingerprint": "5d521493f742ee97774996dc8532311daaeabc7fa4e1f269222d6581c6052077",
-      "verified": true,
-      "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
-      "verificationBasis": "full-release-confirmation"
-    },
-    {
-      "id": "src/MhwModManager.Storage/CatalogDiscoveryService.cs::CatalogDiscoveryService::method:TryGetHealthAsync(IModCatalogProvider)",
-      "fingerprint": "eb13710e0677f6c42bee2133a12a85283249a96df22f60aeeddadc280f53893c",
       "verified": true,
       "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
       "verificationBasis": "full-release-confirmation"
@@ -13361,9 +13354,9 @@
     },
     {
       "id": "src/MhwModManager.Storage/CatalogSyncService.cs::CatalogSyncService::method:SyncPageAsync(IModCatalogProvider,CatalogBrowseRequest,string?,CatalogSyncOptions?,CancellationToken)",
-      "fingerprint": "7872b88a2898c8513bd51892c604d92eef9162f90ea1d55a9d83b161142939ba",
+      "fingerprint": "d6a5a5bdbada34fe8ecf9085a65f163a4dd50e763aee3cd32fd2c628126cca85",
       "verified": true,
-      "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
+      "verifiedAtUtc": "2026-11-24T13:16:47.5499974+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -13375,16 +13368,16 @@
     },
     {
       "id": "src/MhwModManager.Storage/CatalogSyncService.cs::CatalogSyncService::method:TryGetHealthAsync(IModCatalogProvider,CancellationToken)",
-      "fingerprint": "5074f996eaab4cc42324e8891a7377b936189d30a242573b1070055cc356f3ce",
+      "fingerprint": "ee01b0595bb6c4c8efc7ac7406d3093dabc4a744747a899148279c7d98fed93c",
       "verified": true,
-      "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
+      "verifiedAtUtc": "2026-11-24T13:16:47.5499974+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Storage/CatalogSyncService.cs::CatalogSyncService::method:TryPersistFailureAsync(string,string,DateTimeOffset,CatalogSyncFailureKind,CatalogProviderHealth?)",
-      "fingerprint": "7f1747b1bd17c5f6a6093c2d0297935b2c4d78a1a503a28fca0100c408754534",
+      "id": "src/MhwModManager.Storage/CatalogSyncService.cs::CatalogSyncService::method:TryPersistFailureAsync(string,string,DateTimeOffset,CatalogSyncFailureKind,CatalogProviderHealth?,CancellationToken)",
+      "fingerprint": "baf6e41343ebeac152a63cd6c6e4c3ce9f7f805f2cee37914f8c5373905f9fff",
       "verified": true,
-      "verifiedAtUtc": "2026-11-24T12:38:35.1132894+00:00",
+      "verifiedAtUtc": "2026-11-24T13:16:47.5499974+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
