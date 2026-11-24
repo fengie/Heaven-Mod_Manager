@@ -46,6 +46,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             TestToken.ThrowIfCancellationRequested();
             var passed = new List<string>();
             string? error = null;
+            string? exceptionDetail = null;
             try
             {
                 await exercise(game, passed, TestToken);
@@ -53,12 +54,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             catch (Exception ex) when (!TestToken.IsCancellationRequested)
             {
                 error = ex.Message;
+                // Preserve the type and call site for hosted diagnostics; do
+                // not reduce product failures to an untraceable message string.
+                exceptionDetail = ex.ToString();
                 failures.Add($"{game.Id} after {passed.LastOrDefault() ?? "startup"}: {error}");
             }
             var evidence = Environment.GetEnvironmentVariable("MHW_GAME_UI_EVIDENCE");
             if (!string.IsNullOrEmpty(evidence))
                 File.WriteAllText(Path.Combine(evidence, $"{scenario}-{game.Id}.json"),
-                    JsonSerializer.Serialize(new { game.Id, game.AdapterId, passed, error }));
+                    JsonSerializer.Serialize(new { game.Id, game.AdapterId, passed, error, exceptionDetail }));
             if (error is not null && !failedOperations.Add((passed.LastOrDefault() ?? "startup", error)))
             {
                 failures.Add("The same operation failed twice. Remaining profiles require a corrected candidate.");

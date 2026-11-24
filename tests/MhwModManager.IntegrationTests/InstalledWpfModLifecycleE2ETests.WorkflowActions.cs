@@ -38,9 +38,18 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             e => e.Current.AutomationId == id && e.Current.IsEnabled), UiTimeout, id, ct);
         async Task Tab(string name)
         {
-            var tab = await WaitForElementAsync(() => Find(dialog, e => e.Current.ControlType == ControlType.TabItem &&
-                e.Current.Name == name && e.Current.IsEnabled), UiTimeout, name, ct);
-            ((SelectionItemPattern)tab.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+            // Switching tabs can invalidate the old UIA element while the
+            // workflow refreshes its data. Reacquire on each bounded attempt,
+            // and verify the selected state instead of trusting a stale pattern.
+            await WaitForAsync(() =>
+            {
+                var tab = Find(dialog, e => e.Current.ControlType == ControlType.TabItem &&
+                    e.Current.Name == name && e.Current.IsEnabled);
+                if (tab is null || !tab.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var found) ||
+                    found is not SelectionItemPattern selection) return false;
+                if (!selection.Current.IsSelected) selection.Select();
+                return selection.Current.IsSelected;
+            }, UiTimeout, "workflow tab " + name, ct);
         }
         async Task Click(string label) => Invoke(await WaitForElementAsync(() => FindButton(dialog, label, enabled: true),
             UiTimeout, label, ct));

@@ -562,6 +562,23 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Find(root, element => element.Current.ControlType == ControlType.Button &&
             element.Current.Name == name && (!enabled || element.Current.IsEnabled));
 
+    /// <summary>
+    /// UI Automation can briefly lose a child element while WPF rebuilds a tab,
+    /// or encounter a denied token query from a transient hosted provider.
+    /// Retry only those cross-process UIA lookup failures; unrelated application,
+    /// filesystem and cancellation exceptions must still fail the acceptance test.
+    /// </summary>
+    internal static bool IsTransientAutomationQueryFailure(Exception ex)
+    {
+        if (ex is ElementNotAvailableException or COMException) return true;
+        if (ex is not (System.ComponentModel.Win32Exception or
+            System.Security.SecurityException or InvalidOperationException))
+            return false;
+        return ex.Message.Contains("Could not open the process token", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("target element corresponds to UI that is no longer available",
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private static AutomationElement? Find(AutomationElement root, Func<AutomationElement, bool> predicate)
     {
         var walker = TreeWalker.RawViewWalker;
@@ -579,8 +596,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 if (sibling is not null) pending.Push(sibling);
                 if (child is not null) pending.Push(child);
             }
-            catch (ElementNotAvailableException) { }
-            catch (COMException) { }
+            catch (Exception ex) when (IsTransientAutomationQueryFailure(ex)) { }
         }
         return null;
     }
@@ -606,8 +622,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 var result = find();
                 if (result is not null) return result;
             }
-            catch (ElementNotAvailableException) { }
-            catch (COMException) { }
+            catch (Exception ex) when (IsTransientAutomationQueryFailure(ex)) { }
             await Task.Delay(200, ct);
         }
         throw new TimeoutException("Installed WPF accessibility timeout: " + operation);
@@ -626,8 +641,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             }
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
-            catch (ElementNotAvailableException) { }
-            catch (COMException) { }
+            catch (Exception ex) when (IsTransientAutomationQueryFailure(ex)) { }
             await Task.Delay(200, ct);
         }
         throw new TimeoutException("Installed WPF functional timeout: " + operation);
