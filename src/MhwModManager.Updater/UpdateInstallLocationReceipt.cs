@@ -86,12 +86,32 @@ public static class UpdateInstallLocationReceipt
             UpdatePathSafety.CreateDirectorySafely(local, updater);
             var locator = Path.Combine(updater, Locator);
             UpdatePathSafety.EnsureExistingComponentsNotReparse(local, locator);
-            await UpdatePackageStager.WriteJsonAtomicallyAsync(locator, new
+            var value = new
             {
                 SchemaVersion = 1,
                 ProductId = UpdateProtocol.ProductId,
                 InstallRoot = install
-            }, ct);
+            };
+
+            // Compare only the bounded canonical receipt bytes. Do not parse an
+            // arbitrary previous file or rewrite an already valid identical hint.
+            var expected = JsonSerializer.SerializeToUtf8Bytes(value, UpdateProtocol.Json);
+            if (File.Exists(locator))
+            {
+                await using var current = new FileStream(locator, FileMode.Open, FileAccess.Read, FileShare.Read);
+                if (current.Length == expected.Length)
+                {
+                    var previous = new byte[expected.Length];
+                    await current.ReadExactlyAsync(previous, ct);
+                    ct.ThrowIfCancellationRequested();
+                    if (current.Length == expected.Length && previous.SequenceEqual(expected))
+                        return true;
+                }
+            }
+
+            ct.ThrowIfCancellationRequested();
+            UpdatePathSafety.EnsureExistingComponentsNotReparse(local, locator);
+            await UpdatePackageStager.WriteJsonAtomicallyAsync(locator, value, ct);
             return true;
         }
         catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException
@@ -105,6 +125,18 @@ public static class UpdateInstallLocationReceipt
     private static bool RegularDirectoryChain(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Match the external observer: only canonical directories on local
+        // fixed or removable volumes, never UNC, device aliases or ADS paths.
+        if (path.Length > 1024 || Path.GetDirectoryName(path) is null)
+            return false;
+        if (OperatingSystem.IsWindows())
+        {
+            var drive = Path.GetPathRoot(path);
+            if (drive is null || drive.Length != 3 || !char.IsAsciiLetter(drive[0])
+                || drive[1] != ':' || drive[2] != '\\' || path[2..].Contains(':')
+                || new DriveInfo(drive).DriveType is not (DriveType.Fixed or DriveType.Removable))
+                return false;
+        }
         for (DirectoryInfo? current = new(path); current is not null; current = current.Parent)
         {
             if (!current.Exists || (current.Attributes & FileAttributes.ReparsePoint) != 0)

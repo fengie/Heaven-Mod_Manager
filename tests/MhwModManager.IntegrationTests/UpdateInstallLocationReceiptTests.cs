@@ -119,7 +119,7 @@ public sealed class UpdateInstallLocationReceiptTests : IDisposable
         var before = await File.ReadAllBytesAsync(Locator, TestToken);
 
         Assert.False(await UpdateInstallLocationReceipt.TryRecordAsync(
-            @"\\?\\" + install, Local, identity, TestToken));
+            @"\\?\" + install, Local, identity, TestToken));
         Assert.Equal(before, await File.ReadAllBytesAsync(Locator, TestToken));
     }
 
