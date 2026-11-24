@@ -287,7 +287,9 @@ public sealed class CatalogActionsTests
             {
                 var outcome = await importer.AcquireAsync(provider, game, mod, file, ct);
                 Assert.Equal(CatalogImportOutcomeKind.Imported, outcome.Kind);
-                Assert.True(queries >= 2);
+                // The source returns short fragments; capacity queries are bounded
+                // by the 128 KiB output chunks, not the number of network reads.
+                Assert.Equal((archive.Length + 128 * 1024 - 1) / (128 * 1024), queries);
                 Assert.Single(await services.Database.GetModsAsync(ct));
                 var origin = Assert.Single(await origins.GetAllAsync(ct));
                 Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(archive)), origin.ArchiveSha256, ignoreCase: true);
@@ -312,6 +314,9 @@ public sealed class CatalogActionsTests
     private sealed class UnknownLengthArchiveStream(byte[] bytes) : MemoryStream(bytes, writable: false)
     {
         public override bool CanSeek => false;
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            base.ReadAsync(buffer[..Math.Min(buffer.Length, 4093)], cancellationToken);
     }
 
     private sealed class ArchiveTransport(byte[] bytes, bool incorrectHeader, bool omitLength = false) : HttpMessageHandler

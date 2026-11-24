@@ -276,7 +276,11 @@ public sealed class CatalogAcquisitionService
         long total = 0;
         while (true)
         {
-            var read = await input.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
+            // Coalesce fragmented unknown-length network reads into bounded
+            // writes; the provider cannot force one volume probe per tiny fragment.
+            var read = knownArchiveBytes is null
+                ? await input.ReadAtLeastAsync(buffer.AsMemory(), BufferSize, throwOnEndOfStream: false, cancellationToken: ct).ConfigureAwait(false)
+                : await input.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
             if (read == 0) break;
             if (total > MaxDownloadBytes - read)
                 throw new InvalidDataException("Catalog download exceeded the 1 GiB safety budget.");
