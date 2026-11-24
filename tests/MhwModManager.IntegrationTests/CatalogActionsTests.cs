@@ -247,14 +247,81 @@ public sealed class CatalogActionsTests
             Assert.Empty(Directory.GetFiles(services.Paths.DownloadsRoot, "*", SearchOption.AllDirectories));
         });
 
-    private sealed class ArchiveTransport(byte[] bytes, bool incorrectHeader) : HttpMessageHandler
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(-1)]
+    public Task Unknown_length_catalog_stream_preserves_free_space_and_cleans_failed_staging(int allowedWrites) =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var game = services.Paths.Game;
+            var mod = Item(game, "Unknown length capacity");
+            using var buffer = new MemoryStream();
+            using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                using var entry = zip.CreateEntry("Mods/fixture.bin", CompressionLevel.NoCompression).Open();
+                entry.Write(new byte[256 * 1024]);
+            }
+
+            var archive = buffer.ToArray();
+            var file = new CatalogModFile("fixture", mod.ProviderModId, "stream-capacity-file",
+                "Unknown length archive", "chosen.zip", CatalogFileCategory.Main, "1", null);
+            var provider = new CatalogSyncServiceTests.FakeProvider
+            {
+                Acquisition = new(CatalogAcquisitionKind.Direct,
+                    new Uri("https://fixture.example.test/chosen.zip"), null, null, "fixture")
+            };
+            var transport = new ArchiveTransport(archive, incorrectHeader: false, omitLength: true);
+            using var http = new HttpClient(transport);
+            var origins = new InstalledCatalogOriginRepository(services.Database);
+            var stagingRoot = Path.Combine(services.Paths.NextStateRoot, "DownloadTemp");
+            var queries = 0;
+            var importer = new CatalogAcquisitionService(
+                http, services.Importer, origins, services.Database, services.Hashing,
+                stagingRoot, savedArchiveRoot: services.Paths.DownloadsRoot,
+                availableSpaceProvider: _ => ++queries <= allowedWrites || allowedWrites < 0
+                    ? long.MaxValue : 0);
+
+            if (allowedWrites < 0)
+            {
+                var outcome = await importer.AcquireAsync(provider, game, mod, file, ct);
+                Assert.Equal(CatalogImportOutcomeKind.Imported, outcome.Kind);
+                Assert.True(queries >= 2);
+                Assert.Single(await services.Database.GetModsAsync(ct));
+                Assert.Single(await origins.GetAllAsync(ct));
+                Assert.Single(Directory.GetFiles(services.Paths.DownloadsRoot, "*", SearchOption.AllDirectories));
+            }
+            else
+            {
+                var error = await Assert.ThrowsAsync<IOException>(
+                    () => importer.AcquireAsync(provider, game, mod, file, ct));
+                Assert.Contains("Not enough free disk space", error.Message, StringComparison.OrdinalIgnoreCase);
+                Assert.Equal(allowedWrites + 1, queries);
+                Assert.Empty(await services.Database.GetModsAsync(ct));
+                Assert.Empty(await origins.GetAllAsync(ct));
+                Assert.Empty(Directory.GetFiles(services.Paths.DownloadsRoot, "*", SearchOption.AllDirectories));
+            }
+
+            Assert.Equal(1, transport.Requests);
+            Assert.Empty(Directory.GetFiles(stagingRoot, "catalog-*"));
+        });
+
+    private sealed class UnknownLengthArchiveStream(byte[] bytes) : MemoryStream(bytes, writable: false)
+    {
+        public override bool CanSeek => false;
+    }
+
+    private sealed class ArchiveTransport(byte[] bytes, bool incorrectHeader, bool omitLength = false) : HttpMessageHandler
     {
         public int Requests { get; private set; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Assert.Equal("https://fixture.example.test/chosen.zip",request.RequestUri!.AbsoluteUri);
             Requests++;
-            var content = new ByteArrayContent(bytes);
+            HttpContent content = omitLength
+                ? new StreamContent(new UnknownLengthArchiveStream(bytes))
+                : new ByteArrayContent(bytes);
+            if (omitLength) Assert.Null(content.Headers.ContentLength);
             if (incorrectHeader) content.Headers.ContentLength = bytes.Length + 3;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage=request, Content=content });
         }
