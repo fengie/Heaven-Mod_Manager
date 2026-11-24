@@ -8,7 +8,7 @@ public sealed class CrimsonDesertFieldManifestTests
     [Fact]
     public void Swiss_and_dmm_field_shapes_have_the_same_target_key_for_the_same_table_edit()
     {
-        const string swiss = """{"format":3,"format_minor":1,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"13810","field":"discardable","value":0}]}]}""";
+        const string swiss = """{"format":3,"format_minor":1,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"entry":"Sample","key":"13810","field":"discardable","value":0}]}]}""";
         const string dmm = """{"format":3,"format_minor":1,"modinfo":{"title":"Example"},"targets":[{"file":"iteminfo.pabgb","intents":[{"entry":"Sample","key":13810,"field":"discardable","op":"set","new":0}]}]}""";
 
         var first = CrimsonDesertFieldManifestInspector.Inspect(swiss);
@@ -132,5 +132,69 @@ public sealed class CrimsonDesertFieldManifestTests
         Assert.True(unrelated.IsValid, unrelated.Reason);
         Assert.Empty(CrimsonDesertFieldManifestInspector.FindClaimCollisions([remove, unrelated]));
     }
+
+
+    [Fact]
+    public void Dmm_entry_identity_is_preferred_over_numeric_key_when_it_changes_across_updates()
+    {
+        var first = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"iteminfo.pabgb","intents":[{"op":"set","entry":"ITEM_LONGSWORD_01","key":123,"field":"buy_price","new":50}]}""");
+        var second = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"iteminfo.pabgb","intents":[{"op":"set","entry":"ITEM_LONGSWORD_01","key":987,"field":"buy_price","new":55}]}""");
+        Assert.True(first.IsValid, first.Reason);
+        Assert.True(second.IsValid, second.Reason);
+        Assert.Equal(Assert.Single(first.Claims).TargetKey, Assert.Single(second.Claims).TargetKey);
+        Assert.Single(CrimsonDesertFieldManifestInspector.FindClaimCollisions([first, second]));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Nested_field_and_parent_edit_overlap_in_both_orders(bool reverse)
+    {
+        var parent = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"skill.pabgb","intents":[{"op":"set","key":42,"field":"cooltime","new":{"a":10,"b":30}}]}""");
+        var child = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"skill.pabgb","intents":[{"op":"set","key":42,"field":"cooltime.a","new":2}]}""");
+        Assert.True(parent.IsValid, parent.Reason);
+        Assert.True(child.IsValid, child.Reason);
+        var collisions = reverse
+            ? CrimsonDesertFieldManifestInspector.FindClaimCollisions([child, parent])
+            : CrimsonDesertFieldManifestInspector.FindClaimCollisions([parent, child]);
+        Assert.Single(collisions);
+    }
+
+    [Fact]
+    public void Dmm_match_selector_is_not_treated_as_independent_of_concrete_table_rows()
+    {
+        var matching = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"iteminfo.pabgb","intents":[{"op":"set","match":{"equip_type_info":2667368044},"field":"equipable_level","new":1}]}""");
+        var concrete = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"iteminfo.pabgb","intents":[{"op":"set","key":1234,"field":"equipable_level","new":5}]}""");
+        Assert.True(matching.IsValid, matching.Reason);
+        Assert.True(concrete.IsValid, concrete.Reason);
+        Assert.NotEmpty(CrimsonDesertFieldManifestInspector.FindClaimCollisions([matching, concrete]));
+        Assert.NotEmpty(CrimsonDesertFieldManifestInspector.FindClaimCollisions([concrete, matching]));
+    }
+
+    [Fact]
+    public void Dmm_relative_operations_are_staged_but_never_marked_as_simple_composable_sets()
+    {
+        var observed = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"target":"iteminfo.pabgb","intents":[{"op":"add","key":10,"field":"buy_price","new":1},{"op":"scale","key":11,"field":"sell_price","factor":2},{"op":"list_append","key":12,"field":"effects","new":3}]}""");
+        Assert.True(observed.IsValid, observed.Reason);
+        Assert.Equal(3, observed.Claims.Count);
+        Assert.All(observed.Claims, c => Assert.False(c.IsSimpleSet));
+    }
+
+    [Fact]
+    public void Dmm_multi_target_requires_file_in_each_target_and_rejects_skipped_intents()
+    {
+        var observed = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"target":"skill.pabgb","intents":[{"op":"set","key":42,"field":"cooltime","new":1}]}]}""");
+        Assert.False(observed.IsValid);
+        Assert.Empty(observed.Claims);
+    }
+
 
 }
