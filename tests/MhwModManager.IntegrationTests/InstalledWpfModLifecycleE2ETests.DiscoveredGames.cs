@@ -26,6 +26,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
     public Task BrightMemoryInfiniteSecondPackageDisableRegression() =>
         VerifyAllGamesAsync("focused", ExerciseGameWindowAsync, onlyGameId: "bright-memory-infinite");
 
+    [Fact(Skip = "Requires the disposable hosted Windows acceptance workflow", SkipUnless = nameof(IsOptedIn))]
+    [Trait("Category", "InstalledWpf")]
+    public Task SwordAndFairy7SecondPackageDisableRegression() =>
+        VerifyAllGamesAsync("focused", ExerciseGameWindowAsync, onlyGameId: "sword-and-fairy-7");
+
     private static async Task VerifyAllGamesAsync(string scenario,
         Func<GameProfile, List<string>, CancellationToken, Task> exercise,
         string? onlyGameId = null)

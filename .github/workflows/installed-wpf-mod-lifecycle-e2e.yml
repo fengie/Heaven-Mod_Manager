@@ -147,6 +147,25 @@ jobs:
             throw 'Focused Bright Memory WPF regression did not execute exactly one passing case.'
           }
 
+      - name: Verify Sword and Fairy 7's second-package disable before the full profile matrix
+        id: sword_and_fairy
+        timeout-minutes: 7
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runner = '.\tests\MhwModManager.IntegrationTests\bin\Release\net10.0-windows10.0.19041.0\MhwModManager.IntegrationTests.exe'
+          $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
+          $method = "$class.SwordAndFairy7SecondPackageDisableRegression"
+          $output = @(& $runner '--filter-method' $method 2>&1)
+          $exit = $LASTEXITCODE
+          $output | Add-Content -LiteralPath (Join-Path $env:MHW_GAME_UI_EVIDENCE 'test-run.log') -Encoding UTF8
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exit -ne 0) { throw "Focused Sword and Fairy 7 WPF regression failed, exit code $exit." }
+          $summary = $output -join [Environment]::NewLine
+          if ($summary -notmatch 'succeeded:\s+1\b' -or $summary -notmatch 'skipped:\s+0\b') {
+            throw 'Focused Sword and Fairy 7 WPF regression did not execute exactly one passing case.'
+          }
+
       - name: Verify three package picker and saved-choice cases
         id: picker
         timeout-minutes: 12
@@ -169,7 +188,7 @@ jobs:
 
 
       - name: Verify remaining lifecycle cases and all registered game receipts
-        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' && steps.bright_memory.outcome == 'success' && steps.picker.outcome == 'success' }}
+        if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' && steps.bright_memory.outcome == 'success' && steps.sword_and_fairy.outcome == 'success' && steps.picker.outcome == 'success' }}
         timeout-minutes: 53
         shell: powershell
         run: |
@@ -178,10 +197,11 @@ jobs:
           $evidence = $env:MHW_GAME_UI_EVIDENCE
           $class = 'MhwModManager.IntegrationTests.InstalledWpfModLifecycleE2ETests'
           $method = "$class.NestedUnrealPackagesRemainSeparateThroughPreviewApplyAndUndo"
-          $expectedCases = 15
-          $remainingCases = $expectedCases - 4
+          $expectedCases = 16
+          $remainingCases = $expectedCases - 5
           $focused = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
-          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method $focused 2>&1)
+          $sword = "$class.SwordAndFairy7SecondPackageDisableRegression"
+          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method $focused $sword 2>&1)
           $exit = $LASTEXITCODE
           $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
           $output | ForEach-Object { Write-Host $_ }
