@@ -51,7 +51,7 @@ public sealed class ModLibraryVisibleScopeTests
         Assert.Contains("public string RefreshVisibleLabel", source, StringComparison.Ordinal);
         Assert.Contains("public string VisibleBulkScopeHelp", source, StringComparison.Ordinal);
         Assert.Contains(
-            "Bulk actions affect all {VisibleModCount}",
+            "Select All marks visible rows; bulk actions affect the marked rows, including any hidden by filters.",
             source,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -72,11 +72,11 @@ public sealed class ModLibraryVisibleScopeTests
             Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
 
         Assert.Contains(
-            "Content=\"Select All\" Command=\"{Binding EnableVisibleCommand}\"",
+            "Content=\"Select All\" Command=\"{Binding SelectAllVisibleCommand}\"",
             xaml,
             StringComparison.Ordinal);
         Assert.Contains(
-            "Content=\"Deselect All\" Command=\"{Binding DisableVisibleCommand}\"",
+            "Content=\"Deselect All\" Command=\"{Binding ClearBulkSelectionCommand}\"",
             xaml,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -84,15 +84,15 @@ public sealed class ModLibraryVisibleScopeTests
             xaml,
             StringComparison.Ordinal);
         Assert.Contains(
-            "Text=\"{Binding VisibleBulkScopeHelp}\"",
+            "Text=\"{Binding BulkSelectionSummary}\"",
             xaml,
             StringComparison.Ordinal);
         Assert.Contains(
             "AutomationProperties.HelpText=\"{Binding VisibleBulkScopeHelp}\"",
             xaml,
             StringComparison.Ordinal);
-        Assert.DoesNotContain("EnableSelectedCommand", xaml, StringComparison.Ordinal);
-        Assert.DoesNotContain("DisableSelectedCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("EnableSelectedCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("DisableSelectedCommand", xaml, StringComparison.Ordinal);
         Assert.DoesNotContain("ReindexSelectedCommand", xaml, StringComparison.Ordinal);
     }
 

@@ -138,9 +138,12 @@ public sealed class AutoPopulateDispatcherRegressionTests
         Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", modPage, StringComparison.Ordinal);
         Assert.Contains("<WrapPanel x:Name=\"ModLibraryToolbar\"", modPage, StringComparison.Ordinal);
         Assert.Contains("Content=\"Select All\"", modPage, StringComparison.Ordinal);
-        Assert.Contains("Command=\"{Binding EnableVisibleCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding SelectAllVisibleCommand}\"", modPage, StringComparison.Ordinal);
         Assert.Contains("Content=\"Deselect All\"", modPage, StringComparison.Ordinal);
-        Assert.Contains("Command=\"{Binding DisableVisibleCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding ClearBulkSelectionCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding EnableSelectedCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding DisableSelectedCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding ApplyCommand}\"", modPage, StringComparison.Ordinal);
         Assert.DoesNotContain("Content=\"Auto Populate\"", modPage, StringComparison.Ordinal);
         Assert.DoesNotContain("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
     }

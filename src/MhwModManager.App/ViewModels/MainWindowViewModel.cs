@@ -152,7 +152,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
     }
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
-    public int EnabledCount=>Mods.Count(x=>x.AppliedEnabled);
+    public int EnabledCount
+    {
+        get
+        {
+            using var __mhwTrace=MasterDebugLog.BeginMethod();
+            return Mods.Count(x=>x.AppliedEnabled);
+        }
+    }
     public int StagedCount=>Mods.Count(x=>x.HasStagedChanges);
     public int BlockerCount=>Conflicts.Count;
     public int FullyEffectiveCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.FullyEffective);

@@ -3,6 +3,7 @@ using System.Windows.Threading;
 using MhwModManager.App;
 using MhwModManager.Core;
 using MhwModManager.Diagnostics;
+using MhwModManager.Filesystem;
 using Xunit;
 
 namespace MhwModManager.IntegrationTests;
@@ -39,6 +40,9 @@ internal static class IsolatedWpfSession
                     // These dispatcher fixtures drive commands directly. A live file watcher
                     // also schedules independent telemetry writes to this session database.
                     services.ChangeHints.Dispose();
+                    // Restrict inventory discovery to disposable game roots. Production sessions
+                    // retain full host discovery; fixture timing must not depend on installed games.
+                    services = services with { GameRegistry = new GameProfileRegistry(paths.StateRoot, () => [], registeredInventoryOnly: true) };
                     await run(services, token);
                 }
                 catch (Exception ex) { failure = ex; }
