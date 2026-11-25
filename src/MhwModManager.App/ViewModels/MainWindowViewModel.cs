@@ -297,6 +297,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         s=services;
         var settings=s.Settings.Current;
+        LoadLibraryPreferences();
         autoUpdateEnabled=settings.AutoUpdateEnabled;
         uiAnimationsEnabled=settings.UiAnimationsEnabled;
         rememberLastTab=settings.RememberLastTab;
@@ -543,6 +544,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         OnPropertyChanged(nameof(SelectedLibraryItem));
+        CustomCategoryText=value?.CustomCategory ?? "";
+        OnPropertyChanged(nameof(FavoriteActionLabel));
         if(value is null)return;
         _=LoadModVisualsAsync(value);
     }
@@ -564,6 +567,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         MasterDebugLog.Write("UI-FILTER",$"Mod smart view changed to {value}");
+        if (suppressLibraryFilterRefresh) return;
         RefreshLibraryFilters();
         NotifyVisibleModState();
     }
@@ -572,6 +576,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         searchCts?.Cancel();
         searchCts?.Dispose();
+        if (suppressLibraryFilterRefresh) { searchCts=null; return; }
         var cts=searchCts=new CancellationTokenSource();
         _=DebounceSearchAsync(cts.Token);
     }
@@ -595,7 +600,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             await Task.Delay(160,ct);
             ct.ThrowIfCancellationRequested();
-            await Application.Current.Dispatcher.InvokeAsync(()=>
+            await viewDispatcher.InvokeAsync(()=>
             {
                 if (ct.IsCancellationRequested) return;
                 RefreshLibraryFilters();
@@ -613,6 +618,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         {
             "Enabled"=>m.AppliedEnabled,
             "Disabled"=>!m.AppliedEnabled,
+            "Favorites"=>m.IsFavorite,
             "Staged"=>m.HasStagedChanges,
             "Updates"=>m.HasUpdate,
             "FamilyLinks"=>m.HasSuggestedParents,
@@ -622,13 +628,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             _=>true
         };
         if(!modeMatch)return false;
+        if (!PathRules.Comparer.Equals(CategoryFilter, AllCategories) &&
+            !PathRules.Comparer.Equals(CategoryFilter, m.DisplayCategory)) return false;
         if(string.IsNullOrWhiteSpace(SearchText))return true;
         var q=SearchText.Trim();
         return m.DisplayName.Contains(q,StringComparison.OrdinalIgnoreCase)||
                m.Name.Contains(q,StringComparison.OrdinalIgnoreCase)||
                m.PartsLabel.Contains(q,StringComparison.OrdinalIgnoreCase)||
                m.Members.Any(x=>x.DisplayName.Contains(q,StringComparison.OrdinalIgnoreCase)||x.Name.Contains(q,StringComparison.OrdinalIgnoreCase)||x.SourcePath.Contains(q,StringComparison.OrdinalIgnoreCase))||
-               (m.Category?.Contains(q,StringComparison.OrdinalIgnoreCase)??false)||
+               m.DisplayCategory.Contains(q,StringComparison.OrdinalIgnoreCase)||
                (m.IssueBadge?.Contains(q,StringComparison.OrdinalIgnoreCase)??false)||
                (m.IssueReason?.Contains(q,StringComparison.OrdinalIgnoreCase)??false);
     }
@@ -732,7 +740,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             catalogInventoryIdentities = identities;
             var selected=SelectedLibraryItem;
             observedCatalog=models;
+            foreach (var row in rows) ApplyLibraryPreferences(row);
             Mods.ReplaceAll(rows);
+            RefreshLibraryCategories();
             if (sourcesChanged) InvalidateLocalInventory();
             RebuildLibraryRows();
             RefreshLibraryFilters();
@@ -1027,8 +1037,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private void ClearModFilters()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        SearchText=string.Empty;
-        ModViewMode="All";
+        suppressLibraryFilterRefresh = true;
+        try { SearchText=string.Empty; ModViewMode="All"; CategoryFilter=AllCategories; }
+        finally { suppressLibraryFilterRefresh = false; }
+        RefreshLibraryFilters();
+        NotifyVisibleModState();
         SelectedTab=1;
     }
 

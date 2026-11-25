@@ -102,7 +102,7 @@ public sealed partial class MainWindowViewModel
         using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
         if (item is not ExternalLibraryReference external) return FilterMod(item);
         var query = SearchText.Trim();
-        return ModViewMode == "All" && (external.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)
+        return ModViewMode == "All" && PathRules.Comparer.Equals(CategoryFilter, AllCategories) && (external.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)
             || external.ItemId.Contains(query, StringComparison.OrdinalIgnoreCase)
             || external.OwnerLabel.Contains(query, StringComparison.OrdinalIgnoreCase)
             || external.SourceSummary.Contains(query, StringComparison.OrdinalIgnoreCase));

@@ -340,7 +340,7 @@
 
                     <Border Grid.Row="1" Margin="0,6,0,6" Style="{StaticResource SubtleCard}" Padding="8">
                         <Grid>
-                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel Margin="0,0,12,0" VerticalAlignment="Center">
@@ -362,6 +362,7 @@
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Enabled"><Setter Property="Text" Value="Enabled"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Disabled"><Setter Property="Text" Value="Disabled"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Favorites"><Setter Property="Text" Value="Favorites"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Staged"><Setter Property="Text" Value="Pending changes"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Updates"><Setter Property="Text" Value="Updates"/></DataTrigger>
                                                          <DataTrigger Binding="{Binding ModViewMode}" Value="FamilyLinks"><Setter Property="Text" Value="Possible families"/></DataTrigger>
@@ -384,6 +385,7 @@
                                 <Button Content="{Binding FamilySuggestionsViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="FamilyLinks" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Review possible parent/add-on relationships, including disabled mods. No package is linked or enabled automatically."/>
                                 <Button Content="{Binding EnabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Enabled" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show mods currently applied in the active game."/>
                                 <Button Content="{Binding DisabledViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Disabled" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show managed mods with no currently enabled components."/>
+                                <Button Content="Favorites" Command="{Binding SetModViewCommand}" CommandParameter="Favorites" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show explicitly favorited managed packages."/>
                                 <Button Content="{Binding StagedViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Staged" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show unapplied changes."/>
                                 <Button Content="{Binding UpdatesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Updates" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show mods with detected updates."/>
                                 <Button Content="{Binding IssuesViewLabel}" Command="{Binding SetModViewCommand}" CommandParameter="Issues" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show mods with crash or graphics-problem evidence."/>
@@ -396,6 +398,8 @@
                                         ToolTip="Mark all managed mods shown by the current filters. Does not change activation." AutomationProperties.Name="Select all visible mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
                                 <Button Content="Deselect All" Command="{Binding ClearBulkSelectionCommand}" IsEnabled="{Binding HasBulkSelection}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0"
                                         ToolTip="Clear all marks, including those hidden by filters. Does not change activation." AutomationProperties.Name="Deselect all selected mods" AutomationProperties.HelpText="{Binding VisibleBulkScopeHelp}"/>
+                                <Button Content="Mark highlighted" Command="{Binding MarkHighlightedCommand}" CommandParameter="{Binding SelectedItems,ElementName=ModLibraryGrid}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0" ToolTip="Use Ctrl or Shift to highlight a range in the list, then mark only those rows. No activation."/>
+                                <Button Content="Unmark highlighted" Command="{Binding UnmarkHighlightedCommand}" CommandParameter="{Binding SelectedItems,ElementName=ModLibraryGrid}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0" ToolTip="Remove marks from highlighted rows without disabling them."/>
                                 <Button Content="Enable selected mods" Command="{Binding EnableSelectedCommand}" IsEnabled="{Binding HasBulkSelection}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0" ToolTip="Enable marked mods and apply once; any other pending changes require confirmation."/>
                                 <Button Content="Disable selected mods" Command="{Binding DisableSelectedCommand}" IsEnabled="{Binding HasBulkSelection}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0" ToolTip="Disable marked mods and apply once; any other pending changes require confirmation."/>
                                 <Button Content="{Binding RefreshVisibleLabel}" Command="{Binding ReindexVisibleCommand}" IsEnabled="{Binding HasVisibleMods}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5"
@@ -405,12 +409,21 @@
                                         AutomationProperties.Name="Inspect nested mod package layouts without making changes"/>
                                 <TextBlock Text="{Binding BulkSelectionSummary}" VerticalAlignment="Center" Margin="10,3,0,3" MaxWidth="520" TextWrapping="Wrap" FontSize="10" Foreground="{StaticResource Muted}" AutomationProperties.LiveSetting="Polite"/>
                             </WrapPanel>
+                            <WrapPanel Grid.Row="3" Margin="0,8,0,0" VerticalAlignment="Center">
+                                <ComboBox Width="150" Margin="0,0,6,4" ItemsSource="{Binding LibraryCategories}" SelectedItem="{Binding CategoryFilter,Mode=TwoWay}" AutomationProperties.Name="Category filter"/>
+                                <ComboBox Width="170" Margin="0,0,6,4" ItemsSource="{Binding SavedLibraryViews}" SelectedItem="{Binding SelectedSavedLibraryView,Mode=TwoWay}" DisplayMemberPath="Name" AutomationProperties.Name="Saved library views"/>
+                                <Button Content="Use view" Command="{Binding UseSavedLibraryViewCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                                <Button Content="Delete view" Command="{Binding DeleteSavedLibraryViewCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                                <TextBox Width="140" Margin="0,0,6,4" Text="{Binding NewSavedViewName,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="New library view name" ToolTip="Name for current search and filters"/>
+                                <Button Content="Save or update view" Command="{Binding SaveLibraryViewCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                                <Button Content="Clear filters" Command="{Binding ClearModFiltersCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                            </WrapPanel>
                         </Grid>
                     </Border>
 
                     <Grid x:Name="ModLibraryRegion" Grid.Row="2">
                         <Border CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="1">
-                        <DataGrid ItemsSource="{Binding LibraryView}" SelectedItem="{Binding SelectedLibraryItem,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
+                        <DataGrid x:Name="ModLibraryGrid" ItemsSource="{Binding LibraryView}" SelectedItem="{Binding SelectedLibraryItem,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
                             <DataGrid.ItemContainerStyleSelector>
                                 <vm:LibraryRowStyleSelector>
                                     <vm:LibraryRowStyleSelector.ExternalStyle>
@@ -437,6 +450,11 @@
                                     <Border Margin="72,2,18,10" Padding="14" Background="#0D1217" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8">
                                         <StackPanel>
                                             <TextBlock Text="Mod preview" FontWeight="SemiBold"/>
+                                            <WrapPanel Margin="0,6,0,8">
+                                                <Button Content="{Binding DataContext.FavoriteActionLabel,RelativeSource={RelativeSource AncestorType=Window}}" Command="{Binding DataContext.ToggleFavoriteCommand,RelativeSource={RelativeSource AncestorType=Window}}" Style="{StaticResource QuietButton}" Margin="0,0,6,0"/>
+                                                <TextBox Width="180" Text="{Binding DataContext.CustomCategoryText,RelativeSource={RelativeSource AncestorType=Window},UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Custom category" ToolTip="Leave blank to restore detected category"/>
+                                                <Button Content="Set category" Command="{Binding DataContext.AssignCustomCategoryCommand,RelativeSource={RelativeSource AncestorType=Window}}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
+                                            </WrapPanel>
                                             <TextBlock Margin="0,3,0,8" Foreground="{StaticResource Muted}" FontSize="11" Text="Cached Nexus artwork and screenshots found inside the source packages. Select a mod to load its gallery."/>
                                             <ItemsControl ItemsSource="{Binding GalleryPaths}" Margin="0,0,0,14">
                                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -609,7 +627,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="125" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding DisplayCategory,Mode=OneWay}" Width="125" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="LOAD ORDER" Binding="{Binding Priority}" Width="76" IsReadOnly="True"/>
                                 <DataGridTemplateColumn Header="INSTALLED FROM" Width="1.2*" SortMemberPath="SourceSummary">
                                     <DataGridTemplateColumn.CellTemplate>

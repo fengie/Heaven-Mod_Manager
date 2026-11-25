@@ -4,6 +4,8 @@ using MhwModManager.Core;
 
 namespace MhwModManager.App;
 
+public sealed record SavedLibraryView(string Name, string Mode, string Query, string Category);
+
 public sealed class ManagerSettings
 {
     public bool AutoUpdateEnabled { get; set; } = true;
@@ -14,6 +16,10 @@ public sealed class ManagerSettings
     public bool ConfirmBeforeDiscardStaged { get; set; } = true;
     public bool BackgroundMetadataRefreshEnabled { get; set; } = true;
     public bool AutoEnableDiscoveredMods { get; set; } = true;
+    public IReadOnlyList<SavedLibraryView> SavedLibraryViews { get; set; } = [];
+    public IReadOnlyList<string> FavoriteLibraryKeys { get; set; } = [];
+    public IReadOnlyDictionary<string, string> CustomLibraryCategories { get; set; } =
+        new Dictionary<string, string>(PathRules.Comparer);
 }
 
 public sealed class ManagerSettingsStore

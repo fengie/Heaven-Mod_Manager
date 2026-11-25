@@ -201,7 +201,7 @@ MainWindow.xaml | TabItem:Mods | Button | Content=Preview Mod Changes ; Command=
 MainWindow.xaml | TabItem:Mods | Button | Content=Review and retry ; Command={Binding ApplyCommand} ; Visibility={Binding ReviewRetryVisibility}
 MainWindow.xaml | TabItem:Mods | Button | Content=Select All ; Command={Binding SelectAllVisibleCommand} ; IsEnabled={Binding HasVisibleMods} ; AutomationProperties.Name=Select all visible mods
 MainWindow.xaml | TabItem:Mods | Button | Content=Undo ; Command={Binding UndoCommand} ; AutomationProperties.Name=Undo Last Applied Change
-MainWindow.xaml | TabItem:Mods | DataGrid | ItemsSource={Binding LibraryView} ; SelectedItem={Binding SelectedLibraryItem,Mode=TwoWay} ; IsReadOnly=True ; AutomationProperties.Name=Mod library
+MainWindow.xaml | TabItem:Mods | DataGrid | Name=ModLibraryGrid ; ItemsSource={Binding LibraryView} ; SelectedItem={Binding SelectedLibraryItem,Mode=TwoWay} ; IsReadOnly=True ; AutomationProperties.Name=Mod library
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=ENABLED
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=PLANNED EFFECT
@@ -209,7 +209,7 @@ MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=INSTALLED FROM
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=MOD
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=SELECT
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=STATUS
-MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=CATEGORY ; Binding={Binding Category} ; IsReadOnly=True
+MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=CATEGORY ; Binding={Binding DisplayCategory,Mode=OneWay} ; IsReadOnly=True
 MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=LOAD ORDER ; Binding={Binding Priority} ; IsReadOnly=True
 MainWindow.xaml | TabItem:Mods | KeyBinding | Key=Enter ; Command={Binding SubmitModSearchCommand}
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector |
@@ -438,3 +438,16 @@ MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=AFTER SHA-256 
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Apply Mod Changes ; Command={Binding ApplyCommand} ; IsEnabled={Binding HasPendingDeployment}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Open Mod Library ; Command={Binding SetModViewCommand} ; CommandParameter=All
 MainWindow.xaml | TabItem:Settings | CheckBox | Content=Automatically enable safe newly discovered mods ; IsChecked={Binding AutoEnableDiscoveredMods,Mode=TwoWay} ; AutomationProperties.Name=Automatically enable discovered mods
+MainWindow.xaml | TabItem:Mods | Button | Content=Favorites ; Command={Binding SetModViewCommand} ; CommandParameter=Favorites
+MainWindow.xaml | TabItem:Mods | Button | Content=Mark highlighted ; Command={Binding MarkHighlightedCommand} ; CommandParameter={Binding SelectedItems,ElementName=ModLibraryGrid}
+MainWindow.xaml | TabItem:Mods | Button | Content=Unmark highlighted ; Command={Binding UnmarkHighlightedCommand} ; CommandParameter={Binding SelectedItems,ElementName=ModLibraryGrid}
+MainWindow.xaml | TabItem:Mods | ComboBox | ItemsSource={Binding LibraryCategories} ; SelectedItem={Binding CategoryFilter,Mode=TwoWay} ; AutomationProperties.Name=Category filter
+MainWindow.xaml | TabItem:Mods | ComboBox | ItemsSource={Binding SavedLibraryViews} ; SelectedItem={Binding SelectedSavedLibraryView,Mode=TwoWay} ; AutomationProperties.Name=Saved library views
+MainWindow.xaml | TabItem:Mods | TextBox | Text={Binding NewSavedViewName,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name=New library view name
+MainWindow.xaml | TabItem:Mods | Button | Content=Use view ; Command={Binding UseSavedLibraryViewCommand}
+MainWindow.xaml | TabItem:Mods | Button | Content=Delete view ; Command={Binding DeleteSavedLibraryViewCommand}
+MainWindow.xaml | TabItem:Mods | Button | Content=Save or update view ; Command={Binding SaveLibraryViewCommand}
+MainWindow.xaml | TabItem:Mods | Button | Content=Clear filters ; Command={Binding ClearModFiltersCommand}
+MainWindow.xaml | TabItem:Mods/DataTemplate: | Button | Content={Binding DataContext.FavoriteActionLabel,RelativeSource={RelativeSource AncestorType=Window}} ; Command={Binding DataContext.ToggleFavoriteCommand,RelativeSource={RelativeSource AncestorType=Window}}
+MainWindow.xaml | TabItem:Mods/DataTemplate: | TextBox | Text={Binding DataContext.CustomCategoryText,RelativeSource={RelativeSource AncestorType=Window},UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name=Custom category
+MainWindow.xaml | TabItem:Mods/DataTemplate: | Button | Content=Set category ; Command={Binding DataContext.AssignCustomCategoryCommand,RelativeSource={RelativeSource AncestorType=Window}}
