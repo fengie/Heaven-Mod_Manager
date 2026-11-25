@@ -1,6 +1,6 @@
-# v8.8.145 — canonical state and launch, texture relationships and explicit bulk activation
+# v8.8.145 - source verified, publication unverified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `f9107b2659a00e03a6f8c8ae602d43de2c351e85`. [#985](https://github.com/fengie/Heaven-Mod_Manager/pull/985) integrated at `f9107b2659a00e03a6f8c8ae602d43de2c351e85`; exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. [Main Windows Gate 45603013115](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45603013115) passed verification/build; publication intentionally skipped because the product version was unchanged. Published [v8.8.144 build 647](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-647) from `3073837e37819ce896332202e13b893777dc194e`. Windows Gate [45522977721](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45522977721) and genuine hosted update/rollback [45524374984](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45524374984) passed. The previous checked-in closure ledger for build 641 remains preserved; physical game behavior is separate. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` verified at `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` (Windows Gate 45712238130); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -60,9 +60,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `f9107b2659a00e03a6f8c8ae60
 
 ## Verification boundary
 
-Published [v8.8.144 build 647](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-647) from `3073837e37819ce896332202e13b893777dc194e`. Windows Gate [45522977721](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45522977721) and genuine hosted update/rollback [45524374984](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45524374984) passed. The previous checked-in closure ledger for build 641 remains preserved; physical game behavior is separate.
+Current hosted-Windows closure: v8.8.145 source `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` passed run `45712238130` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.145-heaven-windows-closure.log`.
 
-[#985](https://github.com/fengie/Heaven-Mod_Manager/pull/985) integrated at `f9107b2659a00e03a6f8c8ae602d43de2c351e85`; exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. [Main Windows Gate 45603013115](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45603013115) passed verification/build; publication intentionally skipped because the product version was unchanged. The versioned 8.8.145 release and genuine packaged update/rollback remain pending.
+Public release status: **NOT VERIFIED** for source `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 

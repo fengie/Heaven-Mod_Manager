@@ -1,6 +1,6 @@
-# v8.8.145 — launch, texture relationships and explicit bulk activation release pending
+# v8.8.145 - source verified, publication unverified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `f9107b2659a00e03a6f8c8ae602d43de2c351e85` after #985. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` verified at `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` (Windows Gate 45712238130); exact immutable release not yet verified. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -27,9 +27,11 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.144 build 647](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-647) from `3073837e37819ce896332202e13b893777dc194e`. Windows Gate [45522977721](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45522977721) and genuine hosted update/rollback [45524374984](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45524374984) passed. The previous checked-in closure ledger for build 641 remains preserved; physical game behavior is separate.
+Current hosted-Windows closure: v8.8.145 source `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` passed run `45712238130` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.145-heaven-windows-closure.log`.
 
-Integrate synchronized v8.8.145 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Keep #986 separate until its own current-base packaged WPF gate and review pass. Preserve provider access, personal data, rollback and recursive continuity.
+Public release status: **NOT VERIFIED** for source `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd`. Successful build or another source's same-version release is not proof of publication.
+
+The tested source remains `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 
