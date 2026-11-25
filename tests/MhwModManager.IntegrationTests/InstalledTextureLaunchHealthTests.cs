@@ -64,7 +64,7 @@ public sealed class InstalledTextureLaunchHealthTests
             Assert.True((await services.Executor.ApplyAsync(plan, "Apply texture stack", ct: ct)).Success);
             var live = services.Executor.Destination(relative);
             Assert.Equal(valid, await File.ReadAllBytesAsync(live, ct));
-            var report = await services.LaunchGate.EvaluateAsync(ct, requireApplied: true);
+            var report = await services.LaunchGate.EvaluateAsync(requireApplied: true, ct);
             Assert.True(report.Ready, string.Join(" | ", report.Findings.Select(f => f.Summary)));
             Assert.Contains(report.Findings, f => f.ModId == "base" &&
                 f.Severity == MhwModManager.Automation.AutomationSeverity.Warning &&
@@ -74,7 +74,7 @@ public sealed class InstalledTextureLaunchHealthTests
 
             // External tampering is not excused by the saved override rule.
             await File.WriteAllBytesAsync(live, invalid, ct);
-            report = await services.LaunchGate.EvaluateAsync(ct, requireApplied: true);
+            report = await services.LaunchGate.EvaluateAsync(requireApplied: true, ct);
             Assert.False(report.Ready);
             Assert.Contains(report.Findings, f => f.Severity == MhwModManager.Automation.AutomationSeverity.Blocker &&
                 f.Summary.Contains("changed outside", StringComparison.OrdinalIgnoreCase));

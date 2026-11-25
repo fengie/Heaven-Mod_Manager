@@ -12,13 +12,13 @@ public sealed class HealthService(ManagerDatabase db,PlannerSnapshotRepository p
     public Task<IReadOnlyList<HealthIssue>> ScanAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return ScanAsync(ct, null);
+        return ScanAsync(null, ct);
     }
 
     // Only the launch gate supplies this snapshot, after resolving an entirely applied plan.
     // An ordinary library health scan remains strict about every enabled source.
-    public async Task<IReadOnlyList<HealthIssue>> ScanAsync(CancellationToken ct,
-        IReadOnlyDictionary<string, DeploymentManifestEntry>? appliedTextures)
+    public async Task<IReadOnlyList<HealthIssue>> ScanAsync(
+        IReadOnlyDictionary<string, DeploymentManifestEntry>? appliedTextures, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var verifiedWinners = new ConcurrentDictionary<string, string>(PathRules.Comparer);

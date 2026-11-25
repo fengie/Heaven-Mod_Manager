@@ -149,7 +149,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
     }
     public int SourcePackageCount=>Mods.Sum(x=>x.MemberCount);
-    public int EnabledCount=>Mods.Count(x=>x.StagedEnabled!=false);
+    public int EnabledCount=>Mods.Count(x=>x.AppliedEnabled);
     public int StagedCount=>Mods.Count(x=>x.HasStagedChanges);
     public int BlockerCount=>Conflicts.Count;
     public int FullyEffectiveCount=>Mods.Count(x=>x.EffectiveState==EffectiveModState.FullyEffective);
@@ -204,7 +204,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return $"Bulk actions affect all {VisibleModCount} {(VisibleModCount==1?"mod":"mods")} shown by the current search and filters, not just selected rows.";
+            return $"{VisibleModCount} managed mod(s) shown. Select All marks visible rows; bulk actions affect the marked rows, including any hidden by filters.";
         }
     }
 
@@ -246,6 +246,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
     }
     public string EnabledViewLabel=>$"Enabled ({EnabledCount})";
+    public string DisabledViewLabel
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return $"Disabled ({Mods.Count(row=>!row.AppliedEnabled)})";
+        }
+    }
     public string StagedViewLabel
     {
         get
@@ -598,7 +606,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(o is not ModRowViewModel m)return false;
         var modeMatch=ModViewMode switch
         {
-            "Enabled"=>m.StagedEnabled!=false,
+            "Enabled"=>m.AppliedEnabled,
+            "Disabled"=>!m.AppliedEnabled,
             "Staged"=>m.HasStagedChanges,
             "Updates"=>m.HasUpdate,
             "FamilyLinks"=>m.HasSuggestedParents,
@@ -629,13 +638,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(DisableVisibleLabel));
         OnPropertyChanged(nameof(RefreshVisibleLabel));
         OnPropertyChanged(nameof(VisibleBulkScopeHelp));
+        OnPropertyChanged(nameof(BulkSelectionSummary));
     }
 
     private void Changed()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(suppressChanged)return;
-        if(StagedCount==0)ReviewRetryVisibility=Visibility.Collapsed;
+        if(!HasPendingDeployment)ReviewRetryVisibility=Visibility.Collapsed;
         s.Database.SetPendingModIds(Mods.Where(row=>row.HasStagedChanges).SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key));
         OnPropertyChanged(nameof(EnabledCount));
         OnPropertyChanged(nameof(StagedCount));
@@ -643,10 +653,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         OnPropertyChanged(nameof(StagedDisableCount));
         OnPropertyChanged(nameof(StagedSummary));
         OnPropertyChanged(nameof(HasStagedChanges));
+        OnPropertyChanged(nameof(HasPendingDeployment));
         OnPropertyChanged(nameof(PendingActionsHelp));
         OnPropertyChanged(nameof(UpdateCount));
         OnPropertyChanged(nameof(AllViewLabel));
         OnPropertyChanged(nameof(EnabledViewLabel));
+        OnPropertyChanged(nameof(DisabledViewLabel));
+        NotifyBulkSelection();
         OnPropertyChanged(nameof(StagedViewLabel));
         OnPropertyChanged(nameof(UpdatesViewLabel));
         OnPropertyChanged(nameof(InstalledCount));
@@ -682,7 +695,17 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 : null;
             if (pending is not null && discoveryUserEdits is not null)
                 foreach(var edit in discoveryUserEdits) pending[edit.Key]=edit.Value;
-            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending,RecordUserChoice)).ToArray();
+            var marked = Mods.Where(row=>row.BulkSelected).ToDictionary(row=>row.Id,
+                row=>row.Members.Select(member=>member.Id).ToHashSet(PathRules.Comparer), PathRules.Comparer);
+            var rows=logical.Select(m=>new ModRowViewModel(m,Changed,pending,RecordUserChoice,NotifyBulkSelection)).ToArray();
+            suppressBulkSelectionNotifications = true;
+            try
+            {
+                foreach (var row in rows)
+                    row.BulkSelected = row.CanStage && marked.TryGetValue(row.Id, out var prior) &&
+                        prior.SetEquals(row.Members.Select(member=>member.Id));
+            }
+            finally { suppressBulkSelectionNotifications = false; }
             var rowsByMember=rows.SelectMany(row=>row.Members.Select(member=>(member.Id,row)))
                 .ToDictionary(x=>x.Id,x=>x.row,StringComparer.OrdinalIgnoreCase);
             foreach(var group in suggestions.GroupBy(s=>s.ChildModId,StringComparer.OrdinalIgnoreCase))
@@ -1010,7 +1033,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         try{foreach(var row in Mods)row.DiscardStaged();}
         finally{suppressChanged=false;Changed();}
         PlanPreviewText="No change preview yet.";
-        StatusText="Discarded all pending changes. Your installed game files were not changed.";
+        StatusText=rulesNeedApply
+            ? "Discarded staged activation changes. Saved relationship rules are still pending Apply. No game files changed."
+            : "Discarded all pending changes. Your installed game files were not changed.";
+        ScheduleAutomaticChanges();
     }
 
     [RelayCommand]
@@ -1069,11 +1095,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         return ApplyStagedChangesAsync(confirm:true);
     }
 
-    private async Task ApplyStagedChangesAsync(bool confirm)
+    private async Task ApplyStagedChangesAsync(bool confirm, bool forceConfirm = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(confirm&&ConfirmBeforeApply&&StagedCount>0&&MessageBox.Show(
-            $"Apply {StagedCount} pending mod change(s) to {s.Paths.Game.DisplayName}?",
+        if(confirm&&(ConfirmBeforeApply||forceConfirm)&&HasPendingDeployment&&MessageBox.Show(
+            $"Apply all {StagedCount} pending mod change(s) and saved overwrite choices to {s.Paths.Game.DisplayName}?",
             "Apply mod changes",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question)!=MessageBoxResult.Yes)
@@ -1087,7 +1113,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var blockers=s.ProcessGuard.GetKnownBlockers();
         if(blockers.Count>0)
         {
-            retryExplicitOnActivation=true;
             throw new InvalidOperationException($"{s.Paths.Game.DisplayName} is running. Close it before deployment.");
         }
 
@@ -1128,6 +1153,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if (analysis.plan.Changes.Count == 0 && explicitIds.Length == 0)
         {
             rulesNeedApply=false;
+            Changed();
             StatusText="Game files already match your choices.";
             return;
         }
@@ -1274,49 +1300,6 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentNullException.ThrowIfNull(build);
         return Task.Run(()=>build(ct),ct);
-    }
-
-    [RelayCommand]
-    private void EnableVisible()
-    {
-        using (MasterDebugLog.BeginMethod())
-        {
-            StageVisible(true);
-        }
-    }
-
-    [RelayCommand]
-    private void DisableVisible()
-    {
-        using (MasterDebugLog.BeginMethod())
-        {
-            StageVisible(false);
-        }
-    }
-
-    private void StageVisible(bool enabled)
-    {
-        using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var targets=ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray();
-        if(targets.Length==0)
-        {
-            StatusText="No visible mods can be staged.";
-            return;
-        }
-        if(targets.Length>1&&MessageBox.Show(
-            $"{(enabled?"Enable":"Disable")} {targets.Length} currently visible mods? Manager will verify and apply eligible changes to game files.",
-            $"{(enabled?"Enable":"Disable")} visible mods",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question)!=MessageBoxResult.Yes)
-        {
-            StatusText="Bulk change cancelled. No additional changes were staged.";
-            return;
-        }
-
-        suppressChanged=true;
-        try{foreach(var m in targets)m.StagedEnabled=enabled;}
-        finally{suppressChanged=false;Changed();OnModChoiceChanged();}
-        StatusText=$"Selected {(enabled?"enable":"disable")} for {targets.Length} visible {(targets.Length==1?"mod":"mods")}.";
     }
 
     [RelayCommand]
@@ -1617,10 +1600,11 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             StatusText = "Launch blocked: registered game executable is unavailable. Review the game installation path.";
             return;
         }
-        if(StagedCount>0||rulesNeedApply)
+        if(HasPendingDeployment)
         {
-            await Apply();
-            if(StagedCount>0||rulesNeedApply||BlockerCount>0){StatusText="Launch stopped because the pending mod changes could not be applied safely. "+StatusText;return;}
+            StatusText="Apply or discard pending mod changes before launching. No game files were changed.";
+            SelectedTab=1;
+            return;
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {

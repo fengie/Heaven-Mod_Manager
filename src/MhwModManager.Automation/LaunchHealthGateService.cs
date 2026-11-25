@@ -10,10 +10,10 @@ public sealed class LaunchHealthGateService(PlannerSnapshotRepository plannerSna
     public Task<LaunchHealthReport> EvaluateAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return EvaluateAsync(ct, requireApplied: false);
+        return EvaluateAsync(requireApplied: false, ct);
     }
 
-    public async Task<LaunchHealthReport> EvaluateAsync(CancellationToken ct, bool requireApplied)
+    public async Task<LaunchHealthReport> EvaluateAsync(bool requireApplied, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var findings = new List<AutomationFinding>();
@@ -26,7 +26,7 @@ public sealed class LaunchHealthGateService(PlannerSnapshotRepository plannerSna
             ? snap.CurrentManifest.Values.Where(entry => entry.Path.EndsWith(".tex", StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(entry => entry.Path, PathRules.Comparer)
             : null;
-        var healthIssues = await health.ScanAsync(ct, appliedTextures);
+        var healthIssues = await health.ScanAsync(appliedTextures, ct);
         foreach (var issue in healthIssues) findings.Add(new("health", issue.Severity.Equals("Error",StringComparison.OrdinalIgnoreCase)?AutomationSeverity.Blocker:AutomationSeverity.Warning, issue.Summary, issue.Detail ?? issue.Path ?? issue.Code, issue.ModId));
         if (requireApplied && !plan.IsBlocked && plan.Changes.Count > 0)
             findings.Add(new("pending-deployment", AutomationSeverity.Blocker, "Saved mod choices are not applied. Apply mod changes before launching.", $"{plan.Changes.Count} pending file change(s)."));

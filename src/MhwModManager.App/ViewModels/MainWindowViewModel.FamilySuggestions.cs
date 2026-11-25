@@ -47,7 +47,7 @@ public sealed partial class MainWindowViewModel
         // This shortcut is an explicit mod-wide ordering decision, not automatic classification.
         // Show every affected existing file and warn about *future* overlaps before persisting it.
         var heading = $"Attach '{childRow.DisplayName}' under '{parentRow.DisplayName}'?\n\n{selection.Evidence}\n\n";
-        const string warning = "IMPORTANT: This creates explicit MOD-WIDE overwrite precedence for these packages, including any new overlapping files imported later. Manager will check this choice and apply compatible changes.";
+        const string warning = "IMPORTANT: This creates explicit MOD-WIDE overwrite precedence for these packages, including any new overlapping files imported later. Manager will save the rule for review. Apply Mod Changes commits the deployment.";
         bool confirmed;
         if (sharedPaths.Length <= 20)
         {
@@ -124,7 +124,7 @@ public sealed partial class MainWindowViewModel
                 }
 
                 await RefreshAnalysis(ct);
-                StatusText = $"Linked '{childRow.DisplayName}' as an add-on of '{parentRow.DisplayName}'. Manager will check the resulting file choices.";
+                StatusText = $"Linked '{childRow.DisplayName}' as an add-on of '{parentRow.DisplayName}'. Review the resulting file choices, then Apply Mod Changes.";
                 RequestRuleApply();
                 await s.Timeline.RecordAsync("family.suggestion-confirmed", AutomationSeverity.Info,
                     $"User confirmed a suggested family relationship: {childRow.DisplayName} under {parentRow.DisplayName}.",

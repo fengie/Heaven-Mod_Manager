@@ -235,10 +235,10 @@ public sealed class AutomationCoordinator(
     public Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return PrepareForPlayAsync(ct, requireApplied: false);
+        return PrepareForPlayAsync(requireApplied: false, ct);
     }
 
-    private async Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct, bool requireApplied)
+    private async Task<LaunchHealthReport> PrepareForPlayAsync(bool requireApplied, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         UnifiedDebugLog.Write("LAUNCH", "PrepareForPlay BEGIN");
@@ -246,7 +246,7 @@ public sealed class AutomationCoordinator(
         if(unmanaged>0){var adopted=await adoption.AdoptAsync(ct);await timeline.RecordAsync("launch.auto-adopt",AutomationSeverity.Info,adopted.Message,null,ct);}
         var snapshot=await backups.CreateAsync("pre-launch",ct);
         await timeline.RecordAsync("launch.snapshot",snapshot.Success?AutomationSeverity.Info:AutomationSeverity.Warning,snapshot.Message,new{snapshot.SnapshotRoot,snapshot.SaveSource},ct);
-        var report = await gate.EvaluateAsync(ct, requireApplied);
+        var report = await gate.EvaluateAsync(requireApplied, ct);
         UnifiedDebugLog.Write("LAUNCH", $"PrepareForPlay END Ready={report.Ready}; Findings={report.Findings.Count}");
         return report;
     }
@@ -262,7 +262,7 @@ public sealed class AutomationCoordinator(
             UnifiedDebugLog.Write("LAUNCH", "Launch blocked: registered executable unavailable.");
             return new(false,false,null,TimeSpan.Zero,"Launch blocked: registered game executable is unavailable. Review the game installation path.");
         }
-        var health=await PrepareForPlayAsync(ct, requireApplied: mode == LaunchMode.Modded);
+        var health=await PrepareForPlayAsync(requireApplied: mode == LaunchMode.Modded, ct);
         if(!health.Ready)
         {
             UnifiedDebugLog.Write("LAUNCH", "LaunchAndObserve BLOCKED by launch health gate.");
