@@ -45,6 +45,33 @@ public sealed class AutomaticDiscoveryTests
         },DiscoveredGameProfiles.Load().Single(game=>game.Id==gameId));
 
     [Fact]
+    public Task ImportDisabledPreferencePersistsAndDoesNotReplayAlreadyReviewedPackages() =>
+        IsolatedWpfSession.RunAsync(async (s, ct) =>
+        {
+            using var vm = new MainWindowViewModel(s);
+            Assert.True(vm.AutoEnableDiscoveredMods);
+            vm.AutoEnableDiscoveredMods = false;
+            Assert.False(MhwModManager.App.ManagerSettingsStore.Load(Path.Combine(s.Paths.NextStateRoot, "settings.json"))
+                .Current.AutoEnableDiscoveredMods);
+            var source = Path.Combine(s.Paths.ModsRoot, "Staged only", s.Paths.Game.ModRootRelativePath, "staged.bin");
+            Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+            await File.WriteAllTextAsync(source, "keep original", ct);
+            await s.Catalog.RefreshFoldersAsync(ct);
+            var pending = await s.Database.GetSettingsByPrefixAsync("discovery.pending:", ct);
+            var id = Assert.Single(pending.Values);
+            Assert.Equal(0, await MainWindowViewModel.ApplyDiscoveredAsync(s, [id], ct));
+            Assert.Empty(await s.Database.GetSettingsByPrefixAsync("discovery.pending:", ct));
+            Assert.False(Assert.Single(await s.Database.GetModsAsync(ct)).Enabled);
+            var target = Path.Combine(s.Paths.Game.LiveModRoot, "staged.bin");
+            Assert.False(File.Exists(target));
+            vm.AutoEnableDiscoveredMods = true;
+            await s.Catalog.RefreshFoldersAsync(ct);
+            Assert.Equal(0, await MainWindowViewModel.ApplyDiscoveredAsync(s, [id], ct));
+            Assert.False(File.Exists(target));
+            Assert.Equal("keep original", await File.ReadAllTextAsync(source, ct));
+        });
+
+    [Fact]
     public Task OldChoicesForeignFilesAndExecutablePayloadStayUntouched() =>
         IsolatedWpfSession.RunAsync(async (s,ct)=>
         {
