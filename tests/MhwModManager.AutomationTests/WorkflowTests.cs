@@ -131,6 +131,52 @@ public sealed class WorkflowTests : IDisposable
         Assert.Single(diff.ProviderChanges); Assert.Equal(2, diff.Mods.Count);
     }
     [Fact]
+    public async Task PendingFileInspectionUsesStagedChoicesWithoutWritingCatalog()
+    {
+        var db = await DatabaseAsync();
+        await SeedAsync(db, "a", true);
+        await SeedAsync(db, "b");
+        var planner = new DeploymentPlanner(new ConflictEngine());
+        var inspector = new EffectiveInspectorService(new PlannerSnapshotRepository(db), planner);
+        var staged = new Dictionary<string, (bool enabled, int priority)>(PathRules.Comparer)
+        {
+            ["a"] = (false, 1), ["b"] = (true, 2)
+        };
+        var explanation = await inspector.ExplainWhyAsync(@"nativePC\a.tex", staged, Token);
+        Assert.NotNull(explanation);
+        Assert.Equal("b", explanation.PlannedWinnerModId);
+        Assert.False(explanation.AppliedMatchesPlan);
+        Assert.Null(explanation.AppliedProviderModId);
+        staged["a"] = (true, 1);
+        var shared = Assert.Single(await inspector.HeatmapAsync(staged, Token));
+        Assert.Equal(2, shared.ProviderCount);
+        Assert.False(shared.NeedsChoice);
+        Assert.True(Assert.Single(await db.GetModsAsync(Token), mod => mod.Id == "a").Enabled);
+        Assert.False(Assert.Single(await db.GetModsAsync(Token), mod => mod.Id == "b").Enabled);
+    }
+
+    [Fact]
+    public async Task ProfileComparisonShowsUnavailableEnabledIdentityAndExactProviderNames()
+    {
+        var db = await DatabaseAsync();
+        await SeedAsync(db, "a", true);
+        await SeedAsync(db, "b");
+        var snapshot = await db.LoadPlannerSnapshotAsync(Token);
+        var planner = new DeploymentPlanner(new ConflictEngine());
+        var left = new Dictionary<string, (bool, int)> { ["a"] = (true, 1), ["missing-local-package"] = (true, 4) };
+        var right = new Dictionary<string, (bool, int)> { ["b"] = (true, 2) };
+        var diff = WorkflowAnalysis.Compare(snapshot, planner, left, right);
+        var unavailable = Assert.Single(diff.UnavailableMods);
+        Assert.Equal("missing-local-package", unavailable.ModId);
+        Assert.True(unavailable.BeforeEnabled);
+        Assert.False(unavailable.AfterEnabled);
+        var transition = Assert.Single(diff.ProviderTransitions);
+        Assert.Equal("a", transition.BeforeId);
+        Assert.Equal("b", transition.AfterId);
+        Assert.Equal(@"nativePC\a.tex", transition.Path);
+    }
+
+    [Fact]
     public async Task CrashMinimizerFindsCrossPartitionPairAndRejectsBadBaseline()
     {
         var engine = new CrashBisectorEngine();

@@ -125,3 +125,11 @@ Primary OS semantics: Microsoft's `FileShare.None` declines sharing of an
 opened file until it is closed (<https://learn.microsoft.com/dotnet/api/system.io.fileshare>);
 `Task.Delay` observes cancellation
 (<https://learn.microsoft.com/dotnet/api/system.threading.tasks.task.delay>).
+
+
+## Explicit activation and library review (November 25 candidate)
+
+- `ExplicitModSelectionTests` verifies marks and mixed staged changes remain independent of deployment, and `LibraryPreferenceTests` covers saved views, category/favorite persistence and 100/500/1,000-row bulk marking without deployment.
+- `DeploymentReviewTests` checks exact plan projection, resolved overlaps and global blockers. `DeploymentReviewBenchmarks` characterizes 10k/50k/100k planned replacements across 100/500/1,000 mods; `TextureRelationshipBenchmarks` checks 100/500-mod texture relationships.
+- Run the existing manual benchmark workflow with `*DeploymentReviewBenchmarks*` and `*TextureRelationshipBenchmarks*`, separately, and retain measured results. A compiled benchmark or deterministic scale test is not a measured responsiveness result.
+- Installed WPF, actual game launch, and full feature/method verification remain release gates; no physical machine results are implied by this candidate.

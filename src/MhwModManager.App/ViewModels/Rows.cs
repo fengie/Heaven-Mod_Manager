@@ -70,6 +70,20 @@ public partial class ModRowViewModel:ObservableObject
     private readonly Action? bulkSelectionChanged;
 
     [ObservableProperty]private bool bulkSelected;
+    [ObservableProperty]private bool isFavorite;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayCategory))]
+    private string? customCategory;
+
+    public string LibraryPreferenceKey { get; }
+    public string DisplayCategory
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return CustomCategory ?? Category ?? "Uncategorized";
+        }
+    }
 
     partial void OnBulkSelectedChanged(bool value)
     {
@@ -209,6 +223,8 @@ public partial class ModRowViewModel:ObservableObject
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         Id=family.Id;Name=family.Name;DisplayName=family.DisplayName;Category=family.Category;Members=family.Members;ArchivedMembers=family.SupersededMembers;
+        LibraryPreferenceKey=string.Concat(Members.Select(member=>member.Id).Order(PathRules.Comparer)
+            .Select(id=>id.Length.ToString(System.Globalization.CultureInfo.InvariantCulture)+":"+id));
         SourcePath=family.Members.Count==1?family.Members[0].SourcePath:string.Empty;
         SourceSummary=family.Members.Count==1?family.Members[0].SourcePath:$"{family.Members.Count} source packages";
         SourceName=family.Members.Count==1?ModDisplayNames.StripTransportDigest(System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(SourcePath))):$"{family.Members.Count} source packages";

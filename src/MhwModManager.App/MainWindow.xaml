@@ -114,6 +114,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <StackPanel>
@@ -160,7 +161,7 @@
                             <Border Margin="5" Style="{StaticResource MetricCard}">
                                 <StackPanel>
                                     <TextBlock Text="{Binding FullyEffectiveCount}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource Info}"/>
-                                    <TextBlock Text="Working in game" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Effective in plan" FontWeight="SemiBold"/>
                                     <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" partly replaced"/></TextBlock>
                                 </StackPanel>
                             </Border>
@@ -180,7 +181,37 @@
                             </Border>
                         </UniformGrid>
 
-                        <Grid Grid.Row="3">
+                        <Border Grid.Row="3" Margin="0,0,0,14" Padding="14">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding HasPendingReview}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="Pending deployment review" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Text="{Binding PlanPreviewText}" Margin="0,5,0,0" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock Margin="0,4,0,8" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Text="Read-only snapshot. Apply always checks the current setup again. Resolved overlaps do not require action; blockers must be resolved before any files change."/>
+                                <DataGrid ItemsSource="{Binding PendingReviewRows}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" Height="270" EnableRowVirtualization="True" EnableColumnVirtualization="True" AutomationProperties.Name="Pending deployment review">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="ACTION" Binding="{Binding Action,Mode=OneWay}" Width="150"/>
+                                        <DataGridTextColumn Header="TARGET" Binding="{Binding Path,Mode=OneWay}" Width="260"/>
+                                        <DataGridTextColumn Header="CURRENT PROVIDER" Binding="{Binding BeforeProvider,Mode=OneWay}" Width="180"/>
+                                        <DataGridTextColumn Header="PLANNED PROVIDER" Binding="{Binding AfterProvider,Mode=OneWay}" Width="180"/>
+                                        <DataGridTextColumn Header="REASON" Binding="{Binding Detail,Mode=OneWay}" Width="420"/>
+                                        <DataGridTextColumn Header="REASON CODE" Binding="{Binding ReasonCode,Mode=OneWay}" Width="160"/>
+                                        <DataGridTextColumn Header="BEFORE SHA-256" Binding="{Binding BeforeDigest,Mode=OneWay}" Width="180"/>
+                                        <DataGridTextColumn Header="AFTER SHA-256" Binding="{Binding AfterDigest,Mode=OneWay}" Width="180"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <WrapPanel Margin="0,8,0,0">
+                                    <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding HasPendingDeployment}" Style="{StaticResource PrimaryButton}"/>
+                                    <Button Content="Open Mod Library" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" Margin="8,0,0,0"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Grid.Row="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1.55*"/>
                                 <ColumnDefinition Width="1*"/>
@@ -309,7 +340,7 @@
 
                     <Border Grid.Row="1" Margin="0,6,0,6" Style="{StaticResource SubtleCard}" Padding="8">
                         <Grid>
-                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel Margin="0,0,12,0" VerticalAlignment="Center">
@@ -331,6 +362,7 @@
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Enabled"><Setter Property="Text" Value="Enabled"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Disabled"><Setter Property="Text" Value="Disabled"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding ModViewMode}" Value="Favorites"><Setter Property="Text" Value="Favorites"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Staged"><Setter Property="Text" Value="Pending changes"/></DataTrigger>
                                                         <DataTrigger Binding="{Binding ModViewMode}" Value="Updates"><Setter Property="Text" Value="Updates"/></DataTrigger>
                                                          <DataTrigger Binding="{Binding ModViewMode}" Value="FamilyLinks"><Setter Property="Text" Value="Possible families"/></DataTrigger>
@@ -374,12 +406,28 @@
                                         AutomationProperties.Name="Inspect nested mod package layouts without making changes"/>
                                 <TextBlock Text="{Binding BulkSelectionSummary}" VerticalAlignment="Center" Margin="10,3,0,3" MaxWidth="520" TextWrapping="Wrap" FontSize="10" Foreground="{StaticResource Muted}" AutomationProperties.LiveSetting="Polite"/>
                             </WrapPanel>
+                            <Expander Grid.Row="3" Header="Library organization and range selection" Margin="0,5,0,0" IsExpanded="False">
+                                <WrapPanel Margin="0,4,0,0" VerticalAlignment="Center">
+                                    <ComboBox Width="150" Margin="0,0,6,4" ItemsSource="{Binding LibraryCategories}" SelectedItem="{Binding CategoryFilter,Mode=TwoWay}" AutomationProperties.Name="Category filter"/>
+                                    <ComboBox Width="170" Margin="0,0,6,4" ItemsSource="{Binding SavedLibraryViews}" SelectedItem="{Binding SelectedSavedLibraryView,Mode=TwoWay}" DisplayMemberPath="Name" AutomationProperties.Name="Saved library views"/>
+                                    <Button Content="Use view" Command="{Binding UseSavedLibraryViewCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                                    <Button Content="Delete view" Command="{Binding DeleteSavedLibraryViewCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                                    <TextBox Width="140" Margin="0,0,6,4" Text="{Binding NewSavedViewName,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="New library view name" ToolTip="Name for current search and filters"/>
+                                    <Button Content="Save or update view" Command="{Binding SaveLibraryViewCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,4"/>
+                                    <Button Content="Favorites" Command="{Binding SetModViewCommand}" CommandParameter="Favorites" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2" ToolTip="Show explicitly favorited managed packages."/>
+                                    <Button Content="Mark highlighted" Command="{Binding MarkHighlightedCommand}" CommandParameter="{Binding SelectedItems,ElementName=ModLibraryGrid}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0" ToolTip="Use Ctrl or Shift to highlight a range in the list, then mark only those rows. No activation."/>
+                                    <Button Content="Unmark highlighted" Command="{Binding UnmarkHighlightedCommand}" CommandParameter="{Binding SelectedItems,ElementName=ModLibraryGrid}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="0,0,6,0" ToolTip="Remove marks from highlighted rows without disabling them."/>
+                                    <Button Content="{Binding FavoriteActionLabel}" Command="{Binding ToggleFavoriteCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,0"/>
+                                    <TextBox Width="180" Text="{Binding CustomCategoryText,UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Custom category" ToolTip="Leave blank to restore detected category"/>
+                                    <Button Content="Set category" Command="{Binding AssignCustomCategoryCommand}" Style="{StaticResource QuietButton}" Margin="6,0,0,0"/>
+                                </WrapPanel>
+                            </Expander>
                         </Grid>
                     </Border>
 
                     <Grid x:Name="ModLibraryRegion" Grid.Row="2">
                         <Border CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="1">
-                        <DataGrid ItemsSource="{Binding LibraryView}" SelectedItem="{Binding SelectedLibraryItem,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
+                        <DataGrid x:Name="ModLibraryGrid" ItemsSource="{Binding LibraryView}" SelectedItem="{Binding SelectedLibraryItem,Mode=TwoWay}" SelectionMode="Extended" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="58" AutomationProperties.Name="Mod library">
                             <DataGrid.ItemContainerStyleSelector>
                                 <vm:LibraryRowStyleSelector>
                                     <vm:LibraryRowStyleSelector.ExternalStyle>
@@ -568,7 +616,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="IN GAME" Width="155">
+                                <DataGridTemplateColumn Header="PLANNED EFFECT" Width="155">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel ToolTip="{Binding EffectiveReason}">
@@ -578,7 +626,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="125" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding DisplayCategory,Mode=OneWay}" Width="125" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="LOAD ORDER" Binding="{Binding Priority}" Width="76" IsReadOnly="True"/>
                                 <DataGridTemplateColumn Header="INSTALLED FROM" Width="1.2*" SortMemberPath="SourceSummary">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -1207,6 +1255,10 @@
                         <Border Margin="0,0,0,12" Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock Text="Background refresh" Style="{StaticResource SectionTitle}"/>
+                                <CheckBox Margin="0,12,0,0" Content="Automatically enable safe newly discovered mods"
+                                          IsChecked="{Binding AutoEnableDiscoveredMods,Mode=TwoWay}"
+                                          AutomationProperties.Name="Automatically enable discovered mods"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Text="Turn off to import and index new packages without activating them. Reviewed disabled packages stay off when you turn this setting back on."/>
                                 <CheckBox Margin="0,12,0,0" Content="Refresh mod metadata periodically in the background"
                                           IsChecked="{Binding BackgroundMetadataRefreshEnabled,Mode=TwoWay}"
                                           AutomationProperties.Name="Background metadata refresh"/>
