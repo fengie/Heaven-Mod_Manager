@@ -128,6 +128,19 @@ public sealed partial class App:Application, IDisposable
             }
             try
             {
+                // Locator publication is optional and does not establish release trust
+                // or prevent normal startup if the installation cannot be identified.
+                await Task.Run(()=>UpdateInstallLocationReceipt.TryRecordAsync(
+                    UpdateClientService.GetInstallRoot(),
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    buildIdentity, CancellationToken.None));
+            }
+            catch(Exception ex)
+            {
+                logger.Warning(ex,"Program updater install-location receipt failed non-fatally.");
+            }
+            try
+            {
                 await Task.Run(()=>UpdateStorageMaintenance.RunAsync(
                     message=>logger.Information("Program updater: {UpdaterMessage}",message),
                     CancellationToken.None));
