@@ -1,3 +1,4 @@
+using MhwModManager.Automation;
 using MhwModManager.App.ViewModels;
 using MhwModManager.Core;
 using Xunit;
@@ -59,4 +60,37 @@ public sealed class SafeLaunchTests
             Assert.False(File.Exists(services.Executor.Destination(waitingFile.Path)));
             Assert.Equal(waitingFile.Path, Assert.Single(services.Planner.Build(after).Changes).Path);
         }, DiscoveredGameProfiles.Load().Single(game => game.Id == id));
+
+    [Fact]
+    public Task MissingModdedExecutableDoesNotStartOrCreateBackup() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            File.Delete(services.Paths.Game.ExecutablePath);
+            var root = services.Backups.SnapshotRoot;
+            var before = Directory.Exists(root) ? Directory.GetDirectories(root) : [];
+            var result = await services.Automation.LaunchAndObserveAsync(
+                LaunchMode.Modded, TimeSpan.Zero, ct);
+            Assert.False(result.Started);
+            Assert.Contains("unavailable", result.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(before.Order(), (Directory.Exists(root) ? Directory.GetDirectories(root) : []).Order());
+        }, DiscoveredGameProfiles.Load().Single(game => game.IsMonsterHunterWorld));
+
+    [Fact]
+    public Task ModdedLaunchRejectsUnappliedDeployment() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            var source = Directory.CreateDirectory(Path.Combine(services.Paths.ToolRoot, "pending package"));
+            await File.WriteAllTextAsync(Path.Combine(source.FullName, "sample.bin"), "pending bytes", ct);
+            var mod = new ModDescriptor("pending", "Pending", "Pending", source.FullName, true, 1);
+            await services.Database.UpsertModAsync(mod, ct);
+            var file = Assert.Single(await services.Scanner.CaptureAsync(mod, ct));
+            var plan = services.Planner.Build(await services.PlannerSnapshots.LoadAsync(ct));
+            Assert.False(plan.IsBlocked);
+            Assert.NotEmpty(plan.Changes);
+            var result = await services.Automation.LaunchAndObserveAsync(
+                LaunchMode.Modded, TimeSpan.Zero, ct);
+            Assert.False(result.Started);
+            Assert.Contains("not applied", result.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.False(File.Exists(services.Executor.Destination(file.Path)));
+        });
 }
