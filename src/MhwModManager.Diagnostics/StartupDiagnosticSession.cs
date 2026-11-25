@@ -28,6 +28,8 @@ public sealed class StartupDiagnosticSession
     private static readonly long RunningReportIntervalTicks=Math.Max(1,Stopwatch.Frequency/4);
     private long lastReportPersistTimestamp;
     private bool completed;
+    private string? terminalOverall;
+    private string? terminalSummary;
 
     private StartupDiagnosticSession(string logDirectory, string stamp)
     {
@@ -46,7 +48,8 @@ public sealed class StartupDiagnosticSession
     public static StartupDiagnosticSession Start(string? preferredRoot = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var stamp = DateTimeOffset.Now.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture);
+        // Multiple startup sessions can begin in the same millisecond, even in one process.
+        var stamp = DateTimeOffset.Now.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N");
         var root = string.IsNullOrWhiteSpace(preferredRoot) ? AppContext.BaseDirectory : preferredRoot;
         var preferred = Path.Combine(root, "StartupLogs");
         try
@@ -162,9 +165,11 @@ public sealed class StartupDiagnosticSession
         {
             if (completed) return;
             completed = true;
+            terminalOverall = success ? "PASS" : "FAIL";
+            terminalSummary = summary;
             var finished = DateTimeOffset.Now;
             AppendLine($"\nStartup {(success ? "PASSED" : "FAILED")} at {finished.ToString("O", CultureInfo.InvariantCulture)} ({(finished - startedAt).TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture)} ms).{(string.IsNullOrWhiteSpace(summary) ? string.Empty : " " + summary)}");
-            PersistReport(success ? "PASS" : "FAIL", summary, force:true);
+            PersistReport(terminalOverall, terminalSummary, force:true);
         }
     }
 
@@ -198,7 +203,8 @@ public sealed class StartupDiagnosticSession
             {
                 AppendLine(Indent(entry.ExceptionDetails));
             }
-            PersistReport(completed ? "COMPLETE" : "RUNNING", null, force:completed||entry.Status==StartupDiagnosticStatus.Failed);
+            // Late observations can enrich a finished report but cannot erase the outcome.
+            PersistReport(terminalOverall ?? "RUNNING", terminalSummary, force:completed||entry.Status==StartupDiagnosticStatus.Failed);
         }
     }
 
