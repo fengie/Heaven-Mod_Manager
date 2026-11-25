@@ -13,6 +13,7 @@ public sealed class ManagerSettings
     public bool ConfirmBeforeApply { get; set; } = true;
     public bool ConfirmBeforeDiscardStaged { get; set; } = true;
     public bool BackgroundMetadataRefreshEnabled { get; set; } = true;
+    public bool AutoEnableDiscoveredMods { get; set; } = true;
 }
 
 public sealed class ManagerSettingsStore

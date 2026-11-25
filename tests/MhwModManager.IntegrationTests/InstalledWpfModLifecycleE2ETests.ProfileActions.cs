@@ -143,7 +143,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         foreach (var (label, key) in new[] { ("Interface animations", "uiAnimationsEnabled"),
             ("Remember last tab", "rememberLastTab"), ("Confirm before apply", "confirmBeforeApply"),
             ("Confirm before discard", "confirmBeforeDiscardStaged"), ("Background metadata refresh", "backgroundMetadataRefreshEnabled"),
-            ("Automatic program updates", "autoUpdateEnabled") })
+            ("Automatic program updates", "autoUpdateEnabled"), ("Automatically enable discovered mods", "autoEnableDiscoveredMods") })
         {
             var box = await WaitForElementAsync(() => Find(window, item => item.Current.ControlType == ControlType.CheckBox &&
                 item.Current.Name == label), UiTimeout, label, ct);

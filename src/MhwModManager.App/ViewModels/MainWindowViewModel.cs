@@ -303,6 +303,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         confirmBeforeApply=settings.ConfirmBeforeApply;
         confirmBeforeDiscardStaged=settings.ConfirmBeforeDiscardStaged;
         backgroundMetadataRefreshEnabled=settings.BackgroundMetadataRefreshEnabled;
+        autoEnableDiscoveredMods=settings.AutoEnableDiscoveredMods;
         selectedTab=rememberLastTab?Math.Clamp(settings.LastSelectedTab,0,9):0;
         UiMotion.AnimationsEnabled=uiAnimationsEnabled;
         CurrentProgramBuildText=s.BuildIdentity.BuildNumber>0

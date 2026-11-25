@@ -131,13 +131,20 @@ public sealed partial class MainWindowViewModel
     internal static async Task<int?> ApplyDiscoveredAsync(AppServices s,string[] ids,CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var pending = ids.ToHashSet(PathRules.Comparer);
+        pending.IntersectWith((await s.Database.GetSettingsByPrefixAsync("discovery.pending:",ct)).Values);
+        if(pending.Count==0) return 0;
+        // A completed import-disabled discovery is acknowledged, not left queued
+        // for surprise deployment when the preference is enabled again.
+        if (!s.Settings.Current.AutoEnableDiscoveredMods)
+        {
+            await s.Database.FinishDiscoveryAsync(pending,ct);
+            return 0;
+        }
         if (!File.Exists(s.Paths.Game.ExecutablePath) || s.ProcessGuard.GetKnownBlockers().Count > 0)
         {
             return null;
         }
-        var pending = ids.ToHashSet(PathRules.Comparer);
-        pending.IntersectWith((await s.Database.GetSettingsByPrefixAsync("discovery.pending:",ct)).Values);
-        if(pending.Count==0) return 0;
         var mods = await s.Database.GetModsAsync(ct);
         var protectedIds = await s.Database.GetDiscoveryProtectedIdsAsync(ct);
         var candidates = mods.Where(m => pending.Contains(m.Id) && !protectedIds.Contains(m.Id) && !m.Enabled && !m.IsSuperseded &&
@@ -174,6 +181,11 @@ public sealed partial class MainWindowViewModel
                 permitted.SetEquals(plan.Changes.Select(change=>change.ProviderAfter!)) &&
                 (await s.Dependencies.ScanStageAsync(stage.Where(p=>p.Value.enabled).Select(p=>p.Key).ToHashSet(PathRules.Comparer),plan,ct)).All(d=>d.Ready))
             {
+                if (!s.Settings.Current.AutoEnableDiscoveredMods)
+                {
+                    await s.Database.FinishDiscoveryAsync(pending,ct);
+                    return 0;
+                }
                 plan = plan with { Changes=plan.Changes.Select(change=>change with {RequireAbsent=true}).ToArray() };
                 var result = await s.Executor.ApplyAsync(plan,"Automatically install newly discovered mods",stage,ct:ct);
                 if (!result.Success) throw new IOException(result.Message,result.Exception);

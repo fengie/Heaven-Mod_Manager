@@ -47,6 +47,7 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty] private bool confirmBeforeApply;
     [ObservableProperty] private bool confirmBeforeDiscardStaged;
     [ObservableProperty] private bool backgroundMetadataRefreshEnabled;
+    [ObservableProperty] private bool autoEnableDiscoveredMods;
     [ObservableProperty] private string storageStatusText =
         "Storage usage has not been measured yet. Opening Settings measures manager-owned roots without deleting anything.";
     [ObservableProperty] private string legalStatusText =
@@ -108,6 +109,13 @@ public sealed partial class MainWindowViewModel
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"value={value}");
         s.Settings.Update(settings=>settings.ConfirmBeforeDiscardStaged=value);
+    }
+
+    partial void OnAutoEnableDiscoveredModsChanged(bool value)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        s.Settings.Update(settings=>settings.AutoEnableDiscoveredMods=value);
+        RequestDiscoveryCheck();
     }
 
     partial void OnBackgroundMetadataRefreshEnabledChanged(bool value)

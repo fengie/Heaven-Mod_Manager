@@ -1238,6 +1238,10 @@
                         <Border Margin="0,0,0,12" Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock Text="Background refresh" Style="{StaticResource SectionTitle}"/>
+                                <CheckBox Margin="0,12,0,0" Content="Automatically enable safe newly discovered mods"
+                                          IsChecked="{Binding AutoEnableDiscoveredMods,Mode=TwoWay}"
+                                          AutomationProperties.Name="Automatically enable discovered mods"/>
+                                <TextBlock Margin="24,4,0,0" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Text="Turn off to import and index new packages without activating them. Reviewed disabled packages stay off when you turn this setting back on."/>
                                 <CheckBox Margin="0,12,0,0" Content="Refresh mod metadata periodically in the background"
                                           IsChecked="{Binding BackgroundMetadataRefreshEnabled,Mode=TwoWay}"
                                           AutomationProperties.Name="Background metadata refresh"/>

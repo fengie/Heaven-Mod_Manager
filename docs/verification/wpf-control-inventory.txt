@@ -437,3 +437,4 @@ MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=BEFORE SHA-256
 MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=AFTER SHA-256 ; Binding={Binding AfterDigest,Mode=OneWay}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Apply Mod Changes ; Command={Binding ApplyCommand} ; IsEnabled={Binding HasPendingDeployment}
 MainWindow.xaml | TabItem:Dashboard | Button | Content=Open Mod Library ; Command={Binding SetModViewCommand} ; CommandParameter=All
+MainWindow.xaml | TabItem:Settings | CheckBox | Content=Automatically enable safe newly discovered mods ; IsChecked={Binding AutoEnableDiscoveredMods,Mode=TwoWay} ; AutomationProperties.Name=Automatically enable discovered mods
