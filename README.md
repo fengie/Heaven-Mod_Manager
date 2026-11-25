@@ -1,14 +1,19 @@
-# v8.8.143 — MHW Manual Mod Manager
+# v8.8.144 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 24, 2026 · 8:12:00 AM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 24, 2026 · 7:39:51 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.143**.
+Current product version: **8.8.144**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.144 — verified portable install discovery
+
+- Record a verified same-account portable installation locator after healthy startup, preserving the current receipt on cancellation and rejecting development, staging, noncanonical and unverifiable install paths. The locator is a discovery hint, not installed-health proof. [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980)
+- Exact candidate Feature 45511979755, Startup Performance 45511979645, AutoUpdate 45511979680, Product Security 45511979698 and packaged WPF 45511979654 passed. Source integrated at `2417de36`; immutable versioned publication, genuine updater/rollback and physical H2 acceptance remain separate.
 
 ## v8.8.143 — catalogue refresh cancellation
 
@@ -20,14 +25,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Guard unknown-length catalog archive downloads with actual staging-volume free-space checks before each bounded write, retaining 256 MiB headroom and the existing 1 GiB archive limit. Coalesce short network reads into 128 KiB chunks without unbounded buffering. [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975)
 - Cover initial and mid-stream low-space refusal, legitimate fragmented-stream acquisition, exact retained bytes, and owner-lease cleanup. Existing known-size preflight and user data protection remain unchanged. These are point-in-time capacity checks, not atomic volume reservations. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669)
 - native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed; 26/26 repository verification checks, 1,451 integration passes, zero failures, 15 skips; zero trace gaps or uncovered call sites. Immutable publication, hosted packaged update/rollback and personal Heaven2 acceptance remain separate.
-
-## v8.8.141 — game-safe bulk intake and external-modification protection
-
-- Crimson Desert is recognized by its verified install layout and supports staging mixed archived/loose third-party mod packages, DMM V3/V3.1 JSON/JSONC structure and read-only table/asset conflict previews. No unverified PAZ/PAMT registry rewrite, ASI execution or third-party loader installation. [PR #973](https://github.com/fengie/Heaven-Mod_Manager/pull/973) · [#972](https://github.com/fengie/Heaven-Mod_Manager/issues/972)
-- Shared deployment admission separates import evidence from permission to write live files. Existing MHW, Unreal, BepInEx and historical configured generic games retain compatibility; new unknown executable-only games remain staging-only until a verified mod target is selected.
-- The existing transactional planner and journal now detect unauthorized changes to any manager-owned game file before unrelated writes, including same-size/timestamp-restored edits. Protected sources remain unchanged; the owner must resolve external modifications explicitly.
-- Hosted WPF automation now reacquires changing tabs after refresh, retries only observed transient UIA provider errors, and retains full failure evidence. Real RAR fixture fetches are pinned to immutable source digests with bounded retries, not substituted by synthetic archives.
-- Native exact-source feature, startup and hosted WPF acceptance, immutable publication, actual packaged updater/rollback and personal Heaven2/gameplay health are distinct release boundaries. **Crimson live-game deployment is not yet supported.**
 
 ## Current plans & progress
 

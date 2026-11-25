@@ -1,3 +1,8 @@
+# v8.8.144 — November 24, 2026
+
+- Record a verified same-account portable installation locator after healthy startup, preserving the current receipt on cancellation and rejecting development, staging, noncanonical and unverifiable install paths. The locator is a discovery hint, not installed-health proof. [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980)
+- Exact candidate Feature 45511979755, Startup Performance 45511979645, AutoUpdate 45511979680, Product Security 45511979698 and packaged WPF 45511979654 passed. Source integrated at `2417de36`; immutable versioned publication, genuine updater/rollback and physical H2 acceptance remain separate.
+
 # v8.8.143 — November 24, 2026
 
 - Preserve user cancellation when Browse Mods provider failure diagnostics or failure-state persistence are in progress. Reuse cancellation-aware provider health checks; stop cancelled refreshes instead of reporting ordinary provider errors. Non-cancelled provider-local timeouts remain isolated and other providers continue. [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978)
