@@ -28,9 +28,9 @@ public sealed partial class MainWindowViewModel
             .Select(f => f.Path).ToHashSet(PathRules.Comparer);
         var sharedPaths = preview.Files.Where(f => previewChild.Contains(f.ModId) && mainPaths.Contains(f.Path))
             .Select(f => f.Path).Distinct(PathRules.Comparer).Order(StringComparer.OrdinalIgnoreCase).ToArray();
-        if (sharedPaths.Length == 0 || sharedPaths.Length > 20)
+        if (sharedPaths.Length == 0)
         {
-            StatusText = "The suggested family needs detailed conflict review: either no current shared target or more than 20 affected paths.";
+            StatusText = "The suggested family has no current shared target. Refresh the library before choosing a parent.";
             return;
         }
 
@@ -46,17 +46,25 @@ public sealed partial class MainWindowViewModel
 
         // This shortcut is an explicit mod-wide ordering decision, not automatic classification.
         // Show every affected existing file and warn about *future* overlaps before persisting it.
-        if (MessageBox.Show(
-                $"Attach '{childRow.DisplayName}' under '{parentRow.DisplayName}'?\n\n" +
-                $"{selection.Evidence}\n\n" +
+        var heading = $"Attach '{childRow.DisplayName}' under '{parentRow.DisplayName}'?\n\n{selection.Evidence}\n\n";
+        const string warning = "IMPORTANT: This creates explicit MOD-WIDE overwrite precedence for these packages, including any new overlapping files imported later. Manager will save the rule for review. Apply Mod Changes commits the deployment.";
+        bool confirmed;
+        if (sharedPaths.Length <= 20)
+        {
+            confirmed = MessageBox.Show(heading +
                 $"Current overlapping target paths ({sharedPaths.Length}):\n" +
-                string.Join("\n", sharedPaths) + "\n\n" +
-                "IMPORTANT: This creates explicit MOD-WIDE overwrite precedence for these packages, including any new overlapping files imported later. " +
-                "Manager will check this choice and apply compatible changes.\n\nContinue?",
+                string.Join("\n", sharedPaths) + "\n\n" + warning + "\n\nContinue?",
                 "Review complete family overwrite scope",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning) != MessageBoxResult.Yes)
-            return;
+                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes;
+        }
+        else
+        {
+            var review = new FamilyOverwriteReviewWindow(heading, warning, sharedPaths);
+            if (Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) is { } owner)
+                review.Owner = owner;
+            confirmed = review.ShowDialog() == true;
+        }
+        if (!confirmed) return;
 
         var staged = CaptureStage();
         await RunBusy(
@@ -116,7 +124,7 @@ public sealed partial class MainWindowViewModel
                 }
 
                 await RefreshAnalysis(ct);
-                StatusText = $"Linked '{childRow.DisplayName}' as an add-on of '{parentRow.DisplayName}'. Manager will check the resulting file choices.";
+                StatusText = $"Linked '{childRow.DisplayName}' as an add-on of '{parentRow.DisplayName}'. Review the resulting file choices, then Apply Mod Changes.";
                 RequestRuleApply();
                 await s.Timeline.RecordAsync("family.suggestion-confirmed", AutomationSeverity.Info,
                     $"User confirmed a suggested family relationship: {childRow.DisplayName} under {parentRow.DisplayName}.",

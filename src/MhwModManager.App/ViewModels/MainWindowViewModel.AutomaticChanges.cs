@@ -10,16 +10,13 @@ public sealed partial class MainWindowViewModel
 {
     private bool discoveryRequested;
     private bool retryDiscoveryOnActivation;
-    private bool retryExplicitOnActivation;
-    private bool userApplyRequested;
     private bool rulesNeedApply;
 
     private void RequestRuleApply()
     {
         using var trace = MasterDebugLog.BeginMethod();
         rulesNeedApply = true;
-        userApplyRequested = true;
-        ScheduleAutomaticChanges();
+        Changed();
     }
     private bool automaticChangesScheduled;
     private Task automaticChangeWork=Task.CompletedTask;
@@ -43,11 +40,6 @@ public sealed partial class MainWindowViewModel
     internal void ResumeDeferredDiscovery()
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod();
-        if (retryExplicitOnActivation)
-        {
-            retryExplicitOnActivation=false;
-            userApplyRequested=rulesNeedApply || StagedCount>0;
-        }
         if (retryDiscoveryOnActivation)
         {
             retryDiscoveryOnActivation=false;
@@ -60,8 +52,8 @@ public sealed partial class MainWindowViewModel
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (suppressChanged) return;
-        userApplyRequested = true;
-        ScheduleAutomaticChanges();
+        // A user choice is only staged. Do not dispatch a deployment or retry it on activation.
+        OnPropertyChanged(nameof(HasPendingDeployment));
     }
 
     private void PreserveDeniedAutomaticChange(string operationName)
@@ -78,17 +70,13 @@ public sealed partial class MainWindowViewModel
             return;
         }
         if (operationName != "deployment.apply" || (StagedCount == 0 && !rulesNeedApply)) return;
-        // The dispatcher may have consumed userApplyRequested before RunBusy
-        // discovers that an updater handoff or foreground task owns the gate.
-        // Do not silently discard this explicit choice or spin on a busy gate.
-        retryExplicitOnActivation = true;
-        StatusText = "Your mod changes are still pending. Reopen Mods or Apply after the current operation finishes.";
+        StatusText = "Your mod changes are still pending. Apply after the current operation finishes.";
     }
 
     private void ScheduleAutomaticChanges()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (automaticChangesScheduled || (!userApplyRequested && !discoveryRequested) ||
+        if (automaticChangesScheduled || !discoveryRequested || HasPendingDeployment ||
             busyCts is not null || backgroundCts.IsCancellationRequested || Application.Current is null) return;
         automaticChangesScheduled = true;
         automaticChangeWork=Application.Current.Dispatcher.InvokeAsync(DrainAutomaticChangesAsync, DispatcherPriority.Background).Task.Unwrap();
@@ -100,16 +88,11 @@ public sealed partial class MainWindowViewModel
         try
         {
             if (busyCts is not null || backgroundCts.IsCancellationRequested) return;
-            if (userApplyRequested)
-            {
-                userApplyRequested = false;
-                if (StagedCount > 0 || rulesNeedApply) await ApplyStagedChangesAsync(confirm:false);
-            }
-            if (discoveryRequested && StagedCount == 0 && !backgroundCts.IsCancellationRequested)
+            if (discoveryRequested && !HasPendingDeployment && !backgroundCts.IsCancellationRequested)
             {
                 discoveryRequested = false;
                 var pending = await s.Database.GetSettingsByPrefixAsync("discovery.pending:",backgroundCts.Token);
-                if (pending.Count > 0 && busyCts is null && StagedCount == 0 && !disposed && !backgroundCts.IsCancellationRequested)
+                if (pending.Count > 0 && busyCts is null && !HasPendingDeployment && !disposed && !backgroundCts.IsCancellationRequested)
                     await RunBusy("deployment.discovered","Checking new mods","Checking ownership, compatibility and game files…",false,async ct =>
                     {
                         discoveryUserEdits=new(PathRules.Comparer);
@@ -140,8 +123,8 @@ public sealed partial class MainWindowViewModel
         finally
         {
             automaticChangesScheduled = false;
-            // An unresolved user choice stays pending until the next real edit.
-            if (userApplyRequested || (discoveryRequested && StagedCount == 0)) ScheduleAutomaticChanges();
+            // Do not auto-deploy user choices, even after reactivation or a blocked attempt.
+            if (discoveryRequested && !HasPendingDeployment) ScheduleAutomaticChanges();
         }
     }
 

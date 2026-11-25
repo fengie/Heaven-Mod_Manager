@@ -11,6 +11,7 @@ public sealed partial class GameProfileRegistry
     private readonly string registryPath;
     private readonly string activePath;
     private readonly Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride;
+    private readonly bool registeredInventoryOnly;
     private readonly object mutationGate=new();
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web){WriteIndented=true};
 
@@ -19,13 +20,14 @@ public sealed partial class GameProfileRegistry
         using var __mhwTrace=MasterDebugLog.BeginMethod();
     }
 
-    internal GameProfileRegistry(string stateRoot,Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride)
+    internal GameProfileRegistry(string stateRoot,Func<IReadOnlyList<GameDiscoveryCandidate>>? discoveryOverride,bool registeredInventoryOnly=false)
     {
         using var __mhwTrace=MasterDebugLog.BeginMethod();
         this.stateRoot=Path.GetFullPath(stateRoot);
         registryPath=Path.Combine(this.stateRoot,"games.json");
         activePath=Path.Combine(this.stateRoot,"active-game.txt");
         this.discoveryOverride=discoveryOverride;
+        this.registeredInventoryOnly=registeredInventoryOnly;
     }
 
     public string RegistryPath=>registryPath;
@@ -378,7 +380,10 @@ public sealed partial class GameProfileRegistry
     public IReadOnlyList<LocalModLocation> ScanLocalMods(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return LocalModInventory.Scan(Load(), previousRoots: ReadInstallHistory(), ct: ct);
+        // Isolated integration sessions must not scan unrelated host installations.
+        return registeredInventoryOnly
+            ? LocalModInventory.Scan(Load(), steamLibraries: [], standaloneLibraries: [], previousRoots: ReadInstallHistory(), ct: ct)
+            : LocalModInventory.Scan(Load(), previousRoots: ReadInstallHistory(), ct: ct);
     }
 
     public void Upsert(GameProfile profile)

@@ -69,29 +69,24 @@ public sealed class ActiveInboxStageTests
             row.StagedEnabled=false;
             try
             {
-                var choice=typeof(MainWindowViewModel).GetMethod("OnModChoiceChanged",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                choice!.Invoke(vm,null);
-                var drain=typeof(MainWindowViewModel).GetMethod("DrainAutomaticChangesAsync",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                await (Task)drain!.Invoke(vm,null)!;
+                await vm.ApplyCommand.ExecuteAsync(null);
                 Assert.True(row.HasStagedChanges);
                 Assert.False(row.StagedEnabled);
                 Assert.True(File.Exists(target),"An armed updater gate must not mutate game files.");
                 Assert.True(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
-                var retry=typeof(MainWindowViewModel).GetField("retryExplicitOnActivation",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.True(Assert.IsType<bool>(retry!.GetValue(vm)),
-                    "The automatic dispatcher must not discard a rejected user disable.");
                 Assert.Contains("pending",vm.StatusText,StringComparison.OrdinalIgnoreCase);
             }
             finally { gate.DisarmHandoff(); }
 
-            // Re-activation requeues the original user choice rather than re-toggling it.
+            // Activation may resume discovery, but never commits a staged user edit.
             vm.ResumeDeferredDiscovery();
-            var deferred=typeof(MainWindowViewModel).GetField("userApplyRequested",
+            var drain=typeof(MainWindowViewModel).GetMethod("DrainAutomaticChangesAsync",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.True(Assert.IsType<bool>(deferred!.GetValue(vm)));
+            await (Task)drain!.Invoke(vm,null)!;
+            Assert.True(row.HasStagedChanges);
+            Assert.False(row.StagedEnabled);
+            Assert.True(File.Exists(target));
+            Assert.True(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
             await vm.ApplyCommand.ExecuteAsync(null);
             Assert.False(File.Exists(target),vm.StatusText);
             Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);

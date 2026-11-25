@@ -54,6 +54,9 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Assert.Equal(ToggleState.On, toggle.Current.ToggleState);
         toggle.Toggle();
         await WaitForAsync(() => toggle.Current.ToggleState == ToggleState.Off, UiTimeout, "staged mod disable", ct);
+        Assert.True(File.Exists(run.LiveModPath), "Staged profile edit must not deploy.");
+        Invoke(await Button("Apply Mod Changes"));
+        await WaitForAsync(() => !File.Exists(run.LiveModPath), UiTimeout, "explicit disable applied", ct);
 
         // A second writer changes the disposable catalog while Profiles is hidden.
         // Returning to the page must discover the new row without any repair command.
@@ -86,7 +89,10 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await WaitForAsync(() => FindModToggle(window, fixtureMod) is { } current &&
             ((TogglePattern)current.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.On,
             UiTimeout, "saved profile restores the staged enabled choice", ct);
-        passed.Add("Refresh and use saved profile to restore enabled selection");
+        Assert.False(File.Exists(run.LiveModPath), "Using a profile only stages its choices.");
+        Invoke(await Button("Apply Mod Changes"));
+        await WaitForAsync(() => File.Exists(run.LiveModPath), UiTimeout, "explicit profile application", ct);
+        passed.Add("Refresh and use saved profile, then explicitly apply its selection");
 
         await SelectTab("History");
         var history = await Grid("Recent activity");
@@ -289,6 +295,11 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             keys.SendKeys(" ");
         }
         finally { System.Runtime.InteropServices.Marshal.FinalReleaseComObject((object)keys); }
+        await WaitForAsync(() => ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "native keyboard stages disable", ct);
+        Assert.Equal(payload, File.ReadAllBytes(alternateLive));
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true),
+            UiTimeout, "explicit keyboard edit Apply", ct));
         try
         {
             await WaitForAsync(()=>ReadToggle(alternateName)==ToggleState.Off && !File.Exists(alternateLive),
@@ -359,13 +370,31 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value == "" &&
             !Busy() && ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages with independent choices", ct);
-        await Answer("Select all visible mods", "Enable visible mods", "No");
+        Invoke(await Button("Select all visible mods"));
         Assert.Equal(ToggleState.Off, ReadToggle(alternateName));
-        await Answer("Select all visible mods", "Enable visible mods", "Yes");
+        Assert.True(File.Exists(run.LiveModPath));
+        Assert.False(File.Exists(alternateLive));
+        Invoke(await Button("Deselect all selected mods"));
+        Assert.Equal(ToggleState.On, ReadToggle(primaryName));
+        Assert.Equal(ToggleState.Off, ReadToggle(alternateName));
+        Assert.True(File.Exists(run.LiveModPath));
+        Assert.False(File.Exists(alternateLive));
+
+        // Exercise confirmation when the bulk action would also include an existing staged edit.
+        var alternateToggle = (TogglePattern)(await WaitForElementAsync(() => Package(alternateName), UiTimeout,
+            "independent activation checkbox", ct)).GetCurrentPattern(TogglePattern.Pattern);
+        alternateToggle.Toggle();
+        Assert.False(File.Exists(alternateLive));
+        Invoke(await Button("Select all visible mods"));
+        await Answer("Enable selected mods", "Apply mod changes", "No");
+        Assert.False(File.Exists(alternateLive));
+        await Answer("Enable selected mods", "Apply mod changes", "Yes");
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.On,
             UiTimeout, "both packages staged on", ct);
         await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"confirmed bulk additions reached disk",ct);
-        await Answer("Deselect all visible mods", "Disable visible mods", "Yes");
+        Invoke(await Button("Select all visible mods"));
+        Assert.True(File.Exists(run.LiveModPath) && File.Exists(alternateLive));
+        Invoke(await Button("Disable selected mods"));
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.Off && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages staged off", ct);
         await WaitForAsync(()=>!File.Exists(run.LiveModPath)&&!File.Exists(alternateLive),UiTimeout,"confirmed bulk disable reached disk",ct);
@@ -397,6 +426,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var restoredToggle = (TogglePattern)restored.GetCurrentPattern(TogglePattern.Pattern);
         Assert.Equal(ToggleState.On, restoredToggle.Current.ToggleState);
         restoredToggle.Toggle();
+        Assert.True(File.Exists(alternateLive));
+        Invoke(await Button("Apply Mod Changes"));
         await WaitForAsync(() => !File.Exists(alternateLive) && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "alternate disabled for vanilla-launch control", ct);
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));

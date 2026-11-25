@@ -402,6 +402,56 @@ public sealed class ModRelationshipInferenceTests
         Assert.Contains("texture-only payload without an explicit add-on label", suggestion.Evidence);
     }
 
+    [Theory]
+    [InlineData(65)]
+    [InlineData(256)]
+    [InlineData(1000)]
+    public void Large_texture_overlays_are_reviewable_without_automatically_merging_families(int count)
+    {
+        var mods = new[] { Mod("base", "High Poly Body Base", "1001"),
+            Mod("overlay", "High Poly Body Texture Overlay", "2002") };
+        var files = Enumerable.Range(0, count).SelectMany(i =>
+        {
+            var path = $@"nativePC\pl\f_equip\pl001_0000\body\detail{i}.tex";
+            return new[] { ContentFile("base", path, new string('a', 64)),
+                ContentFile("overlay", path, new string('b', 64)) };
+        }).Append(File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3")).ToArray();
+
+        var suggestion = Assert.Single(ModRelationshipInference.Suggest(mods, files));
+        Assert.Equal("base", suggestion.ParentModId);
+        Assert.Equal("overlay", suggestion.ChildModId);
+        Assert.Equal(count, suggestion.SharedPaths);
+        Assert.Equal(suggestion, Assert.Single(ModRelationshipInference.Suggest(
+            mods.Reverse().ToArray(), files.Reverse().ToArray())));
+        Assert.Equal(2, LogicalModFamilies.Build(mods, files).Count);
+        Assert.All(mods, mod => Assert.False(mod.Enabled));
+    }
+
+    [Fact]
+    public void Large_texture_pick_one_variant_is_not_an_addon()
+    {
+        var mods = new[] { Mod("base", "High Poly Body Base", "1001"),
+            Mod("variant", "High Poly Body Alternate Texture", "2002") };
+        var files = Enumerable.Range(0, 256).SelectMany(i =>
+        {
+            var path = $@"nativePC\pl\f_equip\pl001_0000\body\detail{i}.tex";
+            return new[] { File("base", path), File("variant", path) };
+        }).Append(File("base", @"nativePC\pl\f_equip\pl001_0000\body\body.mod3")).ToArray();
+
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
+    [Fact]
+    public void Crowded_texture_paths_do_not_manufacture_parent_edges()
+    {
+        var mods = Enumerable.Range(0, 129).Select(i =>
+            Mod($"m{i}", $"Body Base {i}", (1000 + i).ToString(System.Globalization.CultureInfo.InvariantCulture)))
+            .Append(Mod("overlay", "Body Texture Overlay", "9001")).ToArray();
+        var files = mods.SelectMany(mod => Enumerable.Range(0, 80).Select(i =>
+            File(mod.Id, $@"nativePC\pl\f_equip\pl001_0000\body\detail{i}.tex"))).ToArray();
+        Assert.Empty(ModRelationshipInference.Suggest(mods, files));
+    }
+
     private static ModFileDescriptor ContentFile(string modId, string path, string digest) =>
         new(modId, path, digest, null, 4096, DateTimeOffset.UnixEpoch, PathRules.ClassifyFile(path));
 

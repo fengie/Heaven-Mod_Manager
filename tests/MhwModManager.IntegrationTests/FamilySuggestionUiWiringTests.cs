@@ -43,6 +43,22 @@ public sealed class FamilySuggestionUiWiringTests
         Assert.Contains("MessageBoxButton.YesNo", viewModel);
     }
 
+    [Fact]
+    public Task Large_overwrite_review_exposes_every_target_and_requires_explicit_confirmation() =>
+        IsolatedWpfSession.RunAsync((_, _) =>
+        {
+            var paths = Enumerable.Range(0, 256).Select(i => $"nativePC/file{i}.tex").ToArray();
+            var review = new MhwModManager.App.FamilyOverwriteReviewWindow("Attach overlay?", "Future overlaps will also be affected.", paths);
+            var layout = Assert.IsType<System.Windows.Controls.DockPanel>(review.Content);
+            var list = Assert.Single(layout.Children.OfType<System.Windows.Controls.ListBox>());
+            Assert.Equal(paths, list.ItemsSource.Cast<string>().ToArray());
+            var buttons = Assert.Single(layout.Children.OfType<System.Windows.Controls.StackPanel>());
+            Assert.Contains(buttons.Children.OfType<System.Windows.Controls.Button>(), button => button.IsCancel);
+            var attach = Assert.Single(buttons.Children.OfType<System.Windows.Controls.Button>(), button => (string)button.Content == "Attach as add-on");
+            Assert.False(attach.IsDefault);
+            return Task.CompletedTask;
+        });
+
     private static string FindRepositoryRoot()
     {
         var folder = new DirectoryInfo(AppContext.BaseDirectory);

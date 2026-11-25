@@ -9,9 +9,19 @@ public sealed class HealthService(ManagerDatabase db,PlannerSnapshotRepository p
 {
     private const int HashParallelism=4;
 
-    public async Task<IReadOnlyList<HealthIssue>> ScanAsync(CancellationToken ct=default)
+    public Task<IReadOnlyList<HealthIssue>> ScanAsync(CancellationToken ct=default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ScanAsync(null, ct);
+    }
+
+    // Only the launch gate supplies this snapshot, after resolving an entirely applied plan.
+    // An ordinary library health scan remains strict about every enabled source.
+    public async Task<IReadOnlyList<HealthIssue>> ScanAsync(
+        IReadOnlyDictionary<string, DeploymentManifestEntry>? appliedTextures, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var verifiedWinners = new ConcurrentDictionary<string, string>(PathRules.Comparer);
         var issues=new ConcurrentBag<HealthIssue>();
         var integrity=await db.IntegrityCheckAsync(ct);
         if(!integrity.Equals("ok",StringComparison.OrdinalIgnoreCase))
@@ -20,19 +30,45 @@ public sealed class HealthService(ManagerDatabase db,PlannerSnapshotRepository p
         // Health does not need every mod file; avoid materializing the whole library just to
         // validate the current deployment/rules.
         var snap=await plannerSnapshots.LoadAsync(Array.Empty<string>(),ct);
+        if (appliedTextures is not null)
+        {
+            foreach (var expected in appliedTextures.Values)
+                if (!snap.CurrentManifest.TryGetValue(expected.Path, out var current) || current != expected)
+                    issues.Add(new("DEPLOYED_TEXTURE_SNAPSHOT_CHANGED", "Error", "Texture deployment changed during launch checks. Recheck the setup.", expected.Path));
+        }
         await Parallel.ForEachAsync(snap.CurrentManifest.Values,
             new ParallelOptions{MaxDegreeOfParallelism=HashParallelism,CancellationToken=ct},
             async(e,token)=>
             {
                 var path=destination(e.Path);
                 if(!File.Exists(path)){issues.Add(new("DEPLOYED_MISSING","Error","Managed file is missing.",e.Path));return;}
+                var inspectWinner = appliedTextures is not null &&
+                    appliedTextures.TryGetValue(e.Path, out var expected) && expected == e;
+                if (inspectWinner && (e.ProviderModId is null || e.ExpectedLiveSha256 is not { Length: 64 } ||
+                    !StringComparer.OrdinalIgnoreCase.Equals(e.BlobSha256, e.ExpectedLiveSha256)))
+                    issues.Add(new("DEPLOYED_TEXTURE_UNVERIFIED", "Error", "The applied texture lacks a verified provider or content digest.", e.Path));
                 if(e.ExpectedLiveSha256 is not null)
                 {
                     try
                     {
                         var h=await hashing.HashFileAsync(path,true,token);
                         if(!StringComparer.OrdinalIgnoreCase.Equals(h.Sha256,e.ExpectedLiveSha256))
-                            issues.Add(new("DEPLOYED_CHANGED","Warning","Managed file changed outside the manager.",e.Path,Detail:$"expected={e.ExpectedLiveSha256} actual={h.Sha256}"));
+                            issues.Add(new("DEPLOYED_CHANGED",inspectWinner?"Error":"Warning","Managed file changed outside the manager.",e.Path,Detail:$"expected={e.ExpectedLiveSha256} actual={h.Sha256}"));
+                        else if (inspectWinner && e.ProviderModId is { } winner &&
+                            StringComparer.OrdinalIgnoreCase.Equals(e.BlobSha256, h.Sha256))
+                        {
+                            // Verify the actual deployed texture, not a shadowed source.
+                            var prefix = new byte[16];
+                            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read,
+                                FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                            var read = await stream.ReadAsync(prefix.AsMemory(), token);
+                            var safety = TextureSafetyInspector.InspectTexHeader(prefix.AsSpan(0, read), stream.Length);
+                            if (safety.Severity == TextureSafetySeverity.Error)
+                                issues.Add(new("DEPLOYED_" + safety.Code, "Error",
+                                    $"Unsafe deployed texture: {safety.Message}", e.Path, winner));
+                            else
+                                verifiedWinners.TryAdd(e.Path, winner);
+                        }
                     }
                     catch(Exception ex){issues.Add(new("DEPLOYED_UNREADABLE","Error","Managed file could not be verified.",e.Path,Detail:ex.Message));}
                 }
@@ -50,6 +86,8 @@ public sealed class HealthService(ManagerDatabase db,PlannerSnapshotRepository p
         {
             ct.ThrowIfCancellationRequested();
             var mod = mods[f.ModId];
+            var shadowed = verifiedWinners.TryGetValue(f.Path, out var winner) &&
+                !PathRules.Comparer.Equals(winner, f.ModId);
             var source = ResolveSourceFile(mod.SourcePath, f.Path);
             if (source is null)
             {
@@ -68,14 +106,18 @@ public sealed class HealthService(ManagerDatabase db,PlannerSnapshotRepository p
                 var safety = TextureSafetyInspector.InspectTexHeader(prefix.AsSpan(0, read), info.Length);
                 if (safety.Severity == TextureSafetySeverity.Error)
                 {
-                    MasterDebugLog.Write("TEXTURE-SAFETY", $"BLOCK mod={mod.Id}; name={mod.DisplayName}; path={f.Path}; code={safety.Code}; detail={safety.Message}");
-                    issues.Add(new(safety.Code, "Error", $"Unsafe texture in {mod.DisplayName}: {safety.Message}", f.Path, mod.Id, source));
+                    MasterDebugLog.Write("TEXTURE-SAFETY", $"{(shadowed ? "SHADOWED" : "BLOCK")} mod={mod.Id}; name={mod.DisplayName}; path={f.Path}; code={safety.Code}; detail={safety.Message}");
+                    issues.Add(new(safety.Code, shadowed ? "Warning" : "Error",
+                        $"Unsafe texture in {mod.DisplayName}: {safety.Message}" +
+                        (shadowed ? $" Not deployed; verified winner: {winner}." : ""), f.Path, mod.Id, source));
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 MasterDebugLog.Write("TEXTURE-SAFETY", $"READ-FAIL mod={mod.Id}; name={mod.DisplayName}; path={f.Path}", ex);
-                issues.Add(new("TEX_SOURCE_UNREADABLE", "Error", $"Texture source could not be validated for {mod.DisplayName}.", f.Path, mod.Id, ex.Message));
+                issues.Add(new("TEX_SOURCE_UNREADABLE", shadowed ? "Warning" : "Error",
+                    $"Texture source could not be validated for {mod.DisplayName}." +
+                    (shadowed ? $" Not deployed; verified winner: {winner}." : ""), f.Path, mod.Id, ex.Message));
             }
         }
 
