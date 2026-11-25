@@ -13,16 +13,21 @@ public sealed class LaunchHealthGateService(PlannerSnapshotRepository plannerSna
         return EvaluateAsync(ct, requireApplied: false);
     }
 
-    internal async Task<LaunchHealthReport> EvaluateAsync(CancellationToken ct, bool requireApplied)
+    public async Task<LaunchHealthReport> EvaluateAsync(CancellationToken ct, bool requireApplied)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var findings = new List<AutomationFinding>();
-        var healthIssues = await health.ScanAsync(ct);
-        foreach (var issue in healthIssues) findings.Add(new("health", issue.Severity.Equals("Error",StringComparison.OrdinalIgnoreCase)?AutomationSeverity.Blocker:AutomationSeverity.Warning, issue.Summary, issue.Detail ?? issue.Path ?? issue.Code, issue.ModId));
         var unmanaged = game is null || game.IsMonsterHunterWorld || !string.IsNullOrWhiteSpace(game.ModRootRelativePath) ? await adoption.CountAsync(ct) : 0;
         if (unmanaged > 0) findings.Add(new("unmanaged", AutomationSeverity.Warning, $"{unmanaged} unmanaged live file(s)", "These can be adopted automatically before launch."));
         var snap = await plannerSnapshots.LoadAsync(ct);
         var plan = planner.Build(snap);
+        var appliedTextures = requireApplied && !plan.IsBlocked && plan.Changes.Count == 0 &&
+            (game is null || game.IsMonsterHunterWorld)
+            ? snap.CurrentManifest.Values.Where(entry => entry.Path.EndsWith(".tex", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(entry => entry.Path, PathRules.Comparer)
+            : null;
+        var healthIssues = await health.ScanAsync(ct, appliedTextures);
+        foreach (var issue in healthIssues) findings.Add(new("health", issue.Severity.Equals("Error",StringComparison.OrdinalIgnoreCase)?AutomationSeverity.Blocker:AutomationSeverity.Warning, issue.Summary, issue.Detail ?? issue.Path ?? issue.Code, issue.ModId));
         if (requireApplied && !plan.IsBlocked && plan.Changes.Count > 0)
             findings.Add(new("pending-deployment", AutomationSeverity.Blocker, "Saved mod choices are not applied. Apply mod changes before launching.", $"{plan.Changes.Count} pending file change(s)."));
         var enabled = snap.Mods.Where(x => x.Enabled && !x.IsSuperseded).Select(x => x.Id).ToHashSet(PathRules.Comparer);
