@@ -950,6 +950,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         await viewDispatcher.InvokeAsync(()=>
         {
             if (generation!=conflictPreviewGeneration || ct.IsCancellationRequested) return;
+            // Saved rule choices can survive a process restart while their game files
+            // still represent the old deployment. Expose an explicit Apply for that
+            // persisted difference, not just in-memory checkbox edits.
+            if (!HasPendingDeployment && !analysis.plan.IsBlocked && analysis.plan.Changes.Count > 0)
+            {
+                rulesNeedApply = true;
+                OnPropertyChanged(nameof(HasPendingDeployment));
+                OnPropertyChanged(nameof(PendingActionsHelp));
+                OnPropertyChanged(nameof(StagedSummary));
+            }
             Conflicts.ReplaceAll(displayRows);
             var summaryById=analysis.summaries.ToDictionary(x=>x.LogicalModId,StringComparer.OrdinalIgnoreCase);
             foreach(var row in Mods)if(summaryById.TryGetValue(row.Id,out var summary))row.SetEffective(summary);

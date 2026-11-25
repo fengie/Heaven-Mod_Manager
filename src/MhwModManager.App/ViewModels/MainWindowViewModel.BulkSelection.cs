@@ -21,7 +21,7 @@ public sealed partial class MainWindowViewModel
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return Mods.Count(row => row.CanStage && row.BulkSelected);
+            return Mods.Count(row => row.BulkSelected && row.CanStage);
         }
     }
 
@@ -40,7 +40,7 @@ public sealed partial class MainWindowViewModel
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
             var selected = BulkSelectedCount;
-            var visible = ModsView.Cast<ModRowViewModel>().Count(row => row.CanStage && row.BulkSelected);
+            var visible = ModsView.Cast<ModRowViewModel>().Count(row => row.BulkSelected && row.CanStage);
             return $"{selected} marked for bulk action ({selected - visible} hidden by filters). Selection does not change game files.";
         }
     }
@@ -92,7 +92,7 @@ public sealed partial class MainWindowViewModel
     private async Task ApplySelectedAsync(bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var targets = Mods.Where(row => row.CanStage && row.BulkSelected).ToArray();
+        var targets = Mods.Where(row => row.BulkSelected && row.CanStage).ToArray();
         if (targets.Length == 0)
         {
             StatusText = "Mark one or more managed mods first.";
