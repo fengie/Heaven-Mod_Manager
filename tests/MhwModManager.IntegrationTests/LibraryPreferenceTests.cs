@@ -52,6 +52,30 @@ public sealed class LibraryPreferenceTests
             Assert.Empty(vm.SavedLibraryViews);
         });
 
+    [Theory]
+    [InlineData(100)]
+    [InlineData(500)]
+    [InlineData(1000)]
+    public Task LargeLibraryMarkingDoesNotStageOrDeploy(int count) =>
+        IsolatedWpfSession.RunAsync(async (s, ct) =>
+        {
+            using var vm = new MainWindowViewModel(s);
+            for (var i = 0; i < count; i++)
+            {
+                var id = $"mod-{i}";
+                var mod = new ModDescriptor(id, id, id, id, false, i);
+                vm.Mods.Add(new ModRowViewModel(new LogicalModFamily(id, id, id, [mod], null), () => { }));
+            }
+
+            vm.SelectAllVisibleCommand.Execute(null);
+            Assert.Equal(count, vm.BulkSelectedCount);
+            Assert.Equal(0, vm.StagedCount);
+            Assert.All(vm.Mods, row => Assert.False(row.AppliedEnabled));
+            vm.ClearBulkSelectionCommand.Execute(null);
+            Assert.Equal(0, vm.BulkSelectedCount);
+            Assert.Empty((await s.PlannerSnapshots.LoadAsync(ct)).CurrentManifest);
+        });
+
     [Fact]
     public void PreferenceIdentityIsOrderIndependentButChangesWithFamilyMembership()
     {
