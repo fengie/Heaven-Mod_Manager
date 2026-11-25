@@ -581,6 +581,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
     partial void OnSearchTextChanged(string value)
     {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
         searchCts?.Cancel();
         searchCts?.Dispose();
         if (suppressLibraryFilterRefresh) { searchCts=null; return; }

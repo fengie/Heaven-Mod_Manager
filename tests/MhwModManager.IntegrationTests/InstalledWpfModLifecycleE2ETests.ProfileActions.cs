@@ -371,12 +371,13 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             !Busy() && ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages with independent choices", ct);
         Invoke(await Button("Select all visible mods"));
-        Assert.Equal(ToggleState.Off, ReadToggle(alternateName));
+        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "bulk marking leaves both activation checkboxes unchanged", ct);
         Assert.True(File.Exists(run.LiveModPath));
         Assert.False(File.Exists(alternateLive));
         Invoke(await Button("Deselect all selected mods"));
-        Assert.Equal(ToggleState.On, ReadToggle(primaryName));
-        Assert.Equal(ToggleState.Off, ReadToggle(alternateName));
+        await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.Off,
+            UiTimeout, "clearing marks leaves both activation checkboxes unchanged", ct);
         Assert.True(File.Exists(run.LiveModPath));
         Assert.False(File.Exists(alternateLive));
 
