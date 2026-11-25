@@ -426,3 +426,14 @@ WorkflowWindow.xaml.cs | ExportRecipe | SaveFileDialog dialog |
 WorkflowWindow.xaml.cs | ExportVortexHandoff | SaveFileDialog dialog |
 WorkflowWindow.xaml.cs | OpenRecipe | OpenFileDialog dialog |
 WorkflowWindow.xaml.cs | OpenVortexHandoff | OpenFileDialog dialog |
+MainWindow.xaml | TabItem:Dashboard | DataGrid | ItemsSource={Binding PendingReviewRows} ; IsReadOnly=True ; AutomationProperties.Name=Pending deployment review
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=ACTION ; Binding={Binding Action,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=TARGET ; Binding={Binding Path,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=CURRENT PROVIDER ; Binding={Binding BeforeProvider,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=PLANNED PROVIDER ; Binding={Binding AfterProvider,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=REASON ; Binding={Binding Detail,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=REASON CODE ; Binding={Binding ReasonCode,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=BEFORE SHA-256 ; Binding={Binding BeforeDigest,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | DataGridTextColumn | Header=AFTER SHA-256 ; Binding={Binding AfterDigest,Mode=OneWay}
+MainWindow.xaml | TabItem:Dashboard | Button | Content=Apply Mod Changes ; Command={Binding ApplyCommand} ; IsEnabled={Binding HasPendingDeployment}
+MainWindow.xaml | TabItem:Dashboard | Button | Content=Open Mod Library ; Command={Binding SetModViewCommand} ; CommandParameter=All

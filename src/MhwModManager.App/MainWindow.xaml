@@ -114,6 +114,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <StackPanel>
@@ -180,7 +181,37 @@
                             </Border>
                         </UniformGrid>
 
-                        <Grid Grid.Row="3">
+                        <Border Grid.Row="3" Margin="0,0,0,14" Padding="14">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding HasPendingReview}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="Pending deployment review" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Text="{Binding PlanPreviewText}" Margin="0,5,0,0" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock Margin="0,4,0,8" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Text="Read-only snapshot. Apply always checks the current setup again. Resolved overlaps do not require action; blockers must be resolved before any files change."/>
+                                <DataGrid ItemsSource="{Binding PendingReviewRows}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" Height="270" EnableRowVirtualization="True" EnableColumnVirtualization="True" AutomationProperties.Name="Pending deployment review">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="ACTION" Binding="{Binding Action,Mode=OneWay}" Width="150"/>
+                                        <DataGridTextColumn Header="TARGET" Binding="{Binding Path,Mode=OneWay}" Width="260"/>
+                                        <DataGridTextColumn Header="CURRENT PROVIDER" Binding="{Binding BeforeProvider,Mode=OneWay}" Width="180"/>
+                                        <DataGridTextColumn Header="PLANNED PROVIDER" Binding="{Binding AfterProvider,Mode=OneWay}" Width="180"/>
+                                        <DataGridTextColumn Header="REASON" Binding="{Binding Detail,Mode=OneWay}" Width="420"/>
+                                        <DataGridTextColumn Header="REASON CODE" Binding="{Binding ReasonCode,Mode=OneWay}" Width="160"/>
+                                        <DataGridTextColumn Header="BEFORE SHA-256" Binding="{Binding BeforeDigest,Mode=OneWay}" Width="180"/>
+                                        <DataGridTextColumn Header="AFTER SHA-256" Binding="{Binding AfterDigest,Mode=OneWay}" Width="180"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <WrapPanel Margin="0,8,0,0">
+                                    <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding HasPendingDeployment}" Style="{StaticResource PrimaryButton}"/>
+                                    <Button Content="Open Mod Library" Command="{Binding SetModViewCommand}" CommandParameter="All" Style="{StaticResource QuietButton}" Margin="8,0,0,0"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Grid.Row="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1.55*"/>
                                 <ColumnDefinition Width="1*"/>

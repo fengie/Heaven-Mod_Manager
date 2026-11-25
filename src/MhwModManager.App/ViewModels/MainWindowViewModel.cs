@@ -50,6 +50,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     [ObservableProperty]private string searchText="";
     [ObservableProperty]private string modViewMode="All";
     [ObservableProperty]private string planPreviewText="No change preview yet.";
+    [ObservableProperty]private bool hasPendingReview;
+    [ObservableProperty]private IReadOnlyList<DeploymentReviewRow> pendingReviewRows=[];
+    private int pendingReviewGeneration;
     [ObservableProperty]private string statusText="Ready.";
     [ObservableProperty]private string footerText="Ready";
     [ObservableProperty]private string busyTitle="Working…";
@@ -646,6 +649,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(suppressChanged)return;
+        InvalidatePendingReview();
         if(!HasPendingDeployment)ReviewRetryVisibility=Visibility.Collapsed;
         s.Database.SetPendingModIds(Mods.Where(row=>row.HasStagedChanges).SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key));
         OnPropertyChanged(nameof(EnabledCount));
@@ -896,7 +900,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
             // Count the actual effective provider for every staged path, including paths with no
             // conflict at all. This is the effective-mod view, not merely a conflict counter.
-            var decisionByPath=plan.Conflicts.ToDictionary(d=>d.Path,StringComparer.OrdinalIgnoreCase);
+            var decisionByPath=plan.Conflicts.ToLookup(d=>d.Path,StringComparer.OrdinalIgnoreCase);
             foreach(var (path,providers) in filesByPath)
             {
                 var logicalProviders=providers
@@ -909,7 +913,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
                 string? winnerLogical=null;
                 if(logicalProviders.Length==1)winnerLogical=logicalProviders[0];
-                else if(decisionByPath.TryGetValue(path,out var decision)&&!decision.Blocking&&decision.WinnerModId is not null&&logicalByMember.TryGetValue(decision.WinnerModId,out var winnerIdentity))winnerLogical=winnerIdentity.LogicalId;
+                else if(decisionByPath[path].FirstOrDefault() is { Blocking: false, WinnerModId: not null } decision && logicalByMember.TryGetValue(decision.WinnerModId,out var winnerIdentity))winnerLogical=winnerIdentity.LogicalId;
 
                 if(winnerLogical is null)continue;
                 if(winningPaths.TryGetValue(winnerLogical,out var wins))wins.Add(path);
@@ -1050,44 +1054,60 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         ScheduleAutomaticChanges();
     }
 
+    private void InvalidatePendingReview()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        pendingReviewGeneration = unchecked(pendingReviewGeneration + 1);
+        if (!HasPendingReview) return;
+        HasPendingReview = false;
+        PendingReviewRows = [];
+        PlanPreviewText = "Setup changed. Preview again.";
+    }
+
     [RelayCommand]
     private async Task PreviewApply()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         await RunBusy("deployment.preview","Previewing Mod Changes","Checking exactly what will change without editing game files…",true,async ct=>
-    {
-        var stage=CaptureStage();
-        var current=await s.Database.GetModsAsync(ct);
-        var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
-        if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
-        var analysis=await BuildAnalysisAsync(stage,ct);
-        var changes=analysis.plan.Changes;
-        var add=changes.Count(x=>x.Kind==ChangeKind.Add);
-        var replace=changes.Count(x=>x.Kind==ChangeKind.Replace);
-        var remove=changes.Count(x=>x.Kind==ChangeKind.Remove);
-        var restore=changes.Count(x=>x.Kind==ChangeKind.RestoreOriginal);
-        if(analysis.plan.IsBlocked)
         {
-            var displayRows=await EnrichConflictPreviewsAsync(analysis.rows,ct);
-            await Application.Current.Dispatcher.InvokeAsync(()=>Conflicts.ReplaceAll(displayRows));
-            var blockingCount=analysis.plan.Conflicts.Count(x=>x.Blocking);
-            PlanPreviewText=$"Blocked • {Math.Max(analysis.rows.Length,blockingCount)} blocking decision(s) • no files would be written";
-            StatusText=analysis.rows.Length>0?PlanPreviewText:PlanPreviewText+" Check the rule/dependency diagnostics for the exact reason.";
-            SelectedTab=3;
-            return;
-        }
-        var dependencyBlockers=await GetDependencyBlockersAsync(stage,analysis.plan,ct);
-        if(dependencyBlockers.Length>0)
-        {
-            PlanPreviewText=$"Blocked • {dependencyBlockers.Length} mod(s) have unsatisfied effective requirements • no files would be written";
-            StatusText="Dependency validation blocked deployment. "+DescribeDependencyBlockers(dependencyBlockers);
-            SelectedTab=1;
-            return;
-        }
-        PlanPreviewText=$"Ready • {changes.Count} file change(s): {add} add • {replace} replace • {remove} remove • {restore} restore";
-        StatusText="Dry run passed. "+PlanPreviewText+".";
-        SelectedTab=0;
-    });
+            InvalidatePendingReview();
+            var generation = pendingReviewGeneration;
+            var stage=CaptureStage();
+            var current=await s.Database.GetModsAsync(ct);
+            var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
+            if(enabling.Length>0)await s.Catalog.EnsureCapturedAsync(enabling,ct);
+            var analysis=await BuildAnalysisAsync(stage,ct);
+            var dependencyBlockers = analysis.plan.IsBlocked ? [] : await GetDependencyBlockersAsync(stage,analysis.plan,ct);
+            var rows = await Task.Run(() => DeploymentReview.Project(analysis.plan, current)
+                .Concat(dependencyBlockers.Select(block => new DeploymentReviewRow("Dependency blocker", block.ModName,
+                    block.ModId, "Unsatisfied requirement", null, null, "dependency", string.Join("; ",block.Missing))))
+                .ToArray(), ct);
+            if (generation != pendingReviewGeneration)
+            {
+                StatusText="Setup changed during preview. Preview again; no game files changed.";
+                return;
+            }
+            var changes=analysis.plan.Changes;
+            if(analysis.plan.IsBlocked)
+            {
+                Conflicts.ReplaceAll(analysis.rows);
+                PlanPreviewText=$"Blocked • {analysis.plan.Conflicts.Count(x=>x.Blocking)} blocking decision(s) • no files would be written";
+                StatusText=PlanPreviewText+" Review Needs attention or compatibility rules for resolution.";
+            }
+            else if(dependencyBlockers.Length>0)
+            {
+                PlanPreviewText=$"Blocked • {dependencyBlockers.Length} mod(s) have unsatisfied effective requirements • no files would be written";
+                StatusText="Dependency validation blocked deployment. "+DescribeDependencyBlockers(dependencyBlockers);
+            }
+            else
+            {
+                PlanPreviewText=$"Ready • {changes.Count} file change(s): {changes.Count(x=>x.Kind==ChangeKind.Add)} add • {changes.Count(x=>x.Kind==ChangeKind.Replace)} replace • {changes.Count(x=>x.Kind==ChangeKind.Remove)} remove • {changes.Count(x=>x.Kind==ChangeKind.RestoreOriginal)} restore";
+                StatusText="Dry run passed. "+PlanPreviewText+".";
+            }
+            PendingReviewRows=rows;
+            HasPendingReview=true;
+            SelectedTab=0;
+        });
     }
 
     [RelayCommand]
