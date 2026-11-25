@@ -1,6 +1,6 @@
-# v8.8.144 — canonical state and portable install discovery
+# v8.8.144 - immutable release verified
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `2417de3609a9cb8f69fd14ee636de69e6549cf5f`. [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980) consolidated portable install locator. Native Feature 45511979755, Startup Performance 45511979645, AutoUpdate 45511979680, Product Security 45511979698 and packaged WPF 45511979654 passed; exact tested tree merged. Published [v8.8.143 build 643](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-643) from `590e018fb53b69eafb5bde6234325d801f69deda`; run 45480699080 failed after publication during continuity persistence (repaired by #982). Actual packaged update/rollback for 643 remains unverified. Last verified hosted updater/rollback: [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, runs 45394597944 and 45396245072, evidence #977. Physical H2 remains unverified. Bootstrap `fengie/heaven-toolbox@main` and preserve recursive continuity.
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `3073837e37819ce896332202e13b893777dc194e`. Public immutable [updater-main-647](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-647) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
 
@@ -58,9 +58,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `2417de3609a9cb8f69fd14ee63
 
 ## Verification boundary
 
-Published [v8.8.143 build 643](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-643) from `590e018fb53b69eafb5bde6234325d801f69deda`; run 45480699080 failed after publication during continuity persistence (repaired by #982). Actual packaged update/rollback for 643 remains unverified. Last verified hosted updater/rollback: [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, runs 45394597944 and 45396245072, evidence #977. Physical H2 remains unverified.
+Current hosted-Windows closure: v8.8.144 source `3073837e37819ce896332202e13b893777dc194e` passed run `45522977721` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.144-heaven-windows-closure.log`.
 
-Current v8.8.144 metadata follows #980 source `2417de3609a9cb8f69fd14ee636de69e6549cf5f`. Exact-main Windows release verification, immutable publication and genuine packaged updater/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
+Verified immutable GitHub release: [updater-main-647](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-647), exact source `3073837e37819ce896332202e13b893777dc194e`, ZIP SHA-256 `88616520051e0f7b0a16cc1c719e81dbee3bc147fd73edf758aaccd3f8167ab4` and manifest SHA-256 `1d2bd1d695c39a6250d22d49423ee17938da64db966e9b0c8368960be8badb7c`. Public release and tag ref independently match the built artifact.
+
+The tested source remains `3073837e37819ce896332202e13b893777dc194e` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
