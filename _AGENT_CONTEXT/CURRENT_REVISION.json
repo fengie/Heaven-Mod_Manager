@@ -4,16 +4,16 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.144",
+  "currentVersion": "8.8.145",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.144-release-acceptance-pending",
-  "nextMilestone": "Publish immutable v8.8.144 from integrated portable install locator #980 at 2417de3609a9cb8f69fd14ee636de69e6549cf5f; verify exact Windows release and genuine packaged update/rollback.",
-  "nextRequiredAction": "Integrate exact-tested versioned metadata; run existing Windows Release Gate and genuine packaged installed-client E2E. Personal Heaven2 health, provider authorization and genuine corpus/endurance remain separate.",
+  "status": "v8.8.145-release-acceptance-pending",
+  "nextMilestone": "Publish immutable v8.8.145 from integrated #985 source f9107b2659a00e03a6f8c8ae602d43de2c351e85; verify genuine packaged updater/rollback.",
+  "nextRequiredAction": "Integrate synchronized v8.8.145 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Keep #986 separate until its own current-base packaged WPF gate and review pass. Preserve provider access, personal data, rollback and recursive continuity.",
   "verificationAppliesToCommit": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
   "lastClosedVerificationCommit": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
   "lastClosedVerificationRun": "v8.8.142 build 641 source 6fcbc3ecb683bb597728f8cf0b9a8190d7695d55 Windows Gate 45394597944 and real hosted updater/rollback 45396245072 passed; evidence integrated by #977.",
-  "verificationScopeNote": "v8.8.142 build 641, 6fcbc3ecb683bb597728f8cf0b9a8190d7695d55, runs 45394597944 and 45396245072, remains last fully verified release and rollback. Build 643 was published from 590e018fb53b69eafb5bde6234325d801f69deda; continuity persistence failed and E2E remains unverified. #980 source passed all five native workflows; v8.8.144 publication and physical H2 health remain separate.",
+  "verificationScopeNote": "Build 647 v8.8.144 source 3073837e37819ce896332202e13b893777dc194e was immutably published; Windows Gate 45522977721 and real hosted update/rollback 45524374984 passed. The checked-in lastClosedVerification/lastClosedWindowsVerification ledger still records build 641, not a replacement proof of current source. #985 exact source checks and main Windows Gate 45603013115 passed; release intent skipped the unchanged version. New version publication and physical acceptance remain separate.",
   "lastClosedVerification": {
     "sourceSha": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
     "updaterBuild": 641,
@@ -23,6 +23,7 @@
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
+    "#946: #985 merged source and native packaged lifecycle proof pass; real game launch, texture layering, comprehensive method coverage, texture benchmark timings and physical acceptance remain unverified. #986 retains separate review and current-base installed WPF evidence.",
     "Build 643 immutable publication is independently observed; original release gate failed during continuity persistence and genuine updater/rollback is unverified. #982 repairs persistence; #980 locator is discovery evidence only, not physical H2 health.",
     "#558 includes bounded local catalogue paging, stable FTS ordering, truthful provider diagnostics and cancellation-aware failure handling. Actual provider authorization, real installed browse p95 and broader coverage remain open.",
     "The v8.8.89 legal/privacy material is an engineering baseline, not jurisdiction-specific legal advice; paid/commercial service, hosted personal data, child-directed collection, analytics/ads, embedded web tracking/cookies, marketing email, reviews/testimonials, or new telemetry require renewed review before release.",
@@ -56,12 +57,12 @@
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.142-heaven-windows-closure.log"
   },
   "publishedRelease": {
-    "tag": "updater-main-643",
-    "version": "8.8.143",
-    "sourceSha": "590e018fb53b69eafb5bde6234325d801f69deda",
-    "buildNumber": 643,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.143-win-x64.zip",
-    "artifactSha256": "75883c67847e49ab067d9889f6886afc04385e7ad6feef796121dc1162f0fb2f",
-    "manifestSha256": "45e1ea5c10538ade8c4d8cc62a040b8ff6c99479ef428dd95fad042838f775d2"
+    "tag": "updater-main-647",
+    "version": "8.8.144",
+    "sourceSha": "3073837e37819ce896332202e13b893777dc194e",
+    "buildNumber": 647,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.144-win-x64.zip",
+    "artifactSha256": "88616520051e0f7b0a16cc1c719e81dbee3bc147fd73edf758aaccd3f8167ab4",
+    "manifestSha256": "1d2bd1d695c39a6250d22d49423ee17938da64db966e9b0c8368960be8badb7c"
   }
 }
