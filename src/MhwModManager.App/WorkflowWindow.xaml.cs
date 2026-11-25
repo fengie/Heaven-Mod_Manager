@@ -223,7 +223,7 @@ public partial class WorkflowWindow : Window
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (Files.SelectedItem is not EffectiveAsset asset) return;
-        Explanation.Text = $"{asset.Path}\nEffective provider: {asset.WinnerName ?? "No deployable winner"}\nSHA-256: {asset.Sha256 ?? "none"}\n\n" + string.Join("\n", asset.Evidence.Select(x => $"{(x.Decisive ? "Decision" : "Context")} · {x.Source}: {x.Description}"));
+        Explanation.Text = $"{asset.Path}\nPlanned provider: {asset.WinnerName ?? "No deployable winner"}\nPlanned SHA-256: {asset.Sha256 ?? "none"}\nRecorded applied provider: {asset.AppliedProviderName ?? "None"}\nRecorded applied SHA-256: {asset.AppliedDigest ?? "none"}\n\n" + string.Join("\n", asset.Evidence.Select(x => $"{(x.Decisive ? "Decision" : "Context")} · {x.Source}: {x.Description}"));
     }
     private async void OpenRecipe(object sender, RoutedEventArgs e)
     {
@@ -347,13 +347,17 @@ public partial class WorkflowWindow : Window
             var current = await services.Database.LoadPlannerSnapshotAsync();
             var diff = await Task.Run(() => WorkflowAnalysis.Compare(current, services.Planner, left, right));
             ProfileDiff.Text = $"{a.Name} → {b.Name}\n{diff.Mods.Count(m => !m.BeforeEnabled && m.AfterEnabled)} enabled · {diff.Mods.Count(m => m.BeforeEnabled && !m.AfterEnabled)} disabled · {diff.Mods.Count(m => m.BeforePriority != m.AfterPriority)} load-order changes\n{diff.ProviderChanges.Count} file choices change · {diff.IntroducedConflicts.Count} conflicts introduced · {diff.ResolvedConflicts.Count} resolved · {diff.ChangedArmorComponents.Count} armor components change\n\n" + string.Join("\n", diff.Mods.Select(m => $"{m.Name}: {(m.BeforeEnabled ? "Enabled" : "Disabled")} → {(m.AfterEnabled ? "Enabled" : "Disabled")}; load order {m.BeforePriority} → {m.AfterPriority}")) + "\n\nNew conflicts:\n" + string.Join("\n", diff.IntroducedConflicts) + "\n\nChanged file choices:\n" + string.Join("\n", diff.ProviderChanges);
-            Status.Text = "Comparison uses current captured files and current global rules.";
+            ProfileDiff.Text += "\n\nExact provider transitions:\n" + string.Join("\n", diff.ProviderTransitions.Select(change =>
+                $"{change.Path}: {change.BeforeName} [{change.BeforeId ?? "none"}] → {change.AfterName} [{change.AfterId ?? "none"}]. {change.Reason}")) +
+                "\n\nUnavailable enabled packages:\n" + string.Join("\n", diff.UnavailableMods.Select(mod =>
+                $"{mod.Name} [{mod.ModId}]: {mod.Reason}; left={mod.BeforeEnabled}, right={mod.AfterEnabled}"));
+            Status.Text = $"Comparison uses current captured files and global rules. Left blocked: {diff.BeforeBlocked}; right blocked: {diff.AfterBlocked}. Missing packages are not restored automatically.";
         });
     }
     private async void StageProfile(object sender, RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        await RunAsync(async () => { if (ProfileB.SelectedItem is not ProfileSummary p) throw new InvalidOperationException("Choose the right profile."); stage = new(await services.Profiles.LoadAsync(p.Id), StringComparer.OrdinalIgnoreCase); RequestedStage = stage; await RefreshAsync(); Status.Text = "Close this window to apply the selected profile."; });
+        await RunAsync(async () => { if (ProfileB.SelectedItem is not ProfileSummary p) throw new InvalidOperationException("Choose the right profile."); stage = new(await services.Profiles.LoadAsync(p.Id), StringComparer.OrdinalIgnoreCase); RequestedStage = stage; await RefreshAsync(); Status.Text = "Close this window to stage the selected profile, then review and Apply Mod Changes explicitly."; });
     }
     private void RuleSelected(object sender, SelectionChangedEventArgs e)
     {

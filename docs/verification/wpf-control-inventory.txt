@@ -204,7 +204,7 @@ MainWindow.xaml | TabItem:Mods | Button | Content=Undo ; Command={Binding UndoCo
 MainWindow.xaml | TabItem:Mods | DataGrid | ItemsSource={Binding LibraryView} ; SelectedItem={Binding SelectedLibraryItem,Mode=TwoWay} ; IsReadOnly=True ; AutomationProperties.Name=Mod library
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=ENABLED
-MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=IN GAME
+MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=PLANNED EFFECT
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=INSTALLED FROM
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=MOD
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=SELECT

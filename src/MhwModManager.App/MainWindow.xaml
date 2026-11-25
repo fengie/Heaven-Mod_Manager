@@ -161,7 +161,7 @@
                             <Border Margin="5" Style="{StaticResource MetricCard}">
                                 <StackPanel>
                                     <TextBlock Text="{Binding FullyEffectiveCount}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource Info}"/>
-                                    <TextBlock Text="Working in game" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Effective in plan" FontWeight="SemiBold"/>
                                     <TextBlock Margin="0,3,0,0" Foreground="{StaticResource Muted}" FontSize="10"><Run Text="{Binding ComposedCount,Mode=OneWay}"/><Run Text=" partly replaced"/></TextBlock>
                                 </StackPanel>
                             </Border>
@@ -599,7 +599,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="IN GAME" Width="155">
+                                <DataGridTemplateColumn Header="PLANNED EFFECT" Width="155">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel ToolTip="{Binding EffectiveReason}">

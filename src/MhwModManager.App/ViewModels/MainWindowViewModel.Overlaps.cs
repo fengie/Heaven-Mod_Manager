@@ -9,16 +9,15 @@ public sealed partial class MainWindowViewModel
     private async Task RefreshOverlaps(CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var heatmap=await s.Inspector.HeatmapAsync(ct);
-        var blockingBundles=Conflicts.Select(c=>c.BundleKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var heatmap=await s.Inspector.HeatmapAsync(CaptureStage(),ct);
         var rows=heatmap.Select(item=>
         {
-            var blocking=blockingBundles.Contains(item.AssetKey);
+            var blocking=item.NeedsChoice;
             var providers=string.Join("  •  ",item.Providers);
-            var resolution=blocking?"Needs choice":"Resolved overlay";
+            var resolution=blocking?"Needs choice":"Resolved in plan";
             var detail=blocking
-                ?"These unrelated mods still need you to choose which one wins."
-                :"This shared file is already handled automatically by load order, a known mod relationship, identical content, or a saved choice.";
+                ?"The pending resolver found an unresolved choice or global blocker. Inspect the exact file decision."
+                :"The pending resolver has a winner. This does not mean the file is already deployed.";
             var primaryPath=item.Paths is { Count: > 0 } ? item.Paths[0] : item.AssetKey;
             return new AssetOverlapRow(item.AssetKey,item.DisplayName,item.ProviderCount,providers,resolution,detail,primaryPath);
         }).OrderByDescending(x=>StringComparer.OrdinalIgnoreCase.Equals(x.Resolution,"Needs choice"))
@@ -53,14 +52,14 @@ public sealed partial class MainWindowViewModel
 
         await RunBusy("analysis.explain-why","Explaining File Choice","Checking the current mod setup and collecting the reason for this file choice…",true,async ct=>
         {
-            var explanation=await s.Inspector.ExplainWhyAsync(selected.PrimaryPath,ct);
+            var explanation=await s.Inspector.ExplainWhyAsync(selected.PrimaryPath,CaptureStage(),ct);
             SelectedExplanation=explanation;
             ExplainWhyStatus=explanation is null
                 ?"No enabled mod currently supplies this file."
                 :explanation.Blocking
                     ?"The manager stopped because this file needs your choice."
                     :explanation.AppliedMatchesPlan
-                        ?"The game is already using the mod selected by the current plan."
+                        ?"Recorded applied provider and digest match the pending plan."
                         :"Your pending setup differs from the files currently installed. Check Needs attention for any unresolved choices.";
         });
     }

@@ -129,7 +129,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return $"{EnabledCount} enabled • {FullyEffectiveCount+ComposedCount} working in game • {BlockerCount} need attention • {UpdateCount} update(s)";
+            return $"{EnabledCount} enabled • {FullyEffectiveCount+ComposedCount} effective in plan • {BlockerCount} need attention • {UpdateCount} update(s)";
         }
     }
     public string GamePathText=>$"{s.Paths.Game.DisplayName}: {s.Paths.GameRoot}";
@@ -912,8 +912,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 if(logicalProviders.Length==0)continue;
 
                 string? winnerLogical=null;
-                if(logicalProviders.Length==1)winnerLogical=logicalProviders[0];
-                else if(decisionByPath[path].FirstOrDefault() is { Blocking: false, WinnerModId: not null } decision && logicalByMember.TryGetValue(decision.WinnerModId,out var winnerIdentity))winnerLogical=winnerIdentity.LogicalId;
+                if(decisionByPath[path].FirstOrDefault() is { Blocking: false, WinnerModId: not null } decision && logicalByMember.TryGetValue(decision.WinnerModId,out var winnerIdentity))winnerLogical=winnerIdentity.LogicalId;
 
                 if(winnerLogical is null)continue;
                 if(winningPaths.TryGetValue(winnerLogical,out var wins))wins.Add(path);
@@ -933,7 +932,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 EffectiveModState state;string reason;
                 if(!row.Enabled){state=EffectiveModState.Disabled;reason="This mod is turned off in the pending setup.";}
                 else if(row.NeedsRevalidation){state=EffectiveModState.NeedsRevalidation;reason="The game was updated or changed, so this mod should be checked again before use.";}
-                else if(blockedLogical.Contains(row.Id)){state=EffectiveModState.NeedsChoice;reason="Another unrelated mod changes the same game content. Choose which one should win.";}
+                else if(blockedLogical.Contains(row.Id)){state=EffectiveModState.NeedsChoice;reason="A pending file or family choice is unresolved. Review the exact planner evidence.";}
+                else if(plan.IsBlocked){state=EffectiveModState.NeedsChoice;reason="The overall pending deployment is blocked. No planned changes will be written.";}
+                else if(total==0){state=EffectiveModState.NeedsRevalidation;reason="No indexed target files are available to prove this mod is effective.";}
                 else if(total>0&&wins==0){state=EffectiveModState.FullySuperseded;reason="Another enabled mod currently provides every game file from this mod.";}
                 else if(shadows>0){state=EffectiveModState.PartiallyOverridden;reason=$"{shadows} file(s) are replaced by another enabled add-on or update; the rest are still used.";}
                 else{state=EffectiveModState.FullyEffective;reason="All files from this mod will be used in the current setup.";}

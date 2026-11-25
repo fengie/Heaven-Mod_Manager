@@ -29,13 +29,21 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
             manifest?.BlobSha256);
     }
 
-    public async Task<EffectiveDecisionExplanation?> ExplainWhyAsync(string path, CancellationToken ct = default)
+    public Task<EffectiveDecisionExplanation?> ExplainWhyAsync(string path, CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return ExplainWhyAsync(path, null, ct);
+    }
+
+    public async Task<EffectiveDecisionExplanation?> ExplainWhyAsync(string path,
+        IReadOnlyDictionary<string, (bool enabled, int priority)>? stage, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (planner is null) throw new InvalidOperationException("Explain Why requires the application's configured deployment planner.");
 
         var normalized = PathRules.Normalize(path);
         var snapshot = await plannerSnapshots.LoadAsync(ct);
+        if (stage is not null) snapshot = WorkflowAnalysis.WithState(snapshot, stage);
         var enabledMods = snapshot.Mods
             .Where(x => x.Enabled && !x.IsSuperseded)
             .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
@@ -47,7 +55,8 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
         if (providerFiles.Length == 0) return null;
 
         var plan = await Task.Run(() => planner.Build(snapshot), ct);
-        var decision = plan.Conflicts.FirstOrDefault(x => PathRules.Comparer.Equals(x.Path, normalized));
+        var decision = plan.Conflicts.FirstOrDefault(x => PathRules.Comparer.Equals(x.Path, normalized)) ??
+            plan.Conflicts.FirstOrDefault(x => x.Blocking && x.Path.StartsWith('<'));
         if (decision is null) return null;
 
         snapshot.CurrentManifest.TryGetValue(normalized, out var applied);
@@ -57,10 +66,12 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
         var appliedName = applied?.ProviderModId is not null && snapshot.Mods.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Id, applied.ProviderModId)) is { } appliedMod
             ? appliedMod.DisplayName
             : null;
-        var appliedMatchesPlan = !decision.Blocking
+        var appliedMatchesPlan = !plan.IsBlocked && !decision.Blocking
             && decision.WinnerModId is not null
             && applied?.ProviderModId is not null
-            && StringComparer.OrdinalIgnoreCase.Equals(decision.WinnerModId, applied.ProviderModId);
+            && StringComparer.OrdinalIgnoreCase.Equals(decision.WinnerModId, applied.ProviderModId)
+            && providerFiles.Any(file => PathRules.Comparer.Equals(file.ModId, decision.WinnerModId) &&
+                PathRules.Comparer.Equals(file.BlobSha256, applied.BlobSha256));
 
         var persistentRule = decision.RuleId is not null
             ? snapshot.Rules.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Id, decision.RuleId))
@@ -81,6 +92,9 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
         var summary = decision.Blocking
             ? $"No provider is selected for '{normalized}' because the resolver stopped safely: {decision.Explanation}"
             : $"{plannedName ?? decision.WinnerModId ?? "The selected provider"} wins '{normalized}' because {decision.Explanation}";
+
+        if (plan.IsBlocked && !decision.Blocking)
+            summary += " The overall pending deployment is blocked; this is only a proposed winner.";
 
         var details = providerFiles
             .Select(file =>
@@ -127,11 +141,22 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
             details);
     }
 
-    public async Task<IReadOnlyList<AssetHeatmapRow>> HeatmapAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<AssetHeatmapRow>> HeatmapAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return HeatmapAsync(null, ct);
+    }
+
+    public async Task<IReadOnlyList<AssetHeatmapRow>> HeatmapAsync(
+        IReadOnlyDictionary<string, (bool enabled, int priority)>? stage, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var snapshot = await plannerSnapshots.LoadAsync(ct);
-        var enabled = snapshot.Mods.Where(x => x.Enabled).ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
+        if (stage is not null) snapshot = WorkflowAnalysis.WithState(snapshot, stage);
+        var plan = planner is null ? null : await Task.Run(() => planner.Build(snapshot), ct);
+        var blockedPaths = (plan?.Conflicts ?? []).Where(d => d.Blocking).Select(d => d.Path).ToHashSet(PathRules.Comparer);
+        var globallyBlocked = blockedPaths.Any(path => path.StartsWith('<'));
+        var enabled = snapshot.Mods.Where(x => x.Enabled && !x.IsSuperseded).ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
         var providers = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var paths = new Dictionary<string,HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
@@ -141,7 +166,7 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
             var key = AssetBundles.KeyForPath(file.Path);
             if (!providers.TryGetValue(key, out var providerSet)) providers[key] = providerSet = new(StringComparer.OrdinalIgnoreCase);
             if (!paths.TryGetValue(key, out var pathSet)) paths[key] = pathSet = new(StringComparer.OrdinalIgnoreCase);
-            providerSet.Add(mod.DisplayName);
+            providerSet.Add(mod.Id);
             pathSet.Add(file.Path);
         }
 
@@ -149,11 +174,11 @@ public sealed class EffectiveInspectorService(PlannerSnapshotRepository plannerS
             .Where(x => x.Value.Count > 1)
             .Select(x => new AssetHeatmapRow(
                 x.Key,
-                AssetBundles.DisplayNameForPath(x.Key),
+                AssetBundles.DisplayNameForPath(paths[x.Key].Order(PathRules.Comparer).First()),
                 x.Value.Count,
-                true,
-                x.Value.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
-                paths[x.Key].Order(StringComparer.OrdinalIgnoreCase).ToArray()))
+                plan is null || globallyBlocked || paths[x.Key].Any(blockedPaths.Contains),
+                x.Value.Select(id => $"{enabled[id].DisplayName} [{id}]").Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+                paths[x.Key].OrderByDescending(blockedPaths.Contains).ThenBy(path => path, PathRules.Comparer).ToArray()))
             .OrderByDescending(x => x.ProviderCount)
             .ThenBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
