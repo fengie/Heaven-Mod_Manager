@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.144",
+  "currentVersion": "8.8.145",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.143 updater-main-643 from 590e018fb53b69eafb5bde6234325d801f69deda; publication observed but continuity persistence failed and genuine update/rollback remains unverified. Last fully verified hosted release build 641 (runs 45394597944 and 45396245072). #980 merged at 2417de3609a9cb8f69fd14ee636de69e6549cf5f with all five native workflows passing.",
+  "immediateParentRevision": "Immutable v8.8.144 updater-main-647 source 3073837e37819ce896332202e13b893777dc194e; Windows Gate 45522977721 and hosted update/rollback 45524374984 PASS. #985 integrated f9107b2659a00e03a6f8c8ae602d43de2c351e85, native Feature/Startup/AutoUpdate/packaged WPF green and source main Windows Gate 45603013115 PASS (no publication without version bump).",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Reconcile canonical main, integrate exact versioned v8.8.144 metadata, verify immutable publication and genuine packaged updater/rollback. Preserve provider access holds, personal H2 and real-corpus/endurance boundaries. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
+  "nextAgentObligation": "Integrate synchronized v8.8.145 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Keep #986 separate until its own current-base packaged WPF gate and review pass. Preserve provider access, personal data, rollback and recursive continuity. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

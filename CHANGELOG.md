@@ -1,3 +1,10 @@
+# v8.8.145 — November 25, 2026
+
+- Validate the game executable and block launch when deployment or relationship changes remain unapplied. Launch never silently applies edits. [#985](https://github.com/fengie/Heaven-Mod_Manager/pull/985)
+- Improve bounded large-texture overlap suggestions and reviewed override handling; retain explicit confirmation, pick-one exclusions, and exact committed-winner safety.
+- Separate bulk marks from staged and applied activation. Explicit Enable Selected/Disable Selected actions batch changes; Enabled/Disabled filters reflect committed state and Pending remains independent.
+- Exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. Integrated source `f9107b26` passed Windows Release Gate 45603013115 without publishing an unchanged version. Immutable v8.8.145 publication, genuine update/rollback, texture benchmarks and physical game behavior remain separate.
+
 # v8.8.144 — November 24, 2026
 
 - Record a verified same-account portable installation locator after healthy startup, preserving the current receipt on cancellation and rejecting development, staging, noncanonical and unverifiable install paths. The locator is a discovery hint, not installed-health proof. [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980)

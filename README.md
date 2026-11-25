@@ -1,14 +1,21 @@
-# v8.8.144 — MHW Manual Mod Manager
+# v8.8.145 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 24, 2026 · 7:39:51 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 25, 2026 · 7:04:35 AM EST** _(repo-enforced)_
 
-Current product version: **8.8.144**.
+Current product version: **8.8.145**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.145 — launch, texture relationships and explicit bulk activation
+
+- Validate the game executable and block launch when deployment or relationship changes remain unapplied. Launch never silently applies edits. [#985](https://github.com/fengie/Heaven-Mod_Manager/pull/985)
+- Improve bounded large-texture overlap suggestions and reviewed override handling; retain explicit confirmation, pick-one exclusions, and exact committed-winner safety.
+- Separate bulk marks from staged and applied activation. Explicit Enable Selected/Disable Selected actions batch changes; Enabled/Disabled filters reflect committed state and Pending remains independent.
+- Exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. Integrated source `f9107b26` passed Windows Release Gate 45603013115 without publishing an unchanged version. Immutable v8.8.145 publication, genuine update/rollback, texture benchmarks and physical game behavior remain separate.
 
 ## v8.8.144 — verified portable install discovery
 
@@ -19,12 +26,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 
 - Preserve user cancellation when Browse Mods provider failure diagnostics or failure-state persistence are in progress. Reuse cancellation-aware provider health checks; stop cancelled refreshes instead of reporting ordinary provider errors. Non-cancelled provider-local timeouts remain isolated and other providers continue. [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978)
 - Three native red-first regressions plus a non-cancelled timeout control passed; exact-head Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed (26/26 verification sections, 1,455 integration passes, 15 skips, 0 failures; 17/17 focused catalogue tests). Provider permissions and expired-review holds are unchanged. Immutable publication and installed-client acceptance remain separate.
-
-## v8.8.142 — bounded unknown-length catalog downloads
-
-- Guard unknown-length catalog archive downloads with actual staging-volume free-space checks before each bounded write, retaining 256 MiB headroom and the existing 1 GiB archive limit. Coalesce short network reads into 128 KiB chunks without unbounded buffering. [#975](https://github.com/fengie/Heaven-Mod_Manager/pull/975)
-- Cover initial and mid-stream low-space refusal, legitimate fragmented-stream acquisition, exact retained bytes, and owner-lease cleanup. Existing known-size preflight and user data protection remain unchanged. These are point-in-time capacity checks, not atomic volume reservations. [#669](https://github.com/fengie/Heaven-Mod_Manager/issues/669)
-- native Feature 45387115331, Startup Performance 45387115440, AutoUpdate 45387115373 passed; 26/26 repository verification checks, 1,451 integration passes, zero failures, 15 skips; zero trace gaps or uncovered call sites. Immutable publication, hosted packaged update/rollback and personal Heaven2 acceptance remain separate.
 
 ## Current plans & progress
 

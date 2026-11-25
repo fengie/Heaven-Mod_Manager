@@ -1,6 +1,6 @@
-# v8.8.144 — portable install locator release pending
+# v8.8.145 — launch, texture relationships and explicit bulk activation release pending
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `2417de3609a9cb8f69fd14ee636de69e6549cf5f` after #980. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `f9107b2659a00e03a6f8c8ae602d43de2c351e85` after #985. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -8,7 +8,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.144 source:** [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980) integrated at `2417de3609a9cb8f69fd14ee636de69e6549cf5f`; verified portable install locator. Native Feature 45511979755, Startup Performance 45511979645, AutoUpdate 45511979680, Product Security 45511979698 and packaged WPF 45511979654 passed; exact tested tree merged.
+- **v8.8.145 source:** [#985](https://github.com/fengie/Heaven-Mod_Manager/pull/985) integrated at `f9107b2659a00e03a6f8c8ae602d43de2c351e85`; exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. [Main Windows Gate 45603013115](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45603013115) passed verification/build; publication intentionally skipped because the product version was unchanged. Launch/staged deployment, reviewed texture overlays and explicit bulk activation are the current release scope.
 
 - Earlier releases and detailed evidence: see [_AGENT_CONTEXT/CURRENT_STATE.md](_AGENT_CONTEXT/CURRENT_STATE.md), [_AGENT_CONTEXT/PROJECT_PLAN.md](_AGENT_CONTEXT/PROJECT_PLAN.md), and [CHANGELOG.md](CHANGELOG.md). Build 641 (v8.8.142) passed hosted update/rollback; build 639 (v8.8.141) shipped Crimson staging only, with no verified live PAZ/ASI/loader writes. Historical evidence remains in Git and the linked records.
 
@@ -27,14 +27,14 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.143 build 643](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-643) from `590e018fb53b69eafb5bde6234325d801f69deda`; run 45480699080 failed after publication during continuity persistence (repaired by #982). Actual packaged update/rollback for 643 remains unverified. Last verified hosted updater/rollback: [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, runs 45394597944 and 45396245072, evidence #977. Physical H2 remains unverified.
+Published [v8.8.144 build 647](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-647) from `3073837e37819ce896332202e13b893777dc194e`. Windows Gate [45522977721](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45522977721) and genuine hosted update/rollback [45524374984](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45524374984) passed. The previous checked-in closure ledger for build 641 remains preserved; physical game behavior is separate.
 
-Current v8.8.144 metadata follows #980 source `2417de3609a9cb8f69fd14ee636de69e6549cf5f`. Exact-main Windows release verification, immutable publication and genuine packaged updater/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
+Integrate synchronized v8.8.145 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Keep #986 separate until its own current-base packaged WPF gate and review pass. Preserve provider access, personal data, rollback and recursive continuity.
 
 ## Unresolved risk and acceptance
 
 - **Unresolved risk:** [#791](https://github.com/fengie/Heaven-Mod_Manager/issues/791) retains genuine hundreds-mod Sifu/Stellar Blade/MHW corpus, large solid RAR/7z, nested mixed-game, installed WPF Explorer drag/drop/progress/cancel and p50/p95 acceptance. Small genuine RAR4/RAR5/7z format regressions merged via #850 and passed [main Windows Release Gate 44047541323](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/44047541323); they do not prove these larger workloads.
-- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 641 hosted success is not current personal proof.
+- [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 647 hosted success is not current personal proof.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817) source-level release continuity repair [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) is integrated at `main@687607cfa3466bd2f55f29f0a333cceaf4c4b4ec` after all five exact-head gates passed. Bounded source/receipt and next-step sync now reject stale candidate preambles; keep root README/CHANGELOG publication-neutrality for the next serialized version, and distinguish packaged release from physical installation.
 
 Preserve security, privacy, publisher ownership, rollback and source-bound verification. Every successor must recursively propagate the continuity protocol and active Learned Rules to the next agent again. Do not break the chain.
