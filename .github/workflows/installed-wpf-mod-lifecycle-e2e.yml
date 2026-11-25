@@ -48,7 +48,8 @@ jobs:
   installed-wpf:
     name: Actual packaged WPF app with fake game profiles
     runs-on: windows-2025
-    timeout-minutes: 65
+    # Allow the full profile matrix to finish and reserve time for build and evidence.
+    timeout-minutes: 95
     env:
       MHW_RUN_INSTALLED_WPF_E2E: '1'
     steps:
@@ -189,7 +190,9 @@ jobs:
 
       - name: Verify remaining lifecycle cases and all registered game receipts
         if: ${{ !cancelled() && env.MHW_GAME_UI_EVIDENCE != '' && steps.bright_memory.outcome == 'success' && steps.sword_and_fairy.outcome == 'success' && steps.picker.outcome == 'success' }}
-        timeout-minutes: 53
+        # Run 45574865756 reached 34/37 completed profiles at the former 53m limit.
+        # Reserve two minutes per registered fixture; retain a finite hard deadline.
+        timeout-minutes: 75
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -201,10 +204,13 @@ jobs:
           $remainingCases = $expectedCases - 5
           $focused = "$class.BrightMemoryInfiniteSecondPackageDisableRegression"
           $sword = "$class.SwordAndFairy7SecondPackageDisableRegression"
-          $output = @(& $runner '--filter-class' $class '--filter-not-method' $method $focused $sword 2>&1)
+          # Stream progress and retain partial diagnostics even if the bounded step times out.
+          & $runner '--filter-class' $class '--filter-not-method' $method $focused $sword 2>&1 |
+            Tee-Object -Variable output | ForEach-Object {
+              Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Value $_ -Encoding UTF8
+              Write-Host $_
+            }
           $exit = $LASTEXITCODE
-          $output | Add-Content -LiteralPath (Join-Path $evidence 'test-run.log') -Encoding UTF8
-          $output | ForEach-Object { Write-Host $_ }
           if ($exit -ne 0) { throw "Installed WPF lifecycle acceptance failed, exit code $exit." }
           $summary = $output -join [Environment]::NewLine
           if ($summary -notmatch "succeeded:\s+$remainingCases\b" -or $summary -notmatch 'skipped:\s+0\b') {

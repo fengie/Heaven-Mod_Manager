@@ -70,6 +70,31 @@ public sealed class InstalledWpfAcceptanceContractTests
             Assert.Matches($@"(?m)^      - '{Regex.Escape(path)}'\r?$", trigger.Groups["body"].Value);
     }
 
+    [Fact]
+    public void InstalledWpfMatrixHasBoundedInventoryBudgetAndStreamsEvidence()
+    {
+        var root = FindRepositoryRoot();
+        var workflow = File.ReadAllText(Path.Combine(root,
+            ".github", "workflows", "installed-wpf-mod-lifecycle-e2e.yml"));
+        using var inventory = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(root,
+            "tests", "fixtures", "discovered-games", "games.json")));
+        var profiles = inventory.RootElement.GetArrayLength();
+        Assert.True(profiles > 0);
+        var job = Regex.Match(workflow, @"(?m)^    timeout-minutes: (?<minutes>\d+)\r?$");
+        var step = Regex.Match(workflow,
+            @"(?ms)^      - name: Verify remaining lifecycle cases and all registered game receipts\r?\n(?<body>.*?)(?=^      - name:)");
+        Assert.True(job.Success && step.Success);
+        var matrix = Regex.Match(step.Groups["body"].Value, @"(?m)^        timeout-minutes: (?<minutes>\d+)\r?$");
+        Assert.True(matrix.Success);
+        var jobMinutes = int.Parse(job.Groups["minutes"].Value, System.Globalization.CultureInfo.InvariantCulture);
+        var matrixMinutes = int.Parse(matrix.Groups["minutes"].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.InRange(matrixMinutes, profiles * 2, 100);
+        Assert.InRange(jobMinutes, matrixMinutes + 15, 120);
+        Assert.Contains("Tee-Object -Variable output", step.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("$exit = $LASTEXITCODE", step.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("$observedIds.Count -ne $expectedIds.Count", step.Groups["body"].Value, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
