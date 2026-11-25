@@ -232,7 +232,13 @@ public sealed class AutomationCoordinator(
         }
     }
 
-    public async Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct = default)
+    public Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct = default)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return PrepareForPlayAsync(ct, requireApplied: false);
+    }
+
+    private async Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct, bool requireApplied)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         UnifiedDebugLog.Write("LAUNCH", "PrepareForPlay BEGIN");
@@ -240,7 +246,7 @@ public sealed class AutomationCoordinator(
         if(unmanaged>0){var adopted=await adoption.AdoptAsync(ct);await timeline.RecordAsync("launch.auto-adopt",AutomationSeverity.Info,adopted.Message,null,ct);}
         var snapshot=await backups.CreateAsync("pre-launch",ct);
         await timeline.RecordAsync("launch.snapshot",snapshot.Success?AutomationSeverity.Info:AutomationSeverity.Warning,snapshot.Message,new{snapshot.SnapshotRoot,snapshot.SaveSource},ct);
-        var report = await gate.EvaluateAsync(ct);
+        var report = await gate.EvaluateAsync(ct, requireApplied);
         UnifiedDebugLog.Write("LAUNCH", $"PrepareForPlay END Ready={report.Ready}; Findings={report.Findings.Count}");
         return report;
     }
@@ -249,19 +255,39 @@ public sealed class AutomationCoordinator(
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         UnifiedDebugLog.Write("LAUNCH", $"LaunchAndObserve BEGIN mode={mode}; startupWindow={startupWindow}");
-        var health=await PrepareForPlayAsync(ct);
+        ct.ThrowIfCancellationRequested();
+        var exe=game?.ExecutablePath??Path.Combine(gameRoot,"MonsterHunterWorld.exe");
+        if (!File.Exists(exe))
+        {
+            UnifiedDebugLog.Write("LAUNCH", "Launch blocked: registered executable unavailable.");
+            return new(false,false,null,TimeSpan.Zero,"Launch blocked: registered game executable is unavailable. Review the game installation path.");
+        }
+        var health=await PrepareForPlayAsync(ct, requireApplied: mode == LaunchMode.Modded);
         if(!health.Ready)
         {
             UnifiedDebugLog.Write("LAUNCH", "LaunchAndObserve BLOCKED by launch health gate.");
-            return new(false,false,null,TimeSpan.Zero,"Launch blocked: "+string.Join(" | ",health.Findings.Where(x=>x.Severity==AutomationSeverity.Blocker).Select(x=>x.Summary)));
+            var blockers = health.Findings.Where(x=>x.Severity==AutomationSeverity.Blocker).ToArray();
+            var details = string.Join(" | ", blockers.Take(5).Select(x=>$"{x.Summary} — {x.Detail}"));
+            if (blockers.Length > 5) details += $" | {blockers.Length - 5} additional blocker(s). Review diagnostics.";
+            return new(false,false,null,TimeSpan.Zero,"Launch blocked: "+details);
         }
-        var exe=game?.ExecutablePath??Path.Combine(gameRoot,"MonsterHunterWorld.exe");
         var mods=await db.GetModsAsync(ct);
         var state=mods.ToDictionary(x=>x.Id,x=>new ModState(x.Enabled,x.Priority),StringComparer.OrdinalIgnoreCase);
         var enabled=state.Where(x=>x.Value.Enabled).Select(x=>x.Key).ToArray();
         var build=await db.GetGameBuildFingerprintAsync(ct);
         var launchId=Guid.NewGuid().ToString("N"); var startedAt=DateTimeOffset.UtcNow; var sw=Stopwatch.StartNew();
-        using var process=ProcessDebug.Start(new ProcessStartInfo(exe){WorkingDirectory=gameRoot,UseShellExecute=true}, $"mhw-launch-{mode}");
+        ct.ThrowIfCancellationRequested();
+        Process? process;
+        try
+        {
+            process = ProcessDebug.Start(new ProcessStartInfo(exe){WorkingDirectory=gameRoot,UseShellExecute=true}, $"mhw-launch-{mode}");
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            UnifiedDebugLog.Write("LAUNCH", $"Process start failed: {ex.Message}");
+            return new(false,false,null,TimeSpan.Zero,$"Windows could not start {game?.DisplayName??"Monster Hunter: World"}: {ex.Message}");
+        }
+        using var processHandle = process;
         if(process is null)
         {
             UnifiedDebugLog.Write("LAUNCH", "LaunchAndObserve FAILED: Windows returned no process.");

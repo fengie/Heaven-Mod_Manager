@@ -88,20 +88,28 @@ public static partial class ModRelationshipInference
         // an Alt/Choose texture variant would be admitted through TextureOnly.
         foreach (var child in profiles.Values.Where(p =>
                      (p.IsAddOn || p.TextureOnly) &&
-                     p.Paths.Count <= MaxChildPaths &&
+                     (p.TextureOnly || p.Paths.Count <= MaxChildPaths) &&
                      !p.HasPickOneCue)
                      .OrderBy(p => p.Mod.Id, StringComparer.OrdinalIgnoreCase))
         {
             var isNegatedOption = HasNegatedOptionCue(child.Mod);
-            var parentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var parentMatches = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var path in child.Paths)
             {
                 if (!providersByPath.TryGetValue(path, out var providers) ||
                     providers.Count > MaxCandidateProvidersPerPath) continue;
-                foreach (var id in providers) parentIds.Add(id);
+                foreach (var id in providers)
+                    parentMatches[id] = parentMatches.GetValueOrDefault(id) + 1;
             }
 
-            foreach (var id in parentIds.Order(StringComparer.OrdinalIgnoreCase))
+            // For large texture packs, require at least 75% overlap evidence from
+            // non-crowded paths before scanning each candidate's complete inventory.
+            // With a 128-provider cap per path, at most 170 candidates can pass.
+            // Small packages retain their existing candidate discovery behavior.
+            foreach (var id in parentMatches.Where(pair =>
+                         child.Paths.Count <= MaxChildPaths ||
+                         (long)pair.Value * 4 >= (long)child.Paths.Count * 3)
+                         .Select(pair => pair.Key).Order(StringComparer.OrdinalIgnoreCase))
             {
                 if (id.Equals(child.Mod.Id, StringComparison.OrdinalIgnoreCase) ||
                     !profiles.TryGetValue(id, out var parent) ||
@@ -111,7 +119,7 @@ public static partial class ModRelationshipInference
                     ProvenanceIntelligence.SameNexusMod(parent.Mod, child.Mod)) continue;
 
                 var shared = child.Paths.Count(path => parent.Paths.Contains(path));
-                if (shared == 0 || shared * 4 < child.Paths.Count * 3) continue;
+                if (shared == 0 || (long)shared * 4 < (long)child.Paths.Count * 3) continue;
 
                 var identical = 0;
                 foreach (var path in child.Paths)

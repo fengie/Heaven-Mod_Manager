@@ -1612,10 +1612,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task LaunchModded()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if(StagedCount>0)
+        if (!File.Exists(s.Paths.Game.ExecutablePath))
+        {
+            StatusText = "Launch blocked: registered game executable is unavailable. Review the game installation path.";
+            return;
+        }
+        if(StagedCount>0||rulesNeedApply)
         {
             await Apply();
-            if(StagedCount>0||BlockerCount>0){StatusText="Launch stopped because the pending mod changes could not be applied safely.";return;}
+            if(StagedCount>0||rulesNeedApply||BlockerCount>0){StatusText="Launch stopped because the pending mod changes could not be applied safely. "+StatusText;return;}
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
         {
