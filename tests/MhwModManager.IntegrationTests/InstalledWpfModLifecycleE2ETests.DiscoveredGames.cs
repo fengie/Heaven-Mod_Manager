@@ -286,18 +286,28 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         }
         await Filter("Updates", false);
         await Filter("Enabled", true);
+        await Filter("Disabled", false);
         await Filter("Updates", false);
         await Filter("Pending", false);
         await Filter("All", true);
-        passed.Add("All eight mod filters show or exclude the known installed package");
+        passed.Add("All nine mod filters show or exclude the known installed package");
 
         async Task Click(string label) => Invoke(await WaitForElementAsync(() => FindButton(window, label, enabled: true),
             UiTimeout, label, ct));
         passed.Add("Automatic discovery applied exact game bytes");
         toggle=await WaitForElementAsync(()=>FindModToggle(window,name),UiTimeout,"installed mod",ct);
         ((TogglePattern)toggle.GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        Assert.True(File.Exists(run.LiveModPath), "Staging a disable must preserve the applied payload.");
+        await Filter("Pending", true);
+        await Filter("Disabled", false);
+        await Filter("Enabled", true);
+        await Filter("All", true);
+        await Click("Apply Mod Changes");
         await WaitForAsync(()=>!File.Exists(run.LiveModPath),UiTimeout,"explicit disable removed managed payload",ct);
-        passed.Add("Explicit off automatically updates game files");
+        await Filter("Disabled", true);
+        await Filter("Enabled", false);
+        await Filter("All", true);
+        passed.Add("Staging does not deploy; explicit Apply updates files and applied-status filters");
         await Click("Undo Last Applied Change");
         await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.ReadAllBytes(run.LiveModPath).SequenceEqual(run.ModBytes),UiTimeout,"Undo restored the explicit switch",ct);
         passed.Add("Undo deployment");

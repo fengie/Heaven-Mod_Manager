@@ -174,11 +174,13 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         (await Part("WITH_Cape")).Toggle();
         await Expect("NO_Cape", false);
         await Expect("WITH_Cape", true);
+        Assert.All(ChoiceFiles, file => Assert.False(File.Exists(Path.Combine(mount, file))));
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true), UiTimeout, "apply Cape choice", ct));
 
         await WaitForAsync(() => ChoiceFiles.All(file =>
             File.Exists(Path.Combine(mount, file)) &&
             File.ReadAllBytes(Path.Combine(mount, file)).SequenceEqual(original[Path.Combine(run.InstalledRoot, ChoiceTitle, "WITH_Cape", file)])),
-            UiTimeout, "automatic apply committed the selected Cape files before choosing another family", ct);
+            UiTimeout, "explicit apply committed the selected Cape files before choosing another family", ct);
 
         await OpenFamily(AddonTitle);
         (await Part("Main")).Toggle();
@@ -188,6 +190,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("Lantern", true);
         (await Part("Lantern")).Toggle();
         await Expect("Compass", true);
+        Assert.False(File.Exists(Path.Combine(mount, "Compass.pak")));
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true), UiTimeout, "apply family components", ct));
         await VerifyFiles("WITH_Cape", false);
 
         // Process.MainWindowHandle can still refer to the startup splash. Close the
@@ -221,12 +225,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await Expect("NO_Cape", false);
         (await Part("NO_Cape")).Toggle();
         await Expect("WITH_Cape", false);
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true), UiTimeout, "apply alternate Cape", ct));
         await OpenFamily(AddonTitle);
         await Expect("Main", true);
         await Expect("Compass", true);
         await Expect("Lantern", false);
         await VerifyFiles("NO_Cape", false);
         (await Part("Lantern")).Toggle();
+        Assert.False(File.Exists(Path.Combine(mount, "Lantern.pak")));
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true), UiTimeout, "apply Lantern", ct));
         await VerifyFiles("NO_Cape", true);
         await SelectModsTabAsync(window, ct);
         Invoke(await WaitForElementAsync(() => FindButton(window, "Undo Last Applied Change", enabled: true), UiTimeout, "undo last family choice", ct));

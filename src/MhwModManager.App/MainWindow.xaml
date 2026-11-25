@@ -86,7 +86,7 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <Button Content="Install Mod" Command="{Binding ImportArchiveCommand}" Style="{StaticResource QuietButton}" Margin="0,0,6,0"/>
-                    <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Back up your saves, check the setup, and launch the game with your enabled mods."/>
+                    <Button Content="Launch Game" Command="{Binding LaunchModdedCommand}" Style="{StaticResource PrimaryButton}" ToolTip="Apply pending changes first. Then back up your saves, check the applied setup, and launch the game."/>
                 </StackPanel>
             </Grid>
         </Border>

@@ -170,7 +170,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
         Task<AutomationElement> WaitForToggle(string name) => WaitForElementAsync(() => Find(grid, element =>
             element.Current.ControlType == ControlType.CheckBox &&
-            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase)),
+            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase) &&
+            !element.Current.Name.EndsWith(" for bulk action", StringComparison.Ordinal)),
             UiTimeout, "automatic Inbox row " + name, TestToken);
         var firstHash = SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive));
         var secondHash = SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive));
@@ -180,6 +181,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await WaitForAsync(()=>File.Exists(firstLive),UiTimeout,"first Inbox mod deployed",TestToken);
         var first = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
         first.Toggle();
+        Assert.True(File.Exists(firstLive), "Selection alone must not remove the applied file.");
+        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true), UiTimeout, "explicit Apply", TestToken));
         await WaitForAsync(()=>!File.Exists(firstLive),UiTimeout,"explicit off reached disk",TestToken);
         run.CopyToInbox(run.BatchSecondArchive);
         await WaitForToggle("BulkTwo");
@@ -556,7 +559,8 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
     private static AutomationElement? FindModToggle(AutomationElement window, string name) =>
         Find(window, element => element.Current.ControlType == ControlType.CheckBox &&
-            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase) &&
+            !element.Current.Name.EndsWith(" for bulk action", StringComparison.Ordinal));
 
     private static AutomationElement? FindButton(AutomationElement root, string name, bool enabled = false) =>
         Find(root, element => element.Current.ControlType == ControlType.Button &&

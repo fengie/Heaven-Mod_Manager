@@ -656,7 +656,7 @@ public sealed partial class XamlBindingSafetyTests
         var xaml = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "MainWindow.xaml"));
         var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
 
-        Assert.Contains("Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"See exactly what would change without editing game files.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
+        Assert.Contains("Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"See exactly what would change without editing game files.\" IsEnabled=\"{Binding HasPendingDeployment}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
         Assert.Contains("Content=\"Discard Pending Changes\" Command=\"{Binding DiscardStagedCommand}\" Style=\"{StaticResource QuietButton}\" MinHeight=\"32\" Padding=\"9,5\" Margin=\"2,0\" ToolTip=\"Discard all pending enable/disable changes. Installed game files are not changed.\" IsEnabled=\"{Binding HasStagedChanges}\" AutomationProperties.HelpText=\"{Binding PendingActionsHelp}\"", xaml);
         Assert.Contains("Content=\"Review and retry\" Command=\"{Binding ApplyCommand}\" Visibility=\"{Binding ReviewRetryVisibility}\"", xaml);
         Assert.DoesNotContain("Style=\"{StaticResource ActionTile}\" Content=\"Preview Mod Changes\" Command=\"{Binding PreviewApplyCommand}\" IsEnabled=\"{Binding HasStagedChanges}\"", xaml);
@@ -675,12 +675,17 @@ public sealed partial class XamlBindingSafetyTests
         var main = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.cs"));
         var rows = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "Rows.cs"));
 
-        Assert.Contains("Content=\"Select All\" Command=\"{Binding EnableVisibleCommand}\"", xaml);
-        Assert.Contains("Content=\"Deselect All\" Command=\"{Binding DisableVisibleCommand}\"", xaml);
+        var selection = File.ReadAllText(Path.Combine(root, "src", "MhwModManager.App", "ViewModels", "MainWindowViewModel.BulkSelection.cs"));
+        Assert.Contains("Content=\"Select All\" Command=\"{Binding SelectAllVisibleCommand}\"", xaml);
+        Assert.Contains("Content=\"Deselect All\" Command=\"{Binding ClearBulkSelectionCommand}\"", xaml);
+        Assert.Contains("EnableSelectedCommand", xaml);
+        Assert.Contains("DisableSelectedCommand", xaml);
         Assert.Contains("HasVisibleMods", xaml);
-        Assert.Contains("var targets=ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray();", main);
+        Assert.Contains("ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray()", selection);
         Assert.Contains("IsEnabled=\"{Binding CanStage}\"", xaml);
-        Assert.Contains("if(targets.Length>1&&MessageBox.Show(", main);
+        Assert.Contains("row.BulkSelected = true", selection);
+        Assert.Contains("ApplyStagedChangesAsync(confirm: true, forceConfirm: hadPending)", selection);
+        Assert.Contains("\"Disabled\"=>!m.AppliedEnabled", main);
         Assert.Contains("public string PendingStateLabel", rows);
         Assert.Contains("OnPropertyChanged(nameof(PendingStateLabel));", rows);
     }

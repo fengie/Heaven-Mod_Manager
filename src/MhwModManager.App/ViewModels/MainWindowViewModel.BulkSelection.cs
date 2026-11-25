@@ -112,11 +112,16 @@ public sealed partial class MainWindowViewModel
         finally { suppressChanged = false; Changed(); }
         if (!HasPendingDeployment)
         {
-            StatusText = "Selected mods already match the requested activation.";
             ClearBulkSelection();
+            StatusText = "Selected mods already match the requested activation.";
             return;
         }
         await ApplyStagedChangesAsync(confirm: true, forceConfirm: hadPending);
-        if (!HasPendingDeployment) ClearBulkSelection();
+        if (!HasPendingDeployment)
+        {
+            var result = StatusText;
+            ClearBulkSelection();
+            StatusText = result;
+        }
     }
 }

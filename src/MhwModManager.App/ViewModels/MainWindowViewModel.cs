@@ -223,6 +223,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
+            if (rulesNeedApply) return $"{StagedCount} activation change(s) plus saved overwrite choices pending Apply.";
             return HasStagedChanges
                 ? $"{StagedCount} pending {(StagedCount==1?"mod change is":"mod changes are")} ready to preview, discard, or apply."
                 : "No pending mod changes to preview, discard, or apply.";
@@ -234,7 +235,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         get
         {
             using var __mhwTrace = MasterDebugLog.BeginMethod();
-            return StagedCount==0?"No pending changes":$"{StagedCount} pending • {StagedEnableCount} turning on • {StagedDisableCount} turning off";
+            return (StagedCount==0?"No pending activation changes":$"{StagedCount} pending • {StagedEnableCount} turning on • {StagedDisableCount} turning off") + (rulesNeedApply?" • overwrite rules pending":"");
         }
     }
     public string AllViewLabel
@@ -1602,7 +1603,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         }
         if(HasPendingDeployment)
         {
-            StatusText="Apply or discard pending mod changes before launching. No game files were changed.";
+            StatusText=rulesNeedApply
+                ? "Apply saved overwrite choices before launching. No game files were changed."
+                : "Apply or discard pending mod changes before launching. No game files were changed.";
             SelectedTab=1;
             return;
         }
