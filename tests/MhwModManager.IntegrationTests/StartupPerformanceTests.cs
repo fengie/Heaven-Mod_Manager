@@ -30,6 +30,33 @@ public sealed class StartupPerformanceTests : IDisposable
     }
 
     [Fact]
+    public async Task Concurrent_startup_sessions_have_independent_terminal_reports()
+    {
+        var diagnosticRoot = MasterDebugLog.RootDirectory;
+        var sessions = await Task.WhenAll(Enumerable.Range(0, 16).Select(index => Task.Run(() =>
+        {
+            var session = StartupDiagnosticSession.Start(diagnosticRoot);
+            var summary = "Session " + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            using var observed = File.Open(session.JsonReportPath, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete);
+            session.Complete(true, summary);
+            session.Info("late-observation");
+            using var original = JsonDocument.Parse(observed);
+            Assert.Equal("RUNNING", original.RootElement.GetProperty("overall").GetString());
+            return (session.JsonReportPath, summary);
+        }, TestToken)));
+
+        Assert.Equal(sessions.Length, sessions.Select(session => session.JsonReportPath)
+            .Distinct(PathRules.Comparer).Count());
+        foreach (var (path, summary) in sessions)
+        {
+            using var final = JsonDocument.Parse(await File.ReadAllTextAsync(path, TestToken));
+            Assert.Equal("PASS", final.RootElement.GetProperty("overall").GetString());
+            Assert.Equal(summary, final.RootElement.GetProperty("summary").GetString());
+        }
+    }
+
+    [Fact]
     public async Task Unchanged_game_build_metadata_skips_fingerprint_rewrite()
     {
         var gameRoot=Path.Combine(root,"game");
