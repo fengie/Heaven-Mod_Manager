@@ -6,13 +6,15 @@ namespace MhwModManager.IntegrationTests;
 
 public sealed class ExplicitModSelectionTests
 {
+    private static readonly string[] FixtureIds = ["one", "two", "three"];
+
     [Fact]
     public Task SelectingRowsDoesNotDeployAndExplicitBulkActionsCommitOnce() =>
         IsolatedWpfSession.RunAsync(async (services, ct) =>
         {
             using var vm = new MainWindowViewModel(services) { ConfirmBeforeApply = false };
             var files = new Dictionary<string, string>(PathRules.Comparer);
-            foreach (var id in new[] { "one", "two", "three" })
+            foreach (var id in FixtureIds)
             {
                 var root = Directory.CreateDirectory(Path.Combine(services.Paths.ToolRoot, id));
                 await File.WriteAllTextAsync(Path.Combine(root.FullName, id + ".bin"), id, ct);
