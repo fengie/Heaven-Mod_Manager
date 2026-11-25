@@ -1,6 +1,6 @@
-# v8.8.143 — catalogue cancellation release pending
+# v8.8.144 — portable install locator release pending
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b` after #978. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `2417de3609a9cb8f69fd14ee636de69e6549cf5f` after #980. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -8,7 +8,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.143 source:** [#978](https://github.com/fengie/Heaven-Mod_Manager/pull/978) integrated at `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`; cancellation now propagates through failure health probes and diagnostic persistence. Native Feature 45399054167, Startup Performance 45399054195 and AutoUpdate 45399054241 passed. Real provider authorization, installed H2 health and v8.8.143 publication remain separate.
+- **v8.8.144 source:** [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980) integrated at `2417de3609a9cb8f69fd14ee636de69e6549cf5f`; verified portable install locator. Native Feature 45511979755, Startup Performance 45511979645, AutoUpdate 45511979680, Product Security 45511979698 and packaged WPF 45511979654 passed; exact tested tree merged.
 
 - Earlier releases and detailed evidence: see [_AGENT_CONTEXT/CURRENT_STATE.md](_AGENT_CONTEXT/CURRENT_STATE.md), [_AGENT_CONTEXT/PROJECT_PLAN.md](_AGENT_CONTEXT/PROJECT_PLAN.md), and [CHANGELOG.md](CHANGELOG.md). Build 641 (v8.8.142) passed hosted update/rollback; build 639 (v8.8.141) shipped Crimson staging only, with no verified live PAZ/ASI/loader writes. Historical evidence remains in Git and the linked records.
 
@@ -27,9 +27,9 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), exact source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`: Windows Gate [45394597944](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45394597944) and real hosted update/rollback [45396245072](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45396245072) passed. Exact seven-file evidence integrated by #977. Physical H2 remains unverified.
+Published [v8.8.143 build 643](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-643) from `590e018fb53b69eafb5bde6234325d801f69deda`; run 45480699080 failed after publication during continuity persistence (repaired by #982). Actual packaged update/rollback for 643 remains unverified. Last verified hosted updater/rollback: [v8.8.142 build 641](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-641), source `6fcbc3ecb683bb597728f8cf0b9a8190d7695d55`, runs 45394597944 and 45396245072, evidence #977. Physical H2 remains unverified.
 
-Current v8.8.143 release metadata follows integrated #978 source `76e23fd4bd12dd0dae81074f4566f20d3ce1674b`. Exact-main Windows release verification, immutable publication and actual packaged update/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
+Current v8.8.144 metadata follows #980 source `2417de3609a9cb8f69fd14ee636de69e6549cf5f`. Exact-main Windows release verification, immutable publication and genuine packaged updater/rollback are still required. Evidence-only commits do not alter immutable tested-source identity.
 
 ## Unresolved risk and acceptance
 

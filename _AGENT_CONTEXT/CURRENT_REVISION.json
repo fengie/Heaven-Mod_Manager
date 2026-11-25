@@ -4,16 +4,16 @@
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "workingBranch": "main",
-  "currentVersion": "8.8.143",
+  "currentVersion": "8.8.144",
   "companyTrainingRoot": "fengie/heaven-toolbox@main:_AGENT_TRAINING",
   "companyTrainingStatus": "external-canonical",
-  "status": "v8.8.143-release-acceptance-pending",
-  "nextMilestone": "Publish immutable v8.8.143 from integrated catalogue cancellation #978; verify exact Windows release and genuine packaged update/rollback.",
-  "nextRequiredAction": "Integrate exact-tested versioned metadata; run existing Windows Release Gate and packaged installed-client E2E. Personal Heaven2 health, provider authorization and genuine corpus/endurance remain separate.",
+  "status": "v8.8.144-release-acceptance-pending",
+  "nextMilestone": "Publish immutable v8.8.144 from integrated portable install locator #980 at 2417de3609a9cb8f69fd14ee636de69e6549cf5f; verify exact Windows release and genuine packaged update/rollback.",
+  "nextRequiredAction": "Integrate exact-tested versioned metadata; run existing Windows Release Gate and genuine packaged installed-client E2E. Personal Heaven2 health, provider authorization and genuine corpus/endurance remain separate.",
   "verificationAppliesToCommit": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
   "lastClosedVerificationCommit": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
   "lastClosedVerificationRun": "v8.8.142 build 641 source 6fcbc3ecb683bb597728f8cf0b9a8190d7695d55 Windows Gate 45394597944 and real hosted updater/rollback 45396245072 passed; evidence integrated by #977.",
-  "verificationScopeNote": "v8.8.142 immutable release and hosted updater rollback verified. #978 native feature, performance and AutoUpdate gates passed on exact candidate tree; v8.8.143 release verification/publication and physical H2 remain separate.",
+  "verificationScopeNote": "v8.8.142 build 641, 6fcbc3ecb683bb597728f8cf0b9a8190d7695d55, runs 45394597944 and 45396245072, remains last fully verified release and rollback. Build 643 was published from 590e018fb53b69eafb5bde6234325d801f69deda; continuity persistence failed and E2E remains unverified. #980 source passed all five native workflows; v8.8.144 publication and physical H2 health remain separate.",
   "lastClosedVerification": {
     "sourceSha": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
     "updaterBuild": 641,
@@ -23,6 +23,7 @@
   },
   "candidateSourceCommit": null,
   "unresolvedRisks": [
+    "Build 643 immutable publication is independently observed; original release gate failed during continuity persistence and genuine updater/rollback is unverified. #982 repairs persistence; #980 locator is discovery evidence only, not physical H2 health.",
     "#558 includes bounded local catalogue paging, stable FTS ordering, truthful provider diagnostics and cancellation-aware failure handling. Actual provider authorization, real installed browse p95 and broader coverage remain open.",
     "The v8.8.89 legal/privacy material is an engineering baseline, not jurisdiction-specific legal advice; paid/commercial service, hosted personal data, child-directed collection, analytics/ads, embedded web tracking/cookies, marketing email, reviews/testimonials, or new telemetry require renewed review before release.",
     "Issue #350 cannot be fully closed until a real production public updater trust anchor is embedded, its private key is provisioned outside the repository/ordinary release credentials, and one real signed release is verified end to end.",
@@ -55,12 +56,12 @@
     "evidence": "_AGENT_CONTEXT/EVIDENCE/v8.8.142-heaven-windows-closure.log"
   },
   "publishedRelease": {
-    "tag": "updater-main-641",
-    "version": "8.8.142",
-    "sourceSha": "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
-    "buildNumber": 641,
-    "artifactName": "MHW-Manual-Mod-Manager-v8.8.142-win-x64.zip",
-    "artifactSha256": "ffccab56ae819140d48a746b118acdb82209b4239a364509537d74f0635b0a8f",
-    "manifestSha256": "44d12584b0f40382b9fd5425a0bea18b865b8a10010823c369b274c89268d4fc"
+    "tag": "updater-main-643",
+    "version": "8.8.143",
+    "sourceSha": "590e018fb53b69eafb5bde6234325d801f69deda",
+    "buildNumber": 643,
+    "artifactName": "MHW-Manual-Mod-Manager-v8.8.143-win-x64.zip",
+    "artifactSha256": "75883c67847e49ab067d9889f6886afc04385e7ad6feef796121dc1162f0fb2f",
+    "manifestSha256": "45e1ea5c10538ade8c4d8cc62a040b8ff6c99479ef428dd95fad042838f775d2"
   }
 }
