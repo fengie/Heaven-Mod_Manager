@@ -406,13 +406,14 @@
                     <ControlTemplate TargetType="TabControl">
                         <Grid KeyboardNavigation.TabNavigation="Local">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="236"/>
+                                <ColumnDefinition x:Name="PART_NavigationWidth" Width="216" MinWidth="160" MaxWidth="340"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0">
                                 <DockPanel>
                                     <StackPanel DockPanel.Dock="Top" Margin="16,22,16,12">
                                         <TextBlock Margin="4,0,0,0" Text="NAVIGATION" Style="{StaticResource Eyebrow}"/>
+                                        <TextBlock Margin="4,4,0,0" Text="Drag tabs to reorder" FontSize="10" Foreground="{StaticResource Muted}" TextWrapping="Wrap" ToolTip="Keyboard: Ctrl+Shift+Up or Down on a focused tab."/>
                                     </StackPanel>
                                     <StackPanel DockPanel.Dock="Bottom" Margin="14,8,14,16">
                                         <TextBlock Margin="4,0,0,5" Text="SESSION" Style="{StaticResource Eyebrow}"/>
@@ -431,10 +432,14 @@
                                         </Border>
                                     </StackPanel>
                                     <ScrollViewer Margin="12,0,8,12" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                        <StackPanel IsItemsHost="True" Margin="0,0,4,0" KeyboardNavigation.TabIndex="1"/>
+                                        <local:WorkspaceTabPanel x:Name="PART_NavigationHeaderPanel" IsItemsHost="True" Margin="0,0,4,0" KeyboardNavigation.TabIndex="1"/>
                                     </ScrollViewer>
                                 </DockPanel>
                             </Border>
+                            <GridSplitter x:Name="PART_NavigationSplitter" Grid.Column="0" Width="7" HorizontalAlignment="Right"
+                                          VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="CurrentAndNext"
+                                          Background="{StaticResource Border}" Cursor="SizeWE" ShowsPreview="False"
+                                          AutomationProperties.Name="Resize navigation pane" Panel.ZIndex="5"/>
                             <Border Grid.Column="1" Background="{StaticResource Bg}">
                                 <DockPanel>
                                     <Expander DockPanel.Dock="Bottom" Header="More info" Margin="12,2,12,4"

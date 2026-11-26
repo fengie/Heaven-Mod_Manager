@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Automation;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -52,7 +53,7 @@ public sealed class WorkspaceTabPanel : Panel
         var ranks = order.Select((id, index) => (id, index))
             .ToDictionary(item => item.id, item => item.index, StringComparer.Ordinal);
         var children = InternalChildren.Cast<UIElement>()
-            .OrderBy(child => child is TabItem tab && ranks.TryGetValue(tab.Name, out var rank) ? rank : int.MaxValue);
+            .OrderBy(child => child is TabItem tab && ranks.TryGetValue(AutomationProperties.GetAutomationId(tab), out var rank) ? rank : int.MaxValue);
         var y = 0d;
         var index = 0;
         foreach (var child in children)
@@ -103,7 +104,7 @@ public sealed class WorkspaceTabPanel : Panel
             pressedTab = null;
             return;
         }
-        if (pressedTab is null || draggedTab is not null || !order.Contains(pressedTab.Name, StringComparer.Ordinal)) return;
+        if (pressedTab is null || draggedTab is not null || !order.Contains(AutomationProperties.GetAutomationId(pressedTab), StringComparer.Ordinal)) return;
         var point = e.GetPosition(this);
         if (Math.Abs(point.X - pressPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(point.Y - pressPoint.Y) < SystemParameters.MinimumVerticalDragDistance) return;
@@ -112,7 +113,7 @@ public sealed class WorkspaceTabPanel : Panel
         pressedTab = null;
         try
         {
-            _ = DragDrop.DoDragDrop(this, new DataObject(DragFormat, draggedTab.Name), DragDropEffects.Move);
+            _ = DragDrop.DoDragDrop(this, new DataObject(DragFormat, AutomationProperties.GetAutomationId(draggedTab)), DragDropEffects.Move);
         }
         finally { draggedTab = null; }
     }
@@ -137,7 +138,7 @@ public sealed class WorkspaceTabPanel : Panel
         e.Effects = DragDropEffects.None;
         if (draggedTab is null || HeaderAt(e.OriginalSource as DependencyObject) is not TabItem target ||
             ReferenceEquals(draggedTab, target)) return;
-        MoveHeader(draggedTab.Name, target.Name, e.GetPosition(target).Y >= target.ActualHeight / 2);
+        MoveHeader(AutomationProperties.GetAutomationId(draggedTab), AutomationProperties.GetAutomationId(target), e.GetPosition(target).Y >= target.ActualHeight / 2);
         e.Effects = DragDropEffects.Move;
     }
 
@@ -148,10 +149,10 @@ public sealed class WorkspaceTabPanel : Panel
         if (Keyboard.Modifiers != (ModifierKeys.Control | ModifierKeys.Shift) ||
             e.Key is not (Key.Up or Key.Down) ||
             HeaderAt(e.OriginalSource as DependencyObject) is not TabItem tab) return;
-        var current = order.ToList().IndexOf(tab.Name);
+        var current = order.ToList().IndexOf(AutomationProperties.GetAutomationId(tab));
         var next = current + (e.Key == Key.Up ? -1 : 1);
         if (current < 0 || next < 0 || next >= order.Count) return;
-        MoveHeader(tab.Name, order[next], e.Key == Key.Down);
+        MoveHeader(AutomationProperties.GetAutomationId(tab), order[next], e.Key == Key.Down);
         e.Handled = true;
     }
 
