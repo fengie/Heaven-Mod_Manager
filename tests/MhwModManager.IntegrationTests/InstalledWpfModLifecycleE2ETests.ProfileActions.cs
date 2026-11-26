@@ -352,17 +352,6 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         passed.Add("Refresh one filtered package and rebuild its missing content index from original bytes");
 
         int pid = window.Current.ProcessId;
-        async Task Answer(string action, string caption, string choice)
-        {
-            var button = await Button(action);
-            var invocation = Task.Run(() => Invoke(button), ct);
-            var dialog = await WaitForElementAsync(() => FindProcessDialog(pid, caption), UiTimeout, caption, ct);
-            var answer = await WaitForElementAsync(() => FindButton(dialog, choice, enabled: true),
-                UiTimeout, caption + " " + choice, ct);
-            Invoke(answer);
-            await invocation.WaitAsync(UiTimeout, ct);
-            await WaitForAsync(() => FindProcessDialog(pid, caption) is null, UiTimeout, "dismiss " + caption, ct);
-        }
         var clearSearch = await WaitForElementAsync(() => !Busy() ? CurrentSearch() : null,
             UiTimeout, "idle native search before clearing independent package filter", ct);
         ((ValuePattern)clearSearch.GetCurrentPattern(ValuePattern.Pattern)).SetValue("");
@@ -381,27 +370,34 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         Assert.True(File.Exists(run.LiveModPath));
         Assert.False(File.Exists(alternateLive));
 
-        // Exercise confirmation when the bulk action would also include an existing staged edit.
+        // Marking and staging remain distinct from the only deployment action.
         var alternateToggle = (TogglePattern)(await WaitForElementAsync(() => Package(alternateName), UiTimeout,
             "independent activation checkbox", ct)).GetCurrentPattern(TogglePattern.Pattern);
         alternateToggle.Toggle();
         Assert.False(File.Exists(alternateLive));
         Invoke(await Button("Select all visible mods"));
-        await Answer("Enable selected mods", "Apply mod changes", "No");
-        Assert.False(File.Exists(alternateLive));
-        await Answer("Enable selected mods", "Apply mod changes", "Yes");
+        Invoke(await Button("Stage enable selected"));
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.On && ReadToggle(alternateName) == ToggleState.On,
             UiTimeout, "both packages staged on", ct);
-        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"confirmed bulk additions reached disk",ct);
+        Assert.True(File.Exists(run.LiveModPath));
+        Assert.False(File.Exists(alternateLive));
+        Invoke(await Button("Apply Mod Changes"));
+        await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive)&&!Busy()&&
+            FindButton(window,"Apply Mod Changes") is { } apply && !apply.Current.IsEnabled,
+            UiTimeout,"explicit Apply commits additions and clears pending state",ct);
         Invoke(await Button("Select all visible mods"));
-        Assert.True(File.Exists(run.LiveModPath) && File.Exists(alternateLive));
-        Invoke(await Button("Disable selected mods"));
+        Invoke(await Button("Stage disable selected"));
         await WaitForAsync(() => ReadToggle(primaryName) == ToggleState.Off && ReadToggle(alternateName) == ToggleState.Off,
             UiTimeout, "both packages staged off", ct);
-        await WaitForAsync(()=>!File.Exists(run.LiveModPath)&&!File.Exists(alternateLive),UiTimeout,"confirmed bulk disable reached disk",ct);
+        Assert.True(File.Exists(run.LiveModPath) && File.Exists(alternateLive));
+        Invoke(await Button("Apply Mod Changes"));
+        await WaitForAsync(()=>!File.Exists(run.LiveModPath)&&!File.Exists(alternateLive)&&!Busy()&&
+            FindButton(window,"Apply Mod Changes") is { } apply && !apply.Current.IsEnabled,
+            UiTimeout,"explicit Apply commits removals and clears pending state",ct);
+        Assert.NotNull(await Button("Auto Select Mods"));
         Invoke(await Button("Undo Last Applied Change"));
         await WaitForAsync(()=>File.Exists(run.LiveModPath)&&File.Exists(alternateLive),UiTimeout,"Undo restored both installed mods",ct);
-        passed.Add("Cancel and confirm bulk selection, disable both, and undo the applied change");
+        passed.Add("Stage bulk changes without deployment, explicitly apply and clear pending, then undo");
 
         const string review = "Existing mod layouts — read-only preview";
         var inspect = await Button("Inspect nested mod package layouts without making changes");
