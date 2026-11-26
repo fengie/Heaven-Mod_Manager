@@ -7,7 +7,9 @@ $ErrorActionPreference = 'Stop'
 
 # A diagnostic inventory, not publication authority. Keep missing and invalid
 # evidence distinct from an observed failure and never infer a green result.
-$inventory = @(Get-Content -LiteralPath $InventoryPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+# Windows PowerShell 5.1 can emit a JSON root array as one pipeline object.
+# Assign directly and let foreach enumerate the actual root array.
+$inventory = ConvertFrom-Json -InputObject (Get-Content -LiteralPath $InventoryPath -Raw -Encoding UTF8)
 $expected = New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList ([StringComparer]::OrdinalIgnoreCase)
 $ids = @()
 foreach ($profile in $inventory) {
