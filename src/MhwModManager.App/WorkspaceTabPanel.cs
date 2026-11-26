@@ -12,7 +12,7 @@ namespace MhwModManager.App;
 public sealed class WorkspaceTabPanel : Panel
 {
     public const string DragFormat = "Heaven.ModManager.WorkspaceTab.v1";
-    private IReadOnlyList<string> order = WorkspaceLayout.Default.NavigationOrder;
+    private IReadOnlyList<string> order;
     private TabItem? pressedTab;
     private TabItem? draggedTab;
     private Point pressPoint;
@@ -20,10 +20,18 @@ public sealed class WorkspaceTabPanel : Panel
     public WorkspaceTabPanel()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        order = WorkspaceLayout.Default.NavigationOrder;
         AllowDrop = true;
     }
 
-    public IReadOnlyList<string> Order => order;
+    public IReadOnlyList<string> Order
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return order;
+        }
+    }
     public event EventHandler? OrderChanged;
 
     public void SetOrder(IEnumerable<string>? value)

@@ -17,7 +17,14 @@ public sealed record WorkspaceLayout(IReadOnlyList<string> NavigationOrder, doub
         "HistoryTab", "SharedFilesTab", "SettingsTab", "BrowseModsTab", "InstalledFilesTab"
     });
 
-    public static WorkspaceLayout Default => new(DefaultNavigation, DefaultSidebarWidth, null);
+    public static WorkspaceLayout Default
+    {
+        get
+        {
+            using var __mhwTrace = MasterDebugLog.BeginMethod();
+            return new(DefaultNavigation, DefaultSidebarWidth, null);
+        }
+    }
 
     public static WorkspaceLayout Normalize(WorkspaceLayout? saved)
     {
