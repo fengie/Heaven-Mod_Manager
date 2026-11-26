@@ -100,13 +100,23 @@ public sealed class WpfControlInventoryTests
         }
     }
 
+    private static readonly string[] InventoryExpectedDifferences =
+    [
+        "Expected 0, found 1: new",
+        "Expected 1, found 0: removed",
+        "Expected 2, found 1: repeat"
+    ];
+    private static readonly string[] InventoryRecordedSites = ["removed", "repeat", "repeat", "same"];
+    private static readonly string[] InventoryChangedSites = ["new", "repeat", "same"];
+    private static readonly string[] InventoryEquivalentSites = ["same", "repeat", "repeat"];
+    private static readonly string[] InventoryReorderedSites = ["repeat", "same", "repeat"];
+
     [Fact]
     public void InventoryDiagnosticsReportEveryMissingExtraAndRepeatedSite()
     {
-        Assert.Equal(
-            new string[] { "Expected 0, found 1: new", "Expected 1, found 0: removed", "Expected 2, found 1: repeat" },
-            DescribeInventoryDifferences(["removed", "repeat", "repeat", "same"], ["new", "repeat", "same"]));
-        Assert.Empty(DescribeInventoryDifferences(["same", "repeat", "repeat"], ["repeat", "same", "repeat"]));
+        Assert.Equal(InventoryExpectedDifferences,
+            DescribeInventoryDifferences(InventoryRecordedSites, InventoryChangedSites));
+        Assert.Empty(DescribeInventoryDifferences(InventoryEquivalentSites, InventoryReorderedSites));
     }
 
     private static string[] DescribeInventoryDifferences(string[] recorded, string[] discovered)
