@@ -204,7 +204,7 @@ MainWindow.xaml | TabItem:Mods | Button | Content=Select All ; Command={Binding 
 MainWindow.xaml | TabItem:Mods | Button | Content=Undo ; Command={Binding UndoCommand} ; AutomationProperties.Name=Undo Last Applied Change
 MainWindow.xaml | TabItem:Mods | DataGrid | Name=ModLibraryGrid ; ItemsSource={Binding LibraryView} ; SelectedItem={Binding SelectedLibraryItem,Mode=TwoWay} ; IsReadOnly=True ; AutomationProperties.Name=Mod library
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=
-MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=ENABLED
+MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=STAGED ON
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=PLANNED EFFECT
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=INSTALLED FROM
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=MOD
