@@ -109,6 +109,7 @@ public sealed class SafeLaunchTests
                 Assert.Contains("unavailable", vm.StatusText, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("unavailable", vm.FooterText, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("installation path", vm.FooterText, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("unavailable", vm.LaunchFeedback, StringComparison.OrdinalIgnoreCase);
                 var after = await services.PlannerSnapshots.LoadAsync(ct);
                 Assert.Equal(before.CurrentManifest.OrderBy(item => item.Key), after.CurrentManifest.OrderBy(item => item.Key));
             }
@@ -135,6 +136,7 @@ public sealed class SafeLaunchTests
                 Assert.True(vm.HasPendingDeployment);
                 await vm.LaunchModdedCommand.ExecuteAsync(null);
                 Assert.Contains("Apply", vm.FooterText, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Apply", vm.LaunchFeedback, StringComparison.OrdinalIgnoreCase);
                 Assert.True(vm.HasPendingDeployment);
                 Assert.False(File.Exists(services.Executor.Destination(file.Path)));
                 Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);

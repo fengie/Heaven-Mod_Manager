@@ -18,7 +18,7 @@ public sealed class WorkspaceLayoutRegressionTests
         Assert.Equal("DashboardTab", recovered.NavigationOrder[1]);
         Assert.Equal(WorkspaceLayout.Default.NavigationOrder.Order(), recovered.NavigationOrder.Order());
         Assert.Equal(WorkspaceLayout.DefaultSidebarWidth, recovered.SidebarWidth);
-        Assert.Equal(WorkspaceLayout.MaximumToolsHeight, recovered.ModToolsHeight);
+        Assert.Equal<double?>(WorkspaceLayout.MaximumToolsHeight, recovered.ModToolsHeight);
         Assert.Equal(WorkspaceLayout.MinimumSidebarWidth,
             WorkspaceLayout.Normalize(new WorkspaceLayout([], -50, -50)).SidebarWidth);
         Assert.Null(WorkspaceLayout.Normalize(new WorkspaceLayout([], 200, double.NaN)).ModToolsHeight);
@@ -44,8 +44,8 @@ public sealed class WorkspaceLayoutRegressionTests
             var saved = ManagerSettingsStore.Load(path);
             var layout = WorkspaceLayout.Normalize(saved.Current.Workspace);
             Assert.Equal(order, layout.NavigationOrder);
-            Assert.Equal(290, layout.SidebarWidth);
-            Assert.Equal(155, layout.ModToolsHeight);
+            Assert.Equal(290d, layout.SidebarWidth);
+            Assert.Equal<double?>(155d, layout.ModToolsHeight);
             saved.Update(settings => settings.Workspace = WorkspaceLayout.Default);
             var reset = ManagerSettingsStore.Load(path).Current;
             Assert.Equal(WorkspaceLayout.Default.NavigationOrder, WorkspaceLayout.Normalize(reset.Workspace).NavigationOrder);

@@ -452,3 +452,14 @@ MainWindow.xaml | TabItem:Mods | Button | Content={Binding FavoriteActionLabel} 
 MainWindow.xaml | TabItem:Mods | TextBox | Text={Binding CustomCategoryText,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name=Custom category
 MainWindow.xaml | TabItem:Mods | Button | Content=Set category ; Command={Binding AssignCustomCategoryCommand}
 MainWindow.xaml | TabItem:Mods | Expander | Header=Library organization and range selection ; IsExpanded=False
+App.xaml | Style:TabControlMainNavigationTabs/ControlTemplate:TabControl | WorkspaceTabPanel | Name=PART_NavigationHeaderPanel
+App.xaml | Style:TabControlMainNavigationTabs/ControlTemplate:TabControl | GridSplitter | Name=PART_NavigationSplitter ; AutomationProperties.Name=Resize navigation pane
+MainWindow.xaml | TabItem:Mods | ScrollViewer |
+MainWindow.xaml | TabItem:Mods | GridSplitter | AutomationProperties.Name=Resize mod tools and library ; KeyUp=OnWorkspaceSplitterKeyUp
+MainWindow.xaml |  | Button | Content=Reset Layout ; Click=OnResetWorkspaceLayout ; AutomationProperties.Name=Reset workspace layout
+MainWindow.xaml.cs | event | workspaceSidebarSplitter.KeyUp | OnWorkspaceSplitterKeyUp
+MainWindow.xaml.cs | event | workspaceHeaderPanel.OrderChanged | OnWorkspaceOrderChanged
+WorkspaceTabPanel.cs | keyboard | Key.Up
+WorkspaceTabPanel.cs | keyboard | Key.Up
+WorkspaceTabPanel.cs | keyboard | Key.Down
+WorkspaceTabPanel.cs | keyboard | Key.Down
