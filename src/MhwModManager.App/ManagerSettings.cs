@@ -12,6 +12,7 @@ public sealed class ManagerSettings
     public bool UiAnimationsEnabled { get; set; } = true;
     public bool RememberLastTab { get; set; } = true;
     public int LastSelectedTab { get; set; }
+    public WorkspaceLayout? Workspace { get; set; }
     public bool ConfirmBeforeApply { get; set; } = true;
     public bool ConfirmBeforeDiscardStaged { get; set; } = true;
     public bool BackgroundMetadataRefreshEnabled { get; set; } = true;
