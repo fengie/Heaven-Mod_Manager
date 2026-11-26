@@ -188,13 +188,14 @@ MainWindow.xaml | TabItem:Mods | Button | Content={Binding StagedViewLabel} ; Co
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding SupersededViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Superseded
 MainWindow.xaml | TabItem:Mods | Button | Content={Binding UpdatesViewLabel} ; Command={Binding SetModViewCommand} ; CommandParameter=Updates
 MainWindow.xaml | TabItem:Mods | Button | Content=Apply Mod Changes ; Command={Binding ApplyCommand} ; IsEnabled={Binding HasPendingDeployment}
+MainWindow.xaml | TabItem:Mods | Button | Content=Auto Select Mods ; Command={Binding AutoPopulateCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Bring In Manual Mods ; Command={Binding AdoptManualFilesCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Bring In Manual Mods ; Command={Binding AdoptManualFilesCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Clear filters ; Command={Binding ClearModFiltersCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Deselect All ; Command={Binding ClearBulkSelectionCommand} ; IsEnabled={Binding HasBulkSelection} ; AutomationProperties.Name=Deselect all selected mods
-MainWindow.xaml | TabItem:Mods | Button | Content=Disable selected mods ; Command={Binding DisableSelectedCommand} ; IsEnabled={Binding HasBulkSelection}
+MainWindow.xaml | TabItem:Mods | Button | Content=Stage disable selected ; Command={Binding DisableSelectedCommand} ; IsEnabled={Binding HasBulkSelection}
 MainWindow.xaml | TabItem:Mods | Button | Content=Discard Pending Changes ; Command={Binding DiscardStagedCommand} ; IsEnabled={Binding HasStagedChanges}
-MainWindow.xaml | TabItem:Mods | Button | Content=Enable selected mods ; Command={Binding EnableSelectedCommand} ; IsEnabled={Binding HasBulkSelection}
+MainWindow.xaml | TabItem:Mods | Button | Content=Stage enable selected ; Command={Binding EnableSelectedCommand} ; IsEnabled={Binding HasBulkSelection}
 MainWindow.xaml | TabItem:Mods | Button | Content=Inspect Existing Mod Layouts ; Command={Binding InspectExistingModCollectionsCommand} ; AutomationProperties.Name=Inspect nested mod package layouts without making changes
 MainWindow.xaml | TabItem:Mods | Button | Content=Install Mod ; Command={Binding ImportArchiveCommand}
 MainWindow.xaml | TabItem:Mods | Button | Content=Preview Mod Changes ; Command={Binding PreviewApplyCommand} ; IsEnabled={Binding HasPendingDeployment}
@@ -215,8 +216,8 @@ MainWindow.xaml | TabItem:Mods | KeyBinding | Key=Enter ; Command={Binding Submi
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector |
 MainWindow.xaml | TabItem:Mods | LibraryRowStyleSelector.ExternalStyle |
 MainWindow.xaml | TabItem:Mods | TextBox | Name=ModSearchBox ; Text={Binding SearchText,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name=Search mods
-MainWindow.xaml | TabItem:Mods/DataGridTemplateColumn:ENABLED/DataTemplate: | CheckBox | IsEnabled={Binding CanStage} ; IsChecked={Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name={Binding DisplayName}
-MainWindow.xaml | TabItem:Mods/DataGridTemplateColumn:SELECT/DataTemplate: | CheckBox | IsEnabled={Binding CanStage} ; IsChecked={Binding BulkSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name={Binding DisplayName,StringFormat='Select {0} for bulk action'}
+MainWindow.xaml | TabItem:Mods/DataGridTemplateColumn:STAGED ON/DataTemplate: | CheckBox | IsEnabled={Binding CanStage} ; IsChecked={Binding StagedEnabled,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name={Binding DisplayName}
+MainWindow.xaml | TabItem:Mods/DataGridTemplateColumn:MARK/DataTemplate: | CheckBox | IsEnabled={Binding CanStage} ; IsChecked={Binding BulkSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged} ; AutomationProperties.Name={Binding DisplayName,StringFormat='Select {0} for bulk action'}
 MainWindow.xaml | TabItem:Mods/DataTemplate: | ItemsControl | ItemsSource={Binding GalleryPaths}
 MainWindow.xaml | TabItem:Mods/DataTemplate: | ItemsControl | ItemsSource={Binding Parts} ; IsEnabled={Binding CanStage}
 MainWindow.xaml | TabItem:Mods/DataTemplate: | ItemsControl | ItemsSource={Binding SuggestedParents}
