@@ -11,7 +11,7 @@ public sealed record WorkspaceLayout(IReadOnlyList<string> NavigationOrder, doub
     public const double MinimumToolsHeight = 80;
     public const double MaximumToolsHeight = 340;
 
-    private static readonly IReadOnlyList<string> DefaultNavigation = Array.AsReadOnly(new[]
+    private static readonly System.Collections.ObjectModel.ReadOnlyCollection<string> DefaultNavigation = Array.AsReadOnly(new[]
     {
         "DashboardTab", "ModsTab", "CoverageTab", "AttentionTab", "ProfilesTab",
         "HistoryTab", "SharedFilesTab", "SettingsTab", "BrowseModsTab", "InstalledFilesTab"
