@@ -4,7 +4,7 @@ $tokens=$null
 $errors=$null
 $ast=[System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot '..\release\Verify-Release.ps1'),[ref]$tokens,[ref]$errors)
 if($errors.Count -gt 0){throw 'Verifier script must parse before testing its cache.'}
-foreach($name in @('Add-ProjectInputs','Get-ProjectFingerprint','Get-StageFingerprint','Get-CachedStage','Initialize-StageCache','Invoke-BuildAndTestStages','Add-BlockedStage')){
+foreach($name in @('Add-ProjectInputs','Get-ProjectFingerprint','Get-StageFingerprint','Get-CachedStage','Initialize-StageCache','Set-CachedStage','Invoke-CachedDotnetStep','Invoke-BuildAndTestStages','Add-BlockedStage')){
     $definition=$ast.Find({param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name},$true)
     if($null -eq $definition){throw "Missing fingerprint function: $name"}
     . ([scriptblock]::Create($definition.Extent.Text))
@@ -58,6 +58,9 @@ try{
         Set-Content -LiteralPath (Join-Path $Root $relative) -Value 'changed external verification input'
         if($before -eq (Get-ProjectFingerprint $integration)){throw "Integration fingerprint ignored $relative"}
     }
+    $before=Get-ProjectFingerprint $integration
+    Remove-Item -LiteralPath (Join-Path $Root 'docs/verification/wpf-control-inventory.txt')
+    if($before -eq (Get-ProjectFingerprint $integration)){throw 'Removing an inventory input did not invalidate integration evidence.'}
     if($coreBefore -ne (Get-ProjectFingerprint $core)){throw 'Unrelated integration runtime inputs invalidated Core.'}
 
     $buildArgs=@('build',$core,'-c','Release','--no-incremental','-warnaserror')
@@ -99,8 +102,29 @@ try{
     function Invoke-DotnetStep {
         param($Group,$Name,$Arguments,$LogName)
         $script:FixtureCalls += $Name
+        $script:FixtureArguments=@($Arguments)
         return ($Name -ne $script:FixtureFailure)
     }
+    function Save-StageCache { $script:FixtureCacheWrites++ }
+    $script:FixtureCalls=@()
+    $script:FixtureResults=@()
+    $script:FixtureCacheWrites=0
+    $script:FixtureFailure='cache fixture'
+    $currentFingerprint=Get-StageFingerprint $core $buildArgs
+    $script:StageCache=@{ fixture=[pscustomobject]@{id='fixture';fingerprint=$currentFingerprint;verified=$true} }
+    $env:CI='true'
+    if(Invoke-CachedDotnetStep 'fixture' $core 'Tests' 'cache fixture' $buildArgs 'fixture-log'){throw 'Failed fresh execution returned success.'}
+    if($script:StageCache.ContainsKey('fixture') -or $script:FixtureCacheWrites -ne 1){throw 'Observed stage failure did not invalidate its positive cache entry.'}
+    $script:FixtureFailure=''
+    if(!(Invoke-CachedDotnetStep 'fixture' $core 'Tests' 'cache fixture' $buildArgs 'fixture-log' -Binlog 'owned.binlog')){throw 'Successful fresh execution was not credited.'}
+    if($script:StageCache['fixture'].fingerprint -cne $currentFingerprint -or $script:FixtureCacheWrites -ne 2){throw 'Stage cache did not retain exact fresh invocation evidence.'}
+    if($script:FixtureArguments[-1] -ne '-bl:owned.binlog'){throw 'Diagnostic binlog argument was lost.'}
+    $env:CI=''
+    $beforeCalls=$script:FixtureCalls.Count
+    if(!(Invoke-CachedDotnetStep 'fixture' $core 'Tests' 'cache fixture' $buildArgs 'fixture-log' -Binlog 'another-owned.binlog')){throw 'Identical local stage was not reusable.'}
+    if($script:FixtureCalls.Count -ne $beforeCalls){throw 'Generated binlog output path invalidated semantic evidence.'}
+
+    # Substitute only the native command boundary for dependency tests.
     function Invoke-CachedDotnetStep {
         param($CacheId,$ProjectPath,$Group,$Name,$Arguments,$LogName,$Binlog)
         $script:FixtureCalls += $Name
