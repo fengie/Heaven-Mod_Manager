@@ -208,7 +208,7 @@ MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=STAGED ON
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=PLANNED EFFECT
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=INSTALLED FROM
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=MOD
-MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=SELECT
+MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=MARK
 MainWindow.xaml | TabItem:Mods | DataGridTemplateColumn | Header=STATUS
 MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=CATEGORY ; Binding={Binding DisplayCategory,Mode=OneWay} ; IsReadOnly=True
 MainWindow.xaml | TabItem:Mods | DataGridTextColumn | Header=LOAD ORDER ; Binding={Binding Priority} ; IsReadOnly=True
