@@ -56,6 +56,7 @@ public sealed class CatalogSyncService
             request,
             cursor: null,
             options,
+            visitedCursors: null,
             ct).ConfigureAwait(false);
     }
 
@@ -82,38 +83,28 @@ public sealed class CatalogSyncService
             scopeKey,
             ct).ConfigureAwait(false);
 
-        CatalogSyncResult current;
-        if (previous is null || (string.IsNullOrWhiteSpace(previous.Cursor) && previous.LastSuccessAt is null))
-        {
-            current = await SyncAsync(provider, request, options, ct).ConfigureAwait(false);
-        }
-        else if (string.IsNullOrWhiteSpace(previous.Cursor))
-        {
+        if (previous is not null && string.IsNullOrWhiteSpace(previous.Cursor)
+            && previous.LastSuccessAt is not null)
             return 0;
-        }
-        else
+
+        // Track requested cursors, including the persisted resume point, before
+        // accepting the next page. Invalid cycles must not overwrite the last
+        // good continuation or publish their unverified page into the cache.
+        var visitedCursors = new HashSet<string>(StringComparer.Ordinal);
+        var cursor = string.IsNullOrWhiteSpace(previous?.Cursor) ? null : previous.Cursor;
+        var total = 0;
+        while (true)
         {
-            current = await SyncNextPageAsync(provider, request, options, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            if (cursor is not null)
+                visitedCursors.Add(cursor);
+            var current = await SyncPageAsync(provider, request, cursor, options,
+                visitedCursors, ct).ConfigureAwait(false);
+            total = checked(total + current.ItemCount);
+            if (!current.HasMore)
+                return total;
+            cursor = current.NextCursor;
         }
-
-        var total = current.ItemCount;
-        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
-        while (current.HasMore)
-        {
-            var cursor = current.NextCursor!;
-            if (!seenCursors.Add(cursor))
-                throw new InvalidDataException(
-                    $"Catalog provider '{provider.ProviderId}' repeated continuation cursor '{cursor}'.");
-
-            if (current.ItemCount == 0)
-                throw new InvalidDataException(
-                    $"Catalog provider '{provider.ProviderId}' returned an empty page with a continuation cursor.");
-
-            current = await SyncNextPageAsync(provider, request, options, ct).ConfigureAwait(false);
-            total += current.ItemCount;
-        }
-
-        return total;
     }
 
     public async Task<CatalogSyncResult> SyncNextPageAsync(
@@ -156,6 +147,7 @@ public sealed class CatalogSyncService
             request,
             previous.Cursor,
             options,
+            visitedCursors: null,
             ct).ConfigureAwait(false);
     }
 
@@ -164,6 +156,7 @@ public sealed class CatalogSyncService
         CatalogBrowseRequest request,
         string? cursor,
         CatalogSyncOptions? options,
+        IReadOnlySet<string>? visitedCursors,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
@@ -197,6 +190,17 @@ public sealed class CatalogSyncService
             {
                 var discovered = await provider.SearchModsAsync(request, ct).ConfigureAwait(false);
                 page = new CatalogBrowsePage(discovered);
+            }
+
+            if (page.HasMore)
+            {
+                var next = page.NextCursor!;
+                if (page.Items.Count == 0)
+                    throw new InvalidDataException(
+                        $"Catalog provider '{provider.ProviderId}' returned an empty page with a continuation cursor.");
+                if (StringComparer.Ordinal.Equals(cursor, next) || visitedCursors?.Contains(next) == true)
+                    throw new InvalidDataException(
+                        $"Catalog provider '{provider.ProviderId}' repeated a continuation cursor.");
             }
 
             var prepared = await PrepareBatchAsync(
