@@ -15,6 +15,9 @@ on:
       - 'src/MhwModManager.Core/GameProfiles.cs'
       - 'src/MhwModManager.Filesystem/GameProfileRegistry*.cs'
       - 'tests/MhwModManager.IntegrationTests/InstalledWpfAcceptanceContractTests.cs'
+      - 'tests/MhwModManager.IntegrationTests/InstalledWpfAutomationRetryTests.cs'
+      - 'scripts/testing/Get-InstalledWpfReceiptSummary.ps1'
+      - 'scripts/testing/Test-InstalledWpfReceiptSummary.ps1'
       - 'src/MhwModManager.App/MainWindow.xaml'
       - 'src/MhwModManager.App/MainWindow.xaml.cs'
       - 'src/MhwModManager.App/ViewModels/MainWindowViewModel.AutoSort.cs'
@@ -79,6 +82,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Verify installed matrix receipt diagnostics
+        shell: powershell
+        run: .\scripts\testing\Test-InstalledWpfReceiptSummary.ps1
 
       - name: Provision pinned SDK
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
@@ -234,6 +241,11 @@ jobs:
           if ($repairedIds.Count -ne $expectedIds.Count -or (Compare-Object $expectedIds $repairedIds)) {
             throw 'The move-repair receipts do not cover the registered fixture inventory.'
           }
+          # Keep the existing full inventory and test-count requirements, and
+          # additionally reject malformed or unexpected per-profile evidence.
+          $receiptSummary = & .\scripts\testing\Get-InstalledWpfReceiptSummary.ps1 `
+            -InventoryPath tests/fixtures/discovered-games/games.json -EvidenceDirectory $evidence
+          if (!$receiptSummary.complete) { throw 'Installed matrix contains incomplete or invalid receipts.' }
           $exe = Join-Path $env:MHW_WPF_E2E_PACKAGE_DIR 'MHW Mod Manager.exe'
           if ('${{ steps.picker.outcome }}' -ne 'success') { throw 'The picker checks failed. Per-game receipts were retained without a passing release proof.' }
           $proof = [ordered]@{
@@ -249,6 +261,29 @@ jobs:
           $proofJson = $proof | ConvertTo-Json -Depth 4
           $proofJson | Set-Content -LiteralPath (Join-Path $evidence 'proof.json') -Encoding UTF8
           Write-Host $proofJson
+
+      - name: Report completed, failed and unreached fixture profiles
+        if: ${{ always() && env.MHW_GAME_UI_EVIDENCE != '' }}
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $summary = & .\scripts\testing\Get-InstalledWpfReceiptSummary.ps1 `
+            -InventoryPath tests/fixtures/discovered-games/games.json -EvidenceDirectory $env:MHW_GAME_UI_EVIDENCE
+          $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $env:MHW_GAME_UI_EVIDENCE 'matrix-summary.json') -Encoding UTF8
+          $lines = New-Object 'System.Collections.Generic.List[string]'
+          $lines.Add('## Installed WPF profile diagnostics')
+          $lines.Add("Expected game/repair receipts: $($summary.expectedCount); passed: $($summary.passedCount); failed: $($summary.failedCount); not run: $($summary.notRunCount); invalid: $($summary.invalidCount); unexpected: $($summary.unexpectedCount).")
+          $lines.Add('')
+          $lines.Add('This is diagnostic evidence; it does not replace the required full acceptance result.')
+          foreach ($row in @($summary.profiles | Where-Object { $_.status -ne 'Passed' })) {
+            $label = ([string]$row.lastSuccess) -replace '[\r\n]',' '
+            if ($label.Length -gt 150) { $label = $label.Substring(0,150) }
+            $detail = if ($label) { " after $label" } else { '' }
+            $lines.Add("- $($row.scenario)/$($row.profileId): $($row.status)$detail")
+          }
+          foreach ($name in @($summary.unexpectedReceipts)) { $lines.Add("- Unexpected receipt: $name") }
+          $lines | ForEach-Object { Write-Host $_ }
+          $lines | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding UTF8
 
       - name: Retain bounded evidence when artifact quota allows
         if: always()

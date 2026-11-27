@@ -684,7 +684,10 @@ public sealed partial class XamlBindingSafetyTests
         Assert.Contains("ModsView.Cast<ModRowViewModel>().Where(row => row.CanStage).ToArray()", selection);
         Assert.Contains("IsEnabled=\"{Binding CanStage}\"", xaml);
         Assert.Contains("row.BulkSelected = true", selection);
-        Assert.Contains("ApplyStagedChangesAsync(confirm: true, forceConfirm: hadPending)", selection);
+        Assert.Contains("StageSelected(true);", selection);
+        Assert.Contains("StageSelected(false);", selection);
+        Assert.Contains("Mods.Where(row => row.BulkSelected && row.CanStage).ToArray()", selection);
+        Assert.DoesNotContain("ApplyStagedChangesAsync(", selection);
         Assert.Contains("\"Disabled\"=>!m.AppliedEnabled", main);
         Assert.Contains("public string PendingStateLabel", rows);
         Assert.Contains("OnPropertyChanged(nameof(PendingStateLabel));", rows);
