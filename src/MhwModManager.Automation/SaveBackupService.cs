@@ -60,7 +60,7 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
             await RecordSnapshotAsync(id, reason, root, source, state, build?.Sha256, manifest, ct);
             recorded = true;
             // Do not reacquire the lease: capture owns the root through retention.
-            await PruneCoreAsync(30, ct, null);
+            await PruneCoreAsync(30, null, ct);
             return new(true, id, root, source, copied, source is null ? $"Snapshot created for {game.DisplayName}; no configured save file was found, so mod/deployment state only was captured." : $"{game.DisplayName} save + mod/deployment snapshot created.");
         }
         catch
@@ -242,10 +242,14 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ct.ThrowIfCancellationRequested();
+        GameModIntakeService.RefuseReparseComponents(SnapshotRoot);
         Directory.CreateDirectory(SnapshotRoot);
+        GameModIntakeService.RefuseReparseComponents(SnapshotRoot);
+        var lockPath = Path.Combine(SnapshotRoot, ".snapshot-operation.lock");
+        GameModIntakeService.RefuseReparseComponents(lockPath);
         try
         {
-            return new FileStream(Path.Combine(SnapshotRoot, ".snapshot-operation.lock"),
+            return new FileStream(lockPath,
                 FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         }
         catch (IOException ex)
@@ -259,10 +263,10 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentOutOfRangeException.ThrowIfNegative(keep);
         using var operation = AcquireSnapshotOperation(ct);
-        await PruneCoreAsync(keep, ct, unlinkReparsePoint);
+        await PruneCoreAsync(keep, unlinkReparsePoint, ct);
     }
 
-    private async Task PruneCoreAsync(int keep, CancellationToken ct, Action<string>? unlinkReparsePoint)
+    private async Task PruneCoreAsync(int keep, Action<string>? unlinkReparsePoint, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
 
