@@ -5,14 +5,16 @@ namespace MhwModManager.Core;
 public static partial class PathRules
 {
     public static readonly StringComparer Comparer = StringComparer.OrdinalIgnoreCase;
-    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+    // Validate against the destination filesystem's rules, even when core
+    // verification runs on a non-Windows host.
+    private static readonly char[] InvalidFileNameChars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
     private static readonly HashSet<string> ReservedDeviceNames = BuildReservedNames();
 
     public static string Normalize(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var p = path.Replace('/', '\\').Trim();
+        var p = path.Replace('/', '\\');
         if (p.StartsWith('\\') || Path.IsPathRooted(p))
             throw new ArgumentException($"Unsafe rooted path: {path}", nameof(path));
         p = p.TrimStart('\\');
@@ -32,7 +34,7 @@ public static partial class PathRules
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (string.IsNullOrWhiteSpace(path))
             return false;
-        var p = path.Replace('/', '\\').Trim();
+        var p = path.Replace('/', '\\');
         if (p.StartsWith('\\') || Path.IsPathRooted(p) || p.Contains(':'))
             return false;
         var segments = p.Split('\\', StringSplitOptions.RemoveEmptyEntries);
@@ -44,12 +46,15 @@ public static partial class PathRules
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (segment is "." or ".." || string.IsNullOrWhiteSpace(segment))
             return true;
-        if (segment.Contains(':') || segment.IndexOfAny(InvalidFileNameChars) >= 0)
+        if (segment.IndexOfAny(InvalidFileNameChars) >= 0 || segment.Any(ch => ch < 32))
             return true;
         var trimmed = segment.TrimEnd('.', ' ');
         if (trimmed.Length == 0 || !trimmed.Equals(segment, StringComparison.Ordinal))
             return true;
-        var stem = Path.GetFileNameWithoutExtension(trimmed);
+        // Windows reserves the device name before the FIRST extension
+        // (e.g. NUL.tar.gz is still NUL), not only the last extension.
+        var extension = trimmed.IndexOf('.');
+        var stem = (extension < 0 ? trimmed : trimmed[..extension]).TrimEnd(' ');
         return ReservedDeviceNames.Contains(stem);
     }
 
@@ -117,6 +122,11 @@ public static partial class PathRules
         {
             names.Add($"COM{i}");
             names.Add($"LPT{i}");
+        }
+        foreach (var digit in "¹²³")
+        {
+            names.Add($"COM{digit}");
+            names.Add($"LPT{digit}");
         }
         return names;
     }
