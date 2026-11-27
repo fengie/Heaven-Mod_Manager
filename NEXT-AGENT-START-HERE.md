@@ -1,6 +1,6 @@
-# v8.8.146 — exact deployment review and library organization release pending
+# v8.8.146 - immutable release verified
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd` after #986. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical source: `fengie/Heaven-Mod_Manager@main` at `4d944e1c4c72142115802271e338daaca133fd03`. Public immutable [updater-main-651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -27,9 +27,11 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Verification boundary
 
-Published [v8.8.145 build 649](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-649) from `b611408ea33997a7e7f9a500864aff5b5aee7225`. Windows Gate [45612139146](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45612139146) and genuine hosted update/rollback [45614469145](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45614469145) passed. The checked-in closure ledger for build 641 remains preserved; hosted success is not physical-game or personal H2 proof.
+Current hosted-Windows closure: v8.8.146 source `4d944e1c4c72142115802271e338daaca133fd03` passed run `45724110053` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.146-heaven-windows-closure.log`.
 
-Integrate synchronized v8.8.146 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Preserve provider access, personal data, rollback and recursive continuity.
+Verified immutable GitHub release: [updater-main-651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651), exact source `4d944e1c4c72142115802271e338daaca133fd03`, ZIP SHA-256 `8148d8edfbd0fc516914705009ac16b71dca44db66719da07e1127f0c02c5238` and manifest SHA-256 `3dd3a4c071da90fc0cb817678082214097bf771bf77b76a76749607a96db2952`. Public release and tag ref independently match the built artifact.
+
+The tested source remains `4d944e1c4c72142115802271e338daaca133fd03` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Unresolved risk and acceptance
 

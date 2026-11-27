@@ -74,6 +74,53 @@ public sealed class InstalledWpfAutomationRetryTests
     }
 
     [Fact]
+    public void PreInputFocusReacquiresAReboundControlWithoutReplayingAnAction()
+    {
+        var generation = "initial";
+        string? focusedGeneration = null;
+        var focusAttempts = 0;
+        var inputCount = 0;
+        string FindReady() => generation;
+        bool IsFocused(string candidate) => focusedGeneration == candidate && generation == candidate;
+        void Focus(string candidate)
+        {
+            focusAttempts++;
+            focusedGeneration = candidate;
+            if (focusAttempts == 1) generation = "rebound"; // WPF replaced the original control.
+        }
+
+        Assert.False(InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+            FindReady, IsFocused, Focus));
+        Assert.Equal(0, inputCount);
+        Assert.True(InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+            FindReady, IsFocused, Focus));
+        inputCount++; // The caller sends its single activation only after verification.
+        Assert.True(InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+            FindReady, IsFocused, Focus));
+        Assert.Equal(2, focusAttempts);
+        Assert.Equal(1, inputCount);
+    }
+
+    [Fact]
+    public void PreInputFocusRetriesUnavailableAndDisabledControlsButNotApplicationFailures()
+    {
+        string? Missing() => null;
+        string Ready() => "current";
+        Assert.False(InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+            Missing, _ => false, _ => throw new InvalidOperationException("No target may be focused")));
+        Assert.False(InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+            Ready, _ => false, _ => throw new ElementNotEnabledException("Rebinding")));
+        Assert.False(InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+            Ready, _ => false, _ => throw new ElementNotAvailableException("Rebinding")));
+        Assert.Throws<InvalidOperationException>(() =>
+            InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+                Ready, _ => false, _ => throw new InvalidOperationException("Unexpected failure")));
+        Assert.Throws<OperationCanceledException>(() =>
+            InstalledWpfModLifecycleE2ETests.TryAcquireCurrentFocus<string>(
+                Ready, _ => false, _ => throw new OperationCanceledException()));
+    }
+
+    [Fact]
     public void Com_unavailable_elements_can_be_retried_while_hosted_ui_rebinds()
     {
         var providerFailure = Marshal.GetExceptionForHR(unchecked((int)0x80004005))
