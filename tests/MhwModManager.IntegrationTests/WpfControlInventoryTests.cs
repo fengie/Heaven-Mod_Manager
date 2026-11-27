@@ -100,6 +100,37 @@ public sealed class WpfControlInventoryTests
         }
     }
 
+    private static readonly string[] InventoryExpectedDifferences =
+    [
+        "Expected 0, found 1: new",
+        "Expected 1, found 0: removed",
+        "Expected 2, found 1: repeat"
+    ];
+    private static readonly string[] InventoryRecordedSites = ["removed", "repeat", "repeat", "same"];
+    private static readonly string[] InventoryChangedSites = ["new", "repeat", "same"];
+    private static readonly string[] InventoryEquivalentSites = ["same", "repeat", "repeat"];
+    private static readonly string[] InventoryReorderedSites = ["repeat", "same", "repeat"];
+
+    [Fact]
+    public void InventoryDiagnosticsReportEveryMissingExtraAndRepeatedSite()
+    {
+        Assert.Equal(InventoryExpectedDifferences,
+            DescribeInventoryDifferences(InventoryRecordedSites, InventoryChangedSites));
+        Assert.Empty(DescribeInventoryDifferences(InventoryEquivalentSites, InventoryReorderedSites));
+    }
+
+    private static string[] DescribeInventoryDifferences(string[] recorded, string[] discovered)
+    {
+        var expected = recorded.GroupBy(site => site, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        var actual = discovered.GroupBy(site => site, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        return expected.Keys.Union(actual.Keys, StringComparer.Ordinal).Order(StringComparer.Ordinal)
+            .Where(site => expected.GetValueOrDefault(site) != actual.GetValueOrDefault(site))
+            .Select(site => $"Expected {expected.GetValueOrDefault(site)}, found {actual.GetValueOrDefault(site)}: {site}")
+            .ToArray();
+    }
+
     [Fact]
     public async Task SourceSitesAndBehaviorReferencesMatchTheReviewedInventory()
     {
@@ -126,6 +157,10 @@ public sealed class WpfControlInventoryTests
         var discovered = (await output).Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         var recorded = await File.ReadAllLinesAsync(Path.Combine(verification, "wpf-control-inventory.txt"), token);
         // Include repeated sites: a second control wired to the same command requires review too.
+        var differences = DescribeInventoryDifferences(recorded, discovered);
+        if (differences.Length != 0)
+            Assert.Fail("WPF control inventory differs from reviewed source sites:" + Environment.NewLine +
+                string.Join(Environment.NewLine, differences));
         Assert.Equal(recorded.Order(StringComparer.Ordinal), discovered.Order(StringComparer.Ordinal));
 
         var mappings = await File.ReadAllLinesAsync(Path.Combine(verification, "wpf-control-behavior.tsv"), token);

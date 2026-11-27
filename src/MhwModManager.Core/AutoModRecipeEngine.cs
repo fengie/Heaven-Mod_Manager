@@ -7,12 +7,16 @@ namespace MhwModManager.Core;
 
 public static class AutoModRecipeParser
 {
+    public const int MaxRecipeUtf8Bytes = 256 * 1024;
+    private const int MaxAdapterRequirements = 64;
     private static readonly JsonSerializerOptions Options = CreateOptions();
 
     public static AutoModRecipeV1 Parse(string json)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentException.ThrowIfNullOrWhiteSpace(json);
+        if (json.Length > MaxRecipeUtf8Bytes || Encoding.UTF8.GetByteCount(json) > MaxRecipeUtf8Bytes)
+            throw new JsonException("Auto Mod recipe exceeds the 256 KiB document limit.");
 
         var dto = JsonSerializer.Deserialize<RecipeDto>(json, Options)
             ?? throw new JsonException("Auto Mod recipe JSON did not contain an object.");
@@ -22,11 +26,14 @@ public static class AutoModRecipeParser
         var inputDtos = dto.Inputs ?? throw new JsonException("Auto Mod recipe inputs is required.");
         var stepDtos = dto.Steps ?? throw new JsonException("Auto Mod recipe steps is required.");
         var outputDtos = dto.Outputs ?? throw new JsonException("Auto Mod recipe outputs is required.");
+        if (adapterDtos.Count > MaxAdapterRequirements || inputDtos.Count > AutoModConstants.MaxInputs
+            || stepDtos.Count > AutoModConstants.MaxSteps || outputDtos.Count > AutoModConstants.MaxOutputs)
+            throw new JsonException("Auto Mod recipe exceeds its item-count limits.");
 
         var adapters = new AutoModAdapterRequirement[adapterDtos.Count];
         for (var i = 0; i < adapterDtos.Count; i++)
         {
-            var requirement = adapterDtos[i];
+            var requirement = adapterDtos[i] ?? throw new JsonException("Auto Mod adapter requirement cannot be null.");
             adapters[i] = new AutoModAdapterRequirement(requirement.Id ?? string.Empty, requirement.Version ?? string.Empty);
         }
 
@@ -36,8 +43,11 @@ public static class AutoModRecipeParser
         for (var i = 0; i < inputKeys.Length; i++)
         {
             var key = inputKeys[i];
-            var input = inputDtos[key];
+            var input = inputDtos[key] ?? throw new JsonException("Auto Mod input descriptor cannot be null.");
             var inputType = input.Type ?? throw new JsonException(string.Concat("Auto Mod input type is required: ", key));
+            var options = input.Options ?? throw new JsonException("Auto Mod input options cannot be null.");
+            if (options.Any(option => option is null))
+                throw new JsonException("Auto Mod input option cannot be null.");
             inputs[i] = new AutoModInputDescriptor(
                 key,
                 inputType,
@@ -47,7 +57,7 @@ public static class AutoModRecipeParser
                 input.Min,
                 input.Max,
                 input.Pattern,
-                input.Options.ToArray(),
+                options.ToArray(),
                 input.Catalog,
                 input.Advanced);
         }
@@ -55,7 +65,7 @@ public static class AutoModRecipeParser
         var steps = new AutoModRecipeStep[stepDtos.Count];
         for (var i = 0; i < stepDtos.Count; i++)
         {
-            var step = stepDtos[i];
+            var step = stepDtos[i] ?? throw new JsonException("Auto Mod recipe step cannot be null.");
             var operation = step.Op ?? throw new JsonException(string.Concat("Auto Mod step op is required: ", step.Id));
             steps[i] = new AutoModRecipeStep(
                 step.Id ?? string.Empty,
@@ -71,7 +81,7 @@ public static class AutoModRecipeParser
         var outputs = new AutoModOutputDescriptor[outputDtos.Count];
         for (var i = 0; i < outputDtos.Count; i++)
         {
-            var output = outputDtos[i];
+            var output = outputDtos[i] ?? throw new JsonException("Auto Mod recipe output cannot be null.");
             outputs[i] = new AutoModOutputDescriptor(output.Source ?? string.Empty, output.Path ?? string.Empty);
         }
 
@@ -94,7 +104,9 @@ public static class AutoModRecipeParser
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = false,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+            AllowDuplicateProperties = false,
+            MaxDepth = 32
         };
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false));
         return options;

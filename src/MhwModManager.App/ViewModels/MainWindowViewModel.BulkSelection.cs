@@ -79,17 +79,19 @@ public sealed partial class MainWindowViewModel
     private Task EnableSelected()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return ApplySelectedAsync(true);
+        StageSelected(true);
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
     private Task DisableSelected()
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return ApplySelectedAsync(false);
+        StageSelected(false);
+        return Task.CompletedTask;
     }
 
-    private async Task ApplySelectedAsync(bool enabled)
+    private void StageSelected(bool enabled)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         var targets = Mods.Where(row => row.BulkSelected && row.CanStage).ToArray();
@@ -100,28 +102,17 @@ public sealed partial class MainWindowViewModel
         }
         if (busyCts is not null)
         {
-            StatusText = "Finish the current operation before applying selected mods.";
+            StatusText = "Finish the current operation before staging selected mods.";
             return;
         }
 
-        // Never commit unrelated earlier staging silently. Existing choices can be
-        // combined, but only after an explicit confirmation of the full batch.
-        var hadPending = HasPendingDeployment;
+        // Marks select targets, never authorize live writes. Batch UI updates
+        // while preserving all other pending choices and the user's marks.
         suppressChanged = true;
         try { foreach (var row in targets) row.StagedEnabled = enabled; }
         finally { suppressChanged = false; Changed(); }
-        if (!HasPendingDeployment)
-        {
-            ClearBulkSelection();
-            StatusText = "Selected mods already match the requested activation.";
-            return;
-        }
-        await ApplyStagedChangesAsync(confirm: true, forceConfirm: hadPending);
-        if (!HasPendingDeployment)
-        {
-            var result = StatusText;
-            ClearBulkSelection();
-            StatusText = result;
-        }
+        StatusText = HasPendingDeployment
+            ? $"Staged {targets.Length} marked mod(s) {(enabled ? "on" : "off")}. {StagedCount} pending. Apply Mod Changes commits the setup."
+            : "Selected mods already match the requested activation. No game files changed.";
     }
 }
