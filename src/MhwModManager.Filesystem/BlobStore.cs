@@ -39,8 +39,8 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
         string source,
         Func<string, CancellationToken, Task> afterInitialCopy,
         bool registerInDatabase = true,
-        CancellationToken ct = default,
-        Func<string, CancellationToken, Task>? afterSourceCertification = null)
+        Func<string, CancellationToken, Task>? afterSourceCertification = null,
+        CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
         return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, afterSourceCertification, ct);
