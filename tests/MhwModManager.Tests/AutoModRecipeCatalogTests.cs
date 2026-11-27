@@ -18,7 +18,7 @@ public sealed class AutoModRecipeCatalogTests
         ], CreateRegistry());
 
         var results = catalog.Search("monster-hunter-world");
-        Assert.Equal(new[] { "a", "missing", "z" }, results.Select(x => x.SourceId));
+        Assert.Equal(["a", "missing", "z"], results.Select(x => x.SourceId).ToArray());
         Assert.True(results[0].AdapterReady);
         Assert.Contains(results[1].AdapterIssues, issue => issue.Code == "adapter.missing");
         Assert.Contains(results[2].AdapterIssues, issue => issue.Code == "adapter.version");
@@ -44,7 +44,7 @@ public sealed class AutoModRecipeCatalogTests
 
         Assert.Equal("unique", Assert.Single(first.Entries).SourceId);
         Assert.Equal("unique", Assert.Single(reversed.Entries).SourceId);
-        Assert.Equal(new[] { "first", "second" }, first.Rejected.Select(x => x.SourceId));
+        Assert.Equal(["first", "second"], first.Rejected.Select(x => x.SourceId).ToArray());
         Assert.Equal(first.Rejected.Select(x => x.SourceId), reversed.Rejected.Select(x => x.SourceId));
         Assert.All(first.Rejected, entry =>
             Assert.Contains(entry.Issues, issue => issue.Code == "catalog.duplicate_id"));
@@ -96,6 +96,18 @@ public sealed class AutoModRecipeCatalogTests
             [new("same", Recipe("a", "A")), new("same", Recipe("b", "B"))], CreateRegistry()));
     }
 
+    [Fact]
+    public void Unsupported_adapter_operation_is_visible_but_not_selectable_as_ready()
+    {
+        var registry = new AutoModAdapterRegistry();
+        registry.Register(new FixtureAdapter(supportsSet: false));
+        var catalog = AutoModRecipeCatalog.Build([new("fixture", Recipe("fixture", "Fixture"))], registry);
+        var item = Assert.Single(catalog.Search("monster-hunter-world"));
+        Assert.False(item.AdapterReady);
+        Assert.Contains(item.AdapterIssues, issue => issue.Code == "step.capability");
+        Assert.Empty(catalog.Search("monster-hunter-world", includeUnavailable: false));
+    }
+
     private static string Recipe(
         string id, string name, string game = "monster-hunter-world",
         string adapterId = "synthetic.table", string adapterVersion = ">=1.0.0 <2.0.0")
@@ -122,11 +134,11 @@ public sealed class AutoModRecipeCatalogTests
         return registry;
     }
 
-    private sealed class FixtureAdapter : IAutoModFormatAdapter
+    private sealed class FixtureAdapter(bool supportsSet = true) : IAutoModFormatAdapter
     {
         public string Id => "synthetic.table";
         public string Version => "1.2.0";
         public IReadOnlySet<AutoModOperationKind> SupportedOperations { get; } =
-            new HashSet<AutoModOperationKind> { AutoModOperationKind.SetField };
+            supportsSet ? new HashSet<AutoModOperationKind> { AutoModOperationKind.SetField } : new HashSet<AutoModOperationKind>();
     }
 }
