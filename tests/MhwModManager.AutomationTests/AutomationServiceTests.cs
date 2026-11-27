@@ -313,6 +313,65 @@ public sealed class AutomationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task LastKnownGoodPreservesObservedLaunchInsteadOfLaterCatalogState()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("observed-lkg.db");
+        await db.UpsertModAsync(new("original", "Original", "Original", Path.Combine(root, "observed-original"), true, 7), ct);
+        var service = new LastKnownGoodService(db);
+        var preflight = Path.Combine(root, "observed-snapshot");
+        var started = DateTimeOffset.UtcNow.AddSeconds(-15);
+        var state = new Dictionary<string, ModState>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["original"] = new(true, 7)
+        };
+        var observation = new LaunchObservationRecord("observed-launch", started, started.AddSeconds(15),
+            LaunchMode.Modded, "observed-build", true, null, true, state, "Observed startup");
+
+        // The game already started. A later library edit must not become part
+        // of the recovered working setup or its recorded game build.
+        await db.UpsertModAsync(new("original", "Original", "Original", Path.Combine(root, "observed-original"), false, 99), ct);
+        await db.UpsertModAsync(new("later", "Later", "Later", Path.Combine(root, "observed-later"), true, 11), ct);
+        await service.RecordObservedLaunchAsync(observation, preflight);
+        state["original"] = new(false, 100);
+
+        var known = Assert.IsType<LastKnownGoodState>(await service.LoadAsync(ct));
+        Assert.Equal(observation.EndedAt, known.RecordedAt);
+        Assert.Equal(preflight, known.SnapshotRoot);
+        Assert.Equal("observed-build", known.GameBuildSha256);
+        var saved = Assert.Single(known.Mods);
+        Assert.Equal("original", saved.Key);
+        Assert.Equal(new ModState(true, 7), saved.Value);
+        var restore = LastKnownGoodService.RestoreState(known, await db.GetModsAsync(ct));
+        Assert.Equal((true, 7), restore["original"]);
+        Assert.Equal((false, 11), restore["later"]);
+    }
+
+    [Theory]
+    [InlineData(LaunchMode.Modded, false, false)]
+    [InlineData(LaunchMode.Modded, true, false)]
+    [InlineData(LaunchMode.Vanilla, true, true)]
+    [InlineData(LaunchMode.Diagnostic, true, true)]
+    public async Task LastKnownGoodRejectsUnverifiedOrNonModdedObservations(LaunchMode mode, bool success, bool survived)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("invalid-observed-lkg.db");
+        var service = new LastKnownGoodService(db);
+        await SeedModAsync(db, "prior", "Prior");
+        await service.RecordAsync("prior-snapshot", ct);
+        var started = DateTimeOffset.UtcNow.AddSeconds(-15);
+        var observation = new LaunchObservationRecord("invalid-launch", started, started.AddSeconds(15),
+            mode, "unverified-build", success, null, survived,
+            new Dictionary<string, ModState> { ["later"] = new(true, 10) }, "Unverified setup");
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.RecordObservedLaunchAsync(observation, "other-snapshot"));
+
+        var known = Assert.IsType<LastKnownGoodState>(await service.LoadAsync(ct));
+        Assert.Equal("prior-snapshot", known.SnapshotRoot);
+        Assert.Equal("prior", Assert.Single(known.Mods).Key);
+    }
+
+    [Fact]
     public async Task LastKnownGoodChangedSinceReportsRemovedAndChangedModsSymmetrically()
     {
         var db=await CreateDbAsync("last-known-good-changes.db");
