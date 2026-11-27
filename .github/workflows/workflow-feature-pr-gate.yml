@@ -46,6 +46,11 @@ on:
       - '_AGENT_CONTEXT/CURRENT_STATE.md'
       - 'NEXT-AGENT-START-HERE.md'
       - '_AGENT_CONTEXT/EVIDENCE/*-heaven-windows-closure.log'
+      # Source-level verification contracts and reviewed inventories require
+      # the same native feature gate as the production/test code they constrain.
+      - 'scripts/release/Verify-Release.ps1'
+      - 'scripts/testing/Test-VerificationCache.ps1'
+      - 'docs/verification/**'
       - 'scripts/release/Sync-VerificationContinuity.ps1'
       - 'scripts/testing/Test-AgentHandoff.ps1'
       - 'scripts/testing/Test-AgentHandoff-NegativeFixtures.ps1'
