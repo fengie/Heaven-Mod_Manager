@@ -1,6 +1,6 @@
 # v8.8.147 — explicit mod changes
 
-Canonical pre-release source: #989 at `22555887f1ed718db78e31aebd92d6700deb8c6b` passed [Windows verification](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482). Build 651 remains the published release.
+Canonical pre-release source: #989 and #993 at `3445d44189809cd5ff7a862b7c910753cb8e64f4` passed [Windows verification](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46078148415). Build 651 remains the published release.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 

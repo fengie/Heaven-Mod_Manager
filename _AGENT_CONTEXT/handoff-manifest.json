@@ -5,7 +5,7 @@
   "project": "MHW Manual Mod Manager",
   "currentVersion": "8.8.147",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.146 build 651 from 4d944e1c passed Windows Gate 45724110053 and packaged update/rollback 45725419775. Integrated #989 at 22555887f1ed718db78e31aebd92d6700deb8c6b passed Windows Gate 46068858482.",
+  "immediateParentRevision": "v8.8.146 build 651 from 4d944e1c passed Windows Gate 45724110053 and packaged update/rollback 45725419775. Integrated #989 and #993 at 3445d44189809cd5ff7a862b7c910753cb8e64f4 passed Windows Gate 46078148415.",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",

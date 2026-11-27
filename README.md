@@ -1,6 +1,6 @@
 # v8.8.147 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 27, 2026 · 5:36:02 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 27, 2026 · 5:56:10 PM EST** _(repo-enforced)_
 
 Current product version: **8.8.147**.
 
@@ -13,6 +13,7 @@ Keep this section intentionally short. The README shows the **current patch plus
 ## v8.8.147 — explicit mod changes
 
 - Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989)
+- Restore the exact mod and build state observed during a successful modded launch, using its recorded backup. [#993](https://github.com/fengie/Heaven-Mod_Manager/pull/993)
 - Inspect the bounded Auto Modder recipe catalog and adapter readiness. [#1012](https://github.com/fengie/Heaven-Mod_Manager/pull/1012)
 - Keep source files certified through content-store publication. [#1001](https://github.com/fengie/Heaven-Mod_Manager/pull/1001)
 

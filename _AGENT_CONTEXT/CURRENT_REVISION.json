@@ -13,7 +13,7 @@
     "verificationAppliesToCommit":  "4d944e1c4c72142115802271e338daaca133fd03",
     "lastClosedVerificationCommit":  "4d944e1c4c72142115802271e338daaca133fd03",
     "lastClosedVerificationRun":  "v8.8.146 source 4d944e1c4c72142115802271e338daaca133fd03: hosted Windows verification run 45724110053 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.146-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "Build 651 remains the last verified immutable release. Windows Gate 46068858482 verified integrated #989 source at 22555887f1ed718db78e31aebd92d6700deb8c6b. Versioned publication, hosted update/rollback and physical Heaven2 operation require separate receipts.",
+    "verificationScopeNote":  "Build 651 remains the last verified immutable release. Windows Gate 46078148415 verified integrated #989 and #993 source at 3445d44189809cd5ff7a862b7c910753cb8e64f4. Versioned publication, hosted update/rollback and physical Heaven2 operation require separate receipts.",
     "lastClosedVerification":  {
                                    "sourceSha":  "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
                                    "updaterBuild":  641,

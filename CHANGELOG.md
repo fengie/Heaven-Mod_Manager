@@ -1,9 +1,10 @@
 # v8.8.147 — November 27, 2026
 
 - Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989)
+- Restore the exact mod and build state observed during a successful modded launch, using its recorded backup. [#993](https://github.com/fengie/Heaven-Mod_Manager/pull/993)
 - Inspect the bounded Auto Modder recipe catalog and adapter readiness. [#1012](https://github.com/fengie/Heaven-Mod_Manager/pull/1012)
 - Keep source files certified through content-store publication. [#1001](https://github.com/fengie/Heaven-Mod_Manager/pull/1001)
-- [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) integrated at `22555887f1ed718db78e31aebd92d6700deb8c6b`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482) verified and built that source. Publication skipped because v8.8.146 already existed.
+- [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) and [#993](https://github.com/fengie/Heaven-Mod_Manager/pull/993) are on main at `3445d44189809cd5ff7a862b7c910753cb8e64f4`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46078148415) verified and built that source. Publication skipped because v8.8.146 already existed.
 
 # v8.8.146 — November 25, 2026
 
