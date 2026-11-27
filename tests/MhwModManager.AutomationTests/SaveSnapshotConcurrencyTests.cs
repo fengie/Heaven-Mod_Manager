@@ -73,6 +73,42 @@ public sealed class SaveSnapshotConcurrencyTests : IDisposable
         Assert.Equal(1L, await CountSnapshotsAsync(db, ct));
     }
 
+    [Fact]
+    public async Task LinkedSnapshotRootCannotBeUsedForCaptureOrPrune()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, "linked.db"));
+        await db.InitializeAsync(ct);
+        var game = await CreateGameAsync(ct);
+        var service = new SaveBackupService(db, Path.Combine(root, "linked-state"), game);
+        var external = Directory.CreateDirectory(Path.Combine(root, "outside")).FullName;
+        var child = Directory.CreateDirectory(Path.Combine(external, "unindexed")).FullName;
+        var sentinel = Path.Combine(child, "keep.txt");
+        await File.WriteAllTextAsync(sentinel, "not manager-owned", ct);
+        Directory.CreateDirectory(Path.GetDirectoryName(service.SnapshotRoot)!);
+        using var process = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo("cmd.exe",
+                $"/d /c mklink /J \"{service.SnapshotRoot}\" \"{external}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }) ?? throw new InvalidOperationException("Could not create fixture junction.");
+        await process.WaitForExitAsync(ct);
+        Assert.Equal(0, process.ExitCode);
+        try
+        {
+            await Assert.ThrowsAsync<InvalidDataException>(() => service.PruneAsync(30, ct));
+            await Assert.ThrowsAsync<InvalidDataException>(() => service.CreateAsync("linked", ct));
+            Assert.Equal("not manager-owned", await File.ReadAllTextAsync(sentinel, ct));
+            Assert.False(File.Exists(Path.Combine(external, ".snapshot-operation.lock")));
+            Assert.Equal(0L, await CountSnapshotsAsync(db, ct));
+        }
+        finally
+        {
+            Directory.Delete(service.SnapshotRoot, recursive: false);
+        }
+    }
+
     private async Task<GameProfile> CreateGameAsync(CancellationToken ct)
     {
         var save = Path.Combine(root, "fixture-save.bin");
