@@ -220,6 +220,24 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await ExerciseWorkflowActionsAsync(run, window, passed, ct);
     }
 
+    // Only the pre-input acquisition is retryable. Re-resolve after SetFocus
+    // because WPF can replace a recycled container while focus is moving.
+    internal static bool TryAcquireCurrentFocus<T>(Func<T?> findReady, Func<T, bool> hasFocus, Action<T> focus)
+        where T : class
+    {
+        try
+        {
+            var candidate = findReady();
+            if (candidate is null) return false;
+            if (!hasFocus(candidate)) focus(candidate);
+            return findReady() is { } current && hasFocus(current);
+        }
+        catch (Exception ex) when (ex is ElementNotEnabledException || IsTransientAutomationQueryFailure(ex))
+        {
+            return false;
+        }
+    }
+
     private static async Task ExerciseFilteredLibraryActionsAsync(DisposableWpfRun run, AutomationElement window,
         List<string> passed, CancellationToken ct)
     {
@@ -269,24 +287,38 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         await TypeNativePathAsync(search,alternateName,window.Current.ProcessId,ct,submit:false);
         bool ExactSearch()=>CurrentSearch() is { } field &&
             ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value==alternateName;
-        var alternate=await WaitForElementAsync(()=>
+        AutomationElement? ReadyPackage()
         {
             if(Busy()||!ExactSearch()||Package(alternateName) is not { } checkbox||
                 !checkbox.Current.IsEnabled||checkbox.Current.IsOffscreen||!checkbox.Current.IsKeyboardFocusable||
                 ((TogglePattern)checkbox.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState!=ToggleState.On)return null;
             return checkbox;
-        },UiTimeout,"new package enabled in an idle current Mods library",ct);
-        alternate.SetFocus();
-        bool FocusedOnCurrentPackage()
-        {
-            if(Busy()||!ExactSearch()||Package(alternateName) is not { } current||
-                !current.Current.IsEnabled||current.Current.IsOffscreen)return false;
-            var focused=AutomationElement.FocusedElement;
-            return focused.Current.ProcessId==window.Current.ProcessId &&
-                focused.GetRuntimeId().SequenceEqual(current.GetRuntimeId()) &&
-                ((TogglePattern)current.GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState==ToggleState.On;
         }
-        await WaitForAsync(FocusedOnCurrentPackage,UiTimeout,"focused current enabled independent package",ct);
+        bool HasCurrentFocus(AutomationElement current)
+        {
+            var focused=AutomationElement.FocusedElement;
+            return focused is not null &&
+                focused.Current.ProcessId==window.Current.ProcessId &&
+                current.Current.HasKeyboardFocus &&
+                focused.GetRuntimeId().SequenceEqual(current.GetRuntimeId());
+        }
+        bool FocusedOnCurrentPackage() => ReadyPackage() is { } current && HasCurrentFocus(current);
+        await WaitForElementAsync(ReadyPackage,UiTimeout,"new package enabled in an idle current Mods library",ct);
+        var focusAttempts=0;
+        try
+        {
+            // Reacquire a current, idle, visible checkbox on every bounded
+            // pre-input attempt. Focus is idempotent; activation is not.
+            await WaitForAsync(() => TryAcquireCurrentFocus(ReadyPackage, HasCurrentFocus, element =>
+            {
+                focusAttempts++;
+                element.SetFocus();
+            }),UiTimeout,"focused current enabled independent package",ct);
+        }
+        catch (TimeoutException ex)
+        {
+            throw new TimeoutException($"Independent package focus was not acquired before activation; attempts={focusAttempts}; no activation was sent.",ex);
+        }
         // One native Space activation, never a retry/double toggle of uncertain effect.
         dynamic keys=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell",throwOnError:true)!)!;
         try
