@@ -32,6 +32,7 @@ public sealed class GameModIntakeService
     private static readonly JsonSerializerOptions PrettyJson = new() { WriteIndented = true };
     private const int MaxSources = 12;
     private const int MaxEntriesPerSource = 50_000;
+    private const int MaxReceiptEntries = 50_000;
     private const int MaxFolderFiles = 50_000;
     private const int MaxContainerDepth = 64;
     private const int MaxNestedArchiveDepth = 4;
@@ -1041,6 +1042,9 @@ public sealed class GameModIntakeService
                 receipts.UnionWith(durableReceipts);
                 return false;
             }
+            // Capacity is part of publication admission, not a post-move check.
+            // Hold the same receipt lease from this check through persistence.
+            EnsureReceiptCapacity(durableReceipts);
             var filename = SafeDisplayStem(source) + "-" + sha + Path.GetExtension(source).ToLowerInvariant();
             var destination = Path.Combine(inboxRoot, filename);
             RefuseReparseComponents(inboxRoot);
@@ -1122,6 +1126,9 @@ public sealed class GameModIntakeService
                 receipts.UnionWith(durableReceipts);
                 return false;
             }
+            // Capacity is part of publication admission, not a post-move check.
+            // Hold the same receipt lease from this check through persistence.
+            EnsureReceiptCapacity(durableReceipts);
             var destination = Path.Combine(inboxRoot, SafeDisplayStem(source) + "-" + sha);
             RefuseReparseComponents(inboxRoot);
             if (Directory.Exists(destination))
@@ -1489,7 +1496,7 @@ public sealed class GameModIntakeService
             FileShare.ReadWrite | FileShare.Delete);
         var entries = JsonSerializer.Deserialize<string[]>(reader)
             ?? throw new InvalidDataException("Mod intake receipt index was empty.");
-        if (entries.Length > 50000 || entries.Any(entry => entry.Length != 64 || entry.Any(ch => !Uri.IsHexDigit(ch))))
+        if (entries.Length > MaxReceiptEntries || entries.Any(entry => entry is null || entry.Length != 64 || entry.Any(ch => !Uri.IsHexDigit(ch))))
             throw new InvalidDataException("Mod intake receipt index is malformed or exceeds its supported limit.");
         return new HashSet<string>(entries, StringComparer.OrdinalIgnoreCase);
     }
@@ -1529,13 +1536,20 @@ public sealed class GameModIntakeService
         }
     }
 
+    private static void EnsureReceiptCapacity(HashSet<string> durableReceipts)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (durableReceipts.Count >= MaxReceiptEntries)
+            throw new InvalidDataException("Mod intake receipt index has reached its 50,000-entry safety limit; new packages require review.");
+    }
+
     private void RememberReceipt(HashSet<string> receipts, HashSet<string> durableReceipts, string key)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        if (durableReceipts.Add(key))
+        if (!durableReceipts.Contains(key))
         {
-            if (durableReceipts.Count > 50_000)
-                throw new InvalidDataException("Mod intake receipt index exceeds its 50,000-entry safety limit.");
+            EnsureReceiptCapacity(durableReceipts);
+            durableReceipts.Add(key);
             var path = Path.Combine(stateRoot, "mod-intake-receipts.json");
             RefuseReparseComponents(path);
             SaveAtomic(path, JsonSerializer.Serialize(

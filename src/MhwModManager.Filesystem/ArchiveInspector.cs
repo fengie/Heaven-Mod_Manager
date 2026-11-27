@@ -22,10 +22,14 @@ public enum ArchiveExtractionFaultPoint
 public sealed class ArchiveInspector
 {
     private readonly Action<ArchiveExtractionFaultPoint,string> injectFault;
+    private readonly int maxEntries;
 
-    public ArchiveInspector(Action<ArchiveExtractionFaultPoint,string>? faultInjector=null)
+    public ArchiveInspector(Action<ArchiveExtractionFaultPoint,string>? faultInjector=null,int maxEntries=MaxEntries)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxEntries);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(maxEntries,MaxEntries);
+        this.maxEntries=maxEntries;
         injectFault=faultInjector??((_,_)=>{});
     }
 
@@ -49,12 +53,16 @@ public sealed class ArchiveInspector
             ct.ThrowIfCancellationRequested();
             var key=(e.Key??"").Replace('/','\\');
             bad |= !PathRules.IsSafeArchiveRelativePath(key);
-            if(!e.IsDirectory) total=checked(total+e.Size);
-            if (total > MaxExpandedBytes) throw new InvalidDataException("Archive expanded-size safety limit exceeded.");
+            if(!e.IsDirectory)
+            {
+                if(e.Size<0 || e.Size>MaxExpandedBytes-total)
+                    throw new InvalidDataException("Archive expanded-size safety limit exceeded.");
+                total+=e.Size;
+            }
             var first=key.Split('\\',StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
             if(first is not null)top.Add(first);
             entries.Add(new(key,e.Size,e.IsDirectory));
-            if(entries.Count>MaxEntries)throw new InvalidDataException("Archive contains an excessive number of entries.");
+            if(entries.Count>maxEntries)throw new InvalidDataException("Archive contains an excessive number of entries.");
         }
         var hasNative=entries.Any(x=>x.Key.Split('\\').Any(s=>s.Equals("nativePC",StringComparison.OrdinalIgnoreCase)));
         var hasRoot=entries.Any(x=>x.Key.Split('\\').Any(s=>s.Equals("GameRoot",StringComparison.OrdinalIgnoreCase)));
@@ -111,21 +119,30 @@ public sealed class ArchiveInspector
         // leave earlier extracted files behind as an apparently usable mod.
         var files=new List<(IArchiveEntry Entry,string Destination)>();
         var outputs=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var directories=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         long declaredTotal=0;
-        foreach(var entry in archive.Entries.Where(x=>!x.IsDirectory))
+        var entryCount=0;
+        foreach(var entry in archive.Entries)
         {
             ct.ThrowIfCancellationRequested();
-            if(files.Count>=MaxEntries)
+            // Directory entries consume inventory too, even though they do not
+            // produce payload bytes. Bound and validate the entire manifest.
+            if(++entryCount>maxEntries)
                 throw new InvalidDataException("Archive expansion safety limit exceeded.");
-            if(entry.Size<0||entry.Size>limits.MaxDeclaredExpandedBytes-declaredTotal)
-                throw new InvalidDataException("Archive expansion safety limit exceeded.");
-            declaredTotal+=entry.Size;
             var key=(entry.Key??"").Replace('/',Path.DirectorySeparatorChar).Replace('\\',Path.DirectorySeparatorChar);
             if(!PathRules.IsSafeArchiveRelativePath(key))
                 throw new InvalidDataException($"Unsafe archive path: {entry.Key}");
             var dest=Path.GetFullPath(Path.Combine(destinationFull,key));
             if(!dest.StartsWith(root,StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Archive path traversal detected.");
+            if(entry.IsDirectory)
+            {
+                directories.Add(Path.TrimEndingDirectorySeparator(dest));
+                continue;
+            }
+            if(entry.Size<0||entry.Size>limits.MaxDeclaredExpandedBytes-declaredTotal)
+                throw new InvalidDataException("Archive expansion safety limit exceeded.");
+            declaredTotal+=entry.Size;
             if(!outputs.Add(dest))
                 throw new InvalidDataException($"Archive contains a duplicate output path: {entry.Key}");
             files.Add((entry,dest));
@@ -134,10 +151,12 @@ public sealed class ArchiveInspector
         // A file cannot also be an ancestor directory of another output.
         // Reject these collisions before writing the first byte, regardless of
         // archive entry order or Windows filename casing.
-        foreach (var file in files)
+        if(outputs.Overlaps(directories))
+            throw new InvalidDataException("Archive contains a file and directory destination collision.");
+        foreach (var path in outputs.Concat(directories))
         {
             ct.ThrowIfCancellationRequested();
-            var ancestor = Path.GetDirectoryName(file.Destination);
+            var ancestor = Path.GetDirectoryName(path);
             while (ancestor is not null && ancestor.StartsWith(root, StringComparison.OrdinalIgnoreCase))
             {
                 if (outputs.Contains(ancestor))
