@@ -231,7 +231,7 @@ public static class ImportWorkspaceMaintenance
         if (stream.Length is <= 0 or > MaxLeaseBytes)
             throw new InvalidDataException("Import workspace lease size is invalid.");
         Span<byte> bytes = stackalloc byte[MaxLeaseBytes + 1];
-        var count = stream.ReadAtLeast(bytes, bytes.Length, throwIfEndOfStream: false);
+        var count = stream.ReadAtLeast(bytes, bytes.Length, false);
         if (count is <= 0 or > MaxLeaseBytes || count != stream.Length)
             throw new InvalidDataException("Import workspace lease changed or exceeded its metadata limit.");
 
