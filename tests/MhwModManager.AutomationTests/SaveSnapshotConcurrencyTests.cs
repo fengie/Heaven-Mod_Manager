@@ -1,0 +1,99 @@
+using MhwModManager.Automation;
+using MhwModManager.Core;
+using MhwModManager.Storage;
+using Xunit;
+
+namespace MhwModManager.AutomationTests;
+
+public sealed class SaveSnapshotConcurrencyTests : IDisposable
+{
+    private readonly string root = Path.Combine(Path.GetTempPath(),
+        "MhwSaveSnapshotConcurrency-" + Guid.NewGuid().ToString("N"));
+
+    public SaveSnapshotConcurrencyTests() => Directory.CreateDirectory(root);
+
+    [Fact]
+    public async Task ActiveCaptureRejectsConcurrentPruningAndCaptureUntilIndexed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, "snapshots.db"));
+        await db.InitializeAsync(ct);
+        var game = await CreateGameAsync(ct);
+        var state = Path.Combine(root, "state");
+        var owner = new SaveBackupService(db, state, game);
+        var peer = new SaveBackupService(db, state, game);
+
+        var first = await owner.CreateCoreAsync("first", async (directory, token) =>
+        {
+            var sentinel = Path.Combine(directory, "in-progress.txt");
+            await File.WriteAllTextAsync(sentinel, "active capture", token);
+
+            // The capture has created its directory but has no database row yet.
+            // Prune must not treat that directory as an orphan.
+            await Assert.ThrowsAsync<IOException>(() => peer.PruneAsync(30, token));
+            await Assert.ThrowsAsync<IOException>(() => peer.CreateAsync("competing", token));
+            Assert.Equal("active capture", await File.ReadAllTextAsync(sentinel, token));
+            Assert.Single(Directory.EnumerateDirectories(owner.SnapshotRoot));
+            Assert.Equal(0L, await CountSnapshotsAsync(db, token));
+        }, ct);
+
+        Assert.True(first.Success);
+        Assert.True(File.Exists(Path.Combine(first.SnapshotRoot, "snapshot.json")));
+        Assert.Equal(1L, await CountSnapshotsAsync(db, ct));
+
+        // Once capture and indexing complete, the same root can be used again.
+        var second = await peer.CreateAsync("second", ct);
+        Assert.True(second.Success);
+        Assert.NotEqual(first.SnapshotRoot, second.SnapshotRoot);
+        await peer.PruneAsync(30, ct);
+        Assert.Equal(2L, await CountSnapshotsAsync(db, ct));
+        Assert.True(File.Exists(Path.Combine(first.SnapshotRoot, "snapshot.json")));
+        Assert.True(File.Exists(Path.Combine(second.SnapshotRoot, "snapshot.json")));
+    }
+
+    [Fact]
+    public async Task FailedCaptureReleasesLeaseWithoutPublishingPartialSnapshot()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = new ManagerDatabase(Path.Combine(root, "failed.db"));
+        await db.InitializeAsync(ct);
+        var game = await CreateGameAsync(ct);
+        var state = Path.Combine(root, "failed-state");
+        var owner = new SaveBackupService(db, state, game);
+        var peer = new SaveBackupService(db, state, game);
+
+        await Assert.ThrowsAsync<IOException>(() => owner.CreateCoreAsync(
+            "injected failure", (_, _) => throw new IOException("capture failed"), ct));
+
+        Assert.Empty(Directory.EnumerateDirectories(owner.SnapshotRoot));
+        Assert.Equal(0L, await CountSnapshotsAsync(db, ct));
+
+        var recovered = await peer.CreateAsync("recovered", ct);
+        Assert.True(recovered.Success);
+        Assert.Equal(1L, await CountSnapshotsAsync(db, ct));
+    }
+
+    private async Task<GameProfile> CreateGameAsync(CancellationToken ct)
+    {
+        var save = Path.Combine(root, "fixture-save.bin");
+        await File.WriteAllTextAsync(save, "isolated test save", ct);
+        return GameProfile.Generic("snapshot-test", "Snapshot Test", Path.Combine(root, "game"),
+            "game.exe", "") with { SavePath = save };
+    }
+
+    private static async Task<long> CountSnapshotsAsync(ManagerDatabase db, CancellationToken ct)
+    {
+        await using var connection = await db.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM save_snapshots";
+        return (long)(await command.ExecuteScalarAsync(ct))!;
+    }
+
+    public void Dispose()
+    {
+        try { Directory.Delete(root, true); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        GC.SuppressFinalize(this);
+    }
+}
