@@ -32,23 +32,25 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
     public Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
-        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, ct);
+        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, afterSourceCertification: null, ct);
     }
 
     internal Task<HashResult> CaptureWithHashForTestingAsync(
         string source,
         Func<string, CancellationToken, Task> afterInitialCopy,
         bool registerInDatabase = true,
+        Func<string, CancellationToken, Task>? afterSourceCertification = null,
         CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
-        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, ct);
+        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, afterSourceCertification, ct);
     }
 
     private async Task<HashResult> CaptureWithHashCoreAsync(
         string source,
         bool registerInDatabase,
         Func<string, CancellationToken, Task>? afterInitialCopy,
+        Func<string, CancellationToken, Task>? afterSourceCertification,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
@@ -89,11 +91,19 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
             if (afterInitialCopy is not null)
                 await afterInitialCopy(source, ct);
 
-            await VerifySourceStillMatchesAsync(source, shaBytes, bufferSize, ct);
+            // Windows FileShare.Read excludes competing writers and renames for
+            // the lifetime of this handle. Keep the final certification handle
+            // through CAS publication and optional database registration.
+            await using var certification = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
+                bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+            await VerifySourceStillMatchesAsync(certification, source, shaBytes, ct);
+            if (afterSourceCertification is not null)
+                await afterSourceCertification(source, ct);
 
             var after = new FileInfo(source);
             if (!after.Exists || after.Length != before.Length || after.LastWriteTimeUtc != before.LastWriteTimeUtc)
                 throw new IOException($"Source changed while it was being captured: {source}");
+            ct.ThrowIfCancellationRequested();
             var dest = PathFor(shaHex);
 
             if (File.Exists(dest))
@@ -147,11 +157,9 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
             ct: ct);
     }
 
-    private static async Task VerifySourceStillMatchesAsync(string source, ReadOnlyMemory<byte> capturedSha256, int bufferSize, CancellationToken ct)
+    private static async Task VerifySourceStillMatchesAsync(FileStream input, string source, ReadOnlyMemory<byte> capturedSha256, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}");
-        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
-            bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
         var currentSha256 = await SHA256.HashDataAsync(input, ct);
         if (!CryptographicOperations.FixedTimeEquals(currentSha256, capturedSha256.Span))
             throw new IOException($"Source changed while it was being captured: {source}");
