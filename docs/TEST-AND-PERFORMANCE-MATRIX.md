@@ -133,3 +133,28 @@ opened file until it is closed (<https://learn.microsoft.com/dotnet/api/system.i
 - `DeploymentReviewTests` checks exact plan projection, resolved overlaps and global blockers. `DeploymentReviewBenchmarks` characterizes 10k/50k/100k planned replacements across 100/500/1,000 mods; `TextureRelationshipBenchmarks` checks 100/500-mod texture relationships.
 - Run the existing manual benchmark workflow with `*DeploymentReviewBenchmarks*` and `*TextureRelationshipBenchmarks*`, separately, and retain measured results. A compiled benchmark or deterministic scale test is not a measured responsiveness result.
 - Installed WPF, actual game launch, and full feature/method verification remain release gates; no physical machine results are implied by this candidate.
+
+## Auto Populate topology baseline (#735)
+
+`AutoPopulateTopologyBenchmarks` measures **warm planning**, not installed UI latency.
+It calls the real `AutoPopulateService.BuildAsync` on an isolated SQLite library with
+indexed one-file synthetic mods. Cases cover independent mods, dependency chains up
+to 32 members, pairs replacing the same texture, valid dependency cycles, and a
+missing dependency on every eighth mod. Each iteration checks the selected identities,
+including the higher-priority replacement winner, outside the measured interval.
+No game is launched, personal profile opened, files mounted, or timer budget enforced.
+
+Run from a disposable **local Windows checkout** at the candidate SHA with the pinned SDK:
+
+```powershell
+.\scripts\benchmarks\Run-Benchmarks.ps1 -Filter '*AutoPopulateTopologyBenchmarks*' -Job Dry
+```
+
+The default is 100 mods. For a deliberate larger run set
+`$env:MHW_AUTOPOPULATE_BENCHMARK_SIZE = '1000'` or `'10000'`, narrow the filter to
+one case if needed, and remove the variable afterward. Use the same machine, revision,
+size and topology to compare repeat runs. A Dry run is a correctness smoke test, not
+a p95 baseline. Keep raw logs and BenchmarkDotNet JSON local. Report only vetted
+aggregate statistics with their sample count and settings. Cold start, dispatcher
+blocking, visual acknowledgement, disk I/O and durable Apply completion still need
+their own installed witnesses; do not infer them from these planner measurements.
