@@ -91,7 +91,7 @@ public sealed class CatalogSyncService
         // accepting the next page. Invalid cycles must not overwrite the last
         // good continuation or publish their unverified page into the cache.
         var visitedCursors = new HashSet<string>(StringComparer.Ordinal);
-        var cursor = string.IsNullOrWhiteSpace(previous?.Cursor) ? null : previous.Cursor;
+        var cursor = string.IsNullOrWhiteSpace(previous?.Cursor) ? null : previous?.Cursor;
         var total = 0;
         while (true)
         {
@@ -156,7 +156,7 @@ public sealed class CatalogSyncService
         CatalogBrowseRequest request,
         string? cursor,
         CatalogSyncOptions? options,
-        IReadOnlySet<string>? visitedCursors,
+        HashSet<string>? visitedCursors,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
