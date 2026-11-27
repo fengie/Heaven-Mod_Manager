@@ -1,6 +1,6 @@
 # v8.8.147 — explicit mod changes
 
-Canonical pre-release source: [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) integrated at `22555887f1ed718db78e31aebd92d6700deb8c6b`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482) verified and built that source. Publication skipped because v8.8.146 already existed. The previous immutable [v8.8.146 build 651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) passed its [packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45725419775).
+Canonical pre-release source: #989 at `22555887f1ed718db78e31aebd92d6700deb8c6b` passed [Windows verification](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482). Build 651 remains the published release.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
@@ -8,7 +8,7 @@ Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resumin
 
 ## Integrated source and exact evidence
 
-- **v8.8.147** — Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. Verify the immutable v8.8.147 release and its packaged update and rollback. Under #793 verify the actual Heaven2 launcher, installed process and build. Under #946 verify that applying one alternate removal clears pending changes and preserves the primary and unmanaged files. Preserve the broader #946 workflow, performance and physical-game obligations.
+- **v8.8.147** — Explicit Apply commits staged choices. Verify publication and update/rollback under #793, then canonical Heaven2 use and preservation of primary and unmanaged bytes under #946.
 
 - **v8.8.146 source:** [#986](https://github.com/fengie/Heaven-Mod_Manager/pull/986) integrated at `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd`; exact-head Feature 45704981417, Startup Performance 45704981205, packaged WPF 45704981295, Product Security 45704981433 and AutoUpdate 45704981269 passed. [Main Windows Gate 45712238130](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45712238130) passed verification/build; publication skipped for the unchanged version. The subsequent updater workflow classified no new publication and skipped real update/rollback.
 

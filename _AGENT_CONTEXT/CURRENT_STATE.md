@@ -1,6 +1,6 @@
 # v8.8.147 — explicit mod changes
 
-Canonical pre-release state: [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) integrated at `22555887f1ed718db78e31aebd92d6700deb8c6b`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482) verified and built that source. Publication skipped because v8.8.146 already existed. The previous immutable [v8.8.146 build 651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) passed its [packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45725419775).
+Canonical state: [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) integrated at `22555887f1ed718db78e31aebd92d6700deb8c6b`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482) verified and built that source. Publication skipped because v8.8.146 already existed. The previous immutable [v8.8.146 build 651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) passed its [packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45725419775).
 
 ## Integrated implementation
 
