@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sourceVersion": "8.8.146",
-  "verifiedAtUtc": "2026-11-25T23:54:16.841796+00:00",
+  "verifiedAtUtc": "2026-11-27T05:41:05.8989279+00:00",
   "functions": [
     {
       "id": "src/MhwModManager.App/App.xaml.cs::App::method:OnStartup(StartupEventArgs)",
@@ -11632,23 +11632,23 @@
     },
     {
       "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:CaptureWithHashAsync(string,bool,CancellationToken)",
-      "fingerprint": "1eb69e19b6ff2a1ec03c2ca9c333cfb1f72bb43e8c59df66123f5fb0e4492eee",
+      "fingerprint": "f0e596a7a8ac621958f280f5a02a42449bb22e5d383fee4d975069023aa39e9f",
       "verified": true,
-      "verifiedAtUtc": "2026-11-25T23:54:16.841796+00:00",
+      "verifiedAtUtc": "2026-11-27T05:41:05.8989279+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:CaptureWithHashForTestingAsync(string,Func\u003Cstring,CancellationToken,Task\u003E,bool,CancellationToken)",
-      "fingerprint": "89c00875f0c1305a28210cfec27f8be597888351e1bd4522633cb34b303d419c",
+      "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:CaptureWithHashForTestingAsync(string,Func\u003Cstring,CancellationToken,Task\u003E,bool,Func\u003Cstring,CancellationToken,Task\u003E?,CancellationToken)",
+      "fingerprint": "58fa1503f4e534e94586f18789d138419b801354ddce61a294b2d00c574b0e41",
       "verified": true,
-      "verifiedAtUtc": "2026-11-25T23:54:16.841796+00:00",
+      "verifiedAtUtc": "2026-11-27T05:41:05.8989279+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:CaptureWithHashCoreAsync(string,bool,Func\u003Cstring,CancellationToken,Task\u003E?,CancellationToken)",
-      "fingerprint": "19afc3334daa6b3602a9a90c0906535e5fc3c0399c4fc150f09050251730b8cf",
+      "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:CaptureWithHashCoreAsync(string,bool,Func\u003Cstring,CancellationToken,Task\u003E?,Func\u003Cstring,CancellationToken,Task\u003E?,CancellationToken)",
+      "fingerprint": "435b6890a7d71d7a5cd688dae82720a18400cf61e996176425628cc2198cea49",
       "verified": true,
-      "verifiedAtUtc": "2026-11-25T23:54:16.841796+00:00",
+      "verifiedAtUtc": "2026-11-27T05:41:05.8989279+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
@@ -11659,10 +11659,10 @@
       "verificationBasis": "full-release-confirmation"
     },
     {
-      "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:VerifySourceStillMatchesAsync(string,ReadOnlyMemory\u003Cbyte\u003E,int,CancellationToken)",
-      "fingerprint": "7cf19520bda0b6da112bbcfa07a3beea0d8b8d30d5900d6dbcc2a4fa9287e9ad",
+      "id": "src/MhwModManager.Filesystem/BlobStore.cs::BlobStore::method:VerifySourceStillMatchesAsync(FileStream,string,ReadOnlyMemory\u003Cbyte\u003E,CancellationToken)",
+      "fingerprint": "05fc533f188888101ee3709309eceec211a202f4345e8031333c4f26271ad052",
       "verified": true,
-      "verifiedAtUtc": "2026-11-25T23:54:16.841796+00:00",
+      "verifiedAtUtc": "2026-11-27T05:41:05.8989279+00:00",
       "verificationBasis": "full-release-confirmation"
     },
     {
