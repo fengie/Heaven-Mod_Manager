@@ -12,7 +12,10 @@ public sealed record OperationLatencySample(string Operation, string Outcome, do
     double CpuMs, long AllocatedBytes);
 
 public sealed record OperationLatencyRow(string Operation, int Completed, int Failed, int Cancelled,
-    double? P50Ms, double? P95Ms, double? MaxMs, double? MeanCpuMs, double? MeanAllocatedMiB);
+    double? P50Ms, double? P95Ms, double? MaxMs, double? MeanCpuMs, double? MeanAllocatedMiB)
+{
+    public int Timed { get; init; }
+}
 
 /// <summary>
 /// Read-only summary of bounded, already-recorded foreground operation timings.
@@ -33,7 +36,9 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
         await using (var command = connection.CreateCommand())
         {
             command.CommandText = """
-                SELECT kind, elapsed_ms, data_json FROM diagnostics
+                SELECT kind,
+                       CASE WHEN typeof(elapsed_ms) IN ('integer', 'real') THEN elapsed_ms END,
+                       data_json FROM diagnostics
                 WHERE time >= $since AND kind IN ('operation.completed','operation.failed','operation.cancelled')
                 ORDER BY time DESC LIMIT 10000
                 """;
@@ -55,14 +60,16 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
                     }
                     var operation = operationProperty.GetString();
                     if (string.IsNullOrWhiteSpace(operation)) { malformed++; continue; }
-                    var elapsed = reader.IsDBNull(1) ? double.NaN :
-                        Convert.ToDouble(reader.GetValue(1), CultureInfo.InvariantCulture);
+                    var elapsed = reader.IsDBNull(1) ? double.NaN : reader.GetDouble(1);
                     var cpu = GetDouble(data, "cpuMs");
-                    var allocated = GetDouble(data, "allocatedBytesDelta");
+                    // The producer emits an Int64 byte counter. Do not round-trip
+                    // it through double (Int64.MaxValue rounds up to 2^63).
+                    var allocated = data.TryGetProperty("allocatedBytesDelta", out var bytes)
+                        && bytes.ValueKind == JsonValueKind.Number
+                        && bytes.TryGetInt64(out var count) && count >= 0 ? count : -1;
                     samples.Add(new OperationLatencySample(operation,
                         reader.GetString(0)["operation.".Length..],
-                        elapsed, cpu, double.IsFinite(allocated) && allocated >= 0
-                            ? (long)Math.Min(allocated, long.MaxValue) : -1));
+                        elapsed, cpu, allocated));
                 }
                 catch (JsonException) { malformed++; }
             }
@@ -74,21 +81,21 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
         output.AppendLine(FormattableString.Invariant($"Generated UTC: {now:O}"));
         output.AppendLine(FormattableString.Invariant($"Window: last 7 days; at most {MaxSamples:N0} latest operation records"));
         output.AppendLine(FormattableString.Invariant($"Read records: {samples.Count}; malformed/ignored: {malformed}"));
-        output.AppendLine("Only completed operations contribute latency quantiles; failures/cancellations are separate.");
+        output.AppendLine("DONE counts completed operations; TIMED counts those with a finite nonnegative duration. Only TIMED contributes to latency quantiles.");
         output.AppendLine("p50/p95 use nearest-rank statistics; small samples are not reliable performance budgets.");
         output.AppendLine("Actual UI responsiveness, input latency and real RAR throughput require separate measurements.");
         output.AppendLine();
-        output.AppendLine(FormattableString.Invariant($"{"OPERATION",-34} {"DONE",5} {"FAIL",5} {"CANCEL",6} {"P50 ms",10} {"P95 ms",10} {"MAX ms",10} {"CPU ms",10} {"ALLOC MiB",10}"));
+        output.AppendLine(FormattableString.Invariant($"{"OPERATION",-34} {"DONE",5} {"TIMED",5} {"FAIL",5} {"CANCEL",6} {"P50 ms",10} {"P95 ms",10} {"MAX ms",10} {"CPU ms",10} {"ALLOC MiB",10}"));
         foreach (var row in rows)
         {
             ct.ThrowIfCancellationRequested();
             output.AppendLine(
-                FormattableString.Invariant($"{row.Operation,-34} {row.Completed,5} {row.Failed,5} {row.Cancelled,6} ") +
+                FormattableString.Invariant($"{row.Operation,-34} {row.Completed,5} {row.Timed,5} {row.Failed,5} {row.Cancelled,6} ") +
                 FormattableString.Invariant($"{Format(row.P50Ms),10} {Format(row.P95Ms),10} {Format(row.MaxMs),10} ") +
                 FormattableString.Invariant($"{Format(row.MeanCpuMs),10} {Format(row.MeanAllocatedMiB),10}"));
         }
-        if (rows.Count == 0)
-            output.AppendLine("No completed operation telemetry in this window. Run an operation before comparing latency.");
+        if (!rows.Any(row => row.Timed > 0))
+            output.AppendLine("No timed completed operations in this window. No latency comparison is available.");
         Directory.CreateDirectory(reportDirectory);
         var path = Path.Combine(reportDirectory, $"operation-latency-{now:yyyyMMdd-HHmmss}.txt");
         await File.WriteAllTextAsync(path, output.ToString(), ct);
@@ -106,9 +113,9 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
             .GroupBy(s => s.Operation, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
-                var completed = group.Where(s => s.Outcome == "completed" &&
-                    double.IsFinite(s.ElapsedMs) && s.ElapsedMs >= 0).ToArray();
-                var elapsed = completed.Select(s => s.ElapsedMs).OrderBy(v => v).ToArray();
+                var completed = group.Where(s => s.Outcome == "completed").ToArray();
+                var elapsed = completed.Select(s => s.ElapsedMs)
+                    .Where(v => double.IsFinite(v) && v >= 0).OrderBy(v => v).ToArray();
                 var validCpu = completed.Where(s => double.IsFinite(s.CpuMs) && s.CpuMs >= 0)
                     .Select(s => s.CpuMs).ToArray();
                 var validAllocations = completed.Where(s => s.AllocatedBytes >= 0)
@@ -119,7 +126,8 @@ public sealed class OperationLatencyReportService(ManagerDatabase database)
                     Percentile(elapsed, .50), Percentile(elapsed, .95),
                     elapsed.Length > 0 ? elapsed[^1] : null,
                     validCpu.Length > 0 ? validCpu.Average() : null,
-                    validAllocations.Length > 0 ? validAllocations.Average() / 1048576d : null);
+                    validAllocations.Length > 0 ? validAllocations.Average(v => (double)v) / 1048576d : null)
+                { Timed = elapsed.Length };
             })
             .OrderByDescending(row => row.P95Ms ?? -1)
             .ThenBy(row => row.Operation, StringComparer.OrdinalIgnoreCase)

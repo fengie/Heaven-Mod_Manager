@@ -17,6 +17,7 @@ public sealed class OperationLatencyReportTests
         var rows = OperationLatencyReportService.Summarize(samples);
         var inbox = Assert.Single(rows, row => row.Operation == "automation.inbox");
         Assert.Equal(20, inbox.Completed);
+        Assert.Equal(20, inbox.Timed);
         Assert.Equal(1, inbox.Failed);
         Assert.Equal(0, inbox.Cancelled);
         Assert.Equal(1000, inbox.P50Ms);
@@ -50,7 +51,7 @@ public sealed class OperationLatencyReportTests
     }
 
     [Fact]
-    public async Task Missing_cpu_and_allocation_json_are_reported_as_unknown_not_zero()
+    public async Task Report_survives_untyped_elapsed_values_and_retains_unknown_resource_metrics()
     {
         var root = Path.Combine(Path.GetTempPath(), "mhwmm-latency-null-" + Guid.NewGuid().ToString("N"));
         var ct = TestContext.Current.CancellationToken;
@@ -62,8 +63,20 @@ public sealed class OperationLatencyReportTests
             await using (var connection = await database.OpenAsync(ct))
             await using (var command = connection.CreateCommand())
             {
-                command.CommandText = "INSERT INTO diagnostics(time, kind, elapsed_ms, data_json) " +
-                    "VALUES ($time, 'operation.completed', 250, $data)";
+                command.CommandText = """
+                    INSERT INTO diagnostics(time, kind, elapsed_ms, data_json) VALUES
+                        ($time, 'operation.completed', 250, $data),
+                        ($time, 'operation.completed', 'unknown', $data),
+                        ($time, 'operation.completed', X'FF', $data),
+                        ($time, 'operation.completed', NULL, $data),
+                        ($time, 'operation.completed', -1, $data),
+                        ($time, 'operation.completed', 0, $data),
+                        ($time, 'operation.failed', 'unknown', $data),
+                        ($time, 'operation.cancelled', NULL, $data),
+                        ($time, 'operation.completed', 1, '{"operation":"large","allocatedBytesDelta":9223372036854775807}'),
+                        ($time, 'operation.completed', 1, '{"operation":"large","allocatedBytesDelta":9223372036854775807}'),
+                        ($time, 'operation.completed', 1, '{"operation":"large","allocatedBytesDelta":9223372036854775808}');
+                    """;
                 command.Parameters.AddWithValue("$time",
                     DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("$data", "{\"operation\":\"metadata.sync\"}");
@@ -75,9 +88,11 @@ public sealed class OperationLatencyReportTests
             var row = Assert.Single(report.Split('\n'), line =>
                 line.TrimStart().StartsWith("metadata.sync", StringComparison.Ordinal));
             var columns = row.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            Assert.Equal("n/a", columns[^2]);
-            Assert.Equal("n/a", columns[^1].Trim());
-            Assert.Contains("250.0", row, StringComparison.Ordinal);
+            Assert.Equal("metadata.sync 6 2 1 1 0.0 250.0 250.0 n/a n/a", string.Join(' ', columns).TrimEnd());
+            var large = Assert.Single(report.Split('\n'), line =>
+                line.TrimStart().StartsWith("large ", StringComparison.Ordinal));
+            Assert.EndsWith("8796093022208.0", large.TrimEnd(), StringComparison.Ordinal);
+            Assert.DoesNotContain("No timed completed operations", report, StringComparison.Ordinal);
         }
         finally
         {
@@ -88,15 +103,20 @@ public sealed class OperationLatencyReportTests
     }
 
     [Fact]
-    public void Empty_or_nonfinite_samples_never_create_fabricated_latency_measurements()
+    public void Untimed_completions_keep_their_outcome_and_only_observed_resource_measurements()
     {
         var rows = OperationLatencyReportService.Summarize([
-            new OperationLatencySample("metadata.sync", "completed", double.NaN, 0, 0),
+            new OperationLatencySample("metadata.sync", "completed", double.NaN, 2, 1048576),
+            new OperationLatencySample("metadata.sync", "completed", double.PositiveInfinity, double.NaN, -1),
             new OperationLatencySample("metadata.sync", "failed", 0, 0, 0)]);
         var row = Assert.Single(rows);
-        Assert.Equal(0, row.Completed);
+        Assert.Equal(2, row.Completed);
+        Assert.Equal(0, row.Timed);
         Assert.Equal(1, row.Failed);
         Assert.Null(row.P95Ms);
         Assert.Null(row.P50Ms);
+        Assert.Null(row.MaxMs);
+        Assert.Equal(2, row.MeanCpuMs);
+        Assert.Equal(1, row.MeanAllocatedMiB);
     }
 }
