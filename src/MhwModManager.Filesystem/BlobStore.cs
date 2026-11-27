@@ -32,23 +32,25 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
     public Task<HashResult> CaptureWithHashAsync(string source, bool registerInDatabase = true, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
-        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, ct);
+        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy: null, afterSourceCertification: null, ct);
     }
 
     internal Task<HashResult> CaptureWithHashForTestingAsync(
         string source,
         Func<string, CancellationToken, Task> afterInitialCopy,
         bool registerInDatabase = true,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Func<string, CancellationToken, Task>? afterSourceCertification = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
-        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, ct);
+        return CaptureWithHashCoreAsync(source, registerInDatabase, afterInitialCopy, afterSourceCertification, ct);
     }
 
     private async Task<HashResult> CaptureWithHashCoreAsync(
         string source,
         bool registerInDatabase,
         Func<string, CancellationToken, Task>? afterInitialCopy,
+        Func<string, CancellationToken, Task>? afterSourceCertification,
         CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"source={source}; register={registerInDatabase}");
@@ -90,6 +92,8 @@ public sealed class BlobStore(string root, ManagerDatabase db, IAtomicReplaceBac
                 await afterInitialCopy(source, ct);
 
             await VerifySourceStillMatchesAsync(source, shaBytes, bufferSize, ct);
+            if (afterSourceCertification is not null)
+                await afterSourceCertification(source, ct);
 
             var after = new FileInfo(source);
             if (!after.Exists || after.Length != before.Length || after.LastWriteTimeUtc != before.LastWriteTimeUtc)
