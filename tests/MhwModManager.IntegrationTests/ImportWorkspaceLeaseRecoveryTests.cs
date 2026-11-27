@@ -151,6 +151,44 @@ public sealed class ImportWorkspaceLeaseRecoveryTests
     }
 
 
+    [Theory]
+    [InlineData("duplicate")]
+    [InlineData("unknown")]
+    [InlineData("oversized")]
+    public void Ambiguous_or_oversized_import_leases_never_authorize_cleanup(string kind)
+    {
+        using var temp = new TemporaryWorkspace();
+        var staging = ImportPublicationWorkspace.Allocate(temp.ModsRoot, "archive");
+        Directory.CreateDirectory(staging);
+        var sentinel = Path.Combine(staging, "payload.bin");
+        File.WriteAllText(sentinel, "PRESERVE");
+        var leasePath = staging + ImportWorkspaceMaintenance.LeaseSuffix;
+
+        // Duplicate owner identity could otherwise replace the live PID with
+        // an exited one. An unknown property may represent a future policy.
+        if (kind != "duplicate")
+            MakeOwnerExited(staging);
+        var original = File.ReadAllText(leasePath);
+        var ambiguous = kind switch
+        {
+            "duplicate" => original[..^1] + ",\"OwnerProcessId\":2147483647}",
+            "unknown" => original[..^1] + ",\"UnrecognizedOwnershipPolicy\":true}",
+            "oversized" => original + new string(' ', 4096),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
+        File.WriteAllText(leasePath, ambiguous);
+
+        var result = ImportWorkspaceMaintenance.CleanupRoot(
+            temp.ModsRoot, DateTimeOffset.UtcNow.AddDays(2), TimeSpan.Zero,
+            maxOwnedBytes: 0, log: null, CancellationToken.None);
+
+        Assert.Equal(0, result.DeletedWorkspaces);
+        Assert.Equal(0, result.DeletedLeases);
+        Assert.True(result.DeferredEntries >= 1);
+        Assert.Equal("PRESERVE", File.ReadAllText(sentinel));
+        Assert.Equal(ambiguous, File.ReadAllText(leasePath));
+    }
+
     [Fact]
     public async Task Forcibly_terminated_import_worker_reclaims_its_durable_lease_without_deleting_user_content()
     {
