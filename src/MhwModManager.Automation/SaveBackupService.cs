@@ -10,15 +10,28 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
 {
     public string SnapshotRoot { get; } = Path.Combine(stateRoot, "Automation", "Snapshots");
 
-    public async Task<SaveSnapshotResult> CreateAsync(string reason, CancellationToken ct = default)
+    public Task<SaveSnapshotResult> CreateAsync(string reason, CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        var id = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture);
+        return CreateCoreAsync(reason, null, ct);
+    }
+
+    internal async Task<SaveSnapshotResult> CreateCoreAsync(
+        string reason, Func<string, CancellationToken, Task>? afterDirectoryCreated, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        using var operation = AcquireSnapshotOperation(ct);
+        // A timestamp is useful to operators, but it is not a unique identity
+        // across rapid sequential captures or wall-clock adjustments.
+        var id = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss-fff", CultureInfo.InvariantCulture)
+            + "-" + Guid.NewGuid().ToString("N");
         var root = Path.Combine(SnapshotRoot, id);
         Directory.CreateDirectory(root);
         var recorded = false;
         try
         {
+            if (afterDirectoryCreated is not null)
+                await afterDirectoryCreated(root, ct);
             var source = FindSaveFile(game);
             var copied = 0;
             if (source is not null)
@@ -46,7 +59,8 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
             await File.WriteAllTextAsync(Path.Combine(root, "snapshot.json"), JsonSerializer.Serialize(metadata, AutomationJson.Options), ct);
             await RecordSnapshotAsync(id, reason, root, source, state, build?.Sha256, manifest, ct);
             recorded = true;
-            await PruneAsync(30, ct);
+            // Do not reacquire the lease: capture owns the root through retention.
+            await PruneCoreAsync(30, ct, null);
             return new(true, id, root, source, copied, source is null ? $"Snapshot created for {game.DisplayName}; no configured save file was found, so mod/deployment state only was captured." : $"{game.DisplayName} save + mod/deployment snapshot created.");
         }
         catch
@@ -221,10 +235,36 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
 
     private sealed record FileFingerprint(long Length, DateTime LastWriteTimeUtc, byte[] Sha256);
 
+    // A stable, empty lock file is never removed by retention. Windows sharing
+    // semantics serialize independent service instances and processes using this
+    // snapshot root, and the OS releases the handle if a process exits.
+    private FileStream AcquireSnapshotOperation(CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ct.ThrowIfCancellationRequested();
+        Directory.CreateDirectory(SnapshotRoot);
+        try
+        {
+            return new FileStream(Path.Combine(SnapshotRoot, ".snapshot-operation.lock"),
+                FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (IOException ex)
+        {
+            throw new IOException("Could not acquire the exclusive snapshot operation lease; another capture or prune may be active.", ex);
+        }
+    }
+
     internal async Task PruneAsync(int keep, CancellationToken ct, Action<string>? unlinkReparsePoint = null)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ArgumentOutOfRangeException.ThrowIfNegative(keep);
+        using var operation = AcquireSnapshotOperation(ct);
+        await PruneCoreAsync(keep, ct, unlinkReparsePoint);
+    }
+
+    private async Task PruneCoreAsync(int keep, CancellationToken ct, Action<string>? unlinkReparsePoint)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
 
         var fullSnapshotRoot = Path.GetFullPath(SnapshotRoot)
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
