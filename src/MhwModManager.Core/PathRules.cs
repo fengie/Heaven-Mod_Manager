@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text.RegularExpressions;
 
 namespace MhwModManager.Core;
@@ -7,7 +8,7 @@ public static partial class PathRules
     public static readonly StringComparer Comparer = StringComparer.OrdinalIgnoreCase;
     // Validate against the destination filesystem's rules, even when core
     // verification runs on a non-Windows host.
-    private static readonly char[] InvalidFileNameChars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
+    private static readonly SearchValues<char> InvalidFileNameChars = SearchValues.Create("<>:\"/\\|?*");
     private static readonly HashSet<string> ReservedDeviceNames = BuildReservedNames();
 
     public static string Normalize(string path)
@@ -46,7 +47,7 @@ public static partial class PathRules
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (segment is "." or ".." || string.IsNullOrWhiteSpace(segment))
             return true;
-        if (segment.IndexOfAny(InvalidFileNameChars) >= 0 || segment.Any(ch => ch < 32))
+        if (segment.AsSpan().IndexOfAny(InvalidFileNameChars) >= 0 || segment.Any(ch => ch < 32))
             return true;
         var trimmed = segment.TrimEnd('.', ' ');
         if (trimmed.Length == 0 || !trimmed.Equals(segment, StringComparison.Ordinal))
