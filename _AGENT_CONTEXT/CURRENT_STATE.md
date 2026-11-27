@@ -1,8 +1,10 @@
-# v8.8.146 - immutable release verified
+# v8.8.147 — explicit mod changes
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `4d944e1c4c72142115802271e338daaca133fd03`. Public immutable [updater-main-651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical pre-release state: [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) integrated at `22555887f1ed718db78e31aebd92d6700deb8c6b`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482) verified and built that source. Publication skipped because v8.8.146 already existed. The previous immutable [v8.8.146 build 651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) passed its [packaged update and rollback](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45725419775).
 
 ## Integrated implementation
+
+- **v8.8.147** — Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. Verify the immutable v8.8.147 release and its packaged update and rollback. Under #793 verify the actual Heaven2 launcher, installed process and build. Under #946 verify that applying one alternate removal clears pending changes and preserves the primary and unmanaged files. Preserve the broader #946 workflow, performance and physical-game obligations.
 
 - **v8.8.146 — #986:** exact read-only deployment review and Apply recheck, staged/applied and profile-transition inspection, unavailable saved packages, per-game disabled import preference, named views, favorites, categories and explicit multi-row marking. Native packaged WPF and performance gates passed; immutable v8.8.146 release, measured benchmark and physical-game proof remain open.
 
@@ -75,6 +77,6 @@ The tested source remains `4d944e1c4c72142115802271e338daaca133fd03` even though
 - [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 647 hosted acceptance is verified, not personal health.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in the canonical documentation-only release handoff. No new product binary or version was created.
 
-Next: Integrate synchronized v8.8.145 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Keep #986 separate until its own current-base packaged WPF gate and review pass. Preserve provider access, personal data, rollback and recursive continuity.
+Next: Verify the immutable v8.8.147 release and its packaged update and rollback. Under #793 verify the actual Heaven2 launcher, installed process and build. Under #946 verify that applying one alternate removal clears pending changes and preserves the primary and unmanaged files. Preserve the broader #946 workflow, performance and physical-game obligations.
 
 Auto Populate checks pre-Iceborne armor materials since v8.8.119. See product PR #913 for profile recovery and verification.

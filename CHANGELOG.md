@@ -1,3 +1,10 @@
+# v8.8.147 — November 27, 2026
+
+- Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989)
+- Inspect the bounded Auto Modder recipe catalog and adapter readiness. [#1012](https://github.com/fengie/Heaven-Mod_Manager/pull/1012)
+- Keep source files certified through content-store publication. [#1001](https://github.com/fengie/Heaven-Mod_Manager/pull/1001)
+- [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989) integrated at `22555887f1ed718db78e31aebd92d6700deb8c6b`. The [Windows gate](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46068858482) verified and built that source. Publication skipped because v8.8.146 already existed.
+
 # v8.8.146 — November 25, 2026
 
 - Review exact deployment changes before Apply, including before/after provider identity, hashes, rules, resolved overlaps and global blockers. Staged changes invalidate review; Apply rechecks it. [#986](https://github.com/fengie/Heaven-Mod_Manager/pull/986)
