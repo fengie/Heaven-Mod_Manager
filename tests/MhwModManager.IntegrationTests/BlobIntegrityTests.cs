@@ -144,6 +144,82 @@ public sealed class BlobIntegrityTests : IDisposable
     }
 
     [Fact]
+    public async Task Capture_refuses_equal_length_mutation_after_final_source_certification()
+    {
+        Directory.CreateDirectory(root);
+        var db = new ManagerDatabase(Path.Combine(root, "state", "m.db"));
+        await db.InitializeAsync(TestToken);
+        var blobs = new BlobStore(Path.Combine(root, "state", "blobs"), db);
+        var source = Path.Combine(root, "source");
+        await File.WriteAllTextAsync(source, "ORIGINAL", TestToken);
+        var timestamp = File.GetLastWriteTimeUtc(source);
+        var attempted = false;
+
+        await Assert.ThrowsAsync<IOException>(() => blobs.CaptureWithHashForTestingAsync(
+            source, (_, _) => Task.CompletedTask, ct: TestToken,
+            afterSourceCertification: async (path, ct) =>
+            {
+                attempted = true;
+                await File.WriteAllTextAsync(path, "MUTATED!", ct);
+                File.SetLastWriteTimeUtc(path, timestamp);
+            }));
+
+        Assert.True(attempted);
+        Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(source, TestToken));
+        Assert.Equal(timestamp, File.GetLastWriteTimeUtc(source));
+        Assert.Equal("0", await ScalarAsync(db, "SELECT COUNT(*) FROM blobs"));
+        Assert.Empty(Directory.EnumerateFiles(blobs.Root));
+
+        // The failure path must release the source handle too.
+        await File.WriteAllTextAsync(source, "RELEASED", TestToken);
+        Assert.Equal("RELEASED", await File.ReadAllTextAsync(source, TestToken));
+    }
+
+    [Fact]
+    public async Task Capture_prevents_source_rename_until_successful_publication_and_releases_handle()
+    {
+        Directory.CreateDirectory(root);
+        var db = new ManagerDatabase(Path.Combine(root, "state", "m.db"));
+        await db.InitializeAsync(TestToken);
+        var blobs = new BlobStore(Path.Combine(root, "state", "blobs"), db);
+        var source = Path.Combine(root, "source");
+        var moved = Path.Combine(root, "moved");
+        await File.WriteAllTextAsync(source, "ORIGINAL", TestToken);
+
+        var result = await blobs.CaptureWithHashForTestingAsync(
+            source, (_, _) => Task.CompletedTask, ct: TestToken,
+            afterSourceCertification: (path, _) =>
+            {
+                Assert.Throws<IOException>(() => File.Move(path, moved));
+                Assert.False(File.Exists(moved));
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(blobs.PathFor(result.Sha256), TestToken));
+        Assert.Equal("1", await ScalarAsync(db, "SELECT COUNT(*) FROM blobs"));
+        Assert.Empty(Directory.EnumerateFiles(blobs.Root, ".capture-*.tmp"));
+        File.Move(source, moved);
+        Assert.Equal("ORIGINAL", await File.ReadAllTextAsync(moved, TestToken));
+    }
+
+    [Fact]
+    public async Task Canceled_capture_after_certification_does_not_publish_unregistered_blob()
+    {
+        Directory.CreateDirectory(root);
+        var source = Path.Combine(root, "source");
+        await File.WriteAllTextAsync(source, "ORIGINAL", TestToken);
+        var blobs = new BlobStore(Path.Combine(root, "blobs"), new ManagerDatabase(Path.Combine(root, "m.db")));
+        using var canceled = new CancellationTokenSource();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => blobs.CaptureWithHashForTestingAsync(
+            source, (_, _) => Task.CompletedTask, registerInDatabase: false, ct: canceled.Token,
+            afterSourceCertification: (_, _) => canceled.CancelAsync()));
+
+        Assert.Empty(Directory.EnumerateFiles(blobs.Root));
+        await File.WriteAllTextAsync(source, "RELEASED", TestToken);
+    }
+
+    [Fact]
     public async Task Canceled_capture_does_not_publish_or_leave_private_staging()
     {
         var (_, blobs, source, hash) = await CreateAsync();
