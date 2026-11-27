@@ -346,6 +346,35 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
             verifiedLaunch.CommandText = "SELECT COUNT(*) FROM launch_history WHERE success=1 AND startup_survived=1";
             await WaitForAsync(() => (long)verifiedLaunch.ExecuteScalar()! == 1,
                 UiTimeout, "committed successful observed launch for this profile", ct);
+
+            // A successful real fixture process and its recovery baseline must
+            // describe the same observed mod state and game build.
+            using var knownGood = connection.CreateCommand();
+            knownGood.CommandText = "SELECT value FROM settings WHERE key='automation:last-known-good'";
+            await WaitForAsync(() => knownGood.ExecuteScalar() is string { Length: > 0 },
+                UiTimeout, "committed last-known-good recovery baseline", ct);
+            using var known = JsonDocument.Parse(Assert.IsType<string>(knownGood.ExecuteScalar()));
+            using var observed = connection.CreateCommand();
+            observed.CommandText = "SELECT state_json,game_build_sha256,ended_at FROM launch_history WHERE mode='Modded' AND success=1 AND startup_survived=1";
+            using (var reader = observed.ExecuteReader())
+            {
+                Assert.True(reader.Read());
+                using var launchState = JsonDocument.Parse(reader.GetString(0));
+                Assert.True(JsonElement.DeepEquals(launchState.RootElement, known.RootElement.GetProperty("mods")));
+                var observedBuild = reader.IsDBNull(1) ? null : reader.GetString(1);
+                var knownBuild = known.RootElement.TryGetProperty("gameBuildSha256", out var build) ? build.GetString() : null;
+                Assert.Equal(observedBuild, knownBuild);
+                Assert.Equal(DateTimeOffset.Parse(reader.GetString(2), System.Globalization.CultureInfo.InvariantCulture),
+                    known.RootElement.GetProperty("recordedAt").GetDateTimeOffset());
+                Assert.False(reader.Read());
+            }
+            var snapshotRoot = known.RootElement.GetProperty("snapshotRoot").GetString();
+            Assert.False(string.IsNullOrWhiteSpace(snapshotRoot));
+            using var backup = connection.CreateCommand();
+            backup.CommandText = "SELECT COUNT(*) FROM save_snapshots WHERE reason='pre-launch' AND success=1 AND root_path=$root";
+            backup.Parameters.AddWithValue("$root", snapshotRoot);
+            Assert.Equal(1L, Assert.IsType<long>(backup.ExecuteScalar()));
+            Assert.True(File.Exists(Path.Combine(snapshotRoot!, "snapshot.json")));
         }
         finally
         {
