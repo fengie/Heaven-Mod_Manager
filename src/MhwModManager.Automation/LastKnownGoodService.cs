@@ -18,6 +18,20 @@ public sealed class LastKnownGoodService(ManagerDatabase db)
         await db.SetSettingAsync(Key, JsonSerializer.Serialize(state, AutomationJson.Options), ct);
     }
 
+    /// <summary>Record the completed, successful modded observation, not a later catalog snapshot.</summary>
+    public async Task RecordObservedLaunchAsync(LaunchObservationRecord observation, string? snapshotRoot)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ArgumentNullException.ThrowIfNull(observation);
+        if (observation.Mode != LaunchMode.Modded || !observation.Success || !observation.StartupSurvived || observation.ExitCode is not null)
+            throw new ArgumentException("Only an observed successful modded startup can become last known good.", nameof(observation));
+
+        var observedState = new LastKnownGoodState(observation.EndedAt, snapshotRoot, observation.GameBuildSha256,
+            new Dictionary<string, ModState>(observation.State, StringComparer.OrdinalIgnoreCase));
+        // A user cancellation after the terminal process observation must not change its recovery evidence.
+        await db.SetSettingAsync(Key, JsonSerializer.Serialize(observedState, AutomationJson.Options), CancellationToken.None);
+    }
+
     public async Task<LastKnownGoodState?> LoadAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
