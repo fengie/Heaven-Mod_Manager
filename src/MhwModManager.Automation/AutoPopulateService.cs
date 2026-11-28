@@ -40,6 +40,7 @@ internal sealed record ModRequirementSpec(
 internal static class ModRequirementReader
 {
     private static readonly string[] SidecarNames = ["mod-manager.requirements.json", "mhw-manager.requirements.json"];
+    private const int MaxSidecarBytes = 256 * 1024;
 
     public static async Task<ModRequirementSpec> ReadAsync(
         ModDescriptor mod,
@@ -66,8 +67,13 @@ internal static class ModRequirementReader
             try
             {
                 await using var stream = new FileStream(sidecar, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
-                using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+                if (stream.Length is <= 0 or > MaxSidecarBytes)
+                    throw new JsonException("Requirements sidecar is empty or exceeds the 256 KiB inspection budget.");
+                using var doc = await JsonDocument.ParseAsync(stream,
+                    new JsonDocumentOptions { AllowDuplicateProperties = false }, ct);
                 var root = doc.RootElement;
+                if (root.ValueKind != JsonValueKind.Object)
+                    throw new JsonException("Requirements sidecar must be a JSON object.");
 
                 ReadPathArray(root, "files", requiredPaths, errors);
                 ReadPathArray(root, "textures", requiredTextures, errors);
@@ -961,7 +967,7 @@ public sealed class AutoPopulateService(
                 if (alreadySatisfied)
                     continue;
 
-                var dependency = ChooseModTokenProvider(requirement, mods);
+                var dependency = ChooseModTokenProvider(requirement, mods, requirements);
                 if (dependency is null)
                     return ClosureResult.Fail($"'{mod.DisplayName}' requires {ModRequirementReader.DescribeRequirement(requirement)}, but no installed package satisfies that constraint.");
                 queue.Enqueue(dependency.Id);
@@ -1146,12 +1152,17 @@ public sealed class AutoPopulateService(
             files.Any(f => PathRules.Comparer.Equals(f.Path, path)));
     }
 
-    private static ModDescriptor? ChooseModTokenProvider(ModDependencyRequirement requirement, ModDescriptor[] mods)
+    private static ModDescriptor? ChooseModTokenProvider(ModDependencyRequirement requirement,
+        ModDescriptor[] mods, Dictionary<string,ModRequirementSpec> requirements)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // Rank only providers that can participate in this operation. An
+        // explicitly excluded, unreadable or incompatible package must not
+        // mask another exact provider of the same versioned token.
         return mods.Where(m =>
                 ModRequirementReader.MatchesToken(m, requirement.Token) &&
                 !m.IsSuperseded &&
+                requirements.TryGetValue(m.Id, out var spec) && spec.Errors.Count == 0 &&
                 ModRequirementReader.VersionSatisfies(m, requirement, out _))
             .OrderBy(RoleRank)
             .ThenByDescending(m => m.Enabled)

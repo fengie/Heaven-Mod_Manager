@@ -10,6 +10,39 @@ namespace MhwModManager.IntegrationTests;
 public sealed class WatchedFolderReconnectTests
 {
     [Fact]
+    public async Task ShutdownWaitsForAnInFlightNotification()
+    {
+        var root = Directory.CreateTempSubdirectory("intake-stop-");
+        var testToken = TestContext.Current.CancellationToken;
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(testToken);
+        using var release = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var watcher = MainWindowViewModel.WatchIntakeFolderAsync(root.FullName, TimeSpan.FromMilliseconds(50), name =>
+        {
+            if (name is null) return;
+            entered.TrySetResult();
+            release.Wait(testToken);
+        }, stop.Token);
+        try
+        {
+            File.WriteAllText(Path.Combine(root.FullName, "event.txt"), "event");
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+            var cancellation = stop.CancelAsync();
+            Assert.NotSame(watcher, await Task.WhenAny(watcher, Task.Delay(250, TestContext.Current.CancellationToken)));
+            release.Set();
+            await cancellation;
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => watcher);
+        }
+        finally
+        {
+            release.Set();
+            await stop.CancelAsync();
+            try { await watcher; } catch (OperationCanceledException) when (stop.IsCancellationRequested) { }
+            root.Delete(true);
+        }
+    }
+
+    [Fact]
     public async Task FilesDepositedOfflineAreReconciledOnceAndFutureEventsResume()
     {
         var root = Directory.CreateTempSubdirectory("intake-reconnect-");

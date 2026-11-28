@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.147",
+  "currentVersion": "8.8.148",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "v8.8.146 build 651 from 4d944e1c passed Windows Gate 45724110053 and packaged update/rollback 45725419775. Integrated #989 and #993 at 3445d44189809cd5ff7a862b7c910753cb8e64f4 passed Windows Gate 46078148415.",
+  "immediateParentRevision": "1fa739cc2f8d07a612ad3f8c912653f83596b539",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Verify the immutable v8.8.147 release and its packaged update and rollback. Under #793 verify the actual Heaven2 launcher, installed process and build. Under #946 verify that applying one alternate removal clears pending changes and preserves the primary and unmanaged files. Preserve the broader #946 workflow, performance and physical-game obligations. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
+  "nextAgentObligation": "The v8.8.148 source combines #997 and #1002\u2013#1010 on build 658\u2019s verified main. Verify combined native tests, immutable publication and packaged update/rollback before reporting release acceptance. Physical verification remains under #793/#946. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

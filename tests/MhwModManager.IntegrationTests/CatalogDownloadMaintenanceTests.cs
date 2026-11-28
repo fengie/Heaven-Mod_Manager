@@ -359,4 +359,40 @@ public sealed class CatalogDownloadMaintenanceTests : IDisposable
         File.SetLastWriteTimeUtc(lease, writeUtc.UtcDateTime);
         return (archive, lease);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Cleanup_preserves_oversized_lease_metadata_even_for_exited_owners(bool temporary)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = DateTimeOffset.UtcNow;
+        var old = now - TimeSpan.FromHours(3);
+        string lease;
+        string? archive = null;
+        if (temporary)
+            lease = await CreateTemporaryLeaseAsync(old, int.MaxValue, old);
+        else
+        {
+            var owned = await CreateOwnedDownloadAsync(old, int.MaxValue, old, 64);
+            archive = owned.Archive;
+            lease = owned.Lease;
+        }
+        // Valid JSON padded beyond the app's tiny ownership-record budget.
+        // Cleanup must not deserialize it or grant deletion authority.
+        await File.AppendAllTextAsync(lease, new string(' ', 32 * 1024), ct);
+        File.SetLastWriteTimeUtc(lease, old.UtcDateTime);
+        var original = await File.ReadAllBytesAsync(lease, ct);
+
+        var result = await CatalogDownloadMaintenance.CleanupRootAsync(
+            root, now, TimeSpan.Zero, 0, log: null, ct);
+
+        Assert.Equal(0, result.DeletedDownloads);
+        Assert.Equal(0, result.DeletedLeases);
+        Assert.True(result.DeferredEntries >= 1);
+        Assert.Equal(original, await File.ReadAllBytesAsync(lease, ct));
+        if (archive is not null)
+            Assert.True(File.Exists(archive));
+    }
+
 }

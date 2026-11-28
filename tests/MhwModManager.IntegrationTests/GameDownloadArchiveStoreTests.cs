@@ -166,4 +166,39 @@ public sealed class GameDownloadArchiveStoreTests : IDisposable
         try{Directory.Delete(root,true);}catch(IOException){}catch(UnauthorizedAccessException){}
         GC.SuppressFinalize(this);
     }
+
+    [Fact]
+    public async Task Retention_refuses_a_linked_library_ancestor_before_creating_any_game_directory()
+    {
+        var source = Path.Combine(root, "source.zip");
+        await File.WriteAllTextAsync(source, "isolated archive bytes", TestToken);
+        var sha = Convert.ToHexString(SHA256.HashData(
+            await File.ReadAllBytesAsync(source, TestToken))).ToLowerInvariant();
+        var external = Directory.CreateDirectory(Path.Combine(root, "external")).FullName;
+        var sentinel = Path.Combine(external, "keep.txt");
+        await File.WriteAllTextAsync(sentinel, "untouched", TestToken);
+        var link = Path.Combine(root, "library");
+        using var process = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/d /c mklink /J \"{link}\" \"{external}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }) ?? throw new InvalidOperationException("Could not create fixture junction.");
+        await process.WaitForExitAsync(TestToken);
+        Assert.Equal(0, process.ExitCode);
+        try
+        {
+            var downloads = Path.Combine(link, "game", "Downloads");
+            await Assert.ThrowsAsync<IOException>(() =>
+                GameDownloadArchiveStore.SaveAsync(downloads, source, "Fixture", sha, TestToken));
+            Assert.False(Directory.Exists(Path.Combine(external, "game")));
+            Assert.Equal("untouched", await File.ReadAllTextAsync(sentinel, TestToken));
+            Assert.True(File.Exists(source));
+        }
+        finally
+        {
+            Directory.Delete(link, recursive: false);
+        }
+    }
+
 }

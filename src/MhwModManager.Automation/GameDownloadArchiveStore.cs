@@ -66,19 +66,12 @@ public static class GameDownloadArchiveStore
             throw new InvalidDataException("Saved archive requires a full verified SHA-256 digest.");
         ct.ThrowIfCancellationRequested();
 
-        var root=Path.GetFullPath(downloadsRoot);
-        // GameModStorage resolves the owning game root. Refuse a swapped linked directory
-        // instead of following a symlink/junction into another game's files.
-        var parent=Path.GetDirectoryName(root)
-            ?? throw new InvalidDataException("Download library has no owning game directory.");
-        foreach(var path in new[]{parent,root})
-        {
-            if(Directory.Exists(path)&&(File.GetAttributes(path)&FileAttributes.ReparsePoint)!=0)
-                throw new IOException($"Download library cannot use a reparse-point directory: {path}");
-        }
-        Directory.CreateDirectory(root);
-        if((File.GetAttributes(root)&FileAttributes.ReparsePoint)!=0)
-            throw new IOException("Download library became a reparse-point directory.");
+        var root=CatalogDownloadMaintenance.NormalizeRoot(downloadsRoot);
+        if(Path.GetDirectoryName(root) is null)
+            throw new InvalidDataException("Download library has no owning game directory.");
+        // Reuse the existing safe-root routine: check every ancestor before
+        // creating missing components, not merely Downloads and its parent.
+        CatalogDownloadMaintenance.EnsureSafeRoot(root);
 
         var slug=new StringBuilder();
         var previousSeparator=false;
@@ -111,13 +104,8 @@ public static class GameDownloadArchiveStore
         {
             await gate.Semaphore.WaitAsync(ct);
             acquired=true;
-            // Revalidate after waiting: another actor may have swapped the root.
-            foreach (var path in new[]{parent,root})
-            {
-                if (Directory.Exists(path) &&
-                    (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
-                    throw new IOException("Download library became a reparse-point directory.");
-            }
+            // Revalidate the full ancestry after waiting.
+            CatalogDownloadMaintenance.EnsureSafeRoot(root);
             return await SaveVerifiedUnderGateAsync(
                 root, sourceArchive, name, sha, extension, ct);
         }

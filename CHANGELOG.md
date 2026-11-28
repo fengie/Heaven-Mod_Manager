@@ -1,3 +1,9 @@
+# v8.8.148 — November 27, 2026
+
+- Serialize save snapshots and validate archive limits, import leases, download paths and Windows filenames before writing files.
+- Preserve staged mod choices when dependencies are invalid. Reject ambiguous Crimson manifests and protect legacy staged profiles.
+- Preserve catalog retry positions and count unique instrumented source lines across test suites.
+
 # v8.8.147 — November 27, 2026
 
 - Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989)

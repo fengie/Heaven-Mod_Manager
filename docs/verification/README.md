@@ -19,7 +19,9 @@ Alternatively on a Windows developer or assigned test runner:
 
 The harness fails if a test project fails, the collector emits no Cobertura XML, or counters are missing/invalid. Reports remain under test-owned `BuildLogs/Coverage/run-*/`; do not measure on user's game installations.
 
-**Do not sum the three per-suite percentages:** they can instrument the same production methods. Full cross-suite union/merged branch coverage and changed-code coverage thresholds are **still pending**. Establish a measured baseline and instrumented cost first; then add a compatible merging/reporting tool with tested semantics.
+**Do not sum the three per-suite percentages:** they can instrument the same production methods. The opt-in collector additionally emits `feature-line-coverage.json` for the existing feature inventory. It requires a clean exact Git checkout before and after collection and counts each resolved source-file/line identity once across the selected suites; a line is covered if any report has a positive hit count. Only explicit repository paths, declared source roots and the deterministic `/_/` root are used; ambiguous/unmapped classes are counted separately. Each feature lists uninstrumented paths and uses a null percentage when no mapped lines were measured. Shared paths may appear in multiple feature reports, so feature percentages must not be summed.
+
+The feature report is **not** full-repository or merged branch coverage, a passing feature-functionality claim, or installed acceptance. Branch counters remain per report because aggregate conditions do not provide reliable cross-suite branch identities. The pure fixture regression runs in the native integration suite. A measured real baseline, instrumentation cost and changed-code thresholds remain outstanding; do not set unsupported performance/coverage budgets. Use ignored or external output paths so the measured checkout remains clean.
 
 ## Closure criteria still outstanding
 
