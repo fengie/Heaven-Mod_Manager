@@ -56,6 +56,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private int pendingReviewGeneration;
     [ObservableProperty]private string statusText="Ready.";
     [ObservableProperty]private string footerText="Ready";
+    [ObservableProperty]private string launchFeedback="";
     [ObservableProperty]private string busyTitle="Working…";
     [ObservableProperty]private string busyDetail="";
     [ObservableProperty]private bool busyProgressIndeterminate=true;
@@ -1689,15 +1690,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if (!File.Exists(s.Paths.Game.ExecutablePath))
         {
-            StatusText = "Launch blocked: registered game executable is unavailable. Review the game installation path.";
+            StatusText=FooterText=LaunchFeedback="Launch blocked: registered game executable is unavailable. Review the game installation path.";
             return;
         }
         if(HasPendingDeployment)
         {
-            StatusText=rulesNeedApply
+            SelectedTab=1;
+            StatusText=FooterText=LaunchFeedback=rulesNeedApply
                 ? "Apply saved overwrite choices before launching. No game files were changed."
                 : "Apply or discard pending mod changes before launching. No game files were changed.";
-            SelectedTab=1;
             return;
         }
         await RunBusy("game.just-play","Launch Game","Backing up your save, checking the mod setup, and then launching the game…",true,async ct=>
@@ -1705,15 +1706,37 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             var dependencyBlockers=await GetDependencyBlockersAsync(CaptureStage(),null,ct);
             if(dependencyBlockers.Length>0)
             {
-                StatusText="Launch blocked because enabled mods have unsatisfied requirements. "+DescribeDependencyBlockers(dependencyBlockers);
+                StatusText=LaunchFeedback="Launch blocked because enabled mods have unsatisfied requirements. "+DescribeDependencyBlockers(dependencyBlockers);
                 return;
             }
+            BusyDetail="Checking game health, starting the game and observing startup…";
             var observation=await s.Automation.LaunchAndObserveAsync(LaunchMode.Modded,TimeSpan.FromSeconds(15),ct);
-            StatusText=observation.Message;
-            await RefreshActivity(ct);
-            await RefreshIssueSuspects(ct);
+            StatusText=LaunchFeedback=observation.Message;
             if(!observation.StartupSurvived&&observation.Started)SelectedTab=3;
-        });
+            // A completed observation is not invalidated by a failed diagnostics refresh.
+            try
+            {
+                await RefreshActivity(ct);
+                await RefreshIssueSuspects(ct);
+            }
+            catch(Exception ex)
+            {
+                s.Log.Error(ex,"Launch observation completed, but follow-up diagnostics refresh failed.");
+                StatusText=LaunchFeedback=observation.Message+" Diagnostics refresh did not complete; use History to retry.";
+            }
+        },reportLaunchResult:true);
+    }
+
+    internal WorkspaceLayout ReadWorkspaceLayout()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        return WorkspaceLayout.Normalize(s.Settings.Current.Workspace);
+    }
+
+    internal void SaveWorkspaceLayout(WorkspaceLayout layout)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        s.Settings.Update(settings=>settings.Workspace=WorkspaceLayout.Normalize(layout));
     }
 
     private async Task<InboxRunResult> ProcessInboxWithProgressAsync(CancellationToken ct)
@@ -2128,13 +2151,14 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         public Dictionary<string,ConflictOptionRow> Options{get;}=new(StringComparer.OrdinalIgnoreCase);
     }
 
-    private async Task RunBusy(string operationName,string title,string detail,bool cancellable,Func<CancellationToken,Task> action,bool rethrowOnFailure=false)
+    private async Task RunBusy(string operationName,string title,string detail,bool cancellable,Func<CancellationToken,Task> action,bool rethrowOnFailure=false,bool reportLaunchResult=false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"operation={operationName}; title={title}; cancellable={cancellable}");
         if(!programUpdateHandoffGate.TryBeginForeground())
         {
             PreserveDeniedAutomaticChange(operationName);
             MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; updater handoff or another foreground operation owns the gate");
+            if(reportLaunchResult)StatusText=FooterText=LaunchFeedback="Launch blocked: another operation or program update is in progress. Retry when it finishes.";
             if(rethrowOnFailure)throw new InvalidOperationException($"Startup operation {operationName} could not acquire the foreground gate.");
             return;
         }
@@ -2143,11 +2167,13 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             programUpdateHandoffGate.EndForeground();
             PreserveDeniedAutomaticChange(operationName);
             MasterDebugLog.Write("UI-COMMAND", $"IGNORED operation={operationName}; another operation is already busy");
+            if(reportLaunchResult)StatusText=FooterText=LaunchFeedback="Launch blocked: another operation is already in progress. Retry when it finishes.";
             if(rethrowOnFailure)throw new InvalidOperationException($"Startup operation {operationName} was blocked by an existing foreground operation.");
             return;
         }
         busyCts=new CancellationTokenSource();
         BusyTitle=title;BusyDetail=detail;
+        if(reportLaunchResult)LaunchFeedback="Checking game and mod readiness…";
         BusyProgressIndeterminate=true;BusyProgressPercent=0;BusyProgressSummary=string.Empty;
         BusyItemProgressVisibility=Visibility.Collapsed;BusyItemProgressPercent=0;BusyItemProgressLabel=string.Empty;
         BusyElapsedText="Elapsed: 0s";BusyOperationId=string.Empty;
@@ -2172,14 +2198,21 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     $"operation={operationName}; telemetryId={id}; masterTraceId={MasterDebugLog.CurrentOperationId}");
                 await action(ct);
             },new Dictionary<string,object?>{{"title",title},{"stagedMods",StagedCount}},busyCts.Token);
-            FooterText=$"{title} finished in {sw.Elapsed.TotalSeconds:F1}s";
+            FooterText=reportLaunchResult?LaunchFeedback:$"{title} finished in {sw.Elapsed.TotalSeconds:F1}s";
         }
-        catch(OperationCanceledException){StatusText=$"{title} cancelled.";FooterText=StatusText;if(rethrowOnFailure)throw;}
+        catch(OperationCanceledException)
+        {
+            StatusText=reportLaunchResult?"Launch observation cancelled; the game may already be running.":$"{title} cancelled.";
+            if(reportLaunchResult)LaunchFeedback=StatusText;
+            FooterText=StatusText;
+            if(rethrowOnFailure)throw;
+        }
         catch(Exception ex)
         {
             var assessment=ExceptionPolicy.Assess(ex);
             StatusText=$"{assessment.UserSummary} {ex.Message}";
-            FooterText=$"{title} failed — {assessment.Category}";
+            if(reportLaunchResult)LaunchFeedback=StatusText;
+            FooterText=reportLaunchResult?StatusText:$"{title} failed — {assessment.Category}";
             s.Log.Error(ex,"UI operation {Operation} failed with category {Category}",operationName,assessment.Category);
             if(rethrowOnFailure)throw;
         }

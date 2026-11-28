@@ -74,10 +74,11 @@ public sealed class UxHardeningTests
         Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"",xaml);
         Assert.Contains("<StackPanel Orientation=\"Horizontal\" VerticalAlignment=\"Center\">",xaml);
         Assert.Contains("<Grid x:Name=\"ModLibraryRegion\" Grid.Row=\"2\">",xaml);
-        Assert.Contains("<StackPanel Grid.Column=\"1\" Margin=\"12,0,0,0\" Orientation=\"Horizontal\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
+        Assert.Contains("<WrapPanel Grid.Column=\"1\" Margin=\"12,0,0,0\" Orientation=\"Horizontal\" HorizontalAlignment=\"Right\" VerticalAlignment=\"Center\">",xaml);
+        Assert.Contains("Resize mod tools and library",xaml);
         var modsTab=System.Xml.Linq.XDocument.Parse(xaml).Descendants()
             .Single(element=>element.Name.LocalName=="TabItem"&&(string?)element.Attribute("Header")=="Mods");
-        var modsWrapper=Assert.Single(modsTab.Elements(),element=>element.Name.LocalName!="TabItem.Tag");
+        var modsWrapper=Assert.Single(modsTab.Elements(),element=>!element.Name.LocalName.Contains('.'));
         Assert.Equal("Grid",modsWrapper.Name.LocalName);
         Assert.Equal("Stretch",(string?)modsWrapper.Attribute("HorizontalAlignment"));
         Assert.Null(modsWrapper.Attribute("Width"));

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -68,6 +69,7 @@ public partial class MainWindow:Window
         {
             MasterDebugLog.Write("GAME-SWITCH", "Previous game view-model disposal failed after commit.", ex);
         }
+        ConfigureWorkspaceLayout();
         replacement.StartProgramUpdater();
     }
 
@@ -100,7 +102,86 @@ public partial class MainWindow:Window
     private void OnWindowLoaded(object sender,RoutedEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ConfigureWorkspaceLayout();
         AnimateElement(RootLayout,0.94,0,6,170);
+    }
+
+    private ColumnDefinition? workspaceSidebarColumn;
+    private GridSplitter? workspaceSidebarSplitter;
+    private WorkspaceTabPanel? workspaceHeaderPanel;
+
+    private void ConfigureWorkspaceLayout()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (DataContext is not MainWindowViewModel vm) return;
+        MainTabs.ApplyTemplate();
+        var template = MainTabs.Template;
+        if (template?.FindName("PART_NavigationWidth", MainTabs) is not ColumnDefinition column ||
+            template.FindName("PART_NavigationSplitter", MainTabs) is not GridSplitter splitter ||
+            template.FindName("PART_NavigationHeaderPanel", MainTabs) is not WorkspaceTabPanel headers) return;
+        if (!ReferenceEquals(workspaceSidebarSplitter, splitter))
+        {
+            if (workspaceSidebarSplitter is not null)
+            {
+                workspaceSidebarSplitter.DragCompleted -= OnWorkspaceSplitterCompleted;
+                workspaceSidebarSplitter.KeyUp -= OnWorkspaceSplitterKeyUp;
+            }
+            workspaceSidebarSplitter = splitter;
+            workspaceSidebarSplitter.DragCompleted += OnWorkspaceSplitterCompleted;
+            workspaceSidebarSplitter.KeyUp += OnWorkspaceSplitterKeyUp;
+        }
+        if (!ReferenceEquals(workspaceHeaderPanel, headers))
+        {
+            if (workspaceHeaderPanel is not null) workspaceHeaderPanel.OrderChanged -= OnWorkspaceOrderChanged;
+            workspaceHeaderPanel = headers;
+            workspaceHeaderPanel.OrderChanged += OnWorkspaceOrderChanged;
+        }
+        workspaceSidebarColumn = column;
+        ApplyWorkspaceLayout(vm.ReadWorkspaceLayout());
+    }
+
+    private void ApplyWorkspaceLayout(WorkspaceLayout layout)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        layout = WorkspaceLayout.Normalize(layout);
+        if (workspaceSidebarColumn is not null) workspaceSidebarColumn.Width = new GridLength(layout.SidebarWidth);
+        workspaceHeaderPanel?.SetOrder(layout.NavigationOrder);
+        ModToolsRow.Height = layout.ModToolsHeight is double height ? new GridLength(height) : GridLength.Auto;
+    }
+
+    private void PersistWorkspaceLayout()
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (DataContext is not MainWindowViewModel vm ||
+            workspaceSidebarColumn is null || workspaceHeaderPanel is null) return;
+        var width = workspaceSidebarColumn.Width.IsAbsolute ? workspaceSidebarColumn.Width.Value : workspaceSidebarColumn.ActualWidth;
+        var height = ModToolsRow.Height.IsAbsolute ? (double?)ModToolsRow.Height.Value : null;
+        vm.SaveWorkspaceLayout(new WorkspaceLayout(workspaceHeaderPanel.Order, width, height));
+    }
+
+    private void OnWorkspaceOrderChanged(object? sender, EventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        PersistWorkspaceLayout();
+    }
+
+    private void OnWorkspaceSplitterCompleted(object sender, DragCompletedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (!e.Canceled) PersistWorkspaceLayout();
+    }
+
+    private void OnWorkspaceSplitterKeyUp(object sender, KeyEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        PersistWorkspaceLayout();
+    }
+
+    private void OnResetWorkspaceLayout(object sender, RoutedEventArgs e)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        ApplyWorkspaceLayout(WorkspaceLayout.Default);
+        PersistWorkspaceLayout();
     }
 
     private void OnMainTabSelectionChanged(object sender,SelectionChangedEventArgs e)
@@ -203,6 +284,7 @@ public partial class MainWindow:Window
     private void OnWindowPreviewDragOver(object sender, DragEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (e.Data.GetDataPresent(WorkspaceTabPanel.DragFormat, false)) return;
         e.Effects = SupportedModDropPaths(e.Data).Length > 0
             ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
@@ -211,6 +293,7 @@ public partial class MainWindow:Window
     private async void OnWindowPreviewDrop(object sender, DragEventArgs e)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        if (e.Data.GetDataPresent(WorkspaceTabPanel.DragFormat, false)) return;
         e.Handled = true;
         var paths = SupportedModDropPaths(e.Data);
         if (paths.Length == 0 || DataContext is not MainWindowViewModel vm) return;

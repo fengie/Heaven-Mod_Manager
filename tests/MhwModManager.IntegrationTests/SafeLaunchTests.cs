@@ -93,4 +93,55 @@ public sealed class SafeLaunchTests
             Assert.Contains("not applied", result.Message, StringComparison.OrdinalIgnoreCase);
             Assert.False(File.Exists(services.Executor.Destination(file.Path)));
         });
+
+    [Fact]
+    public Task MissingExecutableReportsActionableLaunchResultOutsideDashboard() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            using var vm = new MainWindowViewModel(services);
+            vm.BackgroundMetadataRefreshEnabled = false;
+            try
+            {
+                vm.SelectedTab = 1;
+                File.Delete(services.Paths.Game.ExecutablePath);
+                var before = await services.PlannerSnapshots.LoadAsync(ct);
+                await vm.LaunchModdedCommand.ExecuteAsync(null);
+                Assert.Contains("unavailable", vm.StatusText, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("unavailable", vm.FooterText, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("installation path", vm.FooterText, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("unavailable", vm.LaunchFeedback, StringComparison.OrdinalIgnoreCase);
+                var after = await services.PlannerSnapshots.LoadAsync(ct);
+                Assert.Equal(before.CurrentManifest.OrderBy(item => item.Key), after.CurrentManifest.OrderBy(item => item.Key));
+            }
+            finally { await vm.StopPageReadsAsync(); }
+        });
+
+    [Fact]
+    public Task LaunchWithStagedChangesReportsTheApplyRequirementAndPreservesFiles() =>
+        IsolatedWpfSession.RunAsync(async (services, ct) =>
+        {
+            using var vm = new MainWindowViewModel(services);
+            vm.BackgroundMetadataRefreshEnabled = false;
+            try
+            {
+                var source = Directory.CreateDirectory(Path.Combine(services.Paths.ToolRoot, "staged launch fixture"));
+                await File.WriteAllTextAsync(Path.Combine(source.FullName, "pending.bin"), "pending launch bytes", ct);
+                var mod = new ModDescriptor("pending-launch", "PendingLaunch", "Pending launch", source.FullName, false, 1);
+                await services.Database.UpsertModAsync(mod, ct);
+                var file = Assert.Single(await services.Scanner.CaptureAsync(mod, ct));
+                var row = new ModRowViewModel(Assert.Single(LogicalModFamilies.Build([mod])), () => { });
+                vm.Mods.Add(row);
+                row.BulkSelected = true;
+                await vm.EnableSelectedCommand.ExecuteAsync(null);
+                Assert.True(vm.HasPendingDeployment);
+                await vm.LaunchModdedCommand.ExecuteAsync(null);
+                Assert.Contains("Apply", vm.FooterText, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Apply", vm.LaunchFeedback, StringComparison.OrdinalIgnoreCase);
+                Assert.True(vm.HasPendingDeployment);
+                Assert.False(File.Exists(services.Executor.Destination(file.Path)));
+                Assert.False(Assert.Single(await services.Database.GetModsAsync(ct)).Enabled);
+            }
+            finally { await vm.StopPageReadsAsync(); }
+        });
+
 }

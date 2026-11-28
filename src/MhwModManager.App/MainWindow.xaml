@@ -18,7 +18,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="78"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="32"/>
+            <RowDefinition Height="Auto" MinHeight="32"/>
         </Grid.RowDefinitions>
 
         <!-- App bar -->
@@ -98,6 +98,7 @@
                     SelectedIndex="{Binding SelectedTab}"
                     SelectionChanged="OnMainTabSelectionChanged">
             <TabItem Header="Dashboard">
+                <AutomationProperties.AutomationId>DashboardTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -301,6 +302,7 @@
             </TabItem>
 
             <TabItem Header="Mods">
+                <AutomationProperties.AutomationId>ModsTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -312,7 +314,7 @@
                 </TabItem.Tag>
                 <Grid HorizontalAlignment="Stretch">
                 <Grid Margin="8,6,8,6">
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition x:Name="ModToolsRow" Height="Auto" MinHeight="80" MaxHeight="340"/><RowDefinition Height="*" MinHeight="120"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -338,7 +340,8 @@
                         </StackPanel>
                     </Grid>
 
-                    <Border Grid.Row="1" Margin="0,6,0,6" Style="{StaticResource SubtleCard}" Padding="8">
+                    <Border Grid.Row="1" Margin="0,6,0,10" Style="{StaticResource SubtleCard}" Padding="8">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <Grid>
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid>
@@ -424,7 +427,12 @@
                                 </WrapPanel>
                             </Expander>
                         </Grid>
+                        </ScrollViewer>
                     </Border>
+                    <GridSplitter Grid.Row="1" Height="7" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                                  ResizeDirection="Rows" ResizeBehavior="CurrentAndNext" Background="{StaticResource Border}"
+                                  Cursor="SizeNS" ShowsPreview="False" AutomationProperties.Name="Resize mod tools and library"
+                                  DragCompleted="OnWorkspaceSplitterCompleted" KeyUp="OnWorkspaceSplitterKeyUp"/>
 
                     <Grid x:Name="ModLibraryRegion" Grid.Row="2">
                         <Border CornerRadius="9" ClipToBounds="True" BorderBrush="{StaticResource Border}" BorderThickness="1">
@@ -677,7 +685,7 @@
                     </Grid>
                     <Border Grid.Row="3" Margin="0,6,0,0" Style="{StaticResource SubtleCard}" Padding="6,5">
                         <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2.4*"/></Grid.ColumnDefinitions>
                             <TextBlock VerticalAlignment="Center"
                                        Foreground="{StaticResource Text}"
                                        FontSize="12"
@@ -685,13 +693,13 @@
                                        Text="{Binding StagedSummary}"
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding PlanPreviewText}"/>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <WrapPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Button Content="Apply Mod Changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding HasPendingDeployment}" Style="{StaticResource PrimaryButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Verify and commit all pending changes as one operation."/>
                                 <Button Content="Review and retry" Command="{Binding ApplyCommand}" Visibility="{Binding ReviewRetryVisibility}" ToolTip="Review a held change and retry after resolving its cause."/>
                                 <Button Content="Preview Mod Changes" Command="{Binding PreviewApplyCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="See exactly what would change without editing game files." IsEnabled="{Binding HasPendingDeployment}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Discard Pending Changes" Command="{Binding DiscardStagedCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="9,5" Margin="2,0" ToolTip="Discard all pending enable/disable changes. Installed game files are not changed." IsEnabled="{Binding HasStagedChanges}" AutomationProperties.HelpText="{Binding PendingActionsHelp}"/>
                                 <Button Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource QuietButton}" MinHeight="32" Padding="10,5" Margin="2,0" ToolTip="Restore the previous applied mod setup. Ctrl+Z." AutomationProperties.Name="Undo Last Applied Change"/>
-                            </StackPanel>
+                            </WrapPanel>
                         </Grid>
                     </Border>
                 </Grid>
@@ -699,6 +707,7 @@
             </TabItem>
 
             <TabItem Header="{Binding CoverageTabLabel}">
+                <AutomationProperties.AutomationId>CoverageTab</AutomationProperties.AutomationId>
                 <Grid Margin="28,26,32,28">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <Grid>
@@ -799,6 +808,7 @@
             </TabItem>
 
             <TabItem Header="Needs attention">
+                <AutomationProperties.AutomationId>AttentionTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -938,6 +948,7 @@
             </TabItem>
 
             <TabItem Header="Profiles">
+                <AutomationProperties.AutomationId>ProfilesTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -993,6 +1004,7 @@
             </TabItem>
 
             <TabItem Header="History">
+                <AutomationProperties.AutomationId>HistoryTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -1046,6 +1058,7 @@
             </TabItem>
 
             <TabItem Header="Shared Files">
+                <AutomationProperties.AutomationId>SharedFilesTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -1191,6 +1204,7 @@
             </TabItem>
 
             <TabItem Header="Settings">
+                <AutomationProperties.AutomationId>SettingsTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -1350,6 +1364,7 @@
 
 
             <TabItem Header="Browse Mods">
+                <AutomationProperties.AutomationId>BrowseModsTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -1771,6 +1786,7 @@
             </TabItem>
 
             <TabItem Header="Installed files">
+                <AutomationProperties.AutomationId>InstalledFilesTab</AutomationProperties.AutomationId>
                 <TabItem.Tag>
                     <DataTemplate DataType="{x:Type vm:MainWindowViewModel}">
                         <StackPanel>
@@ -1799,15 +1815,32 @@
             </TabItem>
         </TabControl>
 
-        <!-- Footer -->
+        <!-- Global operation status -->
         <Border Grid.Row="2" Background="#090C10" BorderBrush="{StaticResource Border}" BorderThickness="0,1,0,0">
-            <Grid Margin="14,0">
+            <Grid Margin="14,4">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="6" Height="6" Fill="{StaticResource Good}" Margin="0,0,8,0"/>
-                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding FooterText}"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Foreground="{StaticResource Muted}" FontSize="11" Text="{Binding FooterText}"
+                               TextTrimming="CharacterEllipsis" ToolTip="{Binding FooterText}"/>
+                    <TextBlock Foreground="{StaticResource Text}" FontSize="12" Margin="0,3,0,0"
+                               Text="{Binding LaunchFeedback,StringFormat='Last launch: {0}'}"
+                               TextWrapping="Wrap" MaxHeight="76" ToolTip="{Binding LaunchFeedback}"
+                               AutomationProperties.Name="Last launch result" AutomationProperties.LiveSetting="Polite">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding LaunchFeedback}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
-                <ProgressBar Grid.Column="1" Width="170" Height="4" IsIndeterminate="True" Visibility="{Binding BusyVisibility}"/>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <Button Content="Reset Layout" Click="OnResetWorkspaceLayout" AutomationProperties.Name="Reset workspace layout"
+                            Style="{StaticResource QuietButton}" Padding="8,3"
+                            ToolTip="Restore default pane sizes and navigation order without changing your mods."/>
+                    <ProgressBar Margin="0,4,0,0" Width="100" Height="4" IsIndeterminate="True" Visibility="{Binding BusyVisibility}"/>
+                </StackPanel>
             </Grid>
         </Border>
 
