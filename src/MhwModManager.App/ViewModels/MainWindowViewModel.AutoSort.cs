@@ -295,21 +295,38 @@ public sealed partial class MainWindowViewModel
                         IncludeSubdirectories = true,
                         NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size | NotifyFilters.LastWrite
                     };
-                    watcher.Created += (_, e) => changed(e.Name);
-                    watcher.Changed += (_, e) => changed(e.Name);
-                    watcher.Renamed += (_, e) => changed(e.Name);
-                    watcher.Error += (_, _) => failed.TrySetResult();
-                    watcher.EnableRaisingEvents = true;
-                    // Subscribe before reconciling files that arrived while the folder was unavailable.
-                    changed(null);
-                    while (!failed.Task.IsCompleted)
+                    var notificationGate = new object();
+                    bool listening = true;
+                    void Notify(string? name)
                     {
-                        var delay = Task.Delay(interval, ct);
-                        if (await Task.WhenAny(delay, failed.Task).ConfigureAwait(false) == failed.Task) break;
-                        await delay.ConfigureAwait(false);
-                        root.Refresh();
-                        if (!root.Exists || root.CreationTimeUtc != created ||
-                            (root.Attributes & FileAttributes.ReparsePoint) != 0) break;
+                        lock (notificationGate)
+                        {
+                            if (listening && !ct.IsCancellationRequested) changed(name);
+                        }
+                    }
+                    watcher.Created += (_, e) => Notify(e.Name);
+                    watcher.Changed += (_, e) => Notify(e.Name);
+                    watcher.Renamed += (_, e) => Notify(e.Name);
+                    watcher.Error += (_, _) => failed.TrySetResult();
+                    try
+                    {
+                        watcher.EnableRaisingEvents = true;
+                        // Subscribe before reconciling files that arrived while the folder was unavailable.
+                        Notify(null);
+                        while (!failed.Task.IsCompleted)
+                        {
+                            var delay = Task.Delay(interval, ct);
+                            if (await Task.WhenAny(delay, failed.Task).ConfigureAwait(false) == failed.Task) break;
+                            await delay.ConfigureAwait(false);
+                            root.Refresh();
+                            if (!root.Exists || root.CreationTimeUtc != created ||
+                                (root.Attributes & FileAttributes.ReparsePoint) != 0) break;
+                        }
+                    }
+                    finally
+                    {
+                        // FileSystemWatcher can already have queued a callback at disposal.
+                        lock (notificationGate) listening = false;
                     }
                 }
             }
