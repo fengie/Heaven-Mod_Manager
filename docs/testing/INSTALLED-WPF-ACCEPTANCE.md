@@ -27,6 +27,13 @@ The harness stops only the process it launched and deletes only a marker-verifie
 
 ## Local acceptance scratch
 
+Use `scripts/testing/Run-Tests.ps1` for standalone source verification. Its
+test assemblies and build intermediates are created under a run-owned
+artifacts directory and removed when the command returns. Pass
+`-KeepBuildOutputs` when you need the normal project `bin` and `obj` directories
+for a subsequent command. An interrupted process may leave its marked build
+directory for inspection.
+
 For manual probes, dot-source `scripts/testing/AcceptanceScratch.ps1` and call
 `New-MhwAcceptanceScratch`. Put generated installs, builds, extracted packages and
 copied fixture state under the returned `Path`. Store reviewed scripts and compact

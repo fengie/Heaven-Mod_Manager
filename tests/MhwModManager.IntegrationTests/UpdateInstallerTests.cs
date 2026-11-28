@@ -618,15 +618,12 @@ public sealed class UpdateInstallerTests : IDisposable
         await UpdateRequestStore.WriteAsync(requestPath, helperRequest, TestToken);
 
         var repositoryRoot = FindRepositoryRoot();
-        var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent?.Name ?? "Release";
-        var helperDll = Path.Combine(
-            repositoryRoot,
-            "src",
-            "MhwModManager.Updater.Helper",
-            "bin",
-            configuration,
-            "net10.0-windows10.0.19041.0",
-            "MHW Mod Manager Updater.dll");
+        var testOutput = new DirectoryInfo(AppContext.BaseDirectory);
+        var helperOutput = testOutput.Parent is { Name: "MhwModManager.IntegrationTests", Parent: { Name: "bin" } artifacts }
+            ? Path.Combine(artifacts.FullName, "MhwModManager.Updater.Helper", testOutput.Name)
+            : Path.Combine(repositoryRoot, "src", "MhwModManager.Updater.Helper", "bin",
+                testOutput.Parent?.Name ?? "Release", testOutput.Name);
+        var helperDll = Path.Combine(helperOutput, "MHW Mod Manager Updater.dll");
         Assert.True(File.Exists(helperDll), $"Updater helper fixture is missing: {helperDll}");
 
         var start = new ProcessStartInfo("dotnet")

@@ -1,10 +1,13 @@
-# Disposable Windows acceptance fixtures belong here. Keep durable evidence outside scratch.
+# Disposable verification artifacts belong here. Keep durable evidence outside scratch.
 function Get-MhwAcceptanceTempRoot {
-    $root = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+    param([string]$ScratchRoot = [IO.Path]::GetTempPath())
+    $root = [IO.Path]::GetFullPath($ScratchRoot)
     if ($root -ne [IO.Path]::GetPathRoot($root)) {
         $root = $root.TrimEnd('\', '/')
     }
-    for ($item = Get-Item -LiteralPath $root -Force -ErrorAction Stop; $null -ne $item; $item = $item.Parent) {
+    $directory = Get-Item -LiteralPath $root -Force -ErrorAction Stop
+    if (!$directory.PSIsContainer) { throw 'Acceptance scratch root is not a directory.' }
+    for ($item = $directory; $null -ne $item; $item = $item.Parent) {
         if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
             throw 'Acceptance temp root traverses a reparse point.'
         }
@@ -12,8 +15,8 @@ function Get-MhwAcceptanceTempRoot {
     return $root
 }
 
-function Assert-MhwAcceptanceScratchTree([string]$Path) {
-    $root = Get-MhwAcceptanceTempRoot
+function Assert-MhwAcceptanceScratchTree([string]$Path, [string]$ScratchRoot = [IO.Path]::GetTempPath()) {
+    $root = Get-MhwAcceptanceTempRoot -ScratchRoot $ScratchRoot
     if ([IO.Path]::GetFullPath($Path) -cne $Path -or
         [IO.Path]::GetDirectoryName($Path) -ine $root -or
         [IO.Path]::GetFileName($Path) -cnotmatch '^mhw-acceptance-[a-f0-9]{32}$') {
@@ -35,8 +38,8 @@ function Assert-MhwAcceptanceScratchTree([string]$Path) {
 }
 
 function New-MhwAcceptanceScratch {
-    param([switch]$ReclaimAfterProducerExit)
-    $root = Get-MhwAcceptanceTempRoot
+    param([switch]$ReclaimAfterProducerExit, [string]$ScratchRoot = [IO.Path]::GetTempPath())
+    $root = Get-MhwAcceptanceTempRoot -ScratchRoot $ScratchRoot
     $token = [Guid]::NewGuid().ToString('N')
     $path = Join-Path $root ('mhw-acceptance-' + $token)
     $process = [Diagnostics.Process]::GetCurrentProcess()
@@ -58,9 +61,9 @@ function New-MhwAcceptanceScratch {
     return @{ Path = $path; Token = $token }
 }
 
-function Remove-MhwAcceptanceScratch($Scratch) {
+function Remove-MhwAcceptanceScratch($Scratch, [string]$ScratchRoot = [IO.Path]::GetTempPath()) {
     if (!(Test-Path -LiteralPath $Scratch.Path)) { return }
-    Assert-MhwAcceptanceScratchTree $Scratch.Path
+    Assert-MhwAcceptanceScratchTree $Scratch.Path -ScratchRoot $ScratchRoot
     $markerPath = Join-Path $Scratch.Path '.mhw-test-scratch.json'
     $marker = Get-Content -LiteralPath $markerPath -Raw -ErrorAction Stop | ConvertFrom-Json
     if ($marker.schema -cne 'mhw-test-scratch/v1' -or $marker.owner -cne 'MhwAcceptanceScratch' -or

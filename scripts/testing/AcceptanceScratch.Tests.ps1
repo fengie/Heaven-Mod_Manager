@@ -8,6 +8,7 @@ function Assert-That([bool]$Value, [string]$Message) {
 $previousTemp = $env:TEMP
 $previousTmp = $env:TMP
 $parent = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+if ($parent -ne [IO.Path]::GetPathRoot($parent)) { $parent = $parent.TrimEnd('\', '/') }
 $testRoot = Join-Path $parent ('mhw-scratch-contract-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $testRoot | Out-Null
 try {
@@ -37,6 +38,22 @@ try {
     Remove-MhwAcceptanceScratch $scratch
     Assert-That (!(Test-Path -LiteralPath $scratch.Path)) 'Normal cleanup left the package behind.'
     Remove-MhwAcceptanceScratch $scratch
+
+    $buildRoot = Join-Path $testRoot 'artifacts'
+    New-Item -ItemType Directory -Path $buildRoot | Out-Null
+    $retained = Join-Path $buildRoot 'ordinary-build.dll'
+    [IO.File]::WriteAllText($retained, 'existing output')
+    $build = New-MhwAcceptanceScratch -ScratchRoot $buildRoot
+    [IO.File]::WriteAllText((Join-Path $build.Path 'test-build.dll'), 'disposable build output')
+    try {
+        Remove-MhwAcceptanceScratch $build
+        throw 'Default cleanup accepted scratch under a different root.'
+    } catch {
+        if ($_.Exception.Message -notmatch 'Unexpected acceptance scratch path') { throw }
+    }
+    Remove-MhwAcceptanceScratch $build -ScratchRoot $buildRoot
+    Assert-That (!(Test-Path -LiteralPath $build.Path)) 'Build cleanup left disposable output behind.'
+    Assert-That (Test-Path -LiteralPath $retained) 'Build cleanup removed ordinary output.'
 
     $stale = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
     $active = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
