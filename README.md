@@ -1,14 +1,20 @@
-# v8.8.147 — MHW Manual Mod Manager
+# v8.8.148 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 27, 2026 · 5:56:10 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 27, 2026 · 10:38:53 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.147**.
+Current product version: **8.8.148**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.148 — safer intake and recovery
+
+- Serialize save snapshots and validate archive limits, import leases, download paths and Windows filenames before writing files.
+- Preserve staged mod choices when dependencies are invalid. Reject ambiguous Crimson manifests and protect legacy staged profiles.
+- Preserve catalog retry positions and count unique instrumented source lines across test suites.
 
 ## v8.8.147 — explicit mod changes
 
@@ -23,13 +29,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Inspect staged versus applied state, profile transitions and unavailable saved package identities. Per-game import-disabled preference preserves the existing default; reviewed disabled imports cannot replay.
 - Organize the library with named saved views, favorites, categories and explicit multi-row marking without activation.
 - Exact-head Feature 45704981417, Startup Performance 45704981205, packaged WPF 45704981295, Product Security 45704981433 and AutoUpdate 45704981269 passed. Integrated source `5a97cb34` passed Windows Gate 45712238130; publication skipped for the unchanged version. Fresh versioned release, genuine updater/rollback, measured texture benchmarks and physical-game acceptance remain separate.
-
-## v8.8.145 — launch, texture relationships and explicit bulk activation
-
-- Validate the game executable and block launch when deployment or relationship changes remain unapplied. Launch never silently applies edits. [#985](https://github.com/fengie/Heaven-Mod_Manager/pull/985)
-- Improve bounded large-texture overlap suggestions and reviewed override handling; retain explicit confirmation, pick-one exclusions, and exact committed-winner safety.
-- Separate bulk marks from staged and applied activation. Explicit Enable Selected/Disable Selected actions batch changes; Enabled/Disabled filters reflect committed state and Pending remains independent.
-- Exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. Integrated source `f9107b26` passed Windows Release Gate 45603013115 without publishing an unchanged version. Immutable [v8.8.145 build 649](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-649) from `b611408e` passed Windows Gate 45612139146 and real hosted update/rollback 45614469145; texture benchmarks and physical game behavior remain separate.
 
 ## Current plans & progress
 

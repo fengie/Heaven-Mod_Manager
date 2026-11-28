@@ -1,4 +1,8 @@
-# v8.8.147 - immutable release verified
+# v8.8.148 — intake and recovery validation
+
+The v8.8.148 source combines #997 and #1002–#1010 on build 658’s verified main. Verify combined native tests, immutable publication and packaged update/rollback before reporting release acceptance. Physical verification remains under #793/#946.
+
+## v8.8.147 - immutable release verified
 
 Canonical state: `fengie/Heaven-Mod_Manager@main` at `fb13129a1b876b6da4cf020cad8c7b9e4cc85d74`. Public immutable [updater-main-658](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-658) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 

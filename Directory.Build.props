@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
-    <Version>8.8.147</Version>
-    <InformationalVersion>8.8.147-explicit-apply</InformationalVersion>
+    <Version>8.8.148</Version>
+    <InformationalVersion>8.8.148-intake-and-recovery</InformationalVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
