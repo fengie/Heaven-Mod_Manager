@@ -142,6 +142,62 @@ public sealed class CrimsonDesertIntakeTests
         Assert.Contains(plan.Conflicts, c => c.ReasonCode == "crimson-deployment-unverified");
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Legacy_bin64_root_stays_staging_only_even_during_an_incomplete_update(bool writeArchiveEvidence)
+    {
+        using var fixture = new CrimsonFixture(writeArchiveEvidence);
+        var legacy = GameProfile.Generic("old-bin64", "Legacy Crimson",
+            Path.GetDirectoryName(fixture.ExecutablePath)!, "CrimsonDesert.exe", "",
+            adapterId: "generic-root");
+        Assert.Equal("crimson-desert", GameAdapters.Resolve(legacy).Id);
+        var admission = GameAdapters.DirectFileAdmission(legacy);
+        Assert.False(admission.Allowed);
+    }
+
+    [Fact]
+    public void Legacy_bin64_profile_relink_recovers_game_root_and_preserves_identity()
+    {
+        using var fixture = new CrimsonFixture();
+        var registry = new GameProfileRegistry(fixture.StateRoot);
+        var legacy = GameProfile.Generic("old-bin64", "My Crimson Profile",
+            Path.GetDirectoryName(fixture.ExecutablePath)!, "CrimsonDesert.exe", "",
+            adapterId: "generic-root") with { SavePath = Path.Combine(fixture.Root, "save") };
+        registry.Upsert(legacy);
+        registry.SetActive(legacy.Id);
+
+        var repaired = registry.RepairFromExecutable(legacy, fixture.ExecutablePath, activate: false);
+
+        Assert.Equal(legacy.Id, repaired.Id);
+        Assert.Equal(legacy.DisplayName, repaired.DisplayName);
+        Assert.Equal(legacy.SavePath, repaired.SavePath);
+        Assert.Equal(fixture.GameRoot, repaired.GameRoot, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(fixture.ExecutablePath, repaired.ExecutablePath, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("crimson-desert", repaired.AdapterId);
+        Assert.Equal("", repaired.ModRootRelativePath);
+        Assert.Equal(repaired, registry.GetActive());
+        Assert.Equal(repaired, Assert.Single(registry.Load()));
+        Assert.False(GameAdapters.DirectFileAdmission(repaired).Allowed);
+    }
+
+    [Fact]
+    public void Known_crimson_profile_cannot_be_relinked_to_an_unrelated_executable()
+    {
+        using var fixture = new CrimsonFixture();
+        var registry = new GameProfileRegistry(fixture.StateRoot);
+        var legacy = GameProfile.Generic("old-bin64", "Legacy Crimson",
+            Path.GetDirectoryName(fixture.ExecutablePath)!, "CrimsonDesert.exe", "",
+            adapterId: "generic-root");
+        registry.Upsert(legacy);
+        var other = Path.Combine(fixture.Root, "Other.exe");
+        File.WriteAllBytes(other, [0x4d, 0x5a]);
+
+        Assert.Throws<ArgumentException>(() => registry.RepairFromExecutable(legacy, other));
+        Assert.Equal(legacy, Assert.Single(registry.Load()));
+        Assert.False(GameAdapters.DirectFileAdmission(legacy).Allowed);
+    }
+
     [Fact]
     public async Task Large_explicitly_named_collection_routes_independent_mods_without_touching_sources_or_game()
     {

@@ -95,10 +95,14 @@ public sealed partial class GameProfileRegistry
         if(!File.Exists(full)||!full.EndsWith(".exe",StringComparison.OrdinalIgnoreCase))throw new FileNotFoundException("Select the game's Windows executable.",full);
         if(existing.IsMonsterHunterWorld&&!Path.GetFileName(full).Equals("MonsterHunterWorld.exe",StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("The Monster Hunter: World profile must point to MonsterHunterWorld.exe.",nameof(executablePath));
+        var selectedCrimson = Path.GetFileName(full).Equals("CrimsonDesert.exe", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(Path.GetFileName(Path.GetDirectoryName(full)), "bin64", StringComparison.OrdinalIgnoreCase);
+        if(CrimsonDesertGameAdapter.Matches(existing)&&!selectedCrimson)
+            throw new ArgumentException("The Crimson Desert profile must point to bin64\\CrimsonDesert.exe.",nameof(executablePath));
         var registeredRelative = GameProfile.NormalizeRelative(existing.ExecutableRelativePath, false);
         var root = InferGameRoot(full);
         // A moved install keeps its registered executable and loader paths relative to the installation.
-        if (full.EndsWith(Path.DirectorySeparatorChar + registeredRelative, StringComparison.OrdinalIgnoreCase))
+        if (!selectedCrimson && full.EndsWith(Path.DirectorySeparatorChar + registeredRelative, StringComparison.OrdinalIgnoreCase))
         {
             root = full;
             foreach (var _ in registeredRelative.Split(Path.DirectorySeparatorChar))
@@ -110,6 +114,20 @@ public sealed partial class GameProfileRegistry
             ExecutableRelativePath=GameProfile.NormalizeRelative(Path.GetRelativePath(root,full).Replace('/','\\'),false),
             ProcessName=Path.GetFileNameWithoutExtension(full)
         };
+        if (selectedCrimson)
+        {
+            // Restore the actual installation root without carrying forward a
+            // guessed loader mount. Preserve the user's profile identity and
+            // explicitly configured save path across the relink.
+            repaired = CrimsonDesertGameAdapter.HasGameLayout(root)
+                ? GameProfile.CrimsonDesert(root, existing.Store) with
+                {
+                    Id = existing.Id,
+                    DisplayName = existing.DisplayName,
+                    SavePath = existing.SavePath
+                }
+                : repaired with { ModRootRelativePath = string.Empty };
+        }
         Upsert(repaired);
         // The candidate game may be relinked during an in-process switch. Keep
         // the original active marker until the new session is initialized.
