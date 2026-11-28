@@ -47,6 +47,30 @@ function Get-MhwWindowsBootTime {
     }
 }
 
+function Get-MhwStandaloneBuildMachineId([string]$Root) {
+    if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { return }
+    try {
+        $volume = [IO.Path]::GetPathRoot($Root)
+        if ($volume -notmatch '^[A-Za-z]:\\$' -or [IO.DriveInfo]::new($volume).DriveType -ne [IO.DriveType]::Fixed) { return }
+        $installation = Get-ItemPropertyValue -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Cryptography' -Name MachineGuid -ErrorAction Stop
+        $hardware = (Get-CimInstance -ClassName Win32_ComputerSystemProduct -Property UUID -ErrorAction Stop).UUID
+        $windowsId = [Guid]::Empty
+        $hardwareId = [Guid]::Empty
+        $placeholder = [Guid]'ffffffff-ffff-ffff-ffff-ffffffffffff'
+        if (![Guid]::TryParse($installation, [ref]$windowsId) -or ![Guid]::TryParse($hardware, [ref]$hardwareId) -or
+            $windowsId -in @([Guid]::Empty, $placeholder) -or $hardwareId -in @([Guid]::Empty, $placeholder)) { return }
+        $hash = [Security.Cryptography.SHA256]::Create()
+        try {
+            $bytes = [Text.Encoding]::UTF8.GetBytes("mhw-standalone-build/v1/$($windowsId.ToString('N'))/$($hardwareId.ToString('N'))")
+            return [BitConverter]::ToString($hash.ComputeHash($bytes)).Replace('-', '').ToLowerInvariant()
+        } finally {
+            $hash.Dispose()
+        }
+    } catch {
+        # Missing identity leaves abandoned output in place without affecting normal tests.
+    }
+}
+
 function New-MhwAcceptanceScratch {
     param(
         [switch]$ReclaimAfterProducerExit,
@@ -69,9 +93,10 @@ function New-MhwAcceptanceScratch {
         }
         if ($StandaloneBuild) {
             $bootTime = Get-MhwWindowsBootTime
+            $machineId = Get-MhwStandaloneBuildMachineId $root
             $marker.reclaimAfterProducerExit = $false
-            if ($null -ne $bootTime) {
-                $marker.standaloneBuildHost = [Environment]::MachineName
+            if ($null -ne $bootTime -and $machineId) {
+                $marker.standaloneBuildMachineId = $machineId
                 $marker.standaloneBuildBootUtc = $bootTime.ToString('o')
             }
         }

@@ -33,7 +33,9 @@ artifacts directory and removed when the command returns. Pass
 `-KeepBuildOutputs` when you need the normal project `bin` and `obj` directories
 for a subsequent command. On Windows, the next standalone run can reclaim an
 interrupted run's marked build directory after 24 hours and a verified restart
-of the same host. A restart rules out surviving build and test workers.
+of the creating Windows installation on the same hardware. The marker stores
+a digest of the installation and hardware IDs. Network volumes and markers
+without matching machine evidence are excluded from stale collection.
 Direct `dotnet` commands use the SDK's ordinary output locations.
 
 For manual probes, dot-source `scripts/testing/AcceptanceScratch.ps1` and call

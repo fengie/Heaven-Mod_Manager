@@ -17,12 +17,16 @@ $patterns=@(
     @{ Root=$tempRoot; Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch'; StandaloneBuild=$false }
 )
 $currentBoot = $null
+$localMachine = $null
 if ($IncludeStandaloneBuildScratch) {
     $currentBoot = Get-MhwWindowsBootTime
     $buildRoot = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path 'artifacts'
     if ($null -ne $currentBoot -and (Test-Path -LiteralPath $buildRoot)) {
         $buildRoot = Get-MhwAcceptanceTempRoot -ScratchRoot $buildRoot
-        $patterns += @{ Root=$buildRoot; Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch'; StandaloneBuild=$true }
+        $localMachine = Get-MhwStandaloneBuildMachineId $buildRoot
+        if ($localMachine) {
+            $patterns += @{ Root=$buildRoot; Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch'; StandaloneBuild=$true }
+        }
     }
 }
 $now=[DateTime]::UtcNow
@@ -93,10 +97,11 @@ foreach($spec in $patterns){
 
             if($spec.Owner -ceq 'MhwAcceptanceScratch'){
                 if ($spec.StandaloneBuild) {
-                    # A later OS boot proves that even orphaned build and test workers are gone.
-                    $hostName = $marker.PSObject.Properties['standaloneBuildHost']
+                    # A later boot only rules out workers on the machine that created this build.
+                    $machine = $marker.PSObject.Properties['standaloneBuildMachineId']
                     $boot = $marker.PSObject.Properties['standaloneBuildBootUtc']
-                    if ($null -eq $hostName -or $hostName.Value -cne [Environment]::MachineName -or $null -eq $boot) {
+                    if ($null -eq $machine -or $machine.Value -cnotmatch '^[0-9a-f]{64}$' -or
+                        $machine.Value -cne $localMachine -or $null -eq $boot) {
                         $script:skipped++
                         return
                     }
