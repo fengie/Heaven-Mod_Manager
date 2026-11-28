@@ -1,0 +1,26 @@
+[
+  {
+    "Fixture": "933-workshop-projection-8edec56b",
+    "BuildBasis": "8f19cf1c442ad3ba160dd52781fde9733daa5d77"
+  },
+  {
+    "Fixture": "h2-manager-3f06634-family",
+    "BuildBasis": "a9a0985e6643698fad75336a519424b0b40c34b0"
+  },
+  {
+    "Fixture": "h2-manager-3f06634-family-control",
+    "BuildBasis": "a9a0985e6643698fad75336a519424b0b40c34b0"
+  },
+  {
+    "Fixture": "h2-manager-437-mixed",
+    "BuildBasis": "a9a0985e6643698fad75336a519424b0b40c34b0"
+  },
+  {
+    "Fixture": "h2-manager-437-solid",
+    "BuildBasis": "a9a0985e6643698fad75336a519424b0b40c34b0"
+  },
+  {
+    "Fixture": "h2-manager-4e3-sifu",
+    "BuildBasis": "a9a0985e6643698fad75336a519424b0b40c34b0"
+  }
+]
