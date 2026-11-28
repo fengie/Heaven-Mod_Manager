@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [ValidateRange(1,720)]
-    [int]$MinimumAgeHours=24
+    [int]$MinimumAgeHours=24,
+    [switch]$IncludeStandaloneBuildScratch
 )
 
 $ErrorActionPreference='Stop'
@@ -11,10 +12,23 @@ Set-StrictMode -Version Latest
 $markerName='.mhw-test-scratch.json'
 $tempRoot=Get-MhwAcceptanceTempRoot
 $patterns=@(
-    @{ Pattern='MhwManagerSelfTest-*'; Owner='MhwManagerSelfTest' },
-    @{ Pattern='mhw-updater-installed-e2e-*'; Owner='UpdaterInstalledClientE2ETests' }
-    @{ Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch' }
+    @{ Root=$tempRoot; Pattern='MhwManagerSelfTest-*'; Owner='MhwManagerSelfTest'; StandaloneBuild=$false },
+    @{ Root=$tempRoot; Pattern='mhw-updater-installed-e2e-*'; Owner='UpdaterInstalledClientE2ETests'; StandaloneBuild=$false }
+    @{ Root=$tempRoot; Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch'; StandaloneBuild=$false }
 )
+$currentBoot = $null
+$localMachine = $null
+if ($IncludeStandaloneBuildScratch) {
+    $currentBoot = Get-MhwWindowsBootTime
+    $buildRoot = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path 'artifacts'
+    if ($null -ne $currentBoot -and (Test-Path -LiteralPath $buildRoot)) {
+        $buildRoot = Get-MhwAcceptanceTempRoot -ScratchRoot $buildRoot
+        $localMachine = Get-MhwStandaloneBuildMachineId $buildRoot
+        if ($localMachine) {
+            $patterns += @{ Root=$buildRoot; Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch'; StandaloneBuild=$true }
+        }
+    }
+}
 $now=[DateTime]::UtcNow
 $removed=0
 $skipped=0
@@ -57,7 +71,7 @@ function Remove-WithRetry([string]$Path) {
 }
 
 foreach($spec in $patterns){
-    Get-ChildItem -LiteralPath $tempRoot -Directory -Filter $spec.Pattern -Force -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem -LiteralPath $spec.Root -Directory -Filter $spec.Pattern -Force -ErrorAction SilentlyContinue | ForEach-Object {
         $root=$_.FullName
         $markerPath=Join-Path $root $markerName
         if(($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or -not (Test-Path -LiteralPath $markerPath -PathType Leaf)){
@@ -82,18 +96,35 @@ foreach($spec in $patterns){
             }
 
             if($spec.Owner -ceq 'MhwAcceptanceScratch'){
-                # A launcher PID cannot establish the liveness of detached workers.
-                $reclaim=$marker.PSObject.Properties['reclaimAfterProducerExit']
-                if($null -eq $reclaim -or $reclaim.Value -isnot [bool] -or !$reclaim.Value){
-                    $script:skipped++
-                    return
+                if ($spec.StandaloneBuild) {
+                    # A later boot only rules out workers on the machine that created this build.
+                    $machine = $marker.PSObject.Properties['standaloneBuildMachineId']
+                    $boot = $marker.PSObject.Properties['standaloneBuildBootUtc']
+                    if ($null -eq $machine -or $machine.Value -cnotmatch '^[0-9a-f]{64}$' -or
+                        $machine.Value -cne $localMachine -or $null -eq $boot) {
+                        $script:skipped++
+                        return
+                    }
+                    $recordedBoot = Convert-MarkerTime $boot.Value
+                    $producerStart = Convert-MarkerTime $marker.processStartUtc
+                    if ($recordedBoot -gt $producerStart -or $producerStart -gt $created -or $created -ge $currentBoot) {
+                        $script:skipped++
+                        return
+                    }
+                } else {
+                    # A launcher PID cannot establish the liveness of detached workers.
+                    $reclaim=$marker.PSObject.Properties['reclaimAfterProducerExit']
+                    if($null -eq $reclaim -or $reclaim.Value -isnot [bool] -or !$reclaim.Value){
+                        $script:skipped++
+                        return
+                    }
                 }
                 if($marker.token -cnotmatch '^[a-f0-9]{32}$' -or $_.Name -cne ('mhw-acceptance-'+$marker.token) -or
                     [string]$marker.processId -notmatch '^[1-9][0-9]*$'){
                     $script:skipped++
                     return
                 }
-                Assert-MhwAcceptanceScratchTree $root
+                Assert-MhwAcceptanceScratchTree $root -ScratchRoot $spec.Root
             }
             Remove-WithRetry $root
             $script:removed++
