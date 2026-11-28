@@ -4,16 +4,16 @@
     "canonicalRepository":  "fengie/Heaven-Mod_Manager",
     "canonicalBranch":  "main",
     "workingBranch":  "main",
-    "currentVersion":  "8.8.146",
+    "currentVersion":  "8.8.148",
     "companyTrainingRoot":  "fengie/heaven-toolbox@main:_AGENT_TRAINING",
     "companyTrainingStatus":  "external-canonical",
-    "status":  "v8.8.146-immutable-release-published",
-    "nextMilestone":  "Current v8.8.146 immutable updater-main-651 is source-verified at 4d944e1c4c72142115802271e338daaca133fd03 (Windows Gate 45724110053), with exact ZIP/manifest SHA-256. Do not republish.",
-    "nextRequiredAction":  "Continue unresolved real-device, corpus and independent trust acceptance in _AGENT_CONTEXT/PROJECT_PLAN.md. Preserve immutable release and its exact-source receipt.",
-    "verificationAppliesToCommit":  "4d944e1c4c72142115802271e338daaca133fd03",
-    "lastClosedVerificationCommit":  "4d944e1c4c72142115802271e338daaca133fd03",
-    "lastClosedVerificationRun":  "v8.8.146 source 4d944e1c4c72142115802271e338daaca133fd03: hosted Windows verification run 45724110053 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.146-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
-    "verificationScopeNote":  "v8.8.146 exact source 4d944e1c4c72142115802271e338daaca133fd03 passed hosted Windows verification run 45724110053. Evidence-only persistence commits do not change tested-source identity; any later source/workflow/test change requires fresh exact-input verification.",
+    "status":  "v8.8.148-release-acceptance-pending",
+    "nextMilestone":  "Verify v8.8.148 integrated source and release.",
+    "nextRequiredAction":  "The v8.8.148 source combines #997 and #1002\u2013#1010 on build 658\u2019s verified main. Verify combined native tests, immutable publication and packaged update/rollback before reporting release acceptance. Physical verification remains under #793/#946.",
+    "verificationAppliesToCommit":  "fb13129a1b876b6da4cf020cad8c7b9e4cc85d74",
+    "lastClosedVerificationCommit":  "fb13129a1b876b6da4cf020cad8c7b9e4cc85d74",
+    "lastClosedVerificationRun":  "v8.8.147 source fb13129a1b876b6da4cf020cad8c7b9e4cc85d74: hosted Windows verification run 46086319245 PASS; exact evidence _AGENT_CONTEXT/EVIDENCE/v8.8.147-heaven-windows-closure.log. The later evidence-only commit is not the tested source.",
+    "verificationScopeNote":  "Build 658 is the last verified immutable release.",
     "lastClosedVerification":  {
                                    "sourceSha":  "6fcbc3ecb683bb597728f8cf0b9a8190d7695d55",
                                    "updaterBuild":  641,
@@ -52,17 +52,17 @@
     "activePullRequest":  null,
     "activeIssue":  null,
     "lastClosedWindowsVerification":  {
-                                          "sourceSha":  "4d944e1c4c72142115802271e338daaca133fd03",
-                                          "runId":  45724110053,
-                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.146-heaven-windows-closure.log"
+                                          "sourceSha":  "fb13129a1b876b6da4cf020cad8c7b9e4cc85d74",
+                                          "runId":  46086319245,
+                                          "evidence":  "_AGENT_CONTEXT/EVIDENCE/v8.8.147-heaven-windows-closure.log"
                                       },
     "publishedRelease":  {
-                             "tag":  "updater-main-651",
-                             "version":  "8.8.146",
-                             "sourceSha":  "4d944e1c4c72142115802271e338daaca133fd03",
-                             "buildNumber":  651,
-                             "artifactName":  "MHW-Manual-Mod-Manager-v8.8.146-win-x64.zip",
-                             "artifactSha256":  "8148d8edfbd0fc516914705009ac16b71dca44db66719da07e1127f0c02c5238",
-                             "manifestSha256":  "3dd3a4c071da90fc0cb817678082214097bf771bf77b76a76749607a96db2952"
+                             "tag":  "updater-main-658",
+                             "version":  "8.8.147",
+                             "sourceSha":  "fb13129a1b876b6da4cf020cad8c7b9e4cc85d74",
+                             "buildNumber":  658,
+                             "artifactName":  "MHW-Manual-Mod-Manager-v8.8.147-win-x64.zip",
+                             "artifactSha256":  "e98e551429dca4c0f340fa39d34fbf09f309f431698ee47dbade15be6bb04727",
+                             "manifestSha256":  "82e80e9d5ac34316c28c33934eb133960642d481000e396223a44835e89a6ba5"
                          }
 }

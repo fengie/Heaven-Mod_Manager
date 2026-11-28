@@ -34,6 +34,12 @@ public static class ImportWorkspaceMaintenance
     public static readonly TimeSpan DefaultMinimumAge = TimeSpan.FromHours(1);
 
     private static readonly string[] Kinds = ["archive", "fomod-source", "fomod-install", "inbox"];
+    private const int MaxLeaseBytes = 4096;
+    private static readonly JsonSerializerOptions LeaseJsonOptions = new()
+    {
+        AllowDuplicateProperties = false,
+        UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow
+    };
 
     public static string Reserve(string modsRoot, string kind)
     {
@@ -219,12 +225,18 @@ public static class ImportWorkspaceMaintenance
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         ImportPublicationWorkspace.RejectReparseAncestors(leasePath);
-        var metadata = new FileInfo(leasePath);
-        if (!metadata.Exists || metadata.Length is <= 0 or > 4096)
+        // Keep the size check and bounded read on the same read-only handle.
+        // Do not let a replacement/growing record confer deletion authority.
+        using var stream = new FileStream(leasePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        if (stream.Length is <= 0 or > MaxLeaseBytes)
             throw new InvalidDataException("Import workspace lease size is invalid.");
+        Span<byte> bytes = stackalloc byte[MaxLeaseBytes + 1];
+        var count = stream.ReadAtLeast(bytes, bytes.Length, false);
+        if (count is <= 0 or > MaxLeaseBytes || count != stream.Length)
+            throw new InvalidDataException("Import workspace lease changed or exceeded its metadata limit.");
 
         var lease = JsonSerializer.Deserialize<ImportWorkspaceLease>(
-                        File.ReadAllText(leasePath))
+                        bytes[..count], LeaseJsonOptions)
                     ?? throw new InvalidDataException("Import workspace lease is empty.");
         if (lease.SchemaVersion != ImportWorkspaceLease.CurrentSchemaVersion
             || !string.Equals(lease.WorkspaceRoot, root, StringComparison.OrdinalIgnoreCase)

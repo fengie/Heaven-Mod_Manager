@@ -1,8 +1,14 @@
-# v8.8.146 - immutable release verified
+# v8.8.148 — intake and recovery validation
 
-Canonical state: `fengie/Heaven-Mod_Manager@main` at `4d944e1c4c72142115802271e338daaca133fd03`. Public immutable [updater-main-651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+The v8.8.148 source combines #997 and #1002–#1010 on build 658’s verified main. Verify combined native tests, immutable publication and packaged update/rollback before reporting release acceptance. Physical verification remains under #793/#946.
+
+## v8.8.147 - immutable release verified
+
+Canonical state: `fengie/Heaven-Mod_Manager@main` at `fb13129a1b876b6da4cf020cad8c7b9e4cc85d74`. Public immutable [updater-main-658](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-658) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
 
 ## Integrated implementation
+
+- **v8.8.147** — Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. Verify the immutable v8.8.147 release and its packaged update and rollback. Under #793 verify the actual Heaven2 launcher, installed process and build. Under #946 verify that applying one alternate removal clears pending changes and preserves the primary and unmanaged files. Preserve the broader #946 workflow, performance and physical-game obligations.
 
 - **v8.8.146 — #986:** exact read-only deployment review and Apply recheck, staged/applied and profile-transition inspection, unavailable saved packages, per-game disabled import preference, named views, favorites, categories and explicit multi-row marking. Native packaged WPF and performance gates passed; immutable v8.8.146 release, measured benchmark and physical-game proof remain open.
 
@@ -62,11 +68,11 @@ Canonical state: `fengie/Heaven-Mod_Manager@main` at `4d944e1c4c72142115802271e3
 
 ## Verification boundary
 
-Current hosted-Windows closure: v8.8.146 source `4d944e1c4c72142115802271e338daaca133fd03` passed run `45724110053` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.146-heaven-windows-closure.log`.
+Current hosted-Windows closure: v8.8.147 source `fb13129a1b876b6da4cf020cad8c7b9e4cc85d74` passed run `46086319245` with 0 failed checks. Exact evidence: `_AGENT_CONTEXT/EVIDENCE/v8.8.147-heaven-windows-closure.log`.
 
-Verified immutable GitHub release: [updater-main-651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651), exact source `4d944e1c4c72142115802271e338daaca133fd03`, ZIP SHA-256 `8148d8edfbd0fc516914705009ac16b71dca44db66719da07e1127f0c02c5238` and manifest SHA-256 `3dd3a4c071da90fc0cb817678082214097bf771bf77b76a76749607a96db2952`. Public release and tag ref independently match the built artifact.
+Verified immutable GitHub release: [updater-main-658](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-658), exact source `fb13129a1b876b6da4cf020cad8c7b9e4cc85d74`, ZIP SHA-256 `e98e551429dca4c0f340fa39d34fbf09f309f431698ee47dbade15be6bb04727` and manifest SHA-256 `82e80e9d5ac34316c28c33934eb133960642d481000e396223a44835e89a6ba5`. Public release and tag ref independently match the built artifact.
 
-The tested source remains `4d944e1c4c72142115802271e338daaca133fd03` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
+The tested source remains `fb13129a1b876b6da4cf020cad8c7b9e4cc85d74` even though persistence creates a later evidence-only commit. Any source, workflow, test, or release-input change after that SHA requires fresh exact-input verification; an evidence-only commit must never be treated as the tested source.
 
 ## Remaining acceptance and risks
 
@@ -75,6 +81,6 @@ The tested source remains `4d944e1c4c72142115802271e338daaca133fd03` even though
 - [#793](https://github.com/fengie/Heaven-Mod_Manager/issues/793) tracks personal H2 installation and bounded endurance; build 647 hosted acceptance is verified, not personal health.
 - [#817](https://github.com/fengie/Heaven-Mod_Manager/issues/817): [PR #852](https://github.com/fengie/Heaven-Mod_Manager/pull/852) merged the deterministic source-bound release and current-next-step sync on `main@687607cf` after exact-head native Windows, ownership, product security, and AutoUpdate checks. Historical candidate prose is reconciled in the canonical documentation-only release handoff. No new product binary or version was created.
 
-Next: Integrate synchronized v8.8.145 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Keep #986 separate until its own current-base packaged WPF gate and review pass. Preserve provider access, personal data, rollback and recursive continuity.
+Next: Verify the immutable v8.8.147 release and its packaged update and rollback. Under #793 verify the actual Heaven2 launcher, installed process and build. Under #946 verify that applying one alternate removal clears pending changes and preserves the primary and unmanaged files. Preserve the broader #946 workflow, performance and physical-game obligations.
 
 Auto Populate checks pre-Iceborne armor materials since v8.8.119. See product PR #913 for profile recovery and verification.

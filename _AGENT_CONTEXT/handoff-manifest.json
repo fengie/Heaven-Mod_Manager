@@ -3,9 +3,9 @@
   "continuityRequired": true,
   "propagateToNextAgent": true,
   "project": "MHW Manual Mod Manager",
-  "currentVersion": "8.8.146",
+  "currentVersion": "8.8.148",
   "originalBaselineVersion": "8.7.0",
-  "immediateParentRevision": "Immutable v8.8.145 updater-main-649 source b611408ea33997a7e7f9a500864aff5b5aee7225; Windows Gate 45612139146 and hosted update/rollback 45614469145 PASS. #986 integrated 5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd, all five native source workflows and main Windows Gate 45712238130 PASS; no publication without version bump.",
+  "immediateParentRevision": "1fa739cc2f8d07a612ad3f8c912653f83596b539",
   "canonicalRepository": "fengie/Heaven-Mod_Manager",
   "canonicalBranch": "main",
   "agentInstructions": "AGENTS.md",
@@ -91,7 +91,7 @@
     ".verification/trusted-v8.7.0-files.json",
     ".verification/trusted-v8.7.0-src.zip"
   ],
-  "nextAgentObligation": "Integrate synchronized v8.8.146 metadata, verify immutable publication and genuine packaged updater/rollback. Verify real game launch and texture layering, measure the existing texture benchmarks, and preserve #946 broader semantic and performance acceptance. Preserve provider access, personal data, rollback and recursive continuity. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
+  "nextAgentObligation": "The v8.8.148 source combines #997 and #1002\u2013#1010 on build 658\u2019s verified main. Verify combined native tests, immutable publication and packaged update/rollback before reporting release acceptance. Physical verification remains under #793/#946. Inherit and recursively propagate the full continuity constitution and active Learned Rules.",
   "requiredToolingFiles": [
     "scripts/testing/Test-AgentHandoff.ps1",
     "scripts/build/Build-Source-Handoff.ps1",

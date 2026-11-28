@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Xunit;
 
@@ -56,6 +57,36 @@ public sealed class FeatureVerificationMatrixTests
         Assert.Contains("'cobertura'", script, StringComparison.Ordinal);
         Assert.Contains("Coverage was requested but produced no Cobertura XML", script, StringComparison.Ordinal);
         Assert.Contains("is NOT overall combined coverage", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FeatureLineEvidenceDeduplicatesSourcesAndRejectsAmbiguousEvidence()
+    {
+        var root = FindRepositoryRoot();
+        var token = TestContext.Current.CancellationToken;
+        var shell = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe");
+        using var process = new Process();
+        process.StartInfo = new ProcessStartInfo(shell)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        process.StartInfo.ArgumentList.Add("-NoLogo");
+        process.StartInfo.ArgumentList.Add("-NoProfile");
+        process.StartInfo.ArgumentList.Add("-NonInteractive");
+        process.StartInfo.ArgumentList.Add("-File");
+        process.StartInfo.ArgumentList.Add(Path.Combine(root, "scripts", "testing", "Test-FeatureLineCoverage.ps1"));
+        Assert.True(process.Start());
+        var output = process.StandardOutput.ReadToEndAsync(token);
+        var errors = process.StandardError.ReadToEndAsync(token);
+        try { await process.WaitForExitAsync(token); }
+        finally { if (!process.HasExited) process.Kill(entireProcessTree: true); }
+        var actual = await output;
+        var error = await errors;
+        Assert.True(process.ExitCode == 0, actual + Environment.NewLine + error);
+        Assert.Contains("PASS: Feature line evidence", actual, StringComparison.Ordinal);
     }
 
     private static int RequiredPaths(string root, JsonElement feature, string property)

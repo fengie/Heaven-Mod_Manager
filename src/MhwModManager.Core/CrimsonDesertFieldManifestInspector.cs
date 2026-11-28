@@ -39,7 +39,7 @@ public static class CrimsonDesertFieldManifestInspector
 
         try
         {
-            using var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 32, CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+            using var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 32, CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true, AllowDuplicateProperties = false });
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object ||
                 !root.TryGetProperty("format", out var format) ||
@@ -192,10 +192,15 @@ public static class CrimsonDesertFieldManifestInspector
                         return new(false, "Field-JSON asset needs source file and virtual target path.", []);
                     var filePath = fileValue.GetString() ?? "";
                     var rawVpath = vpathValue.GetString() ?? "";
-                    var normalizedVpath = rawVpath.StartsWith('/') ? rawVpath[1..] : rawVpath;
+                    // Normalize slash spelling only after removing the one documented
+                    // virtual-root slash. A second leading slash, empty segment or
+                    // trailing whitespace remains ambiguous and needs review.
+                    var normalizedVpath = (rawVpath.StartsWith('/') ? rawVpath[1..] : rawVpath).Replace('\\', '/');
                     if (!PathRules.IsSafeArchiveRelativePath(filePath) ||
-                        !PathRules.IsSafeArchiveRelativePath(normalizedVpath))
-                        return new(false, "Field-JSON asset contains an unsafe path.", []);
+                        !PathRules.IsSafeArchiveRelativePath(normalizedVpath) ||
+                        normalizedVpath.Split('/').Any(string.IsNullOrWhiteSpace) ||
+                        !string.Equals(normalizedVpath, normalizedVpath.Trim(), StringComparison.Ordinal))
+                        return new(false, "Field-JSON asset contains an unsafe or ambiguous path.", []);
                     var targetKey = "asset:" + normalizedVpath.ToLowerInvariant();
                     if (!uniqueKeys.Add(targetKey))
                         return new(false, "Field-JSON supplies the same virtual asset more than once.", []);
@@ -240,7 +245,7 @@ public static class CrimsonDesertFieldManifestInspector
         }
         catch (JsonException)
         {
-            return new(false, "Field-JSON is malformed or exceeds the supported JSON nesting depth.", []);
+            return new(false, "Field-JSON is malformed, contains duplicate properties or exceeds the supported JSON nesting depth.", []);
         }
     }
 

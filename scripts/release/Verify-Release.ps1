@@ -51,7 +51,9 @@ function Initialize-StageCache {
         if([int]$doc.formatVersion -ne 1){throw "Unsupported stage cache format $($doc.formatVersion)."}
         foreach($entry in @($doc.stages)){
             if($null -eq $entry -or [string]::IsNullOrWhiteSpace([string]$entry.id)){continue}
-            $script:StageCache[[string]$entry.id]=$entry
+            $id=[string]$entry.id
+            if($script:StageCache.ContainsKey($id)){throw "Duplicate verification stage identity: $id"}
+            $script:StageCache[$id]=$entry
         }
     }
     catch {
@@ -102,21 +104,25 @@ function Get-ProjectFingerprint([string]$ProjectPath){
     $visited=New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList ([StringComparer]::OrdinalIgnoreCase)
     $files=New-Object 'System.Collections.Generic.HashSet[string]' -ArgumentList ([StringComparer]::OrdinalIgnoreCase)
     Add-ProjectInputs $ProjectPath $visited $files
-    foreach($common in @('Directory.Build.props','Directory.Build.targets','Directory.Packages.props','global.json','.editorconfig','NuGet.Config','nuget.config')){
+    foreach($common in @('Directory.Build.props','Directory.Build.targets','Directory.Packages.props','global.json','.editorconfig','NuGet.Config','nuget.config','MhwModManager.sln')){
         $path=Join-Path $Root $common
         if(Test-Path $path){[void]$files.Add([IO.Path]::GetFullPath($path))}
     }
-    # Integration tests inspect App/XAML, verification tooling, and handoff documents
-    # at runtime without ProjectReference edges to those inputs. Include them too.
+    # Integration tests consume repository contracts, fixtures, policies and
+    # reviewed inventories without ProjectReference edges. Include their sources,
+    # not the generated stage/function cache state.
     if([IO.Path]::GetFileName($ProjectPath.Replace([char]92,[char]47)) -eq 'MhwModManager.IntegrationTests.csproj'){
-        foreach($folder in @('src','tests/MhwModManager.FunctionVerifier','scripts')){
-            Get-ChildItem -LiteralPath (Join-Path $Root $folder) -Recurse -File -Force | Where-Object {
+        foreach($folder in @('src','tests/MhwModManager.FunctionVerifier','scripts','docs','.github','data','tests/fixtures','_AGENT_CONTEXT')){
+            $inputRoot=Join-Path $Root $folder
+            if(!(Test-Path -LiteralPath $inputRoot -PathType Container)){continue}
+            Get-ChildItem -LiteralPath $inputRoot -Recurse -File -Force | Where-Object {
                 $parts=$_.FullName.Substring($Root.Length) -split '[\\/]'
                 -not ($parts -contains 'bin') -and -not ($parts -contains 'obj')
             } | ForEach-Object {[void]$files.Add($_.FullName)}
         }
-        foreach($relative in @('NEXT-AGENT-START-HERE.md','_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md','_AGENT_CONTEXT/handoff-manifest.json')){
-            [void]$files.Add((Join-Path $Root $relative))
+        foreach($relative in @('NEXT-AGENT-START-HERE.md','AGENTS.md','README.md','CHANGELOG.md','VERSION.txt','VERSION_TIMESTAMPS.md','VALIDATION.md','SECURITY.md','PRIVACY.md','TERMS.md','REFUND_POLICY.md','COOKIE_POLICY.md','THIRD_PARTY_NOTICES.md','SUPPORT.md','.verification/README.md','.verification/trusted-v8.7.0-files.json','.verification/trusted-v8.7.0-src.zip')){
+            $inputFile=Join-Path $Root $relative
+            if(Test-Path -LiteralPath $inputFile -PathType Leaf){[void]$files.Add([IO.Path]::GetFullPath($inputFile))}
         }
     }
     $builder=New-Object Text.StringBuilder
@@ -137,10 +143,29 @@ function Get-ProjectFingerprint([string]$ProjectPath){
     finally {$sha.Dispose()}
 }
 
+function Get-StageFingerprint([string]$ProjectPath,[string[]]$Arguments){
+    # Version the key without rewriting historical cache evidence. Encode
+    # command arguments as an array rather than a whitespace-joined string.
+    $policyHash=(Get-FileHash -LiteralPath (Join-Path $Root 'scripts/release/Verify-Release.ps1') -Algorithm SHA256).Hash.ToLowerInvariant()
+    $payload=[ordered]@{
+        keyVersion=2
+        project=(Get-ProjectFingerprint $ProjectPath)
+        verifierPolicy=$policyHash
+        arguments=@($Arguments)
+    }
+    $json=ConvertTo-Json -InputObject $payload -Depth 5 -Compress
+    $sha=[Security.Cryptography.SHA256]::Create()
+    try{
+        return ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($json)))).Replace('-','').ToLowerInvariant()
+    }finally{$sha.Dispose()}
+}
+
 function Get-CachedStage([string]$Id,[string]$Fingerprint){
+    # Local historical hints are not authoritative cross-runner CI evidence.
+    if($env:GITHUB_ACTIONS -eq 'true' -or $env:CI -eq 'true'){return $null}
     if(!$script:StageCache.ContainsKey($Id)){return $null}
     $entry=$script:StageCache[$Id]
-    if($entry.verified -eq $true -and [string]$entry.fingerprint -eq $Fingerprint){return $entry}
+    if($entry.verified -is [bool] -and $entry.verified -and [string]$entry.fingerprint -ceq $Fingerprint){return $entry}
     return $null
 }
 
@@ -216,21 +241,27 @@ function Invoke-DotnetStep([string]$Group,[string]$Name,[string[]]$Arguments,[st
 }
 
 
-function Invoke-CachedDotnetStep([string]$CacheId,[string]$ProjectPath,[string]$Group,[string]$Name,[string[]]$Arguments,[string]$LogName){
-    $fingerprint=Get-ProjectFingerprint $ProjectPath
+function Invoke-CachedDotnetStep([string]$CacheId,[string]$ProjectPath,[string]$Group,[string]$Name,[string[]]$Arguments,[string]$LogName,[string]$Binlog){
+    $fingerprint=Get-StageFingerprint $ProjectPath $Arguments
     $cached=Get-CachedStage $CacheId $fingerprint
     if($null -ne $cached){
-        $detail="cached verified=true; exact project/dependency fingerprint unchanged; originally verified $($cached.verifiedAtUtc); check skipped"
+        $detail="cached local verified=true; exact project/dependency/command/policy fingerprint unchanged; originally verified $($cached.verifiedAtUtc); check skipped"
         Write-Host "`n=== $Group :: $Name ===" -ForegroundColor Cyan
         Write-Host "PASS-CACHED: $Name" -ForegroundColor Green
         Write-MhwMasterDebug -Root $Root -Area 'VERIFY-CACHE' -Message ("HIT: "+$CacheId+" | fingerprint="+$fingerprint+" | "+$detail)
         Add-Result $Group $Name $true 0 0 '' $detail
         return $true
     }
-    $ok=Invoke-DotnetStep $Group $Name $Arguments $LogName
+    $actualArgs=@($Arguments)
+    if($Binlog){$actualArgs+=("-bl:"+$Binlog)}
+    $ok=Invoke-DotnetStep $Group $Name $actualArgs $LogName
     if($ok){
         Set-CachedStage $CacheId $fingerprint $Group $Name ("Verified by current run with exit code 0.")
         Write-MhwMasterDebug -Root $Root -Area 'VERIFY-CACHE' -Message ("CHECKED: "+$CacheId+" | verified=true | fingerprint="+$fingerprint)
+    }elseif($script:StageCache.ContainsKey($CacheId)){
+        # A directly observed failure supersedes any previous positive hint.
+        [void]$script:StageCache.Remove($CacheId)
+        Save-StageCache
     }
     return $ok
 }
@@ -393,7 +424,7 @@ function Write-Reports {
             }
             $lines.Add('')
         }
-        $lines.Add('The verifier intentionally continued after each failure so later subsystems were still exercised.')
+        $lines.Add('The verifier continued independent diagnostics; stages with failed build prerequisites were blocked and cannot count as verified.')
     }
     $lines | Set-Content -Path $MarkdownReport -Encoding UTF8
 
@@ -419,6 +450,66 @@ function Write-Reports {
     Write-MhwMasterDebug -Root $Root -Area 'VERIFY-REPORT' -Message ("Report write complete. Overall="+$overall+"; Passed="+$passed+"; Failed="+$failed)
 }
 
+function Add-BlockedStage([string]$Group,[string]$Name,[string]$Prerequisite){
+    $detail="Not executed: required prerequisite failed or was not verified ($Prerequisite)."
+    Write-Host "BLOCKED: $Name - $detail" -ForegroundColor Yellow
+    Write-MhwMasterDebug -Root $Root -Area 'VERIFY-STAGE' -Message ("BLOCKED: "+$Group+" :: "+$Name+" | "+$detail)
+    Add-Result $Group $Name $false 9002 0 '' $detail
+}
+
+function Invoke-BuildAndTestStages([bool]$WindowsHost){
+    $restoreOk=Invoke-DotnetStep 'Restore' 'Solution restore' @('restore','.\MhwModManager.sln') 'restore'
+    $relaxedOk=$false
+    if($restoreOk){
+        Invoke-DotnetStep 'Verification' 'Function fingerprint scan' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionReport) 'function-scan' | Out-Null
+        $relaxedOk=Invoke-DotnetStep 'Compile' 'Relaxed whole solution' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-p:TreatWarningsAsErrors=false',"-bl:$RelaxedBinlog") 'compile-relaxed'
+    }else{
+        Add-BlockedStage 'Verification' 'Function fingerprint scan' 'Solution restore'
+        Add-BlockedStage 'Compile' 'Relaxed whole solution' 'Solution restore'
+    }
+
+    # Preserve independent strict analyzer diagnostics after a single project
+    # fails, but never compile against stale dependencies from a failed build.
+    $strictProjectsOk=$relaxedOk
+    foreach($Project in $Projects){
+        if(!$relaxedOk){
+            Add-BlockedStage 'Strict compile/analyzers' $Project.Name 'Relaxed whole solution'
+            continue
+        }
+        $binlog=Join-Path $BuildLogs ("project-{0}-{1}.binlog" -f ($Project.Name -replace '[^A-Za-z0-9_.-]','_'),$Stamp)
+        # Force compilation after the relaxed build. Only the generated
+        # diagnostic binlog destination is excluded from semantic arguments.
+        $ok=Invoke-CachedDotnetStep ("strict:"+$Project.Name) $Project.Path 'Strict compile/analyzers' $Project.Name @('build',$Project.Path,'-c','Release','--no-restore','--no-incremental','-warnaserror','-p:BuildProjectReferences=false') 'compile-strict' -Binlog $binlog
+        if(!$ok){$strictProjectsOk=$false}
+    }
+
+    $strictSolutionOk=$false
+    if($relaxedOk){
+        $strictSolutionOk=Invoke-DotnetStep 'Compile' 'Strict whole solution' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-warnaserror',"-bl:$FinalBinlog") 'compile-final'
+    }else{
+        Add-BlockedStage 'Compile' 'Strict whole solution' 'Relaxed whole solution'
+    }
+    $buildReady=$restoreOk -and $relaxedOk -and $strictProjectsOk -and $strictSolutionOk
+    if(!$buildReady){
+        foreach($name in @('Core unit tests','Automation unit tests','Integration + fault injection','Full automation self-test')){
+            Add-BlockedStage 'Tests' $name 'Current exact-source strict build'
+        }
+        return $false
+    }
+
+    Invoke-CachedDotnetStep 'test:Core unit tests' '.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj' 'Tests' 'Core unit tests' @('test','.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
+    Invoke-CachedDotnetStep 'test:Automation unit tests' '.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj' 'Tests' 'Automation unit tests' @('test','.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
+    if($WindowsHost){
+        Invoke-CachedDotnetStep 'test:Integration + fault injection' '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj' 'Tests' 'Integration + fault injection' @('test','.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
+        Invoke-CachedDotnetStep 'test:Full automation self-test' '.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj' 'Tests' 'Full automation self-test' @('run','-c','Release','--project','.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-restore','--no-build','--',$BuildLogs) 'selftest' | Out-Null
+    }else{
+        Write-MhwMasterDebug -Root $Root -Area 'VERIFY' -Message 'Windows-only integration/self-test stages skipped because host is not Windows.'
+        Add-Result 'Tests' 'Integration + fault injection' $false 9001 0 '' 'Skipped: Windows is required.'
+        Add-Result 'Tests' 'Full automation self-test' $false 9001 0 '' 'Skipped: Windows is required.'
+    }
+    return $true
+}
+
 try {
     Start-Transcript -Path $TranscriptPath -Force | Out-Null
     $TranscriptStarted=$true
@@ -439,31 +530,7 @@ try {
     Invoke-AgentHandoffPreflight | Out-Null
     Invoke-CiSecurityPolicyPreflight | Out-Null
 
-    Invoke-DotnetStep 'Restore' 'Solution restore' @('restore','.\MhwModManager.sln') 'restore' | Out-Null
-
-    Invoke-DotnetStep 'Verification' 'Function fingerprint scan' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--','--root',$Root,'--mode','scan','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionReport) 'function-scan' | Out-Null
-
-    Invoke-DotnetStep 'Compile' 'Relaxed whole solution' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-p:TreatWarningsAsErrors=false',"-bl:$RelaxedBinlog") 'compile-relaxed' | Out-Null
-
-    foreach($Project in $Projects){
-        $binlog=Join-Path $BuildLogs ("project-{0}-{1}.binlog" -f ($Project.Name -replace '[^A-Za-z0-9_.-]','_'),$Stamp)
-        # A preceding relaxed build can leave MSBuild targets up-to-date. Force compiler/analyzer execution so -warnaserror cannot be bypassed by incremental no-op builds.
-        Invoke-CachedDotnetStep ("strict:"+$Project.Name) $Project.Path 'Strict compile/analyzers' $Project.Name @('build',$Project.Path,'-c','Release','--no-restore','--no-incremental','-warnaserror','-p:BuildProjectReferences=false',"-bl:$binlog") 'compile-strict' | Out-Null
-    }
-
-    Invoke-DotnetStep 'Compile' 'Strict whole solution' @('build','.\MhwModManager.sln','-c','Release','--no-restore','-warnaserror',"-bl:$FinalBinlog") 'compile-final' | Out-Null
-
-    Invoke-CachedDotnetStep 'test:Core unit tests' '.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj' 'Tests' 'Core unit tests' @('test','.\tests\MhwModManager.Tests\MhwModManager.Tests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
-    Invoke-CachedDotnetStep 'test:Automation unit tests' '.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj' 'Tests' 'Automation unit tests' @('test','.\tests\MhwModManager.AutomationTests\MhwModManager.AutomationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
-    $isWindowsHost = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
-    if($isWindowsHost){
-        Invoke-CachedDotnetStep 'test:Integration + fault injection' '.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj' 'Tests' 'Integration + fault injection' @('test','.\tests\MhwModManager.IntegrationTests\MhwModManager.IntegrationTests.csproj','-c','Release','--no-restore','--no-build') 'test' | Out-Null
-        Invoke-CachedDotnetStep 'test:Full automation self-test' '.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj' 'Tests' 'Full automation self-test' @('run','-c','Release','--project','.\tests\MhwModManager.SelfTest\MhwModManager.SelfTest.csproj','--no-restore','--no-build','--',$BuildLogs) 'selftest' | Out-Null
-    } else {
-        Write-MhwMasterDebug -Root $Root -Area 'VERIFY' -Message 'Windows-only integration/self-test stages skipped because host is not Windows.'
-        Add-Result 'Tests' 'Integration + fault injection' $false 9001 0 '' 'Skipped: Windows is required.'
-        Add-Result 'Tests' 'Full automation self-test' $false 9001 0 '' 'Skipped: Windows is required.'
-    }
+    $buildReady=Invoke-BuildAndTestStages -WindowsHost ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT)
     $prePromotionFailures=@($script:Results | Where-Object { $_.passed -ne $true }).Count
     if($prePromotionFailures -eq 0){
         Invoke-DotnetStep 'Verification' 'Promote verified function fingerprints' @('run','-c','Release','--project','.\tests\MhwModManager.FunctionVerifier\MhwModManager.FunctionVerifier.csproj','--no-restore','--no-build','--','--root',$Root,'--mode','confirm','--baseline',$FunctionBaseline,'--trusted-files',$TrustedFunctionFiles,'--trusted-source',$TrustedFunctionSource,'--report',$FunctionConfirmReport) 'function-confirm' | Out-Null
@@ -471,7 +538,13 @@ try {
         Add-Result 'Verification' 'Function cache promotion safely skipped' $true 0 0 '' ("Preserved previous verified=true function cache because "+$prePromotionFailures+" earlier verification stage(s) failed.")
         Write-MhwMasterDebug -Root $Root -Area 'FUNCTION-VERIFY' -Message ("Cache promotion skipped because "+$prePromotionFailures+" earlier verification stage(s) failed.")
     }
-    if($RunBenchmarks){Invoke-DotnetStep 'Performance' 'Benchmarks' @('run','-c','Release','--project','.\benchmarks\MhwModManager.Benchmarks\MhwModManager.Benchmarks.csproj','--no-restore','--','--filter','*') 'benchmark' | Out-Null}
+    if($RunBenchmarks){
+        if($buildReady){
+            Invoke-DotnetStep 'Performance' 'Benchmarks' @('run','-c','Release','--project','.\benchmarks\MhwModManager.Benchmarks\MhwModManager.Benchmarks.csproj','--no-restore','--','--filter','*') 'benchmark' | Out-Null
+        }else{
+            Add-BlockedStage 'Performance' 'Benchmarks' 'Current exact-source strict build'
+        }
+    }
 }
 catch {
     Add-Result 'Harness' 'Verifier exception' $false 9999 0 $TranscriptPath $_.Exception.ToString()

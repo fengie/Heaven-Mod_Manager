@@ -264,6 +264,100 @@ public sealed class CatalogSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Repeated_next_cursor_does_not_persist_the_invalid_page()
+    {
+        var repository = await CreateRepositoryAsync("paged-repeat-admission");
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = cursor => cursor is null
+                ? new CatalogBrowsePage([CreateMod("fixture", "mod-1")], "loop")
+                : new CatalogBrowsePage([CreateMod("fixture", "mod-2")], "loop")
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-repeat-admission"));
+        var service = new CatalogSyncService(repository);
+        var request = new CatalogBrowseRequest(game);
+        var options = new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false);
+
+        var first = await service.SyncAsync(provider, request, options, TestToken);
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            service.SyncNextPageAsync(provider, request, options, TestToken));
+
+        Assert.NotNull(await repository.GetAsync("fixture:mod-1", TestToken));
+        Assert.Null(await repository.GetAsync("fixture:mod-2", TestToken));
+        var state = await repository.GetSyncStateAsync("fixture", first.ScopeKey, TestToken);
+        Assert.NotNull(state);
+        Assert.Equal("loop", state!.Cursor);
+        Assert.Equal(first.FetchedAt, state.LastSuccessAt);
+        Assert.Equal(CatalogSyncFailureKind.SchemaDrift, state.LastFailureKind);
+    }
+
+    [Fact]
+    public async Task Empty_page_with_continuation_is_not_recorded_as_successful()
+    {
+        var repository = await CreateRepositoryAsync("paged-empty-admission");
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = _ => new CatalogBrowsePage([], "unproven")
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-empty-admission"));
+        var service = new CatalogSyncService(repository);
+        var request = new CatalogBrowseRequest(game);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.SyncAsync(
+            provider, request, new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false), TestToken));
+
+        var state = await repository.GetSyncStateAsync("fixture",
+            BuildExpectedScope(game, CatalogBrowseMode.Trending, null), TestToken);
+        Assert.NotNull(state);
+        Assert.Null(state!.Cursor);
+        Assert.Null(state.LastSuccessAt);
+        Assert.Equal(CatalogSyncFailureKind.SchemaDrift, state.LastFailureKind);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Exhaustive_cursor_cycle_preserves_last_valid_continuation_and_cache(bool resume)
+    {
+        var repository = await CreateRepositoryAsync("paged-cycle-" + resume);
+        var provider = new FakeProvider
+        {
+            BrowsePageFactory = cursor => cursor switch
+            {
+                null => new CatalogBrowsePage([CreateMod("fixture", "mod-1")], "a"),
+                "a" => new CatalogBrowsePage([CreateMod("fixture", "mod-2")], "b"),
+                "b" => new CatalogBrowsePage([CreateMod("fixture", "mod-3")], "a"),
+                _ => throw new InvalidDataException("Unexpected continuation.")
+            }
+        };
+        var game = GameProfile.MonsterHunterWorld(Path.Combine(root, "game-cycle-" + resume));
+        var service = new CatalogSyncService(repository);
+        var request = new CatalogBrowseRequest(game);
+        var options = new CatalogSyncOptions(TimeSpan.FromMinutes(20), HydrateFiles: false);
+        if (resume)
+            await service.SyncAsync(provider, request, options, TestToken);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            service.SyncAllAvailablePagesAsync(provider, request, options, TestToken));
+
+        Assert.Equal(3, provider.BrowsePageCalls);
+        Assert.NotNull(await repository.GetAsync("fixture:mod-1", TestToken));
+        Assert.NotNull(await repository.GetAsync("fixture:mod-2", TestToken));
+        Assert.Null(await repository.GetAsync("fixture:mod-3", TestToken));
+        var state = await repository.GetSyncStateAsync("fixture",
+            BuildExpectedScope(game, CatalogBrowseMode.Trending, null), TestToken);
+        Assert.NotNull(state);
+        Assert.Equal("b", state!.Cursor);
+        Assert.Equal(CatalogSyncFailureKind.SchemaDrift, state.LastFailureKind);
+
+        provider.BrowsePageFactory = cursor => cursor == "b"
+            ? new CatalogBrowsePage([CreateMod("fixture", "mod-3")])
+            : throw new InvalidDataException("Retry lost its continuation.");
+        Assert.Equal(1, await service.SyncAllAvailablePagesAsync(provider, request, options, TestToken));
+        Assert.NotNull(await repository.GetAsync("fixture:mod-3", TestToken));
+    }
+
+    [Fact]
     public async Task Failed_next_page_preserves_previous_cursor_for_retry()
     {
         var repository = await CreateRepositoryAsync("paged-failure");

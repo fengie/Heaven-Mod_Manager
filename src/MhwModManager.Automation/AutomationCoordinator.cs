@@ -232,13 +232,14 @@ public sealed class AutomationCoordinator(
         }
     }
 
-    public Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct = default)
+    public async Task<LaunchHealthReport> PrepareForPlayAsync(CancellationToken ct = default)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
-        return PrepareForPlayAsync(requireApplied: false, ct);
+        var prepared = await PrepareForPlayAsync(requireApplied: false, ct);
+        return prepared.Report;
     }
 
-    private async Task<LaunchHealthReport> PrepareForPlayAsync(bool requireApplied, CancellationToken ct)
+    private async Task<(LaunchHealthReport Report, SaveSnapshotResult Snapshot)> PrepareForPlayAsync(bool requireApplied, CancellationToken ct)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         UnifiedDebugLog.Write("LAUNCH", "PrepareForPlay BEGIN");
@@ -248,7 +249,7 @@ public sealed class AutomationCoordinator(
         await timeline.RecordAsync("launch.snapshot",snapshot.Success?AutomationSeverity.Info:AutomationSeverity.Warning,snapshot.Message,new{snapshot.SnapshotRoot,snapshot.SaveSource},ct);
         var report = await gate.EvaluateAsync(requireApplied, ct);
         UnifiedDebugLog.Write("LAUNCH", $"PrepareForPlay END Ready={report.Ready}; Findings={report.Findings.Count}");
-        return report;
+        return (report, snapshot);
     }
 
     public async Task<LaunchObservation> LaunchAndObserveAsync(LaunchMode mode, TimeSpan startupWindow, CancellationToken ct = default)
@@ -262,7 +263,7 @@ public sealed class AutomationCoordinator(
             UnifiedDebugLog.Write("LAUNCH", "Launch blocked: registered executable unavailable.");
             return new(false,false,null,TimeSpan.Zero,"Launch blocked: registered game executable is unavailable. Review the game installation path.");
         }
-        var health=await PrepareForPlayAsync(requireApplied: mode == LaunchMode.Modded, ct);
+        var (health, snapshot) = await PrepareForPlayAsync(requireApplied: mode == LaunchMode.Modded, ct);
         if(!health.Ready)
         {
             UnifiedDebugLog.Write("LAUNCH", "LaunchAndObserve BLOCKED by launch health gate.");
@@ -293,11 +294,17 @@ public sealed class AutomationCoordinator(
             UnifiedDebugLog.Write("LAUNCH", "LaunchAndObserve FAILED: Windows returned no process.");
             return new(false,false,null,TimeSpan.Zero,$"Windows did not start {game?.DisplayName??"Monster Hunter: World"}.");
         }
-        var delay=Task.Delay(startupWindow,ct); var exit=process.WaitForExitAsync(ct); var finished=await Task.WhenAny(delay,exit);
-        if(finished.IsCanceled&&!process.HasExited)
-            ct.ThrowIfCancellationRequested();
-        var survived=finished==delay&&!process.HasExited; int? exitCode=process.HasExited?process.ExitCode:null; sw.Stop();
-        await launchObservations.PersistAsync(new(
+        var delay = Task.Delay(startupWindow, ct);
+        var exit = process.WaitForExitAsync(ct);
+        var finished = await Task.WhenAny(delay, exit);
+        // A canceled/faulted wait is not a completed startup observation.
+        // Do not manufacture success (or a crash) from an interrupted wait.
+        await finished;
+        var exited = process.HasExited;
+        var survived = finished == delay && !exited;
+        int? exitCode = exited ? process.ExitCode : null;
+        sw.Stop();
+        var observation = new LaunchObservationRecord(
             launchId,
             startedAt,
             DateTimeOffset.UtcNow,
@@ -307,21 +314,61 @@ public sealed class AutomationCoordinator(
             exitCode,
             survived,
             state,
-            $"Observed for {sw.Elapsed.TotalSeconds:F1}s"));
-        if(survived)
+            $"Observed for {sw.Elapsed.TotalSeconds:F1}s");
+        var gameName = game?.DisplayName ?? "Monster Hunter: World";
+        var message = survived
+            ? $"{gameName} launched and survived the startup observation window."
+            : $"{gameName} exited during startup.";
+
+        // The process outcome is already known. Persistence problems are
+        // separate failures, not evidence that Windows did not launch the game.
+        try
         {
-            await issues.RecordSuccessfulLaunchAsync(enabled,ct);
-            var latest=Directory.Exists(backups.SnapshotRoot)?Directory.EnumerateDirectories(backups.SnapshotRoot).OrderByDescending(x=>x,StringComparer.OrdinalIgnoreCase).FirstOrDefault():null;
-            await lastGood.RecordAsync(latest,ct);
-            await timeline.RecordAsync("launch.success",AutomationSeverity.Info,$"{game?.DisplayName??"Monster Hunter: World"} survived the startup health window; recorded as last known good.",new{mode,startupSeconds=startupWindow.TotalSeconds},ct);
+            await launchObservations.PersistAsync(observation);
         }
-        else
+        catch (Exception ex)
         {
-            await timeline.RecordAsync("launch.failure",AutomationSeverity.Warning,$"{game?.DisplayName??"Monster Hunter: World"} exited during the startup observation window.",new{mode,exitCode},ct);
-            if(mode==LaunchMode.Modded)await issues.RecordLaunchFailureAsync(launchId,ModIssueKind.StartupCrash,ct);
+            UnifiedDebugLog.Write("LAUNCH", "Observed process outcome, but launch history/trust could not be saved.", ex);
+            return new(true, survived, exitCode, sw.Elapsed,
+                message + " Launch history could not be saved; automatic recovery evidence was not updated.");
         }
+
+        try
+        {
+            // Authoritative post-observation bookkeeping must not use a
+            // canceled UI wait or a newly read catalog as its evidence.
+            if (survived)
+            {
+                if (mode == LaunchMode.Modded)
+                {
+                    await lastGood.RecordObservedLaunchAsync(observation, snapshot.Success ? snapshot.SnapshotRoot : null);
+                    await issues.RecordSuccessfulLaunchAsync(enabled, CancellationToken.None);
+                }
+                await timeline.RecordAsync("launch.success", AutomationSeverity.Info,
+                    mode == LaunchMode.Modded
+                        ? $"{gameName} survived the startup health window; recorded as last known good."
+                        : $"{gameName} survived the startup health window.",
+                    new { mode, startupSeconds = startupWindow.TotalSeconds }, CancellationToken.None);
+            }
+            else
+            {
+                await timeline.RecordAsync("launch.failure", AutomationSeverity.Warning,
+                    $"{gameName} exited during the startup observation window.", new { mode, exitCode }, CancellationToken.None);
+                if (mode == LaunchMode.Modded)
+                {
+                    await issues.RecordLaunchFailureAsync(launchId, ModIssueKind.StartupCrash, CancellationToken.None);
+                    message += " Automatic crash diagnosis can use mods changed since the last known good launch.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            UnifiedDebugLog.Write("LAUNCH", "Launch observation saved, but follow-up recovery or diagnostics failed.", ex);
+            message += " Launch history was saved, but recovery or diagnostic recording did not complete.";
+        }
+
         UnifiedDebugLog.Write("LAUNCH", $"LaunchAndObserve END survived={survived}; exitCode={exitCode}; elapsed={sw.Elapsed}");
-        return new(true,survived,exitCode,sw.Elapsed,survived?$"{game?.DisplayName??"Monster Hunter: World"} launched and survived the startup observation window.":$"{game?.DisplayName??"Monster Hunter: World"} exited during startup; automatic crash diagnosis can use mods changed since the last known good launch.");
+        return new(true, survived, exitCode, sw.Elapsed, message);
     }
 
 }

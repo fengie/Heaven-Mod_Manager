@@ -455,11 +455,15 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var restoredToggle = (TogglePattern)restored.GetCurrentPattern(TogglePattern.Pattern);
         Assert.Equal(ToggleState.On, restoredToggle.Current.ToggleState);
         restoredToggle.Toggle();
-        Assert.True(File.Exists(alternateLive));
+        Assert.Equal(payload, File.ReadAllBytes(alternateLive));
         Invoke(await Button("Apply Mod Changes"));
-        await WaitForAsync(() => !File.Exists(alternateLive) && ReadToggle(alternateName) == ToggleState.Off,
-            UiTimeout, "alternate disabled for vanilla-launch control", ct);
+        await WaitForAsync(() => !Busy() && !File.Exists(alternateLive) &&
+            ReadToggle(alternateName) == ToggleState.Off &&
+            FindButton(window, "Apply Mod Changes") is { } apply && !apply.Current.IsEnabled,
+            UiTimeout, "single alternate removed and no changes pending", ct);
         Assert.Equal(run.ModBytes, File.ReadAllBytes(run.LiveModPath));
+        Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
+        passed.Add("Apply one alternate removal, clear pending changes and preserve primary and unmanaged bytes");
     }
 
     private static AutomationElement? FindProcessDialog(int pid, string title)

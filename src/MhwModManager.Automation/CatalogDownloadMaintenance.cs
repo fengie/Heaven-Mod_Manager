@@ -69,6 +69,7 @@ public static class CatalogDownloadMaintenance
     public const long DefaultMaxOwnedBytes = 512L * 1024L * 1024L;
     public static readonly TimeSpan DefaultMinimumAge = TimeSpan.FromHours(1);
 
+    private const int MaxLeaseBytes = 16 * 1024;
     private const string ArchivePrefix = "catalog-";
     private const string LeaseSuffix = ".lease.json";
     private const string TemporaryLeaseMarker = LeaseSuffix + ".tmp-";
@@ -215,11 +216,8 @@ public static class CatalogDownloadMaintenance
                     continue;
                 }
 
-                var lease = JsonSerializer.Deserialize<CatalogDownloadLease>(
-                                await File.ReadAllTextAsync(temporaryLeasePath, ct)
-                                    .ConfigureAwait(false))
-                            ?? throw new InvalidDataException(
-                                "Catalog download temporary lease is empty.");
+                var lease = await ReadBoundedLeaseAsync(temporaryLeasePath, ct)
+                    .ConfigureAwait(false);
                 lease.ValidateFor(fullRoot, archivePath);
 
                 var ownerState = GetOwnerState(lease);
@@ -277,11 +275,8 @@ public static class CatalogDownloadMaintenance
                     continue;
                 }
 
-                var lease = JsonSerializer.Deserialize<CatalogDownloadLease>(
-                                await File.ReadAllTextAsync(leasePath, ct)
-                                    .ConfigureAwait(false))
-                            ?? throw new InvalidDataException(
-                                "Catalog download lease is empty.");
+                var lease = await ReadBoundedLeaseAsync(leasePath, ct)
+                    .ConfigureAwait(false);
                 lease.ValidateFor(fullRoot, archivePath);
                 leasedArchives.Add(archivePath);
 
@@ -424,6 +419,22 @@ public static class CatalogDownloadMaintenance
             reclaimedBytes);
     }
 
+    private static async Task<CatalogDownloadLease> ReadBoundedLeaseAsync(
+        string path, CancellationToken ct)
+    {
+        using var __mhwTrace = MasterDebugLog.BeginMethod();
+        // The manager writes a tiny fixed-shape record. An untrusted oversized
+        // file must not consume unbounded memory or confer cleanup authority.
+        await using var input = new FileStream(path, FileMode.Open, FileAccess.Read,
+            FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        if (input.Length is <= 0 or > MaxLeaseBytes)
+            throw new InvalidDataException("Catalog download lease exceeds its bounded metadata size.");
+        using var reader = new StreamReader(input);
+        var json = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<CatalogDownloadLease>(json)
+            ?? throw new InvalidDataException("Catalog download lease is empty.");
+    }
+
     internal static string NormalizeRoot(string path)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"path={path}");
@@ -481,7 +492,7 @@ public static class CatalogDownloadMaintenance
         return true;
     }
 
-    private static void EnsureSafeRoot(string fullRoot)
+    internal static void EnsureSafeRoot(string fullRoot)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod($"root={fullRoot}");
         // Validate the nearest existing ancestor before creating anything so a
