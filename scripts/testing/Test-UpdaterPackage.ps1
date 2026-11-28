@@ -39,7 +39,8 @@ if([int]$manifest.minimumUpdaterProtocol -gt 1){throw "Unsupported minimum updat
 if([string]::IsNullOrWhiteSpace([string]$manifest.executableRelativePath)){throw 'Missing executableRelativePath.'}
 
 . (Join-Path $PSScriptRoot 'AcceptanceScratch.ps1')
-$scratch=New-MhwAcceptanceScratch
+# Package inspection is synchronous and launches no child processes.
+$scratch=New-MhwAcceptanceScratch -ReclaimAfterProducerExit
 $temp=Join-Path $scratch.Path 'package'
 try {
   Add-Type -AssemblyName System.IO.Compression.FileSystem

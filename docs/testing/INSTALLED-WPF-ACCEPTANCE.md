@@ -33,11 +33,12 @@ copied fixture state under the returned `Path`. Store reviewed scripts and compa
 receipts separately. After the probe and its children exit, pass the returned
 object to `Remove-MhwAcceptanceScratch` from `finally`.
 
-`Test-UpdaterPackage.ps1` uses this location for package extraction. On the next
-normal test run, the existing stale-scratch collector can reclaim a marked run
-after 24 hours if its original process has ended. Use scratch for material that
-can be regenerated. Keep original inputs and evidence you need to retain outside
-the scratch directory.
+`Test-UpdaterPackage.ps1` opts into stale collection because ZIP extraction and
+verification run in the creating process. Pass `-ReclaimAfterProducerExit` only
+when the run has no workers that could outlive that process. The normal test
+runner can reclaim eligible scratch after 24 hours once the producer has exited.
+For probes that start installers or other workers, the default keeps abandoned
+scratch for review. Keep original inputs and any evidence you need outside it.
 
 ## Manual bulk intake behavior
 

@@ -1,6 +1,9 @@
 # Disposable Windows acceptance fixtures belong here. Keep durable evidence outside scratch.
 function Get-MhwAcceptanceTempRoot {
-    $root = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\', '/')
+    $root = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+    if ($root -ne [IO.Path]::GetPathRoot($root)) {
+        $root = $root.TrimEnd('\', '/')
+    }
     for ($item = Get-Item -LiteralPath $root -Force -ErrorAction Stop; $null -ne $item; $item = $item.Parent) {
         if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
             throw 'Acceptance temp root traverses a reparse point.'
@@ -32,6 +35,7 @@ function Assert-MhwAcceptanceScratchTree([string]$Path) {
 }
 
 function New-MhwAcceptanceScratch {
+    param([switch]$ReclaimAfterProducerExit)
     $root = Get-MhwAcceptanceTempRoot
     $token = [Guid]::NewGuid().ToString('N')
     $path = Join-Path $root ('mhw-acceptance-' + $token)
@@ -40,6 +44,7 @@ function New-MhwAcceptanceScratch {
         $marker = [ordered]@{
             schema = 'mhw-test-scratch/v1'
             owner = 'MhwAcceptanceScratch'
+            reclaimAfterProducerExit = $ReclaimAfterProducerExit.IsPresent
             token = $token
             processId = $process.Id
             processStartUtc = $process.StartTime.ToUniversalTime().ToString('o')

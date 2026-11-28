@@ -82,6 +82,12 @@ foreach($spec in $patterns){
             }
 
             if($spec.Owner -ceq 'MhwAcceptanceScratch'){
+                # A launcher PID cannot establish the liveness of detached workers.
+                $reclaim=$marker.PSObject.Properties['reclaimAfterProducerExit']
+                if($null -eq $reclaim -or $reclaim.Value -isnot [bool] -or !$reclaim.Value){
+                    $script:skipped++
+                    return
+                }
                 if($marker.token -cnotmatch '^[a-f0-9]{32}$' -or $_.Name -cne ('mhw-acceptance-'+$marker.token) -or
                     [string]$marker.processId -notmatch '^[1-9][0-9]*$'){
                     $script:skipped++

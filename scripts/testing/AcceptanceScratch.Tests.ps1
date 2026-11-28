@@ -15,6 +15,13 @@ try {
     $env:TMP = $testRoot
     . (Join-Path $PSScriptRoot 'AcceptanceScratch.ps1')
 
+    $volumeRoot = [IO.Path]::GetPathRoot($testRoot)
+    $env:TEMP = $volumeRoot
+    $env:TMP = $volumeRoot
+    Assert-That ((Get-MhwAcceptanceTempRoot) -ceq $volumeRoot) 'Temp volume root lost its separator.'
+    $env:TEMP = $testRoot
+    $env:TMP = $testRoot
+
     $scratch = New-MhwAcceptanceScratch
     $package = Join-Path $scratch.Path 'package'
     New-Item -ItemType Directory -Path $package | Out-Null
@@ -31,12 +38,13 @@ try {
     Assert-That (!(Test-Path -LiteralPath $scratch.Path)) 'Normal cleanup left the package behind.'
     Remove-MhwAcceptanceScratch $scratch
 
-    $stale = New-MhwAcceptanceScratch
-    $active = New-MhwAcceptanceScratch
-    $foreign = New-MhwAcceptanceScratch
+    $stale = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
+    $active = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
+    $foreign = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
+    $workerScope = New-MhwAcceptanceScratch
     $unmarked = Join-Path $testRoot ('mhw-acceptance-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $unmarked | Out-Null
-    foreach ($item in @($stale, $active, $foreign)) {
+    foreach ($item in @($stale, $active, $foreign, $workerScope)) {
         $markerPath = Join-Path $item.Path '.mhw-test-scratch.json'
         $marker = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
         $marker.createdUtc = [DateTime]::UtcNow.AddHours(-48).ToString('o')
@@ -44,7 +52,7 @@ try {
         if ($item.Path -eq $foreign.Path) { $marker.owner = 'OtherProducer' }
         $marker | ConvertTo-Json | Set-Content -LiteralPath $markerPath -Encoding UTF8
     }
-    $linked = New-MhwAcceptanceScratch
+    $linked = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
     $markerPath = Join-Path $linked.Path '.mhw-test-scratch.json'
     $marker = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
     $marker.createdUtc = [DateTime]::UtcNow.AddHours(-48).ToString('o')
@@ -56,8 +64,8 @@ try {
     try {
         & (Join-Path $PSScriptRoot 'Clear-StaleTestScratch.ps1') -MinimumAgeHours 24
         Assert-That (!(Test-Path -LiteralPath $stale.Path)) 'Stale owned scratch was retained.'
-        foreach($path in @($active.Path, $unmarked, $foreign.Path, $linked.Path)) {
-            Assert-That (Test-Path -LiteralPath $path) 'Active, foreign, unmarked or linked scratch was removed.'
+        foreach($path in @($active.Path, $unmarked, $foreign.Path, $linked.Path, $workerScope.Path)) {
+            Assert-That (Test-Path -LiteralPath $path) 'Active, foreign, unmarked, linked or potentially worker-owned scratch was removed.'
         }
     } finally {
         (Get-Item -LiteralPath $junction -Force).Delete()
