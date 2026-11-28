@@ -661,6 +661,88 @@ public sealed class AutoPopulateServiceTests : IDisposable
         Assert.True(result.PlannerPasses >= 3);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AutoPopulateSelectsEligibleTokenProviderAroundProtectedDependent(bool explicitlyExcluded)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("eligible-dependency.db");
+        var gameRoot = Path.Combine(root, "game-eligible");
+        Directory.CreateDirectory(gameRoot);
+        var high = await AddModAsync(db, "high", "Higher-ranked dependency", 1000);
+        var eligible = await AddModAsync(db, "eligible", "Eligible dependency", 100);
+        var dependent = await AddModAsync(db, "dependent", "Protected dependent", 200);
+        await db.UpsertModAsync(high with { NexusModId = "12345" }, ct);
+        await db.UpsertModAsync(eligible with { NexusModId = "12345" }, ct);
+        await db.ReplaceModFilesAsync("high",
+            [ModFile("high", @"nativePC\dependency\shared.bin", "high-hash", FileClass.GameData)], ct);
+        await db.ReplaceModFilesAsync("eligible",
+            [ModFile("eligible", @"nativePC\dependency\shared.bin", "eligible-hash", FileClass.GameData)], ct);
+        await db.ReplaceModFilesAsync("dependent",
+            [ModFile("dependent", @"nativePC\dependent\payload.bin", "dependent-hash", FileClass.GameData)], ct);
+        await File.WriteAllTextAsync(Path.Combine(dependent.SourcePath, "mod-manager.requirements.json"),
+            """{"mods":["nexus:12345"]}""", ct);
+        if (!explicitlyExcluded)
+            await File.WriteAllTextAsync(Path.Combine(high.SourcePath, "mod-manager.requirements.json"), "[]", ct);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var service = new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game);
+        IReadOnlyCollection<string> exclusions = explicitlyExcluded ? ["high"] : [];
+
+        var result = await service.BuildAsync(["dependent"], exclusions, ct);
+
+        Assert.True(result.State["dependent"].Enabled);
+        Assert.True(result.State["eligible"].Enabled);
+        Assert.False(result.State["high"].Enabled);
+        Assert.All(await db.GetModsAsync(ct), mod => Assert.False(mod.Enabled));
+    }
+
+    [Theory]
+    [InlineData("array")]
+    [InlineData("scalar")]
+    [InlineData("duplicate")]
+    [InlineData("oversized")]
+    public async Task MalformedRequirementSidecarDoesNotAbortUnrelatedSelection(string kind)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var db = await CreateDbAsync("sidecar-admission.db");
+        var gameRoot = Path.Combine(root, "game-sidecar");
+        Directory.CreateDirectory(gameRoot);
+        var bad = await AddModAsync(db, "bad", "Invalid requirements", 200);
+        await AddModAsync(db, "good", "Independent mod", 100);
+        await db.ReplaceModFilesAsync("bad",
+            [ModFile("bad", @"nativePC\bad\payload.bin", "bad-hash", FileClass.GameData)], ct);
+        await db.ReplaceModFilesAsync("good",
+            [ModFile("good", @"nativePC\good\payload.bin", "good-hash", FileClass.GameData)], ct);
+        var sidecar = kind switch
+        {
+            "array" => "[]",
+            "scalar" => "42",
+            "duplicate" => """{"mods":["missing"],"mods":[]}""",
+            "oversized" => """{"mods":[]}""" + new string(' ', 256 * 1024),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
+        await File.WriteAllTextAsync(Path.Combine(bad.SourcePath, "mod-manager.requirements.json"),
+            sidecar, ct);
+
+        var game = GameProfile.MonsterHunterWorld(gameRoot);
+        var snapshots = new PlannerSnapshotRepository(db);
+        var planner = new DeploymentPlanner(new ConflictEngine(game), game);
+        var dependencies = new DependencyDoctorService(db, gameRoot, game);
+        var result = await new AutoPopulateService(snapshots, planner, dependencies, gameRoot, game)
+            .BuildAsync(ct);
+
+        Assert.True(result.State["good"].Enabled);
+        Assert.False(result.State["bad"].Enabled);
+        Assert.Contains(result.Decisions, decision => decision.ModId == "bad" &&
+            !decision.Enabled && decision.Reason.Contains("requirements sidecar", StringComparison.OrdinalIgnoreCase));
+        Assert.All(await db.GetModsAsync(ct), mod => Assert.False(mod.Enabled));
+    }
+
     private async Task<ManagerDatabase> CreateDbAsync(string name)
     {
         var db = new ManagerDatabase(Path.Combine(root, name));
