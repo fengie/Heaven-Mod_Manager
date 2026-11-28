@@ -45,7 +45,7 @@ public sealed class InstalledWpfAcceptanceContractTests
     }
 
     [Fact]
-    public void InstalledWpfWorkflowWatchesTheNestedImportAndDeploymentPath()
+    public void InstalledWpfWorkflowWatchesAllProductDependencies()
     {
         var workflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(),
             ".github", "workflows", "installed-wpf-mod-lifecycle-e2e.yml"));
@@ -53,18 +53,15 @@ public sealed class InstalledWpfAcceptanceContractTests
         Assert.True(trigger.Success);
         string[] paths =
         [
-            "src/MhwModManager.App/MainWindow.xaml.cs",
-            "src/MhwModManager.App/ViewModels/MainWindowViewModel.AutoSort.cs",
-            "src/MhwModManager.App/ViewModels/MainWindowViewModel.Import.cs",
-            "src/MhwModManager.Automation/GameModIntakeService.cs",
-            "src/MhwModManager.Automation/GameModIntakeClassifier.cs",
-            "src/MhwModManager.Automation/ModBoundaryDiscovery.cs",
-            "src/MhwModManager.Automation/SmartInboxService.cs",
-            "src/MhwModManager.Core/UnrealPakLayout.cs",
-            "src/MhwModManager.Filesystem/ModScanner.cs",
-            "src/MhwModManager.Filesystem/CatalogService.cs",
-            "src/MhwModManager.Storage/ManagerDatabase.cs",
-            "src/MhwModManager.App/App.xaml.cs"
+            "src/**",
+            "Directory.Build.props",
+            "Directory.Packages.props",
+            "global.json",
+            "data/**",
+            "tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.cs",
+            "tests/MhwModManager.IntegrationTests/InstalledWpfModLifecycleE2ETests.*.cs",
+            "tests/fixtures/discovered-games/**",
+            "tests/fixtures/packaged-ui/**"
         ];
         foreach (var path in paths)
             Assert.Matches($@"(?m)^      - '{Regex.Escape(path)}'\r?$", trigger.Groups["body"].Value);

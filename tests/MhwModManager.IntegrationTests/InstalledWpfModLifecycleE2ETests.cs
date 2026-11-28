@@ -161,18 +161,57 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
     [Trait("Category", "InstalledWpf")]
     public async Task InboxDropsAppearInOpenModsAndPreserveStagedSelections()
     {
-        using var run = new DisposableWpfRun(seedInbox: false);
-        var window = await WaitForMainWindowAsync(run.Launch(), TestToken);
+        using var run = new DisposableWpfRun(seedInbox: false, confirmBeforeApply: true);
+        var app = run.Launch();
+        var window = await WaitForMainWindowAsync(app, TestToken);
         await SelectModsTabAsync(window, TestToken);
-        var grid = await WaitForElementAsync(() => Find(window, element =>
+        await WaitForElementAsync(() => Find(window, element =>
             element.Current.ControlType == ControlType.DataGrid && element.Current.Name == "Mod library"),
             UiTimeout, "open Mods before dropping any packages", TestToken);
 
-        Task<AutomationElement> WaitForToggle(string name) => WaitForElementAsync(() => Find(grid, element =>
-            element.Current.ControlType == ControlType.CheckBox &&
-            element.Current.Name.Contains(name, StringComparison.OrdinalIgnoreCase) &&
-            !element.Current.Name.EndsWith(" for bulk action", StringComparison.Ordinal)),
-            UiTimeout, "automatic Inbox row " + name, TestToken);
+        // Reacquire the live row after each Inbox refresh instead of retaining a stale UIA grid.
+        Task<AutomationElement> WaitForToggle(string name) => WaitForElementAsync(
+            () => FindModToggle(window, name), UiTimeout, "automatic Inbox row " + name, TestToken);
+
+        async Task ConfirmApplyAsync(int count, string answer)
+        {
+            var apply = await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true),
+                UiTimeout, "explicit Apply", TestToken);
+            var invocation = Task.Run(() => Invoke(apply), TestToken);
+            const string title = "Apply mod changes";
+            var dialog = await WaitForElementAsync(() => FindProcessDialog(app.Id, title),
+                UiTimeout, "native Apply confirmation", TestToken);
+            await WaitForElementAsync(() => Find(dialog, element =>
+                element.Current.Name.Contains($"Apply all {count} pending mod change(s)", StringComparison.Ordinal)),
+                UiTimeout, "confirmation describes the staged count", TestToken);
+            Invoke(await WaitForElementAsync(() => FindButton(dialog, answer, enabled: true),
+                UiTimeout, "confirmation " + answer, TestToken));
+            await invocation.WaitAsync(UiTimeout, TestToken);
+            await WaitForAsync(() => FindProcessDialog(app.Id, title) is null,
+                UiTimeout, "Apply confirmation closed", TestToken);
+        }
+
+        Task WaitForPendingAsync(int count) => WaitForAsync(
+            () => FindButton(window, $"Pending ({count})") is not null,
+            UiTimeout, $"visible Pending count {count}", TestToken);
+
+        async Task AssertCatalogAsync(bool firstEnabled, bool secondEnabled)
+        {
+            var catalog = run.OpenCatalog();
+            try
+            {
+                var mods = await catalog.GetModsAsync(TestToken);
+                Assert.Equal(firstEnabled, Assert.Single(mods, mod =>
+                    mod.DisplayName.Contains("BulkOne", StringComparison.OrdinalIgnoreCase)).Enabled);
+                Assert.Equal(secondEnabled, Assert.Single(mods, mod =>
+                    mod.DisplayName.Contains("BulkTwo", StringComparison.OrdinalIgnoreCase)).Enabled);
+            }
+            finally
+            {
+                await using var connection = await catalog.OpenAsync(CancellationToken.None);
+                Microsoft.Data.Sqlite.SqliteConnection.ClearPool(connection);
+            }
+        }
         var firstHash = SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive));
         var secondHash = SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive));
         run.CopyToInbox(run.BatchFirstArchive);
@@ -182,12 +221,41 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
         var first = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
         first.Toggle();
         Assert.True(File.Exists(firstLive), "Selection alone must not remove the applied file.");
-        Invoke(await WaitForElementAsync(() => FindButton(window, "Apply Mod Changes", enabled: true), UiTimeout, "explicit Apply", TestToken));
+        await WaitForPendingAsync(1);
+        await ConfirmApplyAsync(1, "Yes");
         await WaitForAsync(()=>!File.Exists(firstLive),UiTimeout,"explicit off reached disk",TestToken);
+        await WaitForPendingAsync(0);
         run.CopyToInbox(run.BatchSecondArchive);
         await WaitForToggle("BulkTwo");
         await WaitForAsync(()=>File.Exists(secondLive),UiTimeout,"second Inbox mod deployed",TestToken);
         Assert.False(File.Exists(firstLive));
+        await AssertCatalogAsync(firstEnabled: false, secondEnabled: true);
+
+        // A single explicit submission must settle opposite pending operations together.
+        var firstOff = (TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.Off, firstOff.Current.ToggleState);
+        firstOff.Toggle();
+        var secondOn = (TogglePattern)(await WaitForToggle("BulkTwo")).GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, secondOn.Current.ToggleState);
+        secondOn.Toggle();
+        await WaitForPendingAsync(2);
+        Assert.False(File.Exists(firstLive));
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(secondLive));
+
+        await ConfirmApplyAsync(2, "No");
+        await WaitForPendingAsync(2);
+        Assert.False(File.Exists(firstLive));
+        Assert.Equal(run.ModBytes, File.ReadAllBytes(secondLive));
+        await AssertCatalogAsync(firstEnabled: false, secondEnabled: true);
+
+        await ConfirmApplyAsync(2, "Yes");
+        await WaitForAsync(() => File.Exists(firstLive) && File.ReadAllBytes(firstLive).SequenceEqual(run.ModBytes) &&
+            !File.Exists(secondLive) && FindButton(window, "Pending (0)") is not null &&
+            FindButton(window, "Apply Mod Changes") is { } apply && !apply.Current.IsEnabled,
+            UiTimeout, "confirmed mixed Apply settled both UI and disk", TestToken);
+        await AssertCatalogAsync(firstEnabled: true, secondEnabled: false);
+        Assert.Equal(ToggleState.On, ((TogglePattern)(await WaitForToggle("BulkOne")).GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
+        Assert.Equal(ToggleState.Off, ((TogglePattern)(await WaitForToggle("BulkTwo")).GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState);
         Assert.Equal(firstHash, SHA256.HashData(File.ReadAllBytes(run.BatchFirstArchive)));
         Assert.Equal(secondHash, SHA256.HashData(File.ReadAllBytes(run.BatchSecondArchive)));
         Assert.Equal(run.BaselineBytes, File.ReadAllBytes(run.SentinelPath));
@@ -690,7 +758,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
 
         public string WorkshopPayload => Path.Combine(root, "steamapps", "workshop", "content", FirstGame.SteamAppId!, "314159", "payload.bin");
 
-        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false, GameProfile? profile = null, bool moved = false)
+        public DisposableWpfRun(bool seedInbox, bool unreal = false, bool workshop = false, GameProfile? profile = null, bool moved = false, bool confirmBeforeApply = false)
         {
             var temp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
             var packageDir = Environment.GetEnvironmentVariable("MHW_WPF_E2E_PACKAGE_DIR");
@@ -764,7 +832,7 @@ public sealed partial class InstalledWpfModLifecycleE2ETests
                 {
                     settings.AutoUpdateEnabled = false;
                     settings.BackgroundMetadataRefreshEnabled = false;
-                    settings.ConfirmBeforeApply = false;
+                    settings.ConfirmBeforeApply = confirmBeforeApply;
                     settings.UiAnimationsEnabled = false;
                 });
             }
