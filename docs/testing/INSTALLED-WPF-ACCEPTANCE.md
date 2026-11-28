@@ -25,6 +25,20 @@ The workflow runs only on disposable GitHub-hosted windows-2025 VMs, not on a se
 
 The harness stops only the process it launched and deletes only a marker-verified GUID-named scratch root. The workflow outputs source SHA, published candidate executable SHA-256 and test result counts. It never shares raw user game paths or credentials. If the hosted UI cannot expose a native dialog or controls, the test fails rather than silently converting to an in-process unit test.
 
+## Local acceptance scratch
+
+For manual probes, dot-source `scripts/testing/AcceptanceScratch.ps1` and call
+`New-MhwAcceptanceScratch`. Put generated installs, builds, extracted packages and
+copied fixture state under the returned `Path`. Store reviewed scripts and compact
+receipts separately. After the probe and its children exit, pass the returned
+object to `Remove-MhwAcceptanceScratch` from `finally`.
+
+`Test-UpdaterPackage.ps1` uses this location for package extraction. On the next
+normal test run, the existing stale-scratch collector can reclaim a marked run
+after 24 hours if its original process has ended. Use scratch for material that
+can be regenerated. Keep original inputs and evidence you need to retain outside
+the scratch directory.
+
 ## Manual bulk intake behavior
 
 For manual multi-archive, folder and single multi-mod-pack inputs, approved packages routed

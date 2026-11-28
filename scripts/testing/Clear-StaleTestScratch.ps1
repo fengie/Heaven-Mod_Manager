@@ -7,27 +7,31 @@ param(
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 
+. (Join-Path $PSScriptRoot 'AcceptanceScratch.ps1')
 $markerName='.mhw-test-scratch.json'
-$tempRoot=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
+$tempRoot=Get-MhwAcceptanceTempRoot
 $patterns=@(
     @{ Pattern='MhwManagerSelfTest-*'; Owner='MhwManagerSelfTest' },
     @{ Pattern='mhw-updater-installed-e2e-*'; Owner='UpdaterInstalledClientE2ETests' }
+    @{ Pattern='mhw-acceptance-*'; Owner='MhwAcceptanceScratch' }
 )
 $now=[DateTime]::UtcNow
 $removed=0
 $skipped=0
 $failed=0
 
+function Convert-MarkerTime($Value) {
+    if($Value -is [DateTime]) { return $Value.ToUniversalTime() }
+    return [DateTimeOffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture).UtcDateTime
+}
+
 function Test-SameProcess($Marker) {
     $pidValue=0
-    if(-not [int]::TryParse([string]$Marker.processId,[ref]$pidValue) -or $pidValue -le 0){ return $false }
+    if(-not [int]::TryParse([string]$Marker.processId,[ref]$pidValue) -or $pidValue -le 0){ return $true }
     $process=Get-Process -Id $pidValue -ErrorAction SilentlyContinue
     if($null -eq $process){ return $false }
     try {
-        $expected=[DateTime]::Parse(
-            [string]$Marker.processStartUtc,
-            [Globalization.CultureInfo]::InvariantCulture,
-            [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+        $expected=Convert-MarkerTime $Marker.processStartUtc
         $actual=$process.StartTime.ToUniversalTime()
         return [Math]::Abs(($actual-$expected).TotalSeconds) -lt 2
     } catch {
@@ -62,20 +66,29 @@ foreach($spec in $patterns){
         }
 
         try {
+            if((Get-Item -LiteralPath $markerPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){
+                $script:skipped++
+                return
+            }
             $marker=Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
             if($marker.schema -cne 'mhw-test-scratch/v1' -or $marker.owner -cne $spec.Owner){
                 $script:skipped++
                 return
             }
-            $created=[DateTime]::Parse(
-                [string]$marker.createdUtc,
-                [Globalization.CultureInfo]::InvariantCulture,
-                [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+            $created=Convert-MarkerTime $marker.createdUtc
             if(($now-$created).TotalHours -lt $MinimumAgeHours -or (Test-SameProcess $marker)){
                 $script:skipped++
                 return
             }
 
+            if($spec.Owner -ceq 'MhwAcceptanceScratch'){
+                if($marker.token -cnotmatch '^[a-f0-9]{32}$' -or $_.Name -cne ('mhw-acceptance-'+$marker.token) -or
+                    [string]$marker.processId -notmatch '^[1-9][0-9]*$'){
+                    $script:skipped++
+                    return
+                }
+                Assert-MhwAcceptanceScratchTree $root
+            }
             Remove-WithRetry $root
             $script:removed++
             Write-Host ('Removed stale marked test scratch: '+$root)
