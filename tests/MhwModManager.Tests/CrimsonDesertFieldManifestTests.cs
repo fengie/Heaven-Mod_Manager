@@ -197,4 +197,43 @@ public sealed class CrimsonDesertFieldManifestTests
     }
 
 
+
+    [Theory]
+    [InlineData("""{"format":3,"format":3,"targets":[{"kind":"asset","file":"a.dds","vpath":"ui/a.dds"}]}""")]
+    [InlineData("""{"format":3,"targets":[{"kind":"asset","file":"a.dds","vpath":"ui/a.dds","vpath":"ui/b.dds"}]}""")]
+    [InlineData("""{"format":3,"targets":[{"kind":"table","table":"ItemInfo","ops":[{"key":"x","field":"count","value":{"a":1,"a":2}}]}]}""")]
+    [InlineData("""{"format":3,"targets":[{"kind":"asset","file":"a.dds","vpath":"ui//a.dds"}]}""")]
+    [InlineData("""{"format":3,"targets":[{"kind":"asset","file":"a.dds","vpath":"ui/a.dds "}]}""")]
+    public void Ambiguous_json_properties_and_virtual_paths_require_review(string json)
+    {
+        var inspection = CrimsonDesertFieldManifestInspector.Inspect(json);
+        Assert.False(inspection.IsValid);
+        Assert.Empty(inspection.Claims);
+    }
+
+    [Fact]
+    public void Asset_path_aliases_are_one_advisory_identity_across_packages()
+    {
+        var first = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"asset","file":"one.dds","vpath":"/UI/Icon/a.dds"}]}""");
+        var second = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"asset","file":"two.dds","vpath":"ui\\icon\\a.dds"}]}""");
+
+        Assert.True(first.IsValid, first.Reason);
+        Assert.True(second.IsValid, second.Reason);
+        Assert.Equal("asset:ui/icon/a.dds", Assert.Single(first.Claims).TargetKey);
+        Assert.Equal(Assert.Single(first.Claims).TargetKey, Assert.Single(second.Claims).TargetKey);
+        Assert.Equal("asset:ui/icon/a.dds", Assert.Single(
+            CrimsonDesertFieldManifestInspector.FindClaimCollisions([first, second])));
+    }
+
+    [Fact]
+    public void Asset_path_aliases_within_one_manifest_cannot_claim_independent_targets()
+    {
+        var inspection = CrimsonDesertFieldManifestInspector.Inspect(
+            """{"format":3,"targets":[{"kind":"asset","file":"one.dds","vpath":"/ui/a.dds"},{"kind":"asset","file":"two.dds","vpath":"UI\\a.dds"}]}""");
+        Assert.False(inspection.IsValid);
+        Assert.Empty(inspection.Claims);
+    }
+
 }
