@@ -38,8 +38,10 @@ if([string]$manifest.sha256 -ne $artifactHash){
 if([int]$manifest.minimumUpdaterProtocol -gt 1){throw "Unsupported minimum updater protocol: $($manifest.minimumUpdaterProtocol)"}
 if([string]::IsNullOrWhiteSpace([string]$manifest.executableRelativePath)){throw 'Missing executableRelativePath.'}
 
-$temp=Join-Path ([IO.Path]::GetTempPath()) ('mhwmm-update-package-'+[Guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -Force $temp | Out-Null
+. (Join-Path $PSScriptRoot 'AcceptanceScratch.ps1')
+# Package inspection is synchronous and launches no child processes.
+$scratch=New-MhwAcceptanceScratch -ReclaimAfterProducerExit
+$temp=Join-Path $scratch.Path 'package'
 try {
   Add-Type -AssemblyName System.IO.Compression.FileSystem
   [IO.Compression.ZipFile]::ExtractToDirectory($artifact,$temp)
@@ -124,5 +126,6 @@ try {
     $manifest.buildNumber,$manifest.sourceSha,$manifest.artifactName,$artifactHash) -ForegroundColor Green
 }
 finally {
-  Remove-Item -LiteralPath $temp -Recurse -Force -ErrorAction SilentlyContinue
+  try { Remove-MhwAcceptanceScratch $scratch }
+  catch { Write-Warning ('Could not remove updater package scratch: '+$_.Exception.Message) }
 }
