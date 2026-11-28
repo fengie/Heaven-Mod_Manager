@@ -299,6 +299,7 @@ public sealed partial class MainWindowViewModel
                     bool listening = true;
                     void Notify(string? name)
                     {
+                        using var notificationTrace = MasterDebugLog.BeginMethod();
                         lock (notificationGate)
                         {
                             if (listening && !ct.IsCancellationRequested) changed(name);
