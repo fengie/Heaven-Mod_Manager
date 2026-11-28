@@ -2,7 +2,7 @@ param([switch]$KeepBuildOutputs)
 
 $ErrorActionPreference='Stop'
 $Root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-& (Join-Path $PSScriptRoot 'Clear-StaleTestScratch.ps1') -MinimumAgeHours 24
+& (Join-Path $PSScriptRoot 'Clear-StaleTestScratch.ps1') -MinimumAgeHours 24 -IncludeStandaloneBuildScratch:(!$KeepBuildOutputs)
 . (Join-Path $PSScriptRoot 'AcceptanceScratch.ps1')
 . (Join-Path $PSScriptRoot '..\diagnostics\Master-Debug.ps1')
 Start-MhwMasterDebugSession -Root $Root -Area 'RUN-TESTS' -Title 'Standalone test run'
@@ -17,7 +17,7 @@ try{
         if (!(Test-Path -LiteralPath $scratchRoot)) {
             New-Item -ItemType Directory -Path $scratchRoot -Force | Out-Null
         }
-        $scratch = New-MhwAcceptanceScratch -ScratchRoot $scratchRoot
+        $scratch = New-MhwAcceptanceScratch -ScratchRoot $scratchRoot -StandaloneBuild
         $buildArguments = @('--artifacts-path', $scratch.Path)
     }
     Write-MhwMasterDebug -Root $Root -Area 'RUN-TESTS' -Message 'Starting Core tests.'

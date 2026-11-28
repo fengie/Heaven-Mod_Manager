@@ -37,8 +37,22 @@ function Assert-MhwAcceptanceScratchTree([string]$Path, [string]$ScratchRoot = [
     }
 }
 
+function Get-MhwWindowsBootTime {
+    if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { return }
+    try {
+        $os = Get-CimInstance -ClassName Win32_OperatingSystem -Property LastBootUpTime -ErrorAction Stop
+        if ($os.LastBootUpTime -is [DateTime]) { return $os.LastBootUpTime.ToUniversalTime() }
+    } catch {
+        # Tests can still run and clean their own builds without stale-run evidence.
+    }
+}
+
 function New-MhwAcceptanceScratch {
-    param([switch]$ReclaimAfterProducerExit, [string]$ScratchRoot = [IO.Path]::GetTempPath())
+    param(
+        [switch]$ReclaimAfterProducerExit,
+        [string]$ScratchRoot = [IO.Path]::GetTempPath(),
+        [switch]$StandaloneBuild
+    )
     $root = Get-MhwAcceptanceTempRoot -ScratchRoot $ScratchRoot
     $token = [Guid]::NewGuid().ToString('N')
     $path = Join-Path $root ('mhw-acceptance-' + $token)
@@ -52,12 +66,20 @@ function New-MhwAcceptanceScratch {
             processId = $process.Id
             processStartUtc = $process.StartTime.ToUniversalTime().ToString('o')
             createdUtc = [DateTime]::UtcNow.ToString('o')
-        } | ConvertTo-Json -Compress
+        }
+        if ($StandaloneBuild) {
+            $bootTime = Get-MhwWindowsBootTime
+            $marker.reclaimAfterProducerExit = $false
+            if ($null -ne $bootTime) {
+                $marker.standaloneBuildHost = [Environment]::MachineName
+                $marker.standaloneBuildBootUtc = $bootTime.ToString('o')
+            }
+        }
     } finally {
         $process.Dispose()
     }
     New-Item -ItemType Directory -Path $path -ErrorAction Stop | Out-Null
-    [IO.File]::WriteAllText((Join-Path $path '.mhw-test-scratch.json'), $marker)
+    [IO.File]::WriteAllText((Join-Path $path '.mhw-test-scratch.json'), ($marker | ConvertTo-Json -Compress))
     return @{ Path = $path; Token = $token }
 }
 

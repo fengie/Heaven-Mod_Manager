@@ -55,6 +55,62 @@ try {
     Assert-That (!(Test-Path -LiteralPath $build.Path)) 'Build cleanup left disposable output behind.'
     Assert-That (Test-Path -LiteralPath $retained) 'Build cleanup removed ordinary output.'
 
+    if ($env:OS -eq 'Windows_NT') {
+        $bootTime = [DateTime]::UtcNow.AddHours(-72)
+        function Get-CimInstance {
+            [CmdletBinding()]
+            param($ClassName, $Property)
+            Assert-That ($ClassName -eq 'Win32_OperatingSystem' -and $Property -eq 'LastBootUpTime') 'Unexpected boot lookup.'
+            [pscustomobject]@{ LastBootUpTime = $bootTime }
+        }
+        $fixtureRepo = Join-Path $testRoot 'build-repo'
+        $fixtureScripts = Join-Path $fixtureRepo 'scripts\testing'
+        $fixtureArtifacts = Join-Path $fixtureRepo 'artifacts'
+        New-Item -ItemType Directory -Force -Path $fixtureScripts, $fixtureArtifacts | Out-Null
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Clear-StaleTestScratch.ps1'), (Join-Path $PSScriptRoot 'AcceptanceScratch.ps1') -Destination $fixtureScripts
+        $prior = New-MhwAcceptanceScratch -ScratchRoot $fixtureArtifacts -StandaloneBuild
+        $live = New-MhwAcceptanceScratch -ScratchRoot $fixtureArtifacts -StandaloneBuild
+        $foreignBuild = New-MhwAcceptanceScratch -ScratchRoot $fixtureArtifacts -StandaloneBuild
+        $existing = Join-Path $fixtureArtifacts 'existing-output.dll'
+        [IO.File]::WriteAllText($existing, 'ordinary build')
+        $unmarkedBuild = Join-Path $fixtureArtifacts ('mhw-acceptance-' + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $unmarkedBuild | Out-Null
+        foreach ($entry in @($prior, $live, $foreignBuild)) {
+            $markerPath = Join-Path $entry.Path '.mhw-test-scratch.json'
+            $marker = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
+            $recordedBoot = if ($entry.Path -eq $live.Path) { $bootTime } else { $bootTime.AddDays(-3) }
+            $marker.standaloneBuildBootUtc = $recordedBoot.ToString('o')
+            $marker.processStartUtc = $recordedBoot.AddHours(1).ToString('o')
+            $marker.createdUtc = $recordedBoot.AddHours(2).ToString('o')
+            if ($entry.Path -eq $foreignBuild.Path) { $marker.standaloneBuildHost = 'other-build-host' }
+            $marker | ConvertTo-Json | Set-Content -LiteralPath $markerPath -Encoding UTF8
+        }
+        $heartbeat = Join-Path $live.Path 'worker-ready'
+        $worker = Start-Job -ArgumentList $heartbeat -ScriptBlock {
+            param($ReadyPath)
+            [IO.File]::WriteAllText($ReadyPath, 'live')
+            Start-Sleep -Seconds 30
+        }
+        try {
+            $deadline = [DateTime]::UtcNow.AddSeconds(15)
+            while (!(Test-Path -LiteralPath $heartbeat) -and [DateTime]::UtcNow -lt $deadline) {
+                Start-Sleep -Milliseconds 100
+            }
+            Assert-That ((Test-Path -LiteralPath $heartbeat) -and $worker.State -eq 'Running') 'Build worker fixture did not start.'
+            $collector = Join-Path $fixtureScripts 'Clear-StaleTestScratch.ps1'
+            & $collector -MinimumAgeHours 24
+            Assert-That (Test-Path -LiteralPath $prior.Path) 'Default collection crossed into the standalone build root.'
+            & $collector -MinimumAgeHours 24 -IncludeStandaloneBuildScratch
+            Assert-That (!(Test-Path -LiteralPath $prior.Path)) 'Abandoned prior-boot build was retained.'
+            foreach ($path in @($heartbeat, $foreignBuild.Path, $existing, $unmarkedBuild)) {
+                Assert-That (Test-Path -LiteralPath $path) 'Live, foreign, ordinary or unmarked build output was removed.'
+            }
+        } finally {
+            Stop-Job -Job $worker
+            Remove-Job -Job $worker
+        }
+    }
+
     $stale = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
     $active = New-MhwAcceptanceScratch -ReclaimAfterProducerExit
     $foreign = New-MhwAcceptanceScratch -ReclaimAfterProducerExit

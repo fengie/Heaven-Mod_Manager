@@ -31,8 +31,10 @@ Use `scripts/testing/Run-Tests.ps1` for standalone source verification. Its
 test assemblies and build intermediates are created under a run-owned
 artifacts directory and removed when the command returns. Pass
 `-KeepBuildOutputs` when you need the normal project `bin` and `obj` directories
-for a subsequent command. An interrupted process may leave its marked build
-directory for inspection.
+for a subsequent command. On Windows, the next standalone run can reclaim an
+interrupted run's marked build directory after 24 hours and a verified restart
+of the same host. A restart rules out surviving build and test workers.
+Direct `dotnet` commands use the SDK's ordinary output locations.
 
 For manual probes, dot-source `scripts/testing/AcceptanceScratch.ps1` and call
 `New-MhwAcceptanceScratch`. Put generated installs, builds, extracted packages and
