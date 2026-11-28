@@ -8,3 +8,6 @@ shown here at the matching historical revision.
 
 Use isolated copies of game and Manager state. Some probes write fixture state
 or extract archives. Keep user data, mod assets and run evidence outside Git.
+
+The read-only catalog verifier accepts a scratch catalog, source root and local
+expectations file. Keep the expectations, inputs and result outside Git.

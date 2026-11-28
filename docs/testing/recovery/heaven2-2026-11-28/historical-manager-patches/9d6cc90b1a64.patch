@@ -1,0 +1,12 @@
+diff --git a/src/MhwModManager.Filesystem/NexusMetadataService.cs b/src/MhwModManager.Filesystem/NexusMetadataService.cs
+index f56f686..a926e0f 100644
+--- a/src/MhwModManager.Filesystem/NexusMetadataService.cs
++++ b/src/MhwModManager.Filesystem/NexusMetadataService.cs
+@@ -416,6 +416,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
+ 
+     private static IEnumerable<string> EnumerateJsonImageUrls(JsonElement element,HashSet<string> keys)
+     {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
+         switch(element.ValueKind)
+         {
+             case JsonValueKind.Object:

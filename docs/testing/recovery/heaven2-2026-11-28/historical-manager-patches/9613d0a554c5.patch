@@ -1,0 +1,75 @@
+diff --git a/src/MhwModManager.Automation/SaveBackupService.cs b/src/MhwModManager.Automation/SaveBackupService.cs
+index 6c7fc73..5a20d59 100644
+--- a/src/MhwModManager.Automation/SaveBackupService.cs
++++ b/src/MhwModManager.Automation/SaveBackupService.cs
+@@ -112,30 +112,55 @@ public sealed class SaveBackupService(ManagerDatabase db, string stateRoot, Game
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+         ArgumentOutOfRangeException.ThrowIfNegative(keep);
+ 
+-        var indexed = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
++        var snapshots = new List<(string Id, string RootPath)>();
+         await using (var c = await db.OpenAsync(ct))
+         {
+             await using var cmd = c.CreateCommand();
+-            cmd.CommandText = "SELECT id,root_path FROM save_snapshots";
++            cmd.CommandText = "SELECT id,root_path FROM save_snapshots ORDER BY created_at DESC,id DESC";
+             await using var r = await cmd.ExecuteReaderAsync(ct);
+-            while (await r.ReadAsync(ct)) indexed[r.GetString(1)] = r.GetString(0);
++            while (await r.ReadAsync(ct)) snapshots.Add((r.GetString(0), r.GetString(1)));
+         }
+ 
+-        foreach (var snapshot in indexed.ToArray())
+-        {
+-            ct.ThrowIfCancellationRequested();
+-            if (Directory.Exists(snapshot.Key)) continue;
+-            await DeleteSnapshotRecordAsync(snapshot.Value, ct);
+-            indexed.Remove(snapshot.Key);
+-        }
++        var directories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
++        if (Directory.Exists(SnapshotRoot))
++            foreach (var dir in Directory.EnumerateDirectories(SnapshotRoot))
++                directories.Add(Path.GetFullPath(dir));
+ 
+-        if (!Directory.Exists(SnapshotRoot)) return;
+-        foreach (var dir in Directory.EnumerateDirectories(SnapshotRoot).OrderByDescending(x => x, StringComparer.OrdinalIgnoreCase).Skip(keep))
++        var retained = 0;
++        foreach (var snapshot in snapshots)
+         {
+             ct.ThrowIfCancellationRequested();
+-            if (indexed.TryGetValue(dir, out var snapshotId))
+-                await DeleteSnapshotRecordAsync(snapshotId, ct);
+-            try { Directory.Delete(dir, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
++            string fullPath;
++            try { fullPath = Path.GetFullPath(snapshot.RootPath); }
++            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
++            {
++                await DeleteSnapshotRecordAsync(snapshot.Id, ct);
++                continue;
++            }
++
++            if (!directories.Contains(fullPath))
++            {
++                await DeleteSnapshotRecordAsync(snapshot.Id, ct);
++                continue;
++            }
++
++            try
++            {
++                if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
++                {
++                    await DeleteSnapshotRecordAsync(snapshot.Id, ct);
++                    continue;
++                }
++            }
++            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
++            {
++                await DeleteSnapshotRecordAsync(snapshot.Id, ct);
++                continue;
++            }
++
++            if (retained++ < keep) continue;
++            await DeleteSnapshotRecordAsync(snapshot.Id, ct);
++            try { Directory.Delete(fullPath, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+         }
+     }
+ 
