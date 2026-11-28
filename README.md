@@ -1,14 +1,21 @@
-# v8.8.146 — MHW Manual Mod Manager
+# v8.8.147 — MHW Manual Mod Manager
 
-> ⏱️ Last README update: **November 25, 2026 · 6:23:13 PM EST** _(repo-enforced)_
+> ⏱️ Last README update: **November 27, 2026 · 5:56:10 PM EST** _(repo-enforced)_
 
-Current product version: **8.8.146**.
+Current product version: **8.8.147**.
 
 Historical version timestamps: [`VERSION_TIMESTAMPS.md`](VERSION_TIMESTAMPS.md).
 
 ## Recent patches
 
 Keep this section intentionally short. The README shows the **current patch plus the two immediately preceding patches only**; complete history belongs in [`CHANGELOG.md`](CHANGELOG.md).
+
+## v8.8.147 — explicit mod changes
+
+- Stage mod choices, review pending changes and commit them with Apply Mod Changes. Bulk marking and Auto Select leave deployment under the user's control. [#989](https://github.com/fengie/Heaven-Mod_Manager/pull/989)
+- Restore the exact mod and build state observed during a successful modded launch, using its recorded backup. [#993](https://github.com/fengie/Heaven-Mod_Manager/pull/993)
+- Inspect the bounded Auto Modder recipe catalog and adapter readiness. [#1012](https://github.com/fengie/Heaven-Mod_Manager/pull/1012)
+- Keep source files certified through content-store publication. [#1001](https://github.com/fengie/Heaven-Mod_Manager/pull/1001)
 
 ## v8.8.146 — exact deployment review and library organization
 
@@ -23,11 +30,6 @@ Keep this section intentionally short. The README shows the **current patch plus
 - Improve bounded large-texture overlap suggestions and reviewed override handling; retain explicit confirmation, pick-one exclusions, and exact committed-winner safety.
 - Separate bulk marks from staged and applied activation. Explicit Enable Selected/Disable Selected actions batch changes; Enabled/Disabled filters reflect committed state and Pending remains independent.
 - Exact-head Feature 45574800616, Startup Performance 45574800561, AutoUpdate 45574800545 and packaged WPF 45574800626 passed. Integrated source `f9107b26` passed Windows Release Gate 45603013115 without publishing an unchanged version. Immutable [v8.8.145 build 649](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-649) from `b611408e` passed Windows Gate 45612139146 and real hosted update/rollback 45614469145; texture benchmarks and physical game behavior remain separate.
-
-## v8.8.144 — verified portable install discovery
-
-- Record a verified same-account portable installation locator after healthy startup, preserving the current receipt on cancellation and rejecting development, staging, noncanonical and unverifiable install paths. The locator is a discovery hint, not installed-health proof. [#980](https://github.com/fengie/Heaven-Mod_Manager/pull/980)
-- Exact candidate Feature 45511979755, Startup Performance 45511979645, AutoUpdate 45511979680, Product Security 45511979698 and packaged WPF 45511979654 passed. Source integrated at `2417de36`; immutable versioned publication, genuine updater/rollback and physical H2 acceptance remain separate.
 
 ## Current plans & progress
 

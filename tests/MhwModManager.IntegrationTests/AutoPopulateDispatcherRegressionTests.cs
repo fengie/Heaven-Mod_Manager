@@ -119,6 +119,7 @@ public sealed class AutoPopulateDispatcherRegressionTests
             "Auto Populate must first ingest and refresh the active game's newly sorted Inbox.");
         Assert.Contains("Mods.Count == 0", action, StringComparison.Ordinal);
         Assert.Contains("No installed mods", action, StringComparison.Ordinal);
+        Assert.DoesNotContain("await Apply()", action, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -144,8 +145,10 @@ public sealed class AutoPopulateDispatcherRegressionTests
         Assert.Contains("Command=\"{Binding EnableSelectedCommand}\"", modPage, StringComparison.Ordinal);
         Assert.Contains("Command=\"{Binding DisableSelectedCommand}\"", modPage, StringComparison.Ordinal);
         Assert.Contains("Command=\"{Binding ApplyCommand}\"", modPage, StringComparison.Ordinal);
-        Assert.DoesNotContain("Content=\"Auto Populate\"", modPage, StringComparison.Ordinal);
-        Assert.DoesNotContain("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Content=\"Auto Select Mods\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding AutoPopulateCommand}\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Header=\"MARK\"", modPage, StringComparison.Ordinal);
+        Assert.Contains("Header=\"STAGED ON\"", modPage, StringComparison.Ordinal);
     }
 
 }

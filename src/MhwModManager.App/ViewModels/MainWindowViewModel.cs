@@ -29,6 +29,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private bool initialMetadataRefreshStarted;
     private bool initialMetadataRefreshCompleted;
     private int conflictPreviewGeneration;
+    private int committedStageGeneration;
     private bool suppressChanged;
     [ObservableProperty] private Visibility reviewRetryVisibility=Visibility.Collapsed;
     private bool disposed;
@@ -666,6 +667,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
         if(suppressChanged)return;
+        // A completed analysis of an older staged setup must not reintroduce a pending flag.
+        unchecked { conflictPreviewGeneration++; }
         InvalidatePendingReview();
         if(!HasPendingDeployment)ReviewRetryVisibility=Visibility.Collapsed;
         s.Database.SetPendingModIds(Mods.Where(row=>row.HasStagedChanges).SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key));
@@ -698,6 +701,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
     private async Task ReloadMods(CancellationToken ct, bool preserveStagedChanges = false)
     {
         using var __mhwTrace = MasterDebugLog.BeginMethod();
+        var readGeneration=Volatile.Read(ref committedStageGeneration);
         var loaded=await Task.Run(async ()=>
         {
             var models=await s.Database.GetModsAsync(ct);
@@ -709,8 +713,16 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             return (models,files,updateSettings,logical,suggestions);
         },ct);
         var (models,files,updateSettings,logical,suggestions)=loaded;
+        var published=false;
         await viewDispatcher.InvokeAsync(()=>
         {
+            // A background library refresh can start before Apply commits.
+            // Never replace the committed UI with that older database snapshot.
+            if(readGeneration!=Volatile.Read(ref committedStageGeneration))
+            {
+                managedReadDeferred=true;
+                return;
+            }
             var pending = preserveStagedChanges
                 ? Mods.Where(row => row.HasStagedChanges).SelectMany(row => row.StagedChanges())
                     .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
@@ -760,7 +772,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 SelectedLibraryItem=external;
             OnPropertyChanged(nameof(FamilySuggestionsViewLabel));
             Changed();
+            published=true;
         });
+        if(!published)return;
         RequestDiscoveryCheck();
         await RefreshIssueSuspects(ct);
     }
@@ -1172,8 +1186,15 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
 
         var stage=CaptureStage();
         var explicitIds=Mods.SelectMany(row=>row.StagedChanges()).Select(pair=>pair.Key).ToArray();
-        if(explicitIds.Length>0)await s.Database.FinishDiscoveryAsync(explicitIds,ct);
         var current=await s.Database.GetModsAsync(ct);
+        var currentIds=current.Select(mod=>mod.Id).ToHashSet(PathRules.Comparer);
+        if(explicitIds.Any(id=>!currentIds.Contains(id)))
+            throw new InvalidOperationException("A pending package is no longer in the current catalog. Refresh the library and review your choices before applying.");
+        // Include freshly discovered catalog rows in the complete plan without
+        // inventing a pending activation or removing their existing files.
+        foreach(var id in stage.Keys.Where(id=>!currentIds.Contains(id)).ToArray())stage.Remove(id);
+        foreach(var mod in current)stage.TryAdd(mod.Id,(mod.Enabled,mod.Priority));
+        if(explicitIds.Length>0)await s.Database.FinishDiscoveryAsync(explicitIds,ct);
         var enabling=current.Where(m=>stage.TryGetValue(m.Id,out var v)&&v.enabled&&(!m.Enabled || m.FamilyId?.StartsWith("authored:",StringComparison.Ordinal)==true)).Select(m=>m with{Enabled=true}).ToArray();
         await s.Catalog.EnsureCapturedAsync(enabling,ct);
 
@@ -1223,14 +1244,32 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         if(!result.Success)
             throw new InvalidOperationException($"{result.Message} Rollback completed: {result.RollbackCompleted}.",result.Exception);
 
-        rulesNeedApply=false;
-        var enabledAfter=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
-        if(enabledAfter.Length>0)await s.Database.MarkRevalidationAsync(enabledAfter,"Validated by a successful deployment after the current game build was observed.",false,ct);
-        await viewDispatcher.InvokeAsync(()=>{foreach(var row in Mods)row.CommitApplied(stage);});
-        StatusText=result.Message;
-        await RefreshAnalysis(ct);
-        await RefreshActivity(ct);
-        Changed();
+        // Executor success means files, manifest and mod state already crossed
+        // the durable commit boundary. Settle pending rows before any optional
+        // revalidation/history refresh; retain edits made after this submission.
+        var committedMessage=$"{result.Message} Committed {explicitIds.Length} pending package choice(s).";
+        await viewDispatcher.InvokeAsync(()=>
+        {
+            Interlocked.Increment(ref committedStageGeneration);
+            rulesNeedApply=false;
+            foreach(var row in Mods)row.CommitApplied(stage);
+            Changed();
+            PlanPreviewText="Last deployment applied.";
+            StatusText=committedMessage;
+        });
+        try
+        {
+            var enabledAfter=stage.Where(x=>x.Value.enabled).Select(x=>x.Key).ToArray();
+            if(enabledAfter.Length>0)await s.Database.MarkRevalidationAsync(enabledAfter,"Validated by a successful deployment after the current game build was observed.",false,ct);
+            await RefreshAnalysis(ct);
+            await RefreshActivity(ct);
+        }
+        catch(Exception ex)
+        {
+            // This is not a failed deployment or a reason to replay its writes.
+            s.Log.Warning(ex,"Deployment committed; follow-up status refresh failed.");
+            StatusText=committedMessage+" Status refresh failed; use Refresh Mod Status to retry the read.";
+        }
     });
         if(StagedCount>0 || rulesNeedApply)ReviewRetryVisibility=Visibility.Visible;
     }
@@ -1243,8 +1282,8 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
         var completed = false;
         await RunBusy(
             "mods.auto-populate",
-            "Auto Populating Mods",
-            "Finding newly downloaded packages, indexing the active game's Inbox, then enabling the largest safe compatible set…",
+            "Selecting Compatible Mods",
+            "Finding newly downloaded packages, indexing the active game's Inbox, then staging a safe compatible set for review…",
             true,
             async ct =>
             {
@@ -1274,7 +1313,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                 if (inboxResult.Imported > 0)
                 {
                     await ReloadMods(ct);
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await viewDispatcher.InvokeAsync(() =>
                     {
                         suppressChanged = true;
                         try
@@ -1311,7 +1350,10 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
                     x => (x.Value.Enabled, x.Value.Priority),
                     StringComparer.OrdinalIgnoreCase);
 
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                // The explicit selector has reviewed these package IDs. Do not
+                // replay their discovery auto-enable policy after staging.
+                await s.Database.FinishDiscoveryAsync(stage.Keys,ct);
+                await viewDispatcher.InvokeAsync(() =>
                 {
                     suppressChanged = true;
                     try { foreach (var row in Mods) row.ApplyProfileState(stage); }
@@ -1338,13 +1380,9 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
             });
 
         if (!completed || result is null) return;
-        if (StagedCount > 0)
-        {
-            await Apply();
-            StatusText += " " + result.Summary;
-        }
-        else
-            StatusText = result.Summary + " No changes were necessary; the current setup is already applied.";
+        StatusText = result.Summary + (HasPendingDeployment
+            ? " Compatible choices are staged. Review them, then Apply Mod Changes."
+            : " No changes were necessary; the current setup is already applied.");
     }
 
     internal static Task<T> RunAutoPopulateBuildAsync<T>(
