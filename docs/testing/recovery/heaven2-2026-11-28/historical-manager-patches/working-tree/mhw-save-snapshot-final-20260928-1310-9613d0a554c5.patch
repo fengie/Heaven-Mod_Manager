@@ -1,0 +1,54 @@
+diff --git a/src/MhwModManager.App/App.xaml.cs b/src/MhwModManager.App/App.xaml.cs
+index e78d0e7..6610263 100644
+--- a/src/MhwModManager.App/App.xaml.cs
++++ b/src/MhwModManager.App/App.xaml.cs
+@@ -28,8 +28,8 @@ public sealed partial class App:Application, IDisposable
+         UnifiedDebugLog.Configure(bootstrapRoot);
+         MasterDebugLog.InstallGlobalExceptionHooks();
+         WpfMasterTracing.Install();
+-        MasterDebugLog.Write("TRACE-COVERAGE", "v8.8.2 call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
+-        UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v8.8.2 | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
++        MasterDebugLog.Write("TRACE-COVERAGE", "v8.8.3 call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
++        UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v8.8.3 | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
+         try
+         {
+             base.OnStartup(e);
+diff --git a/src/MhwModManager.Diagnostics/AppLogging.cs b/src/MhwModManager.Diagnostics/AppLogging.cs
+index 25ed6a5..fc23ccd 100644
+--- a/src/MhwModManager.Diagnostics/AppLogging.cs
++++ b/src/MhwModManager.Diagnostics/AppLogging.cs
+@@ -16,7 +16,7 @@ public static class AppLogging
+         return new LoggerConfiguration()
+             .MinimumLevel.Debug()
+             .Enrich.FromLogContext()
+-            .Enrich.WithProperty("app","UniversalModManager-v8.8.2")
++            .Enrich.WithProperty("app","UniversalModManager-v8.8.3")
+             .Enrich.WithProperty("pid",Environment.ProcessId)
+             .WriteTo.Sink(new UnifiedDebugLogSink(),LogEventLevel.Debug)
+             .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),Path.Combine(logDir,"manager-.jsonl"),restrictedToMinimumLevel:detailed?LogEventLevel.Debug:LogEventLevel.Information,rollingInterval:RollingInterval.Day,retainedFileCountLimit:14,fileSizeLimitBytes:50*1024*1024,rollOnFileSizeLimit:true,shared:false)
+diff --git a/src/MhwModManager.Diagnostics/SupportBundleService.cs b/src/MhwModManager.Diagnostics/SupportBundleService.cs
+index a631272..d211d8e 100644
+--- a/src/MhwModManager.Diagnostics/SupportBundleService.cs
++++ b/src/MhwModManager.Diagnostics/SupportBundleService.cs
+@@ -28,7 +28,7 @@ public sealed class SupportBundleService(ManagerDatabase db,string stateRoot,Dia
+         {
+             var info=new[]
+             {
+-                "MHW Manual Mod Manager v8.3.0 support bundle",
++                "MHW Manual Mod Manager v8.8.3 support bundle",
+                 $"Generated: {DateTimeOffset.UtcNow:O}",
+                 $"OS: {Environment.OSVersion}",
+                 $"Runtime: {Environment.Version}",
+diff --git a/src/MhwModManager.Filesystem/NexusMetadataService.cs b/src/MhwModManager.Filesystem/NexusMetadataService.cs
+index 00edf99..3f6fca5 100644
+--- a/src/MhwModManager.Filesystem/NexusMetadataService.cs
++++ b/src/MhwModManager.Filesystem/NexusMetadataService.cs
+@@ -618,7 +618,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
+ 
+     private static HttpClient CreateHttpClient(){
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+-        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.2");return h;}
++        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.3");return h;}
+     private static string? GetString(JsonElement e,string name)
+     {
+         using var __mhwTrace = MasterDebugLog.BeginMethod();

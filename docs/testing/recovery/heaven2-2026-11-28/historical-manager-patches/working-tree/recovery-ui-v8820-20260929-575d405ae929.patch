@@ -1,0 +1,367 @@
+diff --git a/src/MhwModManager.App/App.xaml b/src/MhwModManager.App/App.xaml
+index 738f3e35..8cddf596 100644
+--- a/src/MhwModManager.App/App.xaml
++++ b/src/MhwModManager.App/App.xaml
+@@ -135,6 +135,7 @@
+             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+             <Setter Property="VerticalContentAlignment" Value="Center"/>
+             <Setter Property="ToolTipService.InitialShowDelay" Value="350"/>
++            <Setter Property="local:UiMotion.EnableHoverFeedback" Value="True"/>
+             <Setter Property="Template">
+                 <Setter.Value>
+                     <ControlTemplate TargetType="Button">
+@@ -149,10 +150,9 @@
+                         <ControlTemplate.Triggers>
+                             <Trigger Property="IsMouseOver" Value="True">
+                                 <Setter TargetName="Root" Property="BorderBrush" Value="#465263"/>
+-                                <Setter TargetName="Root" Property="Opacity" Value="0.94"/>
+                             </Trigger>
+                             <Trigger Property="IsPressed" Value="True">
+-                                <Setter TargetName="Root" Property="Opacity" Value="0.82"/>
++                                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                             </Trigger>
+                             <Trigger Property="IsKeyboardFocused" Value="True">
+                                 <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource FocusRing}"/>
+@@ -293,6 +293,7 @@
+             <Setter Property="Margin" Value="0,2"/>
+             <Setter Property="Padding" Value="15,12"/>
+             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
++            <Setter Property="local:UiMotion.EnableHoverFeedback" Value="True"/>
+             <Setter Property="Template">
+                 <Setter.Value>
+                     <ControlTemplate TargetType="TabItem">
+diff --git a/src/MhwModManager.App/MainWindow.xaml b/src/MhwModManager.App/MainWindow.xaml
+index be9944c5..9cb714a6 100644
+--- a/src/MhwModManager.App/MainWindow.xaml
++++ b/src/MhwModManager.App/MainWindow.xaml
+@@ -3,13 +3,14 @@
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         Title="{Binding WindowTitle}"
+         Width="1480" Height="900" MinWidth="1040" MinHeight="700"
+-        WindowStartupLocation="CenterScreen">
++        WindowStartupLocation="CenterScreen"
++        Loaded="OnWindowLoaded">
+     <Window.InputBindings>
+         <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding ApplyCommand}"/>
+         <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}"/>
+         <KeyBinding Key="F5" Command="{Binding RefreshAnalysisNowCommand}"/>
+     </Window.InputBindings>
+-    <Grid>
++    <Grid x:Name="RootLayout">
+         <Grid.RowDefinitions>
+             <RowDefinition Height="78"/>
+             <RowDefinition Height="*"/>
+@@ -58,7 +59,11 @@
+         </Border>
+ 
+         <!-- Sidebar + pages -->
+-        <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTab}">
++        <TabControl x:Name="MainTabs"
++                    Grid.Row="1"
++                    TabStripPlacement="Left"
++                    SelectedIndex="{Binding SelectedTab}"
++                    SelectionChanged="OnMainTabSelectionChanged">
+             <TabItem Header="Dashboard">
+                 <ScrollViewer x:Name="DashboardScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                     <Grid Width="{Binding ViewportWidth,ElementName=DashboardScroll}" MaxWidth="1320" HorizontalAlignment="Left" Margin="32,30,36,36">
+@@ -874,8 +879,25 @@
+         </Border>
+ 
+         <!-- Blocking operation overlay -->
+-        <Border Grid.RowSpan="3" Background="#C30A0D11" Visibility="{Binding BusyVisibility}" Panel.ZIndex="50">
+-            <Border Width="470" Padding="28" Background="{StaticResource Panel}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
++        <Border x:Name="BusyOverlay"
++                Grid.RowSpan="3"
++                Background="#C30A0D11"
++                Visibility="{Binding BusyVisibility}"
++                IsVisibleChanged="OnBusyOverlayIsVisibleChanged"
++                Panel.ZIndex="50">
++            <Border x:Name="BusyDialogCard"
++                    Width="470"
++                    Padding="28"
++                    Background="{StaticResource Panel}"
++                    BorderBrush="{StaticResource Border}"
++                    BorderThickness="1"
++                    CornerRadius="12"
++                    HorizontalAlignment="Center"
++                    VerticalAlignment="Center"
++                    RenderTransformOrigin="0.5,0.5">
++                <Border.RenderTransform>
++                    <ScaleTransform ScaleX="1" ScaleY="1"/>
++                </Border.RenderTransform>
+                 <StackPanel>
+                     <Border Width="38" Height="38" CornerRadius="19" Background="{StaticResource AccentDim}" HorizontalAlignment="Left">
+                         <TextBlock Text="…" Foreground="{StaticResource AccentBright}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+diff --git a/src/MhwModManager.App/MainWindow.xaml.cs b/src/MhwModManager.App/MainWindow.xaml.cs
+index 2f3dd4a0..030c1d87 100644
+--- a/src/MhwModManager.App/MainWindow.xaml.cs
++++ b/src/MhwModManager.App/MainWindow.xaml.cs
+@@ -1,7 +1,11 @@
+ using MhwModManager.Core;
+ using System.ComponentModel;
+ using System.Windows;
++using System.Windows.Controls;
+ using System.Windows.Input;
++using System.Windows.Media;
++using System.Windows.Media.Animation;
++using System.Windows.Threading;
+ using MhwModManager.App.ViewModels;
+ 
+ namespace MhwModManager.App;
+@@ -30,6 +34,96 @@ public partial class MainWindow:Window
+         ((MainWindowViewModel)DataContext).StartProgramUpdater();
+     }
+ 
++    private void OnWindowLoaded(object sender,RoutedEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        AnimateElement(RootLayout,0.94,0,6,170);
++    }
++
++    private void OnMainTabSelectionChanged(object sender,SelectionChangedEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(!ReferenceEquals(e.Source,MainTabs)||!IsLoaded)return;
++        Dispatcher.BeginInvoke(DispatcherPriority.Render,new Action(() =>
++        {
++            if(MainTabs.Template.FindName("PART_SelectedContentHost",MainTabs) is FrameworkElement content)
++                AnimateElement(content,0.78,10,0,155);
++        }));
++    }
++
++    private void OnBusyOverlayIsVisibleChanged(object sender,DependencyPropertyChangedEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(e.NewValue is not true)
++        {
++            ResetBusyMotion();
++            return;
++        }
++
++        AnimateElement(BusyOverlay,0.42,0,0,130);
++        if(BusyDialogCard.RenderTransform is not ScaleTransform scale)return;
++        if(!SystemParameters.ClientAreaAnimation)
++        {
++            scale.BeginAnimation(ScaleTransform.ScaleXProperty,null);
++            scale.BeginAnimation(ScaleTransform.ScaleYProperty,null);
++            scale.ScaleX=1;
++            scale.ScaleY=1;
++            return;
++        }
++
++        var duration=new Duration(TimeSpan.FromMilliseconds(155));
++        var easing=new CubicEase{EasingMode=EasingMode.EaseOut};
++        scale.BeginAnimation(ScaleTransform.ScaleXProperty,new DoubleAnimation{From=0.975,To=1,Duration=duration,EasingFunction=easing},HandoffBehavior.SnapshotAndReplace);
++        scale.BeginAnimation(ScaleTransform.ScaleYProperty,new DoubleAnimation{From=0.975,To=1,Duration=duration,EasingFunction=easing},HandoffBehavior.SnapshotAndReplace);
++    }
++
++    private static void AnimateElement(FrameworkElement element,double fromOpacity,double fromX,double fromY,int durationMs)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var translate=element.RenderTransform as TranslateTransform;
++        if(translate is null)
++        {
++            translate=new TranslateTransform();
++            element.RenderTransform=translate;
++        }
++
++        if(!SystemParameters.ClientAreaAnimation)
++        {
++            element.BeginAnimation(UIElement.OpacityProperty,null);
++            translate.BeginAnimation(TranslateTransform.XProperty,null);
++            translate.BeginAnimation(TranslateTransform.YProperty,null);
++            element.Opacity=1;
++            translate.X=0;
++            translate.Y=0;
++            return;
++        }
++
++        var duration=new Duration(TimeSpan.FromMilliseconds(durationMs));
++        var easing=new CubicEase{EasingMode=EasingMode.EaseOut};
++        element.BeginAnimation(UIElement.OpacityProperty,new DoubleAnimation{From=fromOpacity,To=1,Duration=duration,EasingFunction=easing},HandoffBehavior.SnapshotAndReplace);
++        translate.BeginAnimation(TranslateTransform.XProperty,new DoubleAnimation{From=fromX,To=0,Duration=duration,EasingFunction=easing},HandoffBehavior.SnapshotAndReplace);
++        translate.BeginAnimation(TranslateTransform.YProperty,new DoubleAnimation{From=fromY,To=0,Duration=duration,EasingFunction=easing},HandoffBehavior.SnapshotAndReplace);
++    }
++
++    private void ResetBusyMotion()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        BusyOverlay.BeginAnimation(UIElement.OpacityProperty,null);
++        BusyOverlay.Opacity=1;
++        if(BusyOverlay.RenderTransform is TranslateTransform translate)
++        {
++            translate.BeginAnimation(TranslateTransform.XProperty,null);
++            translate.BeginAnimation(TranslateTransform.YProperty,null);
++            translate.X=0;
++            translate.Y=0;
++        }
++
++        if(BusyDialogCard.RenderTransform is not ScaleTransform scale)return;
++        scale.BeginAnimation(ScaleTransform.ScaleXProperty,null);
++        scale.BeginAnimation(ScaleTransform.ScaleYProperty,null);
++        scale.ScaleX=1;
++        scale.ScaleY=1;
++    }
+ 
+     private void OnPreviewKeyDown(object sender,KeyEventArgs e)
+     {
+@@ -54,4 +148,4 @@ public partial class MainWindow:Window
+         e.Cancel=true;
+         MessageBox.Show(this,"A transactional or startup operation is still running. Closing now would emulate a process crash, so the normal Close action is blocked until it reaches a commit or rollback point.","Operation in progress",MessageBoxButton.OK,MessageBoxImage.Information);
+     }
+-}
++}
+\ No newline at end of file
+diff --git a/src/MhwModManager.App/UiMotion.cs b/src/MhwModManager.App/UiMotion.cs
+new file mode 100644
+index 00000000..9237f5d1
+--- /dev/null
++++ b/src/MhwModManager.App/UiMotion.cs
+@@ -0,0 +1,115 @@
++using MhwModManager.Core;
++using System.Windows;
++using System.Windows.Controls;
++using System.Windows.Input;
++using System.Windows.Media;
++using System.Windows.Media.Animation;
++
++namespace MhwModManager.App;
++
++public static class UiMotion
++{
++    public static readonly DependencyProperty EnableHoverFeedbackProperty =
++        DependencyProperty.RegisterAttached(
++            "EnableHoverFeedback",
++            typeof(bool),
++            typeof(UiMotion),
++            new PropertyMetadata(false, OnEnableHoverFeedbackChanged));
++
++    public static bool GetEnableHoverFeedback(DependencyObject obj)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return (bool)obj.GetValue(EnableHoverFeedbackProperty);
++    }
++
++    public static void SetEnableHoverFeedback(DependencyObject obj,bool value)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        obj.SetValue(EnableHoverFeedbackProperty,value);
++    }
++
++    private static void OnEnableHoverFeedbackChanged(DependencyObject d,DependencyPropertyChangedEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(d is not Control control)return;
++
++        if((bool)e.OldValue)
++        {
++            control.MouseEnter-=OnMouseEnter;
++            control.MouseLeave-=OnMouseLeave;
++            control.PreviewMouseLeftButtonDown-=OnMouseDown;
++            control.PreviewMouseLeftButtonUp-=OnMouseUp;
++        }
++
++        if(!(bool)e.NewValue)return;
++
++        control.RenderTransformOrigin=new Point(0.5,0.5);
++        control.RenderTransform=new ScaleTransform(1,1);
++        control.MouseEnter+=OnMouseEnter;
++        control.MouseLeave+=OnMouseLeave;
++        control.PreviewMouseLeftButtonDown+=OnMouseDown;
++        control.PreviewMouseLeftButtonUp+=OnMouseUp;
++    }
++
++    private static void OnMouseEnter(object sender,MouseEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(sender is Control control)AnimateTo(control,1.01,0.96,110);
++    }
++
++    private static void OnMouseLeave(object sender,MouseEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(sender is Control control)AnimateTo(control,1,1,130);
++    }
++
++    private static void OnMouseDown(object sender,MouseButtonEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(sender is Control control)AnimateTo(control,0.985,0.88,65);
++    }
++
++    private static void OnMouseUp(object sender,MouseButtonEventArgs e)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(sender is not Control control)return;
++        AnimateTo(control,control.IsMouseOver?1.01:1,control.IsMouseOver?0.96:1,90);
++    }
++
++    private static void AnimateTo(Control control,double scale,double opacity,int durationMs)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if(control.RenderTransform is not ScaleTransform transform)
++        {
++            transform=new ScaleTransform(1,1);
++            control.RenderTransform=transform;
++        }
++
++        if(!SystemParameters.ClientAreaAnimation)
++        {
++            control.BeginAnimation(UIElement.OpacityProperty,null);
++            transform.BeginAnimation(ScaleTransform.ScaleXProperty,null);
++            transform.BeginAnimation(ScaleTransform.ScaleYProperty,null);
++            control.Opacity=opacity;
++            transform.ScaleX=scale;
++            transform.ScaleY=scale;
++            return;
++        }
++
++        var easing=new CubicEase{EasingMode=EasingMode.EaseOut};
++        var duration=new Duration(TimeSpan.FromMilliseconds(durationMs));
++
++        control.BeginAnimation(
++            UIElement.OpacityProperty,
++            new DoubleAnimation{To=opacity,Duration=duration,EasingFunction=easing},
++            HandoffBehavior.SnapshotAndReplace);
++        transform.BeginAnimation(
++            ScaleTransform.ScaleXProperty,
++            new DoubleAnimation{To=scale,Duration=duration,EasingFunction=easing},
++            HandoffBehavior.SnapshotAndReplace);
++        transform.BeginAnimation(
++            ScaleTransform.ScaleYProperty,
++            new DoubleAnimation{To=scale,Duration=duration,EasingFunction=easing},
++            HandoffBehavior.SnapshotAndReplace);
++    }
++}
+diff --git a/tests/MhwModManager.IntegrationTests/UxHardeningTests.cs b/tests/MhwModManager.IntegrationTests/UxHardeningTests.cs
+index c6cbca0f..aa3c1c63 100644
+--- a/tests/MhwModManager.IntegrationTests/UxHardeningTests.cs
++++ b/tests/MhwModManager.IntegrationTests/UxHardeningTests.cs
+@@ -40,6 +40,27 @@ public sealed class UxHardeningTests
+         Assert.DoesNotContain("Text=\"Start here\"",xaml);
+     }
+ 
++    [Fact]
++    public void Shared_ui_motion_is_lightweight_and_respects_windows_animation_settings()
++    {
++        var root=FindRepositoryRoot();
++        var app=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","App.xaml"));
++        var xaml=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml"));
++        var code=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","MainWindow.xaml.cs"));
++        var motion=File.ReadAllText(Path.Combine(root,"src","MhwModManager.App","UiMotion.cs"));
++
++        Assert.Contains("local:UiMotion.EnableHoverFeedback",app);
++        Assert.Contains("x:Name=\"MainTabs\"",xaml);
++        Assert.Contains("SelectionChanged=\"OnMainTabSelectionChanged\"",xaml);
++        Assert.Contains("IsVisibleChanged=\"OnBusyOverlayIsVisibleChanged\"",xaml);
++        Assert.Contains("SystemParameters.ClientAreaAnimation",motion);
++        Assert.Contains("SystemParameters.ClientAreaAnimation",code);
++        Assert.Contains("TranslateTransform",code);
++        Assert.DoesNotContain("ThicknessAnimation",code);
++        Assert.DoesNotContain("HeightProperty",code);
++        Assert.DoesNotContain("WidthProperty",code);
++    }
++
+     [Fact]
+     public void Mods_page_prioritizes_library_height_on_wide_layouts()
+     {

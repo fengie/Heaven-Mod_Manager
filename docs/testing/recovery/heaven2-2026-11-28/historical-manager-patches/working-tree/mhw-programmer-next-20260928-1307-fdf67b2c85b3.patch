@@ -1,0 +1,383 @@
+diff --git a/src/MhwModManager.App/App.xaml.cs b/src/MhwModManager.App/App.xaml.cs
+index e78d0e7..6610263 100644
+--- a/src/MhwModManager.App/App.xaml.cs
++++ b/src/MhwModManager.App/App.xaml.cs
+@@ -28,8 +28,8 @@ public sealed partial class App:Application, IDisposable
+         UnifiedDebugLog.Configure(bootstrapRoot);
+         MasterDebugLog.InstallGlobalExceptionHooks();
+         WpfMasterTracing.Install();
+-        MasterDebugLog.Write("TRACE-COVERAGE", "v8.8.2 call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
+-        UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v8.8.2 | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
++        MasterDebugLog.Write("TRACE-COVERAGE", "v8.8.3 call verification enabled: method scopes, first-chance exceptions, WPF internals, processes, database transactions, filesystem/deployment activity, ViewModel changes, runtime telemetry, startup/build/test logs.");
++        UnifiedDebugLog.Section("APP-BOOTSTRAP", $"ENTER OnStartup v8.8.3 | PID={Environment.ProcessId} | BaseDirectory={AppContext.BaseDirectory}");
+         try
+         {
+             base.OnStartup(e);
+diff --git a/src/MhwModManager.Automation/SmartInboxService.cs b/src/MhwModManager.Automation/SmartInboxService.cs
+index 88d0891..cf70e0c 100644
+--- a/src/MhwModManager.Automation/SmartInboxService.cs
++++ b/src/MhwModManager.Automation/SmartInboxService.cs
+@@ -42,6 +42,7 @@ public sealed class SmartInboxService(ManagerDatabase db, ArchiveInspector archi
+             }
+             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+             {
++                ct.ThrowIfCancellationRequested();
+                 startupDiagnostics?.RecordFailure("startup.automation.inbox.item.recoverable-failure", ex, entry);
+                 UnifiedDebugLog.Write("INBOX", $"RECOVERABLE FAILURE item={entry}", ex);
+                 results.Add(new(entry, null, false, AutomationCategory.Unknown, ex.Message));
+diff --git a/src/MhwModManager.Diagnostics/AppLogging.cs b/src/MhwModManager.Diagnostics/AppLogging.cs
+index 25ed6a5..fc23ccd 100644
+--- a/src/MhwModManager.Diagnostics/AppLogging.cs
++++ b/src/MhwModManager.Diagnostics/AppLogging.cs
+@@ -16,7 +16,7 @@ public static class AppLogging
+         return new LoggerConfiguration()
+             .MinimumLevel.Debug()
+             .Enrich.FromLogContext()
+-            .Enrich.WithProperty("app","UniversalModManager-v8.8.2")
++            .Enrich.WithProperty("app","UniversalModManager-v8.8.3")
+             .Enrich.WithProperty("pid",Environment.ProcessId)
+             .WriteTo.Sink(new UnifiedDebugLogSink(),LogEventLevel.Debug)
+             .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),Path.Combine(logDir,"manager-.jsonl"),restrictedToMinimumLevel:detailed?LogEventLevel.Debug:LogEventLevel.Information,rollingInterval:RollingInterval.Day,retainedFileCountLimit:14,fileSizeLimitBytes:50*1024*1024,rollOnFileSizeLimit:true,shared:false)
+diff --git a/src/MhwModManager.Filesystem/ArchiveInspector.cs b/src/MhwModManager.Filesystem/ArchiveInspector.cs
+index dd75cde..df332a4 100644
+--- a/src/MhwModManager.Filesystem/ArchiveInspector.cs
++++ b/src/MhwModManager.Filesystem/ArchiveInspector.cs
+@@ -10,10 +10,26 @@ public sealed record ArchiveEntryInfo(string Key,long Size,bool IsDirectory);
+ public sealed record ArchiveInspection(IReadOnlyList<ArchiveEntryInfo> Entries,bool HasNativePc,bool HasGameRoot,bool HasSuspiciousPaths,long ExpandedBytes,string? CommonWrapper);
+ public sealed record ArchiveExtractionLimits(long MaxDeclaredExpandedBytes,long MaxActualOutputBytes);
+ 
++public interface IArchiveOutputBackend
++{
++    Stream CreateOutput(string path);
++    ValueTask WriteAsync(Stream output,ReadOnlyMemory<byte> buffer,CancellationToken ct);
++    void DeleteOutput(string path);
++}
++
+ public sealed class ArchiveInspector
+ {
++    private const string CleanupFailureDataKey = "MhwModManager.ArchiveCleanupFailure";
+     public const int MaxEntries = 200_000;
+     public const long MaxExpandedBytes = 200L * 1024 * 1024 * 1024;
++    private static readonly IArchiveOutputBackend DefaultOutputBackend = new FileArchiveOutputBackend();
++    private readonly IArchiveOutputBackend outputBackend;
++
++    public ArchiveInspector(IArchiveOutputBackend? outputBackend=null)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        this.outputBackend=outputBackend??DefaultOutputBackend;
++    }
+ 
+     public Task<ArchiveInspection> InspectAsync(string archivePath, CancellationToken ct=default) =>
+         Task.Run(() => Inspect(archivePath,ct), ct);
+@@ -98,13 +114,7 @@ public sealed class ArchiveInspector
+             try
+             {
+                 using var source=await e.OpenEntryStreamAsync(ct).ConfigureAwait(false);
+-                await using var output=new FileStream(
+-                    dest,
+-                    FileMode.CreateNew,
+-                    FileAccess.Write,
+-                    FileShare.None,
+-                    128*1024,
+-                    FileOptions.Asynchronous|FileOptions.SequentialScan);
++                await using var output=outputBackend.CreateOutput(dest);
+                 createdOutput=true;
+                 var buffer=ArrayPool<byte>.Shared.Rent(128*1024);
+                 try
+@@ -116,7 +126,7 @@ public sealed class ArchiveInspector
+                         if(read==0)break;
+                         if(read>limits.MaxActualOutputBytes-actualTotal)
+                             throw new InvalidDataException("Archive actual-output safety limit exceeded.");
+-                        await output.WriteAsync(buffer.AsMemory(0,read),ct).ConfigureAwait(false);
++                        await outputBackend.WriteAsync(output,buffer.AsMemory(0,read),ct).ConfigureAwait(false);
+                         actualTotal+=read;
+                     }
+                 }
+@@ -125,14 +135,16 @@ public sealed class ArchiveInspector
+                     ArrayPool<byte>.Shared.Return(buffer);
+                 }
+             }
+-            catch(OperationCanceledException) when(createdOutput)
++            catch(Exception primary) when(createdOutput)
+             {
+-                File.Delete(dest);
+-                throw;
+-            }
+-            catch(InvalidDataException) when(createdOutput)
+-            {
+-                File.Delete(dest);
++                try
++                {
++                    outputBackend.DeleteOutput(dest);
++                }
++                catch(Exception cleanup)
++                {
++                    primary.Data[CleanupFailureDataKey]=cleanup;
++                }
+                 throw;
+             }
+         }
+@@ -177,4 +189,31 @@ public sealed class ArchiveInspector
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+         return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+     }
++
++    private sealed class FileArchiveOutputBackend : IArchiveOutputBackend
++    {
++        public Stream CreateOutput(string path)
++        {
++            using var __mhwTrace = MasterDebugLog.BeginMethod();
++            return new FileStream(
++                path,
++                FileMode.CreateNew,
++                FileAccess.Write,
++                FileShare.None,
++                128*1024,
++                FileOptions.Asynchronous|FileOptions.SequentialScan);
++        }
++
++        public async ValueTask WriteAsync(Stream output,ReadOnlyMemory<byte> buffer,CancellationToken ct)
++        {
++            using var __mhwTrace = MasterDebugLog.BeginMethod();
++            await output.WriteAsync(buffer,ct).ConfigureAwait(false);
++        }
++
++        public void DeleteOutput(string path)
++        {
++            using var __mhwTrace = MasterDebugLog.BeginMethod();
++            File.Delete(path);
++        }
++    }
+ }
+diff --git a/src/MhwModManager.Filesystem/NexusMetadataService.cs b/src/MhwModManager.Filesystem/NexusMetadataService.cs
+index 00edf99..3f6fca5 100644
+--- a/src/MhwModManager.Filesystem/NexusMetadataService.cs
++++ b/src/MhwModManager.Filesystem/NexusMetadataService.cs
+@@ -618,7 +618,7 @@ public sealed partial class NexusMetadataService(ManagerDatabase db,PlannerSnaps
+ 
+     private static HttpClient CreateHttpClient(){
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+-        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.2");return h;}
++        var h=new HttpClient{Timeout=TimeSpan.FromSeconds(12)};h.DefaultRequestHeaders.UserAgent.ParseAdd("Universal-Mod-Manager/8.8.3");return h;}
+     private static string? GetString(JsonElement e,string name)
+     {
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+diff --git a/tests/MhwModManager.AutomationTests/AutomationServiceTests.cs b/tests/MhwModManager.AutomationTests/AutomationServiceTests.cs
+index cc325bf..c9f454e 100644
+--- a/tests/MhwModManager.AutomationTests/AutomationServiceTests.cs
++++ b/tests/MhwModManager.AutomationTests/AutomationServiceTests.cs
+@@ -1,7 +1,9 @@
+ using System.Diagnostics;
++using System.IO.Compression;
+ using System.Text.Json;
+ using MhwModManager.Automation;
+ using MhwModManager.Core;
++using MhwModManager.Filesystem;
+ using MhwModManager.Storage;
+ using Xunit;
+ 
+@@ -13,6 +15,25 @@ public sealed class AutomationServiceTests : IDisposable
+     private readonly string root=Path.Combine(Path.GetTempPath(),"MhwAutomationTests-"+Guid.NewGuid().ToString("N"));
+     public AutomationServiceTests()=>Directory.CreateDirectory(root);
+ 
++    private sealed class CancelOnWriteArchiveOutputBackend(CancellationTokenSource cancellation) : IArchiveOutputBackend
++    {
++        public Stream CreateOutput(string path) => new FileStream(
++            path,
++            FileMode.CreateNew,
++            FileAccess.Write,
++            FileShare.None,
++            128*1024,
++            FileOptions.Asynchronous|FileOptions.SequentialScan);
++
++        public ValueTask WriteAsync(Stream output,ReadOnlyMemory<byte> buffer,CancellationToken ct)
++        {
++            cancellation.Cancel();
++            throw new IOException("forced archive write failure after cancellation");
++        }
++
++        public void DeleteOutput(string path)=>File.Delete(path);
++    }
++
+     [Fact]
+     public async Task SaveSnapshotCopiesExplicitSaveAndState()
+     {
+@@ -231,6 +252,44 @@ public sealed class AutomationServiceTests : IDisposable
+         Assert.Equal(1,result.Imported);Assert.True(Directory.Exists(Path.Combine(mods,"Sample Armor")));Assert.True(Directory.Exists(Path.Combine(inbox,"Processed")));
+     }
+ 
++    [Fact]
++    public async Task SmartInboxRequestedCancellationDoesNotProcessLaterItemsAfterIoFailure()
++    {
++        var db=await CreateDbAsync("inbox-cancel.db");
++        var mods=Path.Combine(root,"Mods-cancel");
++        var inbox=Path.Combine(root,"Inbox-cancel");
++        var state=Path.Combine(root,"state-cancel");
++        Directory.CreateDirectory(inbox);
++
++        var first=Path.Combine(inbox,"A Fault.zip");
++        using(var archive=ZipFile.Open(first,ZipArchiveMode.Create))
++        {
++            var entry=archive.CreateEntry("nativePC/fault.bin",CompressionLevel.NoCompression);
++            await using var stream=entry.Open();
++            await stream.WriteAsync(new byte[256*1024],TestContext.Current.CancellationToken);
++        }
++
++        var later=Path.Combine(inbox,"Z Later");
++        Directory.CreateDirectory(Path.Combine(later,"nativePC"));
++        await File.WriteAllTextAsync(Path.Combine(later,"nativePC","later.tex"),"LATER",TestContext.Current.CancellationToken);
++
++        using var cts=CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
++        var hash=new HashingService();
++        var blobs=new BlobStore(Path.Combine(state,"Blobs"),db);
++        var scanner=new ModScanner(db,blobs,hash);
++        var catalog=new CatalogService(db,scanner,mods);
++        var categories=new AutoCategoryService(db);
++        var nexus=new NexusMetadataService(db,new PlannerSnapshotRepository(db),state);
++        var archiveInspector=new ArchiveInspector(new CancelOnWriteArchiveOutputBackend(cts));
++        var service=new SmartInboxService(db,archiveInspector,catalog,nexus,categories,inbox,mods);
++
++        await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>service.ProcessAsync(cts.Token));
++
++        Assert.True(Directory.Exists(later));
++        Assert.False(Directory.Exists(Path.Combine(mods,"Z Later")));
++        Assert.Empty(await db.GetModsAsync(TestContext.Current.CancellationToken));
++    }
++
+     [Fact]
+     public async Task SmartInboxDirectDirectoryRejectsDescendantJunctionWithoutPublishingPartialMod()
+     {
+diff --git a/tests/MhwModManager.IntegrationTests/HardeningTests.cs b/tests/MhwModManager.IntegrationTests/HardeningTests.cs
+index a2df23b..16b66ca 100644
+--- a/tests/MhwModManager.IntegrationTests/HardeningTests.cs
++++ b/tests/MhwModManager.IntegrationTests/HardeningTests.cs
+@@ -48,6 +48,34 @@ public sealed class HardeningTests : IDisposable
+         }
+     }
+ 
++    private sealed class ScriptedArchiveOutputBackend(
++        Func<Stream,ReadOnlyMemory<byte>,CancellationToken,ValueTask>? write=null,
++        Action<string>? delete=null) : IArchiveOutputBackend
++    {
++        public int DeleteAttempts { get; private set; }
++
++        public Stream CreateOutput(string path) => new FileStream(
++            path,
++            FileMode.CreateNew,
++            FileAccess.Write,
++            FileShare.None,
++            128*1024,
++            FileOptions.Asynchronous|FileOptions.SequentialScan);
++
++        public async ValueTask WriteAsync(Stream output,ReadOnlyMemory<byte> buffer,CancellationToken ct)
++        {
++            if(write is not null)await write(output,buffer,ct);
++            else await output.WriteAsync(buffer,ct);
++        }
++
++        public void DeleteOutput(string path)
++        {
++            DeleteAttempts++;
++            if(delete is not null)delete(path);
++            else File.Delete(path);
++        }
++    }
++
+     private static async Task<string?> ReadOperationStateAsync(ManagerDatabase db, string operationId)
+     {
+         await using var connection = await db.OpenAsync(TestToken);
+@@ -602,6 +630,94 @@ public sealed class HardeningTests : IDisposable
+         Assert.Contains("actual-output",ex.Message,StringComparison.OrdinalIgnoreCase);
+         Assert.False(File.Exists(output));
+     }
++
++    [Fact]
++    public async Task Archive_extraction_stream_io_failure_attempts_owned_partial_cleanup()
++    {
++        var zip=Path.Combine(root,"stream-write-failure.zip");
++        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
++        {
++            var entry=archive.CreateEntry("nativePC/failure.bin",CompressionLevel.NoCompression);
++            await using var stream=entry.Open();
++            await stream.WriteAsync(new byte[256*1024],TestToken);
++        }
++
++        var destination=Path.Combine(root,"stream-write-failure-extract");
++        var output=Path.Combine(destination,"nativePC","failure.bin");
++        var backend=new ScriptedArchiveOutputBackend(
++            write:async (stream,buffer,ct)=>
++            {
++                await stream.WriteAsync(buffer,ct);
++                throw new IOException("forced archive output failure");
++            });
++        var inspector=new ArchiveInspector(backend);
++
++        var ex=await Assert.ThrowsAsync<IOException>(
++            ()=>inspector.ExtractSafelyAsync(zip,destination,root,TestToken));
++
++        Assert.Contains("forced archive output failure",ex.Message,StringComparison.Ordinal);
++        Assert.Equal(1,backend.DeleteAttempts);
++        Assert.False(File.Exists(output));
++    }
++
++    [Fact]
++    public async Task Archive_extraction_cleanup_failure_preserves_primary_cancellation()
++    {
++        var zip=Path.Combine(root,"cleanup-cancel.zip");
++        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
++        {
++            var entry=archive.CreateEntry("nativePC/cancel.bin",CompressionLevel.NoCompression);
++            await using var stream=entry.Open();
++            await stream.WriteAsync(new byte[256*1024],TestToken);
++        }
++
++        using var cts=CancellationTokenSource.CreateLinkedTokenSource(TestToken);
++        var destination=Path.Combine(root,"cleanup-cancel-extract");
++        var output=Path.Combine(destination,"nativePC","cancel.bin");
++        var backend=new ScriptedArchiveOutputBackend(
++            write:(_,_,ct)=>
++            {
++                cts.Cancel();
++                ct.ThrowIfCancellationRequested();
++                return ValueTask.CompletedTask;
++            },
++            delete:_=>throw new IOException("forced cleanup failure"));
++        var inspector=new ArchiveInspector(backend);
++
++        var ex=await Assert.ThrowsAnyAsync<OperationCanceledException>(
++            ()=>inspector.ExtractSafelyAsync(zip,destination,root,cts.Token));
++
++        Assert.Equal(1,backend.DeleteAttempts);
++        Assert.True(ex.Data.Contains("MhwModManager.ArchiveCleanupFailure"));
++        Assert.IsType<IOException>(ex.Data["MhwModManager.ArchiveCleanupFailure"]);
++        Assert.True(File.Exists(output));
++    }
++
++    [Fact]
++    public async Task Archive_extraction_cleanup_failure_preserves_primary_budget_failure()
++    {
++        var zip=Path.Combine(root,"cleanup-budget.zip");
++        using(var archive=ZipFile.Open(zip,ZipArchiveMode.Create))
++        {
++            var entry=archive.CreateEntry("nativePC/budget.bin",CompressionLevel.NoCompression);
++            await using var stream=entry.Open();
++            await stream.WriteAsync(new byte[256*1024],TestToken);
++        }
++
++        var destination=Path.Combine(root,"cleanup-budget-extract");
++        var output=Path.Combine(destination,"nativePC","budget.bin");
++        var backend=new ScriptedArchiveOutputBackend(delete:_=>throw new UnauthorizedAccessException("forced cleanup denial"));
++        var inspector=new ArchiveInspector(backend);
++        var limits=new ArchiveExtractionLimits(1024*1024,1);
++
++        var ex=await Assert.ThrowsAsync<InvalidDataException>(
++            ()=>inspector.ExtractSafelyAsync(zip,destination,root,limits,TestToken));
++
++        Assert.Contains("actual-output",ex.Message,StringComparison.OrdinalIgnoreCase);
++        Assert.Equal(1,backend.DeleteAttempts);
++        Assert.IsType<UnauthorizedAccessException>(ex.Data["MhwModManager.ArchiveCleanupFailure"]);
++        Assert.True(File.Exists(output));
++    }
+     [Fact]
+     public async Task Archive_extraction_rejects_junction_ancestor_above_destination()
+     {

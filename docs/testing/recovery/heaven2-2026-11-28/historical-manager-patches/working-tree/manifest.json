@@ -1,0 +1,66 @@
+[
+  {
+    "patch": "recovery-ui-v8820-20260929-575d405ae929.patch",
+    "base": "575d405ae929df4e385920e0f18104964b6d6534",
+    "paths": [
+      "src/MhwModManager.App/App.xaml",
+      "src/MhwModManager.App/MainWindow.xaml",
+      "src/MhwModManager.App/MainWindow.xaml.cs",
+      "src/MhwModManager.App/UiMotion.cs",
+      "tests/MhwModManager.IntegrationTests/UxHardeningTests.cs"
+    ]
+  },
+  {
+    "patch": "mhw-auto-updater-20260928-0419-4fd61dd33609.patch",
+    "base": "4fd61dd33609a7c55e5aedbaad026266a410f942",
+    "paths": [
+      "src/MhwModManager.App/App.xaml.cs",
+      "src/MhwModManager.App/MainWindow.xaml.cs",
+      "src/MhwModManager.App/MhwModManager.App.csproj",
+      "src/MhwModManager.App/ViewModels/MainWindowViewModel.cs",
+      "tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj",
+      "src/MhwModManager.App/ViewModels/MainWindowViewModel.Updates.cs",
+      "src/MhwModManager.Updater/BuildIdentityReader.cs",
+      "src/MhwModManager.Updater/GitHubUpdateSource.cs",
+      "src/MhwModManager.Updater/MhwModManager.Updater.csproj",
+      "src/MhwModManager.Updater/UpdateApplyService.cs",
+      "src/MhwModManager.Updater/UpdateCoordinator.cs",
+      "src/MhwModManager.Updater/UpdateModels.cs",
+      "src/MhwModManager.Updater/UpdatePackageService.cs",
+      "src/MhwModManager.Updater/UpdatePathSafety.cs",
+      "src/MhwModManager.Updater/UpdateRuntime.cs",
+      "src/MhwModManager.Updater/UpdateStateStore.cs",
+      "src/MhwModManager.Updater/UpdateValidation.cs"
+    ]
+  },
+  {
+    "patch": "mhw-mods-auto-updater-agent-64858ba56716.patch",
+    "base": "64858ba567166889ec39cb8ac05ade5ca4b6fb7a",
+    "paths": [
+      "src/MhwModManager.Updater/UpdateInstaller.cs"
+    ]
+  },
+  {
+    "patch": "mhw-programmer-next-20260928-1307-fdf67b2c85b3.patch",
+    "base": "fdf67b2c85b37b3a31c5156a6ed483323778350b",
+    "paths": [
+      "src/MhwModManager.App/App.xaml.cs",
+      "src/MhwModManager.Automation/SmartInboxService.cs",
+      "src/MhwModManager.Diagnostics/AppLogging.cs",
+      "src/MhwModManager.Filesystem/ArchiveInspector.cs",
+      "src/MhwModManager.Filesystem/NexusMetadataService.cs",
+      "tests/MhwModManager.AutomationTests/AutomationServiceTests.cs",
+      "tests/MhwModManager.IntegrationTests/HardeningTests.cs"
+    ]
+  },
+  {
+    "patch": "mhw-save-snapshot-final-20260928-1310-9613d0a554c5.patch",
+    "base": "9613d0a554c546f69b5612f94581be709b4fee58",
+    "paths": [
+      "src/MhwModManager.App/App.xaml.cs",
+      "src/MhwModManager.Diagnostics/AppLogging.cs",
+      "src/MhwModManager.Diagnostics/SupportBundleService.cs",
+      "src/MhwModManager.Filesystem/NexusMetadataService.cs"
+    ]
+  }
+]

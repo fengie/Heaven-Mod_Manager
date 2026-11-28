@@ -1,0 +1,2982 @@
+diff --git a/src/MhwModManager.App/App.xaml.cs b/src/MhwModManager.App/App.xaml.cs
+index 8c272e2..e5ffdc1 100644
+--- a/src/MhwModManager.App/App.xaml.cs
++++ b/src/MhwModManager.App/App.xaml.cs
+@@ -9,6 +9,7 @@ using MhwModManager.Filesystem;
+ using MhwModManager.Mhw;
+ using MhwModManager.Diagnostics;
+ using MhwModManager.Automation;
++using MhwModManager.Updater;
+ using Serilog;
+ 
+ namespace MhwModManager.App;
+@@ -40,6 +41,35 @@ public sealed partial class App:Application, IDisposable
+             throw;
+         }
+ 
++        if(UpdateCommandLine.TryParseHelper(e.Args,out var helperCommand) && helperCommand is not null)
++        {
++            try
++            {
++                var helperExit=await UpdateHelperRunner.RunAsync(helperCommand,CancellationToken.None);
++                Shutdown(helperExit);
++            }
++            catch(Exception ex)
++            {
++                UnifiedDebugLog.Write("UPDATER-HELPER","Updater helper failed before normal application startup.",ex);
++                Shutdown(-40);
++            }
++            return;
++        }
++
++        try
++        {
++            if(await UpdateBootstrap.TryLaunchPendingHelperAtStartupAsync(typeof(App).Assembly,e.Args,CancellationToken.None))
++            {
++                UnifiedDebugLog.Write("UPDATER","Pending verified update handed off before normal startup.");
++                Shutdown(0);
++                return;
++            }
++        }
++        catch(Exception ex)
++        {
++            UnifiedDebugLog.Write("UPDATER","Startup update handoff failed safely; continuing the current known-good application.",ex);
++        }
++
+         DispatcherUnhandledException += (_,args) =>
+         {
+             UnifiedDebugLog.Write("UNHANDLED-DISPATCHER", "DispatcherUnhandledException", args.Exception);
+@@ -114,6 +144,8 @@ public sealed partial class App:Application, IDisposable
+             var launchGate=startup.Run("services.launch-health-gate",()=>new LaunchHealthGateService(plannerSnapshots,health,adoption,dependencies,planner,paths.Game));
+             var automation=startup.Run("services.automation-coordinator",()=>new AutomationCoordinator(db,backups,lastGood,timeline,updateDiff,inbox,duplicates,categories,dependencies,launchGate,trust,issues,adoption,paths.GameRoot,paths.Game,startup));
+             var bisector=startup.Run("services.crash-bisector",()=>new CrashBisectorEngine());
++            var buildIdentity=startup.Run("services.build-identity",()=>BuildIdentityReader.FromAssembly(typeof(App).Assembly));
++            var updates=startup.Run("services.application-updates",()=>UpdateCoordinator.CreateDefault(AppContext.BaseDirectory,buildIdentity));
+             changeHints=startup.Run("services.file-change-hints",()=>new FileChangeHintService(paths.ModsRoot,paths.LiveModRoot));
+             changeHints.HintsAvailable+=hint=>
+             {
+@@ -124,7 +156,7 @@ public sealed partial class App:Application, IDisposable
+             };
+ 
+             Services=startup.Run("services.container",()=>new AppServices(paths,gameRegistry,db,plannerSnapshots,logger,telemetry,hash,blobs,scanner,catalog,planner,executor,guard,health,support,profiles,presentationReads,migrator,archive,changeHints,nexus,gameBuild,adoption,previews,visuals,
+-                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector));
++                timeline,backups,lastGood,categories,dependencies,duplicates,recipe,trust,issues,updateDiff,inspector,presets,gameImpact,importer,inbox,launchGate,automation,bisector,updates));
+ 
+             splash.SetDetail(paths.Game.IsMonsterHunterWorld?"Validating/migrating legacy MHW state without touching nativePC…":"Validating the isolated game workspace…");
+             var migration=paths.Game.IsMonsterHunterWorld
+@@ -170,6 +202,9 @@ public sealed partial class App:Application, IDisposable
+             splash.Close();
+             watchdog=startup.Run("services.dispatcher-watchdog",()=>new DispatcherWatchdog(window.Dispatcher,telemetry,logger));
+             startup.Complete(true,"Main window initialized and displayed successfully.");
++            await updates.ConfirmHealthyStartupIfPendingAsync(CancellationToken.None);
++            await updates.TryCleanupCommittedResidueAsync(CancellationToken.None);
++            window.StartAutomaticUpdateCheck(e.Args);
+         }
+         catch(Exception ex)
+         {
+@@ -231,6 +266,7 @@ public sealed partial class App:Application, IDisposable
+         watchdog=null;
+         changeHints?.Dispose();
+         changeHints=null;
++        Services?.Updates.Dispose();
+         if(Services?.Log is IDisposable disposable)disposable.Dispose();
+         UnifiedDebugLog.Write("APP", "Dispose complete");
+         GC.SuppressFinalize(this);
+@@ -280,7 +316,8 @@ public sealed record AppServices(
+     SmartInboxService Inbox,
+     LaunchHealthGateService LaunchGate,
+     AutomationCoordinator Automation,
+-    CrashBisectorEngine Bisector);
++    CrashBisectorEngine Bisector,
++    UpdateCoordinator Updates);
+ 
+ public sealed record AppPaths(
+     string ToolRoot,
+diff --git a/src/MhwModManager.App/MainWindow.xaml.cs b/src/MhwModManager.App/MainWindow.xaml.cs
+index 35537ec..c2cd5d8 100644
+--- a/src/MhwModManager.App/MainWindow.xaml.cs
++++ b/src/MhwModManager.App/MainWindow.xaml.cs
+@@ -24,6 +24,11 @@ public partial class MainWindow:Window
+         return ((MainWindowViewModel)DataContext).InitializeAsync();
+     }
+ 
++    public void StartAutomaticUpdateCheck(IReadOnlyList<string> arguments)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ((MainWindowViewModel)DataContext).StartAutomaticUpdateCheck(arguments);
++    }
+ 
+     private void OnPreviewKeyDown(object sender,KeyEventArgs e)
+     {
+diff --git a/src/MhwModManager.App/MhwModManager.App.csproj b/src/MhwModManager.App/MhwModManager.App.csproj
+index 9eac3ce..819518a 100644
+--- a/src/MhwModManager.App/MhwModManager.App.csproj
++++ b/src/MhwModManager.App/MhwModManager.App.csproj
+@@ -22,4 +22,7 @@
+     <Resource Include="Assets\MHWModManager.ico" />
+     <Content Include="../../data/Armor Database.csv"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><Link>data/Armor Database.csv</Link></Content>
+   </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="..\MhwModManager.Updater\MhwModManager.Updater.csproj" />
++  </ItemGroup>
+ </Project>
+diff --git a/src/MhwModManager.App/ViewModels/MainWindowViewModel.cs b/src/MhwModManager.App/ViewModels/MainWindowViewModel.cs
+index 0f86f3a..8194521 100644
+--- a/src/MhwModManager.App/ViewModels/MainWindowViewModel.cs
++++ b/src/MhwModManager.App/ViewModels/MainWindowViewModel.cs
+@@ -100,6 +100,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
+     {
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+         s=services;
++        InitializeUpdateIntegration();
+         Activity=new ActivityPageViewModel(s.PresentationReads);
+         ActivityRows=Activity.Rows;
+         Coverage=new CoveragePageViewModel(s.PresentationReads);
+@@ -1051,6 +1052,7 @@ public sealed partial class MainWindowViewModel:ObservableObject, IDisposable
+         using var __mhwTrace = MasterDebugLog.BeginMethod();
+         if(disposed)return;
+         disposed=true;
++        DisposeUpdateIntegration();
+         backgroundCts.Cancel();
+         backgroundCts.Dispose();
+         busyCts?.Cancel();
+diff --git a/tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj b/tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj
+index 175555c..1b8f2ab 100644
+--- a/tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj
++++ b/tests/MhwModManager.IntegrationTests/MhwModManager.IntegrationTests.csproj
+@@ -1 +1,3 @@
+-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>$(NoWarn);CA1707</NoWarn></PropertyGroup><ItemGroup><PackageReference Include="xunit.v3"/><ProjectReference Include="../../src/MhwModManager.Core/MhwModManager.Core.csproj"/><ProjectReference Include="../../src/MhwModManager.Storage/MhwModManager.Storage.csproj"/><ProjectReference Include="../../src/MhwModManager.Filesystem/MhwModManager.Filesystem.csproj"/><ProjectReference Include="../../tools/MhwModManager.FunctionVerifier/MhwModManager.FunctionVerifier.csproj"/></ItemGroup></Project>
++<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework><OutputType>Exe</OutputType><NoWarn>$(NoWarn);CA1707</NoWarn></PropertyGroup><ItemGroup><PackageReference Include="xunit.v3" /><ProjectReference Include="../../src/MhwModManager.Core/MhwModManager.Core.csproj" /><ProjectReference Include="../../src/MhwModManager.Storage/MhwModManager.Storage.csproj" /><ProjectReference Include="../../src/MhwModManager.Filesystem/MhwModManager.Filesystem.csproj" /><ProjectReference Include="../../tools/MhwModManager.FunctionVerifier/MhwModManager.FunctionVerifier.csproj" /></ItemGroup><ItemGroup>
++  <ProjectReference Include="..\..\src\MhwModManager.Updater\MhwModManager.Updater.csproj" />
++</ItemGroup></Project>
+diff --git a/src/MhwModManager.App/ViewModels/MainWindowViewModel.Updates.cs b/src/MhwModManager.App/ViewModels/MainWindowViewModel.Updates.cs
+new file mode 100644
+index 0000000..230bc07
+--- /dev/null
++++ b/src/MhwModManager.App/ViewModels/MainWindowViewModel.Updates.cs
+@@ -0,0 +1,170 @@
++using System.Windows;
++using CommunityToolkit.Mvvm.ComponentModel;
++using CommunityToolkit.Mvvm.Input;
++using MhwModManager.Core;
++using MhwModManager.Updater;
++
++namespace MhwModManager.App.ViewModels;
++
++public sealed partial class MainWindowViewModel
++{
++    private Task? updateTask;
++    private IReadOnlyList<string> updateRestartArguments = Array.Empty<string>();
++
++    [ObservableProperty]
++    private string updateStatusText = "Update service idle.";
++
++    public string BuildLabel
++    {
++        get
++        {
++            using var __mhwTrace = MasterDebugLog.BeginMethod();
++            var build = s.Updates.Snapshot.Current;
++            return build.BuildNumber > 0
++                ? $"v{build.ProductVersion} · b{build.BuildNumber}"
++                : $"v{build.ProductVersion} · local";
++        }
++    }
++
++    public string BuildDetail
++    {
++        get
++        {
++            using var __mhwTrace = MasterDebugLog.BeginMethod();
++            return $"Manager build: {s.Updates.Snapshot.Current.Display}";
++        }
++    }
++
++    private void InitializeUpdateIntegration()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        s.Updates.Changed += OnUpdateSnapshotChanged;
++        ApplyUpdateSnapshot(s.Updates.Snapshot);
++    }
++
++    public void StartAutomaticUpdateCheck(IReadOnlyList<string> arguments)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        updateRestartArguments = arguments.ToArray();
++        if (updateTask is { IsCompleted: false }) return;
++        updateTask = RunAutomaticUpdateCheckAsync(backgroundCts.Token);
++    }
++
++    private async Task RunAutomaticUpdateCheckAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        try
++        {
++            await s.Updates.CheckAndStageAsync(updateRestartArguments, ct);
++            await TryAutoApplyIfSafeAsync(ct);
++        }
++        catch (OperationCanceledException) when (ct.IsCancellationRequested)
++        {
++            MasterDebugLog.Write("UPDATER", "Automatic update check cancelled by application lifetime.");
++        }
++        catch (Exception ex)
++        {
++            MasterDebugLog.Write("UPDATER",
++                "Unexpected automatic update integration failure; current application remains available.", ex);
++            await Application.Current.Dispatcher.InvokeAsync(() =>
++                UpdateStatusText = $"Update integration failed safely: {ex.Message}");
++        }
++    }
++
++    [RelayCommand]
++    private async Task CheckForManagerUpdates()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await RunBusy(
++            "manager.update.check",
++            "Checking manager updates",
++            "Checking the verified private release feed…",
++            true,
++            async ct =>
++            {
++                await s.Updates.CheckAndStageAsync(updateRestartArguments, ct);
++                await TryAutoApplyIfSafeAsync(ct);
++            });
++    }
++
++    [RelayCommand]
++    private async Task ConfigureUpdateAccess()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var dialog = new UpdateCredentialWindow
++        {
++            Owner = Application.Current.MainWindow
++        };
++        if (dialog.ShowDialog() != true) return;
++        try
++        {
++            s.Updates.CredentialStore.SaveToken(dialog.Token);
++            UpdateStatusText =
++                "Private update access saved securely in Windows Credential Manager. Checking now…";
++            await CheckForManagerUpdates();
++        }
++        catch (Exception ex) when (ex is UnauthorizedAccessException
++                                   or System.ComponentModel.Win32Exception
++                                   or PlatformNotSupportedException)
++        {
++            MasterDebugLog.Write("UPDATER", "Could not save private update access.", ex);
++            UpdateStatusText = $"Could not save private update access: {ex.Message}";
++        }
++    }
++
++    private async Task TryAutoApplyIfSafeAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (s.Updates.Snapshot.Status != UpdateStatusKind.Staged) return;
++
++        var blockers = await Task.Run(
++            () => s.ProcessGuard.GetKnownBlockers(),
++            ct);
++        if (CriticalOperation || BusyVisibility == Visibility.Visible || StagedCount > 0 || blockers.Count > 0)
++        {
++            var reason = CriticalOperation
++                ? "a critical manager operation is active"
++                : BusyVisibility == Visibility.Visible
++                    ? "another manager operation is active"
++                    : StagedCount > 0
++                        ? "you have unapplied mod changes"
++                        : "the game is running";
++            UpdateStatusText =
++                $"{s.Updates.Snapshot.Message} Installation is deferred because {reason}; it will retry on the next safe launch.";
++            return;
++        }
++
++        if (!await s.Updates.LaunchStagedHelperAsync(Environment.ProcessId, ct)) return;
++        await Application.Current.Dispatcher.InvokeAsync(() =>
++        {
++            MasterDebugLog.Write("UPDATER", "Normal application shutdown requested for verified update apply.");
++            Application.Current.Shutdown(0);
++        });
++    }
++
++    private void OnUpdateSnapshotChanged(UpdateSnapshot snapshot)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var dispatcher = Application.Current?.Dispatcher;
++        if (dispatcher is not null && !dispatcher.CheckAccess())
++        {
++            _ = dispatcher.BeginInvoke(() => ApplyUpdateSnapshot(snapshot));
++            return;
++        }
++        ApplyUpdateSnapshot(snapshot);
++    }
++
++    private void ApplyUpdateSnapshot(UpdateSnapshot snapshot)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        UpdateStatusText = snapshot.Message;
++        OnPropertyChanged(nameof(BuildLabel));
++        OnPropertyChanged(nameof(BuildDetail));
++    }
++
++    private void DisposeUpdateIntegration()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        s.Updates.Changed -= OnUpdateSnapshotChanged;
++    }
++}
+diff --git a/src/MhwModManager.Updater/BuildIdentityReader.cs b/src/MhwModManager.Updater/BuildIdentityReader.cs
+new file mode 100644
+index 0000000..a990e37
+--- /dev/null
++++ b/src/MhwModManager.Updater/BuildIdentityReader.cs
+@@ -0,0 +1,65 @@
++using System.Reflection;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public static class BuildIdentityReader
++{
++    public static BuildIdentity FromAssembly(Assembly assembly)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(assembly);
++        var metadata = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
++            .GroupBy(static x => x.Key, StringComparer.Ordinal)
++            .ToDictionary(static g => g.Key, static g => g.Last().Value ?? string.Empty, StringComparer.Ordinal);
++
++        var version = Get(metadata, "MhwProductVersion");
++        if (string.IsNullOrWhiteSpace(version))
++            version = assembly.GetName().Version?.ToString(3) ?? "0.0.0";
++
++        var source = Get(metadata, "MhwSourceSha");
++        if (string.IsNullOrWhiteSpace(source)) source = "local";
++
++        var build = ParseLong(Get(metadata, "MhwBuildNumber"));
++        var runId = ParseLong(Get(metadata, "MhwRunId"));
++        DateTimeOffset? built = DateTimeOffset.TryParse(Get(metadata, "MhwBuildTimestampUtc"), out var timestamp)
++            ? timestamp
++            : null;
++
++        return new BuildIdentity(version, source, build, runId, built);
++    }
++
++    private static string Get(Dictionary<string, string> metadata, string key)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return metadata.TryGetValue(key, out var value) ? value : string.Empty;
++    }
++
++    private static long ParseLong(string value)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return long.TryParse(value, System.Globalization.NumberStyles.None,
++            System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : 0;
++    }
++}
++
++public static class UpdateOrdering
++{
++    public static bool IsNewer(BuildIdentity current, UpdateManifest remote)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(current);
++        ArgumentNullException.ThrowIfNull(remote);
++        if (remote.BuildNumber <= current.BuildNumber) return false;
++        return true;
++    }
++
++    public static void ValidateNoAmbiguousSameBuild(BuildIdentity current, UpdateManifest remote)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (remote.BuildNumber != current.BuildNumber) return;
++        if (StringComparer.OrdinalIgnoreCase.Equals(remote.SourceSha, current.SourceSha)) return;
++        throw new InvalidDataException(
++            $"Update feed build {remote.BuildNumber} conflicts with the current source identity.");
++    }
++}
+diff --git a/src/MhwModManager.Updater/GitHubUpdateSource.cs b/src/MhwModManager.Updater/GitHubUpdateSource.cs
+new file mode 100644
+index 0000000..02c47e2
+--- /dev/null
++++ b/src/MhwModManager.Updater/GitHubUpdateSource.cs
+@@ -0,0 +1,349 @@
++using System.Net;
++using System.Net.Http.Headers;
++using System.Security.Cryptography;
++using System.Text.Json;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public interface IUpdateSource
++{
++    Task<UpdateCandidate?> GetLatestAsync(CancellationToken ct);
++    Task DownloadArtifactAsync(UpdateCandidate candidate, string destination, CancellationToken ct);
++}
++
++public sealed class UpdateAuthenticationException(string message) : Exception(message);
++public sealed class UpdateTransportException(string message, Exception? inner = null) : Exception(message, inner);
++
++public sealed class GitHubUpdateSource : IUpdateSource
++{
++    private static readonly HashSet<string> AllowedHosts = new(StringComparer.OrdinalIgnoreCase)
++    {
++        "api.github.com",
++        "github.com",
++        "release-assets.githubusercontent.com",
++        "objects.githubusercontent.com",
++        "github-releases.githubusercontent.com"
++    };
++
++    private readonly HttpClient http;
++    private readonly IUpdateCredentialSource credentials;
++
++    public GitHubUpdateSource(HttpClient http, IUpdateCredentialSource credentials)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        this.http = http ?? throw new ArgumentNullException(nameof(http));
++        this.credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
++    }
++
++    public static HttpClient CreateDefaultHttpClient()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var handler = new SocketsHttpHandler
++        {
++            AllowAutoRedirect = false,
++            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
++            ConnectTimeout = TimeSpan.FromSeconds(15)
++        };
++        return new HttpClient(handler, disposeHandler: true)
++        {
++            Timeout = Timeout.InfiniteTimeSpan
++        };
++    }
++
++    public async Task<UpdateCandidate?> GetLatestAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var token = RequireToken();
++        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
++        timeout.CancelAfter(TimeSpan.FromSeconds(60));
++
++        try
++        {
++            var releasesUri = new Uri("https://api.github.com/repos/fengie/mhw-mods/releases?per_page=100");
++            using var response = await SendFollowingAllowedRedirectsAsync(
++                releasesUri, token, "application/vnd.github+json", timeout.Token).ConfigureAwait(false);
++            await EnsureSuccessAsync(response).ConfigureAwait(false);
++            var bytes = await ReadBoundedAsync(
++                await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false),
++                8L * 1024 * 1024,
++                timeout.Token).ConfigureAwait(false);
++
++            var release = FindNewestRelease(bytes);
++            if (release is null) return null;
++
++            using var manifestResponse = await SendFollowingAllowedRedirectsAsync(
++                release.ManifestAssetUri, token, "application/octet-stream", timeout.Token).ConfigureAwait(false);
++            await EnsureSuccessAsync(manifestResponse).ConfigureAwait(false);
++            var manifestBytes = await ReadBoundedAsync(
++                await manifestResponse.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false),
++                UpdateConstants.MaxManifestBytes,
++                timeout.Token).ConfigureAwait(false);
++            var manifest = UpdateValidation.ParseManifest(manifestBytes);
++
++            if (!manifest.ReleaseTag.Equals(release.Tag, StringComparison.Ordinal) ||
++                manifest.BuildNumber != release.BuildNumber ||
++                !manifest.SourceSha.StartsWith(release.ShortSha, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidDataException("GitHub release identity does not match the update manifest.");
++
++            var artifact = release.Assets.FirstOrDefault(x =>
++                x.Name.Equals(manifest.Artifact, StringComparison.Ordinal));
++            if (artifact is null)
++                throw new InvalidDataException("Update release does not contain the manifest artifact.");
++            if (artifact.Size != manifest.Size)
++                throw new InvalidDataException("GitHub asset size does not match the update manifest.");
++
++            MasterDebugLog.Write("UPDATER",
++                $"Latest release resolved: build={manifest.BuildNumber}; source={manifest.SourceSha}; artifact={manifest.Artifact}; bytes={manifest.Size}");
++            return new UpdateCandidate { Manifest = manifest, ArtifactApiUri = artifact.ApiUri };
++        }
++        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
++        {
++            throw new UpdateTransportException("The update service timed out.");
++        }
++        catch (HttpRequestException ex)
++        {
++            throw new UpdateTransportException("The update service could not be reached.", ex);
++        }
++    }
++
++    public async Task DownloadArtifactAsync(
++        UpdateCandidate candidate,
++        string destination,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(candidate);
++        var manifest = candidate.Manifest;
++        UpdateValidation.ValidateManifest(manifest);
++        var token = RequireToken();
++        EnsureFreeSpace(destination, manifest.Size);
++
++        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
++        timeout.CancelAfter(TimeSpan.FromMinutes(15));
++        Directory.CreateDirectory(Path.GetDirectoryName(destination) ??
++                                  throw new InvalidDataException("Download destination has no parent."));
++        if (File.Exists(destination)) File.Delete(destination);
++
++        try
++        {
++            using var response = await SendFollowingAllowedRedirectsAsync(
++                candidate.ArtifactApiUri, token, "application/octet-stream", timeout.Token).ConfigureAwait(false);
++            await EnsureSuccessAsync(response).ConfigureAwait(false);
++            if (response.Content.Headers.ContentLength is long contentLength &&
++                contentLength != manifest.Size)
++                throw new InvalidDataException(
++                    $"Update download length mismatch before transfer. Expected {manifest.Size}, got {contentLength}.");
++
++            await using var input = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
++            await using var output = new FileStream(
++                destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 256 * 1024,
++                FileOptions.Asynchronous | FileOptions.SequentialScan);
++            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
++            var buffer = new byte[256 * 1024];
++            long total = 0;
++            while (true)
++            {
++                timeout.Token.ThrowIfCancellationRequested();
++                var read = await input.ReadAsync(buffer.AsMemory(), timeout.Token).ConfigureAwait(false);
++                if (read == 0) break;
++                total = checked(total + read);
++                if (total > manifest.Size || total > UpdateConstants.MaxArtifactBytes)
++                    throw new InvalidDataException("Update download exceeded its declared size.");
++                await output.WriteAsync(buffer.AsMemory(0, read), timeout.Token).ConfigureAwait(false);
++                hash.AppendData(buffer, 0, read);
++            }
++            await output.FlushAsync(timeout.Token).ConfigureAwait(false);
++            output.Flush(flushToDisk: true);
++
++            if (total != manifest.Size)
++                throw new InvalidDataException(
++                    $"Update download was truncated. Expected {manifest.Size} bytes, got {total}.");
++            var actual = Convert.ToHexString(hash.GetHashAndReset());
++            if (!actual.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidDataException(
++                    $"Update artifact SHA-256 mismatch. Expected {manifest.Sha256}; actual {actual}.");
++            MasterDebugLog.Write("UPDATER",
++                $"Download verified: build={manifest.BuildNumber}; bytes={total}; sha256={actual}");
++        }
++        catch
++        {
++            try { if (File.Exists(destination)) File.Delete(destination); } catch { }
++            throw;
++        }
++    }
++
++    private string RequireToken()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var token = credentials.ReadToken();
++        if (string.IsNullOrWhiteSpace(token))
++            throw new UpdateAuthenticationException(
++                "Private update access is not configured. Save a read-only GitHub token in Windows Credential Manager.");
++        return token;
++    }
++
++    private async Task<HttpResponseMessage> SendFollowingAllowedRedirectsAsync(
++        Uri start,
++        string token,
++        string accept,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var current = start;
++        for (var redirect = 0; redirect <= 5; redirect++)
++        {
++            ValidateRemoteUri(current);
++            using var request = new HttpRequestMessage(HttpMethod.Get, current);
++            request.Headers.UserAgent.ParseAdd("MHW-Manual-Mod-Manager-Updater/1");
++            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(accept));
++            if (current.Host.Equals("api.github.com", StringComparison.OrdinalIgnoreCase))
++            {
++                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
++                request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
++            }
++
++            var response = await http.SendAsync(
++                request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
++            if (!IsRedirect(response.StatusCode)) return response;
++            if (response.Headers.Location is null)
++            {
++                response.Dispose();
++                throw new UpdateTransportException("Update service returned a redirect without a destination.");
++            }
++
++            var next = response.Headers.Location.IsAbsoluteUri
++                ? response.Headers.Location
++                : new Uri(current, response.Headers.Location);
++            response.Dispose();
++            current = next;
++        }
++
++        throw new UpdateTransportException("Update service exceeded the redirect limit.");
++    }
++
++    private static async Task EnsureSuccessAsync(HttpResponseMessage response)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (response.IsSuccessStatusCode) return;
++        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden or HttpStatusCode.NotFound)
++            throw new UpdateAuthenticationException(
++                "GitHub denied access to the private update feed. Check the stored token and repository Contents permission.");
++        var body = string.Empty;
++        try
++        {
++            body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
++            if (body.Length > 512) body = body[..512];
++        }
++        catch (Exception ex) when (ex is HttpRequestException or IOException)
++        {
++            MasterDebugLog.Write("UPDATER", "Could not read failed GitHub response body.", ex);
++        }
++        throw new UpdateTransportException(
++            $"Update service returned HTTP {(int)response.StatusCode} {response.ReasonPhrase}. {body}");
++    }
++
++    private static bool IsRedirect(HttpStatusCode status)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return status is HttpStatusCode.MovedPermanently
++            or HttpStatusCode.Redirect
++            or HttpStatusCode.RedirectMethod
++            or HttpStatusCode.TemporaryRedirect
++            or HttpStatusCode.PermanentRedirect;
++    }
++
++    private static void ValidateRemoteUri(Uri uri)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (!uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
++            !AllowedHosts.Contains(uri.Host))
++            throw new UpdateTransportException($"Update redirect target is not trusted: {uri.Scheme}://{uri.Host}");
++        if (!uri.IsDefaultPort && uri.Port != 443)
++            throw new UpdateTransportException("Update endpoint uses an unexpected port.");
++    }
++
++    private static ReleaseDescriptor? FindNewestRelease(byte[] bytes)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        using var document = JsonDocument.Parse(bytes);
++        if (document.RootElement.ValueKind != JsonValueKind.Array)
++            throw new InvalidDataException("GitHub releases response is not an array.");
++
++        ReleaseDescriptor? best = null;
++        foreach (var release in document.RootElement.EnumerateArray())
++        {
++            if (!release.TryGetProperty("draft", out var draft) || draft.GetBoolean()) continue;
++            if (!release.TryGetProperty("tag_name", out var tagNode)) continue;
++            var tag = tagNode.GetString() ?? string.Empty;
++            if (!UpdateValidation.TryParseReleaseTag(tag, out var build, out var shortSha)) continue;
++            if (best is not null && best.BuildNumber >= build) continue;
++            if (!release.TryGetProperty("assets", out var assetsNode) ||
++                assetsNode.ValueKind != JsonValueKind.Array) continue;
++
++            var assets = new List<ReleaseAssetDescriptor>();
++            foreach (var asset in assetsNode.EnumerateArray())
++            {
++                var name = asset.GetProperty("name").GetString() ?? string.Empty;
++                var url = asset.GetProperty("url").GetString() ?? string.Empty;
++                var size = asset.GetProperty("size").GetInt64();
++                if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed)) continue;
++                assets.Add(new ReleaseAssetDescriptor(name, size, parsed));
++            }
++
++            var manifest = assets.FirstOrDefault(x =>
++                x.Name.Equals(UpdateConstants.UpdateManifestName, StringComparison.Ordinal));
++            if (manifest is null) continue;
++            best = new ReleaseDescriptor(tag, build, shortSha, manifest.ApiUri, assets);
++        }
++        return best;
++    }
++
++    private static async Task<byte[]> ReadBoundedAsync(
++        Stream input,
++        long maxBytes,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var output = new MemoryStream();
++        var buffer = new byte[64 * 1024];
++        long total = 0;
++        while (true)
++        {
++            var read = await input.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
++            if (read == 0) break;
++            total = checked(total + read);
++            if (total > maxBytes) throw new InvalidDataException("Update metadata exceeded its size limit.");
++            await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
++        }
++        return output.ToArray();
++    }
++
++    private static void EnsureFreeSpace(string destination, long expectedBytes)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        try
++        {
++            var full = Path.GetFullPath(destination);
++            var root = Path.GetPathRoot(full);
++            if (string.IsNullOrWhiteSpace(root)) return;
++            var drive = new DriveInfo(root);
++            var required = checked(expectedBytes + 256L * 1024 * 1024);
++            if (drive.AvailableFreeSpace < required)
++                throw new IOException(
++                    $"Not enough free space for update staging. Need at least {required} bytes.");
++        }
++        catch (ArgumentException)
++        {
++            // Non-drive paths are still bounded by streamed byte limits; the write itself fails closed on disk-full.
++        }
++    }
++
++    private sealed record ReleaseAssetDescriptor(string Name, long Size, Uri ApiUri);
++    private sealed record ReleaseDescriptor(
++        string Tag,
++        long BuildNumber,
++        string ShortSha,
++        Uri ManifestAssetUri,
++        IReadOnlyList<ReleaseAssetDescriptor> Assets);
++}
+diff --git a/src/MhwModManager.Updater/MhwModManager.Updater.csproj b/src/MhwModManager.Updater/MhwModManager.Updater.csproj
+new file mode 100644
+index 0000000..72cf803
+--- /dev/null
++++ b/src/MhwModManager.Updater/MhwModManager.Updater.csproj
+@@ -0,0 +1,11 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <PropertyGroup>
++    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
++    <AssemblyName>MhwModManager.Updater</AssemblyName>
++    <RootNamespace>MhwModManager.Updater</RootNamespace>
++  </PropertyGroup>
++  <ItemGroup>
++    <ProjectReference Include="../MhwModManager.Core/MhwModManager.Core.csproj" />
++    <ProjectReference Include="../MhwModManager.Filesystem/MhwModManager.Filesystem.csproj" />
++  </ItemGroup>
++</Project>
+diff --git a/src/MhwModManager.Updater/UpdateApplyService.cs b/src/MhwModManager.Updater/UpdateApplyService.cs
+new file mode 100644
+index 0000000..8883af1
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdateApplyService.cs
+@@ -0,0 +1,411 @@
++using System.Security.Cryptography;
++using MhwModManager.Core;
++using MhwModManager.Filesystem;
++
++namespace MhwModManager.Updater;
++
++public interface IUpdateFileMutator
++{
++    Task ReplaceAsync(string source, string destination, string expectedSha256, CancellationToken ct);
++    void Delete(string path);
++}
++
++public sealed class AtomicUpdateFileMutator : IUpdateFileMutator
++{
++    public async Task ReplaceAsync(
++        string source,
++        string destination,
++        string expectedSha256,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await AtomicFileOps.ReplaceFromAsync(
++            source, destination, expectedSha256: expectedSha256, ct: ct).ConfigureAwait(false);
++    }
++
++    public void Delete(string path)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        File.Delete(path);
++    }
++}
++
++public interface IUpdateFaultInjector
++{
++    void BeforeMutation(int index, string relativePath, UpdateMutationKind kind);
++    void AfterMutation(int index, string relativePath, UpdateMutationKind kind);
++}
++
++public sealed class NoUpdateFaultInjector : IUpdateFaultInjector
++{
++    public static NoUpdateFaultInjector Instance { get; } = new();
++
++    public void BeforeMutation(int index, string relativePath, UpdateMutationKind kind)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++    }
++
++    public void AfterMutation(int index, string relativePath, UpdateMutationKind kind)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++    }
++}
++
++public sealed class UpdateApplyService
++{
++    private readonly UpdateStateStore state;
++    private readonly UpdatePackageService packages;
++    private readonly IUpdateFileMutator mutator;
++    private readonly IUpdateFaultInjector faults;
++
++    public UpdateApplyService(
++        UpdateStateStore state,
++        UpdatePackageService packages,
++        IUpdateFileMutator? mutator = null,
++        IUpdateFaultInjector? faults = null)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        this.state = state ?? throw new ArgumentNullException(nameof(state));
++        this.packages = packages ?? throw new ArgumentNullException(nameof(packages));
++        this.mutator = mutator ?? new AtomicUpdateFileMutator();
++        this.faults = faults ?? NoUpdateFaultInjector.Instance;
++    }
++
++    public async Task<UpdateApplyJournal> ApplyAsync(
++        PendingUpdateState pending,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(pending);
++        if (!Path.GetFullPath(pending.InstallRoot)
++                .Equals(state.Paths.InstallRoot, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Pending update installation root does not match updater state.");
++
++        UpdatePathSafety.EnsureExistingRootIsPhysical(state.Paths.InstallRoot);
++        var installed = await ManagedInstall.TryLoadAsync(state.Paths.InstallRoot, ct).ConfigureAwait(false)
++                        ?? throw new InvalidDataException(
++                            "Automatic apply is disabled because this is not a managed packaged installation.");
++        if (pending.Manifest.BuildNumber <= installed.Payload.BuildNumber)
++            throw new InvalidDataException("Updater refused a downgrade or replay.");
++        UpdateValidation.ValidateManifestAgreement(pending.Manifest, pending.Payload);
++        await packages.VerifyStagedAsync(pending, ct).ConfigureAwait(false);
++
++        var rollbackRoot = state.Paths.RollbackDirectory(pending.UpdateId);
++        if (Directory.Exists(rollbackRoot))
++            throw new IOException(
++                $"Rollback state already exists for {pending.UpdateId}; recovery is required before reapply.");
++        UpdatePathSafety.EnsureSafeDirectoryPath(state.Paths.RollbackRoot, rollbackRoot);
++        var backupFilesRoot = Path.Combine(rollbackRoot, "files");
++        UpdatePathSafety.EnsureSafeDirectoryPath(rollbackRoot, backupFilesRoot);
++        EnsureRollbackCapacity(rollbackRoot, installed.Payload);
++
++        var journal = new UpdateApplyJournal
++        {
++            UpdateId = pending.UpdateId,
++            InstallRoot = pending.InstallRoot,
++            StagingRoot = pending.StagingRoot,
++            Target = pending.Manifest.Identity,
++            Phase = UpdateApplyPhase.Applying
++        };
++        await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++
++        try
++        {
++            var previous = installed.Payload.Files.ToDictionary(
++                static x => UpdatePathSafety.NormalizePayloadPath(x.Path),
++                StringComparer.OrdinalIgnoreCase);
++            var incoming = pending.Payload.Files.ToDictionary(
++                static x => UpdatePathSafety.NormalizePayloadPath(x.Path),
++                StringComparer.OrdinalIgnoreCase);
++            var stagePayload = Path.Combine(pending.StagingRoot, "payload");
++
++            var orderedIncoming = pending.Payload.Files
++                .OrderBy(static x => x.Path.Equals(UpdateConstants.ExecutableName, StringComparison.OrdinalIgnoreCase))
++                .ThenBy(static x => x.Path, StringComparer.OrdinalIgnoreCase)
++                .ToArray();
++
++            var index = 0;
++            foreach (var file in orderedIncoming)
++            {
++                ct.ThrowIfCancellationRequested();
++                var relative = UpdatePathSafety.NormalizePayloadPath(file.Path);
++                var target = UpdatePathSafety.GetContainedPath(state.Paths.InstallRoot, relative);
++                var source = UpdatePathSafety.GetContainedPath(stagePayload, relative);
++                var wasOwned = previous.ContainsKey(relative);
++                if (File.Exists(target) && !wasOwned)
++                    throw new InvalidDataException(
++                        $"Updater will not overwrite an unknown file that collides with new payload: {relative}");
++                var mutation = await PrepareMutationAsync(
++                    relative, UpdateMutationKind.ReplaceOrAdd, target, file.Sha256,
++                    backupFilesRoot, ct).ConfigureAwait(false);
++                journal.Mutations.Add(mutation);
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                mutation.MutationStarted = true;
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                faults.BeforeMutation(index, relative, mutation.Kind);
++                await mutator.ReplaceAsync(source, target, file.Sha256, ct).ConfigureAwait(false);
++                mutation.MutationCompleted = true;
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                faults.AfterMutation(index, relative, mutation.Kind);
++                index++;
++            }
++
++            var stagedManifest = Path.Combine(pending.StagingRoot, UpdateConstants.PayloadManifestName);
++            var installedManifest = Path.Combine(state.Paths.InstallRoot, UpdateConstants.PayloadManifestName);
++            var manifestMutation = await PrepareMutationAsync(
++                UpdateConstants.PayloadManifestName,
++                UpdateMutationKind.ReplaceOrAdd,
++                installedManifest,
++                pending.Manifest.PayloadManifestSha256,
++                backupFilesRoot,
++                ct).ConfigureAwait(false);
++            journal.Mutations.Add(manifestMutation);
++            await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++            manifestMutation.MutationStarted = true;
++            await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++            faults.BeforeMutation(index, UpdateConstants.PayloadManifestName, manifestMutation.Kind);
++            await mutator.ReplaceAsync(
++                stagedManifest, installedManifest, pending.Manifest.PayloadManifestSha256, ct).ConfigureAwait(false);
++            manifestMutation.MutationCompleted = true;
++            await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++            faults.AfterMutation(index, UpdateConstants.PayloadManifestName, manifestMutation.Kind);
++            index++;
++
++            foreach (var stale in previous.Values
++                         .Where(x => !incoming.ContainsKey(UpdatePathSafety.NormalizePayloadPath(x.Path)))
++                         .OrderBy(static x => x.Path, StringComparer.OrdinalIgnoreCase))
++            {
++                ct.ThrowIfCancellationRequested();
++                var relative = UpdatePathSafety.NormalizePayloadPath(stale.Path);
++                var target = UpdatePathSafety.GetContainedPath(state.Paths.InstallRoot, relative);
++                if (!File.Exists(target)) continue;
++                var mutation = await PrepareMutationAsync(
++                    relative, UpdateMutationKind.Retire, target, null, backupFilesRoot, ct).ConfigureAwait(false);
++                journal.Mutations.Add(mutation);
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                mutation.MutationStarted = true;
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                faults.BeforeMutation(index, relative, mutation.Kind);
++                UpdatePathSafety.EnsureSafeFileDestination(state.Paths.InstallRoot, target);
++                mutator.Delete(target);
++                mutation.MutationCompleted = true;
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                faults.AfterMutation(index, relative, mutation.Kind);
++                index++;
++            }
++
++            await VerifyInstalledAsync(pending, ct).ConfigureAwait(false);
++            journal.Phase = UpdateApplyPhase.AppliedAwaitingHealth;
++            journal.Failure = null;
++            await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++            MasterDebugLog.Write("UPDATER",
++                $"Apply completed and awaits startup confirmation: build={pending.Manifest.BuildNumber}; mutations={journal.Mutations.Count}");
++            return journal;
++        }
++        catch (Exception applyFailure)
++        {
++            journal.Failure = $"{applyFailure.GetType().Name}: {applyFailure.Message}";
++            journal.Phase = UpdateApplyPhase.RollbackRequired;
++            await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++            MasterDebugLog.Write("UPDATER",
++                $"Apply failed; deterministic rollback starting. update={pending.UpdateId}", applyFailure);
++            try
++            {
++                await RollbackAsync(journal, CancellationToken.None).ConfigureAwait(false);
++            }
++            catch (Exception rollbackFailure)
++            {
++                journal.Phase = UpdateApplyPhase.RollbackRequired;
++                journal.Failure =
++                    $"Apply: {applyFailure.GetType().Name}: {applyFailure.Message}; " +
++                    $"Rollback: {rollbackFailure.GetType().Name}: {rollbackFailure.Message}";
++                await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                throw new AggregateException(
++                    "Update apply failed and rollback could not prove restoration.", applyFailure, rollbackFailure);
++            }
++
++            throw new InvalidOperationException("Update apply failed and the previous payload was restored.", applyFailure);
++        }
++    }
++
++    public async Task RollbackAsync(UpdateApplyJournal journal, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(journal);
++        if (!Path.GetFullPath(journal.InstallRoot)
++                .Equals(state.Paths.InstallRoot, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Update journal installation root does not match updater state.");
++        journal.Phase = UpdateApplyPhase.RollingBack;
++        await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++
++        for (var index = journal.Mutations.Count - 1; index >= 0; index--)
++        {
++            ct.ThrowIfCancellationRequested();
++            var mutation = journal.Mutations[index];
++            if (!mutation.MutationStarted || mutation.RollbackCompleted) continue;
++            var target = UpdatePathSafety.GetContainedPath(state.Paths.InstallRoot, mutation.RelativePath);
++            UpdatePathSafety.EnsureSafeFileDestination(state.Paths.InstallRoot, target);
++            if (mutation.PreviousExisted)
++            {
++                if (string.IsNullOrWhiteSpace(mutation.BackupPath) || !File.Exists(mutation.BackupPath))
++                    throw new InvalidDataException($"Rollback backup is missing: {mutation.RelativePath}");
++                var expected = mutation.PreviousSha256 ??
++                               throw new InvalidDataException($"Rollback hash is missing: {mutation.RelativePath}");
++                await mutator.ReplaceAsync(mutation.BackupPath, target, expected, ct).ConfigureAwait(false);
++            }
++            else if (File.Exists(target))
++            {
++                var expected = mutation.TargetSha256 ??
++                               throw new InvalidDataException(
++                                   $"Rollback cannot classify newly created file: {mutation.RelativePath}");
++                var actual = await HashFileAsync(target, ct).ConfigureAwait(false);
++                if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
++                    throw new InvalidDataException(
++                        $"Rollback found ambiguous bytes at a newly created path: {mutation.RelativePath}");
++                mutator.Delete(target);
++            }
++
++            mutation.RollbackCompleted = true;
++            await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++        }
++
++        journal.Phase = UpdateApplyPhase.RolledBack;
++        await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++        MasterDebugLog.Write("UPDATER", $"Rollback completed: update={journal.UpdateId}");
++    }
++
++    public async Task CommitAsync(UpdateApplyJournal journal, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(journal);
++        if (journal.Phase != UpdateApplyPhase.AppliedAwaitingHealth)
++            throw new InvalidOperationException($"Cannot commit updater journal from phase {journal.Phase}.");
++        journal.Phase = UpdateApplyPhase.Committed;
++        journal.Failure = null;
++        await state.SaveJournalAsync(journal, CancellationToken.None).ConfigureAwait(false);
++        state.ClearPending();
++        var rollbackRoot = state.Paths.RollbackDirectory(journal.UpdateId);
++        try
++        {
++            UpdatePathSafety.DeleteOwnedTreeSafe(rollbackRoot);
++        }
++        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
++        {
++            MasterDebugLog.Write("UPDATER",
++                $"Committed update but rollback cleanup was deferred: {rollbackRoot}", ex);
++        }
++        MasterDebugLog.Write("UPDATER", $"Update committed after healthy startup: update={journal.UpdateId}");
++        await Task.CompletedTask.ConfigureAwait(false);
++    }
++
++    private async Task<UpdateMutationRecord> PrepareMutationAsync(
++        string relative,
++        UpdateMutationKind kind,
++        string target,
++        string? targetSha,
++        string backupFilesRoot,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        UpdatePathSafety.EnsureSafeFileDestination(state.Paths.InstallRoot, target);
++        if (!File.Exists(target))
++        {
++            return new UpdateMutationRecord
++            {
++                RelativePath = relative,
++                Kind = kind,
++                PreviousExisted = false,
++                TargetSha256 = targetSha
++            };
++        }
++
++        var backup = UpdatePathSafety.GetContainedPath(backupFilesRoot, relative);
++        UpdatePathSafety.EnsureSafeFileDestination(backupFilesRoot, backup);
++        var previousSha = await CopyAndHashAsync(target, backup, ct).ConfigureAwait(false);
++        return new UpdateMutationRecord
++        {
++            RelativePath = relative,
++            Kind = kind,
++            PreviousExisted = true,
++            PreviousSha256 = previousSha,
++            BackupPath = backup,
++            TargetSha256 = targetSha
++        };
++    }
++
++    private static async Task<string> CopyAndHashAsync(
++        string source,
++        string destination,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var input = new FileStream(
++            source, FileMode.Open, FileAccess.Read, FileShare.Read, 256 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        await using var output = new FileStream(
++            destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 256 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
++        var buffer = new byte[256 * 1024];
++        while (true)
++        {
++            var read = await input.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
++            if (read == 0) break;
++            await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
++            hash.AppendData(buffer, 0, read);
++        }
++        await output.FlushAsync(ct).ConfigureAwait(false);
++        output.Flush(flushToDisk: true);
++        return Convert.ToHexString(hash.GetHashAndReset());
++    }
++
++    private async Task VerifyInstalledAsync(PendingUpdateState pending, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        foreach (var file in pending.Payload.Files)
++        {
++            ct.ThrowIfCancellationRequested();
++            var relative = UpdatePathSafety.NormalizePayloadPath(file.Path);
++            var path = UpdatePathSafety.GetContainedPath(state.Paths.InstallRoot, relative);
++            UpdatePathSafety.EnsureSafeFileDestination(state.Paths.InstallRoot, path);
++            var info = new FileInfo(path);
++            if (!info.Exists || info.Length != file.Size)
++                throw new InvalidDataException($"Installed updater payload size mismatch: {relative}");
++            var actual = await HashFileAsync(path, ct).ConfigureAwait(false);
++            if (!actual.Equals(file.Sha256, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidDataException($"Installed updater payload hash mismatch: {relative}");
++        }
++
++        var installedManifest = Path.Combine(state.Paths.InstallRoot, UpdateConstants.PayloadManifestName);
++        var manifestHash = await HashFileAsync(installedManifest, ct).ConfigureAwait(false);
++        if (!manifestHash.Equals(pending.Manifest.PayloadManifestSha256, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Installed payload manifest hash mismatch.");
++    }
++
++    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var stream = new FileStream(
++            path, FileMode.Open, FileAccess.Read, FileShare.Read, 256 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
++    }
++
++    private static void EnsureRollbackCapacity(string rollbackRoot, ProductPayloadManifest previous)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        try
++        {
++            var root = Path.GetPathRoot(Path.GetFullPath(rollbackRoot));
++            if (string.IsNullOrWhiteSpace(root)) return;
++            var required = checked(previous.Files.Sum(static x => x.Size) + 512L * 1024 * 1024);
++            if (new DriveInfo(root).AvailableFreeSpace < required)
++                throw new IOException(
++                    $"Not enough free space for updater rollback. Need at least {required} bytes.");
++        }
++        catch (ArgumentException)
++        {
++            // Streamed backup writes still fail closed if a non-drive target runs out of space.
++        }
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdateCoordinator.cs b/src/MhwModManager.Updater/UpdateCoordinator.cs
+new file mode 100644
+index 0000000..3cbb4d8
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdateCoordinator.cs
+@@ -0,0 +1,285 @@
++using System.Diagnostics;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public sealed class UpdateCoordinator : IDisposable
++{
++    private readonly BuildIdentity current;
++    private readonly UpdateStateStore state;
++    private readonly UpdatePackageService packages;
++    private readonly IUpdateSource source;
++    private readonly HttpClient? ownedHttp;
++    private readonly SemaphoreSlim gate = new(1, 1);
++    private bool disposed;
++
++    public UpdateCoordinator(
++        BuildIdentity current,
++        UpdateStateStore state,
++        UpdatePackageService packages,
++        IUpdateSource source,
++        IUpdateCredentialStore credentialStore,
++        HttpClient? ownedHttp = null)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        this.current = current ?? throw new ArgumentNullException(nameof(current));
++        this.state = state ?? throw new ArgumentNullException(nameof(state));
++        this.packages = packages ?? throw new ArgumentNullException(nameof(packages));
++        this.source = source ?? throw new ArgumentNullException(nameof(source));
++        CredentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
++        this.ownedHttp = ownedHttp;
++        Snapshot = new UpdateSnapshot(
++            UpdateStatusKind.Idle,
++            $"Current {current.Display}",
++            current);
++    }
++
++    public IUpdateCredentialStore CredentialStore { get; }
++    public UpdateSnapshot Snapshot { get; private set; }
++    public event Action<UpdateSnapshot>? Changed;
++
++    public static UpdateCoordinator CreateDefault(string installRoot, BuildIdentity identity)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var paths = UpdateStatePaths.ForInstallRoot(installRoot);
++        var state = new UpdateStateStore(paths);
++        var credentials = new WindowsCredentialStore();
++        var http = GitHubUpdateSource.CreateDefaultHttpClient();
++        var source = new GitHubUpdateSource(http, credentials);
++        var packages = new UpdatePackageService(state);
++        return new UpdateCoordinator(identity, state, packages, source, credentials, http);
++    }
++
++    public async Task<UpdateSnapshot> CheckAndStageAsync(
++        IReadOnlyList<string> restartArguments,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await gate.WaitAsync(ct).ConfigureAwait(false);
++        try
++        {
++            SetSnapshot(UpdateStatusKind.Checking, $"Checking for updates… Current {current.Display}");
++            MasterDebugLog.Write("UPDATER",
++                $"Check started: product={current.ProductVersion}; build={current.BuildNumber}; source={current.SourceSha}");
++
++            var candidate = await source.GetLatestAsync(ct).ConfigureAwait(false);
++            if (candidate is null)
++            {
++                SetSnapshot(UpdateStatusKind.Current, $"No published update is available. Current {current.Display}");
++                return Snapshot;
++            }
++
++            UpdateOrdering.ValidateNoAmbiguousSameBuild(current, candidate.Manifest);
++            if (!UpdateOrdering.IsNewer(current, candidate.Manifest))
++            {
++                SetSnapshot(UpdateStatusKind.Current,
++                    $"Up to date. Current {current.Display}; latest build {candidate.Manifest.BuildNumber}.",
++                    candidate.Manifest.Identity);
++                MasterDebugLog.Write("UPDATER",
++                    $"No update: current={current.BuildNumber}; remote={candidate.Manifest.BuildNumber}");
++                return Snapshot;
++            }
++
++            SetSnapshot(UpdateStatusKind.UpdateAvailable,
++                $"Update available: {candidate.Manifest.Identity.Display}", candidate.Manifest.Identity);
++            var installed = await ManagedInstall.TryLoadAsync(
++                state.Paths.InstallRoot, ct).ConfigureAwait(false);
++            if (!current.IsPublishedBuild || installed is null)
++            {
++                SetSnapshot(UpdateStatusKind.Disabled,
++                    $"Build {candidate.Manifest.BuildNumber} is available, but automatic apply is disabled for this development/unmanaged installation.",
++                    candidate.Manifest.Identity);
++                return Snapshot;
++            }
++
++            if (installed.Value.Payload.BuildNumber != current.BuildNumber ||
++                !installed.Value.Payload.SourceSha.Equals(current.SourceSha, StringComparison.OrdinalIgnoreCase))
++            {
++                SetSnapshot(UpdateStatusKind.Disabled,
++                    "Automatic apply is disabled because the installed payload identity does not match the running build.",
++                    candidate.Manifest.Identity);
++                return Snapshot;
++            }
++
++            var archive = Path.Combine(state.Paths.DownloadsRoot, candidate.Manifest.Artifact);
++            SetSnapshot(UpdateStatusKind.Downloading,
++                $"Downloading verified build {candidate.Manifest.BuildNumber}…", candidate.Manifest.Identity);
++            var reuse = false;
++            if (File.Exists(archive))
++            {
++                try
++                {
++                    await UpdatePackageService.VerifyArchiveAsync(
++                        candidate.Manifest, archive, ct).ConfigureAwait(false);
++                    reuse = true;
++                }
++                catch (Exception ex) when (ex is IOException or InvalidDataException)
++                {
++                    MasterDebugLog.Write("UPDATER", "Cached update archive failed verification and will be replaced.", ex);
++                    File.Delete(archive);
++                }
++            }
++            if (!reuse)
++                await source.DownloadArtifactAsync(candidate, archive, ct).ConfigureAwait(false);
++
++            var existingStage = state.Paths.StageDirectory(candidate.Manifest.ReleaseTag);
++            if (Directory.Exists(existingStage))
++            {
++                var pending = await state.LoadPendingAsync(ct).ConfigureAwait(false);
++                if (pending is not null && pending.UpdateId.Equals(candidate.Manifest.ReleaseTag, StringComparison.Ordinal))
++                {
++                    await packages.VerifyStagedAsync(pending, ct).ConfigureAwait(false);
++                    SetSnapshot(UpdateStatusKind.Staged,
++                        $"Verified build {candidate.Manifest.BuildNumber} is staged and ready to install.",
++                        candidate.Manifest.Identity, pending.UpdateId);
++                    return Snapshot;
++                }
++                UpdatePathSafety.DeleteOwnedTreeSafe(existingStage);
++            }
++
++            SetSnapshot(UpdateStatusKind.Staging,
++                $"Verifying and staging build {candidate.Manifest.BuildNumber}…", candidate.Manifest.Identity);
++            var staged = await packages.StageAsync(
++                candidate.Manifest,
++                archive,
++                UpdateCommandLine.FilterUserArguments(restartArguments),
++                ct).ConfigureAwait(false);
++            SetSnapshot(UpdateStatusKind.Staged,
++                $"Verified build {candidate.Manifest.BuildNumber} is staged and ready to install.",
++                candidate.Manifest.Identity,
++                staged.UpdateId);
++            return Snapshot;
++        }
++        catch (UpdateAuthenticationException ex)
++        {
++            MasterDebugLog.Write("UPDATER", "Update authentication failed without affecting application startup.", ex);
++            SetSnapshot(UpdateStatusKind.AuthenticationRequired, ex.Message);
++            return Snapshot;
++        }
++        catch (OperationCanceledException) when (ct.IsCancellationRequested)
++        {
++            SetSnapshot(UpdateStatusKind.Idle, $"Update check cancelled. Current {current.Display}");
++            throw;
++        }
++        catch (Exception ex) when (ex is UpdateTransportException
++                                   or HttpRequestException
++                                   or IOException
++                                   or InvalidDataException
++                                   or UnauthorizedAccessException)
++        {
++            MasterDebugLog.Write("UPDATER", "Update check/download/staging failed safely.", ex);
++            SetSnapshot(UpdateStatusKind.Error,
++                $"Update check failed safely: {ex.Message} Current application remains unchanged.");
++            return Snapshot;
++        }
++        finally
++        {
++            gate.Release();
++        }
++    }
++
++    public async Task<bool> LaunchStagedHelperAsync(int currentPid, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await gate.WaitAsync(ct).ConfigureAwait(false);
++        try
++        {
++            var pending = await state.LoadPendingAsync(ct).ConfigureAwait(false);
++            if (pending is null) return false;
++            await packages.VerifyStagedAsync(pending, ct).ConfigureAwait(false);
++            var start = UpdateCommandLine.BuildHelperStartInfo(pending, currentPid);
++            ProcessDebug.Start(start, "verified updater helper");
++            SetSnapshot(UpdateStatusKind.Applying,
++                $"Installing verified build {pending.Manifest.BuildNumber}; application will restart.",
++                pending.Manifest.Identity,
++                pending.UpdateId);
++            MasterDebugLog.Write("UPDATER",
++                $"Updater helper launched: pid={currentPid}; targetBuild={pending.Manifest.BuildNumber}; source={pending.Manifest.SourceSha}");
++            return true;
++        }
++        finally
++        {
++            gate.Release();
++        }
++    }
++
++    public async Task ConfirmHealthyStartupIfPendingAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await gate.WaitAsync(ct).ConfigureAwait(false);
++        try
++        {
++            var pending = await state.LoadPendingAsync(ct).ConfigureAwait(false);
++            if (pending is null) return;
++            var journal = await state.LoadJournalAsync(ct).ConfigureAwait(false);
++            if (journal?.Phase != UpdateApplyPhase.AppliedAwaitingHealth ||
++                !journal.UpdateId.Equals(pending.UpdateId, StringComparison.Ordinal))
++                return;
++            if (current.BuildNumber != pending.Manifest.BuildNumber ||
++                !current.SourceSha.Equals(pending.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase))
++                return;
++
++            await state.WriteConfirmationAsync(pending.UpdateId, current, ct).ConfigureAwait(false);
++            MasterDebugLog.Write("UPDATER",
++                $"Healthy startup checkpoint recorded: build={current.BuildNumber}; source={current.SourceSha}");
++            SetSnapshot(UpdateStatusKind.Current,
++                $"Updated successfully. Current {current.Display}", current);
++        }
++        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
++        {
++            MasterDebugLog.Write("UPDATER",
++                "Could not record updater startup confirmation; rollback material is retained.", ex);
++        }
++        finally
++        {
++            gate.Release();
++        }
++    }
++
++    public async Task TryCleanupCommittedResidueAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await gate.WaitAsync(ct).ConfigureAwait(false);
++        try
++        {
++            var journal = await state.LoadJournalAsync(ct).ConfigureAwait(false);
++            if (journal?.Phase != UpdateApplyPhase.Committed) return;
++            if (Directory.Exists(journal.StagingRoot))
++            {
++                try
++                {
++                    UpdatePathSafety.DeleteOwnedTreeSafe(journal.StagingRoot);
++                }
++                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
++                {
++                    MasterDebugLog.Write("UPDATER", "Committed staging cleanup remains deferred.", ex);
++                }
++            }
++        }
++        finally
++        {
++            gate.Release();
++        }
++    }
++
++    private void SetSnapshot(
++        UpdateStatusKind status,
++        string message,
++        BuildIdentity? latest = null,
++        string? pendingId = null)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        Snapshot = new UpdateSnapshot(status, message, current, latest, pendingId);
++        Changed?.Invoke(Snapshot);
++    }
++
++    public void Dispose()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (disposed) return;
++        disposed = true;
++        gate.Dispose();
++        ownedHttp?.Dispose();
++        GC.SuppressFinalize(this);
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdateModels.cs b/src/MhwModManager.Updater/UpdateModels.cs
+new file mode 100644
+index 0000000..7757e18
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdateModels.cs
+@@ -0,0 +1,189 @@
++using System.Text.Json;
++using System.Text.Json.Serialization;
++
++namespace MhwModManager.Updater;
++
++public static class UpdateConstants
++{
++    public const int ManifestSchemaVersion = 1;
++    public const int PayloadSchemaVersion = 1;
++    public const int JournalSchemaVersion = 1;
++    public const string ProductId = "MhwManualModManager";
++    public const string Channel = "main";
++    public const string Repository = "fengie/mhw-mods";
++    public const string ReleaseTagPrefix = "mhw-main-";
++    public const string UpdateManifestName = "mhw-update-manifest.json";
++    public const string PayloadManifestName = "mhw-payload-manifest.json";
++    public const string ManagedInstallMarkerName = "mhw-managed-install.json";
++    public const string ExecutableName = "MHW Mod Manager.exe";
++    public const long MaxManifestBytes = 4L * 1024 * 1024;
++    public const long MaxArtifactBytes = 4L * 1024 * 1024 * 1024;
++    public const long MaxExpandedBytes = 8L * 1024 * 1024 * 1024;
++    public const int MaxPayloadFiles = 50_000;
++}
++
++public sealed record BuildIdentity(
++    string ProductVersion,
++    string SourceSha,
++    long BuildNumber,
++    long RunId,
++    DateTimeOffset? BuiltUtc)
++{
++    public bool IsPublishedBuild =>
++        BuildNumber > 0 &&
++        SourceSha.Length == 40 &&
++        SourceSha.All(static c => Uri.IsHexDigit(c));
++
++    public string ShortSourceSha => SourceSha.Length >= 12 ? SourceSha[..12] : SourceSha;
++    public string Display => $"v{ProductVersion} · build {BuildNumber} · {ShortSourceSha}";
++}
++
++public sealed class UpdateManifest
++{
++    public int SchemaVersion { get; init; }
++    public string Channel { get; init; } = string.Empty;
++    public string ProductVersion { get; init; } = string.Empty;
++    public string SourceSha { get; init; } = string.Empty;
++    public long BuildNumber { get; init; }
++    public long RunId { get; init; }
++    public string Repository { get; init; } = string.Empty;
++    public string ReleaseTag { get; init; } = string.Empty;
++    public string Artifact { get; init; } = string.Empty;
++    public long Size { get; init; }
++    public string Sha256 { get; init; } = string.Empty;
++    public string PayloadManifestSha256 { get; init; } = string.Empty;
++    public DateTimeOffset CreatedUtc { get; init; }
++    public DateTimeOffset PublishedUtc { get; init; }
++    public int MinimumUpdaterSchemaVersion { get; init; } = 1;
++
++    [JsonIgnore]
++    public BuildIdentity Identity => new(ProductVersion, SourceSha, BuildNumber, RunId, CreatedUtc);
++}
++
++public sealed class ProductPayloadManifest
++{
++    public int SchemaVersion { get; init; }
++    public string ProductId { get; init; } = string.Empty;
++    public string Channel { get; init; } = string.Empty;
++    public string ProductVersion { get; init; } = string.Empty;
++    public string SourceSha { get; init; } = string.Empty;
++    public long BuildNumber { get; init; }
++    public string Executable { get; init; } = string.Empty;
++    public IReadOnlyList<ProductFileEntry> Files { get; init; } = [];
++}
++
++public sealed record ProductFileEntry(string Path, long Size, string Sha256);
++
++public sealed class ManagedInstallMarker
++{
++    public int SchemaVersion { get; init; } = 1;
++    public string ProductId { get; init; } = UpdateConstants.ProductId;
++    public string Channel { get; init; } = UpdateConstants.Channel;
++    public string ProductVersion { get; init; } = string.Empty;
++    public string SourceSha { get; init; } = string.Empty;
++    public long BuildNumber { get; init; }
++    public string InstallMode { get; init; } = "managed-portable";
++}
++
++public enum UpdateStatusKind
++{
++    Idle,
++    Checking,
++    AuthenticationRequired,
++    Disabled,
++    Current,
++    UpdateAvailable,
++    Downloading,
++    Staging,
++    Staged,
++    Applying,
++    Error
++}
++
++public sealed record UpdateSnapshot(
++    UpdateStatusKind Status,
++    string Message,
++    BuildIdentity Current,
++    BuildIdentity? Latest = null,
++    string? PendingUpdateId = null);
++
++public sealed class UpdateCandidate
++{
++    public required UpdateManifest Manifest { get; init; }
++    public required Uri ArtifactApiUri { get; init; }
++}
++
++public sealed class PendingUpdateState
++{
++    public int SchemaVersion { get; init; } = 1;
++    public string UpdateId { get; init; } = string.Empty;
++    public string InstallRoot { get; init; } = string.Empty;
++    public string StagingRoot { get; init; } = string.Empty;
++    public string ArchivePath { get; init; } = string.Empty;
++    public UpdateManifest Manifest { get; init; } = new();
++    public ProductPayloadManifest Payload { get; init; } = new();
++    public string RestartExecutable { get; init; } = UpdateConstants.ExecutableName;
++    public IReadOnlyList<string> RestartArguments { get; init; } = [];
++    public DateTimeOffset StagedUtc { get; init; }
++}
++
++public enum UpdateApplyPhase
++{
++    ReadyToApply,
++    WaitingForProcessExit,
++    Applying,
++    AppliedAwaitingHealth,
++    Committed,
++    RollbackRequired,
++    RollingBack,
++    RolledBack,
++    Failed
++}
++
++public enum UpdateMutationKind
++{
++    ReplaceOrAdd,
++    Retire
++}
++
++public sealed class UpdateMutationRecord
++{
++    public required string RelativePath { get; init; }
++    public UpdateMutationKind Kind { get; init; }
++    public bool PreviousExisted { get; init; }
++    public string? PreviousSha256 { get; init; }
++    public string? BackupPath { get; init; }
++    public string? TargetSha256 { get; init; }
++    public bool MutationStarted { get; set; }
++    public bool MutationCompleted { get; set; }
++    public bool RollbackCompleted { get; set; }
++}
++
++public sealed class UpdateApplyJournal
++{
++    public int SchemaVersion { get; init; } = UpdateConstants.JournalSchemaVersion;
++    public string UpdateId { get; init; } = string.Empty;
++    public string InstallRoot { get; init; } = string.Empty;
++    public string StagingRoot { get; init; } = string.Empty;
++    public BuildIdentity Target { get; init; } = new("", "", 0, 0, null);
++    public UpdateApplyPhase Phase { get; set; }
++    public List<UpdateMutationRecord> Mutations { get; init; } = [];
++    public string? Failure { get; set; }
++    public DateTimeOffset UpdatedUtc { get; set; } = DateTimeOffset.UtcNow;
++}
++
++public static class UpdateJson
++{
++    public static JsonSerializerOptions CreateOptions()
++    {
++        using var __mhwTrace = MhwModManager.Core.MasterDebugLog.BeginMethod();
++        return new JsonSerializerOptions
++        {
++            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
++            PropertyNameCaseInsensitive = false,
++            WriteIndented = true,
++            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
++            Converters = { new JsonStringEnumConverter() }
++        };
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdatePackageService.cs b/src/MhwModManager.Updater/UpdatePackageService.cs
+new file mode 100644
+index 0000000..006791b
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdatePackageService.cs
+@@ -0,0 +1,318 @@
++using System.IO.Compression;
++using System.Security.Cryptography;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public sealed class UpdatePackageService
++{
++    private readonly UpdateStateStore state;
++
++    public UpdatePackageService(UpdateStateStore state)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        this.state = state ?? throw new ArgumentNullException(nameof(state));
++    }
++
++    public async Task<PendingUpdateState> StageAsync(
++        UpdateManifest manifest,
++        string archivePath,
++        IReadOnlyList<string> restartArguments,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(manifest);
++        UpdateValidation.ValidateManifest(manifest);
++        await VerifyArchiveAsync(manifest, archivePath, ct).ConfigureAwait(false);
++
++        var updateId = manifest.ReleaseTag;
++        var stageRoot = state.Paths.StageDirectory(updateId);
++        if (Directory.Exists(stageRoot))
++            throw new IOException($"Updater staging directory already exists: {stageRoot}");
++        UpdatePathSafety.EnsureSafeDirectoryPath(state.Paths.StagingRoot, stageRoot);
++        var payloadRoot = Path.Combine(stageRoot, "payload");
++        UpdatePathSafety.EnsureSafeDirectoryPath(stageRoot, payloadRoot);
++
++        try
++        {
++            var payload = await ExtractAndVerifyAsync(
++                manifest, archivePath, stageRoot, payloadRoot, ct).ConfigureAwait(false);
++            var pending = new PendingUpdateState
++            {
++                UpdateId = updateId,
++                InstallRoot = state.Paths.InstallRoot,
++                StagingRoot = stageRoot,
++                ArchivePath = archivePath,
++                Manifest = manifest,
++                Payload = payload,
++                RestartExecutable = payload.Executable,
++                RestartArguments = restartArguments.ToArray(),
++                StagedUtc = DateTimeOffset.UtcNow
++            };
++            await state.SavePendingAsync(pending, ct).ConfigureAwait(false);
++            MasterDebugLog.Write("UPDATER",
++                $"Staging completed: build={manifest.BuildNumber}; source={manifest.SourceSha}; root={stageRoot}");
++            return pending;
++        }
++        catch
++        {
++            MasterDebugLog.Write("UPDATER", $"Staging failed: build={manifest.BuildNumber}; root={stageRoot}");
++            throw;
++        }
++    }
++
++    public async Task VerifyStagedAsync(PendingUpdateState pending, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(pending);
++        UpdateValidation.ValidateManifestAgreement(pending.Manifest, pending.Payload);
++        var stageRoot = Path.GetFullPath(pending.StagingRoot);
++        var expectedStage = Path.GetFullPath(state.Paths.StageDirectory(pending.UpdateId));
++        if (!stageRoot.Equals(expectedStage, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Pending update staging path does not match its trusted state root.");
++        UpdatePathSafety.EnsureExistingRootIsPhysical(stageRoot);
++
++        var manifestPath = Path.Combine(stageRoot, UpdateConstants.PayloadManifestName);
++        var manifestBytes = await ManagedInstall.ReadBoundedFileAsync(manifestPath, ct).ConfigureAwait(false);
++        var manifestHash = Convert.ToHexString(SHA256.HashData(manifestBytes));
++        if (!manifestHash.Equals(pending.Manifest.PayloadManifestSha256, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Staged payload manifest hash changed after verification.");
++
++        var parsed = UpdateValidation.ParsePayloadManifest(manifestBytes);
++        UpdateValidation.ValidateManifestAgreement(pending.Manifest, parsed);
++        var payloadRoot = Path.Combine(stageRoot, "payload");
++        UpdatePathSafety.EnsureExistingRootIsPhysical(payloadRoot);
++
++        var expected = parsed.Files.ToDictionary(
++            static x => UpdatePathSafety.NormalizePayloadPath(x.Path),
++            StringComparer.OrdinalIgnoreCase);
++        var actualPaths = EnumeratePayloadFilesSafely(payloadRoot);
++        if (actualPaths.Count != expected.Count)
++            throw new InvalidDataException("Staged payload file count changed after verification.");
++
++        foreach (var (relative, fullPath) in actualPaths)
++        {
++            ct.ThrowIfCancellationRequested();
++            if (!expected.TryGetValue(relative, out var entry))
++                throw new InvalidDataException($"Unexpected staged updater file: {relative}");
++            var info = new FileInfo(fullPath);
++            if (info.Length != entry.Size)
++                throw new InvalidDataException($"Staged updater file size changed: {relative}");
++            var hash = await HashFileAsync(fullPath, ct).ConfigureAwait(false);
++            if (!hash.Equals(entry.Sha256, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidDataException($"Staged updater file hash changed: {relative}");
++        }
++    }
++
++    public static async Task VerifyArchiveAsync(
++        UpdateManifest manifest,
++        string archivePath,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var info = new FileInfo(archivePath);
++        if (!info.Exists) throw new FileNotFoundException("Update archive was not found.", archivePath);
++        if (info.Length != manifest.Size)
++            throw new InvalidDataException(
++                $"Update archive size mismatch. Expected {manifest.Size}, got {info.Length}.");
++        var actual = await HashFileAsync(archivePath, ct).ConfigureAwait(false);
++        if (!actual.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException(
++                $"Update archive SHA-256 mismatch. Expected {manifest.Sha256}; actual {actual}.");
++    }
++
++    private static async Task<ProductPayloadManifest> ExtractAndVerifyAsync(
++        UpdateManifest manifest,
++        string archivePath,
++        string stageRoot,
++        string payloadRoot,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var file = new FileStream(
++            archivePath, FileMode.Open, FileAccess.Read, FileShare.Read, 256 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        using var zip = new ZipArchive(file, ZipArchiveMode.Read, leaveOpen: false);
++        if (zip.Entries.Count > UpdateConstants.MaxPayloadFiles + 10_000)
++            throw new InvalidDataException("Update archive contains too many entries.");
++
++        ZipArchiveEntry? manifestEntry = null;
++        var normalizedEntries = new Dictionary<string, ZipArchiveEntry>(StringComparer.OrdinalIgnoreCase);
++        foreach (var entry in zip.Entries)
++        {
++            ct.ThrowIfCancellationRequested();
++            if (LooksLikeLink(entry))
++                throw new InvalidDataException($"Update archive contains a link/reparse entry: {entry.FullName}");
++            var raw = entry.FullName.Replace('/', '\\');
++            var isDirectory = raw.EndsWith('\\');
++            var candidate = isDirectory ? raw.TrimEnd('\\') : raw;
++            if (candidate.Length == 0) continue;
++            if (!MhwModManager.Core.PathRules.IsSafeArchiveRelativePath(candidate))
++                throw new InvalidDataException($"Unsafe update archive path: {entry.FullName}");
++
++            if (isDirectory)
++            {
++                UpdatePathSafety.NormalizePayloadPath(candidate);
++                continue;
++            }
++
++            var normalized = UpdatePathSafety.NormalizePayloadPath(candidate);
++            if (!normalizedEntries.TryAdd(normalized, entry))
++                throw new InvalidDataException(
++                    $"Update archive contains a duplicate/case-colliding path: {entry.FullName}");
++            if (normalized.Equals(UpdateConstants.PayloadManifestName, StringComparison.OrdinalIgnoreCase))
++                manifestEntry = entry;
++        }
++
++        if (manifestEntry is null)
++            throw new InvalidDataException("Update archive is missing its payload manifest.");
++        if (manifestEntry.Length <= 0 || manifestEntry.Length > UpdateConstants.MaxManifestBytes)
++            throw new InvalidDataException("Payload manifest entry has an invalid size.");
++
++        var manifestBytes = await ReadEntryBytesAsync(
++            manifestEntry, UpdateConstants.MaxManifestBytes, ct).ConfigureAwait(false);
++        var payloadHash = Convert.ToHexString(SHA256.HashData(manifestBytes));
++        if (!payloadHash.Equals(manifest.PayloadManifestSha256, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Payload manifest SHA-256 does not match update metadata.");
++        var payload = UpdateValidation.ParsePayloadManifest(manifestBytes);
++        UpdateValidation.ValidateManifestAgreement(manifest, payload);
++
++        var expected = payload.Files.ToDictionary(
++            static x => UpdatePathSafety.NormalizePayloadPath(x.Path),
++            StringComparer.OrdinalIgnoreCase);
++        if (normalizedEntries.Count != expected.Count + 1)
++            throw new InvalidDataException("Update archive contains unmanifested or missing payload files.");
++
++        long actualTotal = 0;
++        foreach (var entry in payload.Files)
++        {
++            ct.ThrowIfCancellationRequested();
++            var normalized = UpdatePathSafety.NormalizePayloadPath(entry.Path);
++            if (!normalizedEntries.TryGetValue(normalized, out var zipEntry))
++                throw new InvalidDataException($"Update archive is missing payload file: {normalized}");
++            if (zipEntry.Length != entry.Size)
++                throw new InvalidDataException($"Update entry size disagrees with payload manifest: {normalized}");
++            actualTotal = checked(actualTotal + entry.Size);
++            if (actualTotal > UpdateConstants.MaxExpandedBytes)
++                throw new InvalidDataException("Update payload exceeds the expanded-size budget.");
++            var destination = UpdatePathSafety.GetContainedPath(payloadRoot, normalized);
++            UpdatePathSafety.EnsureSafeFileDestination(payloadRoot, destination);
++            await ExtractEntryVerifiedAsync(zipEntry, destination, entry, ct).ConfigureAwait(false);
++        }
++
++        var stageManifestPath = Path.Combine(stageRoot, UpdateConstants.PayloadManifestName);
++        await File.WriteAllBytesAsync(stageManifestPath, manifestBytes, ct).ConfigureAwait(false);
++        return payload;
++    }
++
++    private static async Task ExtractEntryVerifiedAsync(
++        ZipArchiveEntry entry,
++        string destination,
++        ProductFileEntry expected,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var input = entry.Open();
++        await using var output = new FileStream(
++            destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 256 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
++        var buffer = new byte[256 * 1024];
++        long total = 0;
++        try
++        {
++            while (true)
++            {
++                ct.ThrowIfCancellationRequested();
++                var read = await input.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
++                if (read == 0) break;
++                total = checked(total + read);
++                if (total > expected.Size)
++                    throw new InvalidDataException($"Update entry exceeded declared size: {expected.Path}");
++                await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
++                hash.AppendData(buffer, 0, read);
++            }
++            await output.FlushAsync(ct).ConfigureAwait(false);
++            output.Flush(flushToDisk: true);
++            if (total != expected.Size)
++                throw new InvalidDataException($"Update entry was truncated: {expected.Path}");
++            var actual = Convert.ToHexString(hash.GetHashAndReset());
++            if (!actual.Equals(expected.Sha256, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidDataException($"Update entry SHA-256 mismatch: {expected.Path}");
++        }
++        catch
++        {
++            try { output.Dispose(); if (File.Exists(destination)) File.Delete(destination); } catch { }
++            throw;
++        }
++    }
++
++    private static async Task<byte[]> ReadEntryBytesAsync(
++        ZipArchiveEntry entry,
++        long maxBytes,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var input = entry.Open();
++        await using var output = new MemoryStream();
++        var buffer = new byte[64 * 1024];
++        long total = 0;
++        while (true)
++        {
++            var read = await input.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
++            if (read == 0) break;
++            total = checked(total + read);
++            if (total > maxBytes) throw new InvalidDataException("Update control entry exceeded its size limit.");
++            await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
++        }
++        return output.ToArray();
++    }
++
++    private static Dictionary<string, string> EnumeratePayloadFilesSafely(string payloadRoot)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
++        var pending = new Stack<string>();
++        pending.Push(payloadRoot);
++        while (pending.Count > 0)
++        {
++            var directory = pending.Pop();
++            if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
++                throw new InvalidDataException($"Staged payload traverses a reparse point: {directory}");
++            foreach (var child in Directory.EnumerateFileSystemEntries(directory))
++            {
++                var attributes = File.GetAttributes(child);
++                if ((attributes & FileAttributes.ReparsePoint) != 0)
++                    throw new InvalidDataException($"Staged payload contains a reparse point: {child}");
++                if ((attributes & FileAttributes.Directory) != 0)
++                {
++                    pending.Push(child);
++                    continue;
++                }
++
++                var relative = UpdatePathSafety.NormalizePayloadPath(
++                    Path.GetRelativePath(payloadRoot, child));
++                if (!result.TryAdd(relative, child))
++                    throw new InvalidDataException($"Staged payload contains a case collision: {relative}");
++            }
++        }
++        return result;
++    }
++
++    private static bool LooksLikeLink(ZipArchiveEntry entry)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var unixType = (entry.ExternalAttributes >> 16) & 0xF000;
++        var dos = (FileAttributes)(entry.ExternalAttributes & 0xFFFF);
++        return unixType == 0xA000 || (dos & FileAttributes.ReparsePoint) != 0;
++    }
++
++    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var stream = new FileStream(
++            path, FileMode.Open, FileAccess.Read, FileShare.Read, 256 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdatePathSafety.cs b/src/MhwModManager.Updater/UpdatePathSafety.cs
+new file mode 100644
+index 0000000..c7d2038
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdatePathSafety.cs
+@@ -0,0 +1,178 @@
++using System.Security.Cryptography;
++using System.Text;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public static class UpdatePathSafety
++{
++    private static readonly string[] ProtectedRootNames =
++    [
++        "State",
++        "Mods",
++        "Inbox",
++        "Mods Archive",
++        "Games",
++        "BuildLogs"
++    ];
++
++    public static string NormalizePayloadPath(string relativePath)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (!PathRules.IsSafeArchiveRelativePath(relativePath))
++            throw new InvalidDataException($"Unsafe updater payload path: {relativePath}");
++        var normalized = relativePath.Replace('/', '\\');
++        var segments = normalized.Split('\\');
++        if (segments.Any(static segment => segment.Length == 0))
++            throw new InvalidDataException($"Updater payload path has an empty segment: {relativePath}");
++        if (ProtectedRootNames.Contains(segments[0], StringComparer.OrdinalIgnoreCase))
++            throw new InvalidDataException($"Updater payload path targets protected user data: {relativePath}");
++        if (normalized.Equals("MHW-DEBUG-ALL.log", StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("The mutable root debug log is not updater-owned.");
++        return normalized;
++    }
++
++    public static string GetContainedPath(string root, string relativePath)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var normalized = NormalizePayloadPath(relativePath);
++        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
++        var full = Path.GetFullPath(Path.Combine(fullRoot, normalized));
++        var prefix = fullRoot + Path.DirectorySeparatorChar;
++        if (!full.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException($"Updater path escapes trusted root: {relativePath}");
++        return full;
++    }
++
++    public static void EnsureExistingRootIsPhysical(string root)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
++        if (!Directory.Exists(fullRoot))
++            throw new DirectoryNotFoundException($"Updater trusted root does not exist: {fullRoot}");
++        if ((File.GetAttributes(fullRoot) & FileAttributes.ReparsePoint) != 0)
++            throw new InvalidDataException($"Updater trusted root is a reparse point: {fullRoot}");
++    }
++
++    public static void EnsureDirectoryTreeSafe(string directory)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var full = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar);
++        var root = Path.GetPathRoot(full);
++        if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
++            throw new DirectoryNotFoundException($"Updater path root does not exist: {full}");
++        var current = root.TrimEnd(Path.DirectorySeparatorChar);
++        if ((File.GetAttributes(root) & FileAttributes.ReparsePoint) != 0)
++            throw new InvalidDataException($"Updater filesystem root is a reparse point: {root}");
++
++        foreach (var segment in Path.GetRelativePath(root, full)
++                     .Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
++        {
++            current = Path.Combine(current, segment);
++            if (Directory.Exists(current))
++            {
++                if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
++                    throw new InvalidDataException($"Updater path traverses a reparse point: {current}");
++                continue;
++            }
++
++            Directory.CreateDirectory(current);
++            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
++                throw new InvalidDataException($"Updater path traverses a reparse point: {current}");
++        }
++    }
++
++    public static void EnsureSafeDirectoryPath(string root, string directory)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
++        var target = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar);
++        var prefix = fullRoot + Path.DirectorySeparatorChar;
++        if (!target.Equals(fullRoot, StringComparison.OrdinalIgnoreCase) &&
++            !target.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException($"Updater directory escapes trusted root: {target}");
++
++        EnsureExistingRootIsPhysical(fullRoot);
++        if (target.Equals(fullRoot, StringComparison.OrdinalIgnoreCase)) return;
++
++        var current = fullRoot;
++        foreach (var segment in Path.GetRelativePath(fullRoot, target)
++                     .Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
++        {
++            current = Path.Combine(current, segment);
++            if (Directory.Exists(current))
++            {
++                if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
++                    throw new InvalidDataException($"Updater path traverses a reparse point: {current}");
++                continue;
++            }
++
++            Directory.CreateDirectory(current);
++            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
++                throw new InvalidDataException($"Updater path traverses a reparse point: {current}");
++        }
++    }
++
++    public static void EnsureSafeFileDestination(string root, string destination)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
++        var full = Path.GetFullPath(destination);
++        var prefix = fullRoot + Path.DirectorySeparatorChar;
++        if (!full.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException($"Updater file escapes trusted root: {destination}");
++        var parent = Path.GetDirectoryName(full) ??
++                     throw new InvalidDataException($"Updater destination has no parent: {destination}");
++        EnsureSafeDirectoryPath(fullRoot, parent);
++        if (File.Exists(full) && (File.GetAttributes(full) & FileAttributes.ReparsePoint) != 0)
++            throw new InvalidDataException($"Updater destination is a reparse point: {full}");
++    }
++
++    public static string InstallationInstanceId(string installRoot)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var canonical = Path.GetFullPath(installRoot)
++            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
++            .ToUpperInvariant();
++        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))[..24].ToLowerInvariant();
++    }
++
++    public static bool IsProtectedUserPath(string relativePath)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var normalized = relativePath.Replace('/', '\\').TrimStart('\\');
++        var first = normalized.Split('\\', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
++        return first is not null &&
++               ProtectedRootNames.Contains(first, StringComparer.OrdinalIgnoreCase);
++    }
++
++    public static void DeleteOwnedTreeSafe(string directory)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (!Directory.Exists(directory)) return;
++        EnsureExistingRootIsPhysical(directory);
++        var directories = new List<string>();
++        var pending = new Stack<string>();
++        pending.Push(directory);
++        while (pending.Count > 0)
++        {
++            var current = pending.Pop();
++            directories.Add(current);
++            foreach (var child in Directory.EnumerateFileSystemEntries(current))
++            {
++                var attributes = File.GetAttributes(child);
++                if ((attributes & FileAttributes.ReparsePoint) != 0)
++                    throw new InvalidDataException($"Updater-owned cleanup encountered a reparse point: {child}");
++                if ((attributes & FileAttributes.Directory) != 0)
++                {
++                    pending.Push(child);
++                    continue;
++                }
++                File.Delete(child);
++            }
++        }
++
++        for (var index = directories.Count - 1; index >= 0; index--)
++            Directory.Delete(directories[index], recursive: false);
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdateRuntime.cs b/src/MhwModManager.Updater/UpdateRuntime.cs
+new file mode 100644
+index 0000000..43de391
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdateRuntime.cs
+@@ -0,0 +1,367 @@
++using System.Diagnostics;
++using System.Reflection;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public sealed record UpdateHelperCommand(string StateRoot, string UpdateId, int WaitPid);
++
++public static class UpdateCommandLine
++{
++    public static bool TryParseHelper(IReadOnlyList<string> args, out UpdateHelperCommand? command)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        command = null;
++        if (!args.Contains("--mhw-updater-helper", StringComparer.Ordinal)) return false;
++        var stateRoot = ReadValue(args, "--state-root");
++        var updateId = ReadValue(args, "--update-id");
++        var pidText = ReadValue(args, "--wait-pid");
++        if (string.IsNullOrWhiteSpace(stateRoot) || string.IsNullOrWhiteSpace(updateId) ||
++            !int.TryParse(pidText, out var pid) || pid <= 0)
++            throw new InvalidDataException("Updater helper command line is incomplete.");
++        command = new UpdateHelperCommand(stateRoot, updateId, pid);
++        return true;
++    }
++
++    public static IReadOnlyList<string> FilterUserArguments(IReadOnlyList<string> args)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var output = new List<string>();
++        for (var index = 0; index < args.Count; index++)
++        {
++            var arg = args[index];
++            if (arg.Equals("--mhw-updater-helper", StringComparison.Ordinal)) continue;
++            if (arg is "--state-root" or "--update-id" or "--wait-pid")
++            {
++                index++;
++                continue;
++            }
++            output.Add(arg);
++        }
++        return output;
++    }
++
++    public static ProcessStartInfo BuildHelperStartInfo(PendingUpdateState pending, int waitPid)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var executable = UpdatePathSafety.GetContainedPath(
++            Path.Combine(pending.StagingRoot, "payload"), pending.RestartExecutable);
++        var info = new ProcessStartInfo
++        {
++            FileName = executable,
++            WorkingDirectory = Path.GetDirectoryName(executable) ??
++                               throw new InvalidDataException("Staged helper executable has no parent."),
++            UseShellExecute = false
++        };
++        info.ArgumentList.Add("--mhw-updater-helper");
++        info.ArgumentList.Add("--state-root");
++        info.ArgumentList.Add(UpdateStatePaths.ForInstallRoot(pending.InstallRoot).StateRoot);
++        info.ArgumentList.Add("--update-id");
++        info.ArgumentList.Add(pending.UpdateId);
++        info.ArgumentList.Add("--wait-pid");
++        info.ArgumentList.Add(waitPid.ToString(System.Globalization.CultureInfo.InvariantCulture));
++        return info;
++    }
++
++    public static ProcessStartInfo BuildRestartStartInfo(PendingUpdateState pending)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var executable = UpdatePathSafety.GetContainedPath(
++            pending.InstallRoot, pending.RestartExecutable);
++        var info = new ProcessStartInfo
++        {
++            FileName = executable,
++            WorkingDirectory = pending.InstallRoot,
++            UseShellExecute = false
++        };
++        foreach (var argument in pending.RestartArguments)
++            info.ArgumentList.Add(argument);
++        return info;
++    }
++
++    private static string? ReadValue(IReadOnlyList<string> args, string name)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        for (var index = 0; index < args.Count - 1; index++)
++            if (args[index].Equals(name, StringComparison.Ordinal))
++                return args[index + 1];
++        return null;
++    }
++}
++
++public sealed class UpdateHelperRunner
++{
++    public static async Task<int> RunAsync(
++        UpdateHelperCommand command,
++        TimeSpan? confirmationTimeout = null,
++        CancellationToken ct = default)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(command);
++        var pendingPath = Path.Combine(command.StateRoot, "pending.json");
++        if (!File.Exists(pendingPath))
++        {
++            MasterDebugLog.Write("UPDATER-HELPER", "No pending update exists for helper invocation.");
++            return 31;
++        }
++
++        var pending = await UpdateStateStore.ReadJsonAsync<PendingUpdateState>(pendingPath, ct)
++            .ConfigureAwait(false);
++        if (!pending.UpdateId.Equals(command.UpdateId, StringComparison.Ordinal))
++            throw new InvalidDataException("Updater helper ID does not match pending state.");
++
++        var expectedStateRoot = UpdateStatePaths.ForInstallRoot(pending.InstallRoot).StateRoot;
++        if (!Path.GetFullPath(expectedStateRoot)
++                .Equals(Path.GetFullPath(command.StateRoot), StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Updater helper state root is not the expected LocalAppData location.");
++
++        var paths = new UpdateStatePaths(pending.InstallRoot, command.StateRoot);
++        var state = new UpdateStateStore(paths);
++        var packages = new UpdatePackageService(state);
++        var apply = new UpdateApplyService(state, packages);
++        var mutexName = "Local\\MhwModManager.Update." +
++                        UpdatePathSafety.InstallationInstanceId(pending.InstallRoot);
++        using var mutex = new Mutex(initiallyOwned: false, mutexName);
++        var acquired = false;
++        try
++        {
++            try { acquired = mutex.WaitOne(TimeSpan.Zero); }
++            catch (AbandonedMutexException) { acquired = true; }
++            if (!acquired)
++            {
++                MasterDebugLog.Write("UPDATER-HELPER", "Another updater helper owns this installation.");
++                return 32;
++            }
++
++            await WaitForProcessExitAsync(command.WaitPid, TimeSpan.FromMinutes(2), ct).ConfigureAwait(false);
++            await packages.VerifyStagedAsync(pending, ct).ConfigureAwait(false);
++
++            var existing = await state.LoadJournalAsync(ct).ConfigureAwait(false);
++            if (existing is not null && existing.UpdateId.Equals(pending.UpdateId, StringComparison.Ordinal))
++            {
++                if (existing.Phase is UpdateApplyPhase.Applying
++                    or UpdateApplyPhase.RollbackRequired
++                    or UpdateApplyPhase.RollingBack)
++                {
++                    await apply.RollbackAsync(existing, CancellationToken.None).ConfigureAwait(false);
++                    state.ClearPending();
++                    StartRestart(pending, "updater recovery restart");
++                    return 33;
++                }
++
++                if (existing.Phase == UpdateApplyPhase.AppliedAwaitingHealth)
++                {
++                    if (state.IsConfirmed(pending.UpdateId))
++                    {
++                        await apply.CommitAsync(existing, CancellationToken.None).ConfigureAwait(false);
++                        return 0;
++                    }
++
++                    await apply.RollbackAsync(existing, CancellationToken.None).ConfigureAwait(false);
++                    state.ClearPending();
++                    StartRestart(pending, "unconfirmed update rollback restart");
++                    return 34;
++                }
++
++                if (existing.Phase == UpdateApplyPhase.Committed)
++                {
++                    state.ClearPending();
++                    return 0;
++                }
++
++                if (existing.Phase == UpdateApplyPhase.RolledBack)
++                {
++                    state.ClearPending();
++                    StartRestart(pending, "rolled-back update restart");
++                    return 35;
++                }
++            }
++
++            UpdateApplyJournal journal;
++            try
++            {
++                journal = await apply.ApplyAsync(pending, ct).ConfigureAwait(false);
++            }
++            catch (Exception ex)
++            {
++                MasterDebugLog.Write("UPDATER-HELPER", "Update apply failed.", ex);
++                state.ClearPending();
++                StartRestart(pending, "apply failure rollback restart");
++                return 36;
++            }
++
++            Process restarted;
++            try
++            {
++                restarted = StartRestart(pending, "updated application restart");
++            }
++            catch (Exception ex)
++            {
++                MasterDebugLog.Write("UPDATER-HELPER",
++                    "New application could not be started; rolling back.", ex);
++                await apply.RollbackAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                state.ClearPending();
++                StartRestart(pending, "restart failure rollback restart");
++                return 37;
++            }
++
++            var result = await WaitForHealthAsync(
++                restarted, state, pending.UpdateId,
++                confirmationTimeout ?? TimeSpan.FromMinutes(2), ct).ConfigureAwait(false);
++            if (result == HealthWaitResult.Confirmed)
++            {
++                await apply.CommitAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                return 0;
++            }
++
++            if (result == HealthWaitResult.Exited)
++            {
++                MasterDebugLog.Write("UPDATER-HELPER",
++                    "Updated application exited before health confirmation; rolling back.");
++                await apply.RollbackAsync(journal, CancellationToken.None).ConfigureAwait(false);
++                state.ClearPending();
++                StartRestart(pending, "startup-health rollback restart");
++                return 38;
++            }
++
++            MasterDebugLog.Write("UPDATER-HELPER",
++                "Updated application remained alive without a health acknowledgement; rollback payload retained.");
++            return 39;
++        }
++        finally
++        {
++            if (acquired) mutex.ReleaseMutex();
++        }
++    }
++
++    private static Process StartRestart(PendingUpdateState pending, string purpose)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return ProcessDebug.Start(UpdateCommandLine.BuildRestartStartInfo(pending), purpose);
++    }
++
++    private static async Task WaitForProcessExitAsync(
++        int pid,
++        TimeSpan timeout,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        Process process;
++        try { process = Process.GetProcessById(pid); }
++        catch (ArgumentException) { return; }
++        using (process)
++        using (var linked = CancellationTokenSource.CreateLinkedTokenSource(ct))
++        {
++            linked.CancelAfter(timeout);
++            try
++            {
++                await process.WaitForExitAsync(linked.Token).ConfigureAwait(false);
++            }
++            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
++            {
++                throw new TimeoutException(
++                    $"Updater helper timed out waiting for application process {pid} to exit.");
++            }
++        }
++    }
++
++    private static async Task<HealthWaitResult> WaitForHealthAsync(
++        Process process,
++        UpdateStateStore state,
++        string updateId,
++        TimeSpan timeout,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        using (process)
++        {
++            var deadline = DateTimeOffset.UtcNow + timeout;
++            while (DateTimeOffset.UtcNow < deadline)
++            {
++                ct.ThrowIfCancellationRequested();
++                if (state.IsConfirmed(updateId)) return HealthWaitResult.Confirmed;
++                if (process.HasExited) return HealthWaitResult.Exited;
++                await Task.Delay(250, ct).ConfigureAwait(false);
++            }
++            if (state.IsConfirmed(updateId)) return HealthWaitResult.Confirmed;
++            if (process.HasExited) return HealthWaitResult.Exited;
++            return HealthWaitResult.TimedOutAlive;
++        }
++    }
++
++    private enum HealthWaitResult
++    {
++        Confirmed,
++        Exited,
++        TimedOutAlive
++    }
++}
++
++public static class UpdateBootstrap
++{
++    public static async Task<bool> TryLaunchPendingHelperAtStartupAsync(
++        Assembly appAssembly,
++        IReadOnlyList<string> currentArguments,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var installRoot = Path.GetFullPath(AppContext.BaseDirectory)
++            .TrimEnd(Path.DirectorySeparatorChar);
++        var paths = UpdateStatePaths.ForInstallRoot(installRoot);
++        var state = new UpdateStateStore(paths);
++        var pending = await state.LoadPendingAsync(ct).ConfigureAwait(false);
++        if (pending is null) return false;
++        var current = BuildIdentityReader.FromAssembly(appAssembly);
++        var journal = await state.LoadJournalAsync(ct).ConfigureAwait(false);
++
++        if (journal is not null && journal.UpdateId.Equals(pending.UpdateId, StringComparison.Ordinal))
++        {
++            if (journal.Phase == UpdateApplyPhase.Committed)
++            {
++                state.ClearPending();
++                return false;
++            }
++            if (journal.Phase == UpdateApplyPhase.RolledBack)
++            {
++                state.ClearPending();
++                return false;
++            }
++            if (journal.Phase == UpdateApplyPhase.AppliedAwaitingHealth &&
++                current.BuildNumber == pending.Manifest.BuildNumber &&
++                current.SourceSha.Equals(pending.Manifest.SourceSha, StringComparison.OrdinalIgnoreCase))
++            {
++                return false;
++            }
++        }
++
++        var packages = new UpdatePackageService(state);
++        try
++        {
++            await packages.VerifyStagedAsync(pending, ct).ConfigureAwait(false);
++        }
++        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
++        {
++            MasterDebugLog.Write("UPDATER",
++                "Pending update failed startup re-verification; current application will continue.", ex);
++            return false;
++        }
++
++        pending = new PendingUpdateState
++        {
++            SchemaVersion = pending.SchemaVersion,
++            UpdateId = pending.UpdateId,
++            InstallRoot = pending.InstallRoot,
++            StagingRoot = pending.StagingRoot,
++            ArchivePath = pending.ArchivePath,
++            Manifest = pending.Manifest,
++            Payload = pending.Payload,
++            RestartExecutable = pending.RestartExecutable,
++            RestartArguments = UpdateCommandLine.FilterUserArguments(currentArguments),
++            StagedUtc = pending.StagedUtc
++        };
++        await state.SavePendingAsync(pending, ct).ConfigureAwait(false);
++        var start = UpdateCommandLine.BuildHelperStartInfo(pending, Environment.ProcessId);
++        ProcessDebug.Start(start, "startup pending-update helper");
++        return true;
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdateStateStore.cs b/src/MhwModManager.Updater/UpdateStateStore.cs
+new file mode 100644
+index 0000000..7606c10
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdateStateStore.cs
+@@ -0,0 +1,231 @@
++using System.Security.Cryptography;
++using System.Text;
++using System.Text.Json;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public sealed class UpdateStatePaths
++{
++    public UpdateStatePaths(string installRoot, string stateRoot)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        InstallRoot = Path.GetFullPath(installRoot).TrimEnd(Path.DirectorySeparatorChar);
++        StateRoot = Path.GetFullPath(stateRoot).TrimEnd(Path.DirectorySeparatorChar);
++        DownloadsRoot = Path.Combine(StateRoot, "Downloads");
++        StagingRoot = Path.Combine(StateRoot, "Staging");
++        RollbackRoot = Path.Combine(StateRoot, "Rollback");
++        PendingPath = Path.Combine(StateRoot, "pending.json");
++        JournalPath = Path.Combine(StateRoot, "apply-journal.json");
++    }
++
++    public string InstallRoot { get; }
++    public string StateRoot { get; }
++    public string DownloadsRoot { get; }
++    public string StagingRoot { get; }
++    public string RollbackRoot { get; }
++    public string PendingPath { get; }
++    public string JournalPath { get; }
++
++    public static UpdateStatePaths ForInstallRoot(string installRoot)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
++        if (string.IsNullOrWhiteSpace(local))
++            throw new DirectoryNotFoundException("LocalAppData is unavailable for updater state.");
++        var instance = UpdatePathSafety.InstallationInstanceId(installRoot);
++        var state = Path.Combine(local, "MHW Manual Mod Manager", "Updater", instance);
++        return new UpdateStatePaths(installRoot, state);
++    }
++
++    public string ConfirmationPath(string updateId)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return Path.Combine(StateRoot, $"confirmed-{SafeId(updateId)}.ok");
++    }
++
++    public string StageDirectory(string updateId)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return Path.Combine(StagingRoot, SafeId(updateId));
++    }
++
++    public string RollbackDirectory(string updateId)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return Path.Combine(RollbackRoot, SafeId(updateId));
++    }
++
++    public void EnsureCreated()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        UpdatePathSafety.EnsureDirectoryTreeSafe(StateRoot);
++        UpdatePathSafety.EnsureSafeDirectoryPath(StateRoot, DownloadsRoot);
++        UpdatePathSafety.EnsureSafeDirectoryPath(StateRoot, StagingRoot);
++        UpdatePathSafety.EnsureSafeDirectoryPath(StateRoot, RollbackRoot);
++    }
++
++    private static string SafeId(string value)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (string.IsNullOrWhiteSpace(value) ||
++            value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
++            value.Contains('/') || value.Contains('\\') || value.Contains(':') ||
++            value is "." or "..")
++            throw new InvalidDataException("Updater state identifier is unsafe.");
++        return value;
++    }
++}
++
++public sealed class UpdateStateStore
++{
++    private readonly UpdateStatePaths paths;
++
++    public UpdateStateStore(UpdateStatePaths paths)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        this.paths = paths ?? throw new ArgumentNullException(nameof(paths));
++        paths.EnsureCreated();
++    }
++
++    public UpdateStatePaths Paths => paths;
++
++    public async Task SavePendingAsync(PendingUpdateState pending, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(pending);
++        await WriteJsonAtomicAsync(paths.PendingPath, pending, ct).ConfigureAwait(false);
++    }
++
++    public async Task<PendingUpdateState?> LoadPendingAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (!File.Exists(paths.PendingPath)) return null;
++        return await ReadJsonAsync<PendingUpdateState>(paths.PendingPath, ct).ConfigureAwait(false);
++    }
++
++    public void ClearPending()
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (File.Exists(paths.PendingPath)) File.Delete(paths.PendingPath);
++    }
++
++    public async Task SaveJournalAsync(UpdateApplyJournal journal, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(journal);
++        journal.UpdatedUtc = DateTimeOffset.UtcNow;
++        await WriteJsonAtomicAsync(paths.JournalPath, journal, ct).ConfigureAwait(false);
++    }
++
++    public async Task<UpdateApplyJournal?> LoadJournalAsync(CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (!File.Exists(paths.JournalPath)) return null;
++        return await ReadJsonAsync<UpdateApplyJournal>(paths.JournalPath, ct).ConfigureAwait(false);
++    }
++
++    public async Task WriteConfirmationAsync(string updateId, BuildIdentity identity, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var path = paths.ConfirmationPath(updateId);
++        var content = Encoding.UTF8.GetBytes(
++            $"{identity.BuildNumber}\n{identity.SourceSha}\n{DateTimeOffset.UtcNow:O}\n");
++        await WriteBytesAtomicAsync(path, content, ct).ConfigureAwait(false);
++    }
++
++    public bool IsConfirmed(string updateId)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        return File.Exists(paths.ConfirmationPath(updateId));
++    }
++
++    public static async Task<T> ReadJsonAsync<T>(string path, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var stream = new FileStream(
++            path, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        if (stream.Length <= 0 || stream.Length > UpdateConstants.MaxManifestBytes)
++            throw new InvalidDataException($"Updater state file has an invalid size: {path}");
++        try
++        {
++            return await JsonSerializer.DeserializeAsync<T>(stream, UpdateJson.CreateOptions(), ct)
++                       .ConfigureAwait(false)
++                   ?? throw new InvalidDataException($"Updater state file is empty: {path}");
++        }
++        catch (JsonException ex)
++        {
++            throw new InvalidDataException($"Updater state file is malformed: {path}", ex);
++        }
++    }
++
++    public static async Task WriteJsonAtomicAsync<T>(string path, T value, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var bytes = JsonSerializer.SerializeToUtf8Bytes(value, UpdateJson.CreateOptions());
++        await WriteBytesAtomicAsync(path, bytes, ct).ConfigureAwait(false);
++    }
++
++    private static async Task WriteBytesAtomicAsync(string path, byte[] bytes, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var parent = Path.GetDirectoryName(path) ??
++                     throw new InvalidDataException("Updater state path has no parent.");
++        Directory.CreateDirectory(parent);
++        var temp = Path.Combine(parent, "." + Path.GetFileName(path) + "." + Guid.NewGuid().ToString("N") + ".tmp");
++        try
++        {
++            await using (var stream = new FileStream(
++                             temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 64 * 1024,
++                             FileOptions.Asynchronous | FileOptions.SequentialScan))
++            {
++                await stream.WriteAsync(bytes, ct).ConfigureAwait(false);
++                await stream.FlushAsync(ct).ConfigureAwait(false);
++                stream.Flush(flushToDisk: true);
++            }
++            File.Move(temp, path, overwrite: true);
++        }
++        finally
++        {
++            try { if (File.Exists(temp)) File.Delete(temp); } catch { }
++        }
++    }
++}
++
++public static class ManagedInstall
++{
++    public static async Task<(ManagedInstallMarker Marker, ProductPayloadManifest Payload)?> TryLoadAsync(
++        string installRoot,
++        CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        var markerPath = Path.Combine(installRoot, UpdateConstants.ManagedInstallMarkerName);
++        var payloadPath = Path.Combine(installRoot, UpdateConstants.PayloadManifestName);
++        if (!File.Exists(markerPath) || !File.Exists(payloadPath)) return null;
++
++        var markerBytes = await ReadBoundedFileAsync(markerPath, ct).ConfigureAwait(false);
++        var payloadBytes = await ReadBoundedFileAsync(payloadPath, ct).ConfigureAwait(false);
++        var marker = UpdateValidation.ParseManagedInstallMarker(markerBytes);
++        UpdateValidation.ValidateManagedInstallMarker(marker);
++        var payload = UpdateValidation.ParsePayloadManifest(payloadBytes);
++        if (!marker.SourceSha.Equals(payload.SourceSha, StringComparison.OrdinalIgnoreCase) ||
++            marker.BuildNumber != payload.BuildNumber ||
++            !marker.ProductVersion.Equals(payload.ProductVersion, StringComparison.Ordinal))
++            throw new InvalidDataException("Managed-install marker and installed payload manifest disagree.");
++        return (marker, payload);
++    }
++
++    public static async Task<byte[]> ReadBoundedFileAsync(string path, CancellationToken ct)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        await using var stream = new FileStream(
++            path, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024,
++            FileOptions.Asynchronous | FileOptions.SequentialScan);
++        if (stream.Length <= 0 || stream.Length > UpdateConstants.MaxManifestBytes)
++            throw new InvalidDataException($"Updater control file has invalid size: {path}");
++        var bytes = new byte[checked((int)stream.Length)];
++        await stream.ReadExactlyAsync(bytes, ct).ConfigureAwait(false);
++        return bytes;
++    }
++}
+diff --git a/src/MhwModManager.Updater/UpdateValidation.cs b/src/MhwModManager.Updater/UpdateValidation.cs
+new file mode 100644
+index 0000000..e30ee99
+--- /dev/null
++++ b/src/MhwModManager.Updater/UpdateValidation.cs
+@@ -0,0 +1,185 @@
++using System.Text.Json;
++using MhwModManager.Core;
++
++namespace MhwModManager.Updater;
++
++public static class UpdateValidation
++{
++    public static UpdateManifest ParseManifest(byte[] bytes)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(bytes);
++        if (bytes.LongLength == 0 || bytes.LongLength > UpdateConstants.MaxManifestBytes)
++            throw new InvalidDataException("Update manifest size is invalid.");
++        UpdateManifest manifest;
++        try
++        {
++            manifest = JsonSerializer.Deserialize<UpdateManifest>(bytes, UpdateJson.CreateOptions())
++                       ?? throw new InvalidDataException("Update manifest is empty.");
++        }
++        catch (JsonException ex)
++        {
++            throw new InvalidDataException("Update manifest JSON is malformed.", ex);
++        }
++
++        ValidateManifest(manifest);
++        return manifest;
++    }
++
++    public static void ValidateManifest(UpdateManifest manifest)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(manifest);
++        if (manifest.SchemaVersion != UpdateConstants.ManifestSchemaVersion)
++            throw new InvalidDataException($"Unsupported update manifest schema {manifest.SchemaVersion}.");
++        if (manifest.MinimumUpdaterSchemaVersion > UpdateConstants.ManifestSchemaVersion)
++            throw new InvalidDataException("This update requires a newer updater bootstrap.");
++        if (!manifest.Channel.Equals(UpdateConstants.Channel, StringComparison.Ordinal))
++            throw new InvalidDataException($"Unexpected update channel: {manifest.Channel}");
++        if (!manifest.Repository.Equals(UpdateConstants.Repository, StringComparison.Ordinal))
++            throw new InvalidDataException($"Unexpected update repository: {manifest.Repository}");
++        if (string.IsNullOrWhiteSpace(manifest.ProductVersion))
++            throw new InvalidDataException("Update manifest product version is missing.");
++        RequireSha(manifest.SourceSha, "source SHA", 40);
++        if (manifest.BuildNumber <= 0) throw new InvalidDataException("Update build number must be positive.");
++        if (manifest.RunId <= 0) throw new InvalidDataException("Update run ID must be positive.");
++        if (manifest.Size <= 0 || manifest.Size > UpdateConstants.MaxArtifactBytes)
++            throw new InvalidDataException("Update artifact size is outside the supported budget.");
++        RequireSha(manifest.Sha256, "artifact SHA-256", 64);
++        RequireSha(manifest.PayloadManifestSha256, "payload manifest SHA-256", 64);
++        if (Path.GetFileName(manifest.Artifact) != manifest.Artifact ||
++            !manifest.Artifact.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
++            throw new InvalidDataException("Update artifact name is unsafe.");
++        var expectedTag = BuildReleaseTag(manifest.BuildNumber, manifest.SourceSha);
++        if (!manifest.ReleaseTag.Equals(expectedTag, StringComparison.Ordinal))
++            throw new InvalidDataException("Update release tag does not match build identity.");
++        if (manifest.CreatedUtc == default || manifest.PublishedUtc == default)
++            throw new InvalidDataException("Update timestamps are missing.");
++    }
++
++    public static ProductPayloadManifest ParsePayloadManifest(byte[] bytes)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(bytes);
++        if (bytes.LongLength == 0 || bytes.LongLength > UpdateConstants.MaxManifestBytes)
++            throw new InvalidDataException("Payload manifest size is invalid.");
++        ProductPayloadManifest payload;
++        try
++        {
++            payload = JsonSerializer.Deserialize<ProductPayloadManifest>(bytes, UpdateJson.CreateOptions())
++                      ?? throw new InvalidDataException("Payload manifest is empty.");
++        }
++        catch (JsonException ex)
++        {
++            throw new InvalidDataException("Payload manifest JSON is malformed.", ex);
++        }
++
++        ValidatePayloadManifest(payload);
++        return payload;
++    }
++
++    public static void ValidatePayloadManifest(ProductPayloadManifest payload)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(payload);
++        if (payload.SchemaVersion != UpdateConstants.PayloadSchemaVersion)
++            throw new InvalidDataException($"Unsupported payload manifest schema {payload.SchemaVersion}.");
++        if (!payload.ProductId.Equals(UpdateConstants.ProductId, StringComparison.Ordinal))
++            throw new InvalidDataException("Payload product identity is invalid.");
++        if (!payload.Channel.Equals(UpdateConstants.Channel, StringComparison.Ordinal))
++            throw new InvalidDataException("Payload channel is invalid.");
++        if (payload.BuildNumber <= 0) throw new InvalidDataException("Payload build number must be positive.");
++        RequireSha(payload.SourceSha, "payload source SHA", 40);
++        if (!payload.Executable.Equals(UpdateConstants.ExecutableName, StringComparison.Ordinal))
++            throw new InvalidDataException("Payload executable identity is invalid.");
++        if (payload.Files.Count == 0 || payload.Files.Count > UpdateConstants.MaxPayloadFiles)
++            throw new InvalidDataException("Payload file count is outside the supported budget.");
++
++        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
++        long total = 0;
++        foreach (var file in payload.Files)
++        {
++            var normalized = UpdatePathSafety.NormalizePayloadPath(file.Path);
++            if (!paths.Add(normalized))
++                throw new InvalidDataException($"Payload contains a duplicate/case-colliding path: {file.Path}");
++            if (file.Size < 0 || file.Size > UpdateConstants.MaxExpandedBytes)
++                throw new InvalidDataException($"Payload file has an invalid size: {file.Path}");
++            total = checked(total + file.Size);
++            if (total > UpdateConstants.MaxExpandedBytes)
++                throw new InvalidDataException("Payload expanded size exceeds the updater budget.");
++            RequireSha(file.Sha256, $"payload SHA-256 for {file.Path}", 64);
++        }
++
++        if (!paths.Contains(UpdateConstants.ExecutableName))
++            throw new InvalidDataException("Payload does not contain the application executable.");
++        if (!paths.Contains(UpdateConstants.ManagedInstallMarkerName))
++            throw new InvalidDataException("Payload does not contain the managed-install marker.");
++    }
++
++    public static void ValidateManifestAgreement(UpdateManifest manifest, ProductPayloadManifest payload)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ValidateManifest(manifest);
++        ValidatePayloadManifest(payload);
++        if (!manifest.ProductVersion.Equals(payload.ProductVersion, StringComparison.Ordinal) ||
++            !manifest.SourceSha.Equals(payload.SourceSha, StringComparison.OrdinalIgnoreCase) ||
++            manifest.BuildNumber != payload.BuildNumber)
++            throw new InvalidDataException("Update and payload manifests describe different builds.");
++    }
++
++    public static ManagedInstallMarker ParseManagedInstallMarker(byte[] bytes)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        try
++        {
++            return JsonSerializer.Deserialize<ManagedInstallMarker>(bytes, UpdateJson.CreateOptions())
++                   ?? throw new InvalidDataException("Managed-install marker is empty.");
++        }
++        catch (JsonException ex)
++        {
++            throw new InvalidDataException("Managed-install marker JSON is malformed.", ex);
++        }
++    }
++
++    public static void ValidateManagedInstallMarker(ManagedInstallMarker marker)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentNullException.ThrowIfNull(marker);
++        if (marker.SchemaVersion != 1 ||
++            !marker.ProductId.Equals(UpdateConstants.ProductId, StringComparison.Ordinal) ||
++            !marker.Channel.Equals(UpdateConstants.Channel, StringComparison.Ordinal) ||
++            !marker.InstallMode.Equals("managed-portable", StringComparison.Ordinal))
++            throw new InvalidDataException("This directory is not a managed MHW Manual Mod Manager installation.");
++    }
++
++    public static string BuildReleaseTag(long buildNumber, string sourceSha)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(buildNumber);
++        RequireSha(sourceSha, "source SHA", 40);
++        return $"{UpdateConstants.ReleaseTagPrefix}{buildNumber}-{sourceSha[..12].ToLowerInvariant()}";
++    }
++
++    public static bool TryParseReleaseTag(string tag, out long buildNumber, out string shortSha)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        buildNumber = 0;
++        shortSha = string.Empty;
++        if (!tag.StartsWith(UpdateConstants.ReleaseTagPrefix, StringComparison.Ordinal)) return false;
++        var rest = tag[UpdateConstants.ReleaseTagPrefix.Length..];
++        var separator = rest.IndexOf('-', StringComparison.Ordinal);
++        if (separator <= 0 || separator == rest.Length - 1) return false;
++        if (!long.TryParse(rest[..separator], System.Globalization.NumberStyles.None,
++                System.Globalization.CultureInfo.InvariantCulture, out buildNumber) || buildNumber <= 0)
++            return false;
++        shortSha = rest[(separator + 1)..];
++        return shortSha.Length == 12 && shortSha.All(static c => Uri.IsHexDigit(c));
++    }
++
++    private static void RequireSha(string value, string name, int length)
++    {
++        using var __mhwTrace = MasterDebugLog.BeginMethod();
++        if (value.Length != length || !value.All(static c => Uri.IsHexDigit(c)))
++            throw new InvalidDataException($"Invalid {name}.");
++    }
++}
