@@ -1,12 +1,14 @@
-# v8.8.146 - immutable release verified
+# v8.8.147 — explicit mod changes
 
-Canonical source: `fengie/Heaven-Mod_Manager@main` at `4d944e1c4c72142115802271e338daaca133fd03`. Public immutable [updater-main-651](https://github.com/fengie/Heaven-Mod_Manager/releases/tag/updater-main-651) contains this exact source. Bootstrap `fengie/heaven-toolbox@main` before other work.
+Canonical pre-release source: #989 and #993 at `3445d44189809cd5ff7a862b7c910753cb8e64f4` passed [Windows verification](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/46078148415). Build 651 remains the published release.
 
 Release evidence is a snapshot. Follow [Resuming release work](AGENTS.md#resuming-release-work) to verify the intended build before scheduling acceptance. Bootstrap fengie/heaven-toolbox@main and preserve recursive continuity.
 
 **Mandatory recursive continuity:** Every successor must read and inherit the full `_AGENT_CONTEXT/CONTINUITY_PROTOCOL.md` and active `_AGENT_CONTEXT/LEARNED_RULES.md`. Every successor must propagate these Core Rules and Learned Rules to the next agent, who must require its own successor to do the same. Do not break the chain. Neither prior chat history nor an earlier read substitutes for fresh project state.
 
 ## Integrated source and exact evidence
+
+- **v8.8.147** — Explicit Apply commits staged choices. Verify publication and update/rollback under #793, then canonical Heaven2 use and preservation of primary and unmanaged bytes under #946.
 
 - **v8.8.146 source:** [#986](https://github.com/fengie/Heaven-Mod_Manager/pull/986) integrated at `5a97cb34242c5b5bf2d1f6791a06cf7bdb6f77bd`; exact-head Feature 45704981417, Startup Performance 45704981205, packaged WPF 45704981295, Product Security 45704981433 and AutoUpdate 45704981269 passed. [Main Windows Gate 45712238130](https://github.com/fengie/Heaven-Mod_Manager/actions/runs/45712238130) passed verification/build; publication skipped for the unchanged version. The subsequent updater workflow classified no new publication and skipped real update/rollback.
 
